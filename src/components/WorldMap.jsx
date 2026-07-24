@@ -79,7 +79,7 @@ export default function WorldMap({
         {/* Summit Peak Header */}
         <div className="text-center mb-6">
           <span className="text-xs font-black uppercase tracking-wider text-amber-900 bg-gradient-to-r from-amber-100 via-yellow-200 to-amber-100 px-4 py-1.5 rounded-full border-2 border-amber-300 shadow-sm">
-            🏔️ Mount Kibo Peak Trail 🏔️
+            🏔️ Mount Kibo Ascent 🏔️
           </span>
         </div>
 

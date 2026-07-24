@@ -68,7 +68,7 @@ export const CURRICULUM_TIERS = [
   {
     tier: 8,
     title: 'Squares, Roots & PEMDAS',
-    subtitle: 'Powers, Square Roots & Order of Ops',
+    subtitle: 'Mount Kibo Summit Peak',
     location: 'Mount Kibo Summit',
     icon: '🏔️',
     color: 'from-yellow-400 via-amber-500 to-purple-600',

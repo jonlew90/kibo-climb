@@ -18,6 +18,7 @@ import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS
 import { getItemById } from './utils/itemsCatalog';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
+import { BRAND_CONFIG } from './config/brand';
 
 export default function App() {
   // App State: 'launch' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
@@ -651,10 +652,11 @@ export default function App() {
                 setAppState('launch');
               }
             }}
-            className="font-extrabold text-2xl tracking-tight text-kibo-orange drop-shadow-sm hover:opacity-90 transition-opacity active:scale-95 text-left"
+            className="font-extrabold text-2xl tracking-tight text-kibo-orange drop-shadow-sm hover:opacity-90 transition-opacity active:scale-95 text-left flex items-center gap-1.5"
             title="Return to Home"
           >
-            Kibo<span className="text-kibo-teal">Math</span>
+            <span>🏔️</span>
+            <span>Kibo<span className="text-kibo-teal">Math</span></span>
           </button>
         </div>
 
@@ -1294,7 +1296,7 @@ export default function App() {
 
       {/* Footer with Parent Zone Link */}
       <footer className="w-full text-center text-xs font-bold text-slate-400 py-2 border-t border-slate-200/60 mt-auto flex items-center justify-between">
-        <span>Kibo Math • Supercharged Fun Mental Math MVP</span>
+        <span>{BRAND_CONFIG.appName} by {BRAND_CONFIG.rootBrand} • math.kiboclimb.com</span>
         <button
           onClick={() => setShowPinGateModal(true)}
           className="text-purple-600 hover:text-purple-800 flex items-center gap-1 font-extrabold"
