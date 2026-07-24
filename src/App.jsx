@@ -8,6 +8,7 @@ import PinGateModal from './components/PinGateModal';
 import ParentDashboardModal from './components/ParentDashboardModal';
 import SkillMapScreen from './components/SkillMapScreen';
 import QuitSprintModal from './components/QuitSprintModal';
+import StreakSavedModal from './components/StreakSavedModal';
 import { generateProblems } from './utils/mathGenerator';
 import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS } from './utils/curriculum';
 import { getItemById } from './utils/itemsCatalog';
@@ -24,6 +25,7 @@ export default function App() {
   const [showPinGateModal, setShowPinGateModal] = useState(false);
   const [showParentDashboard, setShowParentDashboard] = useState(false);
   const [showQuitModal, setShowQuitModal] = useState(false);
+  const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
 
   const [levelUpReason, setLevelUpReason] = useState('');
   const [isBossMode, setIsBossMode] = useState(false);
@@ -42,18 +44,22 @@ export default function App() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
 
+  // Persistent Kibo Shields (Streak Freezes: max capacity 2, default 1)
+  const [streakShields, setStreakShields] = useState(() => {
+    const saved = localStorage.getItem('kibo_math_shields');
+    return saved !== null ? parseInt(saved, 10) : 1;
+  });
+
+  // Persistent Custom 7-Day Practice Schedule (Default [1, 2, 3, 4, 5] = Mon-Fri)
+  const [practiceDays, setPracticeDays] = useState(() => {
+    const saved = localStorage.getItem('kibo_math_practice_days');
+    return saved ? JSON.parse(saved) : [1, 2, 3, 4, 5];
+  });
+
   // Persistent Daily Streak
   const [streak, setStreak] = useState(() => {
     const saved = localStorage.getItem('kibo_math_streak');
-    const lastDate = localStorage.getItem('kibo_math_last_date');
-    const today = getTodayStr();
-    const yesterday = getYesterdayStr();
-
-    if (!saved || !lastDate) return 0;
-    if (lastDate !== today && lastDate !== yesterday) {
-      return 0;
-    }
-    return parseInt(saved, 10);
+    return saved ? parseInt(saved, 10) : 0;
   });
 
   // Persistent Sparks Currency (⚡)
@@ -117,6 +123,45 @@ export default function App() {
     const saved = localStorage.getItem('kibo_math_equipped');
     return saved ? JSON.parse(saved) : [];
   });
+
+  // Schedule-Aware Streak Validation on App Startup
+  useEffect(() => {
+    const lastDateStr = localStorage.getItem('kibo_math_last_date');
+    const savedStreak = parseInt(localStorage.getItem('kibo_math_streak') || '0', 10);
+    const savedShields = parseInt(localStorage.getItem('kibo_math_shields') || '1', 10);
+    const savedDays = JSON.parse(localStorage.getItem('kibo_math_practice_days') || '[1,2,3,4,5]');
+
+    if (!lastDateStr || savedStreak === 0) return;
+
+    const todayStr = getTodayStr();
+    const [y, m, d] = lastDateStr.split('-').map(Number);
+    const curr = new Date(y, m - 1, d);
+    curr.setDate(curr.getDate() + 1);
+
+    let missedActiveDays = 0;
+    while (true) {
+      const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
+      if (dateStr >= todayStr) break;
+
+      const dayIdx = curr.getDay(); // 0 = Sun, 1 = Mon ...
+      if (savedDays.includes(dayIdx)) {
+        missedActiveDays++;
+      }
+      curr.setDate(curr.getDate() + 1);
+    }
+
+    if (missedActiveDays >= 1) {
+      if (savedShields > 0) {
+        const newShields = Math.max(0, savedShields - 1);
+        setStreakShields(newShields);
+        localStorage.setItem('kibo_math_shields', newShields.toString());
+        setShowStreakSavedModal(true);
+      } else {
+        setStreak(0);
+        localStorage.setItem('kibo_math_streak', '0');
+      }
+    }
+  }, []);
 
   // Sprint State
   const [problems, setProblems] = useState([]);
@@ -424,9 +469,20 @@ export default function App() {
     setIsMuted(muted);
   };
 
-  // Workshop Actions (Slot-Based Equipping)
+  // Workshop Actions (Slot-Based Equipping & Consumables)
   const handleBuyItem = (item) => {
     if (sparks < item.cost) return;
+
+    if (item.isConsumable && item.id === 'kibo_shield') {
+      if (streakShields >= 2) return;
+      const updatedSparks = sparks - item.cost;
+      const newShields = Math.min(2, streakShields + 1);
+      setSparks(updatedSparks);
+      setStreakShields(newShields);
+      localStorage.setItem('kibo_math_sparks', updatedSparks.toString());
+      localStorage.setItem('kibo_math_shields', newShields.toString());
+      return;
+    }
 
     const updatedSparks = sparks - item.cost;
     const updatedUnlocked = Array.from(new Set([...unlockedItems, item.id]));
@@ -479,6 +535,11 @@ export default function App() {
     setSecurityAnswer(a);
     localStorage.setItem('kibo_math_parent_sec_q', q);
     localStorage.setItem('kibo_math_parent_sec_a', a);
+  };
+
+  const handleUpdatePracticeDays = (newDays) => {
+    setPracticeDays(newDays);
+    localStorage.setItem('kibo_math_practice_days', JSON.stringify(newDays));
   };
 
   const handleSetTierManual = (newTier) => {
@@ -604,10 +665,14 @@ export default function App() {
           {/* Top Badges Row */}
           <div className="flex items-center gap-2 flex-wrap justify-center">
             {/* Daily Streak Card */}
-            <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border-2 border-amber-200 rounded-full shadow-sm">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 bg-amber-50 border-2 border-amber-200 rounded-full shadow-sm">
               <Flame className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
               <span className="font-extrabold text-amber-900 text-sm sm:text-base">
                 {streak} Day Streak!
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="text-xs font-black text-slate-700 flex items-center gap-1" title="Kibo Shields Remaining">
+                🛡️ {streakShields}/2
               </span>
             </div>
 
@@ -937,6 +1002,14 @@ export default function App() {
         </main>
       )}
 
+      {/* STREAK SAVED MODAL */}
+      <StreakSavedModal
+        isOpen={showStreakSavedModal}
+        onClose={() => setShowStreakSavedModal(false)}
+        streak={streak}
+        remainingShields={streakShields}
+      />
+
       {/* QUIT SPRINT CONFIRMATION MODAL */}
       <QuitSprintModal
         isOpen={showQuitModal}
@@ -972,6 +1045,8 @@ export default function App() {
         sparks={sparks}
         practiceQueueCount={practiceQueue.length}
         sprintHistory={sprintHistory}
+        practiceDays={practiceDays}
+        onUpdatePracticeDays={handleUpdatePracticeDays}
       />
 
       {/* PARENT SPEED INFO MODAL (ℹ️) */}
@@ -1065,6 +1140,7 @@ export default function App() {
         isOpen={isWorkshopOpen}
         onClose={() => setIsWorkshopOpen(false)}
         sparks={sparks}
+        streakShields={streakShields}
         unlockedItems={unlockedItems}
         equippedItems={equippedItems}
         onBuyItem={handleBuyItem}

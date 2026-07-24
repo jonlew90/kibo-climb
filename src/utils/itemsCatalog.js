@@ -71,6 +71,15 @@ export const WORKSHOP_ITEMS = [
 
   // ACCESSORIES (Slot: accessory)
   {
+    id: 'kibo_shield',
+    name: 'Kibo Shield (Streak Freeze)',
+    category: 'accessory',
+    cost: 50,
+    rarity: 'rare',
+    isConsumable: true,
+    description: 'Automatically absorbs 1 missed practice day to protect your streak! (Max 2)'
+  },
+  {
     id: 'bowtie',
     name: 'Red Bowtie',
     category: 'accessory',
@@ -126,7 +135,7 @@ export const WORKSHOP_ITEMS = [
     category: 'aura',
     cost: 500,
     rarity: 'legendary',
-    description: 'Shimmering solid gold metallic Kibo skin!'
+    description: 'Shimmering solid 24k gold metallic Kibo skin!'
   },
 
   // SPRINT BACKGROUNDS (Slot: background)

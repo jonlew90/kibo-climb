@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar } from 'lucide-react';
 import { soundFx } from '../utils/audio';
+
+const DAYS_OF_WEEK = [
+  { idx: 0, label: 'Su' },
+  { idx: 1, label: 'M' },
+  { idx: 2, label: 'T' },
+  { idx: 3, label: 'W' },
+  { idx: 4, label: 'Th' },
+  { idx: 5, label: 'F' },
+  { idx: 6, label: 'Sa' }
+];
 
 export default function ParentDashboardModal({
   isOpen,
@@ -15,7 +25,9 @@ export default function ParentDashboardModal({
   streak,
   sparks,
   practiceQueueCount,
-  sprintHistory
+  sprintHistory,
+  practiceDays = [1, 2, 3, 4, 5],
+  onUpdatePracticeDays
 }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'settings'
 
@@ -114,7 +126,7 @@ export default function ParentDashboardModal({
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Settings className="w-4 h-4 stroke-[2.5]" /> PIN & Security Settings
+            <Settings className="w-4 h-4 stroke-[2.5]" /> PIN & Schedule Settings
           </button>
         </div>
 
@@ -207,11 +219,52 @@ export default function ParentDashboardModal({
           </div>
         )}
 
-        {/* TAB 2: PIN & SECURITY SETTINGS */}
+        {/* TAB 2: PIN & SCHEDULE SETTINGS */}
         {activeTab === 'settings' && (
           <div className="flex-1 overflow-y-auto pr-1 space-y-4 my-1">
+            {/* Custom 7-Day Practice Schedule */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2.5 text-left">
+              <div className="flex items-center gap-2 text-purple-700">
+                <Calendar className="w-5 h-5 stroke-[2.5]" />
+                <h4 className="font-extrabold text-sm text-slate-800">Custom 7-Day Practice Schedule</h4>
+              </div>
+
+              <div className="grid grid-cols-7 gap-1">
+                {DAYS_OF_WEEK.map((d) => {
+                  const isActive = practiceDays.includes(d.idx);
+                  return (
+                    <button
+                      key={d.idx}
+                      type="button"
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        let newDays;
+                        if (isActive) {
+                          if (practiceDays.length === 1) return;
+                          newDays = practiceDays.filter((idx) => idx !== d.idx);
+                        } else {
+                          newDays = [...practiceDays, d.idx].sort();
+                        }
+                        onUpdatePracticeDays(newDays);
+                      }}
+                      className={`py-2 text-xs font-black rounded-xl border-2 transition-all ${
+                        isActive
+                          ? 'bg-purple-600 text-white border-purple-700 shadow-sm scale-[1.02]'
+                          : 'bg-white text-slate-400 border-slate-200 hover:border-purple-300'
+                      }`}
+                    >
+                      {d.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] font-medium text-slate-500 italic leading-snug">
+                Unselected rest days automatically protect your child's streak without consuming a Kibo Shield.
+              </p>
+            </div>
+
             {/* Change 4-Digit PIN */}
-            <form onSubmit={handleChangePin} className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3">
+            <form onSubmit={handleChangePin} className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
               <div className="flex items-center gap-2 text-purple-700">
                 <Key className="w-5 h-5 stroke-[2.5]" />
                 <h4 className="font-extrabold text-sm text-slate-800">Change 4-Digit Parent PIN</h4>
@@ -279,7 +332,7 @@ export default function ParentDashboardModal({
             </form>
 
             {/* Security Question Settings */}
-            <form onSubmit={handleSaveSecurityQuestion} className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3">
+            <form onSubmit={handleSaveSecurityQuestion} className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
               <div className="flex items-center gap-2 text-purple-700">
                 <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
                 <h4 className="font-extrabold text-sm text-slate-800">Security Recovery Question</h4>
