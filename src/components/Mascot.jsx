@@ -41,10 +41,13 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
       )}
 
       {/* 2. AURA / FX GLOW LAYER */}
-      {hasRainbowAura && (
+      {hasGoldenSkin && (
+        <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 opacity-90 blur-xl animate-pulse pointer-events-none scale-125" />
+      )}
+      {hasRainbowAura && !hasGoldenSkin && (
         <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-rose-400 via-amber-300 via-emerald-300 via-sky-300 to-purple-400 opacity-60 blur-md animate-pulse pointer-events-none scale-110" />
       )}
-      {hasGoldenAura && (
+      {hasGoldenAura && !hasGoldenSkin && (
         <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 opacity-70 blur-lg animate-pulse pointer-events-none scale-110" />
       )}
 
@@ -56,19 +59,52 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
+          {/* Default Orange Gradient */}
           <linearGradient id="kiboBodyGrad" x1="100" y1="25" x2="100" y2="175" gradientUnits="userSpaceOnUse">
-            <stop stopColor={hasGoldenSkin ? "#FBBF24" : "#FF7E36"} />
-            <stop offset="1" stopColor={hasGoldenSkin ? "#D97706" : "#E04D00"} />
+            <stop stopColor="#FF7E36" />
+            <stop offset="1" stopColor="#E04D00" />
           </linearGradient>
-          <linearGradient id="kiboEarsGrad" x1="100" y1="20" x2="100" y2="60" gradientUnits="userSpaceOnUse">
-            <stop stopColor={hasGoldenSkin ? "#FCD34D" : "#FF9B60"} />
-            <stop offset="1" stopColor={hasGoldenSkin ? "#B45309" : "#E04D00"} />
+
+          {/* LEGENDARY 24K GOLD METALLIC GRADIENT */}
+          <linearGradient id="goldBodyGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFBEB" />
+            <stop offset="25%" stopColor="#FCD34D" />
+            <stop offset="55%" stopColor="#F59E0B" />
+            <stop offset="80%" stopColor="#FEF08A" />
+            <stop offset="100%" stopColor="#B45309" />
           </linearGradient>
+
+          <linearGradient id="goldEarsGrad" x1="30" y1="10" x2="170" y2="90" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FEF08A" />
+            <stop offset="50%" stopColor="#F59E0B" />
+            <stop offset="100%" stopColor="#78350F" />
+          </linearGradient>
+
+          <radialGradient id="goldShine" cx="50%" cy="35%" r="50%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
+            <stop offset="60%" stopColor="#FBBF24" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#D97706" stopOpacity="0" />
+          </radialGradient>
+
           <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
+          <filter id="goldGlowFilter" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
         </defs>
+
+        {/* LEGENDARY ORBITING SPARKLE STARS */}
+        {hasGoldenSkin && (
+          <g className="animate-spin" style={{ transformOrigin: '100px 110px', animationDuration: '12s' }}>
+            <polygon points="100,10 102,17 109,19 104,24 105,31 100,27 95,31 96,24 91,19 98,17" fill="#FEF08A" />
+            <polygon points="180,100 182,107 189,109 184,114 185,121 180,117 175,121 176,114 171,109 178,107" fill="#FBBF24" />
+            <polygon points="20,100 22,107 29,109 24,114 25,121 20,117 15,121 16,114 11,109 18,107" fill="#FEF08A" />
+            <polygon points="100,190 102,197 109,199 104,204 105,211 100,207 95,211 96,204 91,199 98,197" fill="#FBBF24" />
+          </g>
+        )}
 
         {/* --- BACK ACCESSORIES LAYER --- */}
         {/* Superhero Cape */}
@@ -87,7 +123,6 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
           <g>
             <rect x="42" y="90" width="22" height="45" rx="8" fill="#64748B" stroke="#334155" strokeWidth="3" />
             <rect x="136" y="90" width="22" height="45" rx="8" fill="#64748B" stroke="#334155" strokeWidth="3" />
-            {/* Jetpack Thruster Flames */}
             <path d="M 47 135 L 53 155 L 59 135 Z" fill="#F59E0B" className="animate-bounce" />
             <path d="M 141 135 L 147 155 L 153 135 Z" fill="#F59E0B" className="animate-bounce" />
           </g>
@@ -97,24 +132,30 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
         {/* Left Ear */}
         <path
           d="M 60 65 Q 25 35 48 20 Q 75 35 68 62"
-          fill="url(#kiboEarsGrad)"
-          stroke={hasGoldenSkin ? "#B45309" : "#C23A00"}
-          strokeWidth="4.5"
+          fill={hasGoldenSkin ? "url(#goldEarsGrad)" : "url(#kiboBodyGrad)"}
+          stroke={hasGoldenSkin ? "#78350F" : "#C23A00"}
+          strokeWidth={hasGoldenSkin ? "5" : "4.5"}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path d="M 54 55 Q 38 38 48 30 Q 62 38 58 53" fill={hasGoldenSkin ? "#FEF08A" : "#FFAE82"} />
+        <path
+          d="M 54 55 Q 38 38 48 30 Q 62 38 58 53"
+          fill={hasGoldenSkin ? "#FFFBEB" : "#FFAE82"}
+        />
 
         {/* Right Ear */}
         <path
           d="M 140 65 Q 175 35 152 20 Q 125 35 132 62"
-          fill="url(#kiboEarsGrad)"
-          stroke={hasGoldenSkin ? "#B45309" : "#C23A00"}
-          strokeWidth="4.5"
+          fill={hasGoldenSkin ? "url(#goldEarsGrad)" : "url(#kiboBodyGrad)"}
+          stroke={hasGoldenSkin ? "#78350F" : "#C23A00"}
+          strokeWidth={hasGoldenSkin ? "5" : "4.5"}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path d="M 146 55 Q 162 38 152 30 Q 138 38 142 53" fill={hasGoldenSkin ? "#FEF08A" : "#FFAE82"} />
+        <path
+          d="M 146 55 Q 162 38 152 30 Q 138 38 142 53"
+          fill={hasGoldenSkin ? "#FFFBEB" : "#FFAE82"}
+        />
 
         {/* Main Body/Head Oval */}
         <ellipse
@@ -122,25 +163,39 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
           cy="110"
           rx="62"
           ry="58"
-          fill="url(#kiboBodyGrad)"
-          stroke={hasGoldenSkin ? "#B45309" : "#C23A00"}
-          strokeWidth="5"
+          fill={hasGoldenSkin ? "url(#goldBodyGrad)" : "url(#kiboBodyGrad)"}
+          stroke={hasGoldenSkin ? "#78350F" : "#C23A00"}
+          strokeWidth={hasGoldenSkin ? "6" : "5"}
+          filter={hasGoldenSkin ? "url(#goldGlowFilter)" : undefined}
         />
 
-        {/* Cream Muzzle */}
-        <ellipse cx="100" cy="122" rx="34" ry="24" fill={hasGoldenSkin ? "#FEF3C7" : "#FFF7ED"} />
+        {/* Metallic Gold Specular Highlight Overlay */}
+        {hasGoldenSkin && (
+          <ellipse cx="100" cy="100" rx="58" ry="50" fill="url(#goldShine)" pointerEvents="none" />
+        )}
+
+        {/* Cream / Pearl Muzzle */}
+        <ellipse
+          cx="100"
+          cy="122"
+          rx="34"
+          ry="24"
+          fill={hasGoldenSkin ? "#FFFBEB" : "#FFF7ED"}
+          stroke={hasGoldenSkin ? "#D97706" : undefined}
+          strokeWidth={hasGoldenSkin ? "2" : undefined}
+        />
 
         {/* Nose */}
-        <ellipse cx="100" cy="111" rx="7" ry="5.5" fill="#292524" />
+        <ellipse cx="100" cy="111" rx="7" ry="5.5" fill={hasGoldenSkin ? "#78350F" : "#292524"} />
 
         {/* --- EXPRESSIONS (Eyes & Mouth) --- */}
         {mood === 'happy' && (
           <>
-            <ellipse cx="78" cy="95" rx="6.5" ry="9" fill="#1C1917" />
+            <ellipse cx="78" cy="95" rx="6.5" ry="9" fill={hasGoldenSkin ? "#451A03" : "#1C1917"} />
             <circle cx="80" cy="92" r="2.5" fill="white" />
-            <ellipse cx="122" cy="95" rx="6.5" ry="9" fill="#1C1917" />
+            <ellipse cx="122" cy="95" rx="6.5" ry="9" fill={hasGoldenSkin ? "#451A03" : "#1C1917"} />
             <circle cx="124" cy="92" r="2.5" fill="white" />
-            <path d="M 91 120 Q 100 130 109 120" stroke="#292524" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+            <path d="M 91 120 Q 100 130 109 120" stroke={hasGoldenSkin ? "#451A03" : "#292524"} strokeWidth="3.5" strokeLinecap="round" fill="none" />
             <circle cx="66" cy="108" r="6" fill="#F43F5E" opacity="0.4" />
             <circle cx="134" cy="108" r="6" fill="#F43F5E" opacity="0.4" />
           </>
@@ -148,9 +203,9 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
 
         {mood === 'correct' && (
           <>
-            <path d="M 70 94 Q 78 86 86 94" stroke="#1C1917" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-            <path d="M 114 94 Q 122 86 130 94" stroke="#1C1917" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-            <path d="M 88 118 Q 100 134 112 118 Z" fill="#F43F5E" stroke="#292524" strokeWidth="3" />
+            <path d="M 70 94 Q 78 86 86 94" stroke={hasGoldenSkin ? "#451A03" : "#1C1917"} strokeWidth="4.5" strokeLinecap="round" fill="none" />
+            <path d="M 114 94 Q 122 86 130 94" stroke={hasGoldenSkin ? "#451A03" : "#1C1917"} strokeWidth="4.5" strokeLinecap="round" fill="none" />
+            <path d="M 88 118 Q 100 134 112 118 Z" fill="#F43F5E" stroke={hasGoldenSkin ? "#451A03" : "#292524"} strokeWidth="3" />
             <circle cx="64" cy="108" r="7" fill="#F43F5E" opacity="0.5" />
             <circle cx="136" cy="108" r="7" fill="#F43F5E" opacity="0.5" />
           </>
@@ -158,20 +213,20 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
 
         {mood === 'incorrect' && (
           <>
-            <path d="M 72 90 L 84 98" stroke="#1C1917" strokeWidth="4" strokeLinecap="round" />
-            <path d="M 84 90 L 72 98" stroke="#1C1917" strokeWidth="4" strokeLinecap="round" />
-            <path d="M 116 90 L 128 98" stroke="#1C1917" strokeWidth="4" strokeLinecap="round" />
-            <path d="M 128 90 L 116 98" stroke="#1C1917" strokeWidth="4" strokeLinecap="round" />
-            <path d="M 92 126 Q 100 118 108 126" stroke="#292524" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+            <path d="M 72 90 L 84 98" stroke={hasGoldenSkin ? "#451A03" : "#1C1917"} strokeWidth="4" strokeLinecap="round" />
+            <path d="M 84 90 L 72 98" stroke={hasGoldenSkin ? "#451A03" : "#1C1917"} strokeWidth="4" strokeLinecap="round" />
+            <path d="M 116 90 L 128 98" stroke={hasGoldenSkin ? "#451A03" : "#1C1917"} strokeWidth="4" strokeLinecap="round" />
+            <path d="M 128 90 L 116 98" stroke={hasGoldenSkin ? "#451A03" : "#1C1917"} strokeWidth="4" strokeLinecap="round" />
+            <path d="M 92 126 Q 100 118 108 126" stroke={hasGoldenSkin ? "#451A03" : "#292524"} strokeWidth="3.5" strokeLinecap="round" fill="none" />
             <path d="M 132 82 Q 138 78 135 70" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" fill="none" />
           </>
         )}
 
         {mood === 'celebrate' && (
           <>
-            <path d="M 70 92 Q 78 82 86 92" stroke="#1C1917" strokeWidth="5" strokeLinecap="round" fill="none" />
-            <path d="M 114 92 Q 122 82 130 92" stroke="#1C1917" strokeWidth="5" strokeLinecap="round" fill="none" />
-            <path d="M 86 116 Q 100 136 114 116 Z" fill="#F43F5E" stroke="#292524" strokeWidth="3" />
+            <path d="M 70 92 Q 78 82 86 92" stroke={hasGoldenSkin ? "#451A03" : "#1C1917"} strokeWidth="5" strokeLinecap="round" fill="none" />
+            <path d="M 114 92 Q 122 82 130 92" stroke={hasGoldenSkin ? "#451A03" : "#1C1917"} strokeWidth="5" strokeLinecap="round" fill="none" />
+            <path d="M 86 116 Q 100 136 114 116 Z" fill="#F43F5E" stroke={hasGoldenSkin ? "#451A03" : "#292524"} strokeWidth="3" />
             <polygon points="100,75 103,82 110,83 105,88 106,95 100,91 94,95 95,88 90,83 97,82" fill="#F59E0B" />
           </>
         )}
