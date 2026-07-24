@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle } from 'lucide-react';
+import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles } from 'lucide-react';
 import Mascot from './components/Mascot';
 import Keypad from './components/Keypad';
 import ConfettiCanvas from './components/ConfettiCanvas';
+import WorkshopModal from './components/WorkshopModal';
 import { generate20Problems } from './utils/mathGenerator';
 import { soundFx } from './utils/audio';
 
@@ -10,6 +11,7 @@ export default function App() {
   // App State: 'launch' | 'sprint' | 'victory'
   const [appState, setAppState] = useState('launch');
   const [isMuted, setIsMuted] = useState(false);
+  const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
 
   // Date helpers for calendar day streak tracking
   const getTodayStr = () => {
@@ -31,11 +33,27 @@ export default function App() {
     const yesterday = getYesterdayStr();
 
     if (!saved || !lastDate) return 0;
-    // Reset streak to 0 if last completed sprint was before yesterday (missed a day)
     if (lastDate !== today && lastDate !== yesterday) {
       return 0;
     }
     return parseInt(saved, 10);
+  });
+
+  // Persistent Sparks Currency (⚡)
+  const [sparks, setSparks] = useState(() => {
+    const saved = localStorage.getItem('kibo_math_sparks');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
+  // Persistent Inventory & Equipped Accessories
+  const [unlockedItems, setUnlockedItems] = useState(() => {
+    const saved = localStorage.getItem('kibo_math_unlocked');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [equippedItems, setEquippedItems] = useState(() => {
+    const saved = localStorage.getItem('kibo_math_equipped');
+    return saved ? JSON.parse(saved) : [];
   });
 
   // Sprint State
@@ -45,6 +63,7 @@ export default function App() {
   const [results, setResults] = useState([]); // { problem, isCorrect, latencyMs }
   const [mascotMood, setMascotMood] = useState('happy');
   const [isShaking, setIsShaking] = useState(false);
+  const [earnedSparksInfo, setEarnedSparksInfo] = useState({ base: 0, bonus: 0, total: 0 });
 
   // Latency measurement
   const problemStartTimeRef = useRef(Date.now());
@@ -79,7 +98,6 @@ export default function App() {
 
     const targetLength = currentProblem.answerString.length;
 
-    // Trigger auto-submit when character length matches expected answer length
     if (newInput.length >= targetLength) {
       submitAnswer(newInput, currentProblem);
     }
@@ -110,7 +128,6 @@ export default function App() {
       setTimeout(() => setIsShaking(false), 400);
     }
 
-    // Reset for next problem or finish sprint
     setTimeout(() => {
       setMascotMood('happy');
       setInputVal('');
@@ -119,7 +136,6 @@ export default function App() {
         setCurrentIndex(currentIndex + 1);
         problemStartTimeRef.current = Date.now();
       } else {
-        // Complete Sprint!
         finishSprint(nextResults);
       }
     }, isCorrect ? 200 : 450);
@@ -142,22 +158,32 @@ export default function App() {
     const yesterday = getYesterdayStr();
     const lastDate = localStorage.getItem('kibo_math_last_date');
 
+    // 1. Streak update
     let newStreak = streak;
-
     if (lastDate === today) {
-      // Already completed today: keep current streak intact (do not double increment)
       newStreak = Math.max(1, streak);
     } else if (lastDate === yesterday) {
-      // Completed yesterday: continue daily streak
       newStreak = streak + 1;
     } else {
-      // New streak or starting over after missing days
       newStreak = 1;
     }
 
     setStreak(newStreak);
     localStorage.setItem('kibo_math_streak', newStreak.toString());
     localStorage.setItem('kibo_math_last_date', today);
+
+    // 2. Spark Reward Calculation (Base: 10, Bonus: 5 for 100% accuracy)
+    const correctCount = finalResults.filter((r) => r.isCorrect).length;
+    const accuracyPct = Math.round((correctCount / finalResults.length) * 100);
+
+    const baseSparks = 10;
+    const bonusSparks = accuracyPct === 100 ? 5 : 0;
+    const totalEarned = baseSparks + bonusSparks;
+
+    const newSparkBalance = sparks + totalEarned;
+    setSparks(newSparkBalance);
+    localStorage.setItem('kibo_math_sparks', newSparkBalance.toString());
+    setEarnedSparksInfo({ base: baseSparks, bonus: bonusSparks, total: totalEarned });
 
     soundFx.playVictory();
     setMascotMood('celebrate');
@@ -167,6 +193,37 @@ export default function App() {
   const toggleAudio = () => {
     const muted = soundFx.toggleMute();
     setIsMuted(muted);
+  };
+
+  // Workshop Actions
+  const handleBuyItem = (item) => {
+    if (sparks < item.cost) return;
+
+    const updatedSparks = sparks - item.cost;
+    const updatedUnlocked = [...unlockedItems, item.id];
+    // Automatically equip newly purchased item
+    const updatedEquipped = [...equippedItems, item.id];
+
+    setSparks(updatedSparks);
+    setUnlockedItems(updatedUnlocked);
+    setEquippedItems(updatedEquipped);
+
+    localStorage.setItem('kibo_math_sparks', updatedSparks.toString());
+    localStorage.setItem('kibo_math_unlocked', JSON.stringify(updatedUnlocked));
+    localStorage.setItem('kibo_math_equipped', JSON.stringify(updatedEquipped));
+  };
+
+  const handleToggleEquip = (itemId) => {
+    let updatedEquipped;
+    if (equippedItems.includes(itemId)) {
+      // Unequip
+      updatedEquipped = equippedItems.filter((id) => id !== itemId);
+    } else {
+      // Equip
+      updatedEquipped = [...equippedItems, itemId];
+    }
+    setEquippedItems(updatedEquipped);
+    localStorage.setItem('kibo_math_equipped', JSON.stringify(updatedEquipped));
   };
 
   // Stats Calculations for Victory Screen
@@ -187,7 +244,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 max-w-lg mx-auto relative overflow-hidden">
-      {/* Sound Toggle Header */}
+      {/* Header */}
       <header className="w-full flex items-center justify-between py-2 mb-2">
         <div className="flex items-center gap-2">
           <span className="font-extrabold text-2xl tracking-tight text-kibo-orange drop-shadow-sm">
@@ -195,48 +252,92 @@ export default function App() {
           </span>
         </div>
 
-        <button
-          onClick={toggleAudio}
-          className="p-2.5 bg-white rounded-2xl border-2 border-slate-200 text-slate-600 hover:text-slate-900 active:scale-95 transition-all shadow-sm flex items-center gap-1.5"
-          aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
-        >
-          {isMuted ? <VolumeX className="w-5 h-5 text-rose-500" /> : <Volume2 className="w-5 h-5 text-kibo-teal" />}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Spark Currency Counter Button */}
+          <button
+            onClick={() => setIsWorkshopOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-amber-900 font-extrabold hover:bg-amber-100 active:scale-95 transition-all shadow-sm"
+          >
+            <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
+            <span>{sparks}</span>
+          </button>
+
+          {/* Workshop Button */}
+          <button
+            onClick={() => setIsWorkshopOpen(true)}
+            className="p-2 bg-kibo-teal text-white rounded-2xl border-b-4 border-kibo-teal-dark hover:bg-teal-600 active:translate-y-0.5 active:border-b-0 transition-all shadow-sm flex items-center gap-1 font-bold text-xs"
+            aria-label="Open Kibo Workshop"
+          >
+            <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
+            <span className="hidden sm:inline">Shop</span>
+          </button>
+
+          {/* Sound Toggle Button */}
+          <button
+            onClick={toggleAudio}
+            className="p-2 bg-white rounded-2xl border-2 border-slate-200 text-slate-600 hover:text-slate-900 active:scale-95 transition-all shadow-sm"
+            aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
+          >
+            {isMuted ? <VolumeX className="w-5 h-5 text-rose-500" /> : <Volume2 className="w-5 h-5 text-kibo-teal" />}
+          </button>
+        </div>
       </header>
 
       {/* STATE 1: LAUNCH SCREEN */}
       {appState === 'launch' && (
-        <main className="w-full flex-1 flex flex-col items-center justify-center gap-6 py-6 text-center animate-pop">
-          {/* Daily Streak Card */}
-          <div className="flex items-center gap-3 px-5 py-2.5 bg-amber-50 border-2 border-amber-200 rounded-full shadow-sm animate-bounce-short">
-            <Flame className="w-7 h-7 text-amber-500 fill-amber-400 stroke-[2.5]" />
-            <span className="font-extrabold text-amber-900 text-lg sm:text-xl">
-              {streak} Day Streak!
-            </span>
+        <main className="w-full flex-1 flex flex-col items-center justify-center gap-5 py-4 text-center animate-pop">
+          {/* Top Badges Row */}
+          <div className="flex items-center gap-3">
+            {/* Daily Streak Card */}
+            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border-2 border-amber-200 rounded-full shadow-sm animate-bounce-short">
+              <Flame className="w-6 h-6 text-amber-500 fill-amber-400 stroke-[2.5]" />
+              <span className="font-extrabold text-amber-900 text-base sm:text-lg">
+                {streak} Day Streak!
+              </span>
+            </div>
+
+            {/* Spark Balance Badge */}
+            <button
+              onClick={() => setIsWorkshopOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-amber-100 border-2 border-amber-300 rounded-full shadow-sm hover:bg-amber-200 active:scale-95 transition-all"
+            >
+              <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
+              <span className="font-black text-amber-900 text-base sm:text-lg">{sparks} Sparks</span>
+            </button>
           </div>
 
-          {/* Mascot Header */}
-          <div className="my-2">
-            <Mascot mood="happy" className="w-36 h-36 sm:w-44 sm:h-44" />
+          {/* Mascot Header with Equipped Accessories */}
+          <div className="my-1 cursor-pointer" onClick={() => setIsWorkshopOpen(true)}>
+            <Mascot mood="happy" equipped={equippedItems} className="w-36 h-36 sm:w-44 sm:h-44" />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">
               Ready for your Math Sprint?
             </h1>
-            <p className="text-slate-500 text-base sm:text-lg max-w-xs mx-auto font-medium">
-              Solve 20 quick arithmetic problems as fast and accurately as you can!
+            <p className="text-slate-500 text-sm sm:text-base max-w-xs mx-auto font-medium">
+              Solve 20 quick arithmetic problems to earn Sparks ⚡ and customize Kibo!
             </p>
           </div>
 
-          {/* Sprint Action Button */}
-          <button
-            onClick={startNewSprint}
-            className="btn-3d-orange w-full max-w-xs py-4 text-xl sm:text-2xl rounded-2xl flex items-center justify-center gap-3 group mt-4 shadow-bouncy-orange"
-          >
-            <Play className="w-7 h-7 fill-white stroke-[2.5] group-hover:scale-110 transition-transform" />
-            Start 20-Problem Sprint
-          </button>
+          {/* Action Buttons */}
+          <div className="w-full max-w-xs space-y-3 mt-2">
+            <button
+              onClick={startNewSprint}
+              className="btn-3d-orange w-full py-4 text-xl sm:text-2xl rounded-2xl flex items-center justify-center gap-3 group shadow-bouncy-orange"
+            >
+              <Play className="w-7 h-7 fill-white stroke-[2.5] group-hover:scale-110 transition-transform" />
+              Start 20-Problem Sprint
+            </button>
+
+            <button
+              onClick={() => setIsWorkshopOpen(true)}
+              className="btn-3d-teal w-full py-3 text-lg rounded-2xl flex items-center justify-center gap-2"
+            >
+              <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
+              Kibo's Workshop
+            </button>
+          </div>
         </main>
       )}
 
@@ -260,7 +361,7 @@ export default function App() {
 
           {/* Mascot & Math Display Area */}
           <div className="w-full flex flex-col items-center my-auto">
-            <Mascot mood={mascotMood} className="w-24 h-24 sm:w-28 sm:h-28 mb-3" />
+            <Mascot mood={mascotMood} equipped={equippedItems} className="w-24 h-24 sm:w-28 sm:h-28 mb-3" />
 
             {/* Problem Card */}
             <div
@@ -293,54 +394,80 @@ export default function App() {
 
       {/* STATE 3: VICTORY SCREEN */}
       {appState === 'victory' && (
-        <main className="w-full flex-1 flex flex-col items-center justify-center gap-5 py-4 text-center animate-pop relative z-10">
+        <main className="w-full flex-1 flex flex-col items-center justify-center gap-4 py-3 text-center animate-pop relative z-10">
           <ConfettiCanvas />
 
           <div className="relative">
-            <Mascot mood="celebrate" className="w-36 h-36 sm:w-40 sm:h-40" />
-            <div className="absolute -bottom-2 -right-2 bg-amber-400 p-2 rounded-full border-2 border-white shadow-lg animate-bounce">
-              <Trophy className="w-7 h-7 text-amber-900 fill-amber-300 stroke-[2.5]" />
+            <Mascot mood="celebrate" equipped={equippedItems} className="w-32 h-32 sm:w-36 sm:h-36" />
+            <div className="absolute -bottom-1 -right-1 bg-amber-400 p-2 rounded-full border-2 border-white shadow-lg animate-bounce">
+              <Trophy className="w-6 h-6 text-amber-900 fill-amber-300 stroke-[2.5]" />
             </div>
           </div>
 
           <div className="space-y-1">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">
+            <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
               Sprint Complete! 🎉
             </h2>
-            <p className="text-amber-600 font-bold text-lg flex items-center justify-center gap-1.5">
+            <p className="text-amber-600 font-bold text-base flex items-center justify-center gap-1.5">
               <Flame className="w-5 h-5 fill-amber-500 stroke-[2.5]" />
               Streak increased to {streak} days!
             </p>
           </div>
 
+          {/* Spark Reward Earnings Banner */}
+          <div className="w-full max-w-sm bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 rounded-2xl p-3.5 border-2 border-amber-300 shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3 text-left">
+              <div className="p-2 bg-white/30 rounded-xl">
+                <Sparkles className="w-7 h-7 text-amber-900 fill-amber-300 stroke-[2.5]" />
+              </div>
+              <div>
+                <span className="text-xs uppercase font-extrabold tracking-wider text-amber-900/80 block">
+                  Reward Earned
+                </span>
+                <span className="font-extrabold text-lg text-amber-950">
+                  +{earnedSparksInfo.total} Sparks ⚡
+                </span>
+                {earnedSparksInfo.bonus > 0 && (
+                  <span className="text-xs font-bold text-emerald-900 block">
+                    (Includes +5 Lightning Bonus! ⚡)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsWorkshopOpen(true)}
+              className="px-3 py-1.5 bg-white text-amber-900 font-extrabold text-xs rounded-xl shadow-sm hover:bg-amber-50 active:scale-95"
+            >
+              Workshop
+            </button>
+          </div>
+
           {/* Stats Grid */}
-          <div className="w-full max-w-sm grid grid-cols-3 gap-3 my-2">
-            {/* Total Time */}
-            <div className="bg-white border-2 border-slate-200 rounded-2xl p-3 shadow-md flex flex-col items-center">
-              <Clock className="w-6 h-6 text-kibo-orange mb-1 stroke-[2.5]" />
-              <span className="text-slate-400 font-semibold text-xs uppercase tracking-wider">Time</span>
-              <span className="text-xl sm:text-2xl font-black text-slate-800">{stats.totalTimeSec}s</span>
+          <div className="w-full max-w-sm grid grid-cols-3 gap-2.5">
+            <div className="bg-white border-2 border-slate-200 rounded-2xl p-2.5 shadow-md flex flex-col items-center">
+              <Clock className="w-5 h-5 text-kibo-orange mb-0.5 stroke-[2.5]" />
+              <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-wider">Time</span>
+              <span className="text-lg sm:text-xl font-black text-slate-800">{stats.totalTimeSec}s</span>
             </div>
 
-            {/* Accuracy */}
-            <div className="bg-white border-2 border-slate-200 rounded-2xl p-3 shadow-md flex flex-col items-center">
-              <Target className="w-6 h-6 text-kibo-teal mb-1 stroke-[2.5]" />
-              <span className="text-slate-400 font-semibold text-xs uppercase tracking-wider">Accuracy</span>
-              <span className="text-xl sm:text-2xl font-black text-slate-800">{stats.accuracyPct}%</span>
+            <div className="bg-white border-2 border-slate-200 rounded-2xl p-2.5 shadow-md flex flex-col items-center">
+              <Target className="w-5 h-5 text-kibo-teal mb-0.5 stroke-[2.5]" />
+              <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-wider">Accuracy</span>
+              <span className="text-lg sm:text-xl font-black text-slate-800">{stats.accuracyPct}%</span>
             </div>
 
-            {/* Speed / Velocity */}
-            <div className="bg-white border-2 border-slate-200 rounded-2xl p-3 shadow-md flex flex-col items-center">
-              <Zap className="w-6 h-6 text-kibo-yellow mb-1 stroke-[2.5]" />
-              <span className="text-slate-400 font-semibold text-xs uppercase tracking-wider">Avg Speed</span>
-              <span className="text-xl sm:text-2xl font-black text-slate-800">{stats.avgVelocitySec}s</span>
+            <div className="bg-white border-2 border-slate-200 rounded-2xl p-2.5 shadow-md flex flex-col items-center">
+              <Zap className="w-5 h-5 text-kibo-yellow mb-0.5 stroke-[2.5]" />
+              <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-wider">Avg Speed</span>
+              <span className="text-lg sm:text-xl font-black text-slate-800">{stats.avgVelocitySec}s</span>
             </div>
           </div>
 
           {/* Problem Breakdown Summary List */}
-          <div className="w-full max-w-sm bg-slate-50 border-2 border-slate-200 rounded-2xl p-3 max-h-36 overflow-y-auto space-y-1.5 text-left shadow-inner">
+          <div className="w-full max-w-sm bg-slate-50 border-2 border-slate-200 rounded-2xl p-2.5 max-h-32 overflow-y-auto space-y-1 text-left shadow-inner">
             {results.map((r, i) => (
-              <div key={i} className="flex justify-between items-center text-xs font-semibold text-slate-700 bg-white px-3 py-1.5 rounded-xl border border-slate-100">
+              <div key={i} className="flex justify-between items-center text-xs font-semibold text-slate-700 bg-white px-3 py-1 rounded-xl border border-slate-100">
                 <div className="flex items-center gap-2">
                   {r.isCorrect ? (
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -357,25 +484,36 @@ export default function App() {
           </div>
 
           {/* Action Buttons */}
-          <div className="w-full max-w-sm space-y-2 mt-2">
+          <div className="w-full max-w-sm space-y-2 mt-1">
             <button
               onClick={startNewSprint}
-              className="btn-3d-orange w-full py-3.5 text-xl rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
+              className="btn-3d-orange w-full py-3 text-lg rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
             >
-              <Play className="w-6 h-6 fill-white stroke-[2.5]" />
+              <Play className="w-5 h-5 fill-white stroke-[2.5]" />
               Play Again
             </button>
 
             <button
               onClick={() => setAppState('launch')}
-              className="w-full py-3 text-slate-600 hover:text-slate-900 font-extrabold rounded-2xl flex items-center justify-center gap-2 text-base transition-colors"
+              className="w-full py-2.5 text-slate-600 hover:text-slate-900 font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+              <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
               Back to Home
             </button>
           </div>
         </main>
       )}
+
+      {/* Workshop Modal */}
+      <WorkshopModal
+        isOpen={isWorkshopOpen}
+        onClose={() => setIsWorkshopOpen(false)}
+        sparks={sparks}
+        unlockedItems={unlockedItems}
+        equippedItems={equippedItems}
+        onBuyItem={handleBuyItem}
+        onToggleEquip={handleToggleEquip}
+      />
 
       {/* Footer */}
       <footer className="w-full text-center text-xs font-bold text-slate-400 py-2 border-t border-slate-200/60 mt-auto">
