@@ -80,6 +80,12 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
             <stop offset="100%" stopColor="#78350F" />
           </linearGradient>
 
+          <linearGradient id="jetpackMetalGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#94A3B8" />
+            <stop offset="50%" stopColor="#475569" />
+            <stop offset="100%" stopColor="#1E293B" />
+          </linearGradient>
+
           <radialGradient id="goldShine" cx="50%" cy="35%" r="50%">
             <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
             <stop offset="60%" stopColor="#FBBF24" stopOpacity="0.3" />
@@ -118,13 +124,28 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
           />
         )}
 
-        {/* Jetpack */}
+        {/* Rocket Jetpack (Thruster Tanks visible at sides + flames) */}
         {hasJetpack && (
           <g>
-            <rect x="42" y="90" width="22" height="45" rx="8" fill="#64748B" stroke="#334155" strokeWidth="3" />
-            <rect x="136" y="90" width="22" height="45" rx="8" fill="#64748B" stroke="#334155" strokeWidth="3" />
-            <path d="M 47 135 L 53 155 L 59 135 Z" fill="#F59E0B" className="animate-bounce" />
-            <path d="M 141 135 L 147 155 L 153 135 Z" fill="#F59E0B" className="animate-bounce" />
+            {/* Left Jetpack Tank (Extends out to the left) */}
+            <rect x="18" y="75" width="28" height="68" rx="10" fill="url(#jetpackMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
+            <rect x="22" y="85" width="20" height="8" fill="#EF4444" />
+            <ellipse cx="32" cy="75" rx="14" ry="7" fill="#CBD5E1" stroke="#0F172A" strokeWidth="2.5" />
+            {/* Left Nozzle */}
+            <path d="M 24 143 L 40 143 L 36 153 L 28 153 Z" fill="#334155" stroke="#0F172A" strokeWidth="2" />
+            {/* Left Flame */}
+            <path d="M 26 153 Q 32 178 38 153 Q 32 170 26 153 Z" fill="#FF4500" className="animate-pulse" />
+            <path d="M 28 153 Q 32 168 36 153 Z" fill="#FFD700" className="animate-bounce" />
+
+            {/* Right Jetpack Tank (Extends out to the right) */}
+            <rect x="154" y="75" width="28" height="68" rx="10" fill="url(#jetpackMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
+            <rect x="158" y="85" width="20" height="8" fill="#EF4444" />
+            <ellipse cx="168" cy="75" rx="14" ry="7" fill="#CBD5E1" stroke="#0F172A" strokeWidth="2.5" />
+            {/* Right Nozzle */}
+            <path d="M 160 143 L 176 143 L 172 153 L 164 153 Z" fill="#334155" stroke="#0F172A" strokeWidth="2" />
+            {/* Right Flame */}
+            <path d="M 162 153 Q 168 178 174 153 Q 168 170 162 153 Z" fill="#FF4500" className="animate-pulse" />
+            <path d="M 164 153 Q 168 168 172 153 Z" fill="#FFD700" className="animate-bounce" />
           </g>
         )}
 
@@ -232,6 +253,15 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
         )}
 
         {/* --- FRONT BODY ACCESSORIES LAYER --- */}
+        {/* Jetpack Harness Straps & Chest Reactor Badge */}
+        {hasJetpack && (
+          <g>
+            <path d="M 45 105 L 80 135 M 155 105 L 120 135" stroke="#334155" strokeWidth="5" strokeLinecap="round" />
+            <circle cx="100" cy="136" r="8" fill="#0EA5E9" stroke="#0F172A" strokeWidth="2.5" />
+            <circle cx="100" cy="136" r="4" fill="#38BDF8" className="animate-ping" />
+          </g>
+        )}
+
         {/* Bowtie */}
         {hasBowtie && (
           <g>
