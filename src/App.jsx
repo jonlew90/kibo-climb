@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award } from 'lucide-react';
+import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X } from 'lucide-react';
 import Mascot from './components/Mascot';
 import Keypad from './components/Keypad';
 import ConfettiCanvas from './components/ConfettiCanvas';
@@ -14,6 +14,7 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [showSpeedInfoModal, setShowSpeedInfoModal] = useState(false);
   const [levelUpReason, setLevelUpReason] = useState('');
   const [isBossMode, setIsBossMode] = useState(false);
 
@@ -235,24 +236,21 @@ export default function App() {
     setPracticeQueue(updatedQueue);
     localStorage.setItem('kibo_math_practice_queue', JSON.stringify(updatedQueue));
 
-    // 4. Update Sprint History (last 3 completed sprints regardless of day)
+    // 4. Update Sprint History
     const newSprintRecord = { accuracyPct, avgLatencySec, date: today };
     const updatedHistory = [newSprintRecord, ...sprintHistory].slice(0, 3);
     setSprintHistory(updatedHistory);
     localStorage.setItem('kibo_math_sprint_history', JSON.stringify(updatedHistory));
 
-    // 5. Dual-Path Level-Up Condition Evaluation
+    // 5. Dual-Path Level-Up Evaluation
     let triggerLevelUp = false;
     let reasonText = '';
 
     if (tier < 3) {
-      // Path 2: Boss Challenge Test Out (25 problems, >= 96% accuracy, <= 2.0s avg latency)
       if (isBossMode && accuracyPct >= 96 && avgLatencySec <= 2.0) {
         triggerLevelUp = true;
         reasonText = '⚡ Boss Challenge Passed! You achieved ≥96% accuracy and ≤2.0s average speed on the 25-problem test out!';
-      }
-      // Path 1: 3-Sprint Consistency (last 3 sprints, avg latency <= 2.5s, accuracy >= 90%)
-      else if (updatedHistory.length >= 3) {
+      } else if (updatedHistory.length >= 3) {
         const avgHistLatency = updatedHistory.reduce((acc, s) => acc + s.avgLatencySec, 0) / 3;
         const allAccuracyPass = updatedHistory.every((s) => s.accuracyPct >= 90);
 
@@ -327,7 +325,8 @@ export default function App() {
         avgVelocitySec: '0',
         superFastCount: 0,
         fluentCount: 0,
-        practiceCount: 0
+        practiceCount: 0,
+        total: 0
       };
     }
 
@@ -342,7 +341,15 @@ export default function App() {
     const fluentCount = results.filter((r) => r.speedInfo.category === 'fluent').length;
     const practiceCount = results.filter((r) => r.speedInfo.category === 'practice').length;
 
-    return { totalTimeSec, accuracyPct, avgVelocitySec, superFastCount, fluentCount, practiceCount };
+    return {
+      totalTimeSec,
+      accuracyPct,
+      avgVelocitySec,
+      superFastCount,
+      fluentCount,
+      practiceCount,
+      total: results.length
+    };
   };
 
   const stats = calculateStats();
@@ -430,7 +437,6 @@ export default function App() {
 
           {/* Action Buttons */}
           <div className="w-full max-w-xs space-y-2.5 mt-1">
-            {/* Standard 20-Problem Sprint */}
             <button
               onClick={() => startNewSprint(false)}
               className="btn-3d-orange w-full py-4 text-xl sm:text-2xl rounded-2xl flex items-center justify-center gap-3 group shadow-bouncy-orange"
@@ -439,7 +445,6 @@ export default function App() {
               Start 20-Problem Sprint
             </button>
 
-            {/* Boss Challenge Test Out (25 problems) */}
             {tier < 3 && (
               <button
                 onClick={() => startNewSprint(true)}
@@ -450,7 +455,6 @@ export default function App() {
               </button>
             )}
 
-            {/* Workshop Button */}
             <button
               onClick={() => setIsWorkshopOpen(true)}
               className="btn-3d-teal w-full py-3 text-base rounded-2xl flex items-center justify-center gap-2"
@@ -531,63 +535,132 @@ export default function App() {
 
       {/* STATE 3: VICTORY SCREEN */}
       {appState === 'victory' && (
-        <main className="w-full flex-1 flex flex-col items-center justify-center gap-3.5 py-2 text-center animate-pop relative z-10">
+        <main className="w-full flex-1 flex flex-col items-center justify-center gap-3 py-2 text-center animate-pop relative z-10">
           <ConfettiCanvas />
 
           <div className="relative">
-            <Mascot mood="celebrate" equipped={equippedItems} className="w-28 h-28 sm:w-32 sm:h-32" />
-            <div className="absolute -bottom-1 -right-1 bg-amber-400 p-2 rounded-full border-2 border-white shadow-lg animate-bounce">
+            <Mascot mood="celebrate" equipped={equippedItems} className="w-24 h-24 sm:w-28 sm:h-28" />
+            <div className="absolute -bottom-1 -right-1 bg-amber-400 p-1.5 rounded-full border-2 border-white shadow-lg animate-bounce">
               <Trophy className="w-5 h-5 text-amber-900 fill-amber-300 stroke-[2.5]" />
             </div>
           </div>
 
           <div className="space-y-0.5">
-            <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
               {isBossMode ? 'Boss Challenge Complete! ⚡' : 'Sprint Complete! 🎉'}
             </h2>
-            <p className="text-amber-600 font-bold text-sm flex items-center justify-center gap-1.5">
+            <p className="text-amber-600 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5">
               <Flame className="w-4 h-4 fill-amber-500 stroke-[2.5]" />
               Streak: {streak} days | +{earnedSparksInfo.total} Sparks ⚡
             </p>
           </div>
 
-          {/* 3-Band Speed Classification Breakdown Summary */}
-          <div className="w-full max-w-sm bg-white border-2 border-slate-200 rounded-2xl p-3 shadow-md space-y-2">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-              <span className="text-xs uppercase font-extrabold text-slate-500 tracking-wider">Speed Breakdown</span>
-              <span className="text-xs font-bold text-slate-700">Avg Speed: {stats.avgVelocitySec}s / problem</span>
+          {/* --- REDESIGNED SPEED BREAKDOWN CONTAINER --- */}
+          <div className="w-full max-w-sm bg-white border-2 border-slate-200 rounded-2xl p-3.5 shadow-md space-y-3">
+            {/* Header with Parent Info (ℹ️) Icon */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs uppercase font-extrabold text-slate-600 tracking-wider">
+                  Speed Breakdown
+                </span>
+                <button
+                  onClick={() => setShowSpeedInfoModal(true)}
+                  className="text-slate-400 hover:text-slate-700 transition-colors p-0.5 rounded-full hover:bg-slate-100"
+                  title="How recall latency works"
+                >
+                  <Info className="w-4 h-4 stroke-[2.5]" />
+                </button>
+              </div>
+              <span className="text-xs font-bold text-slate-600">
+                Avg: <span className="font-extrabold text-slate-800">{stats.avgVelocitySec}s</span> / Q
+              </span>
             </div>
 
+            {/* Visual Segmented Progress Bar */}
+            <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden flex border border-slate-200 shadow-inner">
+              {stats.total > 0 && (
+                <>
+                  <div
+                    style={{ width: `${(stats.superFastCount / stats.total) * 100}%` }}
+                    className="bg-amber-400 h-full transition-all duration-500"
+                    title={`Super Fast: ${stats.superFastCount}`}
+                  />
+                  <div
+                    style={{ width: `${(stats.fluentCount / stats.total) * 100}%` }}
+                    className="bg-yellow-400 h-full transition-all duration-500"
+                    title={`Fluent: ${stats.fluentCount}`}
+                  />
+                  <div
+                    style={{ width: `${(stats.practiceCount / stats.total) * 100}%` }}
+                    className="bg-blue-400 h-full transition-all duration-500"
+                    title={`Needs Practice: ${stats.practiceCount}`}
+                  />
+                </>
+              )}
+            </div>
+
+            {/* 3 Explicit Stat Band Cards */}
             <div className="grid grid-cols-3 gap-2">
-              {/* Super Fast */}
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-2 flex flex-col items-center">
-                <span className="text-base font-extrabold text-amber-900">⚡ {stats.superFastCount}</span>
-                <span className="text-[10px] font-bold text-amber-700">Super Fast</span>
+              {/* Super Fast Card */}
+              <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-2 flex flex-col items-center justify-between text-center min-h-[82px]">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs">⚡</span>
+                  <span className={`text-lg font-black ${stats.superFastCount === 0 ? 'text-slate-400' : 'text-amber-900'}`}>
+                    {stats.superFastCount}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] font-extrabold text-amber-900 leading-tight block">Instant Recall</span>
+                  <span className="text-[9px] font-bold text-amber-700/80 block mt-0.5">&lt; 1.5s recall</span>
+                </div>
               </div>
 
-              {/* Fluent */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-2 flex flex-col items-center">
-                <span className="text-base font-extrabold text-yellow-900">🟡 {stats.fluentCount}</span>
-                <span className="text-[10px] font-bold text-yellow-700">Fluent</span>
+              {/* Fluent Card */}
+              <div className="bg-yellow-50/80 border border-yellow-200 rounded-xl p-2 flex flex-col items-center justify-between text-center min-h-[82px]">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs">🟡</span>
+                  <span className={`text-lg font-black ${stats.fluentCount === 0 ? 'text-slate-400' : 'text-yellow-900'}`}>
+                    {stats.fluentCount}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] font-extrabold text-yellow-900 leading-tight block">Worked It Out</span>
+                  <span className="text-[9px] font-bold text-yellow-700/80 block mt-0.5">1.5s – 4.0s</span>
+                </div>
               </div>
 
-              {/* Practice Needed */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-2 flex flex-col items-center">
-                <span className="text-base font-extrabold text-blue-900">🔵 {stats.practiceCount}</span>
-                <span className="text-[10px] font-bold text-blue-700">Needs Practice</span>
+              {/* Focus Area / Practice Card */}
+              <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-2 flex flex-col items-center justify-between text-center min-h-[82px] relative overflow-hidden">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs">🔵</span>
+                  <span className={`text-lg font-black ${stats.practiceCount === 0 ? 'text-slate-400' : 'text-blue-900'}`}>
+                    {stats.practiceCount}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] font-extrabold text-blue-900 leading-tight block">Focus Area</span>
+                  <span className="text-[9px] font-bold text-blue-700/80 block mt-0.5">&gt; 4.0s (Queued)</span>
+                </div>
+
+                {/* Clean Sweep Badge on 0 Practice */}
+                {stats.practiceCount === 0 && (
+                  <div className="mt-1 px-1.5 py-0.5 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-md text-[9px] font-extrabold flex items-center gap-1 shadow-sm">
+                    <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 stroke-[3]" /> Clean Sweep!
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Problem Breakdown List */}
-          <div className="w-full max-w-sm bg-slate-50 border-2 border-slate-200 rounded-2xl p-2.5 max-h-32 overflow-y-auto space-y-1 text-left shadow-inner">
+          <div className="w-full max-w-sm bg-slate-50 border-2 border-slate-200 rounded-2xl p-2.5 max-h-28 overflow-y-auto space-y-1 text-left shadow-inner">
             {results.map((r, i) => (
               <div key={i} className="flex justify-between items-center text-xs font-semibold text-slate-700 bg-white px-3 py-1 rounded-xl border border-slate-100">
                 <div className="flex items-center gap-2">
                   {r.isCorrect ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-rose-500" />
+                    <XCircle className="w-3.5 h-3.5 text-rose-500 stroke-[2.5]" />
                   )}
                   <span>
                     #{i + 1}: {r.problem.num1} {r.problem.operatorSymbol} {r.problem.num2} = {r.problem.answer}
@@ -595,7 +668,7 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-[10px]">{r.speedInfo.icon}</span>
-                  <span className="text-slate-400 font-mono">{(r.latencyMs / 1000).toFixed(2)}s</span>
+                  <span className="text-slate-400 font-mono text-[11px]">{(r.latencyMs / 1000).toFixed(2)}s</span>
                 </div>
               </div>
             ))}
@@ -620,6 +693,53 @@ export default function App() {
             </button>
           </div>
         </main>
+      )}
+
+      {/* PARENT SPEED INFO MODAL (ℹ️) */}
+      {showSpeedInfoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
+          <div className="w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-5 text-left shadow-2xl space-y-3 relative">
+            <button
+              onClick={() => setShowSpeedInfoModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"
+            >
+              <X className="w-5 h-5 stroke-[2.5]" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <Info className="w-6 h-6 text-kibo-teal stroke-[2.5]" />
+              <h3 className="text-xl font-extrabold text-slate-800">How Recall Latency Works</h3>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              Kibo Math measures millisecond latency from the instant a problem appears until the user completes their answer.
+            </p>
+
+            <div className="space-y-2 text-xs font-semibold">
+              <div className="p-2 bg-amber-50 border border-amber-200 rounded-xl">
+                <span className="font-extrabold text-amber-900">⚡ Instant Recall (&lt;1.5s / &lt;2.2s):</span>
+                <p className="text-amber-800 font-normal">Direct memory retrieval without needing scratchpad calculation.</p>
+              </div>
+
+              <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-xl">
+                <span className="font-extrabold text-yellow-900">🟡 Worked It Out (1.5s–4.0s / 2.2s–4.5s):</span>
+                <p className="text-yellow-800 font-normal">Active calculation in working memory. Fluent and correct!</p>
+              </div>
+
+              <div className="p-2 bg-blue-50 border border-blue-200 rounded-xl">
+                <span className="font-extrabold text-blue-900">🔵 Focus Area (&gt;4.0s / &gt;4.5s or Incorrect):</span>
+                <p className="text-blue-800 font-normal">Automatically re-queued into future daily sprints to reinforce memory!</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowSpeedInfoModal(false)}
+              className="btn-3d-teal w-full py-2.5 text-sm rounded-xl"
+            >
+              Got It!
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Tier Level-Up Celebration Modal */}
