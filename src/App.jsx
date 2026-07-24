@@ -201,7 +201,6 @@ export default function App() {
 
     const updatedSparks = sparks - item.cost;
     const updatedUnlocked = [...unlockedItems, item.id];
-    // Automatically equip newly purchased item
     const updatedEquipped = [...equippedItems, item.id];
 
     setSparks(updatedSparks);
@@ -216,10 +215,8 @@ export default function App() {
   const handleToggleEquip = (itemId) => {
     let updatedEquipped;
     if (equippedItems.includes(itemId)) {
-      // Unequip
       updatedEquipped = equippedItems.filter((id) => id !== itemId);
     } else {
-      // Equip
       updatedEquipped = [...equippedItems, itemId];
     }
     setEquippedItems(updatedEquipped);
@@ -244,7 +241,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 max-w-lg mx-auto relative overflow-hidden">
-      {/* Header */}
+      {/* Clean Unified Header */}
       <header className="w-full flex items-center justify-between py-2 mb-2">
         <div className="flex items-center gap-2">
           <span className="font-extrabold text-2xl tracking-tight text-kibo-orange drop-shadow-sm">
@@ -253,23 +250,16 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Spark Currency Counter Button */}
+          {/* Combined Shop & Spark Counter Button in Header */}
           <button
             onClick={() => setIsWorkshopOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-amber-900 font-extrabold hover:bg-amber-100 active:scale-95 transition-all shadow-sm"
-          >
-            <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
-            <span>{sparks}</span>
-          </button>
-
-          {/* Workshop Button */}
-          <button
-            onClick={() => setIsWorkshopOpen(true)}
-            className="p-2 bg-kibo-teal text-white rounded-2xl border-b-4 border-kibo-teal-dark hover:bg-teal-600 active:translate-y-0.5 active:border-b-0 transition-all shadow-sm flex items-center gap-1 font-bold text-xs"
+            className="flex items-center gap-2 px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 rounded-2xl text-amber-900 font-extrabold active:scale-95 transition-all shadow-sm"
             aria-label="Open Kibo Workshop"
           >
-            <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
-            <span className="hidden sm:inline">Shop</span>
+            <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
+            <span className="text-base">{sparks}</span>
+            <span className="text-amber-400 font-bold">|</span>
+            <ShoppingBag className="w-4 h-4 text-amber-800 stroke-[2.5]" />
           </button>
 
           {/* Sound Toggle Button */}
@@ -286,28 +276,16 @@ export default function App() {
       {/* STATE 1: LAUNCH SCREEN */}
       {appState === 'launch' && (
         <main className="w-full flex-1 flex flex-col items-center justify-center gap-5 py-4 text-center animate-pop">
-          {/* Top Badges Row */}
-          <div className="flex items-center gap-3">
-            {/* Daily Streak Card */}
-            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border-2 border-amber-200 rounded-full shadow-sm animate-bounce-short">
-              <Flame className="w-6 h-6 text-amber-500 fill-amber-400 stroke-[2.5]" />
-              <span className="font-extrabold text-amber-900 text-base sm:text-lg">
-                {streak} Day Streak!
-              </span>
-            </div>
-
-            {/* Spark Balance Badge */}
-            <button
-              onClick={() => setIsWorkshopOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 bg-amber-100 border-2 border-amber-300 rounded-full shadow-sm hover:bg-amber-200 active:scale-95 transition-all"
-            >
-              <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
-              <span className="font-black text-amber-900 text-base sm:text-lg">{sparks} Sparks</span>
-            </button>
+          {/* Streak Badge Header */}
+          <div className="flex items-center gap-2 px-5 py-2.5 bg-amber-50 border-2 border-amber-200 rounded-full shadow-sm animate-bounce-short">
+            <Flame className="w-6 h-6 text-amber-500 fill-amber-400 stroke-[2.5]" />
+            <span className="font-extrabold text-amber-900 text-base sm:text-lg">
+              {streak} Day Streak!
+            </span>
           </div>
 
           {/* Mascot Header with Equipped Accessories */}
-          <div className="my-1 cursor-pointer" onClick={() => setIsWorkshopOpen(true)}>
+          <div className="my-1 cursor-pointer" onClick={() => setIsWorkshopOpen(true)} title="Click to customize Kibo!">
             <Mascot mood="happy" equipped={equippedItems} className="w-36 h-36 sm:w-44 sm:h-44" />
           </div>
 
