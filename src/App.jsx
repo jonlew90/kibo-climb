@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X } from 'lucide-react';
+import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck } from 'lucide-react';
 import Mascot from './components/Mascot';
 import Keypad from './components/Keypad';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
+import PinGateModal from './components/PinGateModal';
+import ParentDashboardModal from './components/ParentDashboardModal';
 import { generateProblems } from './utils/mathGenerator';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
@@ -15,6 +17,9 @@ export default function App() {
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [showSpeedInfoModal, setShowSpeedInfoModal] = useState(false);
+  const [showPinGateModal, setShowPinGateModal] = useState(false);
+  const [showParentDashboard, setShowParentDashboard] = useState(false);
+
   const [levelUpReason, setLevelUpReason] = useState('');
   const [isBossMode, setIsBossMode] = useState(false);
 
@@ -30,7 +35,7 @@ export default function App() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
 
-  // Persistent Daily Streak (calendar-day based)
+  // Persistent Daily Streak
   const [streak, setStreak] = useState(() => {
     const saved = localStorage.getItem('kibo_math_streak');
     const lastDate = localStorage.getItem('kibo_math_last_date');
@@ -56,7 +61,24 @@ export default function App() {
     return saved ? parseInt(saved, 10) : 1;
   });
 
-  // Persistent Sprint History (last 3 sprints regardless of day)
+  // Persistent Parent PIN (Default 1234)
+  const [parentPin, setParentPin] = useState(() => {
+    const saved = localStorage.getItem('kibo_math_parent_pin');
+    return saved || '1234';
+  });
+
+  // Persistent Security Question & Answer
+  const [securityQuestion, setSecurityQuestion] = useState(() => {
+    const saved = localStorage.getItem('kibo_math_parent_sec_q');
+    return saved || 'What is your child\'s favorite pet?';
+  });
+
+  const [securityAnswer, setSecurityAnswer] = useState(() => {
+    const saved = localStorage.getItem('kibo_math_parent_sec_a');
+    return saved || 'dog';
+  });
+
+  // Persistent Sprint History (last 3 sprints)
   const [sprintHistory, setSprintHistory] = useState(() => {
     const saved = localStorage.getItem('kibo_math_sprint_history');
     return saved ? JSON.parse(saved) : [];
@@ -199,7 +221,7 @@ export default function App() {
     localStorage.setItem('kibo_math_streak', newStreak.toString());
     localStorage.setItem('kibo_math_last_date', today);
 
-    // 2. Spark Reward Calculation (Base: 10, Bonus: 5 for 100% accuracy)
+    // 2. Spark Reward Calculation (Base: 10/20, Bonus: 5 for 100% accuracy)
     const correctCount = finalResults.filter((r) => r.isCorrect).length;
     const accuracyPct = Math.round((correctCount / finalResults.length) * 100);
     const totalLatencyMs = finalResults.reduce((acc, r) => acc + r.latencyMs, 0);
@@ -316,6 +338,24 @@ export default function App() {
     localStorage.setItem('kibo_math_equipped', JSON.stringify(updatedEquipped));
   };
 
+  // Parent PIN & Security Settings Actions
+  const handleUpdatePin = (newPin) => {
+    setParentPin(newPin);
+    localStorage.setItem('kibo_math_parent_pin', newPin);
+  };
+
+  const handleUpdateSecurityQuestion = (q, a) => {
+    setSecurityQuestion(q);
+    setSecurityAnswer(a);
+    localStorage.setItem('kibo_math_parent_sec_q', q);
+    localStorage.setItem('kibo_math_parent_sec_a', a);
+  };
+
+  const handleSetTierManual = (newTier) => {
+    setTier(newTier);
+    localStorage.setItem('kibo_math_tier', newTier.toString());
+  };
+
   // Stats Calculations for Victory Screen
   const calculateStats = () => {
     if (results.length === 0) {
@@ -383,6 +423,16 @@ export default function App() {
             <ShoppingBag className="w-4 h-4 text-amber-800 stroke-[2.5]" />
           </button>
 
+          {/* Parent Zone Entry Button */}
+          <button
+            onClick={() => setShowPinGateModal(true)}
+            className="p-2 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-2xl text-purple-700 active:scale-95 transition-all shadow-sm"
+            title="Parent Zone (PIN Protected)"
+            aria-label="Open Parent Zone"
+          >
+            <Lock className="w-5 h-5 stroke-[2.5]" />
+          </button>
+
           {/* Sound Toggle Button */}
           <button
             onClick={toggleAudio}
@@ -394,7 +444,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* STATE 1: LAUNCH SCREEN */}
+      {/* STATE 1: LAUNCH SCREEN (Default Child Play Dashboard) */}
       {appState === 'launch' && (
         <main className="w-full flex-1 flex flex-col items-center justify-center gap-4 py-3 text-center animate-pop">
           {/* Top Badges Row */}
@@ -555,9 +605,8 @@ export default function App() {
             </p>
           </div>
 
-          {/* --- REDESIGNED SPEED BREAKDOWN CONTAINER --- */}
+          {/* Speed Breakdown Container */}
           <div className="w-full max-w-sm bg-white border-2 border-slate-200 rounded-2xl p-3.5 shadow-md space-y-3">
-            {/* Header with Parent Info (ℹ️) Icon */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs uppercase font-extrabold text-slate-600 tracking-wider">
@@ -599,9 +648,8 @@ export default function App() {
               )}
             </div>
 
-            {/* 3 Explicit Stat Band Cards */}
+            {/* 3 Stat Band Cards */}
             <div className="grid grid-cols-3 gap-2">
-              {/* Super Fast Card */}
               <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-2 flex flex-col items-center justify-between text-center min-h-[82px]">
                 <div className="flex items-center gap-1">
                   <span className="text-xs">⚡</span>
@@ -615,7 +663,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Fluent Card */}
               <div className="bg-yellow-50/80 border border-yellow-200 rounded-xl p-2 flex flex-col items-center justify-between text-center min-h-[82px]">
                 <div className="flex items-center gap-1">
                   <span className="text-xs">🟡</span>
@@ -629,7 +676,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Focus Area / Practice Card */}
               <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-2 flex flex-col items-center justify-between text-center min-h-[82px] relative overflow-hidden">
                 <div className="flex items-center gap-1">
                   <span className="text-xs">🔵</span>
@@ -642,7 +688,6 @@ export default function App() {
                   <span className="text-[9px] font-bold text-blue-700/80 block mt-0.5">&gt; 4.0s (Queued)</span>
                 </div>
 
-                {/* Clean Sweep Badge on 0 Practice */}
                 {stats.practiceCount === 0 && (
                   <div className="mt-1 px-1.5 py-0.5 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-md text-[9px] font-extrabold flex items-center gap-1 shadow-sm">
                     <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 stroke-[3]" /> Clean Sweep!
@@ -694,6 +739,36 @@ export default function App() {
           </div>
         </main>
       )}
+
+      {/* PARENT PIN GATE MODAL */}
+      <PinGateModal
+        isOpen={showPinGateModal}
+        onClose={() => setShowPinGateModal(false)}
+        currentPin={parentPin}
+        securityQuestion={securityQuestion}
+        securityAnswer={securityAnswer}
+        onUnlockSuccess={() => {
+          setShowPinGateModal(false);
+          setShowParentDashboard(true);
+        }}
+      />
+
+      {/* PARENT DASHBOARD MODAL */}
+      <ParentDashboardModal
+        isOpen={showParentDashboard}
+        onClose={() => setShowParentDashboard(false)}
+        currentPin={parentPin}
+        onUpdatePin={handleUpdatePin}
+        securityQuestion={securityQuestion}
+        securityAnswer={securityAnswer}
+        onUpdateSecurityQuestion={handleUpdateSecurityQuestion}
+        tier={tier}
+        onSetTier={handleSetTierManual}
+        streak={streak}
+        sparks={sparks}
+        practiceQueueCount={practiceQueue.length}
+        sprintHistory={sprintHistory}
+      />
 
       {/* PARENT SPEED INFO MODAL (ℹ️) */}
       {showSpeedInfoModal && (
@@ -792,9 +867,15 @@ export default function App() {
         onToggleEquip={handleToggleEquip}
       />
 
-      {/* Footer */}
-      <footer className="w-full text-center text-xs font-bold text-slate-400 py-2 border-t border-slate-200/60 mt-auto">
-        Kibo Math • Supercharged Fun Mental Math MVP
+      {/* Footer with Parent Zone Link */}
+      <footer className="w-full text-center text-xs font-bold text-slate-400 py-2 border-t border-slate-200/60 mt-auto flex items-center justify-between">
+        <span>Kibo Math • Supercharged Fun Mental Math MVP</span>
+        <button
+          onClick={() => setShowPinGateModal(true)}
+          className="text-purple-600 hover:text-purple-800 flex items-center gap-1 font-extrabold"
+        >
+          <Lock className="w-3.5 h-3.5" /> Parent Zone
+        </button>
       </footer>
     </div>
   );
