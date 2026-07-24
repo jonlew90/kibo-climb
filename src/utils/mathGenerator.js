@@ -1,9 +1,8 @@
-// Generates 20 arithmetic problems based on Tier (1, 2, 3) and practice queue items
+// Generates arithmetic problems based on count (20 or 25 for Boss Challenge), Tier (1, 2, 3), and practice queue
 
-export function generate20Problems(tier = 1, practiceQueue = []) {
+export function generateProblems(count = 20, tier = 1, practiceQueue = []) {
   const problems = [];
   const maxPracticeToInject = Math.min(6, practiceQueue.length);
-  const injectedIds = new Set();
 
   // 1. Inject queued practice items first
   for (let i = 0; i < maxPracticeToInject; i++) {
@@ -19,12 +18,11 @@ export function generate20Problems(tier = 1, practiceQueue = []) {
         answerString: item.answer.toString(),
         isPracticeItem: true
       });
-      injectedIds.add(`${item.num1}${item.operatorSymbol}${item.num2}`);
     }
   }
 
-  // 2. Fill remaining set up to 20 based on Tier
-  const remainingCount = 20 - problems.length;
+  // 2. Fill remaining set up to `count` (20 or 25) based on Tier
+  const remainingCount = count - problems.length;
 
   for (let i = 0; i < remainingCount; i++) {
     let num1, num2, answer, operatorSymbol, type;
@@ -47,13 +45,11 @@ export function generate20Problems(tier = 1, practiceQueue = []) {
       // Tier 2: Crossing the Tens (e.g. 8+7=15, 15-8=7)
       type = Math.random() > 0.5 ? 'add' : 'sub';
       if (type === 'add') {
-        // sum between 11 and 20, crossing 10
         num1 = Math.floor(Math.random() * 5) + 5; // 5 to 9
         num2 = Math.floor(Math.random() * 5) + 6; // 6 to 10
         answer = num1 + num2;
         operatorSymbol = '+';
       } else {
-        // minuend between 11 and 19
         num1 = Math.floor(Math.random() * 9) + 11; // 11 to 19
         num2 = Math.floor(Math.random() * 8) + 3;  // 3 to 10
         answer = num1 - num2;
@@ -83,3 +79,6 @@ export function generate20Problems(tier = 1, practiceQueue = []) {
 
   return problems;
 }
+
+// Retain legacy export alias for backwards compatibility
+export const generate20Problems = (tier = 1, practiceQueue = []) => generateProblems(20, tier, practiceQueue);

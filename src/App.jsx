@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, ChevronUp, Layers, HelpCircle, ArrowUpCircle } from 'lucide-react';
+import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award } from 'lucide-react';
 import Mascot from './components/Mascot';
 import Keypad from './components/Keypad';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
-import { generate20Problems } from './utils/mathGenerator';
+import { generateProblems } from './utils/mathGenerator';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
 
@@ -14,6 +14,8 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [levelUpReason, setLevelUpReason] = useState('');
+  const [isBossMode, setIsBossMode] = useState(false);
 
   // Date helpers for calendar day streak tracking
   const getTodayStr = () => {
@@ -53,7 +55,7 @@ export default function App() {
     return saved ? parseInt(saved, 10) : 1;
   });
 
-  // Persistent Sprint History (last 3 sprints for Level-Up trigger)
+  // Persistent Sprint History (last 3 sprints regardless of day)
   const [sprintHistory, setSprintHistory] = useState(() => {
     const saved = localStorage.getItem('kibo_math_sprint_history');
     return saved ? JSON.parse(saved) : [];
@@ -80,7 +82,7 @@ export default function App() {
   const [problems, setProblems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [inputVal, setInputVal] = useState('');
-  const [results, setResults] = useState([]); // { problem, isCorrect, latencyMs, latencyCategory, label, icon }
+  const [results, setResults] = useState([]);
   const [mascotMood, setMascotMood] = useState('happy');
   const [isShaking, setIsShaking] = useState(false);
   const [earnedSparksInfo, setEarnedSparksInfo] = useState({ base: 0, bonus: 0, total: 0 });
@@ -163,9 +165,11 @@ export default function App() {
     }, isCorrect ? 200 : 450);
   };
 
-  const startNewSprint = () => {
+  const startNewSprint = (asBossMode = false) => {
     soundFx.init();
-    const newProbs = generate20Problems(tier, practiceQueue);
+    setIsBossMode(asBossMode);
+    const count = asBossMode ? 25 : 20;
+    const newProbs = generateProblems(count, tier, practiceQueue);
     setProblems(newProbs);
     setCurrentIndex(0);
     setInputVal('');
@@ -200,7 +204,7 @@ export default function App() {
     const totalLatencyMs = finalResults.reduce((acc, r) => acc + r.latencyMs, 0);
     const avgLatencySec = parseFloat((totalLatencyMs / (finalResults.length * 1000)).toFixed(2));
 
-    const baseSparks = 10;
+    const baseSparks = isBossMode ? 20 : 10;
     const bonusSparks = accuracyPct === 100 ? 5 : 0;
     const totalEarned = baseSparks + bonusSparks;
 
@@ -214,7 +218,6 @@ export default function App() {
     finalResults.forEach((r) => {
       const eqKey = `${r.problem.num1}${r.problem.operatorSymbol}${r.problem.num2}`;
       if (!r.isCorrect || r.speedInfo.category === 'practice') {
-        // Needs practice: add to queue if not present
         if (!updatedQueue.some((p) => `${p.num1}${p.operatorSymbol}${p.num2}` === eqKey)) {
           updatedQueue.push({
             num1: r.problem.num1,
@@ -225,7 +228,6 @@ export default function App() {
           });
         }
       } else {
-        // Correct & Fast: remove from practice queue
         updatedQueue = updatedQueue.filter((p) => `${p.num1}${p.operatorSymbol}${p.num2}` !== eqKey);
       }
     });
@@ -233,25 +235,40 @@ export default function App() {
     setPracticeQueue(updatedQueue);
     localStorage.setItem('kibo_math_practice_queue', JSON.stringify(updatedQueue));
 
-    // 4. Sprint History & Level-Up Eligibility
+    // 4. Update Sprint History (last 3 completed sprints regardless of day)
     const newSprintRecord = { accuracyPct, avgLatencySec, date: today };
     const updatedHistory = [newSprintRecord, ...sprintHistory].slice(0, 3);
     setSprintHistory(updatedHistory);
     localStorage.setItem('kibo_math_sprint_history', JSON.stringify(updatedHistory));
 
-    // Evaluate Level-Up Condition (3 consecutive sprints with >= 90% accuracy & <= 2.5s avg latency)
-    let isEligibleForLevelUp = false;
-    if (updatedHistory.length >= 3 && tier < 3) {
-      isEligibleForLevelUp = updatedHistory.every(
-        (rec) => rec.accuracyPct >= 90 && rec.avgLatencySec <= 2.5
-      );
+    // 5. Dual-Path Level-Up Condition Evaluation
+    let triggerLevelUp = false;
+    let reasonText = '';
+
+    if (tier < 3) {
+      // Path 2: Boss Challenge Test Out (25 problems, >= 96% accuracy, <= 2.0s avg latency)
+      if (isBossMode && accuracyPct >= 96 && avgLatencySec <= 2.0) {
+        triggerLevelUp = true;
+        reasonText = '⚡ Boss Challenge Passed! You achieved ≥96% accuracy and ≤2.0s average speed on the 25-problem test out!';
+      }
+      // Path 1: 3-Sprint Consistency (last 3 sprints, avg latency <= 2.5s, accuracy >= 90%)
+      else if (updatedHistory.length >= 3) {
+        const avgHistLatency = updatedHistory.reduce((acc, s) => acc + s.avgLatencySec, 0) / 3;
+        const allAccuracyPass = updatedHistory.every((s) => s.accuracyPct >= 90);
+
+        if (allAccuracyPass && avgHistLatency <= 2.5) {
+          triggerLevelUp = true;
+          reasonText = `🎯 3-Sprint Consistency Mastered! You maintained ≥90% accuracy with an average speed of ${avgHistLatency.toFixed(2)}s across your last 3 sprints!`;
+        }
+      }
     }
 
     soundFx.playVictory();
     setMascotMood('celebrate');
     setAppState('victory');
 
-    if (isEligibleForLevelUp) {
+    if (triggerLevelUp) {
+      setLevelUpReason(reasonText);
       setTimeout(() => setShowLevelUpModal(true), 600);
     }
   };
@@ -261,7 +278,6 @@ export default function App() {
       const nextTier = tier + 1;
       setTier(nextTier);
       localStorage.setItem('kibo_math_tier', nextTier.toString());
-      // Reset sprint history for next tier mastery
       setSprintHistory([]);
       localStorage.setItem('kibo_math_sprint_history', JSON.stringify([]));
       setShowLevelUpModal(false);
@@ -374,7 +390,7 @@ export default function App() {
       {/* STATE 1: LAUNCH SCREEN */}
       {appState === 'launch' && (
         <main className="w-full flex-1 flex flex-col items-center justify-center gap-4 py-3 text-center animate-pop">
-          {/* Top Badges Row: Streak & Skill Tier */}
+          {/* Top Badges Row */}
           <div className="flex items-center gap-2 flex-wrap justify-center">
             {/* Daily Streak Card */}
             <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border-2 border-amber-200 rounded-full shadow-sm">
@@ -414,17 +430,30 @@ export default function App() {
 
           {/* Action Buttons */}
           <div className="w-full max-w-xs space-y-2.5 mt-1">
+            {/* Standard 20-Problem Sprint */}
             <button
-              onClick={startNewSprint}
+              onClick={() => startNewSprint(false)}
               className="btn-3d-orange w-full py-4 text-xl sm:text-2xl rounded-2xl flex items-center justify-center gap-3 group shadow-bouncy-orange"
             >
               <Play className="w-7 h-7 fill-white stroke-[2.5] group-hover:scale-110 transition-transform" />
               Start 20-Problem Sprint
             </button>
 
+            {/* Boss Challenge Test Out (25 problems) */}
+            {tier < 3 && (
+              <button
+                onClick={() => startNewSprint(true)}
+                className="btn-3d-purple w-full py-3.5 text-base sm:text-lg rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
+              >
+                <Swords className="w-5 h-5 stroke-[2.5]" />
+                ⚡ Boss Challenge Test Out (25 Qs)
+              </button>
+            )}
+
+            {/* Workshop Button */}
             <button
               onClick={() => setIsWorkshopOpen(true)}
-              className="btn-3d-teal w-full py-3 text-lg rounded-2xl flex items-center justify-center gap-2"
+              className="btn-3d-teal w-full py-3 text-base rounded-2xl flex items-center justify-center gap-2"
             >
               <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
               Kibo's Workshop
@@ -440,20 +469,29 @@ export default function App() {
           <div className="w-full space-y-1.5">
             <div className="flex justify-between items-center text-sm font-bold text-slate-600 px-1">
               <div className="flex items-center gap-2">
-                <span>Problem {currentIndex + 1} of 20</span>
-                {problems[currentIndex].isPracticeItem && (
+                <span>Problem {currentIndex + 1} of {problems.length}</span>
+                {isBossMode && (
+                  <span className="text-[10px] uppercase font-black bg-purple-100 text-purple-800 px-2 py-0.5 rounded-md border border-purple-300">
+                    ⚡ Boss Challenge
+                  </span>
+                )}
+                {problems[currentIndex].isPracticeItem && !isBossMode && (
                   <span className="text-[10px] uppercase font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md border border-amber-300">
                     Practice Recall
                   </span>
                 )}
               </div>
-              <span className="text-kibo-teal font-extrabold">{Math.round(((currentIndex + 1) / 20) * 100)}%</span>
+              <span className="text-kibo-teal font-extrabold">{Math.round(((currentIndex + 1) / problems.length) * 100)}%</span>
             </div>
 
             <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
               <div
-                className="h-full bg-gradient-to-r from-kibo-orange to-kibo-teal rounded-full transition-all duration-300 shadow-sm"
-                style={{ width: `${((currentIndex + 1) / 20) * 100}%` }}
+                className={`h-full rounded-full transition-all duration-300 shadow-sm ${
+                  isBossMode
+                    ? 'bg-gradient-to-r from-purple-500 to-kibo-orange'
+                    : 'bg-gradient-to-r from-kibo-orange to-kibo-teal'
+                }`}
+                style={{ width: `${((currentIndex + 1) / problems.length) * 100}%` }}
               />
             </div>
           </div>
@@ -505,7 +543,7 @@ export default function App() {
 
           <div className="space-y-0.5">
             <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-              Sprint Complete! 🎉
+              {isBossMode ? 'Boss Challenge Complete! ⚡' : 'Sprint Complete! 🎉'}
             </h2>
             <p className="text-amber-600 font-bold text-sm flex items-center justify-center gap-1.5">
               <Flame className="w-4 h-4 fill-amber-500 stroke-[2.5]" />
@@ -566,7 +604,7 @@ export default function App() {
           {/* Action Buttons */}
           <div className="w-full max-w-sm space-y-2 mt-1">
             <button
-              onClick={startNewSprint}
+              onClick={() => startNewSprint(false)}
               className="btn-3d-orange w-full py-3 text-lg rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
             >
               <Play className="w-5 h-5 fill-white stroke-[2.5]" />
@@ -589,14 +627,14 @@ export default function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
           <div className="w-full max-w-sm bg-white border-4 border-purple-400 rounded-3xl p-6 text-center shadow-2xl space-y-4">
             <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto border-2 border-purple-300 animate-bounce">
-              <ArrowUpCircle className="w-10 h-10 stroke-[2.5]" />
+              <Award className="w-10 h-10 stroke-[2.5]" />
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs uppercase font-black text-purple-600 tracking-wider">Mastery Achieved!</span>
-              <h3 className="text-2xl font-black text-slate-800">Ready to Level Up?</h3>
-              <p className="text-sm text-slate-600 font-medium">
-                You maintained <strong>≥90% accuracy</strong> with lightning speed across 3 consecutive sprints!
+              <span className="text-xs uppercase font-black text-purple-600 tracking-wider">Level-Up Unlocked!</span>
+              <h3 className="text-2xl font-black text-slate-800">Advance to Tier {tier + 1}?</h3>
+              <p className="text-xs text-slate-600 font-medium">
+                {levelUpReason}
               </p>
             </div>
 
