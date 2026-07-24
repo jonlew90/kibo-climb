@@ -252,6 +252,7 @@ export default function App() {
 
   const handleQuitToHome = () => {
     setShowQuitModal(false);
+    setCurrentIndex(0);
     setProblems([]);
     setResults([]);
     setInputVal('');
@@ -503,9 +504,19 @@ export default function App() {
       {/* Header */}
       <header className="w-full flex items-center justify-between py-2 mb-2">
         <div className="flex items-center gap-2">
-          <span className="font-extrabold text-2xl tracking-tight text-kibo-orange drop-shadow-sm">
+          <button
+            onClick={() => {
+              if (appState === 'sprint') {
+                handleOpenQuitModal();
+              } else {
+                setAppState('launch');
+              }
+            }}
+            className="font-extrabold text-2xl tracking-tight text-kibo-orange drop-shadow-sm hover:opacity-90 transition-opacity active:scale-95 text-left"
+            title="Return to Home"
+          >
             Kibo<span className="text-kibo-teal">Math</span>
-          </span>
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -655,16 +666,17 @@ export default function App() {
                 )}
               </div>
 
-              {/* Progress % + Subtle Quit Sprint "X" Button */}
+              {/* Progress % + Quit Sprint Button */}
               <div className="flex items-center gap-2">
                 <span className="text-kibo-teal font-extrabold">{Math.round(((currentIndex + 1) / problems.length) * 100)}%</span>
                 <button
                   onClick={handleOpenQuitModal}
-                  className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors rounded-lg"
+                  className="flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 font-extrabold text-xs rounded-xl border border-slate-200 transition-all active:scale-95"
                   title="Quit Sprint"
                   aria-label="Quit Sprint"
                 >
-                  <X className="w-5 h-5 stroke-[2.5]" />
+                  <X className="w-4 h-4 stroke-[2.5]" />
+                  <span>Quit</span>
                 </button>
               </div>
             </div>

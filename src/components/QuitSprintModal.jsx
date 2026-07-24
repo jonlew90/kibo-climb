@@ -5,13 +5,19 @@ import { soundFx } from '../utils/audio';
 export default function QuitSprintModal({ isOpen, onKeepPlaying, onQuitToHome }) {
   if (!isOpen) return null;
 
-  const handleKeepPlaying = () => {
-    soundFx.playKeyTap();
+  const handleKeepPlaying = (e) => {
+    if (e) e.preventDefault();
+    try {
+      soundFx.playKeyTap();
+    } catch (err) {}
     onKeepPlaying();
   };
 
-  const handleQuit = () => {
-    soundFx.playKeyTap();
+  const handleQuit = (e) => {
+    if (e) e.preventDefault();
+    try {
+      soundFx.playKeyTap();
+    } catch (err) {}
     onQuitToHome();
   };
 
@@ -32,6 +38,7 @@ export default function QuitSprintModal({ isOpen, onKeepPlaying, onQuitToHome })
         <div className="space-y-2.5 pt-2">
           {/* Keep Playing (Resume) */}
           <button
+            type="button"
             onClick={handleKeepPlaying}
             className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
           >
@@ -41,8 +48,9 @@ export default function QuitSprintModal({ isOpen, onKeepPlaying, onQuitToHome })
 
           {/* Quit to Home */}
           <button
+            type="button"
             onClick={handleQuit}
-            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-rose-600 font-extrabold text-sm rounded-2xl border-2 border-slate-200 flex items-center justify-center gap-2 transition-colors"
+            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-rose-600 font-extrabold text-sm rounded-2xl border-2 border-slate-200 flex items-center justify-center gap-2 transition-colors active:scale-95"
           >
             <Home className="w-4 h-4 stroke-[2.5]" />
             Quit to Home
