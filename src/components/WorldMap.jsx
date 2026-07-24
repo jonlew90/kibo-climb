@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Target, Lock, CheckCircle2, Play, Compass, Award, Star, Zap, X, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Target, Lock, CheckCircle2, Play, Compass, Award, Star, Zap, X, Lightbulb } from 'lucide-react';
 import Mascot from './Mascot';
+import TierIntroModal from './TierIntroModal';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 
@@ -15,10 +16,18 @@ export default function WorldMap({
   onBackToHome
 }) {
   const [selectedNodeTier, setSelectedNodeTier] = useState(null);
+  const [showTierIntroModal, setShowTierIntroModal] = useState(false);
+  const [introModalTier, setIntroModalTier] = useState(1);
 
   const handleNodeClick = (tierNum) => {
     soundFx.playKeyTap();
     setSelectedNodeTier(tierNum);
+  };
+
+  const handleOpenKiboTip = (tierNum) => {
+    soundFx.playKeyTap();
+    setIntroModalTier(tierNum);
+    setShowTierIntroModal(true);
   };
 
   const handleStartSelectedSprint = () => {
@@ -80,13 +89,11 @@ export default function WorldMap({
             const isUnlocked = unlockedTiers.includes(tierItem.tier);
             const isActiveNode = currentTier === tierItem.tier;
 
-            // Determine X offset alignment for winding path (left, center, right)
             const windPositions = ['justify-center', 'justify-start pl-6', 'justify-center', 'justify-end pr-6'];
             const windClass = windPositions[(tierItem.tier - 1) % windPositions.length];
 
             return (
               <div key={tierItem.tier} className={`w-full flex ${windClass} relative my-2`}>
-                {/* Node Button */}
                 <div className="relative flex flex-col items-center">
                   {/* Mascot Standing directly on the Active Node */}
                   {isActiveNode && (
@@ -111,7 +118,6 @@ export default function WorldMap({
                     <span className="text-2xl">{tierItem.icon}</span>
                     <span className="text-[11px] font-black leading-tight">Tier {tierItem.tier}</span>
 
-                    {/* Lock / Mastered Badge */}
                     {!isUnlocked ? (
                       <div className="absolute -bottom-1 -right-1 bg-amber-100 text-amber-700 p-1 rounded-full border border-amber-300 shadow-sm">
                         <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -123,7 +129,6 @@ export default function WorldMap({
                     )}
                   </button>
 
-                  {/* Node Label */}
                   <div className="text-center mt-1">
                     <span className="text-xs font-black text-slate-800 block leading-tight">
                       {tierItem.title}
@@ -142,7 +147,7 @@ export default function WorldMap({
       {/* NODE MODAL PREVIEW (UNLOCKED & LOCKED STATES) */}
       {selectedNodeTier && selectedTierMeta && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
-          <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-4 relative">
+          <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative">
             <button
               onClick={() => setSelectedNodeTier(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"
@@ -173,6 +178,15 @@ export default function WorldMap({
               {selectedTierMeta.description}
             </p>
 
+            {/* Kibo Tip 💡 Button */}
+            <button
+              onClick={() => handleOpenKiboTip(selectedTierMeta.tier)}
+              className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 font-extrabold text-xs rounded-xl border border-amber-300 flex items-center justify-center gap-1.5 transition-all shadow-sm"
+            >
+              <Lightbulb className="w-4 h-4 text-amber-600 fill-amber-300 stroke-[2.5]" />
+              Kibo's Mental Math Tip 💡
+            </button>
+
             <div className="space-y-2 pt-1">
               {isSelectedUnlocked ? (
                 <button
@@ -202,6 +216,19 @@ export default function WorldMap({
           </div>
         </div>
       )}
+
+      {/* TIER INTRO MODAL OVERLAY */}
+      <TierIntroModal
+        isOpen={showTierIntroModal}
+        tierLevel={introModalTier}
+        equippedItems={equippedItems}
+        onStartSprint={(t) => {
+          setShowTierIntroModal(false);
+          setSelectedNodeTier(null);
+          onSelectTierAndStartSprint(t);
+        }}
+        onClose={() => setShowTierIntroModal(false)}
+      />
 
       {/* Footer Back Button */}
       <button

@@ -12,6 +12,7 @@ import StreakSavedModal from './components/StreakSavedModal';
 import WorldMap from './components/WorldMap';
 import PlacementTest from './components/PlacementTest';
 import PlacementRevealModal from './components/PlacementRevealModal';
+import MicroHintCard from './components/MicroHintCard';
 import { generateProblems } from './utils/mathGenerator';
 import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS } from './utils/curriculum';
 import { getItemById } from './utils/itemsCatalog';
@@ -30,6 +31,9 @@ export default function App() {
   const [showQuitModal, setShowQuitModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
+
+  // Consecutive problem miss tracking for Micro-Hints
+  const [consecutiveProblemMisses, setConsecutiveProblemMisses] = useState(0);
 
   // Test-Out State
   const [isTestOut, setIsTestOut] = useState(false);
@@ -153,7 +157,7 @@ export default function App() {
       const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
       if (dateStr >= todayStr) break;
 
-      const dayIdx = curr.getDay(); // 0 = Sun, 1 = Mon ...
+      const dayIdx = curr.getDay();
       if (savedDays.includes(dayIdx)) {
         missedActiveDays++;
       }
@@ -188,7 +192,6 @@ export default function App() {
     total: 0
   });
 
-  // High precision latency measurement & pause ref
   const problemStartTimeRef = useRef(performance.now());
   const pauseStartTimeRef = useRef(0);
 
@@ -242,27 +245,32 @@ export default function App() {
     };
 
     const nextResults = [...results, resultRecord];
-    setResults(nextResults);
 
     if (isCorrect) {
       soundFx.playCorrect();
       setMascotMood('correct');
+      setConsecutiveProblemMisses(0);
+      setResults(nextResults);
     } else {
       soundFx.playIncorrect();
       setMascotMood('incorrect');
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 400);
+      setConsecutiveProblemMisses((prev) => prev + 1);
     }
 
     setTimeout(() => {
       setMascotMood('happy');
       setInputVal('');
 
-      if (currentIndex + 1 < problems.length) {
-        setCurrentIndex(currentIndex + 1);
-        problemStartTimeRef.current = performance.now();
-      } else {
-        finishSprint(nextResults);
+      if (isCorrect) {
+        if (currentIndex + 1 < problems.length) {
+          setCurrentIndex(currentIndex + 1);
+          setConsecutiveProblemMisses(0);
+          problemStartTimeRef.current = performance.now();
+        } else {
+          finishSprint(nextResults);
+        }
       }
     }, isCorrect ? 200 : 450);
   };
@@ -274,6 +282,7 @@ export default function App() {
     setIsTestOut(false);
     setPlacementResultInfo(null);
     setShowQuitModal(false);
+    setConsecutiveProblemMisses(0);
 
     const targetTier = overrideTier || tier;
     const count = asBossMode ? 25 : 20;
@@ -294,6 +303,7 @@ export default function App() {
     setIsBossMode(false);
     setIsPlacementTest(false);
     setShowQuitModal(false);
+    setConsecutiveProblemMisses(0);
 
     const testOutProbs = generateProblems(10, targetTier, []);
     setProblems(testOutProbs);
@@ -327,7 +337,6 @@ export default function App() {
     setShowPlacementRevealModal(true);
   };
 
-  // Pause / Resume / Quit Sprint Handlers
   const handleOpenQuitModal = () => {
     pauseStartTimeRef.current = performance.now();
     setShowQuitModal(true);
@@ -348,6 +357,7 @@ export default function App() {
     setIsBossMode(false);
     setIsPlacementTest(false);
     setIsTestOut(false);
+    setConsecutiveProblemMisses(0);
     setAppState('launch');
   };
 
@@ -361,7 +371,6 @@ export default function App() {
     const totalLatencyMs = finalResults.reduce((acc, r) => acc + r.latencyMs, 0);
     const avgLatencySec = parseFloat((totalLatencyMs / (finalResults.length * 1000)).toFixed(2));
 
-    // Handle Tier Test-Out Challenge Finish
     if (isTestOut && testOutTargetTier) {
       const passedTestOut = accuracyPct === 100 && avgLatencySec < 2.5;
 
@@ -371,7 +380,7 @@ export default function App() {
           if (!newUnlocked.includes(i)) newUnlocked.push(i);
         }
 
-        const updatedSparks = sparks + 30; // +30 Bonus Sparks!
+        const updatedSparks = sparks + 30;
         setTier(testOutTargetTier);
         setUnlockedTiers(newUnlocked.sort());
         setSparks(updatedSparks);
@@ -391,7 +400,6 @@ export default function App() {
       return;
     }
 
-    // 1. Streak update
     let newStreak = streak;
     if (lastDate === today) {
       newStreak = Math.max(1, streak);
@@ -405,7 +413,6 @@ export default function App() {
     localStorage.setItem('kibo_math_streak', newStreak.toString());
     localStorage.setItem('kibo_math_last_date', today);
 
-    // 2. Enhanced Spark Reward Calculation
     const baseSparks = isBossMode ? 20 : 10;
     const accuracyBonusSparks = accuracyPct === 100 ? 10 : 0;
     const speedBonusSparks = avgLatencySec < 2.0 ? 5 : 0;
@@ -425,7 +432,6 @@ export default function App() {
       total: totalEarned
     });
 
-    // 3. Update Practice Queue
     let updatedQueue = [...practiceQueue];
     finalResults.forEach((r) => {
       const eqKey = r.problem.displayString || `${r.problem.num1}${r.problem.operatorSymbol}${r.problem.num2}`;
@@ -448,13 +454,11 @@ export default function App() {
     setPracticeQueue(updatedQueue);
     localStorage.setItem('kibo_math_practice_queue', JSON.stringify(updatedQueue));
 
-    // 4. Update Sprint History
     const newSprintRecord = { accuracyPct, avgLatencySec, date: today };
     const updatedHistory = [newSprintRecord, ...sprintHistory].slice(0, 3);
     setSprintHistory(updatedHistory);
     localStorage.setItem('kibo_math_sprint_history', JSON.stringify(updatedHistory));
 
-    // 5. Dual-Path Level-Up Evaluation
     let triggerLevelUp = false;
     let reasonText = '';
 
@@ -512,7 +516,6 @@ export default function App() {
     setIsMuted(muted);
   };
 
-  // Workshop Actions
   const handleBuyItem = (item) => {
     if (sparks < item.cost) return;
 
@@ -566,7 +569,6 @@ export default function App() {
     localStorage.setItem('kibo_math_equipped', JSON.stringify(updatedEquipped));
   };
 
-  // Parent PIN & Security Settings Actions
   const handleUpdatePin = (newPin) => {
     setParentPin(newPin);
     localStorage.setItem('kibo_math_parent_pin', newPin);
@@ -593,7 +595,6 @@ export default function App() {
     localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(updatedUnlocked));
   };
 
-  // Stats Calculations for Victory Screen
   const calculateStats = () => {
     if (results.length === 0) {
       return {
@@ -808,7 +809,7 @@ export default function App() {
 
       {/* STATE 2: THE MATH SPRINT */}
       {appState === 'sprint' && problems[currentIndex] && (
-        <main className="w-full flex-1 flex flex-col items-center justify-between gap-4 py-2">
+        <main className="w-full flex-1 flex flex-col items-center justify-between gap-3 py-2">
           {/* Top Progress Bar */}
           <div className="w-full space-y-1.5">
             <div className="flex justify-between items-center text-sm font-bold text-slate-600 px-1">
@@ -862,11 +863,11 @@ export default function App() {
 
           {/* Mascot & Math Display Area */}
           <div className="w-full flex flex-col items-center my-auto">
-            <Mascot mood={mascotMood} equipped={equippedItems} className="w-24 h-24 sm:w-28 sm:h-28 mb-3" />
+            <Mascot mood={mascotMood} equipped={equippedItems} className="w-20 h-20 sm:w-24 sm:h-24 mb-2" />
 
             {/* Problem Card */}
             <div
-              className={`w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-6 sm:p-8 text-center shadow-card-3d transition-transform ${
+              className={`w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-5 sm:p-7 text-center shadow-card-3d transition-transform ${
                 isShaking ? 'animate-shake border-rose-400 bg-rose-50' : ''
               }`}
             >
@@ -880,6 +881,11 @@ export default function App() {
                 </span>
               </div>
             </div>
+
+            {/* Mid-Sprint Micro-Hint Card (Triggered on >= 2 consecutive misses) */}
+            {consecutiveProblemMisses >= 2 && (
+              <MicroHintCard problem={problems[currentIndex]} tierLevel={tier} />
+            )}
           </div>
 
           {/* Keypad Input */}
