@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Target, Lock, CheckCircle2, Play, Compass, Award, Star, Zap, X } from 'lucide-react';
+import { ArrowLeft, Target, Lock, CheckCircle2, Play, Compass, Award, Star, Zap, X, ShieldAlert } from 'lucide-react';
 import Mascot from './Mascot';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
@@ -10,6 +10,7 @@ export default function WorldMap({
   equippedItems = [],
   sprintHistory = [],
   onSelectTierAndStartSprint,
+  onStartTestOut,
   onStartPlacementTest,
   onBackToHome
 }) {
@@ -27,9 +28,19 @@ export default function WorldMap({
     }
   };
 
+  const handleStartTestOutChallenge = () => {
+    if (selectedNodeTier) {
+      soundFx.playVictory();
+      onStartTestOut(selectedNodeTier);
+      setSelectedNodeTier(null);
+    }
+  };
+
   const selectedTierMeta = selectedNodeTier
     ? CURRICULUM_TIERS.find((t) => t.tier === selectedNodeTier)
     : null;
+
+  const isSelectedUnlocked = selectedNodeTier ? unlockedTiers.includes(selectedNodeTier) : false;
 
   return (
     <div className="w-full flex-1 flex flex-col items-center justify-between py-3 px-2 sm:px-4 max-w-lg mx-auto animate-pop relative">
@@ -88,13 +99,13 @@ export default function WorldMap({
                   )}
 
                   <button
-                    onClick={() => isUnlocked && handleNodeClick(tierItem.tier)}
+                    onClick={() => handleNodeClick(tierItem.tier)}
                     className={`w-20 h-20 rounded-3xl border-4 flex flex-col items-center justify-center transition-all relative ${
                       isActiveNode
                         ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white border-purple-300 shadow-xl ring-4 ring-purple-200 scale-110'
                         : isUnlocked
                         ? 'bg-white text-slate-800 border-teal-400 shadow-lg hover:border-teal-500 active:scale-95'
-                        : 'bg-slate-200 text-slate-400 border-slate-300 cursor-not-allowed opacity-70'
+                        : 'bg-slate-100 text-slate-500 border-slate-300 hover:border-amber-400 active:scale-95 shadow-sm'
                     }`}
                   >
                     <span className="text-2xl">{tierItem.icon}</span>
@@ -102,8 +113,8 @@ export default function WorldMap({
 
                     {/* Lock / Mastered Badge */}
                     {!isUnlocked ? (
-                      <div className="absolute -bottom-1 -right-1 bg-slate-300 text-slate-600 p-1 rounded-full border border-slate-400">
-                        <Lock className="w-3 h-3 stroke-[2.5]" />
+                      <div className="absolute -bottom-1 -right-1 bg-amber-100 text-amber-700 p-1 rounded-full border border-amber-300 shadow-sm">
+                        <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
                       </div>
                     ) : (
                       <div className="absolute -bottom-1 -right-1 bg-emerald-100 text-emerald-700 p-1 rounded-full border border-emerald-300 shadow-sm">
@@ -128,10 +139,10 @@ export default function WorldMap({
         </div>
       </div>
 
-      {/* NODE MODAL PREVIEW & START SPRINT */}
+      {/* NODE MODAL PREVIEW (UNLOCKED & LOCKED STATES) */}
       {selectedNodeTier && selectedTierMeta && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
-          <div className="w-full max-w-sm bg-white border-4 border-teal-400 rounded-3xl p-5 text-center shadow-2xl space-y-4 relative">
+          <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-4 relative">
             <button
               onClick={() => setSelectedNodeTier(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"
@@ -139,14 +150,21 @@ export default function WorldMap({
               <X className="w-5 h-5 stroke-[2.5]" />
             </button>
 
-            <div className="text-4xl p-3 bg-teal-50 rounded-2xl w-16 h-16 mx-auto flex items-center justify-center border-2 border-teal-200">
+            <div className="text-4xl p-3 bg-amber-50 rounded-2xl w-16 h-16 mx-auto flex items-center justify-center border-2 border-amber-200">
               {selectedTierMeta.icon}
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs uppercase font-black text-teal-600 tracking-wider">
-                Station Node • Tier {selectedTierMeta.tier}
-              </span>
+              <div className="flex items-center justify-center gap-1.5">
+                <span className="text-xs uppercase font-black text-purple-600 tracking-wider">
+                  Station Node • Tier {selectedTierMeta.tier}
+                </span>
+                {!isSelectedUnlocked && (
+                  <span className="text-[9px] font-black uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                    🔒 Locked
+                  </span>
+                )}
+              </div>
               <h3 className="text-2xl font-extrabold text-slate-800">{selectedTierMeta.title}</h3>
               <p className="text-xs text-slate-500 font-semibold">{selectedTierMeta.location}</p>
             </div>
@@ -156,13 +174,23 @@ export default function WorldMap({
             </p>
 
             <div className="space-y-2 pt-1">
-              <button
-                onClick={handleStartSelectedSprint}
-                className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
-              >
-                <Play className="w-5 h-5 fill-white stroke-[2.5]" />
-                Start Sprint on Tier {selectedTierMeta.tier}
-              </button>
+              {isSelectedUnlocked ? (
+                <button
+                  onClick={handleStartSelectedSprint}
+                  className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
+                >
+                  <Play className="w-5 h-5 fill-white stroke-[2.5]" />
+                  Start Sprint on Tier {selectedTierMeta.tier}
+                </button>
+              ) : (
+                <button
+                  onClick={handleStartTestOutChallenge}
+                  className="btn-3d-purple w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
+                >
+                  <Zap className="w-5 h-5 fill-amber-300 text-amber-300 stroke-[2.5]" />
+                  Test Out of Tier {selectedTierMeta.tier} ⚡
+                </button>
+              )}
 
               <button
                 onClick={() => setSelectedNodeTier(null)}

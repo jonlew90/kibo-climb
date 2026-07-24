@@ -31,6 +31,12 @@ export default function App() {
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
 
+  // Test-Out State
+  const [isTestOut, setIsTestOut] = useState(false);
+  const [testOutTargetTier, setTestOutTargetTier] = useState(null);
+  const [showTestOutPassModal, setShowTestOutPassModal] = useState(false);
+  const [showTestOutFailModal, setShowTestOutFailModal] = useState(false);
+
   const [levelUpReason, setLevelUpReason] = useState('');
   const [isBossMode, setIsBossMode] = useState(false);
   const [isPlacementTest, setIsPlacementTest] = useState(false);
@@ -265,6 +271,7 @@ export default function App() {
     soundFx.init();
     setIsBossMode(asBossMode);
     setIsPlacementTest(false);
+    setIsTestOut(false);
     setPlacementResultInfo(null);
     setShowQuitModal(false);
 
@@ -272,6 +279,24 @@ export default function App() {
     const count = asBossMode ? 25 : 20;
     const newProbs = generateProblems(count, targetTier, practiceQueue);
     setProblems(newProbs);
+    setCurrentIndex(0);
+    setInputVal('');
+    setResults([]);
+    setMascotMood('happy');
+    setAppState('sprint');
+    problemStartTimeRef.current = performance.now();
+  };
+
+  const startTestOutSprint = (targetTier) => {
+    soundFx.init();
+    setIsTestOut(true);
+    setTestOutTargetTier(targetTier);
+    setIsBossMode(false);
+    setIsPlacementTest(false);
+    setShowQuitModal(false);
+
+    const testOutProbs = generateProblems(10, targetTier, []);
+    setProblems(testOutProbs);
     setCurrentIndex(0);
     setInputVal('');
     setResults([]);
@@ -289,7 +314,7 @@ export default function App() {
     const newUnlocked = [];
     for (let i = 1; i <= Math.max(1, placedTier); i++) newUnlocked.push(i);
 
-    const updatedSparks = sparks + 50; // Award 50 Bonus Sparks!
+    const updatedSparks = sparks + 50;
 
     setTier(placedTier);
     setUnlockedTiers(newUnlocked);
@@ -322,6 +347,7 @@ export default function App() {
     setInputVal('');
     setIsBossMode(false);
     setIsPlacementTest(false);
+    setIsTestOut(false);
     setAppState('launch');
   };
 
@@ -329,6 +355,41 @@ export default function App() {
     const today = getTodayStr();
     const yesterday = getYesterdayStr();
     const lastDate = localStorage.getItem('kibo_math_last_date');
+
+    const correctCount = finalResults.filter((r) => r.isCorrect).length;
+    const accuracyPct = Math.round((correctCount / finalResults.length) * 100);
+    const totalLatencyMs = finalResults.reduce((acc, r) => acc + r.latencyMs, 0);
+    const avgLatencySec = parseFloat((totalLatencyMs / (finalResults.length * 1000)).toFixed(2));
+
+    // Handle Tier Test-Out Challenge Finish
+    if (isTestOut && testOutTargetTier) {
+      const passedTestOut = accuracyPct === 100 && avgLatencySec < 2.5;
+
+      if (passedTestOut) {
+        const newUnlocked = Array.from(new Set([...unlockedTiers, testOutTargetTier]));
+        for (let i = 1; i <= testOutTargetTier; i++) {
+          if (!newUnlocked.includes(i)) newUnlocked.push(i);
+        }
+
+        const updatedSparks = sparks + 30; // +30 Bonus Sparks!
+        setTier(testOutTargetTier);
+        setUnlockedTiers(newUnlocked.sort());
+        setSparks(updatedSparks);
+
+        localStorage.setItem('kibo_math_tier', testOutTargetTier.toString());
+        localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(newUnlocked));
+        localStorage.setItem('kibo_math_sparks', updatedSparks.toString());
+
+        soundFx.playVictory();
+        setMascotMood('celebrate');
+        setShowTestOutPassModal(true);
+      } else {
+        soundFx.playIncorrect();
+        setMascotMood('happy');
+        setShowTestOutFailModal(true);
+      }
+      return;
+    }
 
     // 1. Streak update
     let newStreak = streak;
@@ -345,17 +406,11 @@ export default function App() {
     localStorage.setItem('kibo_math_last_date', today);
 
     // 2. Enhanced Spark Reward Calculation
-    const correctCount = finalResults.filter((r) => r.isCorrect).length;
-    const accuracyPct = Math.round((correctCount / finalResults.length) * 100);
-    const totalLatencyMs = finalResults.reduce((acc, r) => acc + r.latencyMs, 0);
-    const avgLatencySec = parseFloat((totalLatencyMs / (finalResults.length * 1000)).toFixed(2));
-
     const baseSparks = isBossMode ? 20 : 10;
     const accuracyBonusSparks = accuracyPct === 100 ? 10 : 0;
     const speedBonusSparks = avgLatencySec < 2.0 ? 5 : 0;
     const subtotalSparks = baseSparks + accuracyBonusSparks + speedBonusSparks;
 
-    // 5+ Day Streak Multiplier (1.5x)
     const hasStreakMultiplier = newStreak >= 5;
     const totalEarned = hasStreakMultiplier ? Math.floor(subtotalSparks * 1.5) : subtotalSparks;
 
@@ -457,7 +512,7 @@ export default function App() {
     setIsMuted(muted);
   };
 
-  // Workshop Actions (Slot-Based Equipping & Consumables)
+  // Workshop Actions
   const handleBuyItem = (item) => {
     if (sparks < item.cost) return;
 
@@ -475,7 +530,6 @@ export default function App() {
     const updatedSparks = sparks - item.cost;
     const updatedUnlocked = Array.from(new Set([...unlockedItems, item.id]));
 
-    // Slot-based equip: replace active item in same category slot
     const currentSlotCat = item.category;
     const filteredSameSlot = equippedItems.filter((id) => {
       const equippedItem = getItemById(id);
@@ -531,7 +585,8 @@ export default function App() {
   };
 
   const handleSetTierManual = (newTier) => {
-    const updatedUnlocked = Array.from(new Set([...unlockedTiers, newTier]));
+    const updatedUnlocked = [];
+    for (let i = 1; i <= Math.max(1, newTier); i++) updatedUnlocked.push(i);
     setTier(newTier);
     setUnlockedTiers(updatedUnlocked);
     localStorage.setItem('kibo_math_tier', newTier.toString());
@@ -644,6 +699,7 @@ export default function App() {
           equippedItems={equippedItems}
           sprintHistory={sprintHistory}
           onSelectTierAndStartSprint={handleSelectTierFromMap}
+          onStartTestOut={startTestOutSprint}
           onStartPlacementTest={startPlacementDiagnostic}
           onBackToHome={() => setAppState('launch')}
         />
@@ -758,12 +814,17 @@ export default function App() {
             <div className="flex justify-between items-center text-sm font-bold text-slate-600 px-1">
               <div className="flex items-center gap-2">
                 <span>Problem {currentIndex + 1} of {problems.length}</span>
+                {isTestOut && (
+                  <span className="text-[10px] uppercase font-black bg-purple-100 text-purple-900 px-2 py-0.5 rounded-md border border-purple-300">
+                    ⚡ Tier {testOutTargetTier} Test-Out Blitz
+                  </span>
+                )}
                 {isBossMode && (
                   <span className="text-[10px] uppercase font-black bg-purple-100 text-purple-800 px-2 py-0.5 rounded-md border border-purple-300">
                     ⚡ Boss Challenge
                   </span>
                 )}
-                {problems[currentIndex].isPracticeItem && !isBossMode && (
+                {problems[currentIndex].isPracticeItem && !isBossMode && !isTestOut && (
                   <span className="text-[10px] uppercase font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md border border-amber-300">
                     Practice Recall
                   </span>
@@ -788,7 +849,9 @@ export default function App() {
             <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
               <div
                 className={`h-full rounded-full transition-all duration-300 shadow-sm ${
-                  isBossMode
+                  isTestOut
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-500'
+                    : isBossMode
                     ? 'bg-gradient-to-r from-purple-500 to-kibo-orange'
                     : 'bg-gradient-to-r from-kibo-orange to-kibo-teal'
                 }`}
@@ -995,6 +1058,76 @@ export default function App() {
             </button>
           </div>
         </main>
+      )}
+
+      {/* TEST-OUT PASS CELEBRATION MODAL */}
+      {showTestOutPassModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
+          <div className="w-full max-w-sm bg-white border-4 border-purple-400 rounded-3xl p-6 text-center shadow-2xl space-y-4">
+            <ConfettiCanvas />
+            <Mascot mood="celebrate" equipped={equippedItems} className="w-28 h-28 mx-auto" />
+
+            <div className="space-y-1">
+              <span className="text-xs font-black uppercase text-purple-600 tracking-wider bg-purple-50 px-3 py-1 rounded-full border border-purple-200 inline-block">
+                ⚡ Test-Out Challenge Passed!
+              </span>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                Tier {testOutTargetTier} Unlocked! 🎉
+              </h3>
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                You achieved 100% accuracy and rapid recall speed!
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-300 rounded-2xl p-3 flex items-center justify-center gap-2 text-amber-950 shadow-sm">
+              <Zap className="w-6 h-6 text-amber-600 fill-amber-400 stroke-[2.5] animate-pulse" />
+              <span className="font-black text-base">+30 Test-Out Bonus Sparks! ⚡</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowTestOutPassModal(false);
+                setAppState('world_map');
+              }}
+              className="btn-3d-purple w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
+            >
+              <Compass className="w-5 h-5 stroke-[2.5]" />
+              Continue to World Map 🗺️
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* TEST-OUT FAIL ENCOURAGEMENT MODAL */}
+      {showTestOutFailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
+          <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-6 text-center shadow-2xl space-y-4">
+            <Mascot mood="happy" equipped={equippedItems} className="w-24 h-24 mx-auto" />
+
+            <div className="space-y-1.5">
+              <span className="text-xs font-black uppercase text-amber-700 tracking-wider bg-amber-50 px-3 py-1 rounded-full border border-amber-200 inline-block">
+                Test-Out Challenge
+              </span>
+              <h3 className="text-xl font-black text-slate-800 tracking-tight">
+                Almost there! Practice a bit more to unlock. 💪
+              </h3>
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                Test-Out requires <strong>100% accuracy</strong> and average recall speed under <strong>2.5s</strong>. Keep practicing on current tiers to level up!
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowTestOutFailModal(false);
+                setAppState('world_map');
+              }}
+              className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
+            >
+              <Compass className="w-5 h-5 stroke-[2.5]" />
+              Back to World Map 🗺️
+            </button>
+          </div>
+        </div>
       )}
 
       {/* PLACEMENT REVEAL MODAL */}

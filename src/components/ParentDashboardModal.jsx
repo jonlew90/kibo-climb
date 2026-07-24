@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar } from 'lucide-react';
+import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 
 const DAYS_OF_WEEK = [
@@ -154,38 +155,35 @@ export default function ParentDashboardModal({
               </div>
             </div>
 
-            {/* Manual Tier Selector */}
-            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3 space-y-2">
-              <span className="text-xs uppercase font-extrabold text-slate-600 tracking-wider block">
-                Manual Skill Tier Override
-              </span>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { t: 1, label: 'Tier 1', desc: '1–9 Add/Sub' },
-                  { t: 2, label: 'Tier 2', desc: 'Regrouping' },
-                  { t: 3, label: 'Tier 3', desc: 'Multiplication' }
-                ].map((item) => (
-                  <button
-                    key={item.t}
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      onSetTier(item.t);
-                    }}
-                    className={`p-2 rounded-xl border-2 text-center transition-all ${
-                      tier === item.t
-                        ? 'bg-purple-600 text-white border-purple-700 font-extrabold shadow-sm'
-                        : 'bg-white text-slate-700 border-slate-200 hover:border-purple-300'
-                    }`}
-                  >
-                    <span className="text-xs font-black block">{item.label}</span>
-                    <span className="text-[9px] opacity-80 block">{item.desc}</span>
-                  </button>
-                ))}
+            {/* Manual Tier Selector Dropdown (All 8 Tiers) */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2 text-left">
+              <div className="flex items-center gap-2 text-purple-700">
+                <Layers className="w-5 h-5 stroke-[2.5]" />
+                <h4 className="font-extrabold text-sm text-slate-800">Manual Skill Tier Override</h4>
               </div>
+
+              <select
+                value={tier}
+                onChange={(e) => {
+                  soundFx.playKeyTap();
+                  onSetTier(parseInt(e.target.value, 10));
+                }}
+                className="w-full p-3 bg-white border-2 border-purple-300 rounded-xl text-xs sm:text-sm font-extrabold text-purple-950 focus:border-purple-600 focus:outline-none shadow-sm cursor-pointer"
+              >
+                {CURRICULUM_TIERS.map((t) => (
+                  <option key={t.tier} value={t.tier}>
+                    Tier {t.tier}: {t.title} ({t.subtitle})
+                  </option>
+                ))}
+              </select>
+
+              <p className="text-[11px] font-medium text-slate-500 italic leading-snug">
+                Manually set your child's current practice tier at any time.
+              </p>
             </div>
 
             {/* Practice Queue Info */}
-            <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-3 flex items-center justify-between text-xs">
+            <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-3 flex items-center justify-between text-xs text-left">
               <div>
                 <span className="font-extrabold text-amber-900 block">Queued Practice Items</span>
                 <span className="text-amber-800 font-medium">Problems flagged for targeted recall speed.</span>
@@ -196,7 +194,7 @@ export default function ParentDashboardModal({
             </div>
 
             {/* Sprint Performance History */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <span className="text-xs uppercase font-extrabold text-slate-600 tracking-wider block">
                 Recent Sprints Mastery (Last 3)
               </span>
