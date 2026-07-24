@@ -9,6 +9,9 @@ import ParentDashboardModal from './components/ParentDashboardModal';
 import SkillMapScreen from './components/SkillMapScreen';
 import QuitSprintModal from './components/QuitSprintModal';
 import StreakSavedModal from './components/StreakSavedModal';
+import WorldMap from './components/WorldMap';
+import PlacementTest from './components/PlacementTest';
+import PlacementRevealModal from './components/PlacementRevealModal';
 import { generateProblems } from './utils/mathGenerator';
 import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS } from './utils/curriculum';
 import { getItemById } from './utils/itemsCatalog';
@@ -16,7 +19,7 @@ import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
 
 export default function App() {
-  // App State: 'launch' | 'sprint' | 'victory' | 'skill_map'
+  // App State: 'launch' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
   const [appState, setAppState] = useState('launch');
   const [isMuted, setIsMuted] = useState(false);
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
@@ -26,6 +29,7 @@ export default function App() {
   const [showParentDashboard, setShowParentDashboard] = useState(false);
   const [showQuitModal, setShowQuitModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
+  const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
 
   const [levelUpReason, setLevelUpReason] = useState('');
   const [isBossMode, setIsBossMode] = useState(false);
@@ -257,14 +261,16 @@ export default function App() {
     }, isCorrect ? 200 : 450);
   };
 
-  const startNewSprint = (asBossMode = false) => {
+  const startNewSprint = (asBossMode = false, overrideTier = null) => {
     soundFx.init();
     setIsBossMode(asBossMode);
     setIsPlacementTest(false);
     setPlacementResultInfo(null);
     setShowQuitModal(false);
+
+    const targetTier = overrideTier || tier;
     const count = asBossMode ? 25 : 20;
-    const newProbs = generateProblems(count, tier, practiceQueue);
+    const newProbs = generateProblems(count, targetTier, practiceQueue);
     setProblems(newProbs);
     setCurrentIndex(0);
     setInputVal('');
@@ -276,18 +282,24 @@ export default function App() {
 
   const startPlacementDiagnostic = () => {
     soundFx.init();
-    setIsPlacementTest(true);
-    setIsBossMode(false);
-    setPlacementResultInfo(null);
-    setShowQuitModal(false);
-    const diagProbs = generatePlacementDiagnosticSet();
-    setProblems(diagProbs);
-    setCurrentIndex(0);
-    setInputVal('');
-    setResults([]);
-    setMascotMood('happy');
-    setAppState('sprint');
-    problemStartTimeRef.current = performance.now();
+    setAppState('placement_test');
+  };
+
+  const handleCompletePlacementTest = (placedTier) => {
+    const newUnlocked = [];
+    for (let i = 1; i <= Math.max(1, placedTier); i++) newUnlocked.push(i);
+
+    const updatedSparks = sparks + 50; // Award 50 Bonus Sparks!
+
+    setTier(placedTier);
+    setUnlockedTiers(newUnlocked);
+    setSparks(updatedSparks);
+
+    localStorage.setItem('kibo_math_tier', placedTier.toString());
+    localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(newUnlocked));
+    localStorage.setItem('kibo_math_sparks', updatedSparks.toString());
+
+    setShowPlacementRevealModal(true);
   };
 
   // Pause / Resume / Quit Sprint Handlers
@@ -317,30 +329,6 @@ export default function App() {
     const today = getTodayStr();
     const yesterday = getYesterdayStr();
     const lastDate = localStorage.getItem('kibo_math_last_date');
-
-    // Handle Placement Diagnostic Test finish
-    if (isPlacementTest) {
-      const placedTier = evaluatePlacementTier(finalResults);
-      const newUnlocked = [];
-      for (let i = 1; i <= Math.max(1, placedTier); i++) newUnlocked.push(i);
-
-      setTier(placedTier);
-      setUnlockedTiers(newUnlocked);
-      localStorage.setItem('kibo_math_tier', placedTier.toString());
-      localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(newUnlocked));
-
-      const tierMeta = CURRICULUM_TIERS.find((t) => t.tier === placedTier) || CURRICULUM_TIERS[0];
-      setPlacementResultInfo({
-        placedTier,
-        title: tierMeta.title,
-        location: tierMeta.location
-      });
-
-      soundFx.playVictory();
-      setMascotMood('celebrate');
-      setAppState('victory');
-      return;
-    }
 
     // 1. Streak update
     let newStreak = streak;
@@ -461,7 +449,7 @@ export default function App() {
     setUnlockedTiers(updatedUnlocked);
     localStorage.setItem('kibo_math_tier', selectedTier.toString());
     localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(updatedUnlocked));
-    setAppState('launch');
+    startNewSprint(false, selectedTier);
   };
 
   const toggleAudio = () => {
@@ -648,12 +636,34 @@ export default function App() {
         </div>
       </header>
 
-      {/* SKILL MAP SCREEN */}
+      {/* WORLD MAP SCREEN */}
+      {appState === 'world_map' && (
+        <WorldMap
+          currentTier={tier}
+          unlockedTiers={unlockedTiers}
+          equippedItems={equippedItems}
+          sprintHistory={sprintHistory}
+          onSelectTierAndStartSprint={handleSelectTierFromMap}
+          onStartPlacementTest={startPlacementDiagnostic}
+          onBackToHome={() => setAppState('launch')}
+        />
+      )}
+
+      {/* PLACEMENT TEST SCREEN */}
+      {appState === 'placement_test' && (
+        <PlacementTest
+          equippedItems={equippedItems}
+          onCompletePlacement={handleCompletePlacementTest}
+          onQuitToHome={() => setAppState('launch')}
+        />
+      )}
+
+      {/* SKILL MAP ROADMAP SCREEN */}
       {appState === 'skill_map' && (
         <SkillMapScreen
           currentTier={tier}
           unlockedTiers={unlockedTiers}
-          onSelectTier={handleSelectTierFromMap}
+          onSelectTier={(t) => handleSelectTierFromMap(t)}
           onStartPlacementTest={startPlacementDiagnostic}
           onBackToHome={() => setAppState('launch')}
         />
@@ -678,7 +688,7 @@ export default function App() {
 
             {/* Current Tier Badge */}
             <button
-              onClick={() => setAppState('skill_map')}
+              onClick={() => setAppState('world_map')}
               className="flex items-center gap-1.5 px-4 py-1.5 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-full shadow-sm active:scale-95 transition-all"
             >
               <Layers className="w-5 h-5 text-purple-600 stroke-[2.5]" />
@@ -720,11 +730,11 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setAppState('skill_map')}
+              onClick={() => setAppState('world_map')}
               className="btn-3d-purple w-full py-3 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
             >
               <Compass className="w-5 h-5 stroke-[2.5]" />
-              Skill Map & Roadmap 🗺️
+              World Map Trail 🗺️
             </button>
 
             {tier < 8 && (
@@ -748,17 +758,12 @@ export default function App() {
             <div className="flex justify-between items-center text-sm font-bold text-slate-600 px-1">
               <div className="flex items-center gap-2">
                 <span>Problem {currentIndex + 1} of {problems.length}</span>
-                {isPlacementTest && (
-                  <span className="text-[10px] uppercase font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md border border-amber-300">
-                    🎯 Diagnostic Test
-                  </span>
-                )}
                 {isBossMode && (
                   <span className="text-[10px] uppercase font-black bg-purple-100 text-purple-800 px-2 py-0.5 rounded-md border border-purple-300">
                     ⚡ Boss Challenge
                   </span>
                 )}
-                {problems[currentIndex].isPracticeItem && !isBossMode && !isPlacementTest && (
+                {problems[currentIndex].isPracticeItem && !isBossMode && (
                   <span className="text-[10px] uppercase font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md border border-amber-300">
                     Practice Recall
                   </span>
@@ -783,9 +788,7 @@ export default function App() {
             <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
               <div
                 className={`h-full rounded-full transition-all duration-300 shadow-sm ${
-                  isPlacementTest
-                    ? 'bg-gradient-to-r from-amber-400 to-kibo-orange'
-                    : isBossMode
+                  isBossMode
                     ? 'bg-gradient-to-r from-purple-500 to-kibo-orange'
                     : 'bg-gradient-to-r from-kibo-orange to-kibo-teal'
                 }`}
@@ -839,28 +842,20 @@ export default function App() {
 
           <div className="space-y-0.5">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
-              {isPlacementTest ? 'Placement Test Complete! 🎯' : isBossMode ? 'Boss Challenge Complete! ⚡' : 'Sprint Complete! 🎉'}
+              {isBossMode ? 'Boss Challenge Complete! ⚡' : 'Sprint Complete! 🎉'}
             </h2>
-            {placementResultInfo ? (
-              <div className="bg-amber-100 border-2 border-amber-300 p-2.5 rounded-2xl max-w-sm mx-auto text-amber-950">
-                <span className="text-xs uppercase font-extrabold tracking-wider block">Diagnostic Result</span>
-                <span className="text-base font-black">Placed in Tier {placementResultInfo.placedTier}: {placementResultInfo.title}</span>
-                <span className="text-xs font-semibold block text-amber-800">Station: {placementResultInfo.location}</span>
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 p-2.5 rounded-2xl max-w-sm mx-auto space-y-1 shadow-sm">
+              <p className="text-amber-900 font-extrabold text-sm flex items-center justify-center gap-1.5">
+                <Flame className="w-4 h-4 fill-amber-500 stroke-[2.5]" />
+                Streak: {streak} days | Total Earned: +{earnedSparksInfo.total} Sparks ⚡
+              </p>
+              <div className="text-[11px] font-semibold text-slate-600 flex items-center justify-center gap-2 flex-wrap border-t border-amber-200/60 pt-1">
+                <span>Base: +{earnedSparksInfo.base}⚡</span>
+                {earnedSparksInfo.accuracyBonus > 0 && <span className="text-emerald-700 font-bold">+10 100% Acc</span>}
+                {earnedSparksInfo.speedBonus > 0 && <span className="text-amber-700 font-bold">+5 Lightning</span>}
+                {earnedSparksInfo.multiplier > 1 && <span className="text-purple-700 font-black bg-purple-100 px-1.5 rounded">1.5x Streak Boost!🔥</span>}
               </div>
-            ) : (
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 p-2.5 rounded-2xl max-w-sm mx-auto space-y-1 shadow-sm">
-                <p className="text-amber-900 font-extrabold text-sm flex items-center justify-center gap-1.5">
-                  <Flame className="w-4 h-4 fill-amber-500 stroke-[2.5]" />
-                  Streak: {streak} days | Total Earned: +{earnedSparksInfo.total} Sparks ⚡
-                </p>
-                <div className="text-[11px] font-semibold text-slate-600 flex items-center justify-center gap-2 flex-wrap border-t border-amber-200/60 pt-1">
-                  <span>Base: +{earnedSparksInfo.base}⚡</span>
-                  {earnedSparksInfo.accuracyBonus > 0 && <span className="text-emerald-700 font-bold">+10 100% Acc</span>}
-                  {earnedSparksInfo.speedBonus > 0 && <span className="text-amber-700 font-bold">+5 Lightning</span>}
-                  {earnedSparksInfo.multiplier > 1 && <span className="text-purple-700 font-black bg-purple-100 px-1.5 rounded">1.5x Streak Boost!🔥</span>}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Speed Breakdown Container */}
@@ -985,10 +980,10 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setAppState('skill_map')}
+              onClick={() => setAppState('world_map')}
               className="btn-3d-purple w-full py-2.5 text-sm rounded-2xl flex items-center justify-center gap-2"
             >
-              <Compass className="w-4 h-4 stroke-[2.5]" /> View Skill Map
+              <Compass className="w-4 h-4 stroke-[2.5]" /> View World Map
             </button>
 
             <button
@@ -1001,6 +996,17 @@ export default function App() {
           </div>
         </main>
       )}
+
+      {/* PLACEMENT REVEAL MODAL */}
+      <PlacementRevealModal
+        isOpen={showPlacementRevealModal}
+        placedTier={tier}
+        equippedItems={equippedItems}
+        onGoToWorldMap={() => {
+          setShowPlacementRevealModal(false);
+          setAppState('world_map');
+        }}
+      />
 
       {/* STREAK SAVED MODAL */}
       <StreakSavedModal
