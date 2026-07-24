@@ -3,7 +3,6 @@ import { Target, X, Zap } from 'lucide-react';
 import Mascot from './Mascot';
 import Keypad from './Keypad';
 import { generateTierProblem, getNormalizedProblemKey, CURRICULUM_TIERS } from '../utils/curriculum';
-import { classifyLatency } from '../utils/latencyEngine';
 import { soundFx } from '../utils/audio';
 
 export default function PlacementTest({
@@ -12,20 +11,20 @@ export default function PlacementTest({
   onQuitToHome
 }) {
   const [currentTierLevel, setCurrentTierLevel] = useState(1);
-  const [tierProblemCount, setTierProblemCount] = useState(0); // 0 or 1 per tier (2 total)
+  const [tierProblemCount, setTierProblemCount] = useState(0); // 0 or 1 (2 questions per tier block)
   const [currentProblem, setCurrentProblem] = useState(null);
   const [inputVal, setInputVal] = useState('');
   const [mascotMood, setMascotMood] = useState('happy');
   const [isShaking, setIsShaking] = useState(false);
 
-  // Tracking state for adaptive rules
+  // Tracking state for placement evaluation
   const highestPassedTierRef = useRef(1);
-  const consecutiveErrorsRef = useRef(0);
+  const currentBlockResultsRef = useRef([]);
   const seenKeysRef = useRef(new Set());
   const problemStartTimeRef = useRef(performance.now());
   const questionNumberRef = useRef(1);
 
-  // Generate next adaptive problem based on currentTierLevel
+  // Generate problem strictly for target tier
   const generateNextProblem = (tierLevel) => {
     let probData;
     let attempts = 0;
@@ -38,7 +37,7 @@ export default function PlacementTest({
     return probData;
   };
 
-  // Initialize first problem on mount
+  // Initialize first problem on mount (Tier 1)
   useEffect(() => {
     soundFx.init();
     const firstProb = generateNextProblem(1);
@@ -82,70 +81,73 @@ export default function PlacementTest({
     const latencySec = latencyMs / 1000;
     const isCorrect = userAnswerStr === prob.answerString;
 
+    // Record question result in current block
+    currentBlockResultsRef.current.push({ isCorrect, latencySec });
+
     if (isCorrect) {
       soundFx.playCorrect();
       setMascotMood('correct');
-      consecutiveErrorsRef.current = 0;
     } else {
       soundFx.playIncorrect();
       setMascotMood('incorrect');
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 400);
-      consecutiveErrorsRef.current += 1;
     }
 
     setTimeout(() => {
       setMascotMood('happy');
       setInputVal('');
 
-      // Evaluate adaptive advancement / termination rules
-      const isSlow = latencySec > 5.0;
-      const isTooManyErrors = consecutiveErrorsRef.current >= 2;
-
-      // Early Termination condition
-      if (!isCorrect && (isTooManyErrors || isSlow)) {
+      // Single question hard failure condition: error OR latency > 5.0s
+      if (!isCorrect || latencySec > 5.0) {
         finishDiagnosticTest();
         return;
       }
 
-      if (isCorrect && latencySec <= 3.5) {
-        // High mastery: update highest passed tier
-        highestPassedTierRef.current = Math.max(highestPassedTierRef.current, currentTierLevel);
-      }
+      // Check if current 2-question tier block is complete
+      if (tierProblemCount === 1) {
+        const blockResults = currentBlockResultsRef.current;
+        const bothCorrect = blockResults.length === 2 && blockResults.every((r) => r.isCorrect);
+        const avgBlockLatency = (blockResults[0].latencySec + blockResults[1].latencySec) / 2;
 
-      // Progression logic
-      let nextTier = currentTierLevel;
-      let nextCount = tierProblemCount + 1;
+        // Pass Criteria for Tier Block: both correct AND avg latency < 3.5s
+        if (bothCorrect && avgBlockLatency < 3.5) {
+          highestPassedTierRef.current = currentTierLevel;
 
-      if (nextCount >= 2) {
-        // Advance to next tier level if correct or fast
-        if (isCorrect && currentTierLevel < 8 && !isSlow) {
-          nextTier = currentTierLevel + 1;
-          nextCount = 0;
+          if (currentTierLevel < 5 && questionNumberRef.current < 10) {
+            const nextTier = currentTierLevel + 1;
+            questionNumberRef.current += 1;
+            setCurrentTierLevel(nextTier);
+            setTierProblemCount(0);
+            currentBlockResultsRef.current = [];
+
+            const nextProb = generateNextProblem(nextTier);
+            setCurrentProblem(nextProb);
+            problemStartTimeRef.current = performance.now();
+            return;
+          } else {
+            finishDiagnosticTest();
+            return;
+          }
         } else {
-          // Completed current tier block, finish diagnostic test
+          // Failed block speed or accuracy
           finishDiagnosticTest();
           return;
         }
+      } else {
+        // Continue to question 2 of the current tier block
+        questionNumberRef.current += 1;
+        setTierProblemCount(1);
+
+        const nextProb = generateNextProblem(currentTierLevel);
+        setCurrentProblem(nextProb);
+        problemStartTimeRef.current = performance.now();
       }
-
-      if (questionNumberRef.current >= 10 || nextTier > 8) {
-        finishDiagnosticTest();
-        return;
-      }
-
-      questionNumberRef.current += 1;
-      setCurrentTierLevel(nextTier);
-      setTierProblemCount(nextCount);
-
-      const nextProb = generateNextProblem(nextTier);
-      setCurrentProblem(nextProb);
-      problemStartTimeRef.current = performance.now();
     }, isCorrect ? 200 : 450);
   };
 
   const finishDiagnosticTest = () => {
-    const placedTier = Math.min(8, Math.max(1, highestPassedTierRef.current));
+    const placedTier = Math.min(5, Math.max(1, highestPassedTierRef.current));
     soundFx.playVictory();
     onCompletePlacement(placedTier);
   };
