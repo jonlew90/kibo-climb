@@ -3,6 +3,7 @@ import { Target, Zap, MapPin, Compass, Trophy } from 'lucide-react';
 import Mascot from './Mascot';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
+import ConfettiCanvas from './ConfettiCanvas';
 
 export default function PlacementRevealModal({
   isOpen,
@@ -21,7 +22,9 @@ export default function PlacementRevealModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
-      <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-6 text-center shadow-2xl space-y-4">
+      <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-6 text-center shadow-2xl space-y-4 relative overflow-hidden">
+        <ConfettiCanvas />
+
         {/* Mascot Header */}
         <div className="relative mx-auto w-28 h-28">
           <Mascot mood="celebrate" equipped={equippedItems} className="w-28 h-28" />
@@ -36,10 +39,10 @@ export default function PlacementRevealModal({
             Diagnostic Placement Result
           </span>
           <h3 className="text-2xl font-black text-slate-800 tracking-tight">
-            Tier {placedTier} Unlocked! 🎉
+            Awesome job! 🎉
           </h3>
-          <p className="text-xs text-slate-500 font-semibold">
-            Based on your speed and accuracy, you are placed in:
+          <p className="text-sm text-slate-700 font-extrabold leading-snug">
+            You placed into Tier {placedTier}: {tierMeta.title}!
           </p>
         </div>
 
@@ -47,7 +50,7 @@ export default function PlacementRevealModal({
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-2xl p-3 text-purple-950 space-y-1 shadow-sm">
           <div className="flex items-center justify-center gap-1.5 text-purple-700 font-extrabold text-sm">
             <span>{tierMeta.icon}</span>
-            <span>{tierMeta.title}</span>
+            <span>{tierMeta.subtitle}</span>
           </div>
           <p className="text-xs font-bold text-slate-600">
             Station: <span className="text-purple-900 font-extrabold">{tierMeta.location}</span>
@@ -60,13 +63,13 @@ export default function PlacementRevealModal({
           <span className="font-black text-base">+50 Diagnostic Bonus Sparks! ⚡</span>
         </div>
 
-        {/* Action Button */}
+        {/* Primary Action Button */}
         <button
           onClick={handleGoToMap}
-          className="btn-3d-purple w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
+          className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
         >
           <Compass className="w-5 h-5 stroke-[2.5]" />
-          Go to World Map 🗺️
+          Start Climbing Mount Kibo 🏔️
         </button>
       </div>
     </div>

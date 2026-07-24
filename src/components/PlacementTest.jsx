@@ -93,14 +93,14 @@ export default function PlacementTest({
       setMascotMood('happy');
       setInputVal('');
 
-      // Single question failure condition: error OR latency > 5.0s
-      if (!isCorrect || latencySec > 5.0) {
+      // Single question failure condition: error OR latency > 4.5s
+      if (!isCorrect || latencySec > 4.5) {
         finishDiagnosticTest();
         return;
       }
 
-      // Update highest passed tier if correct with latency <= 3.5s
-      if (isCorrect && latencySec <= 3.5) {
+      // Update highest passed tier if correct with latency <= 4.5s
+      if (isCorrect && latencySec <= 4.5) {
         highestPassedTierRef.current = Math.max(highestPassedTierRef.current, currentTierLevel);
       }
 
@@ -109,13 +109,13 @@ export default function PlacementTest({
       if (isCorrect && latencySec < 2.5) {
         // Ultra-fast recall! Jump 2 tiers forward for advanced learners
         nextTier = Math.min(8, currentTierLevel + 2);
-      } else if (isCorrect && latencySec <= 3.5) {
+      } else if (isCorrect && latencySec <= 4.5) {
         // Fluent recall! Advance 1 tier forward
         nextTier = Math.min(8, currentTierLevel + 1);
       }
 
       // Test Completion Conditions: 8-10 questions reached or Tier 8 passed
-      if (questionNumberRef.current >= 8 || (currentTierLevel === 8 && isCorrect && latencySec <= 3.5)) {
+      if (questionNumberRef.current >= 8 || (currentTierLevel === 8 && isCorrect && latencySec <= 4.5)) {
         finishDiagnosticTest();
         return;
       }
