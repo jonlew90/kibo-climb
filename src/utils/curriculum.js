@@ -58,21 +58,21 @@ export const CURRICULUM_TIERS = [
   },
   {
     tier: 7,
-    title: 'Squares, Roots & PEMDAS',
-    subtitle: 'Powers, Square Roots & Order of Ops',
-    location: 'PEMDAS Plateau',
-    icon: '⚡',
-    color: 'from-rose-400 to-pink-600',
-    description: 'Calculate squares (6²), square roots (√81), and PEMDAS (4 + 3 × 5).'
+    title: 'Fractions, Decimals & Percentages',
+    subtitle: 'Fractions, Decimals & Percentages',
+    location: 'Fraction Falls',
+    icon: '🧩',
+    color: 'from-teal-400 via-emerald-500 to-cyan-600',
+    description: 'Calculate percentages (20% of 80 = 16), decimals, and fractions.'
   },
   {
     tier: 8,
-    title: 'Fractions & Percentages',
-    subtitle: 'Percentages & Mental Fractions',
+    title: 'Squares, Roots & PEMDAS',
+    subtitle: 'Powers, Square Roots & Order of Ops',
     location: 'Mount Kibo Summit',
     icon: '🏔️',
     color: 'from-yellow-400 via-amber-500 to-purple-600',
-    description: 'Calculate percentages (20% of 80 = 16) at the peak of Mount Kibo!'
+    description: 'Master powers (6²), square roots (√81), and PEMDAS at the peak of Mount Kibo!'
   }
 ];
 
@@ -174,7 +174,20 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 7: {
-      // Tier 7: Squares, Roots & PEMDAS (6^2, sqrt(81), 4 + 3 * 5)
+      // Tier 7: Mental Percentages, Decimals & Fractions (e.g., 20% of 80 = 16, 0.25 × 4 = 1)
+      const percentages = [10, 20, 25, 50, 75];
+      const pct = percentages[Math.floor(Math.random() * percentages.length)];
+      const base = (Math.floor(Math.random() * 9) + 1) * 20; // 20, 40, ... 180
+      answer = Math.round((pct / 100) * base);
+      num1 = pct;
+      num2 = base;
+      operatorSymbol = '%';
+      displayString = `${pct}% of ${base}`;
+      break;
+    }
+    case 8:
+    default: {
+      // Tier 8 (Final Peak): Squares, Roots & PEMDAS (6^2 = 36, sqrt(81) = 9, 4 + 3 * 5 = 19)
       const type = Math.random();
       if (type < 0.4) {
         // Square: e.g., 6^2 = 36
@@ -202,19 +215,6 @@ export function generateTierProblem(tierLevel) {
         operatorSymbol = '+';
         displayString = `${a} + ${b} × ${c}`;
       }
-      break;
-    }
-    case 8:
-    default: {
-      // Tier 8: Mental Percentages & Fractions (e.g., 20% of 80 = 16, 50% of 90 = 45)
-      const percentages = [10, 20, 25, 50, 75];
-      const pct = percentages[Math.floor(Math.random() * percentages.length)];
-      const base = (Math.floor(Math.random() * 9) + 1) * 20; // 20, 40, ... 180
-      answer = Math.round((pct / 100) * base);
-      num1 = pct;
-      num2 = base;
-      operatorSymbol = '%';
-      displayString = `${pct}% of ${base}`;
       break;
     }
   }
@@ -247,10 +247,8 @@ export function generatePlacementDiagnosticSet() {
   return problems;
 }
 
-// Diagnostic placement evaluation algorithm:
-// Determines starting active Tier based on performance across diagnostic tier blocks.
+// Diagnostic placement evaluation algorithm
 export function evaluatePlacementTier(diagnosticResults) {
-  // Group results by diagnostic Tier (1 through 5)
   const tierStats = {};
   for (let t = 1; t <= 5; t++) {
     tierStats[t] = { correct: 0, total: 0, totalLatencyMs: 0 };
@@ -274,11 +272,9 @@ export function evaluatePlacementTier(diagnosticResults) {
     const accuracy = stat.correct / stat.total;
     const avgLatencySec = stat.totalLatencyMs / (stat.total * 1000);
 
-    // Criteria: accuracy >= 80% AND avg latency <= 3.0s
     if (accuracy >= 0.8 && avgLatencySec <= 3.0) {
-      recommendedTier = Math.min(8, t + 1); // Recommended next tier to start
+      recommendedTier = Math.min(8, t + 1);
     } else {
-      // Accuracy dropped below 80% or speed was slow: stop placement here
       recommendedTier = t;
       break;
     }
