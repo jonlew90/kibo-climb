@@ -1,0 +1,17 @@
+{
+  "name": "Kibo Math",
+  "short_name": "Kibo Math",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "orientation": "portrait",
+  "description": "Fun, fast-paced mental math sprint app for children with instant recall speed tracking and rewards.",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

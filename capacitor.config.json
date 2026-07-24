@@ -1,0 +1,9 @@
+{
+  "appId": "com.kibomath.app",
+  "appName": "Kibo Math",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

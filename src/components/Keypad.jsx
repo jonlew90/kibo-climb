@@ -21,12 +21,12 @@ export default function Keypad({ onKeyPress, onDelete, onClear }) {
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto grid grid-cols-3 gap-3 sm:gap-4 p-3 bg-slate-100 rounded-3xl border-2 border-slate-200 shadow-inner">
+    <div className="w-full max-w-sm mx-auto grid grid-cols-3 gap-3 sm:gap-4 p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner">
       {keys.map((num) => (
         <button
           key={num}
           onClick={() => handlePress(num)}
-          className="btn-3d-key h-16 sm:h-20 active:scale-95 text-slate-800"
+          className="btn-3d-key text-slate-800"
           aria-label={`Digit ${num}`}
         >
           {num}
@@ -36,16 +36,16 @@ export default function Keypad({ onKeyPress, onDelete, onClear }) {
       {/* Clear Button */}
       <button
         onClick={handleClear}
-        className="btn-3d-key h-16 sm:h-20 text-rose-500 hover:bg-rose-50 border-rose-200 active:scale-95 text-lg font-bold"
+        className="btn-3d-key text-rose-500 hover:bg-rose-50 border-rose-200 text-lg font-bold"
         aria-label="Clear all input"
       >
-        <RotateCcw className="w-6 h-6 stroke-[2.5]" />
+        <RotateCcw className="w-7 h-7 stroke-[2.5]" />
       </button>
 
       {/* 0 Button */}
       <button
         onClick={() => handlePress('0')}
-        className="btn-3d-key h-16 sm:h-20 active:scale-95 text-slate-800"
+        className="btn-3d-key text-slate-800"
         aria-label="Digit 0"
       >
         0
@@ -54,7 +54,7 @@ export default function Keypad({ onKeyPress, onDelete, onClear }) {
       {/* Backspace Button */}
       <button
         onClick={handleDelete}
-        className="btn-3d-key h-16 sm:h-20 text-amber-600 hover:bg-amber-50 border-amber-200 active:scale-95 text-lg font-bold"
+        className="btn-3d-key text-amber-600 hover:bg-amber-50 border-amber-200 text-lg font-bold"
         aria-label="Delete last digit"
       >
         <Delete className="w-7 h-7 stroke-[2.5]" />

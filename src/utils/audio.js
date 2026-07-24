@@ -1,4 +1,15 @@
-// Web Audio API Synthesizer for Kibo Math sound effects
+// Web Audio API Synthesizer & Web Haptics Engine for Kibo Math
+
+// Web Haptics Helper (navigator.vibrate fallback)
+export function triggerHaptic(pattern = 15) {
+  if (typeof window !== 'undefined' && 'navigator' in window && 'vibrate' in navigator) {
+    try {
+      navigator.vibrate(pattern);
+    } catch (e) {
+      // Graceful fallback if unsupported
+    }
+  }
+}
 
 class SoundSystem {
   constructor() {
@@ -23,8 +34,9 @@ class SoundSystem {
     return this.isMuted;
   }
 
-  // Play crisp pop for correct answers
+  // Play crisp pop for correct answers + haptic pulse
   playCorrect() {
+    triggerHaptic([20, 30, 20]);
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
@@ -34,7 +46,6 @@ class SoundSystem {
     const gain = this.ctx.createGain();
 
     osc.type = 'sine';
-    // Arpeggio / pitch sweep pop (e.g. C5 -> G5)
     osc.frequency.setValueAtTime(523.25, now); // C5
     osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.12); // C6
 
@@ -50,6 +61,7 @@ class SoundSystem {
 
   // Play light low tone / buzz for incorrect answers
   playIncorrect() {
+    triggerHaptic(40);
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
@@ -72,8 +84,9 @@ class SoundSystem {
     osc.stop(now + 0.22);
   }
 
-  // Play key tap click audio
+  // Play key tap click audio + subtle haptic tap
   playKeyTap() {
+    triggerHaptic(15);
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
@@ -95,18 +108,19 @@ class SoundSystem {
     osc.stop(now + 0.05);
   }
 
-  // Play celebratory victory fanfare
+  // Play celebratory victory fanfare + victory haptic
   playVictory() {
+    triggerHaptic([30, 40, 30, 40, 60]);
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
 
     const now = this.ctx.currentTime;
     const notes = [
-      { freq: 523.25, duration: 0.12, time: 0 },       // C5
-      { freq: 659.25, duration: 0.12, time: 0.12 },    // E5
-      { freq: 783.99, duration: 0.12, time: 0.24 },    // G5
-      { freq: 1046.50, duration: 0.4, time: 0.36 }     // C6
+      { freq: 523.25, duration: 0.12, time: 0 },
+      { freq: 659.25, duration: 0.12, time: 0.12 },
+      { freq: 783.99, duration: 0.12, time: 0.24 },
+      { freq: 1046.50, duration: 0.4, time: 0.36 }
     ];
 
     notes.forEach(n => {

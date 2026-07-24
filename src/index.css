@@ -13,11 +13,29 @@
     @apply bg-kibo-purple text-white font-bold border-b-4 border-kibo-purple-dark active:translate-y-1 active:border-b-0 transition-all duration-75 shadow-lg;
   }
   .btn-3d-key {
-    @apply bg-white text-slate-700 font-extrabold border-b-4 border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-1 active:border-b-0 transition-all duration-75 shadow-md text-2xl sm:text-3xl rounded-2xl flex items-center justify-center select-none active:bg-amber-100;
+    @apply bg-white text-slate-700 font-extrabold border-b-4 border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-1 active:scale-95 active:border-b-0 transition-all duration-75 shadow-md text-2xl sm:text-3xl rounded-2xl flex items-center justify-center select-none active:bg-amber-100 min-h-[68px] min-w-[68px];
+  }
+
+  /* Safe Area Padding Utilities for Notch & Home Bar Avoidance */
+  .safe-pt {
+    padding-top: env(safe-area-inset-top, 16px);
+  }
+  .safe-pb {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+  .safe-mb {
+    margin-bottom: env(safe-area-inset-bottom, 16px);
   }
 }
 
-/* Prevent unwanted double-tap zoom on touch devices */
+/* Prevent unwanted double-tap zoom & text selection on mobile/tablet */
+html, body {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 button, input, select, textarea {
   touch-action: manipulation;
 }

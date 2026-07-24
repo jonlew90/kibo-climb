@@ -401,7 +401,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 max-w-lg mx-auto relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 safe-pt safe-pb max-w-lg mx-auto relative overflow-hidden">
       {/* Header */}
       <header className="w-full flex items-center justify-between py-2 mb-2">
         <div className="flex items-center gap-2">
