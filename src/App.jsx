@@ -11,10 +11,31 @@ export default function App() {
   const [appState, setAppState] = useState('launch');
   const [isMuted, setIsMuted] = useState(false);
 
-  // Persistent Streak (localStorage)
+  // Date helpers for calendar day streak tracking
+  const getTodayStr = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  const getYesterdayStr = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  // Persistent Daily Streak (calendar-day based)
   const [streak, setStreak] = useState(() => {
     const saved = localStorage.getItem('kibo_math_streak');
-    return saved ? parseInt(saved, 10) : 0;
+    const lastDate = localStorage.getItem('kibo_math_last_date');
+    const today = getTodayStr();
+    const yesterday = getYesterdayStr();
+
+    if (!saved || !lastDate) return 0;
+    // Reset streak to 0 if last completed sprint was before yesterday (missed a day)
+    if (lastDate !== today && lastDate !== yesterday) {
+      return 0;
+    }
+    return parseInt(saved, 10);
   });
 
   // Sprint State
@@ -117,10 +138,26 @@ export default function App() {
   };
 
   const finishSprint = (finalResults) => {
-    // Update daily streak
-    const newStreak = streak + 1;
+    const today = getTodayStr();
+    const yesterday = getYesterdayStr();
+    const lastDate = localStorage.getItem('kibo_math_last_date');
+
+    let newStreak = streak;
+
+    if (lastDate === today) {
+      // Already completed today: keep current streak intact (do not double increment)
+      newStreak = Math.max(1, streak);
+    } else if (lastDate === yesterday) {
+      // Completed yesterday: continue daily streak
+      newStreak = streak + 1;
+    } else {
+      // New streak or starting over after missing days
+      newStreak = 1;
+    }
+
     setStreak(newStreak);
     localStorage.setItem('kibo_math_streak', newStreak.toString());
+    localStorage.setItem('kibo_math_last_date', today);
 
     soundFx.playVictory();
     setMascotMood('celebrate');
