@@ -7,6 +7,7 @@ import WorkshopModal from './components/WorkshopModal';
 import PinGateModal from './components/PinGateModal';
 import ParentDashboardModal from './components/ParentDashboardModal';
 import SkillMapScreen from './components/SkillMapScreen';
+import QuitSprintModal from './components/QuitSprintModal';
 import { generateProblems } from './utils/mathGenerator';
 import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS } from './utils/curriculum';
 import { classifyLatency } from './utils/latencyEngine';
@@ -21,6 +22,7 @@ export default function App() {
   const [showSpeedInfoModal, setShowSpeedInfoModal] = useState(false);
   const [showPinGateModal, setShowPinGateModal] = useState(false);
   const [showParentDashboard, setShowParentDashboard] = useState(false);
+  const [showQuitModal, setShowQuitModal] = useState(false);
 
   const [levelUpReason, setLevelUpReason] = useState('');
   const [isBossMode, setIsBossMode] = useState(false);
@@ -65,11 +67,10 @@ export default function App() {
     return saved ? parseInt(saved, 10) : 1;
   });
 
-  // Persistent Unlocked Curriculum Tiers (Array of Tier numbers, default [1])
+  // Persistent Unlocked Curriculum Tiers
   const [unlockedTiers, setUnlockedTiers] = useState(() => {
     const saved = localStorage.getItem('kibo_math_unlocked_tiers');
     if (saved) return JSON.parse(saved);
-    // If active tier > 1, unlock all preceding
     const activeT = parseInt(localStorage.getItem('kibo_math_tier') || '1', 10);
     const arr = [];
     for (let i = 1; i <= Math.max(1, activeT); i++) arr.push(i);
@@ -125,12 +126,13 @@ export default function App() {
   const [isShaking, setIsShaking] = useState(false);
   const [earnedSparksInfo, setEarnedSparksInfo] = useState({ base: 0, bonus: 0, total: 0 });
 
-  // High precision latency measurement
+  // High precision latency measurement & pause ref
   const problemStartTimeRef = useRef(performance.now());
+  const pauseStartTimeRef = useRef(0);
 
   // Physical Keyboard listener
   useEffect(() => {
-    if (appState !== 'sprint') return;
+    if (appState !== 'sprint' || showQuitModal) return;
 
     const handleKeyDown = (e) => {
       if (e.key >= '0' && e.key <= '9') {
@@ -146,7 +148,7 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [appState, currentIndex, inputVal, problems]);
+  }, [appState, currentIndex, inputVal, problems, showQuitModal]);
 
   // Zero-Friction Auto-Submit logic
   const handleDigitInput = (digit) => {
@@ -208,6 +210,7 @@ export default function App() {
     setIsBossMode(asBossMode);
     setIsPlacementTest(false);
     setPlacementResultInfo(null);
+    setShowQuitModal(false);
     const count = asBossMode ? 25 : 20;
     const newProbs = generateProblems(count, tier, practiceQueue);
     setProblems(newProbs);
@@ -224,6 +227,7 @@ export default function App() {
     setIsPlacementTest(true);
     setIsBossMode(false);
     setPlacementResultInfo(null);
+    setShowQuitModal(false);
     const diagProbs = generatePlacementDiagnosticSet();
     setProblems(diagProbs);
     setCurrentIndex(0);
@@ -232,6 +236,28 @@ export default function App() {
     setMascotMood('happy');
     setAppState('sprint');
     problemStartTimeRef.current = performance.now();
+  };
+
+  // Pause / Resume / Quit Sprint Handlers
+  const handleOpenQuitModal = () => {
+    pauseStartTimeRef.current = performance.now();
+    setShowQuitModal(true);
+  };
+
+  const handleKeepPlaying = () => {
+    const pausedDuration = performance.now() - pauseStartTimeRef.current;
+    problemStartTimeRef.current += pausedDuration;
+    setShowQuitModal(false);
+  };
+
+  const handleQuitToHome = () => {
+    setShowQuitModal(false);
+    setProblems([]);
+    setResults([]);
+    setInputVal('');
+    setIsBossMode(false);
+    setIsPlacementTest(false);
+    setAppState('launch');
   };
 
   const finishSprint = (finalResults) => {
@@ -628,7 +654,19 @@ export default function App() {
                   </span>
                 )}
               </div>
-              <span className="text-kibo-teal font-extrabold">{Math.round(((currentIndex + 1) / problems.length) * 100)}%</span>
+
+              {/* Progress % + Subtle Quit Sprint "X" Button */}
+              <div className="flex items-center gap-2">
+                <span className="text-kibo-teal font-extrabold">{Math.round(((currentIndex + 1) / problems.length) * 100)}%</span>
+                <button
+                  onClick={handleOpenQuitModal}
+                  className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors rounded-lg"
+                  title="Quit Sprint"
+                  aria-label="Quit Sprint"
+                >
+                  <X className="w-5 h-5 stroke-[2.5]" />
+                </button>
+              </div>
             </div>
 
             <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
@@ -844,6 +882,13 @@ export default function App() {
           </div>
         </main>
       )}
+
+      {/* QUIT SPRINT CONFIRMATION MODAL */}
+      <QuitSprintModal
+        isOpen={showQuitModal}
+        onKeepPlaying={handleKeepPlaying}
+        onQuitToHome={handleQuitToHome}
+      />
 
       {/* PARENT PIN GATE MODAL */}
       <PinGateModal

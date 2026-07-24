@@ -1,34 +1,50 @@
-// Generates arithmetic problems based on count (20 or 25 for Boss Challenge), Tier (1 through 8), and practice queue
+// Generates deduplicated arithmetic problems with commutative protection for Kibo Math
 
-import { generateTierProblem } from './curriculum';
+import { generateTierProblem, getNormalizedProblemKey } from './curriculum';
 
 export function generateProblems(count = 20, tier = 1, practiceQueue = []) {
   const problems = [];
+  const seenKeys = new Set();
+
   const maxPracticeToInject = Math.min(6, practiceQueue.length);
 
   // 1. Inject queued practice items first
   for (let i = 0; i < maxPracticeToInject; i++) {
     const item = practiceQueue[i];
     if (item && item.num1 !== undefined) {
-      problems.push({
-        id: `practice-${i + 1}-${Date.now()}`,
-        num1: item.num1,
-        num2: item.num2,
-        operatorSymbol: item.operatorSymbol,
-        type: item.type,
-        answer: item.answer,
-        answerString: item.answer.toString(),
-        displayString: item.displayString || `${item.num1} ${item.operatorSymbol} ${item.num2}`,
-        isPracticeItem: true
-      });
+      const normKey = getNormalizedProblemKey(item);
+      if (!seenKeys.has(normKey)) {
+        seenKeys.add(normKey);
+        problems.push({
+          id: `practice-${i + 1}-${Date.now()}`,
+          num1: item.num1,
+          num2: item.num2,
+          operatorSymbol: item.operatorSymbol,
+          type: item.type,
+          answer: item.answer,
+          answerString: item.answer.toString(),
+          displayString: item.displayString || `${item.num1} ${item.operatorSymbol} ${item.num2}`,
+          isPracticeItem: true
+        });
+      }
     }
   }
 
-  // 2. Fill remaining set up to `count` based on requested Tier (1 through 8)
+  // 2. Fill remaining set up to `count` with deduplicated Tier problems
   const remainingCount = count - problems.length;
 
   for (let i = 0; i < remainingCount; i++) {
-    const probData = generateTierProblem(tier);
+    let probData;
+    let normKey;
+    let attempts = 0;
+
+    do {
+      probData = generateTierProblem(tier);
+      normKey = getNormalizedProblemKey(probData);
+      attempts++;
+    } while (seenKeys.has(normKey) && attempts < 60);
+
+    seenKeys.add(normKey);
 
     problems.push({
       id: `gen-${i + 1}-${Date.now()}`,
@@ -40,5 +56,5 @@ export function generateProblems(count = 20, tier = 1, practiceQueue = []) {
   return problems;
 }
 
-// Retain legacy export alias for backwards compatibility
+// Retain legacy export alias
 export const generate20Problems = (tier = 1, practiceQueue = []) => generateProblems(20, tier, practiceQueue);

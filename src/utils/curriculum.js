@@ -76,13 +76,29 @@ export const CURRICULUM_TIERS = [
   }
 ];
 
+// Helper to calculate normalized key for commutative protection and deduplication
+export function getNormalizedProblemKey(probData) {
+  const { num1, num2, operatorSymbol, displayString } = probData;
+
+  // Commutative protection for Addition (+) and Multiplication (×)
+  if (operatorSymbol === '+' || operatorSymbol === '×') {
+    if (typeof num1 === 'number' && typeof num2 === 'number') {
+      const minVal = Math.min(num1, num2);
+      const maxVal = Math.max(num1, num2);
+      return `${minVal}${operatorSymbol}${maxVal}`;
+    }
+  }
+
+  // Non-commutative operations (subtraction, division, missing addends, percentages, etc.)
+  return displayString || `${num1}${operatorSymbol}${num2}`;
+}
+
 // Problem generator per Tier
 export function generateTierProblem(tierLevel) {
   let num1, num2, answer, operatorSymbol, displayString;
 
   switch (tierLevel) {
     case 1: {
-      // Tier 1: Single-digit addition/subtraction
       const isAdd = Math.random() > 0.5;
       if (isAdd) {
         num1 = Math.floor(Math.random() * 9) + 1;
@@ -99,25 +115,21 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 2: {
-      // Tier 2: Crossing tens & missing addends
       const type = Math.random();
       if (type < 0.4) {
-        // Crossing tens add: e.g., 8+7
-        num1 = Math.floor(Math.random() * 5) + 5; // 5-9
-        num2 = Math.floor(Math.random() * 5) + 6; // 6-10
+        num1 = Math.floor(Math.random() * 5) + 5;
+        num2 = Math.floor(Math.random() * 5) + 6;
         answer = num1 + num2;
         operatorSymbol = '+';
         displayString = `${num1} ${operatorSymbol} ${num2}`;
       } else if (type < 0.7) {
-        // Crossing tens sub: e.g., 15-8
-        num1 = Math.floor(Math.random() * 9) + 11; // 11-19
-        num2 = Math.floor(Math.random() * 8) + 3;  // 3-10
+        num1 = Math.floor(Math.random() * 9) + 11;
+        num2 = Math.floor(Math.random() * 8) + 3;
         answer = num1 - num2;
         operatorSymbol = '−';
         displayString = `${num1} ${operatorSymbol} ${num2}`;
       } else {
-        // Missing addend: 7 + ? = 12
-        const total = Math.floor(Math.random() * 8) + 11; // 11-18
+        const total = Math.floor(Math.random() * 8) + 11;
         const known = Math.floor(Math.random() * (total - 3)) + 2;
         answer = total - known;
         num1 = known;
@@ -128,7 +140,6 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 3: {
-      // Tier 3: Core Multiplication (2, 5, 10)
       const tables = [2, 5, 10];
       num1 = tables[Math.floor(Math.random() * tables.length)];
       num2 = Math.floor(Math.random() * 9) + 1;
@@ -138,7 +149,6 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 4: {
-      // Tier 4: Complete Multiplication (3x through 12x)
       const tables = [3, 4, 6, 7, 8, 9, 11, 12];
       num1 = tables[Math.floor(Math.random() * tables.length)];
       num2 = Math.floor(Math.random() * 9) + 1;
@@ -148,25 +158,23 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 5: {
-      // Tier 5: Division Fact Families (e.g., 56 ÷ 8 = 7)
-      num2 = Math.floor(Math.random() * 9) + 2; // divisor 2 to 10
-      answer = Math.floor(Math.random() * 9) + 1; // quotient 1 to 9
-      num1 = num2 * answer; // dividend
+      num2 = Math.floor(Math.random() * 9) + 2;
+      answer = Math.floor(Math.random() * 9) + 1;
+      num1 = num2 * answer;
       operatorSymbol = '÷';
       displayString = `${num1} ${operatorSymbol} ${num2}`;
       break;
     }
     case 6: {
-      // Tier 6: Multi-Digit Mental Math (2-digit add/sub)
       const isAdd = Math.random() > 0.5;
       if (isAdd) {
-        num1 = Math.floor(Math.random() * 40) + 15; // 15-54
-        num2 = Math.floor(Math.random() * 40) + 15; // 15-54
+        num1 = Math.floor(Math.random() * 40) + 15;
+        num2 = Math.floor(Math.random() * 40) + 15;
         answer = num1 + num2;
         operatorSymbol = '+';
       } else {
-        num1 = Math.floor(Math.random() * 50) + 40; // 40-89
-        num2 = Math.floor(Math.random() * 30) + 12; // 12-41
+        num1 = Math.floor(Math.random() * 50) + 40;
+        num2 = Math.floor(Math.random() * 30) + 12;
         answer = num1 - num2;
         operatorSymbol = '−';
       }
@@ -174,10 +182,9 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 7: {
-      // Tier 7: Mental Percentages, Decimals & Fractions (e.g., 20% of 80 = 16, 0.25 × 4 = 1)
       const percentages = [10, 20, 25, 50, 75];
       const pct = percentages[Math.floor(Math.random() * percentages.length)];
-      const base = (Math.floor(Math.random() * 9) + 1) * 20; // 20, 40, ... 180
+      const base = (Math.floor(Math.random() * 9) + 1) * 20;
       answer = Math.round((pct / 100) * base);
       num1 = pct;
       num2 = base;
@@ -187,25 +194,21 @@ export function generateTierProblem(tierLevel) {
     }
     case 8:
     default: {
-      // Tier 8 (Final Peak): Squares, Roots & PEMDAS (6^2 = 36, sqrt(81) = 9, 4 + 3 * 5 = 19)
       const type = Math.random();
       if (type < 0.4) {
-        // Square: e.g., 6^2 = 36
-        const base = Math.floor(Math.random() * 9) + 2; // 2-10
+        const base = Math.floor(Math.random() * 9) + 2;
         num1 = base;
         num2 = 2;
         answer = base * base;
         operatorSymbol = '²';
         displayString = `${base}²`;
       } else if (type < 0.7) {
-        // Square Root: e.g., sqrt(81) = 9
-        answer = Math.floor(Math.random() * 9) + 2; // 2-10
+        answer = Math.floor(Math.random() * 9) + 2;
         num1 = answer * answer;
         num2 = 2;
         operatorSymbol = '√';
         displayString = `√${num1}`;
       } else {
-        // Simple PEMDAS: e.g., 4 + 3 * 5 = 19
         const a = Math.floor(Math.random() * 8) + 2;
         const b = Math.floor(Math.random() * 5) + 2;
         const c = Math.floor(Math.random() * 4) + 2;
@@ -229,13 +232,23 @@ export function generateTierProblem(tierLevel) {
   };
 }
 
-// Generate 10-Problem Placement Diagnostic Set (2 problems per Tier from Tier 1 to 5)
+// Generate 10-Problem Placement Diagnostic Set (deduplicated)
 export function generatePlacementDiagnosticSet() {
   const problems = [];
   const diagnosticTiers = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
+  const seenKeys = new Set();
 
   diagnosticTiers.forEach((tierLevel, idx) => {
-    const probData = generateTierProblem(tierLevel);
+    let probData;
+    let attempts = 0;
+    do {
+      probData = generateTierProblem(tierLevel);
+      attempts++;
+    } while (seenKeys.has(getNormalizedProblemKey(probData)) && attempts < 50);
+
+    const normKey = getNormalizedProblemKey(probData);
+    seenKeys.add(normKey);
+
     problems.push({
       id: `diag-${idx + 1}-${Date.now()}`,
       ...probData,
