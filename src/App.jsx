@@ -13,6 +13,7 @@ import WorldMap from './components/WorldMap';
 import PlacementTest from './components/PlacementTest';
 import PlacementRevealModal from './components/PlacementRevealModal';
 import MicroHintCard from './components/MicroHintCard';
+import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import { generateProblems } from './utils/mathGenerator';
 import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS } from './utils/curriculum';
 import { getItemById } from './utils/itemsCatalog';
@@ -32,6 +33,11 @@ export default function App() {
   const [showQuitModal, setShowQuitModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
+
+  // First-Time User Onboarding Modal State
+  const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
+    return !localStorage.getItem('kibo_math_has_onboarded') && !localStorage.getItem('kibo_math_tier');
+  });
 
   // Consecutive problem miss tracking for Micro-Hints
   const [consecutiveProblemMisses, setConsecutiveProblemMisses] = useState(0);
@@ -177,6 +183,22 @@ export default function App() {
       }
     }
   }, []);
+
+  // First-Time Launch Handlers
+  const handleStartAtTier1FromOnboarding = () => {
+    setTier(1);
+    setUnlockedTiers([1]);
+    localStorage.setItem('kibo_math_has_onboarded', 'true');
+    localStorage.setItem('kibo_math_tier', '1');
+    localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify([1]));
+    setShowFirstLaunchOnboardingModal(false);
+  };
+
+  const handleStartPlacementFromOnboarding = () => {
+    localStorage.setItem('kibo_math_has_onboarded', 'true');
+    setShowFirstLaunchOnboardingModal(false);
+    startPlacementDiagnostic();
+  };
 
   // Sprint State
   const [problems, setProblems] = useState([]);
@@ -331,6 +353,7 @@ export default function App() {
     setUnlockedTiers(newUnlocked);
     setSparks(updatedSparks);
 
+    localStorage.setItem('kibo_math_has_onboarded', 'true');
     localStorage.setItem('kibo_math_tier', placedTier.toString());
     localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(newUnlocked));
     localStorage.setItem('kibo_math_sparks', updatedSparks.toString());
@@ -1067,6 +1090,14 @@ export default function App() {
           </div>
         </main>
       )}
+
+      {/* FIRST LAUNCH ONBOARDING PLACEMENT MODAL */}
+      <FirstLaunchOnboardingModal
+        isOpen={showFirstLaunchOnboardingModal}
+        equippedItems={equippedItems}
+        onStartPlacementTest={handleStartPlacementFromOnboarding}
+        onStartAtTier1={handleStartAtTier1FromOnboarding}
+      />
 
       {/* TEST-OUT PASS CELEBRATION MODAL */}
       {showTestOutPassModal && (
