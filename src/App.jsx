@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck } from 'lucide-react';
+import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck, Compass, MapPin } from 'lucide-react';
 import Mascot from './components/Mascot';
 import Keypad from './components/Keypad';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
 import PinGateModal from './components/PinGateModal';
 import ParentDashboardModal from './components/ParentDashboardModal';
+import SkillMapScreen from './components/SkillMapScreen';
 import { generateProblems } from './utils/mathGenerator';
+import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS } from './utils/curriculum';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
 
 export default function App() {
-  // App State: 'launch' | 'sprint' | 'victory'
+  // App State: 'launch' | 'sprint' | 'victory' | 'skill_map'
   const [appState, setAppState] = useState('launch');
   const [isMuted, setIsMuted] = useState(false);
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
@@ -22,6 +24,8 @@ export default function App() {
 
   const [levelUpReason, setLevelUpReason] = useState('');
   const [isBossMode, setIsBossMode] = useState(false);
+  const [isPlacementTest, setIsPlacementTest] = useState(false);
+  const [placementResultInfo, setPlacementResultInfo] = useState(null);
 
   // Date helpers for calendar day streak tracking
   const getTodayStr = () => {
@@ -55,10 +59,21 @@ export default function App() {
     return saved ? parseInt(saved, 10) : 0;
   });
 
-  // Persistent Skill Tier (1, 2, 3)
+  // Persistent Active Skill Tier (1 through 8)
   const [tier, setTier] = useState(() => {
     const saved = localStorage.getItem('kibo_math_tier');
     return saved ? parseInt(saved, 10) : 1;
+  });
+
+  // Persistent Unlocked Curriculum Tiers (Array of Tier numbers, default [1])
+  const [unlockedTiers, setUnlockedTiers] = useState(() => {
+    const saved = localStorage.getItem('kibo_math_unlocked_tiers');
+    if (saved) return JSON.parse(saved);
+    // If active tier > 1, unlock all preceding
+    const activeT = parseInt(localStorage.getItem('kibo_math_tier') || '1', 10);
+    const arr = [];
+    for (let i = 1; i <= Math.max(1, activeT); i++) arr.push(i);
+    return arr;
   });
 
   // Persistent Parent PIN (Default 1234)
@@ -191,9 +206,26 @@ export default function App() {
   const startNewSprint = (asBossMode = false) => {
     soundFx.init();
     setIsBossMode(asBossMode);
+    setIsPlacementTest(false);
+    setPlacementResultInfo(null);
     const count = asBossMode ? 25 : 20;
     const newProbs = generateProblems(count, tier, practiceQueue);
     setProblems(newProbs);
+    setCurrentIndex(0);
+    setInputVal('');
+    setResults([]);
+    setMascotMood('happy');
+    setAppState('sprint');
+    problemStartTimeRef.current = performance.now();
+  };
+
+  const startPlacementDiagnostic = () => {
+    soundFx.init();
+    setIsPlacementTest(true);
+    setIsBossMode(false);
+    setPlacementResultInfo(null);
+    const diagProbs = generatePlacementDiagnosticSet();
+    setProblems(diagProbs);
     setCurrentIndex(0);
     setInputVal('');
     setResults([]);
@@ -206,6 +238,30 @@ export default function App() {
     const today = getTodayStr();
     const yesterday = getYesterdayStr();
     const lastDate = localStorage.getItem('kibo_math_last_date');
+
+    // Handle Placement Diagnostic Test finish
+    if (isPlacementTest) {
+      const placedTier = evaluatePlacementTier(finalResults);
+      const newUnlocked = [];
+      for (let i = 1; i <= Math.max(1, placedTier); i++) newUnlocked.push(i);
+
+      setTier(placedTier);
+      setUnlockedTiers(newUnlocked);
+      localStorage.setItem('kibo_math_tier', placedTier.toString());
+      localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(newUnlocked));
+
+      const tierMeta = CURRICULUM_TIERS.find((t) => t.tier === placedTier) || CURRICULUM_TIERS[0];
+      setPlacementResultInfo({
+        placedTier,
+        title: tierMeta.title,
+        location: tierMeta.location
+      });
+
+      soundFx.playVictory();
+      setMascotMood('celebrate');
+      setAppState('victory');
+      return;
+    }
 
     // 1. Streak update
     let newStreak = streak;
@@ -239,19 +295,20 @@ export default function App() {
     // 3. Update Practice Queue
     let updatedQueue = [...practiceQueue];
     finalResults.forEach((r) => {
-      const eqKey = `${r.problem.num1}${r.problem.operatorSymbol}${r.problem.num2}`;
+      const eqKey = r.problem.displayString || `${r.problem.num1}${r.problem.operatorSymbol}${r.problem.num2}`;
       if (!r.isCorrect || r.speedInfo.category === 'practice') {
-        if (!updatedQueue.some((p) => `${p.num1}${p.operatorSymbol}${p.num2}` === eqKey)) {
+        if (!updatedQueue.some((p) => (p.displayString || `${p.num1}${p.operatorSymbol}${p.num2}`) === eqKey)) {
           updatedQueue.push({
             num1: r.problem.num1,
             num2: r.problem.num2,
             operatorSymbol: r.problem.operatorSymbol,
+            displayString: r.problem.displayString,
             type: r.problem.type,
             answer: r.problem.answer
           });
         }
       } else {
-        updatedQueue = updatedQueue.filter((p) => `${p.num1}${p.operatorSymbol}${p.num2}` !== eqKey);
+        updatedQueue = updatedQueue.filter((p) => (p.displayString || `${p.num1}${p.operatorSymbol}${p.num2}`) !== eqKey);
       }
     });
 
@@ -268,7 +325,7 @@ export default function App() {
     let triggerLevelUp = false;
     let reasonText = '';
 
-    if (tier < 3) {
+    if (tier < 8) {
       if (isBossMode && accuracyPct >= 96 && avgLatencySec <= 2.0) {
         triggerLevelUp = true;
         reasonText = '⚡ Boss Challenge Passed! You achieved ≥96% accuracy and ≤2.0s average speed on the 25-problem test out!';
@@ -294,15 +351,27 @@ export default function App() {
   };
 
   const handleLevelUp = () => {
-    if (tier < 3) {
+    if (tier < 8) {
       const nextTier = tier + 1;
+      const updatedUnlocked = Array.from(new Set([...unlockedTiers, nextTier]));
       setTier(nextTier);
+      setUnlockedTiers(updatedUnlocked);
       localStorage.setItem('kibo_math_tier', nextTier.toString());
+      localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(updatedUnlocked));
       setSprintHistory([]);
       localStorage.setItem('kibo_math_sprint_history', JSON.stringify([]));
       setShowLevelUpModal(false);
       soundFx.playVictory();
     }
+  };
+
+  const handleSelectTierFromMap = (selectedTier) => {
+    const updatedUnlocked = Array.from(new Set([...unlockedTiers, selectedTier]));
+    setTier(selectedTier);
+    setUnlockedTiers(updatedUnlocked);
+    localStorage.setItem('kibo_math_tier', selectedTier.toString());
+    localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(updatedUnlocked));
+    setAppState('launch');
   };
 
   const toggleAudio = () => {
@@ -352,8 +421,11 @@ export default function App() {
   };
 
   const handleSetTierManual = (newTier) => {
+    const updatedUnlocked = Array.from(new Set([...unlockedTiers, newTier]));
     setTier(newTier);
+    setUnlockedTiers(updatedUnlocked);
     localStorage.setItem('kibo_math_tier', newTier.toString());
+    localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(updatedUnlocked));
   };
 
   // Stats Calculations for Victory Screen
@@ -394,11 +466,11 @@ export default function App() {
 
   const stats = calculateStats();
 
-  const getTierTitle = (t) => {
-    if (t === 1) return 'Tier 1: Single-Digit Math (1–9)';
-    if (t === 2) return 'Tier 2: Crossing the Tens (Regrouping)';
-    return 'Tier 3: Multiplication Tables';
+  const getTierMeta = (t) => {
+    return CURRICULUM_TIERS.find((item) => item.tier === t) || CURRICULUM_TIERS[0];
   };
+
+  const currentTierMeta = getTierMeta(tier);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 safe-pt safe-pb max-w-lg mx-auto relative overflow-hidden">
@@ -444,9 +516,20 @@ export default function App() {
         </div>
       </header>
 
+      {/* SKILL MAP SCREEN */}
+      {appState === 'skill_map' && (
+        <SkillMapScreen
+          currentTier={tier}
+          unlockedTiers={unlockedTiers}
+          onSelectTier={handleSelectTierFromMap}
+          onStartPlacementTest={startPlacementDiagnostic}
+          onBackToHome={() => setAppState('launch')}
+        />
+      )}
+
       {/* STATE 1: LAUNCH SCREEN (Default Child Play Dashboard) */}
       {appState === 'launch' && (
-        <main className="w-full flex-1 flex flex-col items-center justify-center gap-4 py-3 text-center animate-pop">
+        <main className="w-full flex-1 flex flex-col items-center justify-center gap-3.5 py-2 text-center animate-pop">
           {/* Top Badges Row */}
           <div className="flex items-center gap-2 flex-wrap justify-center">
             {/* Daily Streak Card */}
@@ -458,26 +541,31 @@ export default function App() {
             </div>
 
             {/* Current Tier Badge */}
-            <div className="flex items-center gap-1.5 px-4 py-1.5 bg-purple-50 border-2 border-purple-200 rounded-full shadow-sm">
+            <button
+              onClick={() => setAppState('skill_map')}
+              className="flex items-center gap-1.5 px-4 py-1.5 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-full shadow-sm active:scale-95 transition-all"
+            >
               <Layers className="w-5 h-5 text-purple-600 stroke-[2.5]" />
               <span className="font-extrabold text-purple-900 text-sm sm:text-base">
-                Tier {tier}
+                Tier {tier}: {currentTierMeta.title}
               </span>
-            </div>
+            </button>
           </div>
 
           {/* Mascot Header */}
           <div className="my-1 cursor-pointer" onClick={() => setIsWorkshopOpen(true)} title="Click to customize Kibo!">
-            <Mascot mood="happy" equipped={equippedItems} className="w-36 h-36 sm:w-40 sm:h-40" />
+            <Mascot mood="happy" equipped={equippedItems} className="w-32 h-32 sm:w-36 sm:h-36" />
           </div>
 
           <div className="space-y-1">
             <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">
               Ready for your Math Sprint?
             </h1>
-            <p className="text-purple-600 font-extrabold text-xs sm:text-sm bg-purple-50/80 px-3 py-1 rounded-xl inline-block border border-purple-200">
-              {getTierTitle(tier)}
-            </p>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-purple-700 font-extrabold text-xs bg-purple-50 px-3 py-1 rounded-xl border border-purple-200 flex items-center gap-1">
+                {currentTierMeta.icon} {currentTierMeta.subtitle}
+              </span>
+            </div>
             {practiceQueue.length > 0 && (
               <p className="text-amber-600 font-bold text-xs">
                 🎯 {practiceQueue.length} practice problem{practiceQueue.length > 1 ? 's' : ''} queued for recall!
@@ -486,32 +574,32 @@ export default function App() {
           </div>
 
           {/* Action Buttons */}
-          <div className="w-full max-w-xs space-y-2.5 mt-1">
+          <div className="w-full max-w-xs space-y-2 mt-1">
             <button
               onClick={() => startNewSprint(false)}
-              className="btn-3d-orange w-full py-4 text-xl sm:text-2xl rounded-2xl flex items-center justify-center gap-3 group shadow-bouncy-orange"
+              className="btn-3d-orange w-full py-3.5 text-xl sm:text-2xl rounded-2xl flex items-center justify-center gap-3 group shadow-bouncy-orange"
             >
-              <Play className="w-7 h-7 fill-white stroke-[2.5] group-hover:scale-110 transition-transform" />
-              Start 20-Problem Sprint
+              <Play className="w-6 h-6 fill-white stroke-[2.5] group-hover:scale-110 transition-transform" />
+              Start Sprint
             </button>
 
-            {tier < 3 && (
+            <button
+              onClick={() => setAppState('skill_map')}
+              className="btn-3d-purple w-full py-3 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
+            >
+              <Compass className="w-5 h-5 stroke-[2.5]" />
+              Skill Map & Roadmap 🗺️
+            </button>
+
+            {tier < 8 && (
               <button
                 onClick={() => startNewSprint(true)}
-                className="btn-3d-purple w-full py-3.5 text-base sm:text-lg rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
+                className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl border border-slate-300 flex items-center justify-center gap-1.5"
               >
-                <Swords className="w-5 h-5 stroke-[2.5]" />
+                <Swords className="w-4 h-4 text-purple-600 stroke-[2.5]" />
                 ⚡ Boss Challenge Test Out (25 Qs)
               </button>
             )}
-
-            <button
-              onClick={() => setIsWorkshopOpen(true)}
-              className="btn-3d-teal w-full py-3 text-base rounded-2xl flex items-center justify-center gap-2"
-            >
-              <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
-              Kibo's Workshop
-            </button>
           </div>
         </main>
       )}
@@ -524,12 +612,17 @@ export default function App() {
             <div className="flex justify-between items-center text-sm font-bold text-slate-600 px-1">
               <div className="flex items-center gap-2">
                 <span>Problem {currentIndex + 1} of {problems.length}</span>
+                {isPlacementTest && (
+                  <span className="text-[10px] uppercase font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md border border-amber-300">
+                    🎯 Diagnostic Test
+                  </span>
+                )}
                 {isBossMode && (
                   <span className="text-[10px] uppercase font-black bg-purple-100 text-purple-800 px-2 py-0.5 rounded-md border border-purple-300">
                     ⚡ Boss Challenge
                   </span>
                 )}
-                {problems[currentIndex].isPracticeItem && !isBossMode && (
+                {problems[currentIndex].isPracticeItem && !isBossMode && !isPlacementTest && (
                   <span className="text-[10px] uppercase font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md border border-amber-300">
                     Practice Recall
                   </span>
@@ -541,7 +634,9 @@ export default function App() {
             <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
               <div
                 className={`h-full rounded-full transition-all duration-300 shadow-sm ${
-                  isBossMode
+                  isPlacementTest
+                    ? 'bg-gradient-to-r from-amber-400 to-kibo-orange'
+                    : isBossMode
                     ? 'bg-gradient-to-r from-purple-500 to-kibo-orange'
                     : 'bg-gradient-to-r from-kibo-orange to-kibo-teal'
                 }`}
@@ -560,14 +655,12 @@ export default function App() {
                 isShaking ? 'animate-shake border-rose-400 bg-rose-50' : ''
               }`}
             >
-              <div className="text-4xl sm:text-5xl font-extrabold tracking-wider text-slate-800 flex items-center justify-center gap-3">
-                <span>{problems[currentIndex].num1}</span>
-                <span className="text-kibo-orange font-black">{problems[currentIndex].operatorSymbol}</span>
-                <span>{problems[currentIndex].num2}</span>
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-wider text-slate-800 flex items-center justify-center gap-3 flex-wrap">
+                <span>{problems[currentIndex].displayString || `${problems[currentIndex].num1} ${problems[currentIndex].operatorSymbol} ${problems[currentIndex].num2}`}</span>
                 <span className="text-slate-400 font-bold">=</span>
 
                 {/* Input Box Display */}
-                <span className="inline-block min-w-[70px] px-3 py-1 bg-amber-50 border-3 border-amber-300 rounded-xl text-kibo-teal text-4xl sm:text-5xl font-black shadow-inner">
+                <span className="inline-block min-w-[70px] px-3 py-1 bg-amber-50 border-3 border-amber-300 rounded-xl text-kibo-teal text-3xl sm:text-4xl font-black shadow-inner">
                   {inputVal ? inputVal : <span className="text-slate-300 font-normal animate-pulse">?</span>}
                 </span>
               </div>
@@ -597,12 +690,20 @@ export default function App() {
 
           <div className="space-y-0.5">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
-              {isBossMode ? 'Boss Challenge Complete! ⚡' : 'Sprint Complete! 🎉'}
+              {isPlacementTest ? 'Placement Test Complete! 🎯' : isBossMode ? 'Boss Challenge Complete! ⚡' : 'Sprint Complete! 🎉'}
             </h2>
-            <p className="text-amber-600 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5">
-              <Flame className="w-4 h-4 fill-amber-500 stroke-[2.5]" />
-              Streak: {streak} days | +{earnedSparksInfo.total} Sparks ⚡
-            </p>
+            {placementResultInfo ? (
+              <div className="bg-amber-100 border-2 border-amber-300 p-2.5 rounded-2xl max-w-sm mx-auto text-amber-950">
+                <span className="text-xs uppercase font-extrabold tracking-wider block">Diagnostic Result</span>
+                <span className="text-base font-black">Placed in Tier {placementResultInfo.placedTier}: {placementResultInfo.title}</span>
+                <span className="text-xs font-semibold block text-amber-800">Station: {placementResultInfo.location}</span>
+              </div>
+            ) : (
+              <p className="text-amber-600 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5">
+                <Flame className="w-4 h-4 fill-amber-500 stroke-[2.5]" />
+                Streak: {streak} days | +{earnedSparksInfo.total} Sparks ⚡
+              </p>
+            )}
           </div>
 
           {/* Speed Breakdown Container */}
@@ -632,17 +733,14 @@ export default function App() {
                   <div
                     style={{ width: `${(stats.superFastCount / stats.total) * 100}%` }}
                     className="bg-amber-400 h-full transition-all duration-500"
-                    title={`Super Fast: ${stats.superFastCount}`}
                   />
                   <div
                     style={{ width: `${(stats.fluentCount / stats.total) * 100}%` }}
                     className="bg-yellow-400 h-full transition-all duration-500"
-                    title={`Fluent: ${stats.fluentCount}`}
                   />
                   <div
                     style={{ width: `${(stats.practiceCount / stats.total) * 100}%` }}
                     className="bg-blue-400 h-full transition-all duration-500"
-                    title={`Needs Practice: ${stats.practiceCount}`}
                   />
                 </>
               )}
@@ -708,7 +806,7 @@ export default function App() {
                     <XCircle className="w-3.5 h-3.5 text-rose-500 stroke-[2.5]" />
                   )}
                   <span>
-                    #{i + 1}: {r.problem.num1} {r.problem.operatorSymbol} {r.problem.num2} = {r.problem.answer}
+                    #{i + 1}: {r.problem.displayString || `${r.problem.num1} ${r.problem.operatorSymbol} ${r.problem.num2}`} = {r.problem.answer}
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -730,8 +828,15 @@ export default function App() {
             </button>
 
             <button
+              onClick={() => setAppState('skill_map')}
+              className="btn-3d-purple w-full py-2.5 text-sm rounded-2xl flex items-center justify-center gap-2"
+            >
+              <Compass className="w-4 h-4 stroke-[2.5]" /> View Skill Map
+            </button>
+
+            <button
               onClick={() => setAppState('launch')}
-              className="w-full py-2 text-slate-600 hover:text-slate-900 font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm transition-colors"
+              className="w-full py-2 text-slate-600 hover:text-slate-900 font-extrabold rounded-2xl flex items-center justify-center gap-2 text-xs transition-colors"
             >
               <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
               Back to Home
@@ -834,7 +939,7 @@ export default function App() {
             </div>
 
             <div className="bg-purple-50 p-3 rounded-2xl border border-purple-200 text-purple-900 font-extrabold text-sm">
-              Unlock Tier {tier + 1}: {getTierTitle(tier + 1)}
+              Unlock Tier {tier + 1}: {getTierMeta(tier + 1).title}
             </div>
 
             <div className="space-y-2">

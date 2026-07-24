@@ -1,4 +1,6 @@
-// Generates arithmetic problems based on count (20 or 25 for Boss Challenge), Tier (1, 2, 3), and practice queue
+// Generates arithmetic problems based on count (20 or 25 for Boss Challenge), Tier (1 through 8), and practice queue
+
+import { generateTierProblem } from './curriculum';
 
 export function generateProblems(count = 20, tier = 1, practiceQueue = []) {
   const problems = [];
@@ -16,63 +18,21 @@ export function generateProblems(count = 20, tier = 1, practiceQueue = []) {
         type: item.type,
         answer: item.answer,
         answerString: item.answer.toString(),
+        displayString: item.displayString || `${item.num1} ${item.operatorSymbol} ${item.num2}`,
         isPracticeItem: true
       });
     }
   }
 
-  // 2. Fill remaining set up to `count` (20 or 25) based on Tier
+  // 2. Fill remaining set up to `count` based on requested Tier (1 through 8)
   const remainingCount = count - problems.length;
 
   for (let i = 0; i < remainingCount; i++) {
-    let num1, num2, answer, operatorSymbol, type;
-
-    if (tier === 1) {
-      // Tier 1: Single-Digit Addition & Subtraction (1 to 9)
-      type = Math.random() > 0.5 ? 'add' : 'sub';
-      if (type === 'add') {
-        num1 = Math.floor(Math.random() * 9) + 1;
-        num2 = Math.floor(Math.random() * 9) + 1;
-        answer = num1 + num2;
-        operatorSymbol = '+';
-      } else {
-        num1 = Math.floor(Math.random() * 9) + 1;
-        num2 = Math.floor(Math.random() * num1) + 1;
-        answer = num1 - num2;
-        operatorSymbol = '−';
-      }
-    } else if (tier === 2) {
-      // Tier 2: Crossing the Tens (e.g. 8+7=15, 15-8=7)
-      type = Math.random() > 0.5 ? 'add' : 'sub';
-      if (type === 'add') {
-        num1 = Math.floor(Math.random() * 5) + 5; // 5 to 9
-        num2 = Math.floor(Math.random() * 5) + 6; // 6 to 10
-        answer = num1 + num2;
-        operatorSymbol = '+';
-      } else {
-        num1 = Math.floor(Math.random() * 9) + 11; // 11 to 19
-        num2 = Math.floor(Math.random() * 8) + 3;  // 3 to 10
-        answer = num1 - num2;
-        operatorSymbol = '−';
-      }
-    } else {
-      // Tier 3: Multiplication Tables (2x, 5x, 10x, single-digit mul)
-      type = 'mul';
-      const tables = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-      num1 = tables[Math.floor(Math.random() * tables.length)];
-      num2 = Math.floor(Math.random() * 9) + 1;
-      answer = num1 * num2;
-      operatorSymbol = '×';
-    }
+    const probData = generateTierProblem(tier);
 
     problems.push({
       id: `gen-${i + 1}-${Date.now()}`,
-      num1,
-      num2,
-      operatorSymbol,
-      type,
-      answer,
-      answerString: answer.toString(),
+      ...probData,
       isPracticeItem: false
     });
   }
