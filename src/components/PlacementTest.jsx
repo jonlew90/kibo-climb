@@ -11,15 +11,13 @@ export default function PlacementTest({
   onQuitToHome
 }) {
   const [currentTierLevel, setCurrentTierLevel] = useState(1);
-  const [tierProblemCount, setTierProblemCount] = useState(0); // 0 or 1 (2 questions per tier block)
   const [currentProblem, setCurrentProblem] = useState(null);
   const [inputVal, setInputVal] = useState('');
   const [mascotMood, setMascotMood] = useState('happy');
   const [isShaking, setIsShaking] = useState(false);
 
-  // Tracking state for placement evaluation
+  // Tracking state for adaptive rules across Tiers 1-8
   const highestPassedTierRef = useRef(1);
-  const currentBlockResultsRef = useRef([]);
   const seenKeysRef = useRef(new Set());
   const problemStartTimeRef = useRef(performance.now());
   const questionNumberRef = useRef(1);
@@ -81,9 +79,6 @@ export default function PlacementTest({
     const latencySec = latencyMs / 1000;
     const isCorrect = userAnswerStr === prob.answerString;
 
-    // Record question result in current block
-    currentBlockResultsRef.current.push({ isCorrect, latencySec });
-
     if (isCorrect) {
       soundFx.playCorrect();
       setMascotMood('correct');
@@ -98,56 +93,44 @@ export default function PlacementTest({
       setMascotMood('happy');
       setInputVal('');
 
-      // Single question hard failure condition: error OR latency > 5.0s
+      // Single question failure condition: error OR latency > 5.0s
       if (!isCorrect || latencySec > 5.0) {
         finishDiagnosticTest();
         return;
       }
 
-      // Check if current 2-question tier block is complete
-      if (tierProblemCount === 1) {
-        const blockResults = currentBlockResultsRef.current;
-        const bothCorrect = blockResults.length === 2 && blockResults.every((r) => r.isCorrect);
-        const avgBlockLatency = (blockResults[0].latencySec + blockResults[1].latencySec) / 2;
-
-        // Pass Criteria for Tier Block: both correct AND avg latency < 3.5s
-        if (bothCorrect && avgBlockLatency < 3.5) {
-          highestPassedTierRef.current = currentTierLevel;
-
-          if (currentTierLevel < 5 && questionNumberRef.current < 10) {
-            const nextTier = currentTierLevel + 1;
-            questionNumberRef.current += 1;
-            setCurrentTierLevel(nextTier);
-            setTierProblemCount(0);
-            currentBlockResultsRef.current = [];
-
-            const nextProb = generateNextProblem(nextTier);
-            setCurrentProblem(nextProb);
-            problemStartTimeRef.current = performance.now();
-            return;
-          } else {
-            finishDiagnosticTest();
-            return;
-          }
-        } else {
-          // Failed block speed or accuracy
-          finishDiagnosticTest();
-          return;
-        }
-      } else {
-        // Continue to question 2 of the current tier block
-        questionNumberRef.current += 1;
-        setTierProblemCount(1);
-
-        const nextProb = generateNextProblem(currentTierLevel);
-        setCurrentProblem(nextProb);
-        problemStartTimeRef.current = performance.now();
+      // Update highest passed tier if correct with latency <= 3.5s
+      if (isCorrect && latencySec <= 3.5) {
+        highestPassedTierRef.current = Math.max(highestPassedTierRef.current, currentTierLevel);
       }
+
+      // Calculate next tier level with ultra-fast 2-tier jumping (< 2.5s)
+      let nextTier = currentTierLevel;
+      if (isCorrect && latencySec < 2.5) {
+        // Ultra-fast recall! Jump 2 tiers forward for advanced learners
+        nextTier = Math.min(8, currentTierLevel + 2);
+      } else if (isCorrect && latencySec <= 3.5) {
+        // Fluent recall! Advance 1 tier forward
+        nextTier = Math.min(8, currentTierLevel + 1);
+      }
+
+      // Test Completion Conditions: 8-10 questions reached or Tier 8 passed
+      if (questionNumberRef.current >= 8 || (currentTierLevel === 8 && isCorrect && latencySec <= 3.5)) {
+        finishDiagnosticTest();
+        return;
+      }
+
+      questionNumberRef.current += 1;
+      setCurrentTierLevel(nextTier);
+
+      const nextProb = generateNextProblem(nextTier);
+      setCurrentProblem(nextProb);
+      problemStartTimeRef.current = performance.now();
     }, isCorrect ? 200 : 450);
   };
 
   const finishDiagnosticTest = () => {
-    const placedTier = Math.min(5, Math.max(1, highestPassedTierRef.current));
+    const placedTier = Math.min(8, Math.max(1, highestPassedTierRef.current));
     soundFx.playVictory();
     onCompletePlacement(placedTier);
   };
@@ -163,7 +146,7 @@ export default function PlacementTest({
         <div className="flex justify-between items-center text-sm font-bold text-slate-600 px-1">
           <div className="flex items-center gap-2">
             <span className="text-xs font-black uppercase bg-amber-100 text-amber-900 px-2.5 py-1 rounded-full border border-amber-300 flex items-center gap-1">
-              <Target className="w-3.5 h-3.5 text-amber-600" /> Placement Q{questionNumberRef.current} / 10
+              <Target className="w-3.5 h-3.5 text-amber-600" /> Placement Q{questionNumberRef.current} / 8
             </span>
             <span className="text-xs font-extrabold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
               Tier {currentTierLevel}: {currentTierMeta.title}
@@ -183,7 +166,7 @@ export default function PlacementTest({
         <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
           <div
             className="h-full bg-gradient-to-r from-amber-400 via-orange-400 to-kibo-orange rounded-full transition-all duration-300 shadow-sm"
-            style={{ width: `${(questionNumberRef.current / 10) * 100}%` }}
+            style={{ width: `${(questionNumberRef.current / 8) * 100}%` }}
           />
         </div>
       </div>
