@@ -1,148 +1,256 @@
 import React from 'react';
 
-export default function Mascot({ mood = 'happy', equipped = [], className = 'w-24 h-24' }) {
-  // Normalize equipped to an array of item IDs
-  const isEquipped = (itemId) => Array.isArray(equipped) ? equipped.includes(itemId) : false;
+export default function Mascot({ mood = 'happy', equipped = [], className = "w-36 h-36" }) {
+  // Equipped item checks
+  const isEquipped = (itemId) => equipped.includes(itemId);
+
+  // Background Themes
+  const hasCosmicBg = isEquipped('bg_cosmic');
+  const hasSunsetBg = isEquipped('bg_sunset');
+
+  // Auras & FX
+  const hasRainbowAura = isEquipped('rainbow_aura');
+  const hasGoldenAura = isEquipped('golden_aura');
+  const hasGoldenSkin = isEquipped('golden_skin');
+
+  // Headwear
+  const hasCap = isEquipped('cap');
+  const hasPartyHat = isEquipped('party_hat');
+  const hasGoggles = isEquipped('goggles');
+  const hasWizardHat = isEquipped('wizard_hat');
+  const hasCrown = isEquipped('crown');
+
+  // Body Accessories
+  const hasBowtie = isEquipped('bowtie');
+  const hasCape = isEquipped('cape');
+  const hasHeadphones = isEquipped('headphones');
+  const hasJetpack = isEquipped('jetpack');
 
   return (
-    <div className={`relative inline-block ${className} animate-pulse-glow`}>
-      <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-md">
+    <div className={`relative flex items-center justify-center rounded-3xl overflow-hidden transition-all duration-300 ${className}`}>
+      {/* 1. BACKGROUND THEME LAYER */}
+      {hasCosmicBg && (
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-indigo-950 to-purple-950 flex items-center justify-center pointer-events-none">
+          <div className="absolute w-2 h-2 bg-white rounded-full top-3 left-4 animate-ping opacity-75" />
+          <div className="absolute w-1.5 h-1.5 bg-amber-200 rounded-full top-8 right-6 animate-pulse" />
+          <div className="absolute w-1 h-1 bg-cyan-200 rounded-full bottom-4 left-8 animate-pulse" />
+        </div>
+      )}
+      {hasSunsetBg && (
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-400 via-orange-400 to-rose-500 pointer-events-none" />
+      )}
+
+      {/* 2. AURA / FX GLOW LAYER */}
+      {hasRainbowAura && (
+        <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-rose-400 via-amber-300 via-emerald-300 via-sky-300 to-purple-400 opacity-60 blur-md animate-pulse pointer-events-none scale-110" />
+      )}
+      {hasGoldenAura && (
+        <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 opacity-70 blur-lg animate-pulse pointer-events-none scale-110" />
+      )}
+
+      {/* 3. BASE KIBO SVG & ACCESORIES */}
+      <svg
+        viewBox="0 0 200 200"
+        className="w-full h-full relative z-10 drop-shadow-md overflow-visible"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
-          <linearGradient id="kiboBody" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FF7E47" />
-            <stop offset="100%" stopColor="#E0531F" />
+          <linearGradient id="kiboBodyGrad" x1="100" y1="25" x2="100" y2="175" gradientUnits="userSpaceOnUse">
+            <stop stopColor={hasGoldenSkin ? "#FBBF24" : "#FF7E36"} />
+            <stop offset="1" stopColor={hasGoldenSkin ? "#D97706" : "#E04D00"} />
           </linearGradient>
-          <linearGradient id="kiboEars" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#FFE066" />
-            <stop offset="100%" stopColor="#F7B801" />
+          <linearGradient id="kiboEarsGrad" x1="100" y1="20" x2="100" y2="60" gradientUnits="userSpaceOnUse">
+            <stop stopColor={hasGoldenSkin ? "#FCD34D" : "#FF9B60"} />
+            <stop offset="1" stopColor={hasGoldenSkin ? "#B45309" : "#E04D00"} />
           </linearGradient>
-          <linearGradient id="capeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FF4757" />
-            <stop offset="100%" stopColor="#C0392B" />
-          </linearGradient>
-          <linearGradient id="crownGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#FFD700" />
-            <stop offset="100%" stopColor="#FFA500" />
-          </linearGradient>
-          <linearGradient id="capGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#00A896" />
-            <stop offset="100%" stopColor="#028090" />
-          </linearGradient>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
         </defs>
 
-        {/* --- BACK LAYER: SUPERHERO CAPE --- */}
-        {isEquipped('cape') && (
-          <g id="accessory-cape">
-            {/* Left Cape Fold */}
-            <path d="M 40 120 Q 15 150 10 185 Q 45 175 60 145 Z" fill="url(#capeGrad)" />
-            {/* Right Cape Fold */}
-            <path d="M 160 120 Q 185 150 190 185 Q 155 175 140 145 Z" fill="url(#capeGrad)" />
-            {/* Cape Collar Strap */}
-            <path d="M 50 130 Q 100 145 150 130" fill="none" stroke="#FFD700" strokeWidth="5" />
-            {/* Cape Crest Gem */}
-            <circle cx="100" cy="138" r="6" fill="#00A896" stroke="#FFD700" strokeWidth="2" />
+        {/* --- BACK ACCESSORIES LAYER --- */}
+        {/* Superhero Cape */}
+        {hasCape && (
+          <path
+            d="M 55 105 C 30 115 20 160 35 175 C 65 180 80 170 85 140 Z"
+            fill="#EF4444"
+            stroke="#991B1B"
+            strokeWidth="3.5"
+            strokeLinejoin="round"
+          />
+        )}
+
+        {/* Jetpack */}
+        {hasJetpack && (
+          <g>
+            <rect x="42" y="90" width="22" height="45" rx="8" fill="#64748B" stroke="#334155" strokeWidth="3" />
+            <rect x="136" y="90" width="22" height="45" rx="8" fill="#64748B" stroke="#334155" strokeWidth="3" />
+            {/* Jetpack Thruster Flames */}
+            <path d="M 47 135 L 53 155 L 59 135 Z" fill="#F59E0B" className="animate-bounce" />
+            <path d="M 141 135 L 147 155 L 153 135 Z" fill="#F59E0B" className="animate-bounce" />
           </g>
         )}
 
-        {/* Outer Head background circle */}
-        <circle cx="100" cy="108" r="76" fill="url(#kiboBody)" />
-
+        {/* --- BASE KIBO BODY GEOMETRY --- */}
         {/* Left Ear */}
-        <polygon points="35,65 15,10 65,35" fill="url(#kiboBody)" />
-        <polygon points="37,58 24,20 58,38" fill="url(#kiboEars)" />
+        <path
+          d="M 60 65 Q 25 35 48 20 Q 75 35 68 62"
+          fill="url(#kiboEarsGrad)"
+          stroke={hasGoldenSkin ? "#B45309" : "#C23A00"}
+          strokeWidth="4.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path d="M 54 55 Q 38 38 48 30 Q 62 38 58 53" fill={hasGoldenSkin ? "#FEF08A" : "#FFAE82"} />
 
         {/* Right Ear */}
-        <polygon points="165,65 185,10 135,35" fill="url(#kiboBody)" />
-        <polygon points="163,58 176,20 142,38" fill="url(#kiboEars)" />
+        <path
+          d="M 140 65 Q 175 35 152 20 Q 125 35 132 62"
+          fill="url(#kiboEarsGrad)"
+          stroke={hasGoldenSkin ? "#B45309" : "#C23A00"}
+          strokeWidth="4.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path d="M 146 55 Q 162 38 152 30 Q 138 38 142 53" fill={hasGoldenSkin ? "#FEF08A" : "#FFAE82"} />
 
-        {/* Cream Face patch */}
-        <ellipse cx="100" cy="120" rx="54" ry="46" fill="#FFFDF9" />
+        {/* Main Body/Head Oval */}
+        <ellipse
+          cx="100"
+          cy="110"
+          rx="62"
+          ry="58"
+          fill="url(#kiboBodyGrad)"
+          stroke={hasGoldenSkin ? "#B45309" : "#C23A00"}
+          strokeWidth="5"
+        />
 
-        {/* Cute Eyes based on mood */}
-        {mood === 'celebrate' || mood === 'correct' ? (
+        {/* Cream Muzzle */}
+        <ellipse cx="100" cy="122" rx="34" ry="24" fill={hasGoldenSkin ? "#FEF3C7" : "#FFF7ED"} />
+
+        {/* Nose */}
+        <ellipse cx="100" cy="111" rx="7" ry="5.5" fill="#292524" />
+
+        {/* --- EXPRESSIONS (Eyes & Mouth) --- */}
+        {mood === 'happy' && (
           <>
-            {/* Excited Happy Eyes ^ ^ */}
-            <path d="M 68 100 Q 80 82 92 100" fill="none" stroke="#1E293B" strokeWidth="7" strokeLinecap="round" />
-            <path d="M 108 100 Q 120 82 132 100" fill="none" stroke="#1E293B" strokeWidth="7" strokeLinecap="round" />
-          </>
-        ) : mood === 'incorrect' ? (
-          <>
-            {/* Oops Eyes > < */}
-            <path d="M 72 92 L 88 108 M 88 92 L 72 108" stroke="#1E293B" strokeWidth="6" strokeLinecap="round" />
-            <path d="M 112 92 L 128 108 M 128 92 L 112 108" stroke="#1E293B" strokeWidth="6" strokeLinecap="round" />
-          </>
-        ) : (
-          <>
-            {/* Standard Big Sparkly Eyes */}
-            <circle cx="78" cy="100" r="11" fill="#1E293B" />
-            <circle cx="122" cy="100" r="11" fill="#1E293B" />
-            <circle cx="81" cy="96" r="4.5" fill="#FFFFFF" />
-            <circle cx="125" cy="96" r="4.5" fill="#FFFFFF" />
+            <ellipse cx="78" cy="95" rx="6.5" ry="9" fill="#1C1917" />
+            <circle cx="80" cy="92" r="2.5" fill="white" />
+            <ellipse cx="122" cy="95" rx="6.5" ry="9" fill="#1C1917" />
+            <circle cx="124" cy="92" r="2.5" fill="white" />
+            <path d="M 91 120 Q 100 130 109 120" stroke="#292524" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+            <circle cx="66" cy="108" r="6" fill="#F43F5E" opacity="0.4" />
+            <circle cx="134" cy="108" r="6" fill="#F43F5E" opacity="0.4" />
           </>
         )}
 
-        {/* Cute Rosy Cheeks */}
-        <ellipse cx="60" cy="116" rx="9" ry="6" fill="#FF4081" opacity="0.6" />
-        <ellipse cx="140" cy="116" rx="9" ry="6" fill="#FF4081" opacity="0.6" />
-
-        {/* Cute Button Nose */}
-        <ellipse cx="100" cy="114" rx="7" ry="5" fill="#1E293B" />
-
-        {/* Smiling Mouth */}
-        <path d="M 90 123 Q 100 134 110 123" fill="none" stroke="#1E293B" strokeWidth="5" strokeLinecap="round" />
-
-        {/* Star Badge on forehead (hidden if wearing cap or crown) */}
-        {!isEquipped('cap') && !isEquipped('crown') && (
-          <path d="M 100 52 L 103 60 L 111 60 L 105 65 L 107 73 L 100 68 L 93 73 L 95 65 L 89 60 L 97 60 Z" fill="#F7B801" />
+        {mood === 'correct' && (
+          <>
+            <path d="M 70 94 Q 78 86 86 94" stroke="#1C1917" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+            <path d="M 114 94 Q 122 86 130 94" stroke="#1C1917" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+            <path d="M 88 118 Q 100 134 112 118 Z" fill="#F43F5E" stroke="#292524" strokeWidth="3" />
+            <circle cx="64" cy="108" r="7" fill="#F43F5E" opacity="0.5" />
+            <circle cx="136" cy="108" r="7" fill="#F43F5E" opacity="0.5" />
+          </>
         )}
 
-        {/* --- EYES ACCESSORY: AVIATOR GOGGLES --- */}
-        {isEquipped('goggles') && (
-          <g id="accessory-goggles">
-            {/* Goggles Leather Strap */}
-            <path d="M 26 88 Q 100 78 174 88" fill="none" stroke="#5D4037" strokeWidth="8" />
-            {/* Left Lens Frame */}
-            <circle cx="76" cy="94" r="19" fill="#1E293B" stroke="#D4AF37" strokeWidth="4" />
-            <circle cx="76" cy="94" r="14" fill="#00C9A7" opacity="0.75" />
-            <circle cx="72" cy="90" r="4" fill="#FFFFFF" opacity="0.8" />
+        {mood === 'incorrect' && (
+          <>
+            <path d="M 72 90 L 84 98" stroke="#1C1917" strokeWidth="4" strokeLinecap="round" />
+            <path d="M 84 90 L 72 98" stroke="#1C1917" strokeWidth="4" strokeLinecap="round" />
+            <path d="M 116 90 L 128 98" stroke="#1C1917" strokeWidth="4" strokeLinecap="round" />
+            <path d="M 128 90 L 116 98" stroke="#1C1917" strokeWidth="4" strokeLinecap="round" />
+            <path d="M 92 126 Q 100 118 108 126" stroke="#292524" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+            <path d="M 132 82 Q 138 78 135 70" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" fill="none" />
+          </>
+        )}
 
-            {/* Right Lens Frame */}
-            <circle cx="124" cy="94" r="19" fill="#1E293B" stroke="#D4AF37" strokeWidth="4" />
-            <circle cx="124" cy="94" r="14" fill="#00C9A7" opacity="0.75" />
-            <circle cx="120" cy="90" r="4" fill="#FFFFFF" opacity="0.8" />
+        {mood === 'celebrate' && (
+          <>
+            <path d="M 70 92 Q 78 82 86 92" stroke="#1C1917" strokeWidth="5" strokeLinecap="round" fill="none" />
+            <path d="M 114 92 Q 122 82 130 92" stroke="#1C1917" strokeWidth="5" strokeLinecap="round" fill="none" />
+            <path d="M 86 116 Q 100 136 114 116 Z" fill="#F43F5E" stroke="#292524" strokeWidth="3" />
+            <polygon points="100,75 103,82 110,83 105,88 106,95 100,91 94,95 95,88 90,83 97,82" fill="#F59E0B" />
+          </>
+        )}
 
-            {/* Bridge */}
-            <rect x="92" y="90" width="16" height="6" rx="3" fill="#D4AF37" />
+        {/* --- FRONT BODY ACCESSORIES LAYER --- */}
+        {/* Bowtie */}
+        {hasBowtie && (
+          <g>
+            <polygon points="86,134 100,140 86,146" fill="#DC2626" stroke="#7F1D1D" strokeWidth="2" />
+            <polygon points="114,134 100,140 114,146" fill="#DC2626" stroke="#7F1D1D" strokeWidth="2" />
+            <circle cx="100" cy="140" r="4" fill="#B91C1C" />
           </g>
         )}
 
-        {/* --- HEAD ACCESSORY: BASEBALL CAP --- */}
-        {isEquipped('cap') && (
-          <g id="accessory-cap">
-            {/* Dome of Cap */}
-            <path d="M 46 65 Q 100 20 154 65 Z" fill="url(#capGrad)" stroke="#01626E" strokeWidth="3" />
-            {/* Visor Brim */}
-            <path d="M 40 64 Q 100 48 160 64 Q 130 82 40 64 Z" fill="#FF6B35" stroke="#E0531F" strokeWidth="3" />
-            {/* Front Star Logo */}
-            <circle cx="100" cy="48" r="9" fill="#FFFDF9" />
-            <path d="M 100 43 L 102 47 L 106 47 L 103 50 L 104 54 L 100 51 L 96 54 L 97 50 L 94 47 L 98 47 Z" fill="#FF6B35" />
+        {/* Neon Headphones */}
+        {hasHeadphones && (
+          <g>
+            <path d="M 45 105 C 40 45 160 45 155 105" stroke="#06B6D4" strokeWidth="8" strokeLinecap="round" fill="none" />
+            <rect x="38" y="95" width="16" height="30" rx="6" fill="#0891B2" stroke="#164E63" strokeWidth="2.5" />
+            <rect x="146" y="95" width="16" height="30" rx="6" fill="#0891B2" stroke="#164E63" strokeWidth="2.5" />
           </g>
         )}
 
-        {/* --- HEAD ACCESSORY: ROYAL CROWN --- */}
-        {isEquipped('crown') && (
-          <g id="accessory-crown">
-            {/* Base Band */}
-            <path d="M 52 50 L 148 50 L 144 58 L 56 58 Z" fill="#DAA520" />
-            <rect x="52" y="52" width="96" height="7" rx="3.5" fill="url(#crownGrad)" stroke="#B8860B" strokeWidth="2" />
-            {/* 3 Crown Spikes */}
-            <polygon points="56,52 46,18 78,38 100,12 122,38 154,18 144,52" fill="url(#crownGrad)" stroke="#B8860B" strokeWidth="2.5" />
-            {/* Jewels on tips */}
-            <circle cx="46" cy="18" r="4.5" fill="#FF4757" />
-            <circle cx="100" cy="12" r="6" fill="#00A896" />
-            <circle cx="154" cy="18" r="4.5" fill="#FF4757" />
-            {/* Center Band Ruby */}
-            <polygon points="100,47 104,52 100,57 96,52" fill="#FF4757" />
+        {/* --- HEADWEAR LAYER --- */}
+        {/* Baseball Cap */}
+        {hasCap && (
+          <g>
+            <path d="M 52 75 C 52 42 148 42 148 75 Z" fill="#2563EB" stroke="#1E40AF" strokeWidth="3.5" />
+            <path d="M 40 75 Q 100 70 160 78 Q 110 85 40 75 Z" fill="#1D4ED8" stroke="#1E40AF" strokeWidth="3" />
+            <circle cx="100" cy="46" r="4" fill="#F59E0B" />
+          </g>
+        )}
+
+        {/* Party Hat */}
+        {hasPartyHat && (
+          <g>
+            <polygon points="100,15 70,72 130,72" fill="#EC4899" stroke="#9D174D" strokeWidth="3.5" />
+            <circle cx="100" cy="15" r="7" fill="#F59E0B" />
+            <circle cx="90" cy="45" r="4" fill="#3B82F6" />
+            <circle cx="110" cy="55" r="4" fill="#10B981" />
+          </g>
+        )}
+
+        {/* Aviator Goggles */}
+        {hasGoggles && (
+          <g>
+            <rect x="52" y="78" width="42" height="24" rx="8" fill="#F59E0B" stroke="#B45309" strokeWidth="3" />
+            <rect x="106" y="78" width="42" height="24" rx="8" fill="#F59E0B" stroke="#B45309" strokeWidth="3" />
+            <rect x="56" y="82" width="34" height="16" rx="5" fill="#38BDF8" opacity="0.8" />
+            <rect x="110" y="82" width="34" height="16" rx="5" fill="#38BDF8" opacity="0.8" />
+            <line x1="94" y1="90" x2="106" y2="90" stroke="#78350F" strokeWidth="5" />
+            <line x1="38" y1="90" x2="52" y2="90" stroke="#78350F" strokeWidth="4" />
+            <line x1="148" y1="90" x2="162" y2="90" stroke="#78350F" strokeWidth="4" />
+          </g>
+        )}
+
+        {/* Wizard Hat */}
+        {hasWizardHat && (
+          <g>
+            <path d="M 35 72 Q 100 66 165 72 Q 100 80 35 72 Z" fill="#6B21A8" stroke="#4C1D95" strokeWidth="3" />
+            <polygon points="100,10 65,70 135,70" fill="#7E22CE" stroke="#4C1D95" strokeWidth="3.5" />
+            <polygon points="100,28 103,34 110,35 105,40 106,47 100,43 94,47 95,40 90,35 97,34" fill="#F59E0B" />
+          </g>
+        )}
+
+        {/* Gold Crown */}
+        {hasCrown && (
+          <g filter="url(#glow)">
+            <path
+              d="M 60 70 L 65 38 L 82 55 L 100 30 L 118 55 L 135 38 L 140 70 Z"
+              fill="#F59E0B"
+              stroke="#B45309"
+              strokeWidth="3.5"
+              strokeLinejoin="round"
+            />
+            <circle cx="65" cy="36" r="4.5" fill="#EF4444" />
+            <circle cx="100" cy="28" r="5.5" fill="#3B82F6" />
+            <circle cx="135" cy="36" r="4.5" fill="#10B981" />
+            <rect x="62" y="64" width="76" height="8" rx="2" fill="#D97706" />
           </g>
         )}
       </svg>

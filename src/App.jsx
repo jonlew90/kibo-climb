@@ -10,6 +10,7 @@ import SkillMapScreen from './components/SkillMapScreen';
 import QuitSprintModal from './components/QuitSprintModal';
 import { generateProblems } from './utils/mathGenerator';
 import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS } from './utils/curriculum';
+import { getItemById } from './utils/itemsCatalog';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
 
@@ -124,7 +125,13 @@ export default function App() {
   const [results, setResults] = useState([]);
   const [mascotMood, setMascotMood] = useState('happy');
   const [isShaking, setIsShaking] = useState(false);
-  const [earnedSparksInfo, setEarnedSparksInfo] = useState({ base: 0, bonus: 0, total: 0 });
+  const [earnedSparksInfo, setEarnedSparksInfo] = useState({
+    base: 0,
+    accuracyBonus: 0,
+    speedBonus: 0,
+    multiplier: 1.0,
+    total: 0
+  });
 
   // High precision latency measurement & pause ref
   const problemStartTimeRef = useRef(performance.now());
@@ -304,20 +311,31 @@ export default function App() {
     localStorage.setItem('kibo_math_streak', newStreak.toString());
     localStorage.setItem('kibo_math_last_date', today);
 
-    // 2. Spark Reward Calculation (Base: 10/20, Bonus: 5 for 100% accuracy)
+    // 2. Enhanced Spark Reward Calculation
     const correctCount = finalResults.filter((r) => r.isCorrect).length;
     const accuracyPct = Math.round((correctCount / finalResults.length) * 100);
     const totalLatencyMs = finalResults.reduce((acc, r) => acc + r.latencyMs, 0);
     const avgLatencySec = parseFloat((totalLatencyMs / (finalResults.length * 1000)).toFixed(2));
 
     const baseSparks = isBossMode ? 20 : 10;
-    const bonusSparks = accuracyPct === 100 ? 5 : 0;
-    const totalEarned = baseSparks + bonusSparks;
+    const accuracyBonusSparks = accuracyPct === 100 ? 10 : 0;
+    const speedBonusSparks = avgLatencySec < 2.0 ? 5 : 0;
+    const subtotalSparks = baseSparks + accuracyBonusSparks + speedBonusSparks;
+
+    // 5+ Day Streak Multiplier (1.5x)
+    const hasStreakMultiplier = newStreak >= 5;
+    const totalEarned = hasStreakMultiplier ? Math.floor(subtotalSparks * 1.5) : subtotalSparks;
 
     const newSparkBalance = sparks + totalEarned;
     setSparks(newSparkBalance);
     localStorage.setItem('kibo_math_sparks', newSparkBalance.toString());
-    setEarnedSparksInfo({ base: baseSparks, bonus: bonusSparks, total: totalEarned });
+    setEarnedSparksInfo({
+      base: baseSparks,
+      accuracyBonus: accuracyBonusSparks,
+      speedBonus: speedBonusSparks,
+      multiplier: hasStreakMultiplier ? 1.5 : 1.0,
+      total: totalEarned
+    });
 
     // 3. Update Practice Queue
     let updatedQueue = [...practiceQueue];
@@ -406,13 +424,21 @@ export default function App() {
     setIsMuted(muted);
   };
 
-  // Workshop Actions
+  // Workshop Actions (Slot-Based Equipping)
   const handleBuyItem = (item) => {
     if (sparks < item.cost) return;
 
     const updatedSparks = sparks - item.cost;
-    const updatedUnlocked = [...unlockedItems, item.id];
-    const updatedEquipped = [...equippedItems, item.id];
+    const updatedUnlocked = Array.from(new Set([...unlockedItems, item.id]));
+
+    // Slot-based equip: replace active item in same category slot
+    const currentSlotCat = item.category;
+    const filteredSameSlot = equippedItems.filter((id) => {
+      const equippedItem = getItemById(id);
+      return equippedItem ? equippedItem.category !== currentSlotCat : true;
+    });
+
+    const updatedEquipped = [...filteredSameSlot, item.id];
 
     setSparks(updatedSparks);
     setUnlockedItems(updatedUnlocked);
@@ -424,12 +450,20 @@ export default function App() {
   };
 
   const handleToggleEquip = (itemId) => {
+    const targetItem = getItemById(itemId);
     let updatedEquipped;
+
     if (equippedItems.includes(itemId)) {
       updatedEquipped = equippedItems.filter((id) => id !== itemId);
     } else {
-      updatedEquipped = [...equippedItems, itemId];
+      const currentSlotCat = targetItem ? targetItem.category : null;
+      const filteredSameSlot = equippedItems.filter((id) => {
+        const item = getItemById(id);
+        return item ? item.category !== currentSlotCat : true;
+      });
+      updatedEquipped = [...filteredSameSlot, itemId];
     }
+
     setEquippedItems(updatedEquipped);
     localStorage.setItem('kibo_math_equipped', JSON.stringify(updatedEquipped));
   };
@@ -749,10 +783,18 @@ export default function App() {
                 <span className="text-xs font-semibold block text-amber-800">Station: {placementResultInfo.location}</span>
               </div>
             ) : (
-              <p className="text-amber-600 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5">
-                <Flame className="w-4 h-4 fill-amber-500 stroke-[2.5]" />
-                Streak: {streak} days | +{earnedSparksInfo.total} Sparks ⚡
-              </p>
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 p-2.5 rounded-2xl max-w-sm mx-auto space-y-1 shadow-sm">
+                <p className="text-amber-900 font-extrabold text-sm flex items-center justify-center gap-1.5">
+                  <Flame className="w-4 h-4 fill-amber-500 stroke-[2.5]" />
+                  Streak: {streak} days | Total Earned: +{earnedSparksInfo.total} Sparks ⚡
+                </p>
+                <div className="text-[11px] font-semibold text-slate-600 flex items-center justify-center gap-2 flex-wrap border-t border-amber-200/60 pt-1">
+                  <span>Base: +{earnedSparksInfo.base}⚡</span>
+                  {earnedSparksInfo.accuracyBonus > 0 && <span className="text-emerald-700 font-bold">+10 100% Acc</span>}
+                  {earnedSparksInfo.speedBonus > 0 && <span className="text-amber-700 font-bold">+5 Lightning</span>}
+                  {earnedSparksInfo.multiplier > 1 && <span className="text-purple-700 font-black bg-purple-100 px-1.5 rounded">1.5x Streak Boost!🔥</span>}
+                </div>
+              </div>
             )}
           </div>
 
