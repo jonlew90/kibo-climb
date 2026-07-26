@@ -41,6 +41,30 @@ export const MATH_TRICKS = {
     summary: 'For single digits 1 to 9, write the digit twice!',
     example: '11 × 6: Write 6 twice to get 66!'
   },
+  lcm_trick: {
+    id: 'lcm_trick',
+    title: 'Summit Sync (LCM)!',
+    icon: '🏔️',
+    badge: 'LCM Shortcut',
+    summary: 'Skip-count the LARGER number until the smaller number divides into it!',
+    example: 'LCM(4, 6): Count 6, 12... 12 divides by 4! LCM is 12.'
+  },
+  gcf_trick: {
+    id: 'gcf_trick',
+    title: 'Difference Trick (GCF)!',
+    icon: '📐',
+    badge: 'GCF Shortcut',
+    summary: 'Subtract the two numbers! The difference (or one of its factors) is the GCF!',
+    example: 'GCF(12, 18): 18 - 12 = 6. Since 6 divides both 12 and 18, GCF is 6!'
+  },
+  divisibility_3: {
+    id: 'divisibility_3',
+    title: 'Digit Sum Rule for 3s!',
+    icon: '✨',
+    badge: 'Divisibility Rule',
+    summary: 'Add all the digits together! If the sum divides by 3, the whole number does too!',
+    example: '144: 1 + 4 + 4 = 9. Since 9 is divisible by 3, 144 is divisible by 3!'
+  },
   squares: {
     id: 'squares',
     title: 'Perfect Square Twins!',
@@ -52,13 +76,22 @@ export const MATH_TRICKS = {
 };
 
 /**
- * Returns a relevant trick based on an equation string (e.g. "9 x 6 = 54" or "9 x 4")
+ * Returns a relevant trick based on an equation string
  */
 export function getTrickForProblem(problemStr) {
   if (!problemStr) return MATH_TRICKS.mult_9;
 
   const str = String(problemStr).toLowerCase();
 
+  if (str.includes('lcm')) {
+    return MATH_TRICKS.lcm_trick;
+  }
+  if (str.includes('gcf')) {
+    return MATH_TRICKS.gcf_trick;
+  }
+  if (str.includes('divisible') || str.includes('÷ 3')) {
+    return MATH_TRICKS.divisibility_3;
+  }
   if (str.includes('9 x') || str.includes('x 9') || str.includes('9 ×') || str.includes('× 9')) {
     return MATH_TRICKS.mult_9;
   }
@@ -87,7 +120,9 @@ export function getTrickForTier(tierId) {
   if (t === 2) return MATH_TRICKS.mult_4;
   if (t === 3) return MATH_TRICKS.mult_5;
   if (t === 4) return MATH_TRICKS.mult_9;
-  if (t === 5) return MATH_TRICKS.squares;
+  if (t === 5) return MATH_TRICKS.divisibility_3;
   if (t === 6) return MATH_TRICKS.mult_11;
+  if (t === 7) return MATH_TRICKS.lcm_trick;
+  if (t === 8) return MATH_TRICKS.gcf_trick;
   return MATH_TRICKS.mult_9;
 }
