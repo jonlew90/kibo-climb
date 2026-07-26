@@ -51,21 +51,55 @@ export default function WorkshopModal({
   onBuyItem,
   onToggleEquip
 }) {
+  const INITIAL_PREVIEW_SLOTS = {
+    headwear: null,
+    gear: null,
+    outfits: null,
+    effects: null,
+    background: null
+  };
+
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortMode, setSortMode] = useState('recommended'); // 'recommended' | 'rarity' | 'inventory'
-  const [previewEquipped, setPreviewEquipped] = useState(equippedItems);
+  const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
 
-  // Synchronize previewEquipped when equippedItems change externally
+  // Reset preview slots when modal opens
   useEffect(() => {
-    setPreviewEquipped(equippedItems);
-  }, [equippedItems, isOpen]);
+    if (isOpen) {
+      setPreviewSlots(INITIAL_PREVIEW_SLOTS);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
+  // Compute active stage items (merges saved equipped items with active preview slots)
+  const computeStageEquipped = () => {
+    const stageItems = [];
+
+    ['headwear', 'gear', 'outfits', 'effects', 'background'].forEach((cat) => {
+      if (previewSlots[cat] !== null && previewSlots[cat] !== undefined) {
+        if (previewSlots[cat]) {
+          stageItems.push(previewSlots[cat]);
+        }
+      } else {
+        const savedItemInCat = equippedItems.find((id) => {
+          const item = getItemById(id);
+          return item ? item.category === cat : false;
+        });
+        if (savedItemInCat) {
+          stageItems.push(savedItemInCat);
+        }
+      }
+    });
+
+    return stageItems;
+  };
+
+  const stageEquippedItems = computeStageEquipped();
   const currentCategoryItems = getItemsByCategory(activeCategory);
 
   // Check if any unowned item is currently being previewed on the mascot
-  const hasUnownedPreview = previewEquipped.some((id) => !unlockedItems.includes(id));
+  const hasUnownedPreview = stageEquippedItems.some((id) => !unlockedItems.includes(id));
 
   const handleCategorySelect = (catId) => {
     soundFx.playKeyTap();
@@ -74,23 +108,18 @@ export default function WorkshopModal({
 
   const handleResetPreview = () => {
     soundFx.playKeyTap();
-    setPreviewEquipped([...equippedItems]);
+    setPreviewSlots(INITIAL_PREVIEW_SLOTS);
   };
 
   const handlePreviewToggle = (item) => {
     if (item.isConsumable) return;
     soundFx.playKeyTap();
-    const currentSlotCat = item.category;
+    const cat = item.category;
 
-    if (previewEquipped.includes(item.id)) {
-      setPreviewEquipped((prev) => prev.filter((id) => id !== item.id));
-    } else {
-      const filteredSameSlot = previewEquipped.filter((id) => {
-        const equippedItem = getItemById(id);
-        return equippedItem ? equippedItem.category !== currentSlotCat : true;
-      });
-      setPreviewEquipped([...filteredSameSlot, item.id]);
-    }
+    setPreviewSlots((prev) => ({
+      ...prev,
+      [cat]: prev[cat] === item.id ? false : item.id
+    }));
   };
 
   const handleBuy = (item) => {
@@ -98,12 +127,11 @@ export default function WorkshopModal({
       soundFx.playVictory();
       onBuyItem(item);
       if (!item.isConsumable) {
-        const currentSlotCat = item.category;
-        const filteredSameSlot = previewEquipped.filter((id) => {
-          const equippedItem = getItemById(id);
-          return equippedItem ? equippedItem.category !== currentSlotCat : true;
-        });
-        setPreviewEquipped([...filteredSameSlot, item.id]);
+        const cat = item.category;
+        setPreviewSlots((prev) => ({
+          ...prev,
+          [cat]: item.id
+        }));
       }
     } else {
       soundFx.playIncorrect();
@@ -151,7 +179,7 @@ export default function WorkshopModal({
 
         {/* Live Try-On Preview Mascot Stage Header */}
         <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3 flex items-center justify-around shrink-0 shadow-inner relative">
-          <Mascot mood="happy" equipped={previewEquipped} className="w-24 h-24 sm:w-28 sm:h-28" />
+          <Mascot mood="happy" equipped={stageEquippedItems} className="w-24 h-24 sm:w-28 sm:h-28" />
 
           <div className="text-left space-y-1.5 max-w-[195px]">
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -232,7 +260,7 @@ export default function WorkshopModal({
             const isShieldFull = isConsumable && item.id === 'kibo_shield' && streakShields >= 2;
             const isUnlocked = isConsumable ? false : unlockedItems.includes(item.id);
             const isEquippedInApp = equippedItems.includes(item.id);
-            const isPreviewedOnStage = previewEquipped.includes(item.id);
+            const isPreviewedOnStage = stageEquippedItems.includes(item.id);
             const canAfford = sparks >= item.cost;
             const shortfall = item.cost - sparks;
             const rarityInfo = RARITY_TIERS[item.rarity] || RARITY_TIERS.common;
