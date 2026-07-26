@@ -469,7 +469,11 @@ export default function App() {
             operatorSymbol: r.problem.operatorSymbol,
             displayString: r.problem.displayString,
             type: r.problem.type,
-            answer: r.problem.answer
+            answer: r.problem.answer,
+            reason: !r.isCorrect ? 'ERROR' : 'LATENCY',
+            latencyMs: r.latencyMs,
+            tier: tier,
+            timestamp: Date.now()
           });
         }
       } else {
@@ -1224,6 +1228,7 @@ export default function App() {
         streak={streak}
         sparks={sparks}
         practiceQueueCount={practiceQueue.length}
+        practiceQueue={practiceQueue}
         sprintHistory={sprintHistory}
         practiceDays={practiceDays}
         onUpdatePracticeDays={handleUpdatePracticeDays}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target } from 'lucide-react';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 
@@ -26,6 +26,7 @@ export default function ParentDashboardModal({
   streak,
   sparks,
   practiceQueueCount,
+  practiceQueue = [],
   sprintHistory,
   practiceDays = [1, 2, 3, 4, 5],
   onUpdatePracticeDays
@@ -182,15 +183,62 @@ export default function ParentDashboardModal({
               </p>
             </div>
 
-            {/* Practice Queue Info */}
-            <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-3 flex items-center justify-between text-xs text-left">
-              <div>
-                <span className="font-extrabold text-amber-900 block">Queued Practice Items</span>
-                <span className="text-amber-800 font-medium">Problems flagged for targeted recall speed.</span>
+            {/* Target Facts for Review Section */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2 text-left">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <Target className="w-5 h-5 stroke-[2.5]" />
+                  <h4 className="font-extrabold text-sm text-slate-800">Target Facts for Review</h4>
+                </div>
+                <span className="text-xs font-extrabold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
+                  {practiceQueue ? practiceQueue.length : practiceQueueCount} Queued
+                </span>
               </div>
-              <span className="text-lg font-black text-amber-900 bg-white px-3 py-1 rounded-xl border border-amber-200 shadow-sm">
-                {practiceQueueCount}
-              </span>
+
+              {!practiceQueue || practiceQueue.length === 0 ? (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-semibold leading-relaxed flex items-center gap-2">
+                  <span className="text-base">🎉</span>
+                  <span>No problem facts queued! Your child is mastering their current tier facts with high speed and accuracy.</span>
+                </div>
+              ) : (
+                <div className="space-y-1.5 pt-1">
+                  {practiceQueue.slice(0, 5).map((item, idx) => {
+                    const isError = item.reason === 'ERROR' || !item.reason;
+                    const eqStr = item.displayString || `${item.num1} ${item.operatorSymbol || '×'} ${item.num2} = ${item.answer}`;
+
+                    return (
+                      <div key={idx} className="flex justify-between items-center bg-white border border-slate-200 rounded-xl p-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-slate-800 text-sm">{eqStr}</span>
+                          {item.tier && (
+                            <span className="text-[10px] font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                              T{item.tier}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {isError ? (
+                            <span className="text-[10px] font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200 flex items-center gap-1">
+                              🔴 Needs Accuracy
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center gap-1">
+                              🟡 Building Speed
+                            </span>
+                          )}
+
+                          {item.latencyMs && (
+                            <span className="font-mono text-[10px] text-slate-400">
+                              {(item.latencyMs / 1000).toFixed(1)}s
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Sprint Performance History */}
