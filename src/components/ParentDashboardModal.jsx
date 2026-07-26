@@ -224,6 +224,40 @@ export default function ParentDashboardModal({
               )}
             </div>
 
+            {/* Skill Domain Breakdown */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2 text-left">
+              <div className="flex items-center gap-2 text-purple-700">
+                <Sparkles className="w-5 h-5 stroke-[2.5]" />
+                <h4 className="font-extrabold text-sm text-slate-800">Skill Domain Breakdown</h4>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-white border border-slate-200 p-2.5 rounded-xl space-y-0.5">
+                  <span className="font-extrabold text-slate-800 block text-[11px]">🪙 Money & Time</span>
+                  <span className="text-[10px] text-emerald-700 font-extrabold block">Coins, Change & Clock Jumps</span>
+                  <span className="text-[9px] text-slate-500 font-medium">Tiers 2, 3 & 6</span>
+                </div>
+
+                <div className="bg-white border border-slate-200 p-2.5 rounded-xl space-y-0.5">
+                  <span className="font-extrabold text-slate-800 block text-[11px]">🏔️ Number Theory</span>
+                  <span className="text-[10px] text-purple-700 font-extrabold block">LCM, GCF & Divisibility</span>
+                  <span className="text-[9px] text-slate-500 font-medium">Tiers 5 & 7</span>
+                </div>
+
+                <div className="bg-white border border-slate-200 p-2.5 rounded-xl space-y-0.5">
+                  <span className="font-extrabold text-slate-800 block text-[11px]">⚡ Advanced Math</span>
+                  <span className="text-[10px] text-amber-700 font-extrabold block">Exponents, Roots & PEMDAS</span>
+                  <span className="text-[9px] text-slate-500 font-medium">Tier 8 Peak</span>
+                </div>
+
+                <div className="bg-white border border-slate-200 p-2.5 rounded-xl space-y-0.5">
+                  <span className="font-extrabold text-slate-800 block text-[11px]">🎯 Fact Fluency</span>
+                  <span className="text-[10px] text-sky-700 font-extrabold block">Addition & Multiplication</span>
+                  <span className="text-[9px] text-slate-500 font-medium">Tiers 1, 2, 3 & 4</span>
+                </div>
+              </div>
+            </div>
+
             {/* Sprint Performance History */}
             <div className="space-y-1.5 text-left">
               <span className="text-xs uppercase font-extrabold text-slate-600 tracking-wider block">

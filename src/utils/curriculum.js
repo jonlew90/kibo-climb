@@ -12,22 +12,22 @@ export const CURRICULUM_TIERS = [
   },
   {
     tier: 2,
-    tierTitle: 'Tier 2: Crossing Tens & Missing Addends',
-    title: 'Crossing the Tens',
-    subtitle: 'Regrouping & Missing Addends',
+    tierTitle: 'Tier 2: Crossing Tens & Clock Basics',
+    title: 'Crossing Tens & Time Basics',
+    subtitle: 'Regrouping, Missing Addends & Time',
     location: 'Forest Trail',
     icon: '🌲',
     color: 'from-amber-400 to-orange-500',
-    description: 'Cross the tens boundary (8+7=15) and solve missing addends (7+?=12).'
+    description: 'Cross the tens boundary (8+7=15), missing addends, and read clock times.'
   },
   {
     tier: 3,
-    title: 'Core Multiplication',
-    subtitle: '2×, 5×, and 10× Tables',
+    title: 'Core Multiplication & Money',
+    subtitle: '2×, 5×, 10× Tables & Coin Counting',
     location: 'Multiplication River',
     icon: '🌊',
     color: 'from-blue-400 to-cyan-500',
-    description: 'Build core multiplication table speed for 2, 5, and 10.'
+    description: 'Build core multiplication tables and count coin combinations under $1.00.'
   },
   {
     tier: 4,
@@ -40,39 +40,39 @@ export const CURRICULUM_TIERS = [
   },
   {
     tier: 5,
-    title: 'Division & Divisibility',
+    title: 'Division & Divisibility Secrets',
     subtitle: 'Fact Families & Divisibility Rules',
     location: 'Division Falls',
     icon: '🏞️',
     color: 'from-sky-400 to-blue-600',
-    description: 'Master division fact families (56 ÷ 8 = 7) and divisibility rules.'
+    description: 'Master division fact families (56 ÷ 8 = 7) and digit divisibility secrets.'
   },
   {
     tier: 6,
-    title: 'Multi-Digit Mental Math',
-    subtitle: '2-Digit Addition & Subtraction',
+    title: 'Multi-Digit Math & Elapsed Time',
+    subtitle: '2-Digit Operations, Time Jumps & Dollars',
     location: 'Boulder Ridge',
     icon: '⛰️',
     color: 'from-amber-500 to-stone-600',
-    description: 'Add and subtract double-digit numbers mentally (45 + 38 = 83).'
+    description: 'Mental math (45+38=83), calculate elapsed time jumps, and dollar change.'
   },
   {
     tier: 7,
-    title: 'Fractions, LCM & GCF',
-    subtitle: 'LCM, GCF, Percentages & Decimals',
+    title: 'LCM, GCF & Percentages',
+    subtitle: 'Least Common Multiples, GCF & Percentages',
     location: 'Fraction Falls',
     icon: '🧩',
     color: 'from-teal-400 via-emerald-500 to-cyan-600',
-    description: 'Find Least Common Multiples, Greatest Common Factors, and percentages.'
+    description: 'Find Least Common Multiples (LCM), Greatest Common Factors (GCF), and percentages.'
   },
   {
     tier: 8,
     title: 'Exponents, Roots & PEMDAS',
-    subtitle: 'Mount Kibo Summit Peak',
+    subtitle: 'Powers, Square Roots & Order of Operations',
     location: 'Mount Kibo Summit',
     icon: '🏔️',
     color: 'from-yellow-400 via-amber-500 to-purple-600',
-    description: 'Master exponents (2³), square roots (√81), and PEMDAS at the summit!'
+    description: 'Master exponents (2³), square roots (√81), and PEMDAS at the peak of Mount Kibo!'
   }
 ];
 
