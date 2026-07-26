@@ -21,6 +21,7 @@ import { getItemById } from './utils/itemsCatalog';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
+import { pluralize } from './utils/formatters';
 
 export default function App() {
   // App State: 'launch' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
@@ -748,7 +749,7 @@ export default function App() {
             <div className="flex items-center gap-2 px-3.5 py-1.5 bg-amber-50 border-2 border-amber-200 rounded-full shadow-sm">
               <Flame className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
               <span className="font-extrabold text-amber-900 text-sm sm:text-base">
-                {streak} Day Streak!
+                {pluralize(streak, 'Day')} Streak!
               </span>
               <span className="text-slate-300">|</span>
               <span className="text-xs font-black text-slate-700 flex items-center gap-1" title="Kibo Shields Remaining">
@@ -784,7 +785,7 @@ export default function App() {
             </div>
             {practiceQueue.length > 0 && (
               <p className="text-amber-600 font-bold text-xs">
-                🎯 {practiceQueue.length} practice problem{practiceQueue.length > 1 ? 's' : ''} queued for recall!
+                🎯 {pluralize(practiceQueue.length, 'practice problem')} queued for recall!
               </p>
             )}
           </div>

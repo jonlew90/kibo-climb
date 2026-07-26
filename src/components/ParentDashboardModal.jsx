@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target } from 'lucide-react';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
+import { pluralize } from '../utils/formatters';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
@@ -122,7 +123,7 @@ export default function ParentDashboardModal({
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-2.5">
                 <Flame className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
                 <span className="text-[10px] uppercase font-black text-amber-900 block">Streak</span>
-                <span className="text-xl font-black text-slate-800">{streak} Days</span>
+                <span className="text-xl font-black text-slate-800">{pluralize(streak, 'Day')}</span>
               </div>
 
               <div className="bg-amber-100/60 border border-amber-300 rounded-2xl p-2.5">
@@ -173,7 +174,7 @@ export default function ParentDashboardModal({
                   <h4 className="font-extrabold text-sm text-slate-800">Target Facts for Review</h4>
                 </div>
                 <span className="text-xs font-extrabold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
-                  {practiceQueue ? practiceQueue.length : practiceQueueCount} Queued
+                  {pluralize(practiceQueue ? practiceQueue.length : practiceQueueCount, 'Queued Fact')}
                 </span>
               </div>
 

@@ -3,6 +3,7 @@ import { Trophy, Flame, Zap, Compass, ShoppingBag, CheckCircle2, Clock, Info, XC
 import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
+import { pluralize } from '../utils/formatters';
 
 export default function SprintResultsModal({
   isOpen,
@@ -56,12 +57,12 @@ export default function SprintResultsModal({
           <div className="flex items-center justify-center gap-3">
             <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 border border-amber-300 rounded-full font-extrabold text-amber-950 text-xs">
               <Flame className="w-4 h-4 text-amber-500 fill-amber-400 stroke-[2.5]" />
-              <span>{streak} Day Streak!</span>
+              <span>{pluralize(streak, 'Day')} Streak!</span>
             </div>
 
             <div className="flex items-center gap-1.5 px-3 py-1 bg-yellow-100 border border-yellow-300 rounded-full font-extrabold text-amber-950 text-xs">
               <Zap className="w-4 h-4 text-amber-600 fill-amber-400 stroke-[2.5] animate-pulse" />
-              <span>+{earnedSparksInfo.total} Sparks ⚡</span>
+              <span>+{pluralize(earnedSparksInfo.total, 'Spark')} ⚡</span>
             </div>
           </div>
 
