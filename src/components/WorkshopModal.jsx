@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck } from 'lucide-react';
 import Mascot from './Mascot';
+import ItemThumbnail from './ItemThumbnail';
 import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, getItemsByCategory, getItemById } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 
@@ -254,10 +255,12 @@ export default function WorkshopModal({
                     : 'bg-slate-50 border-slate-200 opacity-95 hover:border-slate-300 cursor-pointer'
                 }`}
               >
+                {/* SVG Item Thumbnail Graphic */}
+                <ItemThumbnail itemId={item.id} rarity={item.rarity} className="w-12 h-12 shrink-0" />
+
                 {/* Item Details */}
-                <div className="space-y-1 text-left flex-1">
+                <div className="space-y-1 text-left flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-lg">{item.icon || '🛍️'}</span>
                     <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{item.name}</h4>
                     
                     {/* Status Badges */}

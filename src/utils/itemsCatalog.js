@@ -1,12 +1,12 @@
 // Expanded Workshop Catalog with Categories & Rarity Tiers for Kibo Math
 
 export const ITEM_CATEGORIES = [
-  { id: 'all', label: 'All Items 🌟' },
-  { id: 'headwear', label: 'Headwear 🧢' },
-  { id: 'gear', label: 'Gear 🎒' },
-  { id: 'outfits', label: 'Outfits 🧣' },
-  { id: 'effects', label: 'Companions & FX ⚡' },
-  { id: 'background', label: 'Backgrounds 🌌' }
+  { id: 'all', label: 'All Items' },
+  { id: 'headwear', label: 'Headwear' },
+  { id: 'gear', label: 'Gear' },
+  { id: 'outfits', label: 'Outfits' },
+  { id: 'effects', label: 'Companions & FX' },
+  { id: 'background', label: 'Backgrounds' }
 ];
 
 export const RARITY_TIERS = {
@@ -36,7 +36,6 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 30,
     rarity: 'common',
-    icon: '🧢',
     description: 'Cool blue forward-facing baseball cap.'
   },
   {
@@ -45,7 +44,6 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 50,
     rarity: 'common',
-    icon: '🧣',
     description: 'Crimson adventurer bandana.'
   },
   {
@@ -54,7 +52,6 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 75,
     rarity: 'common',
-    icon: '🥽',
     description: 'Retro golden aviator flight goggles.'
   },
   {
@@ -63,7 +60,6 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 150,
     rarity: 'rare',
-    icon: '🎧',
     description: 'Keep the math beats going while climbing Mount Kibo!'
   },
   {
@@ -72,7 +68,6 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 120,
     rarity: 'rare',
-    icon: '🧙‍♂️',
     description: 'Mystical starry purple wizard hat.'
   },
   {
@@ -81,7 +76,6 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 350,
     rarity: 'epic',
-    icon: '🤠',
     description: 'Classic leather safari explorer hat for peak summits.'
   },
   {
@@ -90,7 +84,6 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 1500,
     rarity: 'legendary',
-    icon: '👑',
     description: 'Royal jeweled golden crown for math royalty!'
   },
 
@@ -101,7 +94,6 @@ export const WORKSHOP_ITEMS = [
     category: 'gear',
     cost: 75,
     rarity: 'common',
-    icon: '🧪',
     description: 'Hydrating trail canteen for long climb sprints.'
   },
   {
@@ -110,7 +102,6 @@ export const WORKSHOP_ITEMS = [
     category: 'gear',
     cost: 200,
     rarity: 'rare',
-    icon: '🎒',
     description: 'Sturdy mountain climbing pack.'
   },
   {
@@ -119,7 +110,6 @@ export const WORKSHOP_ITEMS = [
     category: 'gear',
     cost: 250,
     rarity: 'epic',
-    icon: '🚀',
     description: 'Futuristic jetpack with fiery thrusters!'
   },
   {
@@ -128,7 +118,6 @@ export const WORKSHOP_ITEMS = [
     category: 'gear',
     cost: 450,
     rarity: 'epic',
-    icon: '🏮',
     description: 'Glowing warm lantern for night climbs.'
   },
 
@@ -139,7 +128,6 @@ export const WORKSHOP_ITEMS = [
     category: 'outfits',
     cost: 25,
     rarity: 'common',
-    icon: '🎀',
     description: 'Dapper crimson bowtie.'
   },
   {
@@ -148,7 +136,6 @@ export const WORKSHOP_ITEMS = [
     category: 'outfits',
     cost: 180,
     rarity: 'rare',
-    icon: '🦺',
     description: 'Warm mountain puffer vest.'
   },
   {
@@ -157,7 +144,6 @@ export const WORKSHOP_ITEMS = [
     category: 'outfits',
     cost: 300,
     rarity: 'epic',
-    icon: '🧣',
     description: 'Cozy knitted mountain scarf for high altitude winds.'
   },
 
@@ -168,7 +154,6 @@ export const WORKSHOP_ITEMS = [
     category: 'effects',
     cost: 50,
     rarity: 'rare',
-    icon: '🛡️',
     isConsumable: true,
     description: 'Automatically absorbs 1 missed practice day to protect your streak! (Max 2)'
   },
@@ -178,7 +163,6 @@ export const WORKSHOP_ITEMS = [
     category: 'effects',
     cost: 600,
     rarity: 'epic',
-    icon: '🐝',
     description: 'A friendly glowing firefly that orbits Kibo on the trail.'
   },
   {
@@ -187,7 +171,6 @@ export const WORKSHOP_ITEMS = [
     category: 'effects',
     cost: 1000,
     rarity: 'epic',
-    icon: '⚡',
     description: 'Electrifying speed aura for ultra-fast solvers.'
   },
   {
@@ -196,7 +179,6 @@ export const WORKSHOP_ITEMS = [
     category: 'effects',
     cost: 2500,
     rarity: 'legendary',
-    icon: '✨',
     description: 'Shimmering solid 24k gold metallic Kibo skin!'
   },
 
@@ -207,7 +189,6 @@ export const WORKSHOP_ITEMS = [
     category: 'background',
     cost: 150,
     rarity: 'rare',
-    icon: '🌅',
     description: 'Warm golden sunset backdrop.'
   },
   {
@@ -216,7 +197,6 @@ export const WORKSHOP_ITEMS = [
     category: 'background',
     cost: 300,
     rarity: 'epic',
-    icon: '🌌',
     description: 'Deep space galaxy background with twinkling stars.'
   }
 ];
