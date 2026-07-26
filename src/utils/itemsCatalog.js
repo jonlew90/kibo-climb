@@ -1,9 +1,11 @@
 // Expanded Workshop Catalog with Categories & Rarity Tiers for Kibo Math
 
 export const ITEM_CATEGORIES = [
+  { id: 'all', label: 'All Items 🌟' },
   { id: 'headwear', label: 'Headwear 🧢' },
-  { id: 'accessory', label: 'Accessories 🎒' },
-  { id: 'aura', label: 'Auras & FX ✨' },
+  { id: 'gear', label: 'Gear 🎒' },
+  { id: 'outfits', label: 'Outfits 🧣' },
+  { id: 'effects', label: 'Companions & FX ⚡' },
   { id: 'background', label: 'Backgrounds 🌌' }
 ];
 
@@ -14,7 +16,7 @@ export const RARITY_TIERS = {
   },
   rare: {
     label: 'Rare',
-    badgeClass: 'bg-sky-100 text-sky-800 border-sky-300'
+    badgeClass: 'bg-teal-100 text-teal-800 border-teal-300'
   },
   epic: {
     label: 'Epic',
@@ -34,15 +36,17 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 30,
     rarity: 'common',
+    icon: '🧢',
     description: 'Cool blue forward-facing baseball cap.'
   },
   {
-    id: 'party_hat',
-    name: 'Party Hat',
+    id: 'bandana',
+    name: 'Climber Bandana',
     category: 'headwear',
-    cost: 40,
+    cost: 50,
     rarity: 'common',
-    description: 'Festive polka-dot cone party hat!'
+    icon: '🧣',
+    description: 'Crimson adventurer bandana.'
   },
   {
     id: 'goggles',
@@ -50,42 +54,8 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 75,
     rarity: 'common',
+    icon: '🥽',
     description: 'Retro golden aviator flight goggles.'
-  },
-  {
-    id: 'wizard_hat',
-    name: 'Wizard Hat',
-    category: 'headwear',
-    cost: 120,
-    rarity: 'rare',
-    description: 'Mystical starry purple wizard hat.'
-  },
-  {
-    id: 'crown',
-    name: 'Gold Crown',
-    category: 'headwear',
-    cost: 500,
-    rarity: 'legendary',
-    description: 'Royal jeweled golden crown for math royalty!'
-  },
-
-  // ACCESSORIES (Slot: accessory)
-  {
-    id: 'kibo_shield',
-    name: 'Kibo Shield (Streak Freeze)',
-    category: 'accessory',
-    cost: 50,
-    rarity: 'rare',
-    isConsumable: true,
-    description: 'Automatically absorbs 1 missed practice day to protect your streak! (Max 2)'
-  },
-  {
-    id: 'bowtie',
-    name: 'Red Bowtie',
-    category: 'accessory',
-    cost: 25,
-    rarity: 'common',
-    description: 'Dapper crimson bowtie.'
   },
   {
     id: 'headphones_neon',
@@ -97,56 +67,157 @@ export const WORKSHOP_ITEMS = [
     description: 'Keep the math beats going while climbing Mount Kibo!'
   },
   {
-    id: 'jetpack',
-    name: 'Rocket Jetpack',
-    category: 'accessory',
-    cost: 250,
-    rarity: 'epic',
-    description: 'Futuristic jetpack with fiery thrusters!'
-  },
-
-  // AURAS & FX (Slot: aura)
-  {
-    id: 'rainbow_aura',
-    name: 'Rainbow Trail Aura',
-    category: 'aura',
-    cost: 200,
-    rarity: 'epic',
-    description: 'Glowing rainbow energy aura.'
+    id: 'wizard_hat',
+    name: 'Wizard Hat',
+    category: 'headwear',
+    cost: 120,
+    rarity: 'rare',
+    icon: '🧙‍♂️',
+    description: 'Mystical starry purple wizard hat.'
   },
   {
-    id: 'golden_aura',
-    name: 'Sparkle Glow Aura',
-    category: 'aura',
+    id: 'explorer_hat',
+    name: 'Explorer Fedora',
+    category: 'headwear',
     cost: 350,
     rarity: 'epic',
-    description: 'Radiant golden sparkle energy ring.'
+    icon: '🤠',
+    description: 'Classic leather safari explorer hat for peak summits.'
+  },
+  {
+    id: 'crown',
+    name: 'Gold Crown',
+    category: 'headwear',
+    cost: 1500,
+    rarity: 'legendary',
+    icon: '👑',
+    description: 'Royal jeweled golden crown for math royalty!'
+  },
+
+  // GEAR (Slot: gear)
+  {
+    id: 'canteen',
+    name: 'Water Canteen',
+    category: 'gear',
+    cost: 75,
+    rarity: 'common',
+    icon: '🧪',
+    description: 'Hydrating trail canteen for long climb sprints.'
+  },
+  {
+    id: 'backpack',
+    name: 'Explorer Backpack',
+    category: 'gear',
+    cost: 200,
+    rarity: 'rare',
+    icon: '🎒',
+    description: 'Sturdy mountain climbing pack.'
+  },
+  {
+    id: 'jetpack',
+    name: 'Rocket Jetpack',
+    category: 'gear',
+    cost: 250,
+    rarity: 'epic',
+    icon: '🚀',
+    description: 'Futuristic jetpack with fiery thrusters!'
+  },
+  {
+    id: 'lantern',
+    name: 'Glimmer Lantern',
+    category: 'gear',
+    cost: 450,
+    rarity: 'epic',
+    icon: '🏮',
+    description: 'Glowing warm lantern for night climbs.'
+  },
+
+  // OUTFITS (Slot: outfits)
+  {
+    id: 'bowtie',
+    name: 'Red Bowtie',
+    category: 'outfits',
+    cost: 25,
+    rarity: 'common',
+    icon: '🎀',
+    description: 'Dapper crimson bowtie.'
+  },
+  {
+    id: 'vest',
+    name: 'Padded Vest',
+    category: 'outfits',
+    cost: 180,
+    rarity: 'rare',
+    icon: '🦺',
+    description: 'Warm mountain puffer vest.'
+  },
+  {
+    id: 'summit_scarf',
+    name: 'Summit Scarf',
+    category: 'outfits',
+    cost: 300,
+    rarity: 'epic',
+    icon: '🧣',
+    description: 'Cozy knitted mountain scarf for high altitude winds.'
+  },
+
+  // COMPANIONS & EFFECTS (Slot: effects)
+  {
+    id: 'kibo_shield',
+    name: 'Kibo Shield (Streak Freeze)',
+    category: 'effects',
+    cost: 50,
+    rarity: 'rare',
+    icon: '🛡️',
+    isConsumable: true,
+    description: 'Automatically absorbs 1 missed practice day to protect your streak! (Max 2)'
+  },
+  {
+    id: 'firefly',
+    name: 'Sparky Firefly Companion',
+    category: 'effects',
+    cost: 600,
+    rarity: 'epic',
+    icon: '🐝',
+    description: 'A friendly glowing firefly that orbits Kibo on the trail.'
+  },
+  {
+    id: 'lightning_aura',
+    name: 'Lightning Speed Trail',
+    category: 'effects',
+    cost: 1000,
+    rarity: 'epic',
+    icon: '⚡',
+    description: 'Electrifying speed aura for ultra-fast solvers.'
   },
   {
     id: 'golden_skin',
-    name: 'Golden Kibo Skin',
-    category: 'aura',
-    cost: 500,
+    name: 'Golden 24K Skin',
+    category: 'effects',
+    cost: 2500,
     rarity: 'legendary',
+    icon: '✨',
     description: 'Shimmering solid 24k gold metallic Kibo skin!'
   },
 
   // SPRINT BACKGROUNDS (Slot: background)
   {
-    id: 'bg_cosmic',
-    name: 'Cosmic Space',
-    category: 'background',
-    cost: 300,
-    rarity: 'epic',
-    description: 'Deep space galaxy background with twinkling stars.'
-  },
-  {
     id: 'bg_sunset',
     name: 'Sunset Meadow',
     category: 'background',
-    cost: 250,
-    rarity: 'epic',
+    cost: 150,
+    rarity: 'rare',
+    icon: '🌅',
     description: 'Warm golden sunset backdrop.'
+  },
+  {
+    id: 'bg_cosmic',
+    name: 'Cosmic Galaxy',
+    category: 'background',
+    cost: 300,
+    rarity: 'epic',
+    icon: '🌌',
+    description: 'Deep space galaxy background with twinkling stars.'
   }
 ];
 
@@ -155,5 +226,6 @@ export function getItemById(id) {
 }
 
 export function getItemsByCategory(category) {
+  if (!category || category === 'all') return WORKSHOP_ITEMS;
   return WORKSHOP_ITEMS.filter((item) => item.category === category);
 }

@@ -16,15 +16,26 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
 
   // Headwear
   const hasCap = isEquipped('cap');
+  const hasBandana = isEquipped('bandana');
   const hasPartyHat = isEquipped('party_hat');
   const hasGoggles = isEquipped('goggles');
   const hasWizardHat = isEquipped('wizard_hat');
+  const hasExplorerHat = isEquipped('explorer_hat');
   const hasCrown = isEquipped('crown');
 
-  // Body Accessories
+  // Body & Gear Accessories
   const hasBowtie = isEquipped('bowtie');
   const hasNeonHeadphones = isEquipped('headphones_neon') || isEquipped('headphones');
   const hasJetpack = isEquipped('jetpack');
+  const hasBackpack = isEquipped('backpack');
+  const hasCanteen = isEquipped('canteen');
+  const hasLantern = isEquipped('lantern');
+  const hasVest = isEquipped('vest');
+  const hasSummitScarf = isEquipped('summit_scarf');
+
+  // Companions & Effects
+  const hasFirefly = isEquipped('firefly');
+  const hasLightningAura = isEquipped('lightning_aura');
 
   // --- LIVING MASCOT ANIMATION STATES ---
   const [isBlinking, setIsBlinking] = useState(false);
@@ -217,6 +228,21 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
         </g>
 
         {/* --- BACK ACCESSORIES LAYER --- */}
+        {hasLightningAura && (
+          <g className="animate-pulse">
+            <polygon points="40,40 55,70 45,70 60,110 30,80 42,80" fill="#FBBF24" opacity="0.9" />
+            <polygon points="160,40 145,70 155,70 140,110 170,80 158,80" fill="#FBBF24" opacity="0.9" />
+          </g>
+        )}
+
+        {hasBackpack && (
+          <g filter="url(#clayShadow)">
+            <rect x="22" y="70" width="30" height="65" rx="8" fill="#B45309" stroke="#78350F" strokeWidth="3" />
+            <rect x="26" y="80" width="22" height="20" rx="4" fill="#D97706" />
+            <rect x="148" y="70" width="30" height="65" rx="8" fill="#B45309" stroke="#78350F" strokeWidth="3" />
+            <rect x="152" y="80" width="22" height="20" rx="4" fill="#D97706" />
+          </g>
+        )}
 
         {hasJetpack && (
           <g filter="url(#clayShadow)">
@@ -338,11 +364,18 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
         <ellipse cx="64" cy="112" rx="7" ry="4.5" fill="#FF4D6D" opacity="0.45" />
         <ellipse cx="136" cy="112" rx="7" ry="4.5" fill="#FF4D6D" opacity="0.45" />
 
-        {/* --- FRONT HEADWEAR ACCESSORIES LAYER --- */}
+        {/* --- FRONT HEADWEAR & OUTFIT ACCESSORIES LAYER --- */}
         {hasCap && (
           <g filter="url(#clayShadow)">
             <path d="M 52 70 Q 100 48 148 70 Z" fill="#2563EB" stroke="#1D4ED8" strokeWidth="3" />
             <path d="M 100 70 Q 148 64 165 72" stroke="#1D4ED8" strokeWidth="5" strokeLinecap="round" fill="none" />
+          </g>
+        )}
+
+        {hasBandana && (
+          <g filter="url(#clayShadow)">
+            <path d="M 50 68 Q 100 46 150 68 L 146 78 Q 100 58 54 78 Z" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+            <polygon points="144,72 165,82 152,90" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
           </g>
         )}
 
@@ -358,6 +391,17 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
             <rect x="65" y="86" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
             <rect x="105" y="86" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
             <line x1="95" y1="96" x2="105" y2="96" stroke="#0284C7" strokeWidth="4" />
+          </g>
+        )}
+
+        {hasExplorerHat && (
+          <g filter="url(#clayShadow)">
+            {/* Crown */}
+            <path d="M 70 65 Q 100 32 130 65 Z" fill="#92400E" stroke="#451A03" strokeWidth="3" />
+            {/* Band */}
+            <path d="M 68 62 Q 100 55 132 62" stroke="#F59E0B" strokeWidth="5" fill="none" />
+            {/* Brim */}
+            <ellipse cx="100" cy="66" rx="54" ry="10" fill="#78350F" stroke="#451A03" strokeWidth="3" />
           </g>
         )}
 
@@ -380,16 +424,13 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
 
         {hasNeonHeadphones && (
           <g filter="url(#clayShadow)">
-            {/* Glowing 3D Headband */}
             <path d="M 52 95 A 50 50 0 0 1 148 95" stroke="url(#neonHeadphoneGrad)" strokeWidth="8" fill="none" strokeLinecap="round" />
             <path d="M 54 94 A 48 48 0 0 1 146 94" stroke="#67E8F9" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.8" />
             
-            {/* Left Earcup Cushion & LED Ring */}
             <rect x="42" y="82" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
             <rect x="46" y="86" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
             <circle cx="51" cy="99" r="3" fill="#A5F3FC" className="animate-pulse" />
 
-            {/* Right Earcup Cushion & LED Ring */}
             <rect x="140" y="82" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
             <rect x="144" y="86" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
             <circle cx="149" cy="99" r="3" fill="#A5F3FC" className="animate-pulse" />
@@ -401,6 +442,41 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
             <polygon points="100,136 82,126 82,146" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
             <polygon points="100,136 118,126 118,146" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
             <circle cx="100" cy="136" r="4" fill="#DC2626" />
+          </g>
+        )}
+
+        {hasVest && (
+          <g filter="url(#clayShadow)">
+            <path d="M 68 132 L 80 162 L 120 162 L 132 132 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="3" />
+          </g>
+        )}
+
+        {hasSummitScarf && (
+          <g filter="url(#clayShadow)">
+            <ellipse cx="100" cy="134" rx="38" ry="12" fill="#E11D48" stroke="#9F1239" strokeWidth="3" />
+            <path d="M 115 138 L 125 170 L 105 170 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="2.5" />
+          </g>
+        )}
+
+        {hasCanteen && (
+          <g filter="url(#clayShadow)">
+            <ellipse cx="138" cy="145" rx="10" ry="14" fill="#0284C7" stroke="#075985" strokeWidth="2.5" />
+            <rect x="135" y="128" width="6" height="5" fill="#CBD5E1" />
+          </g>
+        )}
+
+        {hasLantern && (
+          <g filter="url(#clayShadow)" className="animate-pulse">
+            <rect x="54" y="140" width="16" height="22" rx="4" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
+            <rect x="58" y="144" width="8" height="14" rx="2" fill="#FEF08A" />
+          </g>
+        )}
+
+        {hasFirefly && (
+          <g className="animate-float-3d" filter="url(#claySpecular)">
+            <ellipse cx="168" cy="65" rx="8" ry="6" fill="#FBBF24" />
+            <ellipse cx="166" cy="63" rx="3" ry="2" fill="#FFFFFF" />
+            <circle cx="168" cy="65" r="14" fill="#FEF08A" opacity="0.3" className="animate-ping" />
           </g>
         )}
       </svg>
