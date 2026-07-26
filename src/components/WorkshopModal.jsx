@@ -98,7 +98,8 @@ export default function WorkshopModal({
   const stageEquippedItems = computeStageEquipped();
   const currentCategoryItems = getItemsByCategory(activeCategory);
 
-  // Check if any unowned item is currently being previewed on the mascot
+  // Check if any active preview overrides exist
+  const hasActivePreview = Object.values(previewSlots).some((v) => v !== null);
   const hasUnownedPreview = stageEquippedItems.some((id) => !unlockedItems.includes(id));
 
   const handleCategorySelect = (catId) => {
@@ -116,10 +117,23 @@ export default function WorkshopModal({
     soundFx.playKeyTap();
     const cat = item.category;
 
-    setPreviewSlots((prev) => ({
-      ...prev,
-      [cat]: prev[cat] === item.id ? false : item.id
-    }));
+    setPreviewSlots((prev) => {
+      const currentSlotVal = prev[cat];
+
+      // Case A: Currently previewing this item -> Revert to null (default equipped)
+      if (currentSlotVal === item.id) {
+        return { ...prev, [cat]: null };
+      }
+
+      // Case B: Currently equipped in app and not modified in preview -> Toggle OFF in preview
+      const isSavedEquipped = equippedItems.includes(item.id);
+      if (isSavedEquipped && currentSlotVal === null) {
+        return { ...prev, [cat]: false };
+      }
+
+      // Case C: Preview this item (replacing any prior preview/equipped item in this category)
+      return { ...prev, [cat]: item.id };
+    });
   };
 
   const handleBuy = (item) => {
@@ -202,12 +216,12 @@ export default function WorkshopModal({
               {hasUnownedPreview ? 'Outfit Combination' : 'Equipped Outfit'}
             </h4>
 
-            {hasUnownedPreview ? (
+            {hasActivePreview || hasUnownedPreview ? (
               <button
                 onClick={handleResetPreview}
                 className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 font-extrabold text-[11px] rounded-xl border border-rose-300 flex items-center gap-1.5 active:scale-95 transition-all shadow-sm"
               >
-                <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" /> Reset Preview
+                <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" /> Reset to Equipped Gear
               </button>
             ) : (
               <p className="text-xs text-slate-500 font-medium">
@@ -269,7 +283,7 @@ export default function WorkshopModal({
               <div
                 key={item.id}
                 onClick={() => {
-                  if (!isUnlocked && !isConsumable) {
+                  if (!isConsumable) {
                     handlePreviewToggle(item);
                   }
                 }}
@@ -299,6 +313,10 @@ export default function WorkshopModal({
                     ) : isUnlocked ? (
                       <span className="text-[9px] font-black uppercase text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-300">
                         🟦 OWNED
+                      </span>
+                    ) : isPreviewedOnStage ? (
+                      <span className="text-[9px] font-black uppercase text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-300 flex items-center gap-1">
+                        <Sparkles className="w-2.5 h-2.5 text-purple-600" /> PREVIEWING
                       </span>
                     ) : canAfford ? (
                       <span className="text-[9px] font-black uppercase text-amber-900 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse">
@@ -364,6 +382,14 @@ export default function WorkshopModal({
                         'Equip'
                       )}
                     </button>
+                  ) : isPreviewedOnStage ? (
+                    <button
+                      type="button"
+                      onClick={() => handlePreviewToggle(item)}
+                      className="bg-purple-100 hover:bg-purple-200 text-purple-900 border-2 border-purple-300 px-3.5 py-2 text-xs rounded-xl font-extrabold flex items-center gap-1"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" /> Remove Preview
+                    </button>
                   ) : canAfford ? (
                     <button
                       type="button"
@@ -377,11 +403,9 @@ export default function WorkshopModal({
                     <button
                       type="button"
                       onClick={() => handlePreviewToggle(item)}
-                      className="bg-slate-100 hover:bg-amber-50 text-slate-600 border-2 border-slate-300 text-[11px] px-3 py-1.5 rounded-xl font-bold transition-all"
-                      title="Tap to preview item on Kibo stage"
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 text-[11px] px-3 py-2 rounded-xl font-extrabold"
                     >
-                      <span className="block font-black text-rose-600">Need {shortfall} More ⚡</span>
-                      <span className="text-[9px] font-semibold text-slate-500 block">Tap to Try On</span>
+                      Try On
                     </button>
                   )}
                 </div>
