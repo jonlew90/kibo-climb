@@ -16,7 +16,7 @@ export default function PlacementTest({
   const [mascotMood, setMascotMood] = useState('happy');
   const [isShaking, setIsShaking] = useState(false);
 
-  // Tracking state for adaptive rules across Tiers 1-8
+  // Tracking state for sequential 1-by-1 tier evaluation (Tiers 1-8)
   const highestPassedTierRef = useRef(1);
   const seenKeysRef = useRef(new Set());
   const problemStartTimeRef = useRef(performance.now());
@@ -93,33 +93,23 @@ export default function PlacementTest({
       setMascotMood('happy');
       setInputVal('');
 
-      // Single question failure condition: error OR latency > 4.5s
-      if (!isCorrect || latencySec > 4.5) {
+      // Exit Condition: Incorrect answer OR latency > 4.0s
+      if (!isCorrect || latencySec > 4.0) {
         finishDiagnosticTest();
         return;
       }
 
-      // Update highest passed tier if correct with latency <= 4.5s
-      if (isCorrect && latencySec <= 4.5) {
-        highestPassedTierRef.current = Math.max(highestPassedTierRef.current, currentTierLevel);
-      }
+      // Passed current tier: Update highest passed tier
+      highestPassedTierRef.current = currentTierLevel;
 
-      // Calculate next tier level with ultra-fast 2-tier jumping (< 2.5s)
-      let nextTier = currentTierLevel;
-      if (isCorrect && latencySec < 2.5) {
-        // Ultra-fast recall! Jump 2 tiers forward for advanced learners
-        nextTier = Math.min(8, currentTierLevel + 2);
-      } else if (isCorrect && latencySec <= 4.5) {
-        // Fluent recall! Advance 1 tier forward
-        nextTier = Math.min(8, currentTierLevel + 1);
-      }
-
-      // Test Completion Conditions: 8-10 questions reached or Tier 8 passed
-      if (questionNumberRef.current >= 8 || (currentTierLevel === 8 && isCorrect && latencySec <= 4.5)) {
+      // Completion Condition: Reached Tier 8 Peak
+      if (currentTierLevel >= 8) {
         finishDiagnosticTest();
         return;
       }
 
+      // Advance strictly 1-by-1 to next tier (e.g. T1 -> T2 -> T3 -> T4 -> T5 -> T6 -> T7 -> T8)
+      const nextTier = currentTierLevel + 1;
       questionNumberRef.current += 1;
       setCurrentTierLevel(nextTier);
 
