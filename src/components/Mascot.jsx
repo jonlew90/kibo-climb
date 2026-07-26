@@ -23,8 +23,7 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
 
   // Body Accessories
   const hasBowtie = isEquipped('bowtie');
-  const hasCape = isEquipped('cape');
-  const hasHeadphones = isEquipped('headphones');
+  const hasNeonHeadphones = isEquipped('headphones_neon') || isEquipped('headphones');
   const hasJetpack = isEquipped('jetpack');
 
   // --- LIVING MASCOT ANIMATION STATES ---
@@ -177,6 +176,12 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
             <stop offset="100%" stopColor="#1E293B" />
           </linearGradient>
 
+          <linearGradient id="neonHeadphoneGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#22D3EE" />
+            <stop offset="50%" stopColor="#0EA5E9" />
+            <stop offset="100%" stopColor="#0369A1" />
+          </linearGradient>
+
           {/* Tactile 3D Soft Clay Shadows */}
           <filter id="clayShadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="6" stdDeviation="4" floodColor="#3F1400" floodOpacity="0.35" />
@@ -212,15 +217,6 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
         </g>
 
         {/* --- BACK ACCESSORIES LAYER --- */}
-        {hasCape && (
-          <path
-            d="M 55 105 C 30 115 20 160 35 175 C 65 180 80 170 85 140 Z"
-            fill="#EF4444"
-            stroke="#991B1B"
-            strokeWidth="3.5"
-            filter="url(#clayShadow)"
-          />
-        )}
 
         {hasJetpack && (
           <g filter="url(#clayShadow)">
@@ -382,11 +378,21 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
           </g>
         )}
 
-        {hasHeadphones && (
+        {hasNeonHeadphones && (
           <g filter="url(#clayShadow)">
-            <path d="M 52 95 A 50 50 0 0 1 148 95" stroke="#0EA5E9" strokeWidth="7" fill="none" strokeLinecap="round" />
-            <rect x="44" y="84" width="16" height="30" rx="8" fill="#0284C7" stroke="#0369A1" strokeWidth="2.5" />
-            <rect x="140" y="84" width="16" height="30" rx="8" fill="#0284C7" stroke="#0369A1" strokeWidth="2.5" />
+            {/* Glowing 3D Headband */}
+            <path d="M 52 95 A 50 50 0 0 1 148 95" stroke="url(#neonHeadphoneGrad)" strokeWidth="8" fill="none" strokeLinecap="round" />
+            <path d="M 54 94 A 48 48 0 0 1 146 94" stroke="#67E8F9" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.8" />
+            
+            {/* Left Earcup Cushion & LED Ring */}
+            <rect x="42" y="82" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
+            <rect x="46" y="86" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
+            <circle cx="51" cy="99" r="3" fill="#A5F3FC" className="animate-pulse" />
+
+            {/* Right Earcup Cushion & LED Ring */}
+            <rect x="140" y="82" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
+            <rect x="144" y="86" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
+            <circle cx="149" cy="99" r="3" fill="#A5F3FC" className="animate-pulse" />
           </g>
         )}
 

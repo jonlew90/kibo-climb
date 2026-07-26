@@ -88,20 +88,13 @@ export const WORKSHOP_ITEMS = [
     description: 'Dapper crimson bowtie.'
   },
   {
-    id: 'cape',
-    name: 'Superhero Cape',
-    category: 'accessory',
-    cost: 90,
-    rarity: 'rare',
-    description: 'Flowing vibrant red superhero cape.'
-  },
-  {
-    id: 'headphones',
+    id: 'headphones_neon',
     name: 'Neon Headphones',
-    category: 'accessory',
-    cost: 110,
+    category: 'headwear',
+    cost: 150,
     rarity: 'rare',
-    description: 'Sleek neon cyan music headphones.'
+    icon: '🎧',
+    description: 'Keep the math beats going while climbing Mount Kibo!'
   },
   {
     id: 'jetpack',
