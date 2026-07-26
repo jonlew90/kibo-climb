@@ -3,17 +3,49 @@
 @tailwind utilities;
 
 @layer utilities {
+  /* 3D Volumetric Tactile Buttons (Duolingo Claymorphism Style) */
   .btn-3d-orange {
-    @apply bg-kibo-orange text-white font-bold border-b-4 border-kibo-orange-dark active:translate-y-1 active:border-b-0 transition-all duration-75 shadow-lg;
+    border-bottom-width: 5px;
+    @apply bg-gradient-to-b from-orange-400 via-kibo-orange to-orange-600 text-white font-extrabold border-amber-800 active:translate-y-1.5 active:border-b-0 transition-all duration-75 shadow-clay-orange;
   }
   .btn-3d-teal {
-    @apply bg-kibo-teal text-white font-bold border-b-4 border-kibo-teal-dark active:translate-y-1 active:border-b-0 transition-all duration-75 shadow-lg;
+    border-bottom-width: 5px;
+    @apply bg-gradient-to-b from-teal-400 via-kibo-teal to-teal-600 text-white font-extrabold border-teal-900 active:translate-y-1.5 active:border-b-0 transition-all duration-75 shadow-clay-teal;
   }
   .btn-3d-purple {
-    @apply bg-kibo-purple text-white font-bold border-b-4 border-kibo-purple-dark active:translate-y-1 active:border-b-0 transition-all duration-75 shadow-lg;
+    border-bottom-width: 5px;
+    @apply bg-gradient-to-b from-purple-400 via-purple-600 to-purple-800 text-white font-extrabold border-purple-950 active:translate-y-1.5 active:border-b-0 transition-all duration-75 shadow-clay-purple;
+  }
+  .btn-3d-clay {
+    border-bottom-width: 5px;
+    @apply bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 text-amber-950 font-extrabold border-amber-700 active:translate-y-1.5 active:border-b-0 transition-all duration-75 shadow-clay-amber;
   }
   .btn-3d-key {
-    @apply bg-white text-slate-700 font-extrabold border-b-4 border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-1 active:scale-95 active:border-b-0 transition-all duration-75 shadow-md text-2xl sm:text-3xl rounded-2xl flex items-center justify-center select-none active:bg-amber-100 min-h-[68px] min-w-[68px];
+    @apply bg-gradient-to-b from-white to-slate-100 text-slate-800 font-black border-b-4 border-slate-300 hover:border-slate-400 hover:from-white hover:to-slate-50 active:translate-y-1 active:scale-95 active:border-b-0 transition-all duration-75 shadow-md text-2xl sm:text-3xl rounded-2xl flex items-center justify-center select-none active:bg-amber-100 min-h-[68px] min-w-[68px];
+  }
+
+  /* 3D Clay Card Container Utility */
+  .clay-card {
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.9), inset 0 -3px 6px rgba(0, 0, 0, 0.08), 0 14px 28px -4px rgba(0, 0, 0, 0.15);
+    @apply border-3 border-white/80 rounded-3xl bg-gradient-to-b from-white via-slate-50 to-amber-50/40;
+  }
+
+  .clay-node {
+    box-shadow: inset 0 3px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 8px rgba(0, 0, 0, 0.25), 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Custom 3D Shadow Utilities */
+  .shadow-clay-orange {
+    box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.4), 0 8px 16px -2px rgba(249, 115, 22, 0.4);
+  }
+  .shadow-clay-purple {
+    box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.4), 0 8px 16px -2px rgba(147, 51, 234, 0.4);
+  }
+  .shadow-clay-teal {
+    box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.4), 0 8px 16px -2px rgba(20, 184, 166, 0.4);
+  }
+  .shadow-clay-amber {
+    box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.6), 0 8px 16px -2px rgba(245, 158, 11, 0.4);
   }
 
   /* Safe Area Padding Utilities for Notch & Home Bar Avoidance */
@@ -26,6 +58,20 @@
   .safe-mb {
     margin-bottom: env(safe-area-inset-bottom, 16px);
   }
+}
+
+/* Floating 3D Idle Animation */
+@keyframes float3d {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+.animate-float-3d {
+  animation: float3d 3s ease-in-out infinite;
 }
 
 /* Prevent unwanted double-tap zoom & text selection on mobile/tablet */

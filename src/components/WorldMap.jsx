@@ -107,23 +107,23 @@ export default function WorldMap({
 
                   <button
                     onClick={() => handleNodeClick(tierItem.tier)}
-                    className={`w-20 h-20 rounded-3xl border-4 flex flex-col items-center justify-center transition-all relative ${
+                    className={`w-22 h-22 rounded-3xl border-b-4 flex flex-col items-center justify-center transition-all relative clay-node ${
                       isActiveNode
-                        ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white border-purple-300 shadow-xl ring-4 ring-purple-200 scale-110'
+                        ? 'bg-gradient-to-b from-purple-400 via-purple-600 to-purple-800 text-white border-purple-950 shadow-clay-purple ring-4 ring-purple-300/80 scale-110'
                         : isUnlocked
-                        ? 'bg-white text-slate-800 border-teal-400 shadow-lg hover:border-teal-500 active:scale-95'
-                        : 'bg-slate-100 text-slate-500 border-slate-300 hover:border-amber-400 active:scale-95 shadow-sm'
+                        ? 'bg-gradient-to-b from-teal-300 via-kibo-teal to-teal-700 text-white border-teal-950 shadow-clay-teal hover:scale-105 active:translate-y-1 active:border-b-0'
+                        : 'bg-gradient-to-b from-slate-100 to-slate-200 text-slate-500 border-slate-400 hover:border-amber-400 active:translate-y-1 active:border-b-0 shadow-sm'
                     }`}
                   >
-                    <span className="text-2xl">{tierItem.icon}</span>
-                    <span className="text-[11px] font-black leading-tight">Tier {tierItem.tier}</span>
+                    <span className="text-2xl drop-shadow">{tierItem.icon}</span>
+                    <span className="text-[11px] font-black tracking-tight leading-tight">Tier {tierItem.tier}</span>
 
                     {!isUnlocked ? (
-                      <div className="absolute -bottom-1 -right-1 bg-amber-100 text-amber-700 p-1 rounded-full border border-amber-300 shadow-sm">
+                      <div className="absolute -bottom-1 -right-1 bg-amber-100 text-amber-800 p-1.5 rounded-full border-2 border-amber-300 shadow-md">
                         <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
                       </div>
                     ) : (
-                      <div className="absolute -bottom-1 -right-1 bg-emerald-100 text-emerald-700 p-1 rounded-full border border-emerald-300 shadow-sm">
+                      <div className="absolute -bottom-1 -right-1 bg-emerald-100 text-emerald-800 p-1.5 rounded-full border-2 border-emerald-300 shadow-md">
                         <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
                       </div>
                     )}
