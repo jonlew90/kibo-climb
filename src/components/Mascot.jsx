@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { soundFx } from '../utils/audio';
 
 export default function Mascot({ mood = 'happy', equipped = [], className = "w-36 h-36" }) {
   // Equipped item checks
@@ -26,8 +27,64 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
   const hasHeadphones = isEquipped('headphones');
   const hasJetpack = isEquipped('jetpack');
 
+  // --- LIVING MASCOT ANIMATION STATES ---
+  const [isBlinking, setIsBlinking] = useState(false);
+  const [isEarTwitching, setIsEarTwitching] = useState(false);
+  const [isTapped, setIsTapped] = useState(false);
+  const [sparkParticles, setSparkParticles] = useState([]);
+
+  // Random Idle Blinks & Ear Twitches Loop (every 4-7 seconds)
+  useEffect(() => {
+    let timeoutId;
+
+    const scheduleMicroAction = () => {
+      const delay = Math.floor(Math.random() * 3000) + 4000; // 4000ms - 7000ms
+      timeoutId = setTimeout(() => {
+        const actionType = Math.random() > 0.5 ? 'blink' : 'twitch';
+
+        if (actionType === 'blink') {
+          setIsBlinking(true);
+          setTimeout(() => setIsBlinking(false), 220);
+        } else {
+          setIsEarTwitching(true);
+          setTimeout(() => setIsEarTwitching(false), 350);
+        }
+
+        scheduleMicroAction();
+      }, delay);
+    };
+
+    scheduleMicroAction();
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  // Tap / Click Reaction Handler
+  const handleTapMascot = (e) => {
+    e.stopPropagation();
+    soundFx.playKeyTap();
+
+    setIsTapped(true);
+    setTimeout(() => setIsTapped(false), 580);
+
+    // Spawn 3 temporary floating spark ⚡ particles
+    const newSparks = [
+      { id: Date.now() + 1, left: '30%', top: '20%' },
+      { id: Date.now() + 2, left: '50%', top: '10%' },
+      { id: Date.now() + 3, left: '70%', top: '20%' }
+    ];
+    setSparkParticles((prev) => [...prev, ...newSparks]);
+
+    setTimeout(() => {
+      setSparkParticles((prev) => prev.filter((p) => !newSparks.some((ns) => ns.id === p.id)));
+    }, 700);
+  };
+
   return (
-    <div className={`relative flex items-center justify-center rounded-3xl overflow-hidden transition-all duration-300 ${className}`}>
+    <div
+      onClick={handleTapMascot}
+      onTouchStart={handleTapMascot}
+      className={`relative flex items-center justify-center rounded-3xl overflow-hidden cursor-pointer select-none transition-all duration-300 ${className}`}
+    >
       {/* 1. BACKGROUND THEME LAYER */}
       {hasCosmicBg && (
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-indigo-950 to-purple-950 flex items-center justify-center pointer-events-none">
@@ -51,10 +108,23 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
         <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 opacity-70 blur-lg animate-pulse pointer-events-none scale-110" />
       )}
 
-      {/* 3. BASE 3D VOLUMETRIC KIBO SVG */}
+      {/* 3. REACTIVE FLOATING SPARK ⚡ PARTICLES */}
+      {sparkParticles.map((spark) => (
+        <div
+          key={spark.id}
+          className="absolute z-30 font-black text-amber-400 text-lg pointer-events-none animate-spark-float drop-shadow-md"
+          style={{ left: spark.left, top: spark.top }}
+        >
+          ⚡
+        </div>
+      ))}
+
+      {/* 4. BASE 3D VOLUMETRIC KIBO SVG (WITH IDLE BREATHING & TAP SQUASH) */}
       <svg
         viewBox="0 0 200 200"
-        className="w-full h-full relative z-10 drop-shadow-lg overflow-visible"
+        className={`w-full h-full relative z-10 drop-shadow-lg overflow-visible ${
+          isTapped ? 'animate-mascot-squash' : 'animate-mascot-breathe'
+        }`}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -79,6 +149,13 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
             <stop offset="100%" stopColor="#D65B27" />
           </radialGradient>
 
+          {/* Striped 3D Tail Gradient */}
+          <linearGradient id="tailGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FF8A48" />
+            <stop offset="50%" stopColor="#E04D00" />
+            <stop offset="100%" stopColor="#872200" />
+          </linearGradient>
+
           {/* LEGENDARY 24K GOLD METALLIC GRADIENT */}
           <linearGradient id="goldBodyGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#FFFBEB" />
@@ -100,7 +177,7 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
             <stop offset="100%" stopColor="#1E293B" />
           </linearGradient>
 
-          {/* Tactile 3D Soft Clay Ambient Shadow & Rim Light Filters */}
+          {/* Tactile 3D Soft Clay Shadows */}
           <filter id="clayShadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="6" stdDeviation="4" floodColor="#3F1400" floodOpacity="0.35" />
           </filter>
@@ -120,6 +197,20 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
           </g>
         )}
 
+        {/* --- 3D BUSHY TAIL WITH CONTINUOUS TAIL WAG ANIMATION --- */}
+        <g className="animate-tail-wag">
+          <path
+            d="M 145 130 C 185 130 195 90 170 65 C 150 45 130 75 140 105 Z"
+            fill="url(#tailGrad)"
+            stroke="#6E1B00"
+            strokeWidth="3.5"
+            filter="url(#clayShadow)"
+          />
+          {/* Tail Stripes */}
+          <path d="M 165 75 Q 175 88 158 98" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" opacity="0.8" />
+          <path d="M 158 105 Q 172 115 150 124" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" opacity="0.8" />
+        </g>
+
         {/* --- BACK ACCESSORIES LAYER --- */}
         {hasCape && (
           <path
@@ -133,14 +224,12 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
 
         {hasJetpack && (
           <g filter="url(#clayShadow)">
-            {/* Left Jetpack Tank */}
             <rect x="18" y="75" width="28" height="68" rx="10" fill="url(#jetpackMetalGrad)" stroke="#0F172A" strokeWidth="3" />
             <rect x="22" y="85" width="20" height="8" fill="#EF4444" rx="2" />
             <ellipse cx="32" cy="75" rx="14" ry="7" fill="#E2E8F0" stroke="#0F172A" strokeWidth="2" />
             <path d="M 24 143 L 40 143 L 36 153 L 28 153 Z" fill="#334155" />
             <path d="M 26 153 Q 32 178 38 153 Z" fill="#FF4500" className="animate-pulse" />
 
-            {/* Right Jetpack Tank */}
             <rect x="154" y="75" width="28" height="68" rx="10" fill="url(#jetpackMetalGrad)" stroke="#0F172A" strokeWidth="3" />
             <rect x="158" y="85" width="20" height="8" fill="#EF4444" rx="2" />
             <ellipse cx="168" cy="75" rx="14" ry="7" fill="#E2E8F0" stroke="#0F172A" strokeWidth="2" />
@@ -150,8 +239,15 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
         )}
 
         {/* --- BASE 3D VOLUMETRIC KIBO BODY GEOMETRY --- */}
-        {/* Left Ear */}
-        <g filter="url(#clayShadow)">
+        {/* Left Ear (With Random Ear Twitch Rotation) */}
+        <g
+          filter="url(#clayShadow)"
+          style={{
+            transformOrigin: '60px 65px',
+            transform: isEarTwitching ? 'rotate(-10deg)' : 'rotate(0deg)',
+            transition: 'transform 0.15s ease-out'
+          }}
+        >
           <path
             d="M 60 65 Q 25 35 48 20 Q 75 35 68 62"
             fill={hasGoldenSkin ? "url(#goldEarsGrad)" : "url(#kibo3DBodyGrad)"}
@@ -204,7 +300,6 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
             stroke="#D6A785"
             strokeWidth="2.5"
           />
-          {/* Muzzle Top Highlight */}
           <ellipse cx="98" cy="106" rx="20" ry="8" fill="#FFFFFF" fillOpacity="0.4" />
 
           {/* Cute 3D Button Nose */}
@@ -212,8 +307,8 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
           <ellipse cx="98" cy="110" rx="3" ry="2" fill="#FFFFFF" fillOpacity="0.8" />
         </g>
 
-        {/* Expressive 3D Eyes */}
-        <g>
+        {/* Expressive 3D Eyes (With Random Double Blink Scaling) */}
+        <g style={{ transformOrigin: '100px 98px', transform: isBlinking ? 'scaleY(0.1)' : 'scaleY(1)', transition: 'transform 0.08s ease' }}>
           {/* Left Eye */}
           <ellipse cx="78" cy="98" rx="8" ry="11" fill="#2B1507" />
           <ellipse cx="76" cy="94" rx="3.5" ry="4.5" fill="#FFFFFF" />
