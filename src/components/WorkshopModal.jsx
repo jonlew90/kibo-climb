@@ -7,14 +7,23 @@ import { soundFx } from '../utils/audio';
 export function sortShopItems(items, userSparks, sortMode, unlockedItems = [], equippedItems = []) {
   const rarityRank = { legendary: 1, epic: 2, rare: 3, common: 4 };
 
-  return [...items].sort((a, b) => {
-    if (sortMode === 'price_asc') {
-      return a.cost - b.cost;
-    }
+  // Filter for 'inventory' mode (owned/unlocked items only)
+  let filteredItems = items;
+  if (sortMode === 'inventory') {
+    filteredItems = items.filter((item) => item.isConsumable || unlockedItems.includes(item.id));
+  }
+
+  return [...filteredItems].sort((a, b) => {
     if (sortMode === 'rarity') {
       return (rarityRank[a.rarity] || 5) - (rarityRank[b.rarity] || 5);
     }
-    // Default: 'affordable_first'
+    if (sortMode === 'inventory') {
+      const aEquipped = equippedItems.includes(a.id);
+      const bEquipped = equippedItems.includes(b.id);
+      if (aEquipped !== bEquipped) return aEquipped ? -1 : 1;
+      return a.cost - b.cost;
+    }
+    // Default: 'recommended' (Affordable First)
     const aEquipped = equippedItems.includes(a.id);
     const bEquipped = equippedItems.includes(b.id);
     if (aEquipped !== bEquipped) return aEquipped ? -1 : 1;
@@ -42,7 +51,7 @@ export default function WorkshopModal({
   onToggleEquip
 }) {
   const [activeCategory, setActiveCategory] = useState('all');
-  const [sortMode, setSortMode] = useState('affordable_first'); // 'affordable_first' | 'price_asc' | 'rarity'
+  const [sortMode, setSortMode] = useState('recommended'); // 'recommended' | 'rarity' | 'inventory'
   const [previewEquipped, setPreviewEquipped] = useState(equippedItems);
 
   // Synchronize previewEquipped when equippedItems change externally
@@ -209,9 +218,9 @@ export default function WorkshopModal({
             }}
             className="py-1.5 px-2.5 bg-slate-100 border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-800 focus:outline-none cursor-pointer shrink-0"
           >
-            <option value="affordable_first">Affordable First 💡</option>
-            <option value="price_asc">Price: Low to High 🏷️</option>
-            <option value="rarity">Rarity 💎</option>
+            <option value="recommended">Recommended 💡</option>
+            <option value="rarity">Highest Rarity 💎</option>
+            <option value="inventory">My Inventory 🎒</option>
           </select>
         </div>
 
