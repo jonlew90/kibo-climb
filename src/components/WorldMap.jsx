@@ -4,6 +4,7 @@ import Mascot from './Mascot';
 import TierIntroModal from './TierIntroModal';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
+import { getTrickForTier } from '../data/mathTricks';
 
 export default function WorldMap({
   currentTier,
@@ -177,6 +178,26 @@ export default function WorldMap({
             <p className="text-xs text-slate-600 font-medium leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-200">
               {selectedTierMeta.description}
             </p>
+
+            {/* Pro Tip 💡 Box */}
+            {(() => {
+              const nodeTrick = getTrickForTier(selectedTierMeta.tier);
+              if (!nodeTrick) return null;
+
+              return (
+                <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-2xl p-2.5 text-left space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base">{nodeTrick.icon}</span>
+                    <h5 className="font-extrabold text-amber-950 text-xs">
+                      Pro Tip: {nodeTrick.title}
+                    </h5>
+                  </div>
+                  <p className="text-[11px] font-semibold text-amber-900 leading-snug">
+                    {nodeTrick.summary}
+                  </p>
+                </div>
+              );
+            })()}
 
             {/* Kibo Tip 💡 Button */}
             <button
