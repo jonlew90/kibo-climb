@@ -14,6 +14,7 @@ import PlacementTest from './components/PlacementTest';
 import PlacementRevealModal from './components/PlacementRevealModal';
 import MicroHintCard from './components/MicroHintCard';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
+import SprintResultsModal from './components/SprintResultsModal';
 import { generateProblems } from './utils/mathGenerator';
 import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS } from './utils/curriculum';
 import { getItemById } from './utils/itemsCatalog';
@@ -33,6 +34,7 @@ export default function App() {
   const [showQuitModal, setShowQuitModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
+  const [showSprintResultsModal, setShowSprintResultsModal] = useState(false);
 
   // First-Time User Onboarding Modal State
   const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
@@ -503,7 +505,7 @@ export default function App() {
 
     soundFx.playVictory();
     setMascotMood('celebrate');
-    setAppState('victory');
+    setShowSprintResultsModal(true);
 
     if (triggerLevelUp) {
       setLevelUpReason(reasonText);
@@ -1312,6 +1314,24 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* SPRINT RESULTS CELEBRATION MODAL */}
+      <SprintResultsModal
+        isOpen={showSprintResultsModal}
+        stats={stats}
+        earnedSparksInfo={earnedSparksInfo}
+        streak={streak}
+        equippedItems={equippedItems}
+        isBossMode={isBossMode}
+        onContinueClimbing={() => {
+          setShowSprintResultsModal(false);
+          setAppState('world_map');
+        }}
+        onVisitWorkshop={() => {
+          setShowSprintResultsModal(false);
+          setIsWorkshopOpen(true);
+        }}
+      />
 
       {/* Workshop Modal */}
       <WorkshopModal
