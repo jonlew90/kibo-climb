@@ -132,13 +132,23 @@ export function generateTierProblem(tierLevel) {
     }
     case 2: {
       const type = Math.random();
-      if (type < 0.4) {
+      if (type < 0.25) {
+        // Time Basics (Minutes to hour / half hour)
+        const hours = Math.floor(Math.random() * 8) + 1;
+        const minsAdd = [15, 30, 45][Math.floor(Math.random() * 3)];
+        num1 = hours;
+        num2 = minsAdd;
+        answer = `${hours}:${minsAdd === 15 ? '15' : minsAdd === 30 ? '30' : '45'} PM`;
+        operatorSymbol = '⏰';
+        displayString = `What time is ${minsAdd} mins after ${hours}:00 PM?`;
+        hint = 'Hint: Count forward by 15-minute quarters!';
+      } else if (type < 0.50) {
         num1 = Math.floor(Math.random() * 5) + 5;
         num2 = Math.floor(Math.random() * 5) + 6;
         answer = num1 + num2;
         operatorSymbol = '+';
         displayString = `${num1} ${operatorSymbol} ${num2}`;
-      } else if (type < 0.7) {
+      } else if (type < 0.75) {
         num1 = Math.floor(Math.random() * 9) + 11;
         num2 = Math.floor(Math.random() * 8) + 3;
         answer = num1 - num2;
@@ -156,12 +166,34 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 3: {
-      const tables = [2, 5, 10];
-      num1 = tables[Math.floor(Math.random() * tables.length)];
-      num2 = Math.floor(Math.random() * 9) + 1;
-      answer = num1 * num2;
-      operatorSymbol = '×';
-      displayString = `${num1} ${operatorSymbol} ${num2}`;
+      const type = Math.random();
+      if (type < 0.25) {
+        // Coin Counting (Quarters, Dimes, Nickels)
+        const q = Math.floor(Math.random() * 3) + 1; // 1-3 quarters
+        const d = Math.floor(Math.random() * 3) + 1; // 1-3 dimes
+        answer = q * 25 + d * 10;
+        num1 = q;
+        num2 = d;
+        operatorSymbol = '🪙';
+        displayString = `${q} Quarter${q > 1 ? 's' : ''} + ${d} Dime${d > 1 ? 's' : ''} = ? ¢`;
+        hint = 'Hint: Quarters are 25¢, Dimes are 10¢!';
+      } else if (type < 0.45) {
+        // Making Change under $1.00
+        const cost = (Math.floor(Math.random() * 15) + 5) * 5; // 25c - 95c
+        answer = 100 - cost;
+        num1 = 100;
+        num2 = cost;
+        operatorSymbol = '🪙';
+        displayString = `Pay $1.00 for an item costing ${cost}¢. Change?`;
+        hint = 'Hint: Subtract the cost from 100¢!';
+      } else {
+        const tables = [2, 5, 10];
+        num1 = tables[Math.floor(Math.random() * tables.length)];
+        num2 = Math.floor(Math.random() * 9) + 1;
+        answer = num1 * num2;
+        operatorSymbol = '×';
+        displayString = `${num1} ${operatorSymbol} ${num2}`;
+      }
       break;
     }
     case 4: {
@@ -197,19 +229,43 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 6: {
-      const isAdd = Math.random() > 0.5;
-      if (isAdd) {
+      const subType = Math.random();
+      if (subType < 0.2) {
+        // Elapsed Time Jumps
+        const startHour = Math.floor(Math.random() * 4) + 1; // 1 to 4 PM
+        const startMin = 30;
+        const durHours = 1;
+        const durMins = [15, 30, 45][Math.floor(Math.random() * 3)];
+        num1 = startHour;
+        num2 = durMins;
+        answer = `${durHours} hr ${durMins} min`;
+        operatorSymbol = '⏱️';
+        displayString = `Hike from ${startHour}:${startMin} PM to ${startHour + durHours + 1}:${(startMin + durMins) % 60 === 0 ? '00' : '15'} PM. Duration?`;
+        hint = 'Hint: Jump to the next full hour first!';
+      } else if (subType < 0.4) {
+        // Multi-Dollar Change
+        const bill = [5, 10, 20][Math.floor(Math.random() * 3)];
+        const costCents = Math.floor(Math.random() * 300) + 150; // $1.50 - $4.50
+        const costDollars = (costCents / 100).toFixed(2);
+        answer = `$${(bill - costDollars).toFixed(2)}`;
+        num1 = bill;
+        num2 = costDollars;
+        operatorSymbol = '💵';
+        displayString = `Pay $${bill}.00 for a trail hat costing $${costDollars}. Change?`;
+        hint = 'Hint: Count up to the dollar!';
+      } else if (subType < 0.7) {
         num1 = Math.floor(Math.random() * 40) + 15;
         num2 = Math.floor(Math.random() * 40) + 15;
         answer = num1 + num2;
         operatorSymbol = '+';
+        displayString = `${num1} ${operatorSymbol} ${num2}`;
       } else {
         num1 = Math.floor(Math.random() * 50) + 40;
         num2 = Math.floor(Math.random() * 30) + 12;
         answer = num1 - num2;
         operatorSymbol = '−';
+        displayString = `${num1} ${operatorSymbol} ${num2}`;
       }
-      displayString = `${num1} ${operatorSymbol} ${num2}`;
       break;
     }
     case 7: {

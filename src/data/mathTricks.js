@@ -65,6 +65,22 @@ export const MATH_TRICKS = {
     summary: 'Add all the digits together! If the sum divides by 3, the whole number does too!',
     example: '144: 1 + 4 + 4 = 9. Since 9 is divisible by 3, 144 is divisible by 3!'
   },
+  quarter_beat: {
+    id: 'quarter_beat',
+    title: 'Quarter Rhythm!',
+    icon: '🪙',
+    badge: 'Money Shortcut',
+    summary: 'Chant the quarter rhythm: 25¢, 50¢, 75¢, $1.00! 4 Quarters make $1.00.',
+    example: '3 Quarters + 2 Dimes: 75¢ + 20¢ = 95¢!'
+  },
+  time_jump: {
+    id: 'time_jump',
+    title: 'The Time Jump!',
+    icon: '⏱️',
+    badge: 'Time Shortcut',
+    summary: 'Jump to the next full hour first, then add the remaining minutes!',
+    example: 'From 1:30 to 3:15: Jump 30 mins to 2:00, 1 hr to 3:00, then 15 mins = 1 hr 45 min!'
+  },
   squares: {
     id: 'squares',
     title: 'Perfect Square Twins!',
@@ -83,6 +99,12 @@ export function getTrickForProblem(problemStr) {
 
   const str = String(problemStr).toLowerCase();
 
+  if (str.includes('quarter') || str.includes('dime') || str.includes('change') || str.includes('$')) {
+    return MATH_TRICKS.quarter_beat;
+  }
+  if (str.includes('hike') || str.includes('time') || str.includes('pm') || str.includes('am') || str.includes('minutes')) {
+    return MATH_TRICKS.time_jump;
+  }
   if (str.includes('lcm')) {
     return MATH_TRICKS.lcm_trick;
   }
@@ -117,11 +139,11 @@ export function getTrickForProblem(problemStr) {
 export function getTrickForTier(tierId) {
   const t = Number(tierId);
   if (t === 1) return MATH_TRICKS.add_9;
-  if (t === 2) return MATH_TRICKS.mult_4;
-  if (t === 3) return MATH_TRICKS.mult_5;
+  if (t === 2) return MATH_TRICKS.time_jump;
+  if (t === 3) return MATH_TRICKS.quarter_beat;
   if (t === 4) return MATH_TRICKS.mult_9;
   if (t === 5) return MATH_TRICKS.divisibility_3;
-  if (t === 6) return MATH_TRICKS.mult_11;
+  if (t === 6) return MATH_TRICKS.time_jump;
   if (t === 7) return MATH_TRICKS.lcm_trick;
   if (t === 8) return MATH_TRICKS.gcf_trick;
   return MATH_TRICKS.mult_9;
