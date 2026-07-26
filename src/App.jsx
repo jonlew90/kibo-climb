@@ -113,17 +113,6 @@ export default function App() {
     return saved || '1234';
   });
 
-  // Persistent Security Question & Answer
-  const [securityQuestion, setSecurityQuestion] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_parent_sec_q');
-    return saved || 'What is your child\'s favorite pet?';
-  });
-
-  const [securityAnswer, setSecurityAnswer] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_parent_sec_a');
-    return saved || 'dog';
-  });
-
   // Persistent Sprint History (last 3 sprints)
   const [sprintHistory, setSprintHistory] = useState(() => {
     const saved = localStorage.getItem('kibo_math_sprint_history');
@@ -602,13 +591,6 @@ export default function App() {
   const handleUpdatePin = (newPin) => {
     setParentPin(newPin);
     localStorage.setItem('kibo_math_parent_pin', newPin);
-  };
-
-  const handleUpdateSecurityQuestion = (q, a) => {
-    setSecurityQuestion(q);
-    setSecurityAnswer(a);
-    localStorage.setItem('kibo_math_parent_sec_q', q);
-    localStorage.setItem('kibo_math_parent_sec_a', a);
   };
 
   const handleUpdatePracticeDays = (newDays) => {
@@ -1206,8 +1188,6 @@ export default function App() {
         isOpen={showPinGateModal}
         onClose={() => setShowPinGateModal(false)}
         currentPin={parentPin}
-        securityQuestion={securityQuestion}
-        securityAnswer={securityAnswer}
         onUnlockSuccess={() => {
           setShowPinGateModal(false);
           setShowParentDashboard(true);
@@ -1220,9 +1200,6 @@ export default function App() {
         onClose={() => setShowParentDashboard(false)}
         currentPin={parentPin}
         onUpdatePin={handleUpdatePin}
-        securityQuestion={securityQuestion}
-        securityAnswer={securityAnswer}
-        onUpdateSecurityQuestion={handleUpdateSecurityQuestion}
         tier={tier}
         onSetTier={handleSetTierManual}
         streak={streak}

@@ -18,9 +18,6 @@ export default function ParentDashboardModal({
   onClose,
   currentPin,
   onUpdatePin,
-  securityQuestion,
-  securityAnswer,
-  onUpdateSecurityQuestion,
   tier,
   onSetTier,
   streak,
@@ -39,11 +36,6 @@ export default function ParentDashboardModal({
   const [confirmPinInput, setConfirmPinInput] = useState('');
   const [pinSuccessMsg, setPinSuccessMsg] = useState('');
   const [pinErrorMsg, setPinErrorMsg] = useState('');
-
-  // Security Question State
-  const [secQInput, setSecQInput] = useState(securityQuestion || 'What is your child\'s favorite pet?');
-  const [secAInput, setSecAInput] = useState(securityAnswer || '');
-  const [secSuccessMsg, setSecSuccessMsg] = useState('');
 
   if (!isOpen) return null;
 
@@ -76,16 +68,6 @@ export default function ParentDashboardModal({
     setOldPinInput('');
     setNewPinInput('');
     setConfirmPinInput('');
-  };
-
-  const handleSaveSecurityQuestion = (e) => {
-    e.preventDefault();
-    if (!secQInput.trim() || !secAInput.trim()) return;
-
-    soundFx.playVictory();
-    onUpdateSecurityQuestion(secQInput.trim(), secAInput.trim());
-    setSecSuccessMsg('Security Question updated successfully!');
-    setTimeout(() => setSecSuccessMsg(''), 3000);
   };
 
   return (
@@ -374,51 +356,6 @@ export default function ParentDashboardModal({
                 className="btn-3d-purple w-full py-2.5 text-xs rounded-xl"
               >
                 Update PIN
-              </button>
-            </form>
-
-            {/* Security Question Settings */}
-            <form onSubmit={handleSaveSecurityQuestion} className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
-              <div className="flex items-center gap-2 text-purple-700">
-                <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Security Recovery Question</h4>
-              </div>
-
-              {secSuccessMsg && (
-                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 p-2 rounded-xl border border-emerald-200">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" /> {secSuccessMsg}
-                </div>
-              )}
-
-              <div>
-                <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Security Question</label>
-                <input
-                  type="text"
-                  value={secQInput}
-                  onChange={(e) => setSecQInput(e.target.value)}
-                  placeholder="e.g. What is your favorite pet's name?"
-                  required
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:border-purple-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Answer</label>
-                <input
-                  type="text"
-                  value={secAInput}
-                  onChange={(e) => setSecAInput(e.target.value)}
-                  placeholder="Answer..."
-                  required
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:border-purple-500 focus:outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn-3d-teal w-full py-2.5 text-xs rounded-xl"
-              >
-                Save Security Question
               </button>
             </form>
           </div>
