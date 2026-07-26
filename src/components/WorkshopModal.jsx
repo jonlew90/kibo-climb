@@ -4,17 +4,45 @@ import Mascot from './Mascot';
 import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, getItemsByCategory, getItemById } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 
+export function sortShopItems(items, userSparks, sortMode, unlockedItems = [], equippedItems = []) {
+  const rarityRank = { legendary: 1, epic: 2, rare: 3, common: 4 };
+
+  return [...items].sort((a, b) => {
+    if (sortMode === 'price_asc') {
+      return a.cost - b.cost;
+    }
+    if (sortMode === 'rarity') {
+      return (rarityRank[a.rarity] || 5) - (rarityRank[b.rarity] || 5);
+    }
+    // Default: 'affordable_first'
+    const aEquipped = equippedItems.includes(a.id);
+    const bEquipped = equippedItems.includes(b.id);
+    if (aEquipped !== bEquipped) return aEquipped ? -1 : 1;
+
+    const aUnlocked = unlockedItems.includes(a.id);
+    const bUnlocked = unlockedItems.includes(b.id);
+    if (aUnlocked !== bUnlocked) return aUnlocked ? -1 : 1;
+
+    const aCanAfford = userSparks >= a.cost;
+    const bCanAfford = userSparks >= b.cost;
+    if (aCanAfford !== bCanAfford) return aCanAfford ? -1 : 1;
+
+    return a.cost - b.cost;
+  });
+}
+
 export default function WorkshopModal({
   isOpen,
   onClose,
   sparks,
   streakShields = 1,
-  unlockedItems,
-  equippedItems,
+  unlockedItems = [],
+  equippedItems = [],
   onBuyItem,
   onToggleEquip
 }) {
-  const [activeCategory, setActiveCategory] = useState('headwear');
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [sortMode, setSortMode] = useState('affordable_first'); // 'affordable_first' | 'price_asc' | 'rarity'
   const [previewEquipped, setPreviewEquipped] = useState(equippedItems);
 
   // Synchronize previewEquipped when equippedItems change externally
@@ -153,26 +181,43 @@ export default function WorkshopModal({
           </div>
         </div>
 
-        {/* Category Filter Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl shrink-0 overflow-x-auto scrollbar-none">
-          {ITEM_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => handleCategorySelect(cat.id)}
-              className={`py-2 px-3 text-[11px] sm:text-xs font-extrabold rounded-xl shrink-0 transition-all ${
-                activeCategory === cat.id
-                  ? 'bg-white text-slate-900 shadow-md border-2 border-amber-300 scale-[1.02]'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
+        {/* Controls Bar: Category Filter Tabs & Sort Dropdown */}
+        <div className="flex items-center justify-between gap-2 shrink-0">
+          {/* Category Tabs */}
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl overflow-x-auto scrollbar-none flex-1">
+            {ITEM_CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => handleCategorySelect(cat.id)}
+                className={`py-1.5 px-2.5 text-[11px] font-extrabold rounded-xl shrink-0 transition-all ${
+                  activeCategory === cat.id
+                    ? 'bg-white text-slate-900 shadow-sm border border-amber-300 scale-[1.02]'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Sort Selector Dropdown */}
+          <select
+            value={sortMode}
+            onChange={(e) => {
+              soundFx.playKeyTap();
+              setSortMode(e.target.value);
+            }}
+            className="py-1.5 px-2.5 bg-slate-100 border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-800 focus:outline-none cursor-pointer shrink-0"
+          >
+            <option value="affordable_first">Affordable First 💡</option>
+            <option value="price_asc">Price: Low to High 🏷️</option>
+            <option value="rarity">Rarity 💎</option>
+          </select>
         </div>
 
         {/* Catalog Items Grid */}
         <div className="flex-1 overflow-y-auto space-y-3 pr-1 py-1">
-          {currentCategoryItems.map((item) => {
+          {sortShopItems(currentCategoryItems, sparks, sortMode, unlockedItems, equippedItems).map((item) => {
             const isConsumable = item.isConsumable;
             const isShieldFull = isConsumable && item.id === 'kibo_shield' && streakShields >= 2;
             const isUnlocked = isConsumable ? false : unlockedItems.includes(item.id);
@@ -195,21 +240,39 @@ export default function WorkshopModal({
                     ? 'bg-purple-50/90 border-purple-400 shadow-md ring-2 ring-purple-200 cursor-pointer'
                     : isUnlocked
                     ? 'bg-white border-slate-200 shadow-sm hover:border-slate-300 cursor-pointer'
-                    : 'bg-slate-50 border-slate-200 opacity-95 hover:border-amber-300 cursor-pointer'
+                    : canAfford
+                    ? 'bg-amber-50/40 border-amber-300 shadow-sm hover:border-amber-400 cursor-pointer'
+                    : 'bg-slate-50 border-slate-200 opacity-95 hover:border-slate-300 cursor-pointer'
                 }`}
               >
                 {/* Item Details */}
                 <div className="space-y-1 text-left flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-lg">{item.icon || '🛍️'}</span>
                     <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{item.name}</h4>
+                    
+                    {/* Status Badges */}
+                    {isEquippedInApp ? (
+                      <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5">
+                        🟢 EQUIPPED
+                      </span>
+                    ) : isUnlocked ? (
+                      <span className="text-[9px] font-black uppercase text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-300">
+                        🟦 OWNED
+                      </span>
+                    ) : canAfford ? (
+                      <span className="text-[9px] font-black uppercase text-amber-900 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse">
+                        ⚡ CAN BUY!
+                      </span>
+                    ) : (
+                      <span className="text-[9px] font-black uppercase text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                        🔒 Need {shortfall} ⚡ More
+                      </span>
+                    )}
+
                     <span className={`text-[9px] uppercase px-2 py-0.5 rounded-full border ${rarityInfo.badgeClass}`}>
                       {rarityInfo.label}
                     </span>
-                    {!isUnlocked && !isConsumable && isPreviewedOnStage && (
-                      <span className="text-[9px] font-black uppercase text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded border border-purple-200">
-                        Previewing
-                      </span>
-                    )}
                   </div>
                   <p className="text-xs text-slate-500 font-medium leading-tight">{item.description}</p>
                 </div>
