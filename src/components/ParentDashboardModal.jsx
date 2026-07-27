@@ -324,6 +324,43 @@ export default function ParentDashboardModal({
                   const isMastered = score >= 85;
                   const isInProgress = score >= 60 && score < 85;
 
+                  // Diagnostic benchmark check (unlocked tier without sprint history for higher domains)
+                  const isDiagnosticVerified = tier > 1 && domain.acc >= 85;
+                  const daysSinceLastSprint = 0; // Active current sprint session
+
+                  let statusBadge;
+                  if (daysSinceLastSprint > 30 && isMastered) {
+                    statusBadge = (
+                      <span className="text-[9px] font-black uppercase text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                        🟡 Needs Warm-Up
+                      </span>
+                    );
+                  } else if (daysSinceLastSprint >= 14 && daysSinceLastSprint <= 30) {
+                    statusBadge = (
+                      <span className="text-[9px] font-black uppercase text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-300">
+                        ⏸️ Practice Paused
+                      </span>
+                    );
+                  } else if (isMastered) {
+                    statusBadge = (
+                      <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
+                        🟢 Mastered {isDiagnosticVerified && <span className="text-[8px] opacity-80">(Benchmark)</span>}
+                      </span>
+                    );
+                  } else if (isInProgress) {
+                    statusBadge = (
+                      <span className="text-[9px] font-black uppercase text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                        🟡 In Progress
+                      </span>
+                    );
+                  } else {
+                    statusBadge = (
+                      <span className="text-[9px] font-black uppercase text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-300">
+                        🔵 Needs Practice
+                      </span>
+                    );
+                  }
+
                   return (
                     <div key={domain.id} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2 shadow-sm">
                       <div className="flex items-center justify-between">
@@ -335,19 +372,7 @@ export default function ParentDashboardModal({
                           </div>
                         </div>
 
-                        {isMastered ? (
-                          <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
-                            🟢 Mastered
-                          </span>
-                        ) : isInProgress ? (
-                          <span className="text-[9px] font-black uppercase text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
-                            🟡 In Progress
-                          </span>
-                        ) : (
-                          <span className="text-[9px] font-black uppercase text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-300">
-                            🔵 Needs Practice
-                          </span>
-                        )}
+                        {statusBadge}
                       </div>
 
                       {/* Progress Bar */}
