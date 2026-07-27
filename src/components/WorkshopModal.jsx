@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
 import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, getItemsByCategory, getItemById } from '../utils/itemsCatalog';
@@ -63,12 +63,38 @@ export default function WorkshopModal({
   const [sortMode, setSortMode] = useState('recommended'); // 'recommended' | 'rarity' | 'inventory'
   const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
 
-  // Reset preview slots when modal opens
+  const categoryScrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (!categoryScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+    setCanScrollLeft(scrollLeft > 4);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+  };
+
+  // Reset preview slots when modal opens and check scroll capability
   useEffect(() => {
     if (isOpen) {
       setPreviewSlots(INITIAL_PREVIEW_SLOTS);
+      setTimeout(checkScroll, 100);
     }
   }, [isOpen]);
+
+  const handleScrollLeft = () => {
+    soundFx.playKeyTap();
+    if (categoryScrollRef.current) {
+      categoryScrollRef.current.scrollBy({ left: -100, behavior: 'smooth' });
+    }
+  };
+
+  const handleScrollRight = () => {
+    soundFx.playKeyTap();
+    if (categoryScrollRef.current) {
+      categoryScrollRef.current.scrollBy({ left: 100, behavior: 'smooth' });
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -235,21 +261,51 @@ export default function WorkshopModal({
 
         {/* Controls Bar: Category Filter Tabs & Sort Dropdown */}
         <div className="flex items-center justify-between gap-2 shrink-0">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl overflow-x-auto scrollbar-none flex-1">
-            {ITEM_CATEGORIES.map((cat) => (
+          {/* Category Tabs Container with Right-Edge Fade Mask & Scroll Chevrons */}
+          <div className="relative flex-1 flex items-center min-w-0">
+            {canScrollLeft && (
               <button
-                key={cat.id}
-                onClick={() => handleCategorySelect(cat.id)}
-                className={`py-1.5 px-2.5 text-[11px] font-extrabold rounded-xl shrink-0 transition-all ${
-                  activeCategory === cat.id
-                    ? 'bg-white text-slate-900 shadow-sm border border-amber-300 scale-[1.02]'
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
-                }`}
+                type="button"
+                onClick={handleScrollLeft}
+                className="absolute left-0 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white active:scale-95 transition-all"
               >
-                {cat.label}
+                <ChevronLeft className="w-4 h-4 stroke-[3]" />
               </button>
-            ))}
+            )}
+
+            <div
+              ref={categoryScrollRef}
+              onScroll={checkScroll}
+              style={{
+                maskImage: canScrollRight ? 'linear-gradient(to right, black 82%, transparent 100%)' : 'none',
+                WebkitMaskImage: canScrollRight ? 'linear-gradient(to right, black 82%, transparent 100%)' : 'none'
+              }}
+              className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl overflow-x-auto scrollbar-none w-full scroll-smooth"
+            >
+              {ITEM_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategorySelect(cat.id)}
+                  className={`py-1.5 px-3 text-[11px] font-extrabold rounded-xl shrink-0 transition-all ${
+                    activeCategory === cat.id
+                      ? 'bg-white text-slate-900 shadow-sm border border-amber-300 scale-[1.02]'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {canScrollRight && (
+              <button
+                type="button"
+                onClick={handleScrollRight}
+                className="absolute right-0 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white active:scale-95 transition-all"
+              >
+                <ChevronRight className="w-4 h-4 stroke-[3]" />
+              </button>
+            )}
           </div>
 
           {/* Sort Selector Dropdown */}
@@ -259,7 +315,7 @@ export default function WorkshopModal({
               soundFx.playKeyTap();
               setSortMode(e.target.value);
             }}
-            className="py-1.5 px-2.5 bg-slate-100 border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-800 focus:outline-none cursor-pointer shrink-0"
+            className="py-1.5 px-2 bg-slate-100 border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-800 focus:outline-none cursor-pointer shrink-0"
           >
             <option value="recommended">Recommended 💡</option>
             <option value="rarity">Highest Rarity 💎</option>
