@@ -84,57 +84,72 @@ export default function WorldMap({
           </span>
         </div>
 
-        {/* 8-Tier Path Nodes */}
-        <div className="w-full max-w-sm space-y-6 relative px-4">
+        {/* 8-Tier Path Nodes with 3D Clay Badges */}
+        <div className="w-full max-w-sm space-y-7 relative px-4 z-10">
           {CURRICULUM_TIERS.slice().reverse().map((tierItem) => {
             const isUnlocked = unlockedTiers.includes(tierItem.tier);
             const isActiveNode = currentTier === tierItem.tier;
+            const isCompleted = tierItem.tier < currentTier || (isUnlocked && !isActiveNode);
 
             const windPositions = ['justify-center', 'justify-start pl-6', 'justify-center', 'justify-end pr-6'];
             const windClass = windPositions[(tierItem.tier - 1) % windPositions.length];
 
             return (
-              <div key={tierItem.tier} className={`w-full flex ${windClass} relative my-2`}>
-                <div className="relative flex flex-col items-center">
+              <div key={tierItem.tier} className={`w-full flex ${windClass} relative my-3`}>
+                <div className="relative flex flex-col items-center group">
                   {/* Mascot Standing directly on the Active Node */}
                   {isActiveNode && (
                     <div className="absolute -top-16 z-20 animate-bounce flex flex-col items-center">
-                      <Mascot mood="happy" equipped={equippedItems} className="w-16 h-16" />
-                      <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md">
-                        You Are Here
+                      <Mascot mood="happy" equipped={equippedItems} className="w-16 h-16 filter drop-shadow-xl" />
+                      <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-md border border-purple-300">
+                        Current Base
                       </span>
                     </div>
                   )}
 
+                  {/* 3D Clay Node Badge Container */}
                   <button
                     onClick={() => handleNodeClick(tierItem.tier)}
-                    className={`w-22 h-22 rounded-3xl border-b-4 flex flex-col items-center justify-center transition-all relative clay-node ${
+                    className={`relative w-24 h-24 rounded-3xl border-b-4 flex flex-col items-center justify-center transition-all duration-200 clay-node ${
                       isActiveNode
-                        ? 'bg-gradient-to-b from-purple-400 via-purple-600 to-purple-800 text-white border-purple-950 shadow-clay-purple ring-4 ring-purple-300/80 scale-110'
+                        ? 'bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-600 text-amber-950 border-amber-900 shadow-bouncy-orange ring-4 ring-amber-300/90 scale-110 z-10'
                         : isUnlocked
-                        ? 'bg-gradient-to-b from-teal-300 via-kibo-teal to-teal-700 text-white border-teal-950 shadow-clay-teal hover:scale-105 active:translate-y-1 active:border-b-0'
-                        : 'bg-gradient-to-b from-slate-100 to-slate-200 text-slate-500 border-slate-400 hover:border-amber-400 active:translate-y-1 active:border-b-0 shadow-sm'
+                        ? 'bg-gradient-to-b from-emerald-400 via-teal-500 to-teal-700 text-white border-teal-950 shadow-clay-teal hover:scale-105 active:translate-y-1 active:border-b-0'
+                        : 'bg-gradient-to-b from-slate-200 to-slate-400 text-slate-500 border-slate-600 opacity-60 hover:opacity-100 shadow-sm'
                     }`}
                   >
-                    <span className="text-2xl drop-shadow">{tierItem.icon}</span>
-                    <span className="text-[11px] font-black tracking-tight leading-tight">Tier {tierItem.tier}</span>
+                    <div className="absolute inset-1 rounded-2xl bg-black/10 backdrop-blur-xs flex flex-col items-center justify-center p-1">
+                      <span className="text-3xl filter drop-shadow-md">{tierItem.icon}</span>
+                      <span className="text-[11px] font-black tracking-tight leading-none mt-1">Tier {tierItem.tier}</span>
+                    </div>
 
+                    {/* Status Badges */}
                     {!isUnlocked ? (
-                      <div className="absolute -bottom-1 -right-1 bg-amber-100 text-amber-800 p-1.5 rounded-full border-2 border-amber-300 shadow-md">
-                        <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <div className="absolute -top-2 -right-2 bg-slate-800 text-slate-200 p-1.5 rounded-full border-2 border-slate-600 shadow-lg">
+                        <Lock className="w-4 h-4 stroke-[2.5]" />
                       </div>
-                    ) : (
-                      <div className="absolute -bottom-1 -right-1 bg-emerald-100 text-emerald-800 p-1.5 rounded-full border-2 border-emerald-300 shadow-md">
-                        <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
+                    ) : isCompleted ? (
+                      <div className="absolute -top-2 -right-2 bg-emerald-500 text-white p-1.5 rounded-full border-2 border-white shadow-lg">
+                        <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
                       </div>
-                    )}
+                    ) : null}
                   </button>
 
-                  <div className="text-center mt-1">
+                  {/* 3-Star Rating Row for Completed Nodes */}
+                  {isCompleted && (
+                    <div className="flex items-center gap-0.5 mt-1 bg-amber-100/90 border border-amber-300 px-2 py-0.5 rounded-full shadow-xs">
+                      <Star className="w-3 h-3 text-amber-500 fill-amber-400" />
+                      <Star className="w-3 h-3 text-amber-500 fill-amber-400" />
+                      <Star className="w-3 h-3 text-amber-500 fill-amber-400" />
+                    </div>
+                  )}
+
+                  {/* Node Title Backplate */}
+                  <div className="text-center mt-1.5 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-xl border border-slate-200 shadow-sm">
                     <span className="text-xs font-black text-slate-800 block leading-tight">
                       {tierItem.title}
                     </span>
-                    <span className="text-[10px] font-bold text-slate-500 block">
+                    <span className="text-[10px] font-extrabold text-slate-500 block">
                       {tierItem.location}
                     </span>
                   </div>
