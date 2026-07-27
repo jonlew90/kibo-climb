@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award } from 'lucide-react';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
+import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
 import { getNotificationPrefs, saveNotificationPrefs, requestNotificationPermission } from '../utils/notifications';
@@ -28,7 +29,8 @@ export default function ParentDashboardModal({
   practiceQueue = [],
   sprintHistory,
   practiceDays = [1, 2, 3, 4, 5],
-  onUpdatePracticeDays
+  onUpdatePracticeDays,
+  unlockedBadges = []
 }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'settings'
 
@@ -425,6 +427,35 @@ export default function ParentDashboardModal({
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Earned Trail Badges Showcase */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2 text-left">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <Award className="w-5 h-5 stroke-[2.5]" />
+                  <h4 className="font-extrabold text-sm text-slate-800">Earned Trail Badges</h4>
+                </div>
+                <span className="text-xs font-extrabold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
+                  {unlockedBadges.length} Unlocked
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
+                {BADGES_CATALOG.filter((b) => unlockedBadges.includes(b.id)).length === 0 ? (
+                  <p className="text-xs text-slate-400 font-medium italic py-1">No badges unlocked yet. Keep climbing!</p>
+                ) : (
+                  BADGES_CATALOG.filter((b) => unlockedBadges.includes(b.id)).map((badge) => (
+                    <div key={badge.id} className="bg-white border border-amber-300 p-2.5 rounded-xl flex items-center gap-2 shrink-0 shadow-sm">
+                      <span className="text-2xl">{badge.icon}</span>
+                      <div>
+                        <span className="font-extrabold text-slate-800 text-xs block leading-snug">{badge.title}</span>
+                        <span className="text-[9px] text-amber-800 font-bold uppercase block">{badge.category}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         )}

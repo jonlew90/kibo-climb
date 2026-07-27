@@ -15,6 +15,8 @@ import PlacementRevealModal from './components/PlacementRevealModal';
 import MicroHintCard from './components/MicroHintCard';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import SprintResultsModal from './components/SprintResultsModal';
+import BadgesModal from './components/BadgesModal';
+import { evaluateBadges } from './utils/badgeManager';
 import { generateProblems } from './utils/mathGenerator';
 import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS } from './utils/curriculum';
 import { getItemById } from './utils/itemsCatalog';
@@ -37,6 +39,11 @@ export default function App() {
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
   const [showSprintResultsModal, setShowSprintResultsModal] = useState(false);
+  const [showBadgesModal, setShowBadgesModal] = useState(false);
+
+  const [unlockedBadges, setUnlockedBadges] = useState(() => {
+    return storageService.getUserData().unlockedBadges || [];
+  });
 
   // First-Time User Onboarding Modal State
   const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
@@ -657,6 +664,18 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Trail Badges Showcase Button */}
+          <button
+            onClick={() => {
+              soundFx.playKeyTap();
+              setShowBadgesModal(true);
+            }}
+            className="p-2 bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 rounded-2xl text-amber-900 font-extrabold active:scale-95 transition-all shadow-sm flex items-center justify-center"
+            title="View Trail Badges"
+          >
+            <Award className="w-5 h-5 text-amber-700 stroke-[2.5]" />
+          </button>
+
           {/* Combined Shop & Spark Counter Button */}
           <button
             onClick={() => setIsWorkshopOpen(true)}
@@ -1194,6 +1213,14 @@ export default function App() {
         sprintHistory={sprintHistory}
         practiceDays={practiceDays}
         onUpdatePracticeDays={handleUpdatePracticeDays}
+        unlockedBadges={unlockedBadges}
+      />
+
+      {/* TRAIL BADGES SHOWCASE MODAL */}
+      <BadgesModal
+        isOpen={showBadgesModal}
+        onClose={() => setShowBadgesModal(false)}
+        unlockedBadges={unlockedBadges}
       />
 
       {/* PARENT SPEED INFO MODAL (ℹ️) */}
