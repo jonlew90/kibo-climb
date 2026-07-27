@@ -11,7 +11,12 @@ export const CURRICULUM_TIERS = [
     description: 'Master basic single-digit addition and subtraction fluency.',
     trailTrick: {
       title: 'Plus 9 Hop! 🦘',
-      summary: 'Add 10 first, then step back 1! For 9 + 7, do 10 + 7 = 17, then minus 1 to get 16.'
+      summary: 'Add 10 first, then step back 1! For 9 + 7, do 10 + 7 = 17, then minus 1 to get 16.',
+      sampleProblem: {
+        question: '9 + 7',
+        correctAnswer: '16',
+        hint: 'Add 10 first (10 + 7 = 17), then step back 1 to get 16!'
+      }
     }
   },
   {
@@ -25,7 +30,12 @@ export const CURRICULUM_TIERS = [
     description: 'Cross the tens boundary (8+7=15), missing addends, and read clock times.',
     trailTrick: {
       title: 'Time Jump & Landmark 10s! ⏰',
-      summary: 'Break the second number to land on 10! For 8 + 7, do 8 + 2 = 10, then add the remaining 5 to get 15.'
+      summary: 'Break the second number to land on 10! For 8 + 7, do 8 + 2 = 10, then add the remaining 5 to get 15.',
+      sampleProblem: {
+        question: '8 + 7',
+        correctAnswer: '15',
+        hint: 'Split 7 into 2 + 5. 8 + 2 = 10, plus 5 is 15!'
+      }
     }
   },
   {
@@ -38,7 +48,12 @@ export const CURRICULUM_TIERS = [
     description: 'Build core multiplication tables and count coin combinations under $1.00.',
     trailTrick: {
       title: 'Quarter Rhythm (25¢, 50¢, 75¢, $1.00)! 🪙',
-      summary: 'Count quarters in rhythm: 25¢, 50¢, 75¢, $1.00! For change under $1.00, count up to 100¢.'
+      summary: 'Count quarters in rhythm: 25¢, 50¢, 75¢, $1.00! For change under $1.00, count up to 100¢.',
+      sampleProblem: {
+        question: '3 Quarters (75¢) + 1 Dime (10¢)',
+        correctAnswer: '85',
+        hint: '3 Quarters = 75¢. 75¢ + 10¢ = 85¢!'
+      }
     }
   },
   {
@@ -51,7 +66,12 @@ export const CURRICULUM_TIERS = [
     description: 'Master the full multiplication table grid up to 12×12.',
     trailTrick: {
       title: '10-Finger Magic for 9s! 🖐️',
-      summary: 'Put down the finger you multiply by 9. Fingers left = Tens, fingers right = Ones!'
+      summary: 'Put down the finger you multiply by 9. Fingers left = Tens, fingers right = Ones!',
+      sampleProblem: {
+        question: '9 × 6',
+        correctAnswer: '54',
+        hint: 'Put down 6th finger. 5 left (50) + 4 right (4) = 54!'
+      }
     }
   },
   {
@@ -64,7 +84,12 @@ export const CURRICULUM_TIERS = [
     description: 'Master division fact families (56 ÷ 8 = 7) and digit divisibility secrets.',
     trailTrick: {
       title: 'Sum-of-3 Rule & Fact Family Reversal! 🏞️',
-      summary: 'Add the digits together! If the digit sum divides by 3, the entire number is divisible by 3.'
+      summary: 'Add the digits together! If the digit sum divides by 3, the entire number is divisible by 3.',
+      sampleProblem: {
+        question: 'Is 123 divisible by 3? (Yes/No)',
+        correctAnswer: 'Yes',
+        hint: '1 + 2 + 3 = 6. Since 6 ÷ 3 = 2, 123 is divisible by 3!'
+      }
     }
   },
   {
@@ -77,7 +102,12 @@ export const CURRICULUM_TIERS = [
     description: 'Mental math (45+38=83), calculate elapsed time jumps, and dollar change.',
     trailTrick: {
       title: 'Tens-First Split & Clock Jump! ⛰️',
-      summary: 'Add the tens first (40+30=70), then add the ones (5+8=13) to get 83 instantly!'
+      summary: 'Add the tens first (40+30=70), then add the ones (5+8=13) to get 83 instantly!',
+      sampleProblem: {
+        question: '45 + 38',
+        correctAnswer: '83',
+        hint: 'Tens: 40 + 30 = 70. Ones: 5 + 8 = 13. 70 + 13 = 83!'
+      }
     }
   },
   {
@@ -90,7 +120,12 @@ export const CURRICULUM_TIERS = [
     description: 'Find Least Common Multiples (LCM), Greatest Common Factors (GCF), and percentages.',
     trailTrick: {
       title: 'Summit Sync (LCM) & GCF Difference Trick! 🧩',
-      summary: 'For GCF(12, 18), subtract them (18 - 12 = 6). Since 6 divides both, 6 is the GCF!'
+      summary: 'For GCF(12, 18), subtract them (18 - 12 = 6). Since 6 divides both, 6 is the GCF!',
+      sampleProblem: {
+        question: 'GCF of 12 and 18',
+        correctAnswer: '6',
+        hint: '18 - 12 = 6. 6 divides both 12 and 18!'
+      }
     }
   },
   {
@@ -103,7 +138,12 @@ export const CURRICULUM_TIERS = [
     description: 'Master exponents (2³), square roots (√81), and PEMDAS at the peak of Mount Kibo!',
     trailTrick: {
       title: 'Exponent Base Multiply & PEMDAS Ladder! 🏔️',
-      summary: 'For 2³, multiply the base 3 times: 2 × 2 × 2 = 8! Evaluate Parentheses & Exponents first.'
+      summary: 'For 2³, multiply the base 3 times: 2 × 2 × 2 = 8! Evaluate Parentheses & Exponents first.',
+      sampleProblem: {
+        question: '2³',
+        correctAnswer: '8',
+        hint: '2 × 2 × 2 = 8!'
+      }
     }
   }
 ];

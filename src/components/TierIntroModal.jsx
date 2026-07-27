@@ -84,28 +84,54 @@ export default function TierIntroModal({
             🧪 Try It Out Practice!
           </span>
 
-          <form onSubmit={handleTryOutSubmit} className="flex items-center justify-center gap-2">
-            <span className="text-base font-extrabold text-slate-800">{tryOutProblem.displayString} =</span>
-            <input
-              type="text"
-              value={tryOutInput}
-              onChange={(e) => setTryOutInput(e.target.value)}
-              placeholder="?"
-              className="w-16 text-center py-1 bg-white border-2 border-purple-300 rounded-xl text-base font-black text-purple-900 focus:border-purple-600 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="px-2.5 py-1 bg-purple-600 text-white font-extrabold text-xs rounded-xl shadow-sm hover:bg-purple-700"
-            >
-              Check
-            </button>
-          </form>
+          {(() => {
+            const sample = tierMeta.trailTrick?.sampleProblem || {
+              question: tryOutProblem.displayString,
+              correctAnswer: tryOutProblem.answerString,
+              hint: 'Master your facts with speed!'
+            };
 
-          {isTryOutSuccess && (
-            <div className="flex items-center justify-center gap-1 text-xs font-black text-emerald-600 bg-emerald-50 py-1 rounded-lg border border-emerald-200">
-              <Check className="w-4 h-4 stroke-[3]" /> Perfect! You've got the trick!
-            </div>
-          )}
+            const handleSubmit = (e) => {
+              e.preventDefault();
+              if (tryOutInput.trim().toLowerCase() === sample.correctAnswer.toLowerCase()) {
+                soundFx.playVictory();
+                setIsTryOutSuccess(true);
+              } else {
+                soundFx.playIncorrect();
+              }
+            };
+
+            return (
+              <form onSubmit={handleSubmit} className="space-y-1.5">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-base font-extrabold text-slate-800">{sample.question} =</span>
+                  <input
+                    type="text"
+                    value={tryOutInput}
+                    onChange={(e) => setTryOutInput(e.target.value)}
+                    placeholder="?"
+                    className="w-20 text-center py-1 bg-white border-2 border-purple-300 rounded-xl text-base font-black text-purple-900 focus:border-purple-600 focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    className="px-3 py-1 bg-purple-600 text-white font-extrabold text-xs rounded-xl shadow-sm hover:bg-purple-700 active:scale-95 transition-all"
+                  >
+                    Check
+                  </button>
+                </div>
+
+                {isTryOutSuccess ? (
+                  <div className="flex items-center justify-center gap-1 text-xs font-black text-emerald-700 bg-emerald-100 py-1 px-2 rounded-lg border border-emerald-300 animate-pop">
+                    <Check className="w-4 h-4 stroke-[3] text-emerald-600" /> Spot on! You mastered the trick! 🎉
+                  </div>
+                ) : (
+                  <span className="text-[10px] text-slate-500 font-semibold block italic">
+                    {sample.hint}
+                  </span>
+                )}
+              </form>
+            );
+          })()}
         </div>
 
         {/* Action Button */}
