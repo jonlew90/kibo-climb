@@ -4,6 +4,7 @@ import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
+import { calculateStars } from '../utils/curriculum';
 
 export default function SprintResultsModal({
   isOpen,
@@ -83,14 +84,12 @@ export default function SprintResultsModal({
 
         {/* Star Milestones Unlocked Card */}
         {(() => {
-          const rawTime = parseFloat(stats.totalTimeSec);
-          const durationSec = rawTime > 1000 ? Math.floor(rawTime / 1000) : rawTime || 0;
-          const avgSpeed = parseFloat(stats.avgVelocitySec) || 0;
-
+          const totalStars = stats.starsEarned !== undefined
+            ? stats.starsEarned
+            : calculateStars(stats.accuracyPct, stats.totalTimeSec);
           const star1 = stats.accuracyPct >= 80;
           const star2 = stats.accuracyPct === 100;
-          const star3 = stats.accuracyPct === 100 && (durationSec <= 60 || avgSpeed <= 2.5);
-          const totalStars = (star1 ? 1 : 0) + (star2 ? 1 : 0) + (star3 ? 1 : 0);
+          const star3 = totalStars === 3;
 
           return (
             <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-3 text-left space-y-1.5 shadow-sm">

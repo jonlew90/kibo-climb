@@ -228,6 +228,18 @@ export function lcm(a, b) {
   return Math.abs(a * b) / gcd(a, b);
 }
 
+// Single Source of Truth for Star Calculation
+export function calculateStars(accuracyPct, durationInSeconds) {
+  const accuracy = Number(accuracyPct) || 0;
+  const rawSec = Number(durationInSeconds) || 0;
+  const durationSec = rawSec > 1000 ? Math.floor(rawSec / 1000) : rawSec;
+
+  if (accuracy < 80) return 0;
+  if (accuracy < 100) return 1; // 80% - 99% accuracy
+  if (durationSec > 60) return 2; // 100% accuracy but > 60s
+  return 3; // 100% accuracy AND <= 60s
+}
+
 // Helper to calculate normalized key for commutative protection and deduplication
 export function getNormalizedProblemKey(probData) {
   const { num1, num2, operatorSymbol, displayString } = probData;

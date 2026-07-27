@@ -18,7 +18,7 @@ import SprintResultsModal from './components/SprintResultsModal';
 import BadgesModal from './components/BadgesModal';
 import { evaluateBadges } from './utils/badgeManager';
 import { generateProblems } from './utils/mathGenerator';
-import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS } from './utils/curriculum';
+import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS, calculateStars } from './utils/curriculum';
 import { getItemById } from './utils/itemsCatalog';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
@@ -678,14 +678,7 @@ export default function App() {
     const fluentCount = results.filter((r) => r.speedInfo.category === 'fluent').length;
     const practiceCount = results.filter((r) => r.speedInfo.category === 'practice').length;
 
-    const rawTime = parseFloat(totalTimeSec);
-    const durationSec = rawTime > 1000 ? Math.floor(rawTime / 1000) : rawTime || 0;
-    const avgSpeed = parseFloat(avgVelocitySec) || 0;
-
-    let starsEarned = 0;
-    if (accuracyPct >= 80) starsEarned = 1;
-    if (accuracyPct === 100) starsEarned = 2;
-    if (accuracyPct === 100 && (durationSec <= 60 || avgSpeed <= 2.5)) starsEarned = 3;
+    const starsEarned = calculateStars(accuracyPct, totalTimeSec);
 
     return {
       totalTimeSec,
