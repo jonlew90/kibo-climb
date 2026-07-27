@@ -1,5 +1,5 @@
 import React from 'react';
-import { Delete, RotateCcw } from 'lucide-react';
+import { Delete, RotateCcw, CheckCircle2, XCircle } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
 export default function Keypad({
@@ -10,8 +10,52 @@ export default function Keypad({
   allowDecimal,
   answerString,
   displayString,
-  operatorSymbol
+  operatorSymbol,
+  options
 }) {
+  const isBooleanQuestion = Boolean(
+    (options && options.includes('Yes')) ||
+    (answerString && (
+      answerString.toLowerCase() === 'yes' ||
+      answerString.toLowerCase() === 'no' ||
+      answerString.toLowerCase() === 'true' ||
+      answerString.toLowerCase() === 'false'
+    )) ||
+    (displayString && (
+      displayString.toLowerCase().startsWith('is ') ||
+      displayString.toLowerCase().startsWith('can ') ||
+      displayString.toLowerCase().startsWith('does ')
+    ))
+  );
+
+  if (isBooleanQuestion) {
+    return (
+      <div className="w-full max-w-sm mx-auto flex items-center justify-center gap-3.5 p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner">
+        <button
+          onClick={() => {
+            soundFx.playKeyTap();
+            onKeyPress('Yes');
+          }}
+          className="btn-3d-emerald flex-1 py-4 text-xl sm:text-2xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
+          aria-label="Select Yes"
+        >
+          <CheckCircle2 className="w-6 h-6 stroke-[3]" /> YES
+        </button>
+
+        <button
+          onClick={() => {
+            soundFx.playKeyTap();
+            onKeyPress('No');
+          }}
+          className="btn-3d-rose flex-1 py-4 text-xl sm:text-2xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
+          aria-label="Select No"
+        >
+          <XCircle className="w-6 h-6 stroke-[3]" /> NO
+        </button>
+      </div>
+    );
+  }
+
   const isMoneyOrDecimal = Boolean(
     allowDecimal ||
     (problemType && (

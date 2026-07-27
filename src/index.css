@@ -16,6 +16,14 @@
     border-bottom-width: 5px;
     @apply bg-gradient-to-b from-purple-400 via-purple-600 to-purple-800 text-white font-extrabold border-purple-950 active:translate-y-1.5 active:border-b-0 transition-all duration-75 shadow-clay-purple;
   }
+  .btn-3d-emerald {
+    border-bottom-width: 5px;
+    @apply bg-gradient-to-b from-emerald-400 via-emerald-500 to-emerald-700 text-white font-extrabold border-emerald-900 active:translate-y-1.5 active:border-b-0 transition-all duration-75 shadow-lg;
+  }
+  .btn-3d-rose {
+    border-bottom-width: 5px;
+    @apply bg-gradient-to-b from-rose-400 via-rose-500 to-rose-700 text-white font-extrabold border-rose-900 active:translate-y-1.5 active:border-b-0 transition-all duration-75 shadow-lg;
+  }
   .btn-3d-clay {
     border-bottom-width: 5px;
     @apply bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 text-amber-950 font-extrabold border-amber-700 active:translate-y-1.5 active:border-b-0 transition-all duration-75 shadow-clay-amber;

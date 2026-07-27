@@ -228,6 +228,12 @@ export default function App() {
     const currentProblem = problems[currentIndex];
     if (!currentProblem) return;
 
+    if (digit === 'Yes' || digit === 'No') {
+      setInputVal(digit);
+      submitAnswer(digit, currentProblem);
+      return;
+    }
+
     if (digit === '.' && inputVal.includes('.')) return;
 
     let newInput = inputVal + digit;

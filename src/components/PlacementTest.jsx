@@ -64,6 +64,12 @@ export default function PlacementTest({
   const handleDigitInput = (digit) => {
     if (!currentProblem) return;
 
+    if (digit === 'Yes' || digit === 'No') {
+      setInputVal(digit);
+      submitAnswer(digit, currentProblem);
+      return;
+    }
+
     const newInput = inputVal + digit;
     setInputVal(newInput);
 
