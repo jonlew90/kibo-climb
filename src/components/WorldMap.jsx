@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeft, Target, Lock, CheckCircle2, Play, Compass, Award, Star, Zap, X, Lightbulb } from 'lucide-react';
 import Mascot from './Mascot';
@@ -23,6 +23,20 @@ export default function WorldMap({
   const [showTierIntroModal, setShowTierIntroModal] = useState(false);
   const [showPlacementIntroModal, setShowPlacementIntroModal] = useState(false);
   const [introModalTier, setIntroModalTier] = useState(1);
+  const activeNodeRef = useRef(null);
+
+  useEffect(() => {
+    if (activeNodeRef.current) {
+      const timer = setTimeout(() => {
+        activeNodeRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'center'
+        });
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [currentTier]);
 
   useEffect(() => {
     if (selectedNodeTier) {
@@ -119,7 +133,11 @@ export default function WorldMap({
             const mascotSideClass = isRightAligned ? '-left-16 sm:-left-20' : '-right-16 sm:-right-20';
 
             return (
-              <div key={tierItem.tier} className={`w-full flex ${windClass} relative my-3`}>
+              <div
+                key={tierItem.tier}
+                ref={isActiveNode ? activeNodeRef : null}
+                className={`w-full flex ${windClass} relative my-3`}
+              >
                 <div className="relative flex flex-col items-center group">
                   {/* Mascot Standing Beside the Active Node Badge */}
                   {isActiveNode && (
