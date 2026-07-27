@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { Trophy, Flame, Zap, Compass, ShoppingBag, CheckCircle2, Clock, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import React from 'react';
+import { Trophy, Flame, Zap, Compass, ShoppingBag, CheckCircle2, Clock, Sparkles } from 'lucide-react';
 import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
-import { getTrickForProblem } from '../data/mathTricks';
 
 export default function SprintResultsModal({
   isOpen,
@@ -16,8 +15,6 @@ export default function SprintResultsModal({
   onContinueClimbing,
   onVisitWorkshop
 }) {
-  const [showTrick, setShowTrick] = useState(true);
-
   if (!isOpen) return null;
 
   const handleContinue = () => {
@@ -32,8 +29,12 @@ export default function SprintResultsModal({
 
   const isNewRecord = stats.avgVelocitySec < 2.0;
 
-  // Retrieve relevant math shortcut based on sprint results
-  const recommendedTrick = getTrickForProblem(stats.focusEquation || '9 x 6');
+  const formatTotalTime = (totalSec) => {
+    const sec = Math.round(totalSec || 0);
+    const mins = Math.floor(sec / 60);
+    const remainderSec = sec % 60;
+    return mins > 0 ? `${mins}m ${remainderSec}s` : `${sec}s`;
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-md animate-pop">
@@ -80,41 +81,11 @@ export default function SprintResultsModal({
           </div>
         </div>
 
-        {/* Collapsible "Kibo's Trail Trick" Math Shortcut Card */}
-        {recommendedTrick && (
-          <div className="bg-gradient-to-br from-amber-100 via-yellow-50 to-amber-100 border-2 border-amber-300 rounded-2xl p-3 text-left space-y-1.5 shadow-sm">
-            <div
-              onClick={() => setShowTrick(!showTrick)}
-              className="flex items-center justify-between cursor-pointer select-none"
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="text-lg">{recommendedTrick.icon}</span>
-                <h4 className="font-extrabold text-amber-950 text-xs sm:text-sm flex items-center gap-1">
-                  💡 Kibo's Trail Trick: <span className="text-amber-700">{recommendedTrick.title}</span>
-                </h4>
-              </div>
-              <button type="button" className="text-amber-800 p-0.5">
-                {showTrick ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-            </div>
-
-            {showTrick && (
-              <div className="space-y-1 pt-1 border-t border-amber-200/80 text-xs">
-                <p className="font-bold text-amber-900 leading-snug">{recommendedTrick.summary}</p>
-                <div className="p-2 bg-white/80 rounded-xl border border-amber-300 font-medium text-slate-700 text-[11px]">
-                  <strong className="text-amber-800 block mb-0.5 font-bold">Pro Tip Example:</strong>
-                  {recommendedTrick.example}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Star Milestones Unlocked Card */}
         {(() => {
           const star1 = stats.accuracyPct >= 80;
           const star2 = stats.accuracyPct === 100;
-          const star3 = stats.accuracyPct === 100 && (stats.totalDurationSec <= 60 || stats.avgVelocitySec <= 2.5);
+          const star3 = stats.accuracyPct === 100 && ((stats.totalTimeSec || 0) <= 60 || parseFloat(stats.avgVelocitySec) <= 2.5);
           const totalStars = (star1 ? 1 : 0) + (star2 ? 1 : 0) + (star3 ? 1 : 0);
 
           return (
@@ -148,12 +119,15 @@ export default function SprintResultsModal({
 
         {/* Performance Cards */}
         <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3 space-y-2.5 shadow-inner">
-          <div className="flex justify-between items-center text-xs font-bold text-slate-700 border-b border-slate-200 pb-1.5">
+          <div className="flex justify-between items-center text-xs font-bold text-slate-700 border-b border-slate-200 pb-1.5 flex-wrap gap-1">
             <span className="flex items-center gap-1">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 stroke-[2.5]" /> Accuracy: <strong className="text-slate-900">{stats.accuracyPct}%</strong>
+              <Clock className="w-4 h-4 text-amber-600 stroke-[2.5]" /> Time: <strong className="text-amber-900 font-extrabold">{formatTotalTime(stats.totalTimeSec)}</strong>
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="w-4 h-4 text-kibo-teal stroke-[2.5]" /> Avg Speed: <strong className="text-slate-900">{stats.avgVelocitySec}s / Q</strong>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 stroke-[2.5]" /> Acc: <strong className="text-slate-900">{stats.accuracyPct}%</strong>
+            </span>
+            <span className="flex items-center gap-1">
+              <Zap className="w-4 h-4 text-kibo-teal stroke-[2.5]" /> Speed: <strong className="text-slate-900">{stats.avgVelocitySec}s/Q</strong>
             </span>
           </div>
 
