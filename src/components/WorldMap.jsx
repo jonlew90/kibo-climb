@@ -63,6 +63,9 @@ export default function WorldMap({
     : null;
 
   const isSelectedUnlocked = selectedNodeTier ? unlockedTiers.includes(selectedNodeTier) : false;
+  const isSelectedCompleted = selectedNodeTier ? selectedNodeTier < currentTier : false;
+  const isSelectedActive = selectedNodeTier ? selectedNodeTier === currentTier : false;
+  const isSelectedLocked = selectedNodeTier ? selectedNodeTier > currentTier && !unlockedTiers.includes(selectedNodeTier) : false;
 
   return (
     <div className="w-full flex-1 flex flex-col items-center justify-between py-3 px-2 sm:px-4 max-w-lg mx-auto animate-pop relative">
