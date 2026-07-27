@@ -59,6 +59,11 @@ export default function App() {
   const [showTestOutPassModal, setShowTestOutPassModal] = useState(false);
   const [showTestOutFailModal, setShowTestOutFailModal] = useState(false);
 
+  // 15-Second Idle Hesitation Timer & Tip Repetition Suppression
+  const [showIdleHint, setShowIdleHint] = useState(false);
+  const [seenTips, setSeenTips] = useState(new Set());
+  const idleTimerRef = useRef(null);
+
   const [levelUpReason, setLevelUpReason] = useState('');
   const [isBossMode, setIsBossMode] = useState(false);
   const [isPlacementTest, setIsPlacementTest] = useState(false);
@@ -228,8 +233,32 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [appState, currentIndex, inputVal, problems, showQuitModal]);
 
+  // Reset 15s idle timer on question change or keypress
+  const resetIdleTimer = () => {
+    setShowIdleHint(false);
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+
+    // Suppress idle hints if player has 50%+ mastery on current tier
+    const isMastered = (tierMasteryPercent[tier] || 0) >= 50;
+    if (isMastered) return;
+
+    idleTimerRef.current = setTimeout(() => {
+      setShowIdleHint(true);
+    }, 15000);
+  };
+
+  useEffect(() => {
+    if (appState === 'sprint') {
+      resetIdleTimer();
+    }
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [appState, currentIndex]);
+
   // Zero-Friction Auto-Submit & Format Mask logic
   const handleDigitInput = (digit) => {
+    resetIdleTimer();
     const currentProblem = problems[currentIndex];
     if (!currentProblem) return;
 
@@ -938,9 +967,9 @@ export default function App() {
               )}
             </div>
 
-            {/* Mid-Sprint Micro-Hint Card (Triggered on >= 2 consecutive misses) */}
-            {consecutiveProblemMisses >= 2 && (
-              <MicroHintCard problem={problems[currentIndex]} tierLevel={tier} />
+            {/* Mid-Sprint Micro-Hint Card (Triggered on >= 2 consecutive misses OR 15s idle timer) */}
+            {(consecutiveProblemMisses >= 2 || showIdleHint) && (
+              <MicroHintCard problem={problems[currentIndex]} tierLevel={tier} isIdle={showIdleHint} />
             )}
           </div>
 

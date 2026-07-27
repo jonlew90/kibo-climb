@@ -1,7 +1,7 @@
 import React from 'react';
 import { Lightbulb } from 'lucide-react';
 
-export default function MicroHintCard({ problem, tierLevel }) {
+export default function MicroHintCard({ problem, tierLevel, isIdle = false }) {
   if (!problem) return null;
 
   const num1 = Number(problem.num1) || 0;
@@ -136,7 +136,9 @@ export default function MicroHintCard({ problem, tierLevel }) {
     <div className="w-full max-w-sm bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-3 text-center shadow-sm animate-pop my-2 relative">
       <div className="flex items-center justify-center gap-1.5 mb-1 text-amber-700">
         <Lightbulb className="w-4 h-4 fill-amber-300 stroke-[2.5]" />
-        <span className="text-xs font-black uppercase tracking-wider">Kibo Micro-Hint</span>
+        <span className="text-xs font-black uppercase tracking-wider">
+          {isIdle ? '⚡ Need a hint?' : 'Kibo Micro-Hint'}
+        </span>
       </div>
       {renderHintVisual()}
     </div>
