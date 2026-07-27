@@ -229,26 +229,6 @@ export default function WorldMap({
                 : selectedTierMeta.description}
             </p>
 
-            {/* Pro Tip 💡 Box */}
-            {(() => {
-              const tip = selectedTierMeta.proTip;
-              if (!tip) return null;
-
-              return (
-                <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-2xl p-2.5 text-left space-y-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-base">💡</span>
-                    <h5 className="font-extrabold text-amber-950 text-xs">
-                      Pro Tip: {tip.title}
-                    </h5>
-                  </div>
-                  <p className="text-[11px] font-semibold text-amber-900 leading-snug">
-                    {tip.content || tip.summary}
-                  </p>
-                </div>
-              );
-            })()}
-
             {/* Kibo Tip 💡 Button */}
             <button
               onClick={() => handleOpenKiboTip(selectedTierMeta.tier)}

@@ -401,6 +401,31 @@ export default function ParentDashboardModal({
                         <strong className="text-purple-800 font-bold block mb-0.5">💡 Parent Recommendation:</strong>
                         {domain.recommendation}
                       </div>
+
+                      {/* Parent Coaching Pro Tip Box */}
+                      {(() => {
+                        const tierMap = {
+                          add_sub: 1,
+                          mult_div: 3,
+                          money_time: 5,
+                          multi_digit: 4,
+                          number_theory: 7,
+                          adv_math: 8
+                        };
+                        const targetTierNum = tierMap[domain.id] || 1;
+                        const tierData = CURRICULUM_TIERS.find((t) => t.tier === targetTierNum);
+                        const tip = tierData?.proTip;
+                        if (!tip) return null;
+
+                        return (
+                          <div className="p-2 bg-amber-50/80 border border-amber-200 rounded-lg text-[10px] text-amber-950 font-medium leading-tight space-y-0.5">
+                            <strong className="text-amber-900 font-extrabold flex items-center gap-1">
+                              💡 Coaching Pro Tip: {tip.title}
+                            </strong>
+                            <p>{tip.content || tip.summary}</p>
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })}
