@@ -208,7 +208,7 @@ export default function App() {
     if (appState !== 'sprint' || showQuitModal) return;
 
     const handleKeyDown = (e) => {
-      if (e.key >= '0' && e.key <= '9') {
+      if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
         soundFx.playKeyTap();
         handleDigitInput(e.key);
       } else if (e.key === 'Backspace') {
@@ -223,12 +223,30 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [appState, currentIndex, inputVal, problems, showQuitModal]);
 
-  // Zero-Friction Auto-Submit logic
+  // Zero-Friction Auto-Submit & Format Mask logic
   const handleDigitInput = (digit) => {
     const currentProblem = problems[currentIndex];
     if (!currentProblem) return;
 
-    const newInput = inputVal + digit;
+    if (digit === '.' && inputVal.includes('.')) return;
+
+    let newInput = inputVal + digit;
+
+    // Time Reading Auto-Formatting Mask (e.g. 230 -> 2:30, 1145 -> 11:45)
+    const isTimeProblem = currentProblem.type && (
+      currentProblem.type.startsWith('time') ||
+      currentProblem.type === 'time_basics'
+    );
+
+    if (isTimeProblem && !newInput.includes(':')) {
+      const rawDigits = newInput.replace(/\D/g, '');
+      if (rawDigits.length === 3) {
+        newInput = `${rawDigits[0]}:${rawDigits.slice(1)}`;
+      } else if (rawDigits.length === 4) {
+        newInput = `${rawDigits.slice(0, 2)}:${rawDigits.slice(2)}`;
+      }
+    }
+
     setInputVal(newInput);
 
     const targetLength = currentProblem.answerString.length;
@@ -910,6 +928,7 @@ export default function App() {
             onKeyPress={handleDigitInput}
             onDelete={() => setInputVal((prev) => prev.slice(0, -1))}
             onClear={() => setInputVal('')}
+            problemType={problems[currentIndex]?.type}
           />
         </main>
       )}

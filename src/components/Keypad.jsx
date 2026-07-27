@@ -2,8 +2,14 @@ import React from 'react';
 import { Delete, RotateCcw } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
-export default function Keypad({ onKeyPress, onDelete, onClear }) {
+export default function Keypad({ onKeyPress, onDelete, onClear, problemType, allowDecimal }) {
   const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+  const showDecimal = allowDecimal || (problemType && (
+    problemType.startsWith('money') ||
+    problemType === 'change' ||
+    problemType === 'coins'
+  ));
 
   const handlePress = (digit) => {
     soundFx.playKeyTap();
@@ -33,14 +39,24 @@ export default function Keypad({ onKeyPress, onDelete, onClear }) {
         </button>
       ))}
 
-      {/* Clear Button */}
-      <button
-        onClick={handleClear}
-        className="btn-3d-key text-rose-500 hover:bg-rose-50 border-rose-200 text-lg font-bold"
-        aria-label="Clear all input"
-      >
-        <RotateCcw className="w-7 h-7 stroke-[2.5]" />
-      </button>
+      {/* Decimal Point or Clear Button */}
+      {showDecimal ? (
+        <button
+          onClick={() => handlePress('.')}
+          className="btn-3d-key text-amber-600 font-black text-3xl hover:bg-amber-50 border-amber-200"
+          aria-label="Decimal point"
+        >
+          .
+        </button>
+      ) : (
+        <button
+          onClick={handleClear}
+          className="btn-3d-key text-rose-500 hover:bg-rose-50 border-rose-200 text-lg font-bold"
+          aria-label="Clear all input"
+        >
+          <RotateCcw className="w-7 h-7 stroke-[2.5]" />
+        </button>
+      )}
 
       {/* 0 Button */}
       <button
