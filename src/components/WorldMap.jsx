@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ArrowLeft, Target, Lock, CheckCircle2, Play, Compass, Award, Star, Zap, X, Lightbulb } from 'lucide-react';
 import Mascot from './Mascot';
 import TierIntroModal from './TierIntroModal';
@@ -21,6 +22,15 @@ export default function WorldMap({
   const [showTierIntroModal, setShowTierIntroModal] = useState(false);
   const [showPlacementIntroModal, setShowPlacementIntroModal] = useState(false);
   const [introModalTier, setIntroModalTier] = useState(1);
+
+  useEffect(() => {
+    if (selectedNodeTier) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [selectedNodeTier]);
 
   const handleNodeClick = (tierNum) => {
     soundFx.playKeyTap();
@@ -171,9 +181,9 @@ export default function WorldMap({
       </div>
 
       {/* NODE MODAL PREVIEW (UNLOCKED & LOCKED STATES) */}
-      {selectedNodeTier && selectedTierMeta && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
-          <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative">
+      {selectedNodeTier && selectedTierMeta && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
+          <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative max-h-[85vh] overflow-y-auto">
             <button
               onClick={() => setSelectedNodeTier(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"
@@ -260,7 +270,8 @@ export default function WorldMap({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* PLACEMENT DIAGNOSTIC INTRO MODAL OVERLAY */}
