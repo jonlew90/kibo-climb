@@ -83,9 +83,13 @@ export default function SprintResultsModal({
 
         {/* Star Milestones Unlocked Card */}
         {(() => {
+          const rawTime = parseFloat(stats.totalTimeSec);
+          const durationSec = rawTime > 1000 ? Math.floor(rawTime / 1000) : rawTime || 0;
+          const avgSpeed = parseFloat(stats.avgVelocitySec) || 0;
+
           const star1 = stats.accuracyPct >= 80;
           const star2 = stats.accuracyPct === 100;
-          const star3 = stats.accuracyPct === 100 && ((stats.totalTimeSec || 0) <= 60 || parseFloat(stats.avgVelocitySec) <= 2.5);
+          const star3 = stats.accuracyPct === 100 && (durationSec <= 60 || avgSpeed <= 2.5);
           const totalStars = (star1 ? 1 : 0) + (star2 ? 1 : 0) + (star3 ? 1 : 0);
 
           return (
