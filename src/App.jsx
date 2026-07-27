@@ -22,6 +22,7 @@ import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
 import { pluralize } from './utils/formatters';
+import { storageService } from './services/storageService';
 
 export default function App() {
   // App State: 'launch' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
@@ -70,71 +71,56 @@ export default function App() {
 
   // Persistent Kibo Shields (Streak Freezes: max capacity 2, default 1)
   const [streakShields, setStreakShields] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_shields');
-    return saved !== null ? parseInt(saved, 10) : 1;
+    return storageService.getUserData().streakShields ?? 1;
   });
 
   // Persistent Custom 7-Day Practice Schedule (Default [1, 2, 3, 4, 5] = Mon-Fri)
   const [practiceDays, setPracticeDays] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_practice_days');
-    return saved ? JSON.parse(saved) : [1, 2, 3, 4, 5];
+    return storageService.getParentSettings().practiceDays;
   });
 
   // Persistent Daily Streak
   const [streak, setStreak] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_streak');
-    return saved ? parseInt(saved, 10) : 0;
+    return storageService.getUserData().streak;
   });
 
   // Persistent Sparks Currency (⚡)
   const [sparks, setSparks] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_sparks');
-    return saved ? parseInt(saved, 10) : 0;
+    return storageService.getUserData().sparks;
   });
 
   // Persistent Active Skill Tier (1 through 8)
   const [tier, setTier] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_tier');
-    return saved ? parseInt(saved, 10) : 1;
+    return storageService.getUserData().tier;
   });
 
   // Persistent Unlocked Curriculum Tiers
   const [unlockedTiers, setUnlockedTiers] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_unlocked_tiers');
-    if (saved) return JSON.parse(saved);
-    const activeT = parseInt(localStorage.getItem('kibo_math_tier') || '1', 10);
-    const arr = [];
-    for (let i = 1; i <= Math.max(1, activeT); i++) arr.push(i);
-    return arr;
+    return storageService.getUserData().unlockedTiers;
   });
 
   // Persistent Parent PIN (Default 1234)
   const [parentPin, setParentPin] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_parent_pin');
-    return saved || '1234';
+    return storageService.getParentSettings().pin;
   });
 
   // Persistent Sprint History (last 3 sprints)
   const [sprintHistory, setSprintHistory] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_sprint_history');
-    return saved ? JSON.parse(saved) : [];
+    return storageService.getUserData().sprintHistory;
   });
 
   // Persistent Re-queued Practice Problems
   const [practiceQueue, setPracticeQueue] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_practice_queue');
-    return saved ? JSON.parse(saved) : [];
+    return storageService.getUserData().practiceQueue;
   });
 
   // Persistent Inventory & Equipped Accessories
   const [unlockedItems, setUnlockedItems] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_unlocked');
-    return saved ? JSON.parse(saved) : [];
+    return storageService.getShopState().unlockedItems;
   });
 
   const [equippedItems, setEquippedItems] = useState(() => {
-    const saved = localStorage.getItem('kibo_math_equipped');
-    return saved ? JSON.parse(saved) : [];
+    return storageService.getShopState().equippedItems;
   });
 
   // Schedule-Aware Streak Validation on App Startup
@@ -545,8 +531,7 @@ export default function App() {
       const newShields = Math.min(2, streakShields + 1);
       setSparks(updatedSparks);
       setStreakShields(newShields);
-      localStorage.setItem('kibo_math_sparks', updatedSparks.toString());
-      localStorage.setItem('kibo_math_shields', newShields.toString());
+      storageService.saveUserData({ sparks: updatedSparks, streakShields: newShields });
       return;
     }
 
@@ -565,9 +550,8 @@ export default function App() {
     setUnlockedItems(updatedUnlocked);
     setEquippedItems(updatedEquipped);
 
-    localStorage.setItem('kibo_math_sparks', updatedSparks.toString());
-    localStorage.setItem('kibo_math_unlocked', JSON.stringify(updatedUnlocked));
-    localStorage.setItem('kibo_math_equipped', JSON.stringify(updatedEquipped));
+    storageService.saveUserData({ sparks: updatedSparks });
+    storageService.saveShopState(updatedEquipped, updatedUnlocked);
   };
 
   const handleToggleEquip = (itemId) => {
@@ -586,17 +570,17 @@ export default function App() {
     }
 
     setEquippedItems(updatedEquipped);
-    localStorage.setItem('kibo_math_equipped', JSON.stringify(updatedEquipped));
+    storageService.saveShopState(updatedEquipped, unlockedItems);
   };
 
   const handleUpdatePin = (newPin) => {
     setParentPin(newPin);
-    localStorage.setItem('kibo_math_parent_pin', newPin);
+    storageService.saveParentSettings(newPin, practiceDays);
   };
 
   const handleUpdatePracticeDays = (newDays) => {
     setPracticeDays(newDays);
-    localStorage.setItem('kibo_math_practice_days', JSON.stringify(newDays));
+    storageService.saveParentSettings(parentPin, newDays);
   };
 
   const handleSetTierManual = (newTier) => {

@@ -1,33 +1,18 @@
 // Local Web & Device Notification Engine for Kibo Math
+import { storageService } from '../services/storageService';
 
 let reminderTimeoutId = null;
 
-const DEFAULT_PREFS = {
-  dailyReminderEnabled: true,
-  reminderTime: '17:00', // 5:00 PM
-  weeklyDigestEnabled: true,
-  struggleAlertsEnabled: true
-};
-
 export function getNotificationPrefs() {
-  try {
-    const saved = localStorage.getItem('kibo_parent_notif_prefs');
-    return saved ? { ...DEFAULT_PREFS, ...JSON.parse(saved) } : DEFAULT_PREFS;
-  } catch (e) {
-    return DEFAULT_PREFS;
-  }
+  return storageService.getNotificationSettings();
 }
 
 export function saveNotificationPrefs(prefs) {
-  try {
-    localStorage.setItem('kibo_parent_notif_prefs', JSON.stringify(prefs));
-    if (prefs.dailyReminderEnabled) {
-      scheduleDailyStreakReminder(prefs.reminderTime);
-    } else {
-      cancelPendingReminders();
-    }
-  } catch (e) {
-    console.error('Failed to save notification preferences', e);
+  storageService.saveNotificationSettings(prefs);
+  if (prefs.dailyReminderEnabled) {
+    scheduleDailyStreakReminder(prefs.reminderTime);
+  } else {
+    cancelPendingReminders();
   }
 }
 
@@ -76,7 +61,6 @@ export function scheduleDailyStreakReminder(timeStr = '17:00') {
 
   target.setHours(targetHour, targetMin, 0, 0);
 
-  // If time has already passed today, schedule for tomorrow
   if (now.getTime() >= target.getTime()) {
     target.setDate(target.getDate() + 1);
   }
@@ -88,7 +72,6 @@ export function scheduleDailyStreakReminder(timeStr = '17:00') {
       '🏔️ Kibo Climb Streak Reminder!',
       "Keep your daily math streak alive! Kibo is waiting for today's climb."
     );
-    // Schedule for next day
     scheduleDailyStreakReminder(timeStr);
   }, delayMs);
 }
