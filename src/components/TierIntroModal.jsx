@@ -18,12 +18,14 @@ export default function TierIntroModal({
 
   useEffect(() => {
     if (isOpen) {
+      setTryOutInput('');
+      setIsTryOutSuccess(false);
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = '';
       };
     }
-  }, [isOpen]);
+  }, [isOpen, tierLevel]);
 
   if (!isOpen) return null;
 
