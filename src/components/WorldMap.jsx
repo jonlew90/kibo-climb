@@ -99,9 +99,9 @@ export default function WorldMap({
                 <div className="relative flex flex-col items-center group">
                   {/* Mascot Standing directly on the Active Node */}
                   {isActiveNode && (
-                    <div className="absolute -top-16 z-20 animate-bounce flex flex-col items-center">
-                      <Mascot mood="happy" equipped={equippedItems} className="w-16 h-16 filter drop-shadow-xl" />
-                      <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-md border border-purple-300">
+                    <div className="absolute -top-14 z-5 animate-map-bounce pointer-events-none flex flex-col items-center select-none">
+                      <Mascot mood="happy" equipped={equippedItems} className="w-14 h-14 filter drop-shadow-xl" />
+                      <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md border border-purple-300">
                         Current Base
                       </span>
                     </div>

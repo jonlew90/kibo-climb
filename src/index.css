@@ -149,6 +149,21 @@
   animation: float3d 3s ease-in-out infinite;
 }
 
+/* Subtle Map Breathing Bounce (Max -6px vertical travel, pointer-events: none) */
+@keyframes mapBreathingBounce {
+  0%, 100% {
+    transform: translateY(0px) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-6px) scale(0.98, 1.03);
+  }
+}
+
+.animate-map-bounce {
+  animation: mapBreathingBounce 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
 /* Prevent unwanted double-tap zoom & text selection on mobile/tablet */
 html, body {
   touch-action: manipulation;
