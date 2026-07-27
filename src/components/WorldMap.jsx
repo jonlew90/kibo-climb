@@ -200,18 +200,30 @@ export default function WorldMap({
                 <span className="text-xs uppercase font-black text-purple-600 tracking-wider">
                   Station Node • Tier {selectedTierMeta.tier}
                 </span>
-                {!isSelectedUnlocked && (
+                {isSelectedCompleted ? (
+                  <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                    🟢 Mastered
+                  </span>
+                ) : isSelectedActive ? (
                   <span className="text-[9px] font-black uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                    ⚡ Current Station
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-black uppercase text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-300">
                     🔒 Locked
                   </span>
                 )}
               </div>
-              <h3 className="text-2xl font-extrabold text-slate-800">{selectedTierMeta.title}</h3>
+              <h3 className="text-2xl font-extrabold text-slate-800">
+                {isSelectedLocked ? `Tier ${selectedTierMeta.tier}: Locked 🔒` : selectedTierMeta.title}
+              </h3>
               <p className="text-xs text-slate-500 font-semibold">{selectedTierMeta.location}</p>
             </div>
 
             <p className="text-xs text-slate-600 font-medium leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-200">
-              {selectedTierMeta.description}
+              {isSelectedLocked
+                ? `Complete Tier ${selectedTierMeta.tier - 1} or pass the Tier ${selectedTierMeta.tier} challenge to jump ahead!`
+                : selectedTierMeta.description}
             </p>
 
             {/* Pro Tip 💡 Box */}
@@ -244,13 +256,21 @@ export default function WorldMap({
             </button>
 
             <div className="space-y-2 pt-1">
-              {isSelectedUnlocked ? (
+              {isSelectedCompleted ? (
                 <button
                   onClick={handleStartSelectedSprint}
                   className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
                 >
                   <Play className="w-5 h-5 fill-white stroke-[2.5]" />
-                  Start Sprint on Tier {selectedTierMeta.tier}
+                  Replay Sprint 🔄
+                </button>
+              ) : isSelectedActive || isSelectedUnlocked ? (
+                <button
+                  onClick={handleStartSelectedSprint}
+                  className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
+                >
+                  <Play className="w-5 h-5 fill-white stroke-[2.5]" />
+                  Start Sprint ⚡
                 </button>
               ) : (
                 <button
@@ -258,7 +278,7 @@ export default function WorldMap({
                   className="btn-3d-purple w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
                 >
                   <Zap className="w-5 h-5 fill-amber-300 text-amber-300 stroke-[2.5]" />
-                  Test Out of Tier {selectedTierMeta.tier} ⚡
+                  Test Out of Tier {selectedTierMeta.tier} 🎯
                 </button>
               )}
 
