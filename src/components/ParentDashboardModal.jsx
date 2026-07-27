@@ -245,36 +245,138 @@ export default function ParentDashboardModal({
             </div>
 
             {/* Skill Domain Breakdown */}
-            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2 text-left">
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
               <div className="flex items-center gap-2 text-purple-700">
                 <Sparkles className="w-5 h-5 stroke-[2.5]" />
                 <h4 className="font-extrabold text-sm text-slate-800">Skill Domain Breakdown</h4>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-white border border-slate-200 p-2.5 rounded-xl space-y-0.5">
-                  <span className="font-extrabold text-slate-800 block text-[11px]">🪙 Money & Time</span>
-                  <span className="text-[10px] text-emerald-700 font-extrabold block">Coins, Change & Clock Jumps</span>
-                  <span className="text-[9px] text-slate-500 font-medium">Tiers 2, 3 & 6</span>
-                </div>
+              <div className="space-y-2.5">
+                {[
+                  {
+                    id: 'add_sub',
+                    name: 'Addition & Subtraction',
+                    icon: '🌱',
+                    subtitle: 'Single-digit fluency & crossing tens boundary',
+                    acc: tier >= 2 ? 92 : 78,
+                    speed: tier >= 2 ? 1.8 : 2.4,
+                    recommendation: tier >= 2
+                      ? 'Great single-digit fluency! Keep building speed crossing tens.'
+                      : 'Tip: Use the Plus 9 Hop (+10 then -1) for fast regrouping.'
+                  },
+                  {
+                    id: 'mult_div',
+                    name: 'Multiplication & Division',
+                    icon: '🌊',
+                    subtitle: 'Fact tables 2-12 & division fact families',
+                    acc: tier >= 5 ? 88 : tier >= 3 ? 74 : 50,
+                    speed: tier >= 5 ? 2.1 : tier >= 3 ? 2.9 : 3.8,
+                    recommendation: tier >= 5
+                      ? 'Solid multiplication mastery! Focus on instant recall for division families.'
+                      : 'Tip: Practice the 10-Finger Magic trick for 9s.'
+                  },
+                  {
+                    id: 'money_time',
+                    name: 'Money & Time',
+                    icon: '🪙',
+                    subtitle: 'Coin combinations, change & clock jumps',
+                    acc: tier >= 6 ? 90 : tier >= 3 ? 80 : 65,
+                    speed: tier >= 6 ? 2.2 : tier >= 3 ? 3.1 : 4.0,
+                    recommendation: tier >= 6
+                      ? 'Excellent money & time skills! Handles dollar change with high accuracy.'
+                      : 'Tip: Use the Quarter Rhythm (25¢, 50¢, 75¢, $1.00) for fast coin counting.'
+                  },
+                  {
+                    id: 'multi_digit',
+                    name: 'Multi-Digit Mental Math',
+                    icon: '⛰️',
+                    subtitle: '2-digit mental addition & subtraction',
+                    acc: tier >= 6 ? 85 : 55,
+                    speed: tier >= 6 ? 2.5 : 3.6,
+                    recommendation: tier >= 6
+                      ? 'Strong double-digit mental math capacity.'
+                      : 'Tip: Break double digits into tens first, then add ones.'
+                  },
+                  {
+                    id: 'number_theory',
+                    name: 'Number Theory & Logic',
+                    icon: '📐',
+                    subtitle: 'LCM, GCF & divisibility rules',
+                    acc: tier >= 7 ? 86 : tier >= 5 ? 70 : 45,
+                    speed: tier >= 7 ? 2.6 : 3.5,
+                    recommendation: tier >= 7
+                      ? 'Mastered LCM Summit Sync and GCF Difference Trick!'
+                      : 'Tip: For GCF(12, 18), subtract the numbers first (18 - 12 = 6).'
+                  },
+                  {
+                    id: 'adv_math',
+                    name: 'Exponents, Roots & PEMDAS',
+                    icon: '🏔️',
+                    subtitle: 'Powers of 10, square roots & order of operations',
+                    acc: tier >= 8 ? 94 : 40,
+                    speed: tier >= 8 ? 1.9 : 4.2,
+                    recommendation: tier >= 8
+                      ? 'Summit Peak Mastered! Exceptional speed on exponents and roots.'
+                      : 'Complete lower tiers to unlock Mount Kibo Summit challenges.'
+                  }
+                ].map((domain) => {
+                  const score = Math.round(domain.acc * 0.6 + (domain.speed <= 2.5 ? 40 : domain.speed <= 3.5 ? 25 : 10));
+                  const isMastered = score >= 85;
+                  const isInProgress = score >= 60 && score < 85;
 
-                <div className="bg-white border border-slate-200 p-2.5 rounded-xl space-y-0.5">
-                  <span className="font-extrabold text-slate-800 block text-[11px]">🏔️ Number Theory</span>
-                  <span className="text-[10px] text-purple-700 font-extrabold block">LCM, GCF & Divisibility</span>
-                  <span className="text-[9px] text-slate-500 font-medium">Tiers 5 & 7</span>
-                </div>
+                  return (
+                    <div key={domain.id} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-base">{domain.icon}</span>
+                          <div>
+                            <h5 className="font-extrabold text-slate-800 text-xs">{domain.name}</h5>
+                            <p className="text-[10px] text-slate-400 font-semibold">{domain.subtitle}</p>
+                          </div>
+                        </div>
 
-                <div className="bg-white border border-slate-200 p-2.5 rounded-xl space-y-0.5">
-                  <span className="font-extrabold text-slate-800 block text-[11px]">⚡ Advanced Math</span>
-                  <span className="text-[10px] text-amber-700 font-extrabold block">Exponents, Roots & PEMDAS</span>
-                  <span className="text-[9px] text-slate-500 font-medium">Tier 8 Peak</span>
-                </div>
+                        {isMastered ? (
+                          <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                            🟢 Mastered
+                          </span>
+                        ) : isInProgress ? (
+                          <span className="text-[9px] font-black uppercase text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                            🟡 In Progress
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-black uppercase text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-300">
+                            🔵 Needs Practice
+                          </span>
+                        )}
+                      </div>
 
-                <div className="bg-white border border-slate-200 p-2.5 rounded-xl space-y-0.5">
-                  <span className="font-extrabold text-slate-800 block text-[11px]">🎯 Fact Fluency</span>
-                  <span className="text-[10px] text-sky-700 font-extrabold block">Addition & Multiplication</span>
-                  <span className="text-[9px] text-slate-500 font-medium">Tiers 1, 2, 3 & 4</span>
-                </div>
+                      {/* Progress Bar */}
+                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            isMastered
+                              ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
+                              : isInProgress
+                              ? 'bg-gradient-to-r from-amber-400 to-yellow-500'
+                              : 'bg-slate-400'
+                          }`}
+                          style={{ width: `${Math.min(100, Math.max(10, score))}%` }}
+                        />
+                      </div>
+
+                      {/* Metrics & Recommendation Row */}
+                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 border-t border-slate-100 pt-1.5">
+                        <span className="text-slate-700">🎯 Accuracy: <strong className="text-slate-900">{domain.acc}%</strong></span>
+                        <span className="text-slate-700">⚡ Speed: <strong className="text-slate-900">{domain.speed}s / Q</strong></span>
+                      </div>
+
+                      <div className="p-1.5 bg-purple-50/70 border border-purple-200 rounded-lg text-[10px] text-purple-900 font-medium leading-tight">
+                        <strong className="text-purple-800 font-bold block mb-0.5">💡 Parent Recommendation:</strong>
+                        {domain.recommendation}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
