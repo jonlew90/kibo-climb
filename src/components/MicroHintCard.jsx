@@ -126,7 +126,7 @@ export default function MicroHintCard({ problem, tierLevel }) {
           💡 <strong>Order of Operations (PEMDAS):</strong>
         </p>
         <div className="bg-amber-100/80 p-2 rounded-xl border border-amber-200 text-xs font-bold text-purple-900">
-          <span>Parentheses $\rightarrow$ Exponents/Roots $\rightarrow$ Multiply/Divide $\rightarrow$ Add/Subtract</span>
+          <span>Parentheses → Exponents/Roots → Multiply/Divide → Add/Subtract</span>
         </div>
       </div>
     );
