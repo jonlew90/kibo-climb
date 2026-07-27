@@ -92,16 +92,19 @@ export default function WorldMap({
             const isCompleted = tierItem.tier < currentTier || (isUnlocked && !isActiveNode);
 
             const windPositions = ['justify-center', 'justify-start pl-6', 'justify-center', 'justify-end pr-6'];
-            const windClass = windPositions[(tierItem.tier - 1) % windPositions.length];
+            const windIdx = (tierItem.tier - 1) % windPositions.length;
+            const windClass = windPositions[windIdx];
+            const isRightAligned = windIdx === 3;
+            const mascotSideClass = isRightAligned ? '-left-16 sm:-left-20' : '-right-16 sm:-right-20';
 
             return (
               <div key={tierItem.tier} className={`w-full flex ${windClass} relative my-3`}>
                 <div className="relative flex flex-col items-center group">
-                  {/* Mascot Standing directly on the Active Node */}
+                  {/* Mascot Standing Beside the Active Node Badge */}
                   {isActiveNode && (
-                    <div className="absolute -top-14 z-5 animate-map-bounce pointer-events-none flex flex-col items-center select-none">
+                    <div className={`absolute top-1/2 -translate-y-1/2 ${mascotSideClass} z-5 animate-map-bounce pointer-events-none flex flex-col items-center select-none`}>
                       <Mascot mood="happy" equipped={equippedItems} className="w-14 h-14 filter drop-shadow-xl" />
-                      <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md border border-purple-300">
+                      <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md border border-purple-300 whitespace-nowrap">
                         Current Base
                       </span>
                     </div>
@@ -110,9 +113,9 @@ export default function WorldMap({
                   {/* 3D Clay Node Badge Container */}
                   <button
                     onClick={() => handleNodeClick(tierItem.tier)}
-                    className={`relative w-24 h-24 rounded-3xl border-b-4 flex flex-col items-center justify-center transition-all duration-200 clay-node ${
+                    className={`relative z-20 pointer-events-auto w-24 h-24 rounded-3xl border-b-4 flex flex-col items-center justify-center transition-all duration-200 clay-node ${
                       isActiveNode
-                        ? 'bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-600 text-amber-950 border-amber-900 shadow-bouncy-orange ring-4 ring-amber-300/90 scale-110 z-10'
+                        ? 'bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-600 text-amber-950 border-amber-900 shadow-bouncy-orange ring-4 ring-amber-300/90 scale-110'
                         : isUnlocked
                         ? 'bg-gradient-to-b from-emerald-400 via-teal-500 to-teal-700 text-white border-teal-950 shadow-clay-teal hover:scale-105 active:translate-y-1 active:border-b-0'
                         : 'bg-gradient-to-b from-slate-200 to-slate-400 text-slate-500 border-slate-600 opacity-60 hover:opacity-100 shadow-sm'
