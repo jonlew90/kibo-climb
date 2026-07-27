@@ -306,6 +306,7 @@ export default function App() {
   const submitAnswer = (userAnswerStr, currentProblem) => {
     const now = performance.now();
     const latencyMs = Math.round(Math.max(10, now - problemStartTimeRef.current));
+    const responseTimeSeconds = parseFloat((latencyMs / 1000).toFixed(2));
     const isCorrect = userAnswerStr === currentProblem.answerString;
     const speedInfo = classifyLatency(currentProblem.answerString, latencyMs, isCorrect);
 
@@ -314,6 +315,7 @@ export default function App() {
       userAnswer: userAnswerStr,
       isCorrect,
       latencyMs,
+      responseTimeSeconds,
       speedInfo
     };
 
@@ -707,9 +709,25 @@ export default function App() {
     const accuracyPct = Math.round((correctCount / results.length) * 100);
     const avgVelocitySec = (totalLatencyMs / (results.length * 1000)).toFixed(2);
 
-    const superFastCount = results.filter((r) => r.speedInfo.category === 'super_fast').length;
-    const fluentCount = results.filter((r) => r.speedInfo.category === 'fluent').length;
-    const practiceCount = results.filter((r) => r.speedInfo.category === 'practice').length;
+    const instantRecall = results.filter((p) => {
+      const sec = p.responseTimeSeconds !== undefined
+        ? (p.responseTimeSeconds > 100 ? p.responseTimeSeconds / 1000 : p.responseTimeSeconds)
+        : (p.latencyMs > 100 ? p.latencyMs / 1000 : p.latencyMs);
+      return p.isCorrect && sec < 3.5;
+    });
+
+    const workedOut = results.filter((p) => {
+      const sec = p.responseTimeSeconds !== undefined
+        ? (p.responseTimeSeconds > 100 ? p.responseTimeSeconds / 1000 : p.responseTimeSeconds)
+        : (p.latencyMs > 100 ? p.latencyMs / 1000 : p.latencyMs);
+      return p.isCorrect && sec >= 3.5;
+    });
+
+    const focusArea = results.filter((p) => !p.isCorrect);
+
+    const superFastCount = instantRecall.length;
+    const fluentCount = workedOut.length;
+    const practiceCount = focusArea.length;
 
     const starsEarned = calculateStars(accuracyPct, totalTimeSec);
 
