@@ -277,34 +277,31 @@ export default function App() {
     };
 
     const nextResults = [...results, resultRecord];
+    setResults(nextResults);
 
     if (isCorrect) {
       soundFx.playCorrect();
       setMascotMood('correct');
       setConsecutiveProblemMisses(0);
-      setResults(nextResults);
     } else {
       soundFx.playIncorrect();
       setMascotMood('incorrect');
       setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 400);
       setConsecutiveProblemMisses((prev) => prev + 1);
     }
 
     setTimeout(() => {
       setMascotMood('happy');
+      setIsShaking(false);
       setInputVal('');
 
-      if (isCorrect) {
-        if (currentIndex + 1 < problems.length) {
-          setCurrentIndex(currentIndex + 1);
-          setConsecutiveProblemMisses(0);
-          problemStartTimeRef.current = performance.now();
-        } else {
-          finishSprint(nextResults);
-        }
+      if (currentIndex + 1 < problems.length) {
+        setCurrentIndex(currentIndex + 1);
+        problemStartTimeRef.current = performance.now();
+      } else {
+        finishSprint(nextResults);
       }
-    }, isCorrect ? 200 : 450);
+    }, isCorrect ? 200 : 800);
   };
 
   const startNewSprint = (asBossMode = false, overrideTier = null) => {
@@ -921,6 +918,12 @@ export default function App() {
                   {inputVal ? inputVal : <span className="text-slate-300 font-normal animate-pulse">?</span>}
                 </span>
               </div>
+
+              {isShaking && (
+                <div className="mt-2 text-xs font-black text-rose-700 bg-rose-100 py-1.5 px-3 rounded-full border border-rose-300 animate-pop inline-block">
+                  Correct Answer: {problems[currentIndex].answerString}
+                </div>
+              )}
             </div>
 
             {/* Mid-Sprint Micro-Hint Card (Triggered on >= 2 consecutive misses) */}
