@@ -268,22 +268,29 @@ export default function App() {
       return;
     }
 
+    const isTimeProblem = Boolean(
+      (currentProblem.type && (currentProblem.type.includes('time') || currentProblem.type === 'time_basics')) ||
+      (currentProblem.answerString && currentProblem.answerString.includes(':')) ||
+      currentProblem.operatorSymbol === '⏰' ||
+      (currentProblem.displayString && (currentProblem.displayString.toLowerCase().includes('mins') || currentProblem.displayString.toLowerCase().includes('after')))
+    );
+
     if (digit === '.' && inputVal.includes('.')) return;
 
     let newInput = inputVal + digit;
 
-    // Time Reading Auto-Formatting Mask (e.g. 230 -> 2:30, 1145 -> 11:45)
-    const isTimeProblem = currentProblem.type && (
-      currentProblem.type.startsWith('time') ||
-      currentProblem.type === 'time_basics'
-    );
-
-    if (isTimeProblem && !newInput.includes(':')) {
-      const rawDigits = newInput.replace(/\D/g, '');
-      if (rawDigits.length === 3) {
-        newInput = `${rawDigits[0]}:${rawDigits.slice(1)}`;
-      } else if (rawDigits.length === 4) {
-        newInput = `${rawDigits.slice(0, 2)}:${rawDigits.slice(2)}`;
+    // Time Reading Auto-Formatting Mask (e.g. 315 -> 3:15, 1030 -> 10:30)
+    if (isTimeProblem) {
+      if (digit === ':') {
+        if (inputVal.includes(':')) return;
+        newInput = inputVal + ':';
+      } else if (!inputVal.includes(':')) {
+        const rawDigits = (inputVal + digit).replace(/\D/g, '');
+        if (rawDigits.length === 3) {
+          newInput = `${rawDigits[0]}:${rawDigits.slice(1)}`;
+        } else if (rawDigits.length === 4) {
+          newInput = `${rawDigits.slice(0, 2)}:${rawDigits.slice(2)}`;
+        }
       }
     }
 

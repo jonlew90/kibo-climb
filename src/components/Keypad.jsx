@@ -56,6 +56,13 @@ export default function Keypad({
     );
   }
 
+  const isTimeQuestion = Boolean(
+    (problemType && problemType.includes('time')) ||
+    (answerString && answerString.includes(':')) ||
+    (displayString && (displayString.includes(':') || displayString.includes('time') || displayString.includes('Time'))) ||
+    operatorSymbol === '⏰'
+  );
+
   const isMoneyOrDecimal = Boolean(
     allowDecimal ||
     (problemType && (
@@ -69,7 +76,7 @@ export default function Keypad({
     operatorSymbol === '🪙'
   );
 
-  const bottomLeftKey = isMoneyOrDecimal ? '.' : 'clear';
+  const bottomLeftKey = isTimeQuestion ? ':' : isMoneyOrDecimal ? '.' : 'clear';
 
   const keyGrid = [
     ['1', '2', '3'],
@@ -92,6 +99,19 @@ export default function Keypad({
   return (
     <div className="w-full max-w-sm mx-auto grid grid-cols-3 gap-3 sm:gap-4 p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner">
       {keyGrid.flat().map((keyVal, idx) => {
+        if (keyVal === ':') {
+          return (
+            <button
+              key={`${keyVal}-${idx}`}
+              onClick={() => handleKeyClick(':')}
+              className="btn-3d-key text-purple-700 font-black text-3xl hover:bg-purple-50 border-purple-200"
+              aria-label="Colon time separator"
+            >
+              :
+            </button>
+          );
+        }
+
         if (keyVal === '.') {
           return (
             <button
