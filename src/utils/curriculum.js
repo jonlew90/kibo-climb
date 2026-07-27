@@ -3,127 +3,146 @@
 export const CURRICULUM_TIERS = [
   {
     tier: 1,
-    title: 'Single-Digit Math',
-    subtitle: 'Addition & Subtraction (1–9)',
+    id: 1,
+    name: 'Sums & Differences to 20',
+    title: 'Sums & Differences to 20',
+    subtitle: 'Addition & Subtraction Fluency',
     location: 'Sunny Meadow',
     icon: '🌱',
     color: 'from-emerald-400 to-teal-500',
-    description: 'Master basic single-digit addition and subtraction fluency.',
+    description: 'Master single-digit addition and subtraction fluency.',
     trailTrick: {
-      title: 'Plus 9 Hop! 🦘',
-      summary: 'Add 10 first, then step back 1! For 9 + 7, do 10 + 7 = 17, then minus 1 to get 16.',
+      title: 'Making 10s',
+      description: 'Split the smaller number to turn the bigger number into 10 first! For 8 + 5, take 2 from 5 to make 10, then add 3 to get 13!',
+      summary: 'Split the smaller number to turn the bigger number into 10 first! For 8 + 5, take 2 from 5 to make 10, then add 3 to get 13!',
       sampleProblem: {
-        question: '9 + 7',
-        correctAnswer: '16',
-        hint: 'Add 10 first (10 + 7 = 17), then step back 1 to get 16!'
+        question: '8 + 5',
+        correctAnswer: '13',
+        hint: '8 + 2 = 10, then add the remaining 3!'
       }
     }
   },
   {
     tier: 2,
-    tierTitle: 'Tier 2: Crossing Tens & Clock Basics',
-    title: 'Crossing Tens & Time Basics',
-    subtitle: 'Regrouping, Missing Addends & Time',
+    id: 2,
+    name: 'Multiplication Foundations (0s–5s)',
+    title: 'Multiplication Foundations (0s–5s)',
+    subtitle: 'Fact Tables & Clock Tricks',
     location: 'Forest Trail',
     icon: '🌲',
     color: 'from-amber-400 to-orange-500',
-    description: 'Cross the tens boundary (8+7=15), missing addends, and read clock times.',
+    description: 'Build core multiplication fluency for factors 0s through 5s.',
     trailTrick: {
-      title: 'Time Jump & Landmark 10s! ⏰',
-      summary: 'Break the second number to land on 10! For 8 + 7, do 8 + 2 = 10, then add the remaining 5 to get 15.',
+      title: 'The 5s Clock Trick',
+      description: 'To multiply by 5, multiply by 10 first, then cut the answer in half! For 5 × 8, do 10 × 8 = 80, then half of 80 is 40!',
+      summary: 'To multiply by 5, multiply by 10 first, then cut the answer in half! For 5 × 8, do 10 × 8 = 80, then half of 80 is 40!',
       sampleProblem: {
-        question: '8 + 7',
-        correctAnswer: '15',
-        hint: 'Split 7 into 2 + 5. 8 + 2 = 10, plus 5 is 15!'
+        question: '5 × 8',
+        correctAnswer: '40',
+        hint: '10 × 8 = 80. Half of 80 is 40!'
       }
     }
   },
   {
     tier: 3,
-    title: 'Core Multiplication & Money',
-    subtitle: '2×, 5×, 10× Tables & Coin Counting',
+    id: 3,
+    name: 'Advanced Multiplication (6s–9s)',
+    title: 'Advanced Multiplication (6s–9s)',
+    subtitle: 'Multiplication Tables & Finger Shortcuts',
     location: 'Multiplication River',
     icon: '🌊',
     color: 'from-blue-400 to-cyan-500',
-    description: 'Build core multiplication tables and count coin combinations under $1.00.',
+    description: 'Master advanced multiplication tables (6s through 9s).',
     trailTrick: {
-      title: 'Quarter Rhythm (25¢, 50¢, 75¢, $1.00)! 🪙',
-      summary: 'Count quarters in rhythm: 25¢, 50¢, 75¢, $1.00! For change under $1.00, count up to 100¢.',
+      title: 'The 9s Finger Trick',
+      description: 'Fold down the finger you are multiplying by! Count fingers to the left for tens, and fingers to the right for ones!',
+      summary: 'Fold down the finger you are multiplying by! Count fingers to the left for tens, and fingers to the right for ones!',
       sampleProblem: {
-        question: '3 Quarters (75¢) + 1 Dime (10¢)',
-        correctAnswer: '85',
-        hint: '3 Quarters = 75¢. 75¢ + 10¢ = 85¢!'
+        question: '9 × 7',
+        correctAnswer: '63',
+        hint: 'Fold finger 7 down → 6 tens on left, 3 ones on right!'
       }
     }
   },
   {
     tier: 4,
-    title: 'Complete Multiplication',
-    subtitle: '3× through 12× Tables',
+    id: 4,
+    name: 'Multi-Digit & 11s Trick',
+    title: 'Multi-Digit & 11s Trick',
+    subtitle: 'Multi-Digit Mental Math Shortcuts',
     location: 'Factor Canyon',
     icon: '🏜️',
     color: 'from-purple-400 to-indigo-500',
-    description: 'Master the full multiplication table grid up to 12×12.',
+    description: 'Master multi-digit mental multiplication and the 11s split shortcut.',
     trailTrick: {
-      title: '10-Finger Magic for 9s! 🖐️',
-      summary: 'Put down the finger you multiply by 9. Fingers left = Tens, fingers right = Ones!',
+      title: '11s Split & Add',
+      description: 'For 11 × 35, split the 3 and 5, add them together (3 + 5 = 8), and put the sum in the middle to get 385!',
+      summary: 'For 11 × 35, split the 3 and 5, add them together (3 + 5 = 8), and put the sum in the middle to get 385!',
       sampleProblem: {
-        question: '9 × 6',
-        correctAnswer: '54',
-        hint: 'Put down 6th finger. 5 left (50) + 4 right (4) = 54!'
+        question: '11 × 35',
+        correctAnswer: '385',
+        hint: 'Split 3 and 5. Add 3 + 5 = 8, put 8 in the middle!'
       }
     }
   },
   {
     tier: 5,
-    title: 'Division & Divisibility Secrets',
-    subtitle: 'Fact Families & Divisibility Rules',
+    id: 5,
+    name: 'Money & Elapsed Time Jumps',
+    title: 'Money & Elapsed Time Jumps',
+    subtitle: 'Coin Combinations, Change & Time Jumps',
     location: 'Division Falls',
-    icon: '🏞️',
+    icon: '🪙',
     color: 'from-sky-400 to-blue-600',
-    description: 'Master division fact families (56 ÷ 8 = 7) and digit divisibility secrets.',
+    description: 'Calculate coin combinations, change under $1.00, and elapsed time jumps.',
     trailTrick: {
-      title: 'Sum-of-3 Rule & Fact Family Reversal! 🏞️',
-      summary: 'Add the digits together! If the digit sum divides by 3, the entire number is divisible by 3.',
+      title: 'The $1.00 Bridge',
+      description: 'Count up to $1.00 (100¢) using benchmark coins! From 65¢, add 5¢ to get to 70¢, then 30¢ to reach $1.00!',
+      summary: 'Count up to $1.00 (100¢) using benchmark coins! From 65¢, add 5¢ to get to 70¢, then 30¢ to reach $1.00!',
       sampleProblem: {
-        question: 'Is 123 divisible by 3? (Yes/No)',
-        correctAnswer: 'Yes',
-        hint: '1 + 2 + 3 = 6. Since 6 ÷ 3 = 2, 123 is divisible by 3!'
+        question: '$1.00 - $0.65',
+        correctAnswer: '0.35',
+        hint: 'Count up from 65¢: +5¢ to 70¢, then +30¢ to $1.00!'
       }
     }
   },
   {
     tier: 6,
-    title: 'Multi-Digit Math & Elapsed Time',
-    subtitle: '2-Digit Operations, Time Jumps & Dollars',
+    id: 6,
+    name: 'Division & Long Division Mental Math',
+    title: 'Division & Long Division Mental Math',
+    subtitle: 'Division Fact Families & Halving Ladders',
     location: 'Boulder Ridge',
     icon: '⛰️',
     color: 'from-amber-500 to-stone-600',
-    description: 'Mental math (45+38=83), calculate elapsed time jumps, and dollar change.',
+    description: 'Master division fact families and the halving ladder mental strategy.',
     trailTrick: {
-      title: 'Tens-First Split & Clock Jump! ⛰️',
-      summary: 'Add the tens first (40+30=70), then add the ones (5+8=13) to get 83 instantly!',
+      title: 'The Halving Ladder',
+      description: 'Dividing by 4? Cut the number in half twice! For 84 ÷ 4, half of 84 is 42, and half of 42 is 21!',
+      summary: 'Dividing by 4? Cut the number in half twice! For 84 ÷ 4, half of 84 is 42, and half of 42 is 21!',
       sampleProblem: {
-        question: '45 + 38',
-        correctAnswer: '83',
-        hint: 'Tens: 40 + 30 = 70. Ones: 5 + 8 = 13. 70 + 13 = 83!'
+        question: '84 ÷ 4',
+        correctAnswer: '21',
+        hint: 'Half of 84 is 42. Half of 42 is 21!'
       }
     }
   },
   {
     tier: 7,
-    title: 'LCM, GCF & Percentages',
-    subtitle: 'Least Common Multiples, GCF & Percentages',
+    id: 7,
+    name: 'Fractions, Decimals, & GCF/LCM',
+    title: 'Fractions, Decimals, & GCF/LCM',
+    subtitle: 'Least Common Multiples & Factor Ladders',
     location: 'Fraction Falls',
     icon: '🧩',
     color: 'from-teal-400 via-emerald-500 to-cyan-600',
-    description: 'Find Least Common Multiples (LCM), Greatest Common Factors (GCF), and percentages.',
+    description: 'Find Least Common Multiples (LCM), Greatest Common Factors (GCF), and decimal percentages.',
     trailTrick: {
-      title: 'The GCF Factor Ladder 🧩',
-      summary: 'To find the GCF of 12 and 18, divide both by shared factors (2, then 3). Multiply the factors (2 × 3) to get 6!',
-      description: 'To find the GCF of 12 and 18, divide both by shared factors (2, then 3). Multiply the factors (2 × 3) to get 6!',
+      title: 'The GCF Factor Ladder',
+      description: 'To find the GCF of 12 and 18, divide both by shared prime factors (2, then 3). Multiply the divisors (2 × 3 = 6)!',
+      summary: 'To find the GCF of 12 and 18, divide both by shared prime factors (2, then 3). Multiply the divisors (2 × 3 = 6)!',
       sampleProblem: {
-        question: 'What is the GCF of 12 and 18?',
+        question: 'GCF of 12 & 18',
         correctAnswer: '6',
         hint: 'Find the largest number that divides evenly into both 12 and 18.'
       }
@@ -131,20 +150,22 @@ export const CURRICULUM_TIERS = [
   },
   {
     tier: 8,
-    title: 'Exponents, Roots & PEMDAS',
-    subtitle: 'Powers, Square Roots & Order of Operations',
+    id: 8,
+    name: 'Exponents, Square Roots, & Pre-Algebra',
+    title: 'Exponents, Square Roots, & Pre-Algebra',
+    subtitle: 'Powers, Roots & PEMDAS Peak',
     location: 'Mount Kibo Summit',
     icon: '🏔️',
     color: 'from-yellow-400 via-amber-500 to-purple-600',
-    description: 'Master exponents (2³), square roots (√81), and PEMDAS at the peak of Mount Kibo!',
+    description: 'Master exponents (2⁴), square roots (√81), and PEMDAS at the peak of Mount Kibo!',
     trailTrick: {
-      title: 'Exponent Base Repeater & PEMDAS Ladder 🏔️',
-      summary: 'For 2³, multiply the base (2) by itself 3 times: 2 × 2 × 2 = 8!',
-      description: 'For 2³, multiply the base (2) by itself 3 times: 2 × 2 × 2 = 8!',
+      title: 'Power Doubling',
+      description: 'An exponent tells you how many times to multiply the base by itself! For 2⁴, double four times: 2 → 4 → 8 → 16!',
+      summary: 'An exponent tells you how many times to multiply the base by itself! For 2⁴, double four times: 2 → 4 → 8 → 16!',
       sampleProblem: {
-        question: 'Evaluate 2³',
-        correctAnswer: '8',
-        hint: 'Multiply the base (2) three times: 2 × 2 × 2!'
+        question: 'Evaluate 2⁴',
+        correctAnswer: '16',
+        hint: 'Multiply 2 × 2 × 2 × 2!'
       }
     }
   }
@@ -189,8 +210,7 @@ export function generateTierProblem(tierLevel) {
 
   switch (tierLevel) {
     case 1: {
-      const isAdd = Math.random() > 0.5;
-      if (isAdd) {
+      if (Math.random() > 0.4) {
         num1 = Math.floor(Math.random() * 9) + 1;
         num2 = Math.floor(Math.random() * 9) + 1;
         answer = num1 + num2;
@@ -207,7 +227,6 @@ export function generateTierProblem(tierLevel) {
     case 2: {
       const type = Math.random();
       if (type < 0.25) {
-        // Time Basics (Minutes to hour / half hour)
         const hours = Math.floor(Math.random() * 8) + 1;
         const minsAdd = [15, 30, 45][Math.floor(Math.random() * 3)];
         num1 = hours;
@@ -242,9 +261,8 @@ export function generateTierProblem(tierLevel) {
     case 3: {
       const type = Math.random();
       if (type < 0.25) {
-        // Coin Counting (Quarters, Dimes, Nickels)
-        const q = Math.floor(Math.random() * 3) + 1; // 1-3 quarters
-        const d = Math.floor(Math.random() * 3) + 1; // 1-3 dimes
+        const q = Math.floor(Math.random() * 3) + 1;
+        const d = Math.floor(Math.random() * 3) + 1;
         answer = q * 25 + d * 10;
         num1 = q;
         num2 = d;
@@ -252,8 +270,7 @@ export function generateTierProblem(tierLevel) {
         displayString = `${q} Quarter${q > 1 ? 's' : ''} + ${d} Dime${d > 1 ? 's' : ''} = ? ¢`;
         hint = 'Hint: Quarters are 25¢, Dimes are 10¢!';
       } else if (type < 0.45) {
-        // Making Change under $1.00
-        const cost = (Math.floor(Math.random() * 15) + 5) * 5; // 25c - 95c
+        const cost = (Math.floor(Math.random() * 15) + 5) * 5;
         answer = 100 - cost;
         num1 = 100;
         num2 = cost;
@@ -280,7 +297,6 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 5: {
-      // Tier 5: Division Fact Families (70%) & Divisibility Rules (30%)
       if (Math.random() < 0.3) {
         const divisors = [2, 3, 5, 10];
         const divisor = divisors[Math.floor(Math.random() * divisors.length)];
@@ -305,37 +321,28 @@ export function generateTierProblem(tierLevel) {
     case 6: {
       const subType = Math.random();
       if (subType < 0.2) {
-        // Elapsed Time Jumps
-        const startHour = Math.floor(Math.random() * 4) + 1; // 1 to 4 PM
+        const startHour = Math.floor(Math.random() * 4) + 1;
         const startMin = 30;
         const durHours = 1;
         const durMins = [15, 30, 45][Math.floor(Math.random() * 3)];
         num1 = startHour;
         num2 = durMins;
-        answer = `${durHours} hr ${durMins} min`;
-        operatorSymbol = '⏱️';
-        displayString = `Hike from ${startHour}:${startMin} PM to ${startHour + durHours + 1}:${(startMin + durMins) % 60 === 0 ? '00' : '15'} PM. Duration?`;
-        hint = 'Hint: Jump to the next full hour first!';
-      } else if (subType < 0.4) {
-        // Multi-Dollar Change
-        const bill = [5, 10, 20][Math.floor(Math.random() * 3)];
-        const costCents = Math.floor(Math.random() * 300) + 150; // $1.50 - $4.50
-        const costDollars = (costCents / 100).toFixed(2);
-        answer = `$${(bill - costDollars).toFixed(2)}`;
-        num1 = bill;
-        num2 = costDollars;
-        operatorSymbol = '💵';
-        displayString = `Pay $${bill}.00 for a trail hat costing $${costDollars}. Change?`;
-        hint = 'Hint: Count up to the dollar!';
-      } else if (subType < 0.7) {
-        num1 = Math.floor(Math.random() * 40) + 15;
+        const endMinTotal = startMin + durMins;
+        const endHour = startHour + durHours + Math.floor(endMinTotal / 60);
+        const finalMin = endMinTotal % 60;
+        answer = `${endHour}:${finalMin === 0 ? '00' : finalMin} PM`;
+        operatorSymbol = '⏰';
+        displayString = `Hike started at ${startHour}:${startMin} PM. Duration: 1 hr ${durMins} mins. End time?`;
+        hint = 'Hint: Add hours first, then add minutes!';
+      } else if (subType < 0.6) {
+        num1 = Math.floor(Math.random() * 40) + 20;
         num2 = Math.floor(Math.random() * 40) + 15;
         answer = num1 + num2;
         operatorSymbol = '+';
         displayString = `${num1} ${operatorSymbol} ${num2}`;
       } else {
         num1 = Math.floor(Math.random() * 50) + 40;
-        num2 = Math.floor(Math.random() * 30) + 12;
+        num2 = Math.floor(Math.random() * 30) + 10;
         answer = num1 - num2;
         operatorSymbol = '−';
         displayString = `${num1} ${operatorSymbol} ${num2}`;
@@ -343,137 +350,118 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 7: {
-      // Tier 7: LCM (35%), GCF (35%), Percentages (30%)
       const subType = Math.random();
       if (subType < 0.35) {
-        // LCM Problem
         const pairs = [
-          [2, 3], [3, 4], [4, 6], [3, 5], [4, 8], [6, 8], [5, 10], [6, 9], [4, 10], [8, 12]
+          [4, 6], [3, 5], [6, 8], [4, 10], [5, 10], [6, 9], [8, 12]
         ];
         const pair = pairs[Math.floor(Math.random() * pairs.length)];
         num1 = pair[0];
         num2 = pair[1];
         answer = lcm(num1, num2);
         operatorSymbol = 'LCM';
-        displayString = `Find the LCM of ${num1} and ${num2}`;
-        hint = 'Hint: Skip-count the larger number until the smaller one divides into it!';
-      } else if (subType < 0.70) {
-        // GCF Problem
-        const pairs = [
-          [6, 9], [12, 18], [8, 12], [15, 20], [14, 21], [16, 24], [18, 27], [20, 30], [24, 36]
+        displayString = `Find LCM(${num1}, ${num2})`;
+        hint = `Hint: Skip count by ${Math.max(num1, num2)} until ${Math.min(num1, num2)} divides evenly!`;
+      } else if (subType < 0.7) {
+        const gcfPairs = [
+          [12, 18], [16, 24], [20, 30], [15, 25], [14, 21], [18, 27]
         ];
-        const pair = pairs[Math.floor(Math.random() * pairs.length)];
+        const pair = gcfPairs[Math.floor(Math.random() * gcfPairs.length)];
         num1 = pair[0];
         num2 = pair[1];
         answer = gcd(num1, num2);
         operatorSymbol = 'GCF';
-        displayString = `Find the GCF of ${num1} and ${num2}`;
-        hint = 'Hint: Subtract the two numbers to find common factors!';
+        displayString = `Find GCF(${num1}, ${num2})`;
+        hint = `Hint: Find the largest number that divides into both ${num1} and ${num2}!`;
       } else {
-        // Percentages Problem
-        const percentages = [10, 20, 25, 50, 75];
-        const pct = percentages[Math.floor(Math.random() * percentages.length)];
-        const base = (Math.floor(Math.random() * 9) + 1) * 20;
-        answer = Math.round((pct / 100) * base);
-        num1 = pct;
-        num2 = base;
+        const p = [10, 20, 25, 50][Math.floor(Math.random() * 4)];
+        const total = [40, 60, 80, 100, 200][Math.floor(Math.random() * 5)];
+        answer = (p / 100) * total;
+        num1 = p;
+        num2 = total;
         operatorSymbol = '%';
-        displayString = `${pct}% of ${base}`;
+        displayString = `What is ${p}% of ${total}?`;
+        hint = `Hint: Multiply ${total} by ${p / 100}!`;
       }
       break;
     }
-    case 8:
-    default: {
-      // Tier 8: Exponents (30%), Squares/Roots (40%), PEMDAS (30%)
-      const type = Math.random();
-      if (type < 0.3) {
-        // Exponents
-        const base = [2, 3, 5, 10][Math.floor(Math.random() * 4)];
-        const exp = base === 10 ? Math.floor(Math.random() * 3) + 2 : Math.floor(Math.random() * 2) + 3;
+    case 8: {
+      const subType = Math.random();
+      if (subType < 0.35) {
+        const bases = [2, 3, 5, 10];
+        const base = bases[Math.floor(Math.random() * bases.length)];
+        const exp = base === 10 ? Math.floor(Math.random() * 3) + 1 : Math.floor(Math.random() * 2) + 2;
         num1 = base;
         num2 = exp;
         answer = Math.pow(base, exp);
         operatorSymbol = '^';
-        displayString = `${base}${exp === 3 ? '³' : exp === 4 ? '⁴' : '^' + exp}`;
+        displayString = `${base}^${exp} = ?`;
         hint = `Hint: Multiply ${base} by itself ${exp} times!`;
-      } else if (type < 0.6) {
-        // Square Root
-        answer = Math.floor(Math.random() * 9) + 2;
-        num1 = answer * answer;
+      } else if (subType < 0.7) {
+        const perfectSquares = [4, 9, 16, 25, 36, 49, 64, 81, 100];
+        const sq = perfectSquares[Math.floor(Math.random() * perfectSquares.length)];
+        num1 = sq;
         num2 = 2;
+        answer = Math.sqrt(sq);
         operatorSymbol = '√';
-        displayString = `√${num1}`;
-      } else if (type < 0.8) {
-        // Square
-        const base = Math.floor(Math.random() * 9) + 2;
-        num1 = base;
-        num2 = 2;
-        answer = base * base;
-        operatorSymbol = '²';
-        displayString = `${base}²`;
+        displayString = `√${sq} = ?`;
+        hint = `Hint: What number times itself equals ${sq}?`;
       } else {
-        // PEMDAS Order of Operations
-        const a = Math.floor(Math.random() * 8) + 2;
-        const b = Math.floor(Math.random() * 5) + 2;
-        const c = Math.floor(Math.random() * 4) + 2;
-        num1 = a;
-        num2 = b;
-        answer = a + b * c;
+        const a = Math.floor(Math.random() * 5) + 2;
+        const b = Math.floor(Math.random() * 4) + 2;
+        const c = Math.floor(Math.random() * 5) + 1;
+        answer = a * b + c;
+        num1 = `${a} × ${b}`;
+        num2 = c;
         operatorSymbol = '+';
-        displayString = `${a} + ${b} × ${c}`;
+        displayString = `${a} × ${b} + ${c} = ?`;
+        hint = 'Hint: Remember PEMDAS! Multiply first, then add.';
       }
       break;
+    }
+    default: {
+      num1 = 1;
+      num2 = 1;
+      answer = 2;
+      operatorSymbol = '+';
+      displayString = '1 + 1';
     }
   }
 
   return {
+    tier: tierLevel,
     num1,
     num2,
     operatorSymbol,
-    displayString,
     answer,
-    answerString: String(answer),
+    answerString: answer.toString(),
+    displayString,
     options,
     hint
   };
 }
 
-// Generate 10-Problem Placement Diagnostic Set (deduplicated)
 export function generatePlacementDiagnosticSet() {
-  const problems = [];
-  const diagnosticTiers = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
-  const seenKeys = new Set();
-
-  diagnosticTiers.forEach((tierLevel, idx) => {
-    let probData;
-    let attempts = 0;
-    do {
-      probData = generateTierProblem(tierLevel);
-      attempts++;
-    } while (seenKeys.has(getNormalizedProblemKey(probData)) && attempts < 50);
-
-    const normKey = getNormalizedProblemKey(probData);
-    seenKeys.add(normKey);
-
-    problems.push({
-      id: `diag-${idx + 1}-${Date.now()}`,
-      ...probData,
-      tier: tierLevel
+  const diagnosticProblems = [];
+  for (let tierLevel = 1; tierLevel <= 8; tierLevel++) {
+    diagnosticProblems.push({
+      tierLevel,
+      problem: generateTierProblem(tierLevel)
     });
-  });
-
-  return problems;
+  }
+  return diagnosticProblems;
 }
 
-export function evaluatePlacementTier(results) {
-  let highestTier = 1;
-  if (!results || results.length === 0) return 1;
+export function evaluatePlacementTier(diagnosticResults) {
+  let highestPassedTier = 1;
 
-  for (const res of results) {
-    if (res.correct && (res.latencySec === undefined || res.latencySec <= 4.0)) {
-      highestTier = Math.max(highestTier, (res.tier || 1) + 1);
+  for (const item of diagnosticResults) {
+    if (item.isCorrect) {
+      highestPassedTier = item.tierLevel;
+    } else {
+      break;
     }
   }
 
-  return Math.min(8, Math.max(1, highestTier));
+  return Math.min(8, Math.max(1, highestPassedTier));
 }
