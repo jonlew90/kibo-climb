@@ -231,19 +231,19 @@ export default function WorldMap({
 
             {/* Pro Tip 💡 Box */}
             {(() => {
-              const nodeTrick = getTrickForTier(selectedTierMeta.tier);
-              if (!nodeTrick) return null;
+              const tip = selectedTierMeta.proTip;
+              if (!tip) return null;
 
               return (
                 <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-2xl p-2.5 text-left space-y-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-base">{nodeTrick.icon}</span>
+                    <span className="text-base">💡</span>
                     <h5 className="font-extrabold text-amber-950 text-xs">
-                      Pro Tip: {nodeTrick.title}
+                      Pro Tip: {tip.title}
                     </h5>
                   </div>
                   <p className="text-[11px] font-semibold text-amber-900 leading-snug">
-                    {nodeTrick.summary}
+                    {tip.content || tip.summary}
                   </p>
                 </div>
               );

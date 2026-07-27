@@ -20,6 +20,11 @@ export const CURRICULUM_TIERS = [
         correctAnswer: '13',
         hint: '8 + 2 = 10, then add the remaining 3!'
       }
+    },
+    proTip: {
+      title: 'Anchor to 10',
+      content: '10 is your safest mountain resting spot! Always look for ways to break numbers apart to make a clean 10 first.',
+      summary: '10 is your safest mountain resting spot! Always look for ways to break numbers apart to make a clean 10 first.'
     }
   },
   {
@@ -41,6 +46,11 @@ export const CURRICULUM_TIERS = [
         correctAnswer: '40',
         hint: '10 × 8 = 80. Half of 80 is 40!'
       }
+    },
+    proTip: {
+      title: 'Commutative Flip',
+      content: "Order doesn't matter in multiplication! If 8 × 3 feels tricky, flip it to 3 × 8 and skip-count by 3s!",
+      summary: "Order doesn't matter in multiplication! If 8 × 3 feels tricky, flip it to 3 × 8 and skip-count by 3s!"
     }
   },
   {
@@ -62,6 +72,11 @@ export const CURRICULUM_TIERS = [
         correctAnswer: '63',
         hint: 'Fold finger 7 down → 6 tens on left, 3 ones on right!'
       }
+    },
+    proTip: {
+      title: 'Build from Known Facts',
+      content: 'Stuck on 7 × 8? Use a landmark! Do 5 × 8 = 40, then add two more 8s (16) to reach 56.',
+      summary: 'Stuck on 7 × 8? Use a landmark! Do 5 × 8 = 40, then add two more 8s (16) to reach 56.'
     }
   },
   {
@@ -83,6 +98,11 @@ export const CURRICULUM_TIERS = [
         correctAnswer: '385',
         hint: 'Split 3 and 5. Add 3 + 5 = 8, put 8 in the middle!'
       }
+    },
+    proTip: {
+      title: 'Left-to-Right Mental Addition',
+      content: 'Add the tens first, then the ones! For 45 + 38, do 45 + 30 = 75, then + 8 = 83.',
+      summary: 'Add the tens first, then the ones! For 45 + 38, do 45 + 30 = 75, then + 8 = 83.'
     }
   },
   {
@@ -104,6 +124,11 @@ export const CURRICULUM_TIERS = [
         correctAnswer: '0.35',
         hint: 'Count up from 65¢: +5¢ to 70¢, then +30¢ to $1.00!'
       }
+    },
+    proTip: {
+      title: 'Use the Number Line Bridge',
+      content: 'For time and money, jump to the nearest benchmark! Jump to the next hour or whole dollar first, then add the leftover minutes or cents.',
+      summary: 'For time and money, jump to the nearest benchmark! Jump to the next hour or whole dollar first, then add the leftover minutes or cents.'
     }
   },
   {
@@ -125,6 +150,11 @@ export const CURRICULUM_TIERS = [
         correctAnswer: '21',
         hint: 'Half of 84 is 42. Half of 42 is 21!'
       }
+    },
+    proTip: {
+      title: 'Think Multiplication in Reverse',
+      content: "Division is just asking 'How many groups?' For 72 ÷ 8, think: 'What times 8 equals 72?'",
+      summary: "Division is just asking 'How many groups?' For 72 ÷ 8, think: 'What times 8 equals 72?'"
     }
   },
   {
@@ -146,6 +176,11 @@ export const CURRICULUM_TIERS = [
         correctAnswer: '6',
         hint: 'Find the largest number that divides evenly into both 12 and 18.'
       }
+    },
+    proTip: {
+      title: 'GCF vs. LCM Landmark',
+      content: 'Remember: GCF makes a smaller number (factors divide down), while LCM makes a larger number (multiples leap up)!',
+      summary: 'Remember: GCF makes a smaller number (factors divide down), while LCM makes a larger number (multiples leap up)!'
     }
   },
   {
@@ -167,6 +202,11 @@ export const CURRICULUM_TIERS = [
         correctAnswer: '16',
         hint: 'Multiply 2 × 2 × 2 × 2!'
       }
+    },
+    proTip: {
+      title: 'Treat Variables Like Items',
+      content: 'In pre-algebra, x is just a box of mystery Sparks! 3x + 2x just means 3 boxes plus 2 boxes equals 5 boxes (5x).',
+      summary: 'In pre-algebra, x is just a box of mystery Sparks! 3x + 2x just means 3 boxes plus 2 boxes equals 5 boxes (5x).'
     }
   }
 ];
