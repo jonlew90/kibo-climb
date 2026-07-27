@@ -307,7 +307,7 @@ export default function App() {
     const now = performance.now();
     const latencyMs = Math.round(Math.max(10, now - problemStartTimeRef.current));
     const isCorrect = userAnswerStr === currentProblem.answerString;
-    const speedInfo = classifyLatency(currentProblem.answerString, latencyMs);
+    const speedInfo = classifyLatency(currentProblem.answerString, latencyMs, isCorrect);
 
     const resultRecord = {
       problem: currentProblem,

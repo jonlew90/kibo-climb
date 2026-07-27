@@ -1,25 +1,15 @@
-// Latency classification engine based on answer digit length and response time in ms
+// Latency & Accuracy classification engine for post-sprint categorization
 
-export function classifyLatency(answerString, latencyMs) {
-  const isTwoDigit = answerString.length >= 2;
+export function classifyLatency(answerString, latencyMs, isCorrect = true) {
+  if (!isCorrect) {
+    return { category: 'practice', label: 'Focus Area', icon: '🔵', color: 'text-blue-500' };
+  }
 
-  if (!isTwoDigit) {
-    // 1-Digit Answer Thresholds
-    if (latencyMs < 1500) {
-      return { category: 'super_fast', label: 'Super Fast', icon: '⚡', color: 'text-amber-500' };
-    } else if (latencyMs <= 4000) {
-      return { category: 'fluent', label: 'Fluent', icon: '🟡', color: 'text-yellow-600' };
-    } else {
-      return { category: 'practice', label: 'Needs Practice', icon: '🔵', color: 'text-blue-500' };
-    }
+  const responseTimeSec = latencyMs > 1000 ? latencyMs / 1000 : latencyMs;
+
+  if (responseTimeSec < 3.5) {
+    return { category: 'super_fast', label: 'Instant Recall', icon: '⚡', color: 'text-amber-500' };
   } else {
-    // 2-Digit Answer Thresholds
-    if (latencyMs < 2200) {
-      return { category: 'super_fast', label: 'Super Fast', icon: '⚡', color: 'text-amber-500' };
-    } else if (latencyMs <= 4500) {
-      return { category: 'fluent', label: 'Fluent', icon: '🟡', color: 'text-yellow-600' };
-    } else {
-      return { category: 'practice', label: 'Needs Practice', icon: '🔵', color: 'text-blue-500' };
-    }
+    return { category: 'fluent', label: 'Worked Out', icon: '🟡', color: 'text-yellow-600' };
   }
 }
