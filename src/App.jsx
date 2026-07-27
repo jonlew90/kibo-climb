@@ -106,6 +106,11 @@ export default function App() {
     return storageService.getUserData().unlockedTiers;
   });
 
+  // Persistent Tier Mastery Percent (0, 25, 50, 75, 100)
+  const [tierMasteryPercent, setTierMasteryPercent] = useState(() => {
+    return storageService.getUserData().tierMasteryPercent || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
+  });
+
   // Persistent Parent PIN (Default 1234)
   const [parentPin, setParentPin] = useState(() => {
     return storageService.getParentSettings().pin;
