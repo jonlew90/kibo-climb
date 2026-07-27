@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles } from 'lucide-react';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
+import { getNotificationPrefs, saveNotificationPrefs, requestNotificationPermission } from '../utils/notifications';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
@@ -37,6 +38,25 @@ export default function ParentDashboardModal({
   const [confirmPinInput, setConfirmPinInput] = useState('');
   const [pinSuccessMsg, setPinSuccessMsg] = useState('');
   const [pinErrorMsg, setPinErrorMsg] = useState('');
+
+  // Notification Preferences State
+  const [notifPrefs, setNotifPrefs] = useState(() => getNotificationPrefs());
+
+  const handleToggleNotifPref = (key) => {
+    soundFx.playKeyTap();
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
+    setNotifPrefs(updated);
+    saveNotificationPrefs(updated);
+    if (key === 'dailyReminderEnabled' && updated.dailyReminderEnabled) {
+      requestNotificationPermission();
+    }
+  };
+
+  const handleTimeChange = (newTime) => {
+    const updated = { ...notifPrefs, reminderTime: newTime };
+    setNotifPrefs(updated);
+    saveNotificationPrefs(updated);
+  };
 
   if (!isOpen) return null;
 
@@ -324,6 +344,81 @@ export default function ParentDashboardModal({
               <p className="text-[11px] font-medium text-slate-500 italic leading-snug">
                 Unselected rest days automatically protect your child's streak without consuming a Kibo Shield.
               </p>
+            </div>
+
+            {/* Notification Preferences */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
+              <div className="flex items-center gap-2 text-purple-700">
+                <Bell className="w-5 h-5 stroke-[2.5]" />
+                <h4 className="font-extrabold text-sm text-slate-800">Notification Preferences</h4>
+              </div>
+
+              {/* Daily Kid Reminder */}
+              <div className="flex items-center justify-between bg-white border border-slate-200 p-2.5 rounded-xl">
+                <div>
+                  <span className="font-extrabold text-xs text-slate-800 block">Daily Streak Reminder</span>
+                  <span className="text-[10px] text-slate-500 font-medium">Alert child if sprint is incomplete</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="time"
+                    value={notifPrefs.reminderTime || '17:00'}
+                    onChange={(e) => handleTimeChange(e.target.value)}
+                    disabled={!notifPrefs.dailyReminderEnabled}
+                    className="py-1 px-2 text-xs font-extrabold bg-slate-100 border border-slate-300 rounded-lg cursor-pointer disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleToggleNotifPref('dailyReminderEnabled')}
+                    className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                      notifPrefs.dailyReminderEnabled ? 'bg-purple-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                      notifPrefs.dailyReminderEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Weekly Digest */}
+              <div className="flex items-center justify-between bg-white border border-slate-200 p-2.5 rounded-xl">
+                <div>
+                  <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary</span>
+                  <span className="text-[10px] text-slate-500 font-medium">Weekly mastery breakdown digest</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleNotifPref('weeklyDigestEnabled')}
+                  className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                    notifPrefs.weeklyDigestEnabled ? 'bg-purple-600' : 'bg-slate-300'
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                    notifPrefs.weeklyDigestEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </button>
+              </div>
+
+              {/* Struggle / Target Fact Alerts */}
+              <div className="flex items-center justify-between bg-white border border-slate-200 p-2.5 rounded-xl">
+                <div>
+                  <span className="font-extrabold text-xs text-slate-800 block">Struggle & Review Alerts</span>
+                  <span className="text-[10px] text-slate-500 font-medium">Alert when accuracy or speed drops on target facts</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleNotifPref('struggleAlertsEnabled')}
+                  className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                    notifPrefs.struggleAlertsEnabled ? 'bg-purple-600' : 'bg-slate-300'
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                    notifPrefs.struggleAlertsEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </button>
+              </div>
             </div>
 
             {/* Change 4-Digit PIN */}
