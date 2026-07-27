@@ -21,8 +21,8 @@ export default function PlacementRevealModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
-      <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-6 text-center shadow-2xl space-y-4 relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-4 pt-6 sm:pt-4 bg-slate-900/65 backdrop-blur-sm animate-pop overflow-y-auto">
+      <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-center shadow-2xl space-y-3.5 relative overflow-hidden my-auto max-h-[92vh]">
         <ConfettiCanvas />
 
         {/* Mascot Header */}
