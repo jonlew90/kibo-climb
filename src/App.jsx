@@ -527,6 +527,32 @@ export default function App() {
     setSprintHistory(updatedHistory);
     localStorage.setItem('kibo_math_sprint_history', JSON.stringify(updatedHistory));
 
+    // 4-Segment 25% Step Tier Mastery & Auto-Unlock Calculation
+    const activeTier = tier;
+    const currentPercent = tierMasteryPercent[activeTier] || 0;
+    let newMasteryPercent = currentPercent;
+
+    if (accuracyPct === 100) {
+      newMasteryPercent = 100; // Flawless Fast-Track!
+    } else if (accuracyPct >= 80) {
+      newMasteryPercent = Math.min(100, currentPercent + 25);
+    }
+
+    const updatedMastery = { ...tierMasteryPercent, [activeTier]: newMasteryPercent };
+    setTierMasteryPercent(updatedMastery);
+
+    let updatedUnlocked = unlockedTiers;
+    if (newMasteryPercent === 100 && activeTier < 8) {
+      const nextTier = activeTier + 1;
+      updatedUnlocked = Array.from(new Set([...unlockedTiers, nextTier]));
+      setUnlockedTiers(updatedUnlocked);
+    }
+
+    storageService.saveUserData({
+      tierMasteryPercent: updatedMastery,
+      unlockedTiers: updatedUnlocked
+    });
+
     let triggerLevelUp = false;
     let reasonText = '';
 
