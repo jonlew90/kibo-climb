@@ -11,6 +11,7 @@ import { getTrickForTier } from '../data/mathTricks';
 export default function WorldMap({
   currentTier,
   unlockedTiers,
+  tierMasteryPercent = {},
   equippedItems = [],
   sprintHistory = [],
   onSelectTierAndStartSprint,
@@ -228,6 +229,35 @@ export default function WorldMap({
                 ? `Complete Tier ${selectedTierMeta.tier - 1} or pass the Tier ${selectedTierMeta.tier} challenge to jump ahead!`
                 : selectedTierMeta.description}
             </p>
+
+            {/* 4-Segment 25% Step Mastery Meter */}
+            {(() => {
+              const p = tierMasteryPercent[selectedTierMeta.tier] !== undefined
+                ? tierMasteryPercent[selectedTierMeta.tier]
+                : (selectedTierMeta.tier < currentTier ? 100 : 0);
+              const filledSegments = Math.round(p / 25);
+
+              return (
+                <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-2.5 space-y-1.5 text-left shadow-sm">
+                  <div className="flex items-center justify-between text-xs font-extrabold text-slate-800">
+                    <span>Tier Progress</span>
+                    <span className="text-purple-700 font-black">{p}% Mastered</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5 h-3">
+                    {[1, 2, 3, 4].map((seg) => (
+                      <div
+                        key={seg}
+                        className={`h-full rounded-md transition-all duration-300 ${
+                          seg <= filledSegments
+                            ? 'bg-gradient-to-r from-emerald-400 to-teal-500 shadow-sm'
+                            : 'bg-slate-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* 3-Star Criteria Legend Card */}
             <div className="bg-amber-50/80 border-2 border-amber-200 rounded-2xl p-2.5 text-left space-y-1">

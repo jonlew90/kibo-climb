@@ -741,6 +741,7 @@ export default function App() {
         <WorldMap
           currentTier={tier}
           unlockedTiers={unlockedTiers}
+          tierMasteryPercent={tierMasteryPercent}
           equippedItems={equippedItems}
           sprintHistory={sprintHistory}
           onSelectTierAndStartSprint={handleSelectTierFromMap}
