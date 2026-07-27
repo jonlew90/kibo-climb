@@ -119,12 +119,13 @@ export const CURRICULUM_TIERS = [
     color: 'from-teal-400 via-emerald-500 to-cyan-600',
     description: 'Find Least Common Multiples (LCM), Greatest Common Factors (GCF), and percentages.',
     trailTrick: {
-      title: 'Summit Sync (LCM) & GCF Difference Trick! 🧩',
-      summary: 'For GCF(12, 18), subtract them (18 - 12 = 6). Since 6 divides both, 6 is the GCF!',
+      title: 'The GCF Factor Ladder 🧩',
+      summary: 'To find the GCF of 12 and 18, divide both by shared factors (2, then 3). Multiply the factors (2 × 3) to get 6!',
+      description: 'To find the GCF of 12 and 18, divide both by shared factors (2, then 3). Multiply the factors (2 × 3) to get 6!',
       sampleProblem: {
-        question: 'GCF of 12 and 18',
+        question: 'What is the GCF of 12 and 18?',
         correctAnswer: '6',
-        hint: '18 - 12 = 6. 6 divides both 12 and 18!'
+        hint: 'Find the largest number that divides evenly into both 12 and 18.'
       }
     }
   },
@@ -137,12 +138,13 @@ export const CURRICULUM_TIERS = [
     color: 'from-yellow-400 via-amber-500 to-purple-600',
     description: 'Master exponents (2³), square roots (√81), and PEMDAS at the peak of Mount Kibo!',
     trailTrick: {
-      title: 'Exponent Base Multiply & PEMDAS Ladder! 🏔️',
-      summary: 'For 2³, multiply the base 3 times: 2 × 2 × 2 = 8! Evaluate Parentheses & Exponents first.',
+      title: 'Exponent Base Repeater & PEMDAS Ladder 🏔️',
+      summary: 'For 2³, multiply the base (2) by itself 3 times: 2 × 2 × 2 = 8!',
+      description: 'For 2³, multiply the base (2) by itself 3 times: 2 × 2 × 2 = 8!',
       sampleProblem: {
-        question: '2³',
+        question: 'Evaluate 2³',
         correctAnswer: '8',
-        hint: '2 × 2 × 2 = 8!'
+        hint: 'Multiply the base (2) three times: 2 × 2 × 2!'
       }
     }
   }
