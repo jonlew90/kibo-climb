@@ -67,14 +67,14 @@ export default function TierIntroModal({
           </div>
         </div>
 
-        {/* Trick Description Box */}
+        {/* Trail Trick Description Box */}
         <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-3 text-left space-y-1.5 shadow-sm">
           <div className="flex items-center gap-1.5 text-amber-900 font-extrabold text-xs">
             <Lightbulb className="w-4 h-4 text-amber-600 fill-amber-300 stroke-[2.5]" />
-            <span>Kibo's Shortcut Rule:</span>
+            <span>💡 Kibo's Trail Trick: {tierMeta.trailTrick ? tierMeta.trailTrick.title : "Landmark Numbers"}</span>
           </div>
           <p className="text-xs text-amber-950 font-medium leading-relaxed">
-            {tierMeta.shortcutRule || `Break complex equations into friendly landmark numbers before combining!`}
+            {tierMeta.trailTrick ? tierMeta.trailTrick.summary : "Master your facts with speed and accuracy!"}
           </p>
         </div>
 

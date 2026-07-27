@@ -8,7 +8,11 @@ export const CURRICULUM_TIERS = [
     location: 'Sunny Meadow',
     icon: '🌱',
     color: 'from-emerald-400 to-teal-500',
-    description: 'Master basic single-digit addition and subtraction fluency.'
+    description: 'Master basic single-digit addition and subtraction fluency.',
+    trailTrick: {
+      title: 'Plus 9 Hop! 🦘',
+      summary: 'Add 10 first, then step back 1! For 9 + 7, do 10 + 7 = 17, then minus 1 to get 16.'
+    }
   },
   {
     tier: 2,
@@ -18,7 +22,11 @@ export const CURRICULUM_TIERS = [
     location: 'Forest Trail',
     icon: '🌲',
     color: 'from-amber-400 to-orange-500',
-    description: 'Cross the tens boundary (8+7=15), missing addends, and read clock times.'
+    description: 'Cross the tens boundary (8+7=15), missing addends, and read clock times.',
+    trailTrick: {
+      title: 'Time Jump & Landmark 10s! ⏰',
+      summary: 'Break the second number to land on 10! For 8 + 7, do 8 + 2 = 10, then add the remaining 5 to get 15.'
+    }
   },
   {
     tier: 3,
@@ -27,7 +35,11 @@ export const CURRICULUM_TIERS = [
     location: 'Multiplication River',
     icon: '🌊',
     color: 'from-blue-400 to-cyan-500',
-    description: 'Build core multiplication tables and count coin combinations under $1.00.'
+    description: 'Build core multiplication tables and count coin combinations under $1.00.',
+    trailTrick: {
+      title: 'Quarter Rhythm (25¢, 50¢, 75¢, $1.00)! 🪙',
+      summary: 'Count quarters in rhythm: 25¢, 50¢, 75¢, $1.00! For change under $1.00, count up to 100¢.'
+    }
   },
   {
     tier: 4,
@@ -36,7 +48,11 @@ export const CURRICULUM_TIERS = [
     location: 'Factor Canyon',
     icon: '🏜️',
     color: 'from-purple-400 to-indigo-500',
-    description: 'Master the full multiplication table grid up to 12×12.'
+    description: 'Master the full multiplication table grid up to 12×12.',
+    trailTrick: {
+      title: '10-Finger Magic for 9s! 🖐️',
+      summary: 'Put down the finger you multiply by 9. Fingers left = Tens, fingers right = Ones!'
+    }
   },
   {
     tier: 5,
@@ -45,7 +61,11 @@ export const CURRICULUM_TIERS = [
     location: 'Division Falls',
     icon: '🏞️',
     color: 'from-sky-400 to-blue-600',
-    description: 'Master division fact families (56 ÷ 8 = 7) and digit divisibility secrets.'
+    description: 'Master division fact families (56 ÷ 8 = 7) and digit divisibility secrets.',
+    trailTrick: {
+      title: 'Sum-of-3 Rule & Fact Family Reversal! 🏞️',
+      summary: 'Add the digits together! If the digit sum divides by 3, the entire number is divisible by 3.'
+    }
   },
   {
     tier: 6,
@@ -54,7 +74,11 @@ export const CURRICULUM_TIERS = [
     location: 'Boulder Ridge',
     icon: '⛰️',
     color: 'from-amber-500 to-stone-600',
-    description: 'Mental math (45+38=83), calculate elapsed time jumps, and dollar change.'
+    description: 'Mental math (45+38=83), calculate elapsed time jumps, and dollar change.',
+    trailTrick: {
+      title: 'Tens-First Split & Clock Jump! ⛰️',
+      summary: 'Add the tens first (40+30=70), then add the ones (5+8=13) to get 83 instantly!'
+    }
   },
   {
     tier: 7,
@@ -63,7 +87,11 @@ export const CURRICULUM_TIERS = [
     location: 'Fraction Falls',
     icon: '🧩',
     color: 'from-teal-400 via-emerald-500 to-cyan-600',
-    description: 'Find Least Common Multiples (LCM), Greatest Common Factors (GCF), and percentages.'
+    description: 'Find Least Common Multiples (LCM), Greatest Common Factors (GCF), and percentages.',
+    trailTrick: {
+      title: 'Summit Sync (LCM) & GCF Difference Trick! 🧩',
+      summary: 'For GCF(12, 18), subtract them (18 - 12 = 6). Since 6 divides both, 6 is the GCF!'
+    }
   },
   {
     tier: 8,
@@ -72,7 +100,11 @@ export const CURRICULUM_TIERS = [
     location: 'Mount Kibo Summit',
     icon: '🏔️',
     color: 'from-yellow-400 via-amber-500 to-purple-600',
-    description: 'Master exponents (2³), square roots (√81), and PEMDAS at the peak of Mount Kibo!'
+    description: 'Master exponents (2³), square roots (√81), and PEMDAS at the peak of Mount Kibo!',
+    trailTrick: {
+      title: 'Exponent Base Multiply & PEMDAS Ladder! 🏔️',
+      summary: 'For 2³, multiply the base 3 times: 2 × 2 × 2 = 8! Evaluate Parentheses & Exponents first.'
+    }
   }
 ];
 
