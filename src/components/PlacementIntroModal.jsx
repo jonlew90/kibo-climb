@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Target, Zap, Clock, Compass, X } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
@@ -18,8 +19,8 @@ export default function PlacementIntroModal({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
       <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative max-h-[85vh] overflow-y-auto">
         <button
           onClick={onClose}
@@ -77,6 +78,7 @@ export default function PlacementIntroModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
