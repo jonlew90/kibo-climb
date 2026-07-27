@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Target, Lock, CheckCircle2, Play, Compass, Award, Star, Zap, X, Lightbulb } from 'lucide-react';
 import Mascot from './Mascot';
 import TierIntroModal from './TierIntroModal';
+import PlacementIntroModal from './PlacementIntroModal';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 import { getTrickForTier } from '../data/mathTricks';
@@ -18,6 +19,7 @@ export default function WorldMap({
 }) {
   const [selectedNodeTier, setSelectedNodeTier] = useState(null);
   const [showTierIntroModal, setShowTierIntroModal] = useState(false);
+  const [showPlacementIntroModal, setShowPlacementIntroModal] = useState(false);
   const [introModalTier, setIntroModalTier] = useState(1);
 
   const handleNodeClick = (tierNum) => {
@@ -68,10 +70,15 @@ export default function WorldMap({
         </h2>
 
         <button
-          onClick={onStartPlacementTest}
-          className="px-3 py-1.5 bg-amber-100 border-2 border-amber-300 rounded-2xl text-amber-900 font-extrabold text-xs hover:bg-amber-200 active:scale-95 transition-all shadow-sm flex items-center gap-1"
+          onClick={() => {
+            soundFx.playKeyTap();
+            setShowPlacementIntroModal(true);
+          }}
+          className="px-3 py-1.5 bg-gradient-to-b from-amber-200 via-yellow-300 to-amber-400 border-2 border-amber-500 rounded-2xl text-amber-950 font-black text-xs hover:from-amber-100 hover:to-amber-300 active:scale-95 transition-all shadow-md flex items-center gap-1.5"
+          title="Skip levels you've already mastered"
         >
-          <Target className="w-4 h-4 text-amber-600 stroke-[2.5]" /> Placement
+          <Target className="w-4 h-4 text-amber-900 fill-amber-300 stroke-[2.5]" />
+          <span>Test Out 🎯</span>
         </button>
       </div>
 
@@ -255,6 +262,16 @@ export default function WorldMap({
           </div>
         </div>
       )}
+
+      {/* PLACEMENT DIAGNOSTIC INTRO MODAL OVERLAY */}
+      <PlacementIntroModal
+        isOpen={showPlacementIntroModal}
+        onClose={() => setShowPlacementIntroModal(false)}
+        onStartDiagnostic={() => {
+          setShowPlacementIntroModal(false);
+          onStartPlacementTest();
+        }}
+      />
 
       {/* TIER INTRO MODAL OVERLAY */}
       <TierIntroModal
