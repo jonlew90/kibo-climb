@@ -644,6 +644,11 @@ export default function App() {
     const fluentCount = results.filter((r) => r.speedInfo.category === 'fluent').length;
     const practiceCount = results.filter((r) => r.speedInfo.category === 'practice').length;
 
+    let starsEarned = 0;
+    if (accuracyPct >= 80) starsEarned = 1;
+    if (accuracyPct === 100) starsEarned = 2;
+    if (accuracyPct === 100 && (totalTimeSec <= 60 || parseFloat(avgVelocitySec) <= 2.5)) starsEarned = 3;
+
     return {
       totalTimeSec,
       accuracyPct,
@@ -651,6 +656,7 @@ export default function App() {
       superFastCount,
       fluentCount,
       practiceCount,
+      starsEarned,
       total: results.length
     };
   };
