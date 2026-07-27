@@ -110,6 +110,42 @@ export default function SprintResultsModal({
           </div>
         )}
 
+        {/* Star Milestones Unlocked Card */}
+        {(() => {
+          const star1 = stats.accuracyPct >= 80;
+          const star2 = stats.accuracyPct === 100;
+          const star3 = stats.accuracyPct === 100 && (stats.totalDurationSec <= 60 || stats.avgVelocitySec <= 2.5);
+          const totalStars = (star1 ? 1 : 0) + (star2 ? 1 : 0) + (star3 ? 1 : 0);
+
+          return (
+            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-3 text-left space-y-1.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase text-amber-900 tracking-wider">
+                  ⭐ Star Mastery Unlocked: {totalStars} / 3 Stars
+                </span>
+                <span className="text-sm">{'⭐'.repeat(totalStars)}</span>
+              </div>
+
+              <div className="text-xs font-bold space-y-1 pt-1 border-t border-amber-200">
+                <div className={`flex items-center justify-between p-1.5 rounded-xl border ${star1 ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                  <span>⭐ 1 Star: Pass Sprint (≥80% Acc)</span>
+                  {star1 ? <CheckCircle2 className="w-4 h-4 text-emerald-600 stroke-[3]" /> : <span className="text-[10px]">Incomplete</span>}
+                </div>
+
+                <div className={`flex items-center justify-between p-1.5 rounded-xl border ${star2 ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                  <span>⭐⭐ 2 Stars: Flawless (100% Acc)</span>
+                  {star2 ? <CheckCircle2 className="w-4 h-4 text-emerald-600 stroke-[3]" /> : <span className="text-[10px]">Incomplete</span>}
+                </div>
+
+                <div className={`flex items-center justify-between p-1.5 rounded-xl border ${star3 ? 'bg-amber-100 border-amber-300 text-amber-950' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                  <span>⭐⭐⭐ 3 Stars: Summit Speed (100% in &lt;60s)</span>
+                  {star3 ? <Sparkles className="w-4 h-4 text-amber-600 fill-amber-400 stroke-[2.5]" /> : <span className="text-[10px]">Incomplete</span>}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Performance Cards */}
         <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3 space-y-2.5 shadow-inner">
           <div className="flex justify-between items-center text-xs font-bold text-slate-700 border-b border-slate-200 pb-1.5">
