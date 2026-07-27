@@ -141,43 +141,46 @@ export default function WorldMap({
                 className={`w-full flex ${windClass} relative my-3`}
               >
                 <div className="relative flex flex-col items-center group">
-                  {/* Mascot Standing Beside the Active Node Badge */}
-                  {isActiveNode && (
-                    <div className={`absolute top-1/2 -translate-y-1/2 ${mascotSideClass} z-5 animate-map-bounce pointer-events-none flex flex-col items-center select-none`}>
-                      <Mascot mood="happy" equipped={equippedItems} className="w-14 h-14 filter drop-shadow-xl" />
-                      <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md border border-purple-300 whitespace-nowrap">
-                        Current Base
-                      </span>
-                    </div>
-                  )}
-
-                  {/* 3D Clay Node Badge Container */}
-                  <button
-                    onClick={() => handleNodeClick(tierItem.tier)}
-                    className={`relative z-20 pointer-events-auto w-24 h-24 rounded-3xl border-b-4 flex flex-col items-center justify-center transition-all duration-200 clay-node ${
-                      isActiveNode
-                        ? 'bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-600 text-amber-950 border-amber-900 shadow-bouncy-orange ring-4 ring-amber-300/90 scale-110'
-                        : isUnlocked
-                        ? 'bg-gradient-to-b from-emerald-400 via-teal-500 to-teal-700 text-white border-teal-950 shadow-clay-teal hover:scale-105 active:translate-y-1 active:border-b-0'
-                        : 'bg-gradient-to-b from-slate-200 to-slate-400 text-slate-500 border-slate-600 opacity-60 hover:opacity-100 shadow-sm'
-                    }`}
-                  >
-                    <div className="absolute inset-1 rounded-2xl bg-black/10 backdrop-blur-xs flex flex-col items-center justify-center p-1">
-                      <span className="text-3xl filter drop-shadow-md">{tierItem.icon}</span>
-                      <span className="text-[11px] font-black tracking-tight leading-none mt-1">Tier {tierItem.tier}</span>
-                    </div>
-
-                    {/* Status Badges */}
-                    {!isUnlocked ? (
-                      <div className="absolute -top-2 -right-2 bg-slate-800 text-slate-200 p-1.5 rounded-full border-2 border-slate-600 shadow-lg">
-                        <Lock className="w-4 h-4 stroke-[2.5]" />
+                  {/* Node Icon & Mascot Relative Anchor Container */}
+                  <div className="relative flex items-center justify-center">
+                    {/* Mascot Standing Beside Active Node Icon Button */}
+                    {isActiveNode && (
+                      <div className={`absolute top-1/2 -translate-y-1/2 ${mascotSideClass} z-30 kibo-active-sprite pointer-events-none flex flex-col items-center select-none`}>
+                        <Mascot mood="happy" equipped={equippedItems} className="w-14 h-14 filter drop-shadow-xl" />
+                        <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md border border-purple-300 whitespace-nowrap">
+                          Current Base
+                        </span>
                       </div>
-                    ) : isCompleted ? (
-                      <div className="absolute -top-2 -right-2 bg-emerald-500 text-white p-1.5 rounded-full border-2 border-white shadow-lg">
-                        <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+                    )}
+
+                    {/* 3D Clay Node Badge Container */}
+                    <button
+                      onClick={() => handleNodeClick(tierItem.tier)}
+                      className={`relative z-20 pointer-events-auto w-24 h-24 rounded-3xl border-b-4 flex flex-col items-center justify-center transition-all duration-200 clay-node ${
+                        isActiveNode
+                          ? 'bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-600 text-amber-950 border-amber-900 shadow-bouncy-orange ring-4 ring-amber-300/90 scale-110'
+                          : isUnlocked
+                          ? 'bg-gradient-to-b from-emerald-400 via-teal-500 to-teal-700 text-white border-teal-950 shadow-clay-teal hover:scale-105 active:translate-y-1 active:border-b-0'
+                          : 'bg-gradient-to-b from-slate-200 to-slate-400 text-slate-500 border-slate-600 opacity-60 hover:opacity-100 shadow-sm'
+                      }`}
+                    >
+                      <div className="absolute inset-1 rounded-2xl bg-black/10 backdrop-blur-xs flex flex-col items-center justify-center p-1">
+                        <span className="text-3xl filter drop-shadow-md">{tierItem.icon}</span>
+                        <span className="text-[11px] font-black tracking-tight leading-none mt-1">Tier {tierItem.tier}</span>
                       </div>
-                    ) : null}
-                  </button>
+
+                      {/* Status Badges */}
+                      {!isUnlocked ? (
+                        <div className="absolute -top-2 -right-2 bg-slate-800 text-slate-200 p-1.5 rounded-full border-2 border-slate-600 shadow-lg">
+                          <Lock className="w-4 h-4 stroke-[2.5]" />
+                        </div>
+                      ) : isCompleted ? (
+                        <div className="absolute -top-2 -right-2 bg-emerald-500 text-white p-1.5 rounded-full border-2 border-white shadow-lg">
+                          <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+                        </div>
+                      ) : null}
+                    </button>
+                  </div>
 
                   {/* 3-Star Rating Row for Completed Nodes */}
                   {isCompleted && (

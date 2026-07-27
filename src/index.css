@@ -167,6 +167,20 @@
   }
 }
 
+@keyframes kiboBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.kibo-active-sprite {
+  animation: kiboBounce 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
 .animate-map-bounce {
   animation: mapBreathingBounce 2.4s ease-in-out infinite;
   pointer-events: none;
