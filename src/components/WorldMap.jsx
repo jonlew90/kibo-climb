@@ -245,7 +245,7 @@ export default function WorldMap({
                   className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
                 >
                   <Play className="w-5 h-5 fill-white stroke-[2.5]" />
-                  Replay Sprint 🔄
+                  {selectedTierMeta.tier === 8 ? 'Summit Mastered 🏆' : 'Replay Sprint 🔄'}
                 </button>
               ) : isSelectedActive || isSelectedUnlocked ? (
                 <button
@@ -261,7 +261,9 @@ export default function WorldMap({
                   className="btn-3d-purple w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
                 >
                   <Zap className="w-5 h-5 fill-amber-300 text-amber-300 stroke-[2.5]" />
-                  Test Out of Tier {selectedTierMeta.tier} 🎯
+                  {selectedTierMeta.tier === 8
+                    ? 'Take Summit Challenge 🎯'
+                    : `Test Out of Tier ${selectedTierMeta.tier} 🎯`}
                 </button>
               )}
 
