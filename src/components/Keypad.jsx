@@ -2,14 +2,26 @@ import React from 'react';
 import { Delete, RotateCcw } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
-export default function Keypad({ onKeyPress, onDelete, onClear, problemType, allowDecimal }) {
+export default function Keypad({
+  onKeyPress,
+  onDelete,
+  onClear,
+  problemType,
+  allowDecimal,
+  answerString
+}) {
   const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-  const showDecimal = allowDecimal || (problemType && (
-    problemType.startsWith('money') ||
-    problemType === 'change' ||
-    problemType === 'coins'
-  ));
+  const showDecimal = Boolean(
+    allowDecimal ||
+    (problemType && (
+      problemType.includes('money') ||
+      problemType.includes('decimal') ||
+      problemType === 'change' ||
+      problemType === 'coins'
+    )) ||
+    (answerString && answerString.includes('.'))
+  );
 
   const handlePress = (digit) => {
     soundFx.playKeyTap();

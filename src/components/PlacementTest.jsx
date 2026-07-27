@@ -185,6 +185,9 @@ export default function PlacementTest({
         onKeyPress={handleDigitInput}
         onDelete={() => setInputVal((prev) => prev.slice(0, -1))}
         onClear={() => setInputVal('')}
+        problemType={currentProblem?.type}
+        allowDecimal={currentProblem?.requiresDecimal || currentProblem?.type?.includes('money')}
+        answerString={currentProblem?.answerString}
       />
     </main>
   );

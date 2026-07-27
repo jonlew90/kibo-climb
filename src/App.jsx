@@ -929,6 +929,8 @@ export default function App() {
             onDelete={() => setInputVal((prev) => prev.slice(0, -1))}
             onClear={() => setInputVal('')}
             problemType={problems[currentIndex]?.type}
+            allowDecimal={problems[currentIndex]?.requiresDecimal || problems[currentIndex]?.type?.includes('money')}
+            answerString={problems[currentIndex]?.answerString}
           />
         </main>
       )}
