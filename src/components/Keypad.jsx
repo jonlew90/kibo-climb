@@ -8,7 +8,9 @@ export default function Keypad({
   onClear,
   problemType,
   allowDecimal,
-  answerString
+  answerString,
+  displayString,
+  operatorSymbol
 }) {
   const isMoneyOrDecimal = Boolean(
     allowDecimal ||
@@ -18,7 +20,9 @@ export default function Keypad({
       problemType === 'change' ||
       problemType === 'coins'
     )) ||
-    (answerString && answerString.includes('.'))
+    (answerString && answerString.includes('.')) ||
+    (displayString && (displayString.includes('$') || displayString.includes('¢') || displayString.includes('Change'))) ||
+    operatorSymbol === '🪙'
   );
 
   const bottomLeftKey = isMoneyOrDecimal ? '.' : 'clear';

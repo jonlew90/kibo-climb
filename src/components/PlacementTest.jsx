@@ -188,6 +188,8 @@ export default function PlacementTest({
         problemType={currentProblem?.type}
         allowDecimal={currentProblem?.requiresDecimal || currentProblem?.type?.includes('money')}
         answerString={currentProblem?.answerString}
+        displayString={currentProblem?.displayString}
+        operatorSymbol={currentProblem?.operatorSymbol}
       />
     </main>
   );

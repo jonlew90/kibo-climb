@@ -931,6 +931,8 @@ export default function App() {
             problemType={problems[currentIndex]?.type}
             allowDecimal={problems[currentIndex]?.requiresDecimal || problems[currentIndex]?.type?.includes('money')}
             answerString={problems[currentIndex]?.answerString}
+            displayString={problems[currentIndex]?.displayString}
+            operatorSymbol={problems[currentIndex]?.operatorSymbol}
           />
         </main>
       )}
