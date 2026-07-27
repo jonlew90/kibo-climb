@@ -121,16 +121,18 @@ export default function WorldMap({
 
         {/* 8-Tier Path Nodes with 3D Clay Badges */}
         <div className="w-full max-w-sm space-y-7 relative px-4 z-10">
-          {CURRICULUM_TIERS.slice().reverse().map((tierItem) => {
-            const isUnlocked = unlockedTiers.includes(tierItem.tier);
-            const isActiveNode = currentTier === tierItem.tier;
-            const isCompleted = tierItem.tier < currentTier || (isUnlocked && !isActiveNode);
+          {(() => {
+            const activeTierId = Math.min(8, Math.max(currentTier || 1, ...(unlockedTiers || [1])));
+            return CURRICULUM_TIERS.slice().reverse().map((tierItem) => {
+              const isUnlocked = unlockedTiers.includes(tierItem.tier);
+              const isActiveNode = tierItem.tier === activeTierId;
+              const isCompleted = tierItem.tier < activeTierId;
 
-            const windPositions = ['justify-center', 'justify-start pl-6', 'justify-center', 'justify-end pr-6'];
-            const windIdx = (tierItem.tier - 1) % windPositions.length;
-            const windClass = windPositions[windIdx];
-            const isRightAligned = windIdx === 3;
-            const mascotSideClass = isRightAligned ? '-left-16 sm:-left-20' : '-right-16 sm:-right-20';
+              const windPositions = ['justify-center', 'justify-start pl-6', 'justify-center', 'justify-end pr-6'];
+              const windIdx = (tierItem.tier - 1) % windPositions.length;
+              const windClass = windPositions[windIdx];
+              const isRightAligned = windIdx === 3;
+              const mascotSideClass = isRightAligned ? '-left-16 sm:-left-20' : '-right-16 sm:-right-20';
 
             return (
               <div
@@ -198,7 +200,8 @@ export default function WorldMap({
                 </div>
               </div>
             );
-          })}
+          });
+        })()}
         </div>
       </div>
 
