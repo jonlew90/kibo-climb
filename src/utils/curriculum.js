@@ -337,7 +337,49 @@ export function generateTierProblem(tierLevel) {
       break;
     }
     case 5: {
-      if (Math.random() < 0.3) {
+      const type = Math.random();
+      if (type < 0.40) {
+        const items = ['Trail Bar', 'Water Bottle', 'Carabiner', 'Compass', 'Trail Map', 'Kibo Badge'];
+        const item = items[Math.floor(Math.random() * items.length)];
+        const centsList = [15, 25, 35, 45, 55, 65, 75, 85];
+        const costCents = centsList[Math.floor(Math.random() * centsList.length)];
+        const changeCents = 100 - costCents;
+
+        const templateType = Math.floor(Math.random() * 3);
+        let ansStr, dispStr, numA, numB;
+
+        if (templateType === 0) {
+          dispStr = `${item} costs $0.${costCents}. Change from $1.00?`;
+          ansStr = (changeCents / 100).toFixed(2);
+          numA = 100;
+          numB = costCents;
+        } else if (templateType === 1) {
+          dispStr = `Spent $0.${costCents} of $1.00. Leftover?`;
+          ansStr = (changeCents / 100).toFixed(2);
+          numA = 100;
+          numB = costCents;
+        } else {
+          const p1 = [10, 20, 25, 30][Math.floor(Math.random() * 4)];
+          const p2 = [15, 25, 35, 40][Math.floor(Math.random() * 4)];
+          dispStr = `Saved $0.${p1} & $0.${p2}. Total saved?`;
+          ansStr = ((p1 + p2) / 100).toFixed(2);
+          numA = p1;
+          numB = p2;
+        }
+
+        return {
+          tier: tierLevel,
+          num1: numA,
+          num2: numB,
+          operatorSymbol: '🪙',
+          answer: ansStr,
+          answerString: ansStr,
+          displayString: dispStr,
+          type: 'money',
+          requiresDecimal: true,
+          hint: 'Hint: Enter exact dollar decimal amount (e.g. 0.35)!'
+        };
+      } else if (type < 0.70) {
         const divisors = [2, 3, 5, 10];
         const divisor = divisors[Math.floor(Math.random() * divisors.length)];
         const mult = Math.floor(Math.random() * 30) + 10;
