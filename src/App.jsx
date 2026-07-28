@@ -307,7 +307,22 @@ export default function App() {
     const now = performance.now();
     const latencyMs = Math.round(Math.max(10, now - problemStartTimeRef.current));
     const responseTimeSeconds = parseFloat((latencyMs / 1000).toFixed(2));
-    const isCorrect = userAnswerStr === currentProblem.answerString;
+
+    const isTimeProblem = Boolean(
+      (currentProblem.type && (currentProblem.type.includes('time') || currentProblem.type === 'time_basics')) ||
+      (currentProblem.answerString && currentProblem.answerString.includes(':')) ||
+      currentProblem.operatorSymbol === '⏰'
+    );
+
+    let isCorrect = userAnswerStr.trim() === currentProblem.answerString?.trim();
+    if (!isCorrect && isTimeProblem) {
+      const cleanUser = userAnswerStr.replace(/[^0-9]/g, '').trim();
+      const cleanAns = String(currentProblem.answerString || '').replace(/[^0-9]/g, '').trim();
+      if (cleanUser !== '' && cleanUser === cleanAns) {
+        isCorrect = true;
+      }
+    }
+
     const speedInfo = classifyLatency(currentProblem.answerString, latencyMs, isCorrect);
 
     const resultRecord = {

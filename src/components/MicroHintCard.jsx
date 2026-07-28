@@ -10,6 +10,26 @@ export default function MicroHintCard({ problem, tierLevel, isIdle = false }) {
 
   // Render Tier-Specific Visual Hint Content
   const renderHintVisual = () => {
+    const isTimeQuestion = Boolean(
+      (problem.type && (problem.type.includes('time') || problem.type === 'time_basics')) ||
+      (problem.answerString && problem.answerString.includes(':')) ||
+      problem.operatorSymbol === '⏰' ||
+      (problem.displayString && (problem.displayString.toLowerCase().includes('mins') || problem.displayString.toLowerCase().includes('after')))
+    );
+
+    if (isTimeQuestion) {
+      return (
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-bold text-amber-900">
+            💡 <strong>Clock & Time Rule:</strong> 60 minutes = 1 full hour!
+          </p>
+          <div className="bg-amber-100/80 p-2 rounded-xl border border-amber-200 font-mono text-xs text-amber-950 font-bold">
+            <span>⏰ {problem.hint || 'Count forward by 15-minute quarters!'}</span>
+          </div>
+        </div>
+      );
+    }
+
     // T1 / T2: Ten-frame dots representation
     if (tierLevel <= 2) {
       const totalDots = Math.min(20, Math.max(1, num1 + (op === '-' ? 0 : num2)));
