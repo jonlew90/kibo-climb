@@ -116,6 +116,13 @@ export default function App() {
     return storageService.getUserData().tierMasteryPercent || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
   });
 
+  // Persistent Tier Best Completion Times in Seconds
+  const [tierBestTimes, setTierBestTimes] = useState(() => {
+    return storageService.getUserData().tierBestTimes || {};
+  });
+
+  const [isNewSpeedRecord, setIsNewSpeedRecord] = useState(false);
+
   // Persistent Parent PIN (Default 1234)
   const [parentPin, setParentPin] = useState(() => {
     return storageService.getParentSettings().pin;
@@ -572,9 +579,24 @@ export default function App() {
       setUnlockedTiers(updatedUnlocked);
     }
 
+    // Speed Record Evaluation (Strictly compare against saved best completion time in seconds)
+    const durationInSeconds = totalLatencyMs > 1000 ? totalLatencyMs / 1000 : totalLatencyMs;
+    const previousBestSeconds = tierBestTimes[activeTier] ?? null;
+    const isNewRecord =
+      accuracyPct >= 80 &&
+      (previousBestSeconds === null || durationInSeconds < previousBestSeconds);
+
+    let updatedBestTimes = tierBestTimes;
+    if (isNewRecord) {
+      updatedBestTimes = { ...tierBestTimes, [activeTier]: durationInSeconds };
+      setTierBestTimes(updatedBestTimes);
+    }
+    setIsNewSpeedRecord(isNewRecord);
+
     storageService.saveUserData({
       tierMasteryPercent: updatedMastery,
-      unlockedTiers: updatedUnlocked
+      unlockedTiers: updatedUnlocked,
+      tierBestTimes: updatedBestTimes
     });
 
     let triggerLevelUp = false;
@@ -1453,6 +1475,7 @@ export default function App() {
         streak={streak}
         equippedItems={equippedItems}
         isBossMode={isBossMode}
+        isNewSpeedRecord={isNewSpeedRecord}
         onContinueClimbing={() => {
           setShowSprintResultsModal(false);
           setAppState('world_map');

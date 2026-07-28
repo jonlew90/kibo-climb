@@ -17,6 +17,8 @@ const DEFAULT_PROFILE = {
   userData: {
     tier: 1,
     unlockedTiers: [1],
+    tierMasteryPercent: { 1: 0 },
+    tierBestTimes: {},
     streak: 1,
     streakShields: 1,
     sparks: 50,

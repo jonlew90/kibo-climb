@@ -13,6 +13,7 @@ export default function SprintResultsModal({
   streak,
   equippedItems = [],
   isBossMode = false,
+  isNewSpeedRecord = false,
   onContinueClimbing,
   onVisitWorkshop
 }) {
@@ -27,8 +28,6 @@ export default function SprintResultsModal({
     soundFx.playKeyTap();
     onVisitWorkshop();
   };
-
-  const isNewRecord = stats.avgVelocitySec < 2.0;
 
   const formatTotalTime = (totalSec) => {
     const sec = Math.round(totalSec || 0);
@@ -53,7 +52,7 @@ export default function SprintResultsModal({
         {/* Headline */}
         <div className="space-y-1">
           <span className="text-xs font-black uppercase text-amber-700 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 inline-block">
-            {isBossMode ? '⚡ Boss Challenge Complete!' : isNewRecord ? '⚡ New Speed Record!' : 'Sprint Complete! 🎉'}
+            {isBossMode ? '⚡ Boss Challenge Complete!' : isNewSpeedRecord ? '⚡ New Speed Record!' : 'Sprint Complete! 🎉'}
           </span>
           <h2 className="text-2xl font-black text-slate-800 tracking-tight">
             Great Job Ascending! 🏔️
