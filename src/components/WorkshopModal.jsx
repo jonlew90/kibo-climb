@@ -209,8 +209,12 @@ export default function WorkshopModal({
             </div>
 
             <button
-              onClick={onClose}
+              onClick={() => {
+                soundFx.playKeyTap();
+                onClose();
+              }}
               className="p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition-colors"
+              aria-label="Close Workshop"
             >
               <X className="w-6 h-6 stroke-[2.5]" />
             </button>
@@ -472,10 +476,13 @@ export default function WorkshopModal({
 
         {/* Footer Close Button */}
         <button
-          onClick={onClose}
+          onClick={() => {
+            soundFx.playKeyTap();
+            onClose();
+          }}
           className="btn-3d-teal w-full py-3 text-sm rounded-2xl shrink-0"
         >
-          Done Customizing
+          Done Customizing & Return to Map 🗺️
         </button>
       </div>
     </div>

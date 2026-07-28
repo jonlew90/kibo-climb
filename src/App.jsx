@@ -1459,6 +1459,7 @@ export default function App() {
         }}
         onVisitWorkshop={() => {
           setShowSprintResultsModal(false);
+          setAppState('world_map');
           setIsWorkshopOpen(true);
         }}
       />
@@ -1466,7 +1467,10 @@ export default function App() {
       {/* Workshop Modal */}
       <WorkshopModal
         isOpen={isWorkshopOpen}
-        onClose={() => setIsWorkshopOpen(false)}
+        onClose={() => {
+          setIsWorkshopOpen(false);
+          setAppState('world_map');
+        }}
         sparks={sparks}
         streakShields={streakShields}
         unlockedItems={unlockedItems}
