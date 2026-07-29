@@ -398,9 +398,6 @@ export default function App() {
         isCorrect = rawUser.toLowerCase() === rawTarget.toLowerCase();
       }
 
-      // Instantly clear input to prevent double-submit loops
-      setInputVal('');
-
       const speedInfo = classifyLatency(rawTarget, latencyMs, isCorrect);
 
       const resultRecord = {
@@ -429,6 +426,7 @@ export default function App() {
       setTimeout(() => {
         setMascotMood('happy');
         setIsShaking(false);
+        setInputVal('');
 
         if (currentIndex + 1 < problems.length) {
           setCurrentIndex(currentIndex + 1);
@@ -436,7 +434,7 @@ export default function App() {
         } else {
           finishSprint(nextResults);
         }
-      }, isCorrect ? 200 : 800);
+      }, isCorrect ? 150 : 800);
     } catch (error) {
       console.error('Answer evaluation error caught:', error);
       // Fallback: Clear input and advance to avoid locking screen
