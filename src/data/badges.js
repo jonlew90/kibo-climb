@@ -106,7 +106,7 @@ export const BADGES_CATALOG = [
   {
     id: 'perfect_sprint',
     title: 'Accuracy Ace',
-    description: 'Achieved 100% accuracy on a 10-problem daily sprint!',
+    description: 'Achieved 100% accuracy on a full 20-problem sprint!',
     category: 'resilience',
     icon: '🎯',
     reqText: 'Get 100% Accuracy on a Sprint'
@@ -114,10 +114,10 @@ export const BADGES_CATALOG = [
   {
     id: 'speed_demon',
     title: 'Lightning Climber',
-    description: 'Averaged under 2.0s per problem on a completed sprint!',
+    description: 'Complete a 20-problem sprint in 40 seconds or less (avg ≤ 2.0s/problem) with at least 90% accuracy!',
     category: 'resilience',
     icon: '🏃',
-    reqText: 'Achieve <2.0s Avg Latency'
+    reqText: 'Achieve ≤2.0s Avg Latency on a 20-Problem Sprint'
   }
 ];
 

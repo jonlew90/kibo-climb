@@ -75,11 +75,11 @@ export function evaluateBadges(userState, lastSprintResult = null) {
             ? (durationSeconds / totalQuestions)
             : Number(lastSprintResult.avgLatencySec) || 999;
 
-          // STRICT RULE: Must have >= 90% accuracy, at least 10 questions, and <= 2.0s average speed
+          // STRICT RULE: Must be a full sprint (>= 20 questions), avg time <= 2.0s, and >= 90% accuracy
           const qualifiesForSpeedBadge =
-            accuracy >= 90 &&
-            totalQuestions >= 10 &&
-            avgTimePerQuestion <= 2.0;
+            totalQuestions >= 20 &&
+            avgTimePerQuestion <= 2.0 &&
+            accuracy >= 90;
 
           if (qualifiesForSpeedBadge) {
             unlocked = true;
