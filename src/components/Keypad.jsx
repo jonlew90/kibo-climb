@@ -6,6 +6,7 @@ export default function Keypad({
   onKeyPress,
   onDelete,
   onClear,
+  onSubmit,
   problemType,
   allowDecimal,
   answerString,
@@ -97,71 +98,84 @@ export default function Keypad({
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto grid grid-cols-3 gap-3 sm:gap-4 p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner">
-      {keyGrid.flat().map((keyVal, idx) => {
-        if (keyVal === ':') {
+    <div className="w-full max-w-sm mx-auto space-y-2.5">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4 p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner">
+        {keyGrid.flat().map((keyVal, idx) => {
+          if (keyVal === ':') {
+            return (
+              <button
+                key={`${keyVal}-${idx}`}
+                onClick={() => handleKeyClick(':')}
+                className="btn-3d-key text-purple-700 font-black text-3xl hover:bg-purple-50 border-purple-200"
+                aria-label="Colon time separator"
+              >
+                :
+              </button>
+            );
+          }
+
+          if (keyVal === '.') {
+            return (
+              <button
+                key={`${keyVal}-${idx}`}
+                onClick={() => handleKeyClick('.')}
+                className="btn-3d-key text-amber-600 font-black text-3xl hover:bg-amber-50 border-amber-200"
+                aria-label="Decimal point"
+              >
+                .
+              </button>
+            );
+          }
+
+          if (keyVal === 'clear') {
+            return (
+              <button
+                key={`${keyVal}-${idx}`}
+                onClick={() => handleKeyClick('clear')}
+                className="btn-3d-key text-rose-500 hover:bg-rose-50 border-rose-200 text-lg font-bold"
+                aria-label="Clear all input"
+              >
+                <RotateCcw className="w-7 h-7 stroke-[2.5]" />
+              </button>
+            );
+          }
+
+          if (keyVal === 'backspace') {
+            return (
+              <button
+                key={`${keyVal}-${idx}`}
+                onClick={() => handleKeyClick('backspace')}
+                className="btn-3d-key text-amber-600 hover:bg-amber-50 border-amber-200 text-lg font-bold"
+                aria-label="Delete last digit"
+              >
+                <Delete className="w-7 h-7 stroke-[2.5]" />
+              </button>
+            );
+          }
+
           return (
             <button
               key={`${keyVal}-${idx}`}
-              onClick={() => handleKeyClick(':')}
-              className="btn-3d-key text-purple-700 font-black text-3xl hover:bg-purple-50 border-purple-200"
-              aria-label="Colon time separator"
+              onClick={() => handleKeyClick(keyVal)}
+              className="btn-3d-key text-slate-800"
+              aria-label={`Digit ${keyVal}`}
             >
-              :
+              {keyVal}
             </button>
           );
-        }
+        })}
+      </div>
 
-        if (keyVal === '.') {
-          return (
-            <button
-              key={`${keyVal}-${idx}`}
-              onClick={() => handleKeyClick('.')}
-              className="btn-3d-key text-amber-600 font-black text-3xl hover:bg-amber-50 border-amber-200"
-              aria-label="Decimal point"
-            >
-              .
-            </button>
-          );
-        }
-
-        if (keyVal === 'clear') {
-          return (
-            <button
-              key={`${keyVal}-${idx}`}
-              onClick={() => handleKeyClick('clear')}
-              className="btn-3d-key text-rose-500 hover:bg-rose-50 border-rose-200 text-lg font-bold"
-              aria-label="Clear all input"
-            >
-              <RotateCcw className="w-7 h-7 stroke-[2.5]" />
-            </button>
-          );
-        }
-
-        if (keyVal === 'backspace') {
-          return (
-            <button
-              key={`${keyVal}-${idx}`}
-              onClick={() => handleKeyClick('backspace')}
-              className="btn-3d-key text-amber-600 hover:bg-amber-50 border-amber-200 text-lg font-bold"
-              aria-label="Delete last digit"
-            >
-              <Delete className="w-7 h-7 stroke-[2.5]" />
-            </button>
-          );
-        }
-
-        return (
-          <button
-            key={`${keyVal}-${idx}`}
-            onClick={() => handleKeyClick(keyVal)}
-            className="btn-3d-key text-slate-800"
-            aria-label={`Digit ${keyVal}`}
-          >
-            {keyVal}
-          </button>
-        );
-      })}
+      <button
+        onClick={() => {
+          soundFx.playKeyTap();
+          if (onSubmit) onSubmit();
+        }}
+        className="btn-3d-emerald w-full py-3.5 text-lg font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
+        aria-label="Submit answer"
+      >
+        <CheckCircle2 className="w-6 h-6 stroke-[3]" /> SUBMIT ↵
+      </button>
     </div>
   );
 }

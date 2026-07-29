@@ -234,6 +234,9 @@ export default function App() {
       } else if (e.key === 'Backspace') {
         soundFx.playKeyTap();
         setInputVal((prev) => (prev === null || prev === undefined ? '' : String(prev)).slice(0, -1));
+      } else if (e.key === 'Enter') {
+        soundFx.playKeyTap();
+        handleSubmitAnswer();
       } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
         setInputVal('');
       }
@@ -243,7 +246,13 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [appState, currentIndex, inputVal, problems, showQuitModal]);
 
-  // Zero-Friction Auto-Submit & Format Mask logic
+  const handleSubmitAnswer = () => {
+    const currentProblem = problems[currentIndex];
+    if (!currentProblem || inputVal === null || inputVal === undefined || String(inputVal).trim() === '') return;
+    submitAnswer(String(inputVal).trim(), currentProblem);
+  };
+
+  // Controlled Digit Input & Format Mask logic
   const handleDigitInput = (digit) => {
     try {
       const currentProblem = problems[currentIndex];
@@ -254,6 +263,11 @@ export default function App() {
       if (key === 'Yes' || key === 'No') {
         setInputVal(key);
         submitAnswer(key, currentProblem);
+        return;
+      }
+
+      if (key === 'SUBMIT' || key === 'ENTER' || key === 'Enter' || key === 'check') {
+        handleSubmitAnswer();
         return;
       }
 
@@ -274,7 +288,6 @@ export default function App() {
         (currentProblem.displayString && (currentProblem.displayString.toLowerCase().includes('mins') || currentProblem.displayString.toLowerCase().includes('after')))
       );
 
-      let newInput = '';
       setInputVal((prev) => {
         const current = prev === null || prev === undefined ? '' : String(prev);
 
@@ -301,16 +314,8 @@ export default function App() {
           }
         }
 
-        newInput = nextStr;
         return nextStr;
       });
-
-      const targetAnsStr = String(currentProblem.answerString || currentProblem.correctAnswer || currentProblem.answer || '');
-      const targetLength = targetAnsStr.length;
-
-      if (newInput !== '' && targetLength > 0 && newInput.length >= targetLength) {
-        submitAnswer(newInput, currentProblem);
-      }
     } catch (err) {
       console.error('Error handling digit input:', err);
     }
@@ -1130,8 +1135,9 @@ export default function App() {
           {/* Keypad Input */}
           <Keypad
             onKeyPress={handleDigitInput}
-            onDelete={() => setInputVal((prev) => prev.slice(0, -1))}
+            onDelete={() => setInputVal((prev) => (prev === null || prev === undefined ? '' : String(prev)).slice(0, -1))}
             onClear={() => setInputVal('')}
+            onSubmit={handleSubmitAnswer}
             problemType={problems[currentIndex]?.type}
             allowDecimal={problems[currentIndex]?.requiresDecimal || problems[currentIndex]?.type?.includes('money')}
             answerString={problems[currentIndex]?.answerString}
