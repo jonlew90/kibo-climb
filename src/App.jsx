@@ -59,10 +59,7 @@ export default function App() {
   const [showTestOutPassModal, setShowTestOutPassModal] = useState(false);
   const [showTestOutFailModal, setShowTestOutFailModal] = useState(false);
 
-  // 15-Second Idle Hesitation Timer & Tip Repetition Suppression
-  const [showIdleHint, setShowIdleHint] = useState(false);
-  const [seenTips, setSeenTips] = useState(new Set());
-  const idleTimerRef = useRef(null);
+
 
   const [levelUpReason, setLevelUpReason] = useState('');
   const [isBossMode, setIsBossMode] = useState(false);
@@ -219,31 +216,12 @@ export default function App() {
 
   const problemStartTimeRef = useRef(performance.now());
   const pauseStartTimeRef = useRef(0);
-  const [showIdleToast, setShowIdleToast] = useState(false);
-
-  // Isolated 15-Second Idle Hesitation Notification Timer
-  const startIdleTimer = () => {
-    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-    setShowIdleToast(false);
-    setShowIdleHint(false);
-
-    if (appState !== 'sprint') return;
-
-    console.log('⏳ Idle timer started (15s)...');
-
-    idleTimerRef.current = setTimeout(() => {
-      console.log('🔔 15s elapsed! Triggering idle toast notification.');
-      setShowIdleToast(true);
-      setShowIdleHint(true);
-    }, 15000); // 15 Seconds
-  };
 
   // Physical Keyboard listener
   useEffect(() => {
     if (appState !== 'sprint' || showQuitModal) return;
 
     const handleKeyDown = (e) => {
-      startIdleTimer();
       if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
         soundFx.playKeyTap();
         handleDigitInput(e.key);
@@ -259,18 +237,8 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [appState, currentIndex, inputVal, problems, showQuitModal]);
 
-  useEffect(() => {
-    if (appState === 'sprint') {
-      startIdleTimer();
-    }
-    return () => {
-      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-    };
-  }, [appState, currentIndex]);
-
   // Zero-Friction Auto-Submit & Format Mask logic
   const handleDigitInput = (digit) => {
-    startIdleTimer();
     const currentProblem = problems[currentIndex];
     if (!currentProblem) return;
 
@@ -979,21 +947,6 @@ export default function App() {
       {/* STATE 2: ACTIVE SPRINT VIEW */}
       {appState === 'sprint' && problems.length > 0 && (
         <main className="w-full flex-1 flex flex-col justify-between items-center py-2 animate-pop relative">
-          {/* FLOATING IDLE HESITATION TOAST NOTIFICATION BANNER */}
-          {showIdleToast && (
-            <div className="fixed top-16 right-4 z-[9999] pointer-events-none max-w-xs px-2">
-              <div
-                data-testid="idle-toast"
-                className="pointer-events-auto bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 px-4 py-3 rounded-2xl border-2 border-amber-600 shadow-2xl flex items-center gap-2 animate-bounce"
-              >
-                <span className="text-lg shrink-0 filter drop-shadow-sm">🧗</span>
-                <div className="text-left text-xs font-bold leading-tight">
-                  <span className="font-extrabold uppercase tracking-wide text-[10px] text-amber-900 block">⚡ Need a hand?</span>
-                  <span>Kibo's Tip: {problems[currentIndex]?.hint || 'Count forward in chunks!'}</span>
-                </div>
-              </div>
-            </div>
-          )}
           {/* Top Progress Bar */}
           <div className="w-full space-y-1.5">
             <div className="flex justify-between items-center text-sm font-bold text-slate-600 px-1">
@@ -1072,9 +1025,9 @@ export default function App() {
               )}
             </div>
 
-            {/* Mid-Sprint Micro-Hint Card (Triggered on >= 2 consecutive misses OR 15s idle timer) */}
-            {(consecutiveProblemMisses >= 2 || showIdleHint) && (
-              <MicroHintCard problem={problems[currentIndex]} tierLevel={tier} isIdle={showIdleHint} />
+            {/* Mid-Sprint Micro-Hint Card (Triggered on >= 2 consecutive misses) */}
+            {consecutiveProblemMisses >= 2 && (
+              <MicroHintCard problem={problems[currentIndex]} tierLevel={tier} />
             )}
           </div>
 
