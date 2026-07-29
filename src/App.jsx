@@ -218,17 +218,22 @@ export default function App() {
   const problemStartTimeRef = useRef(performance.now());
   const pauseStartTimeRef = useRef(0);
 
+  // Reset inputVal to clean "" whenever problem index changes
+  useEffect(() => {
+    setInputVal('');
+  }, [currentIndex]);
+
   // Physical Keyboard listener
   useEffect(() => {
     if (appState !== 'sprint' || showQuitModal) return;
 
     const handleKeyDown = (e) => {
-      if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
+      if ((e.key >= '0' && e.key <= '9') || e.key === '.' || e.key === ':') {
         soundFx.playKeyTap();
         handleDigitInput(e.key);
       } else if (e.key === 'Backspace') {
         soundFx.playKeyTap();
-        setInputVal((prev) => prev.slice(0, -1));
+        setInputVal((prev) => (prev === null || prev === undefined ? '' : String(prev)).slice(0, -1));
       } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
         setInputVal('');
       }
@@ -252,6 +257,16 @@ export default function App() {
         return;
       }
 
+      if (key === 'BACKSPACE' || key === 'DELETE' || key === '←' || key === 'backspace') {
+        setInputVal((prev) => (prev === null || prev === undefined ? '' : String(prev)).slice(0, -1));
+        return;
+      }
+
+      if (key === 'CLEAR' || key === 'C' || key === 'clear') {
+        setInputVal('');
+        return;
+      }
+
       const isTimeProblem = Boolean(
         (currentProblem.type && (currentProblem.type.includes('time') || currentProblem.type === 'time_basics')) ||
         (currentProblem.answerString && String(currentProblem.answerString).includes(':')) ||
@@ -262,11 +277,6 @@ export default function App() {
       let newInput = '';
       setInputVal((prev) => {
         const current = prev === null || prev === undefined ? '' : String(prev);
-
-        if (key === 'BACKSPACE' || key === 'DELETE') {
-          newInput = current.slice(0, -1);
-          return newInput;
-        }
 
         if (key === '.' && current.includes('.')) return current;
         if (key === ':' && current.includes(':')) return current;
