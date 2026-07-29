@@ -267,11 +267,20 @@ export function generateTierProblem(tierLevel) {
         num2 = Math.floor(Math.random() * 9) + 1;
         answer = num1 + num2;
         operatorSymbol = '+';
+        const maxVal = Math.max(num1, num2);
+        const minVal = Math.min(num1, num2);
+        hint = `Tip: Start at ${maxVal} and count on ${minVal}!`;
       } else {
         num1 = Math.floor(Math.random() * 9) + 1;
         num2 = Math.floor(Math.random() * num1) + 1;
         answer = num1 - num2;
         operatorSymbol = '−';
+        const diff = num1 - num2;
+        if (diff === 1) {
+          hint = `Tip: How far apart are ${num1} and ${num2}? Just 1 step!`;
+        } else {
+          hint = `Tip: Start at ${num1} and count back ${num2}!`;
+        }
       }
       displayString = `${num1} ${operatorSymbol} ${num2}`;
       break;
