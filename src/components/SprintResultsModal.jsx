@@ -14,6 +14,7 @@ export default function SprintResultsModal({
   equippedItems = [],
   isBossMode = false,
   isNewSpeedRecord = false,
+  newlyUnlockedBadges = [],
   onStartNextSprint,
   onContinueClimbing,
   onVisitWorkshop
@@ -216,6 +217,22 @@ export default function SprintResultsModal({
                 </div>
               )}
             </div>
+
+            {/* Newly Unlocked Badge Celebration Banner */}
+            {newlyUnlockedBadges && newlyUnlockedBadges.length > 0 && (
+              <div className="bg-gradient-to-r from-purple-100 via-amber-100 to-yellow-100 border-2 border-amber-400 rounded-2xl p-2.5 text-center space-y-1 shadow-md animate-bounce">
+                <span className="text-[10px] font-black uppercase text-purple-900 bg-purple-200 px-2.5 py-0.5 rounded-full border border-purple-300 inline-block">
+                  🏆 New Badge Unlocked!
+                </span>
+                <div className="flex items-center justify-center gap-2 pt-0.5">
+                  <span className="text-3xl filter drop-shadow">{newlyUnlockedBadges[0].icon}</span>
+                  <div className="text-left">
+                    <h4 className="text-xs font-black text-slate-900 leading-tight">{newlyUnlockedBadges[0].title}</h4>
+                    <p className="text-[10px] font-bold text-purple-900 leading-tight">{newlyUnlockedBadges[0].description}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="space-y-2 pt-1">

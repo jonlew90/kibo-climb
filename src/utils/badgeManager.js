@@ -57,13 +57,28 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         break;
 
       case 'perfect_sprint':
-        if (lastSprintResult && lastSprintResult.accuracyPct === 100) {
-          unlocked = true;
+        if (lastSprintResult) {
+          const accuracy = Number(lastSprintResult.accuracyPct ?? lastSprintResult.accuracyPercentage ?? 0);
+          if (accuracy === 100) {
+            unlocked = true;
+          }
         }
         break;
+
       case 'speed_demon':
-        if (lastSprintResult && lastSprintResult.avgLatencySec <= 2.0) {
-          unlocked = true;
+        if (lastSprintResult) {
+          const totalQuestions = Number(lastSprintResult.totalQuestions || lastSprintResult.answers?.length || 10);
+          const durationSeconds = Number(lastSprintResult.totalTimeSec ?? lastSprintResult.durationInSeconds ?? 0);
+          const accuracy = Number(lastSprintResult.accuracyPct ?? lastSprintResult.accuracyPercentage ?? 0);
+
+          const avgTimePerQuestion = totalQuestions > 0
+            ? (durationSeconds / totalQuestions)
+            : Number(lastSprintResult.avgLatencySec) || 999;
+
+          // Criteria: <= 2.0s average per question and passed sprint (>= 80% accuracy)
+          if (avgTimePerQuestion <= 2.0 && accuracy >= 80) {
+            unlocked = true;
+          }
         }
         break;
 
@@ -78,7 +93,9 @@ export function evaluateBadges(userState, lastSprintResult = null) {
 
   if (newlyUnlocked.length > 0) {
     const updatedUnlocked = Array.from(new Set([...currentUnlocked, ...newlyUnlocked.map((b) => b.id)]));
-    storageService.saveUserData({ unlockedBadges: updatedUnlocked });
+    const userData = storageService.getUserData();
+    userData.unlockedBadges = updatedUnlocked;
+    storageService.saveUserData(userData);
   }
 
   return newlyUnlocked;

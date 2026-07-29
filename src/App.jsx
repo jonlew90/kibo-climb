@@ -44,6 +44,7 @@ export default function App() {
   const [unlockedBadges, setUnlockedBadges] = useState(() => {
     return storageService.getUserData().unlockedBadges || [];
   });
+  const [newlyUnlockedBadges, setNewlyUnlockedBadges] = useState([]);
 
   // First-Time User Onboarding Modal State
   const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
@@ -571,6 +572,33 @@ export default function App() {
       unlockedTiers: updatedUnlocked,
       tierBestTimes: updatedBestTimes
     });
+
+    // Badge Evaluation & Unlock Persistence
+    const sprintResultData = {
+      accuracyPct,
+      avgLatencySec,
+      totalTimeSec: durationInSeconds,
+      totalQuestions: problems.length,
+      starsEarned
+    };
+
+    const currentUserState = {
+      streak,
+      tier: activeTier,
+      sparks,
+      unlockedItems: equippedItems,
+      streakShields: 1,
+      unlockedBadges
+    };
+
+    const newBadges = evaluateBadges(currentUserState, sprintResultData);
+    if (newBadges.length > 0) {
+      const updatedBadgeIds = Array.from(new Set([...unlockedBadges, ...newBadges.map((b) => b.id)]));
+      setUnlockedBadges(updatedBadgeIds);
+      setNewlyUnlockedBadges(newBadges);
+    } else {
+      setNewlyUnlockedBadges([]);
+    }
 
     let triggerLevelUp = false;
     let reasonText = '';
@@ -1449,6 +1477,7 @@ export default function App() {
         equippedItems={equippedItems}
         isBossMode={isBossMode}
         isNewSpeedRecord={isNewSpeedRecord}
+        newlyUnlockedBadges={newlyUnlockedBadges}
         onStartNextSprint={() => {
           setShowSprintResultsModal(false);
           const nextTier = Math.min(8, tier + 1);
