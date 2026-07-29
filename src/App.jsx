@@ -219,12 +219,32 @@ export default function App() {
 
   const problemStartTimeRef = useRef(performance.now());
   const pauseStartTimeRef = useRef(0);
+  const [showIdleToast, setShowIdleToast] = useState(false);
+
+  // Reset 15s idle timer on question change or keypress
+  const resetIdleTimer = () => {
+    setShowIdleToast(false);
+    setShowIdleHint(false);
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+
+    if (appState !== 'sprint') return;
+
+    // Suppress idle hints if player has 50%+ mastery on current tier
+    const isMastered = (tierMasteryPercent[tier] || 0) >= 50;
+    if (isMastered) return;
+
+    idleTimerRef.current = setTimeout(() => {
+      setShowIdleToast(true);
+      setShowIdleHint(true);
+    }, 15000); // 15 Seconds
+  };
 
   // Physical Keyboard listener
   useEffect(() => {
     if (appState !== 'sprint' || showQuitModal) return;
 
     const handleKeyDown = (e) => {
+      resetIdleTimer();
       if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
         soundFx.playKeyTap();
         handleDigitInput(e.key);
@@ -239,20 +259,6 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [appState, currentIndex, inputVal, problems, showQuitModal]);
-
-  // Reset 15s idle timer on question change or keypress
-  const resetIdleTimer = () => {
-    setShowIdleHint(false);
-    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-
-    // Suppress idle hints if player has 50%+ mastery on current tier
-    const isMastered = (tierMasteryPercent[tier] || 0) >= 50;
-    if (isMastered) return;
-
-    idleTimerRef.current = setTimeout(() => {
-      setShowIdleHint(true);
-    }, 15000);
-  };
 
   useEffect(() => {
     if (appState === 'sprint') {
@@ -971,9 +977,21 @@ export default function App() {
         </main>
       )}
 
-      {/* STATE 2: THE MATH SPRINT */}
-      {appState === 'sprint' && problems[currentIndex] && (
-        <main className="w-full flex-1 flex flex-col items-center justify-between gap-3 py-2">
+      {/* STATE 2: ACTIVE SPRINT VIEW */}
+      {appState === 'sprint' && problems.length > 0 && (
+        <main className="w-full flex-1 flex flex-col justify-between items-center py-2 animate-pop relative">
+          {/* TOP NON-BLOCKING KIBO IDLE HESITATION TOAST BANNER */}
+          {showIdleToast && (
+            <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-full max-w-sm px-4 animate-pop">
+              <div className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 p-3 rounded-2xl border-2 border-amber-600 shadow-2xl flex items-center gap-3">
+                <Mascot mood="happy" equipped={equippedItems} className="w-10 h-10 shrink-0 filter drop-shadow-md" />
+                <div className="text-left text-xs font-bold leading-tight">
+                  <span className="font-extrabold uppercase tracking-wide text-[10px] text-amber-900 block">⚡ Need a hint?</span>
+                  <span>Kibo's Tip: {problems[currentIndex]?.hint || 'Count forward in chunks!'}</span>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Top Progress Bar */}
           <div className="w-full space-y-1.5">
             <div className="flex justify-between items-center text-sm font-bold text-slate-600 px-1">
