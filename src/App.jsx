@@ -288,56 +288,52 @@ export default function App() {
         (currentProblem.displayString && (currentProblem.displayString.toLowerCase().includes('mins') || currentProblem.displayString.toLowerCase().includes('after')))
       );
 
-      let nextInputStr = '';
-      setInputVal((prev) => {
-        const current = prev === null || prev === undefined ? '' : String(prev);
+      const current = inputVal === null || inputVal === undefined ? '' : String(inputVal);
 
-        if (key === '.' && current.includes('.')) return current;
-        if (key === ':' && current.includes(':')) return current;
+      if (key === '.' && current.includes('.')) return;
+      if (key === ':' && current.includes(':')) return;
 
-        // Max input length guard (e.g. "12:59" = 5 chars)
-        if (current.length >= 6) return current;
+      // Max input length guard (e.g. "12:59" = 5 chars)
+      if (current.length >= 6) return;
 
-        let nextStr = current + key;
+      let nextInputStr = current + key;
 
-        // Time Reading Auto-Formatting Mask (e.g. 315 -> 3:15, 1030 -> 10:30)
-        if (isTimeProblem) {
-          if (key === ':') {
-            if (current.includes(':')) return current;
-            nextStr = current + ':';
-          } else if (!current.includes(':')) {
-            const rawDigits = (current + key).replace(/\D/g, '');
-            if (rawDigits.length === 3) {
-              nextStr = `${rawDigits[0]}:${rawDigits.slice(1)}`;
-            } else if (rawDigits.length === 4) {
-              nextStr = `${rawDigits.slice(0, 2)}:${rawDigits.slice(2)}`;
-            }
+      // Time Reading Auto-Formatting Mask (e.g. 315 -> 3:15, 1030 -> 10:30)
+      if (isTimeProblem) {
+        if (key === ':') {
+          if (!current.includes(':')) {
+            nextInputStr = current + ':';
+          }
+        } else if (!current.includes(':')) {
+          const rawDigits = (current + key).replace(/\D/g, '');
+          if (rawDigits.length === 3) {
+            nextInputStr = `${rawDigits[0]}:${rawDigits.slice(1)}`;
+          } else if (rawDigits.length === 4) {
+            nextInputStr = `${rawDigits.slice(0, 2)}:${rawDigits.slice(2)}`;
           }
         }
+      }
 
-        nextInputStr = nextStr;
-        return nextStr;
-      });
+      // Update state for visual rendering
+      setInputVal(nextInputStr);
 
       // Auto-submit once the correct # of digits for the target answer is entered
-      if (nextInputStr !== '') {
-        const targetAnsStr = String(currentProblem.answerString || currentProblem.correctAnswer || currentProblem.answer || '').trim();
+      const targetAnsStr = String(currentProblem.answerString || currentProblem.correctAnswer || currentProblem.answer || '').trim();
 
-        if (isTimeProblem) {
-          const cleanUserDigits = nextInputStr.replace(/\D/g, '');
-          const cleanTargetDigits = targetAnsStr.replace(/\D/g, '');
-          const targetDigitCount = cleanTargetDigits.length > 0 ? cleanTargetDigits.length : 3;
+      if (isTimeProblem) {
+        const cleanUserDigits = nextInputStr.replace(/\D/g, '');
+        const cleanTargetDigits = targetAnsStr.replace(/\D/g, '');
+        const targetDigitCount = cleanTargetDigits.length > 0 ? cleanTargetDigits.length : 3;
 
-          if (cleanUserDigits.length >= targetDigitCount) {
-            submitAnswer(nextInputStr, currentProblem);
-          }
-        } else {
-          // Standard Numeric / Multi-Digit Problems
-          const targetLength = targetAnsStr.length > 0 ? targetAnsStr.length : 1;
+        if (cleanUserDigits.length >= targetDigitCount) {
+          submitAnswer(nextInputStr, currentProblem);
+        }
+      } else {
+        // Standard Numeric / Multi-Digit Problems (e.g. 8 + 5 = 13, targetLength = 2)
+        const targetLength = targetAnsStr.length > 0 ? targetAnsStr.length : 1;
 
-          if (nextInputStr.length >= targetLength) {
-            submitAnswer(nextInputStr, currentProblem);
-          }
+        if (nextInputStr.length >= targetLength) {
+          submitAnswer(nextInputStr, currentProblem);
         }
       }
     } catch (err) {
