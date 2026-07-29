@@ -240,85 +240,122 @@ export default function App() {
 
   // Zero-Friction Auto-Submit & Format Mask logic
   const handleDigitInput = (digit) => {
-    const currentProblem = problems[currentIndex];
-    if (!currentProblem) return;
+    try {
+      const currentProblem = problems[currentIndex];
+      if (!currentProblem) return;
 
-    if (digit === 'Yes' || digit === 'No') {
-      setInputVal(digit);
-      submitAnswer(digit, currentProblem);
-      return;
-    }
+      const key = String(digit);
 
-    const isTimeProblem = Boolean(
-      (currentProblem.type && (currentProblem.type.includes('time') || currentProblem.type === 'time_basics')) ||
-      (currentProblem.answerString && currentProblem.answerString.includes(':')) ||
-      currentProblem.operatorSymbol === '⏰' ||
-      (currentProblem.displayString && (currentProblem.displayString.toLowerCase().includes('mins') || currentProblem.displayString.toLowerCase().includes('after')))
-    );
-
-    if (digit === '.' && inputVal.includes('.')) return;
-
-    let newInput = inputVal + digit;
-
-    // Time Reading Auto-Formatting Mask (e.g. 315 -> 3:15, 1030 -> 10:30)
-    if (isTimeProblem) {
-      if (digit === ':') {
-        if (inputVal.includes(':')) return;
-        newInput = inputVal + ':';
-      } else if (!inputVal.includes(':')) {
-        const rawDigits = (inputVal + digit).replace(/\D/g, '');
-        if (rawDigits.length === 3) {
-          newInput = `${rawDigits[0]}:${rawDigits.slice(1)}`;
-        } else if (rawDigits.length === 4) {
-          newInput = `${rawDigits.slice(0, 2)}:${rawDigits.slice(2)}`;
-        }
+      if (key === 'Yes' || key === 'No') {
+        setInputVal(key);
+        submitAnswer(key, currentProblem);
+        return;
       }
-    }
 
-    setInputVal(newInput);
+      const isTimeProblem = Boolean(
+        (currentProblem.type && (currentProblem.type.includes('time') || currentProblem.type === 'time_basics')) ||
+        (currentProblem.answerString && String(currentProblem.answerString).includes(':')) ||
+        currentProblem.operatorSymbol === '⏰' ||
+        (currentProblem.displayString && (currentProblem.displayString.toLowerCase().includes('mins') || currentProblem.displayString.toLowerCase().includes('after')))
+      );
 
-    const targetLength = currentProblem.answerString.length;
+      let newInput = '';
+      setInputVal((prev) => {
+        const current = prev === null || prev === undefined ? '' : String(prev);
 
-    if (newInput.length >= targetLength) {
-      submitAnswer(newInput, currentProblem);
+        if (key === 'BACKSPACE' || key === 'DELETE') {
+          newInput = current.slice(0, -1);
+          return newInput;
+        }
+
+        if (key === '.' && current.includes('.')) return current;
+        if (key === ':' && current.includes(':')) return current;
+
+        // Max input length guard (e.g. "12:59" = 5 chars)
+        if (current.length >= 6) return current;
+
+        let nextStr = current + key;
+
+        // Time Reading Auto-Formatting Mask (e.g. 315 -> 3:15, 1030 -> 10:30)
+        if (isTimeProblem) {
+          if (key === ':') {
+            if (current.includes(':')) return current;
+            nextStr = current + ':';
+          } else if (!current.includes(':')) {
+            const rawDigits = (current + key).replace(/\D/g, '');
+            if (rawDigits.length === 3) {
+              nextStr = `${rawDigits[0]}:${rawDigits.slice(1)}`;
+            } else if (rawDigits.length === 4) {
+              nextStr = `${rawDigits.slice(0, 2)}:${rawDigits.slice(2)}`;
+            }
+          }
+        }
+
+        newInput = nextStr;
+        return nextStr;
+      });
+
+      const targetAnsStr = String(currentProblem.answerString || currentProblem.correctAnswer || currentProblem.answer || '');
+      const targetLength = targetAnsStr.length;
+
+      if (newInput !== '' && targetLength > 0 && newInput.length >= targetLength) {
+        submitAnswer(newInput, currentProblem);
+      }
+    } catch (err) {
+      console.error('Error handling digit input:', err);
     }
   };
 
   const submitAnswer = (userAnswerStr, currentProblem) => {
     try {
+      if (!currentProblem || userAnswerStr === '' || userAnswerStr === null || userAnswerStr === undefined) return;
+
       const now = performance.now();
       const latencyMs = Math.round(Math.max(10, now - problemStartTimeRef.current));
       const responseTimeSeconds = parseFloat((latencyMs / 1000).toFixed(2));
 
-      const targetAnsStr = currentProblem.answerString || currentProblem.correctAnswer || currentProblem.answer || '';
+      const rawUser = String(userAnswerStr).trim();
+      const rawTarget = String(currentProblem.answerString || currentProblem.correctAnswer || currentProblem.answer || '').trim();
+
+      const normalize = (str) => {
+        let clean = String(str || '').trim();
+        clean = clean.replace(/^0(\d:)/, '$1');
+        if (/^\d{3,4}$/.test(clean)) {
+          clean = `${clean.slice(0, -2)}:${clean.slice(-2)}`;
+        }
+        return clean.replace(/\s*(am|pm)/gi, '').trim();
+      };
 
       const isTimeQuestion = Boolean(
         (currentProblem.type && (currentProblem.type.includes('time') || currentProblem.type === 'time_basics')) ||
-        (String(targetAnsStr).includes(':')) ||
+        rawTarget.includes(':') ||
         currentProblem.operatorSymbol === '⏰' ||
         (currentProblem.displayString && (currentProblem.displayString.toLowerCase().includes('mins') || currentProblem.displayString.toLowerCase().includes('after')))
       );
 
       let isCorrect = false;
       if (isTimeQuestion) {
-        const userNorm = normalizeTimeAnswer(userAnswerStr);
-        const ansNorm = normalizeTimeAnswer(targetAnsStr);
-        const cleanUser = String(userAnswerStr).replace(/\D/g, '').trim();
-        const cleanAns = String(targetAnsStr).replace(/\D/g, '').trim();
+        const normUser = normalize(rawUser);
+        const normTarget = normalize(rawTarget);
+        const digitsUser = rawUser.replace(/\D/g, '');
+        const digitsTarget = rawTarget.replace(/\D/g, '');
 
         isCorrect =
-          userNorm === ansNorm ||
-          (cleanUser !== '' && cleanUser === cleanAns) ||
-          String(userAnswerStr).trim().toLowerCase() === String(targetAnsStr).trim().toLowerCase();
+          normUser === normTarget ||
+          (digitsUser !== '' && digitsUser === digitsTarget) ||
+          rawUser.toLowerCase() === rawTarget.toLowerCase();
       } else {
-        isCorrect = String(userAnswerStr).trim().toLowerCase() === String(targetAnsStr).trim().toLowerCase();
+        isCorrect = rawUser.toLowerCase() === rawTarget.toLowerCase();
       }
 
-      const speedInfo = classifyLatency(targetAnsStr, latencyMs, isCorrect);
+      // Instantly clear input to prevent double-submit loops
+      setInputVal('');
+
+      const speedInfo = classifyLatency(rawTarget, latencyMs, isCorrect);
 
       const resultRecord = {
         problem: currentProblem,
-        userAnswer: userAnswerStr,
+        userAnswer: rawUser,
         isCorrect,
         latencyMs,
         responseTimeSeconds,
@@ -342,7 +379,6 @@ export default function App() {
       setTimeout(() => {
         setMascotMood('happy');
         setIsShaking(false);
-        setInputVal('');
 
         if (currentIndex + 1 < problems.length) {
           setCurrentIndex(currentIndex + 1);
@@ -351,12 +387,10 @@ export default function App() {
           finishSprint(nextResults);
         }
       }, isCorrect ? 200 : 800);
-    } catch (err) {
-      console.error('Error during answer evaluation:', err);
-      setMascotMood('happy');
-      setIsShaking(false);
+    } catch (error) {
+      console.error('Answer evaluation error caught:', error);
+      // Fallback: Clear input and advance to avoid locking screen
       setInputVal('');
-
       if (currentIndex + 1 < problems.length) {
         setCurrentIndex(currentIndex + 1);
         problemStartTimeRef.current = performance.now();
