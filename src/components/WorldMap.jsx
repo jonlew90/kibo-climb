@@ -141,13 +141,13 @@ export default function WorldMap({
                 className={`w-full flex ${windClass} relative my-3`}
               >
                 <div className="relative flex flex-col items-center group">
-                  {/* Node Icon & Mascot Relative Anchor Container */}
-                  <div className="relative flex items-center justify-center">
-                    {/* Mascot Standing Beside Active Node Icon Button */}
+                  {/* Tier Icon Wrapper (Relative Anchor Container) */}
+                  <div className="relative flex items-center justify-center tier-icon-wrapper">
+                    {/* Mascot Floating on Active Node Icon Shoulder */}
                     {isActiveNode && (
-                      <div className={`absolute top-1/2 -translate-y-1/2 ${mascotSideClass} z-30 kibo-active-sprite pointer-events-none flex flex-col items-center select-none`}>
-                        <Mascot mood="happy" equipped={equippedItems} className="w-14 h-14 filter drop-shadow-xl" />
-                        <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md border border-purple-300 whitespace-nowrap">
+                      <div className="absolute -top-8 -right-2 z-30 kibo-active-sprite pointer-events-none flex flex-col items-center select-none">
+                        <Mascot mood="happy" equipped={equippedItems} className="w-12 h-12 sm:w-14 sm:h-14 filter drop-shadow-xl" />
+                        <span className="bg-purple-600 text-white text-[8px] sm:text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full shadow-md border border-purple-300 whitespace-nowrap -mt-1">
                           Current Base
                         </span>
                       </div>
