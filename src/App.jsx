@@ -23,7 +23,7 @@ import { getItemById } from './utils/itemsCatalog';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
-import { pluralize } from './utils/formatters';
+import { pluralize, normalizeTimeAnswer } from './utils/formatters';
 import { storageService } from './services/storageService';
 
 export default function App() {
@@ -285,51 +285,74 @@ export default function App() {
   };
 
   const submitAnswer = (userAnswerStr, currentProblem) => {
-    const now = performance.now();
-    const latencyMs = Math.round(Math.max(10, now - problemStartTimeRef.current));
-    const responseTimeSeconds = parseFloat((latencyMs / 1000).toFixed(2));
+    try {
+      const now = performance.now();
+      const latencyMs = Math.round(Math.max(10, now - problemStartTimeRef.current));
+      const responseTimeSeconds = parseFloat((latencyMs / 1000).toFixed(2));
 
-    const isTimeProblem = Boolean(
-      (currentProblem.type && (currentProblem.type.includes('time') || currentProblem.type === 'time_basics')) ||
-      (currentProblem.answerString && currentProblem.answerString.includes(':')) ||
-      currentProblem.operatorSymbol === '⏰'
-    );
+      const targetAnsStr = currentProblem.answerString || currentProblem.correctAnswer || currentProblem.answer || '';
 
-    let isCorrect = userAnswerStr.trim() === currentProblem.answerString?.trim();
-    if (!isCorrect && isTimeProblem) {
-      const cleanUser = userAnswerStr.replace(/[^0-9]/g, '').trim();
-      const cleanAns = String(currentProblem.answerString || '').replace(/[^0-9]/g, '').trim();
-      if (cleanUser !== '' && cleanUser === cleanAns) {
-        isCorrect = true;
+      const isTimeQuestion = Boolean(
+        (currentProblem.type && (currentProblem.type.includes('time') || currentProblem.type === 'time_basics')) ||
+        (String(targetAnsStr).includes(':')) ||
+        currentProblem.operatorSymbol === '⏰' ||
+        (currentProblem.displayString && (currentProblem.displayString.toLowerCase().includes('mins') || currentProblem.displayString.toLowerCase().includes('after')))
+      );
+
+      let isCorrect = false;
+      if (isTimeQuestion) {
+        const userNorm = normalizeTimeAnswer(userAnswerStr);
+        const ansNorm = normalizeTimeAnswer(targetAnsStr);
+        const cleanUser = String(userAnswerStr).replace(/\D/g, '').trim();
+        const cleanAns = String(targetAnsStr).replace(/\D/g, '').trim();
+
+        isCorrect =
+          userNorm === ansNorm ||
+          (cleanUser !== '' && cleanUser === cleanAns) ||
+          String(userAnswerStr).trim().toLowerCase() === String(targetAnsStr).trim().toLowerCase();
+      } else {
+        isCorrect = String(userAnswerStr).trim().toLowerCase() === String(targetAnsStr).trim().toLowerCase();
       }
-    }
 
-    const speedInfo = classifyLatency(currentProblem.answerString, latencyMs, isCorrect);
+      const speedInfo = classifyLatency(targetAnsStr, latencyMs, isCorrect);
 
-    const resultRecord = {
-      problem: currentProblem,
-      userAnswer: userAnswerStr,
-      isCorrect,
-      latencyMs,
-      responseTimeSeconds,
-      speedInfo
-    };
+      const resultRecord = {
+        problem: currentProblem,
+        userAnswer: userAnswerStr,
+        isCorrect,
+        latencyMs,
+        responseTimeSeconds,
+        speedInfo
+      };
 
-    const nextResults = [...results, resultRecord];
-    setResults(nextResults);
+      const nextResults = [...results, resultRecord];
+      setResults(nextResults);
 
-    if (isCorrect) {
-      soundFx.playCorrect();
-      setMascotMood('correct');
-      setConsecutiveProblemMisses(0);
-    } else {
-      soundFx.playIncorrect();
-      setMascotMood('incorrect');
-      setIsShaking(true);
-      setConsecutiveProblemMisses((prev) => prev + 1);
-    }
+      if (isCorrect) {
+        soundFx.playCorrect();
+        setMascotMood('correct');
+        setConsecutiveProblemMisses(0);
+      } else {
+        soundFx.playIncorrect();
+        setMascotMood('incorrect');
+        setIsShaking(true);
+        setConsecutiveProblemMisses((prev) => prev + 1);
+      }
 
-    setTimeout(() => {
+      setTimeout(() => {
+        setMascotMood('happy');
+        setIsShaking(false);
+        setInputVal('');
+
+        if (currentIndex + 1 < problems.length) {
+          setCurrentIndex(currentIndex + 1);
+          problemStartTimeRef.current = performance.now();
+        } else {
+          finishSprint(nextResults);
+        }
+      }, isCorrect ? 200 : 800);
+    } catch (err) {
+      console.error('Error during answer evaluation:', err);
       setMascotMood('happy');
       setIsShaking(false);
       setInputVal('');
@@ -338,9 +361,9 @@ export default function App() {
         setCurrentIndex(currentIndex + 1);
         problemStartTimeRef.current = performance.now();
       } else {
-        finishSprint(nextResults);
+        finishSprint(results);
       }
-    }, isCorrect ? 200 : 800);
+    }
   };
 
   const startNewSprint = (asBossMode = false, overrideTier = null) => {
