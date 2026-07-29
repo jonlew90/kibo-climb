@@ -19,6 +19,7 @@ const DEFAULT_PROFILE = {
     unlockedTiers: [1],
     tierMasteryPercent: { 1: 0 },
     tierBestTimes: {},
+    masteredTricks: {},
     streak: 1,
     streakShields: 1,
     sparks: 50,

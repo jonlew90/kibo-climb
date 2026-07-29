@@ -4,6 +4,7 @@ import { Lightbulb, Play, X, Check, Zap } from 'lucide-react';
 import Mascot from './Mascot';
 import { CURRICULUM_TIERS, generateTierProblem } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
+import { storageService } from '../services/storageService';
 
 export default function TierIntroModal({
   isOpen,
@@ -18,8 +19,10 @@ export default function TierIntroModal({
 
   useEffect(() => {
     if (isOpen) {
+      const userData = storageService.getUserData();
+      const isAlreadyMastered = Boolean(userData.masteredTricks && userData.masteredTricks[tierLevel]);
       setTryOutInput('');
-      setIsTryOutSuccess(false);
+      setIsTryOutSuccess(isAlreadyMastered);
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = '';
@@ -30,16 +33,6 @@ export default function TierIntroModal({
   if (!isOpen) return null;
 
   const tierMeta = CURRICULUM_TIERS.find((t) => t.tier === tierLevel) || CURRICULUM_TIERS[0];
-
-  const handleTryOutSubmit = (e) => {
-    e.preventDefault();
-    if (tryOutInput.trim() === tryOutProblem.answerString) {
-      soundFx.playVictory();
-      setIsTryOutSuccess(true);
-    } else {
-      soundFx.playIncorrect();
-    }
-  };
 
   const handleStart = () => {
     soundFx.playVictory();
@@ -98,10 +91,27 @@ export default function TierIntroModal({
               if (tryOutInput.trim().toLowerCase() === sample.correctAnswer.toLowerCase()) {
                 soundFx.playVictory();
                 setIsTryOutSuccess(true);
+                const userData = storageService.getUserData();
+                userData.masteredTricks = { ...(userData.masteredTricks || {}), [tierLevel]: true };
+                storageService.saveUserData(userData);
               } else {
                 soundFx.playIncorrect();
               }
             };
+
+            if (isTryOutSuccess) {
+              return (
+                <div className="bg-emerald-50 border-2 border-emerald-300 p-3 rounded-2xl text-center space-y-1 animate-pop">
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-black text-emerald-800 uppercase tracking-wider">
+                    <Check className="w-4.5 h-4.5 stroke-[3] text-emerald-600" />
+                    <span>Awesome job! You've mastered this trick! 🎉</span>
+                  </div>
+                  <p className="text-[11px] font-semibold text-emerald-700">
+                    You're ready to tackle the Tier {tierLevel} Sprint with peak velocity!
+                  </p>
+                </div>
+              );
+            }
 
             return (
               <form onSubmit={handleSubmit} className="space-y-1.5">
@@ -121,29 +131,40 @@ export default function TierIntroModal({
                     Check
                   </button>
                 </div>
-
-                {isTryOutSuccess ? (
-                  <div className="flex items-center justify-center gap-1 text-xs font-black text-emerald-700 bg-emerald-100 py-1 px-2 rounded-lg border border-emerald-300 animate-pop">
-                    <Check className="w-4 h-4 stroke-[3] text-emerald-600" /> Spot on! You mastered the trick! 🎉
-                  </div>
-                ) : (
-                  <span className="text-[10px] text-slate-500 font-semibold block italic">
-                    {sample.hint}
-                  </span>
-                )}
+                <span className="text-[10px] text-slate-500 font-semibold block italic">
+                  {sample.hint}
+                </span>
               </form>
             );
           })()}
         </div>
 
-        {/* Action Button */}
-        <button
-          onClick={handleStart}
-          className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
-        >
-          <Zap className="w-5 h-5 fill-white stroke-[2.5]" />
-          Got It! Start Sprint ⚡
-        </button>
+        {/* Action Buttons */}
+        {isTryOutSuccess ? (
+          <div className="space-y-2 pt-1">
+            <button
+              onClick={handleStart}
+              className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
+            >
+              <Play className="w-5 h-5 fill-white stroke-[2.5]" />
+              Start Sprint 🚀
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 text-xs font-black text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all"
+            >
+              Back to Map 🗺️
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleStart}
+            className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
+          >
+            <Zap className="w-5 h-5 fill-white stroke-[2.5]" />
+            Got It! Start Sprint ⚡
+          </button>
+        )}
       </div>
     </div>,
     document.body
