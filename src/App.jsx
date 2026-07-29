@@ -981,7 +981,7 @@ export default function App() {
         <main className="w-full flex-1 flex flex-col justify-between items-center py-2 animate-pop relative">
           {/* FLOATING IDLE HESITATION TOAST NOTIFICATION BANNER */}
           {showIdleToast && (
-            <div className="fixed top-4 inset-x-0 z-[9999] pointer-events-none flex justify-center px-4">
+            <div className="fixed top-16 inset-x-0 z-[9999] pointer-events-none flex justify-center px-4">
               <div
                 data-testid="idle-toast"
                 className="pointer-events-auto w-full max-w-sm bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 px-4 py-3 rounded-2xl border-2 border-amber-600 shadow-2xl flex items-center gap-3 animate-bounce"
