@@ -14,6 +14,7 @@ export default function SprintResultsModal({
   equippedItems = [],
   isBossMode = false,
   isNewSpeedRecord = false,
+  onStartNextSprint,
   onContinueClimbing,
   onVisitWorkshop
 }) {
@@ -27,6 +28,15 @@ export default function SprintResultsModal({
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleStartNextSprint = () => {
+    soundFx.playVictory();
+    if (onStartNextSprint) {
+      onStartNextSprint();
+    } else {
+      onContinueClimbing();
+    }
+  };
 
   const handleContinue = () => {
     soundFx.playVictory();
@@ -210,20 +220,29 @@ export default function SprintResultsModal({
             {/* Action Buttons */}
             <div className="space-y-2 pt-1">
               <button
-                onClick={handleContinue}
-                className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
+                onClick={handleStartNextSprint}
+                className="btn-3d-emerald w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-lg text-white"
               >
-                <Compass className="w-5 h-5 stroke-[2.5]" />
-                World Map 🗺️
+                <span>Start Next Sprint 🚀</span>
               </button>
 
-              <button
-                onClick={handleWorkshop}
-                className="btn-3d-purple w-full py-3 text-sm rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
-              >
-                <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-                Visit Kibo's Workshop 🎒
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleContinue}
+                  className="flex-1 py-2.5 px-3 rounded-xl border-2 border-slate-300 text-slate-700 font-extrabold text-xs hover:bg-slate-100 transition-colors flex items-center justify-center gap-1"
+                >
+                  <Compass className="w-4 h-4 text-slate-500 stroke-[2.5]" />
+                  <span>World Map 🗺️</span>
+                </button>
+
+                <button
+                  onClick={handleWorkshop}
+                  className="flex-1 py-2.5 px-3 rounded-xl bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 text-purple-900 font-extrabold text-xs transition-colors flex items-center justify-center gap-1"
+                >
+                  <ShoppingBag className="w-4 h-4 text-purple-700 stroke-[2.5]" />
+                  <span>Workshop 🎒</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

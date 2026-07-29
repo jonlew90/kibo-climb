@@ -1449,6 +1449,11 @@ export default function App() {
         equippedItems={equippedItems}
         isBossMode={isBossMode}
         isNewSpeedRecord={isNewSpeedRecord}
+        onStartNextSprint={() => {
+          setShowSprintResultsModal(false);
+          const nextTier = Math.min(8, tier + 1);
+          handleSelectTierFromMap(nextTier);
+        }}
         onContinueClimbing={() => {
           setShowSprintResultsModal(false);
           setAppState('world_map');
