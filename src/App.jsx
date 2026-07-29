@@ -252,7 +252,7 @@ export default function App() {
     submitAnswer(String(inputVal).trim(), currentProblem);
   };
 
-  // Controlled Digit Input & Format Mask logic
+  // Controlled Digit Input & Format Mask logic with Smart Auto-Submit
   const handleDigitInput = (digit) => {
     try {
       const currentProblem = problems[currentIndex];
@@ -288,6 +288,7 @@ export default function App() {
         (currentProblem.displayString && (currentProblem.displayString.toLowerCase().includes('mins') || currentProblem.displayString.toLowerCase().includes('after')))
       );
 
+      let nextInputStr = '';
       setInputVal((prev) => {
         const current = prev === null || prev === undefined ? '' : String(prev);
 
@@ -314,8 +315,42 @@ export default function App() {
           }
         }
 
+        nextInputStr = nextStr;
         return nextStr;
       });
+
+      // Smart Length-Aware Auto-Submit Checker
+      if (nextInputStr !== '') {
+        const targetAnsStr = String(currentProblem.answerString || currentProblem.correctAnswer || currentProblem.answer || '').trim();
+
+        const normalizeTime = (str) => {
+          let val = String(str || '').trim().replace(/^0(\d:)/, '$1');
+          if (/^\d{3,4}$/.test(val)) {
+            val = `${val.slice(0, -2)}:${val.slice(-2)}`;
+          }
+          return val.replace(/\s*(am|pm)/gi, '').trim();
+        };
+
+        if (isTimeProblem) {
+          const normUser = normalizeTime(nextInputStr);
+          const normTarget = normalizeTime(targetAnsStr);
+          const cleanUserDigits = nextInputStr.replace(/\D/g, '');
+          const cleanTargetDigits = targetAnsStr.replace(/\D/g, '');
+
+          if (cleanUserDigits.length >= cleanTargetDigits.length) {
+            if (normUser === normTarget || cleanUserDigits === cleanTargetDigits) {
+              submitAnswer(nextInputStr, currentProblem);
+            }
+          }
+        } else {
+          // Standard Numeric Problems: Only check when input length matches target length!
+          if (nextInputStr.length >= targetAnsStr.length) {
+            if (nextInputStr.toLowerCase() === targetAnsStr.toLowerCase()) {
+              submitAnswer(nextInputStr, currentProblem);
+            }
+          }
+        }
+      }
     } catch (err) {
       console.error('Error handling digit input:', err);
     }
