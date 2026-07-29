@@ -67,7 +67,7 @@ export function evaluateBadges(userState, lastSprintResult = null) {
 
       case 'speed_demon':
         if (lastSprintResult) {
-          const totalQuestions = Number(lastSprintResult.totalQuestions || lastSprintResult.answers?.length || 10);
+          const totalQuestions = Number(lastSprintResult.totalQuestions || lastSprintResult.answers?.length || 0);
           const durationSeconds = Number(lastSprintResult.totalTimeSec ?? lastSprintResult.durationInSeconds ?? 0);
           const accuracy = Number(lastSprintResult.accuracyPct ?? lastSprintResult.accuracyPercentage ?? 0);
 
@@ -75,8 +75,13 @@ export function evaluateBadges(userState, lastSprintResult = null) {
             ? (durationSeconds / totalQuestions)
             : Number(lastSprintResult.avgLatencySec) || 999;
 
-          // Criteria: <= 2.0s average per question and passed sprint (>= 80% accuracy)
-          if (avgTimePerQuestion <= 2.0 && accuracy >= 80) {
+          // STRICT RULE: Must have >= 90% accuracy, at least 10 questions, and <= 2.0s average speed
+          const qualifiesForSpeedBadge =
+            accuracy >= 90 &&
+            totalQuestions >= 10 &&
+            avgTimePerQuestion <= 2.0;
+
+          if (qualifiesForSpeedBadge) {
             unlocked = true;
           }
         }
