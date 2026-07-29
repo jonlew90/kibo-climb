@@ -221,19 +221,18 @@ export default function App() {
   const pauseStartTimeRef = useRef(0);
   const [showIdleToast, setShowIdleToast] = useState(false);
 
-  // Reset 15s idle timer on question change or keypress
-  const resetIdleTimer = () => {
+  // Isolated 15-Second Idle Hesitation Notification Timer
+  const startIdleTimer = () => {
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     setShowIdleToast(false);
     setShowIdleHint(false);
-    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
 
     if (appState !== 'sprint') return;
 
-    // Suppress idle hints if player has 50%+ mastery on current tier
-    const isMastered = (tierMasteryPercent[tier] || 0) >= 50;
-    if (isMastered) return;
+    console.log('⏳ Idle timer started (15s)...');
 
     idleTimerRef.current = setTimeout(() => {
+      console.log('🔔 15s elapsed! Triggering idle toast notification.');
       setShowIdleToast(true);
       setShowIdleHint(true);
     }, 15000); // 15 Seconds
@@ -244,7 +243,7 @@ export default function App() {
     if (appState !== 'sprint' || showQuitModal) return;
 
     const handleKeyDown = (e) => {
-      resetIdleTimer();
+      startIdleTimer();
       if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
         soundFx.playKeyTap();
         handleDigitInput(e.key);
@@ -262,7 +261,7 @@ export default function App() {
 
   useEffect(() => {
     if (appState === 'sprint') {
-      resetIdleTimer();
+      startIdleTimer();
     }
     return () => {
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -271,7 +270,7 @@ export default function App() {
 
   // Zero-Friction Auto-Submit & Format Mask logic
   const handleDigitInput = (digit) => {
-    resetIdleTimer();
+    startIdleTimer();
     const currentProblem = problems[currentIndex];
     if (!currentProblem) return;
 
@@ -980,15 +979,16 @@ export default function App() {
       {/* STATE 2: ACTIVE SPRINT VIEW */}
       {appState === 'sprint' && problems.length > 0 && (
         <main className="w-full flex-1 flex flex-col justify-between items-center py-2 animate-pop relative">
-          {/* TOP NON-BLOCKING KIBO IDLE HESITATION TOAST BANNER */}
+          {/* FLOATING IDLE HESITATION TOAST NOTIFICATION BANNER */}
           {showIdleToast && (
-            <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-full max-w-sm px-4 animate-pop">
-              <div className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 p-3 rounded-2xl border-2 border-amber-600 shadow-2xl flex items-center gap-3">
-                <Mascot mood="happy" equipped={equippedItems} className="w-10 h-10 shrink-0 filter drop-shadow-md" />
-                <div className="text-left text-xs font-bold leading-tight">
-                  <span className="font-extrabold uppercase tracking-wide text-[10px] text-amber-900 block">⚡ Need a hint?</span>
-                  <span>Kibo's Tip: {problems[currentIndex]?.hint || 'Count forward in chunks!'}</span>
-                </div>
+            <div
+              data-testid="idle-toast"
+              className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 px-5 py-3 rounded-2xl border-2 border-amber-600 shadow-2xl flex items-center gap-3 animate-bounce max-w-sm w-full mx-auto"
+            >
+              <span className="text-2xl filter drop-shadow-sm">🧗</span>
+              <div className="text-left text-xs font-bold leading-tight">
+                <span className="font-extrabold uppercase tracking-wide text-[10px] text-amber-900 block">⚡ Need a hand?</span>
+                <span>Kibo's Tip: {problems[currentIndex]?.hint || 'Count forward in chunks!'}</span>
               </div>
             </div>
           )}
