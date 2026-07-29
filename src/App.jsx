@@ -319,35 +319,24 @@ export default function App() {
         return nextStr;
       });
 
-      // Smart Length-Aware Auto-Submit Checker
+      // Auto-submit once the correct # of digits for the target answer is entered
       if (nextInputStr !== '') {
         const targetAnsStr = String(currentProblem.answerString || currentProblem.correctAnswer || currentProblem.answer || '').trim();
 
-        const normalizeTime = (str) => {
-          let val = String(str || '').trim().replace(/^0(\d:)/, '$1');
-          if (/^\d{3,4}$/.test(val)) {
-            val = `${val.slice(0, -2)}:${val.slice(-2)}`;
-          }
-          return val.replace(/\s*(am|pm)/gi, '').trim();
-        };
-
         if (isTimeProblem) {
-          const normUser = normalizeTime(nextInputStr);
-          const normTarget = normalizeTime(targetAnsStr);
           const cleanUserDigits = nextInputStr.replace(/\D/g, '');
           const cleanTargetDigits = targetAnsStr.replace(/\D/g, '');
+          const targetDigitCount = cleanTargetDigits.length > 0 ? cleanTargetDigits.length : 3;
 
-          if (cleanUserDigits.length >= cleanTargetDigits.length) {
-            if (normUser === normTarget || cleanUserDigits === cleanTargetDigits) {
-              submitAnswer(nextInputStr, currentProblem);
-            }
+          if (cleanUserDigits.length >= targetDigitCount) {
+            submitAnswer(nextInputStr, currentProblem);
           }
         } else {
-          // Standard Numeric Problems: Only check when input length matches target length!
-          if (nextInputStr.length >= targetAnsStr.length) {
-            if (nextInputStr.toLowerCase() === targetAnsStr.toLowerCase()) {
-              submitAnswer(nextInputStr, currentProblem);
-            }
+          // Standard Numeric / Multi-Digit Problems
+          const targetLength = targetAnsStr.length > 0 ? targetAnsStr.length : 1;
+
+          if (nextInputStr.length >= targetLength) {
+            submitAnswer(nextInputStr, currentProblem);
           }
         }
       }
