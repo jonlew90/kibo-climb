@@ -161,6 +161,80 @@ export default function ParentDashboardModal({
               </div>
             </div>
 
+            {/* Recent Milestones & Badges Summary Card */}
+            {(() => {
+              const unlockedCount = unlockedBadges ? unlockedBadges.length : 0;
+              const totalBadgesCount = BADGES_CATALOG ? BADGES_CATALOG.length : 8;
+
+              const getParentFriendlyDesc = (badge) => {
+                switch (badge.id) {
+                  case 'perfect_sprint':
+                    return '100% Precision: Perfect accuracy on a 20-problem sprint';
+                  case 'clock_master':
+                    return 'Clock & Time: Reading analog clocks & calculating elapsed time';
+                  case 'coin_counter':
+                    return 'Money Math: Rapid coin counting and change calculation';
+                  case 'master_9s':
+                    return 'Multiplication Strategy: 10-finger magic for 9 times tables';
+                  case 'speed_demon':
+                    return 'High Speed Recall: Solved 20 problems in under 40s (≤2.0s/prob)';
+                  case 'streak_3':
+                  case 'streak_7':
+                    return 'Habit Building: Maintained a multi-day practice streak';
+                  case 'summit_sync':
+                    return 'Number Theory: LCM & GCF step-by-step logic';
+                  case 'exponent_peak':
+                    return 'Advanced Algebra: Powers, roots, and order of operations';
+                  default:
+                    return badge.description || 'Mastered math topic skill badge';
+                }
+              };
+
+              const recentBadges = (BADGES_CATALOG || []).filter((b) => unlockedBadges.includes(b.id)).slice(0, 3);
+
+              return (
+                <section className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 text-left space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <div className="flex items-center gap-2 text-amber-700">
+                      <Award className="w-5 h-5 stroke-[2.5]" />
+                      <h4 className="font-extrabold text-sm text-slate-800">
+                        Recent Milestones ({unlockedCount}/{totalBadgesCount})
+                      </h4>
+                    </div>
+                    <span className="text-[11px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                      {unlockedCount > 0 ? `${Math.round((unlockedCount / totalBadgesCount) * 100)}% Unlocked` : 'Trail Badges'}
+                    </span>
+                  </div>
+
+                  {recentBadges.length === 0 ? (
+                    <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-amber-900 text-xs font-semibold leading-relaxed flex items-center gap-2">
+                      <span className="text-base">🏅</span>
+                      <span>No milestones unlocked yet. Completing 20-problem sprints with high accuracy earns trail badges!</span>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      {recentBadges.map((badge) => (
+                        <div
+                          key={badge.id}
+                          className="bg-slate-50 border border-amber-200/80 rounded-xl p-3 flex flex-col justify-between space-y-1.5 shadow-xs hover:border-amber-400 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl filter drop-shadow-xs">{badge.icon}</span>
+                            <h5 className="font-black text-xs text-slate-800 leading-tight">
+                              {badge.name}
+                            </h5>
+                          </div>
+                          <p className="text-[10px] font-semibold text-slate-600 leading-snug">
+                            {getParentFriendlyDesc(badge)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              );
+            })()}
+
             {/* Manual Tier Selector Dropdown (All 8 Tiers) */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2 text-left">
               <div className="flex items-center gap-2 text-purple-700">
