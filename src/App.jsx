@@ -955,6 +955,7 @@ export default function App() {
           tierMasteryPercent={tierMasteryPercent}
           equippedItems={equippedItems}
           sprintHistory={sprintHistory}
+          unlockedBadges={unlockedBadges}
           onSelectTierAndStartSprint={handleSelectTierFromMap}
           onStartTestOut={startTestOutSprint}
           onStartPlacementTest={startPlacementDiagnostic}

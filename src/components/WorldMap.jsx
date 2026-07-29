@@ -8,12 +8,24 @@ import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 import { getTrickForTier } from '../data/mathTricks';
 
+const TIER_BADGE_MAP = {
+  1: { id: 'perfect_sprint', shortName: 'Accuracy Ace', icon: '🎯' },
+  2: { id: 'clock_master', shortName: 'Clock Master', icon: '⏰' },
+  3: { id: 'coin_counter', shortName: 'Trail Merchant', icon: '🪙' },
+  4: { id: 'master_9s', shortName: '10-Finger Magic', icon: '🖐️' },
+  5: { id: 'speed_demon', shortName: 'Speed Demon', icon: '🏃' },
+  6: { id: 'clock_master', shortName: 'Clock Master', icon: '⏰' },
+  7: { id: 'summit_sync', shortName: 'Summit Sync', icon: '📐' },
+  8: { id: 'exponent_peak', shortName: 'Power Peak', icon: '⚡' }
+};
+
 export default function WorldMap({
   currentTier,
   unlockedTiers,
   tierMasteryPercent = {},
   equippedItems = [],
   sprintHistory = [],
+  unlockedBadges = [],
   onSelectTierAndStartSprint,
   onStartTestOut,
   onStartPlacementTest,
@@ -128,6 +140,9 @@ export default function WorldMap({
               const isActiveNode = tierItem.tier === activeTierId;
               const isCompleted = tierItem.tier < activeTierId;
 
+              const badgeInfo = TIER_BADGE_MAP[tierItem.tier];
+              const isBadgeUnlocked = unlockedBadges && badgeInfo && unlockedBadges.includes(badgeInfo.id);
+
               const windPositions = ['justify-center', 'justify-start pl-6', 'justify-center', 'justify-end pr-6'];
               const windIdx = (tierItem.tier - 1) % windPositions.length;
               const windClass = windPositions[windIdx];
@@ -182,14 +197,26 @@ export default function WorldMap({
                     </button>
                   </div>
 
-                  {/* 3-Star Rating Row for Completed Nodes */}
-                  {isCompleted && (
-                    <div className="flex items-center gap-0.5 mt-1 bg-amber-100/90 border border-amber-300 px-2 py-0.5 rounded-full shadow-xs">
-                      <Star className="w-3 h-3 text-amber-500 fill-amber-400" />
-                      <Star className="w-3 h-3 text-amber-500 fill-amber-400" />
-                      <Star className="w-3 h-3 text-amber-500 fill-amber-400" />
-                    </div>
-                  )}
+                  {/* 3-Star Rating & Unlocked Topic Badge Row */}
+                  <div className="flex flex-col items-center gap-1 mt-1">
+                    {isCompleted && (
+                      <div className="flex items-center gap-0.5 bg-amber-100/90 border border-amber-300 px-2 py-0.5 rounded-full shadow-xs">
+                        <Star className="w-3 h-3 text-amber-500 fill-amber-400" />
+                        <Star className="w-3 h-3 text-amber-500 fill-amber-400" />
+                        <Star className="w-3 h-3 text-amber-500 fill-amber-400" />
+                      </div>
+                    )}
+
+                    {isBadgeUnlocked && badgeInfo && (
+                      <div
+                        className="inline-flex items-center gap-1 bg-gradient-to-r from-amber-100 via-yellow-100 to-amber-200 text-amber-950 border border-amber-400 px-2 py-0.5 rounded-full text-[10px] font-black shadow-sm animate-pop"
+                        title={`${badgeInfo.shortName} Badge Unlocked!`}
+                      >
+                        <span className="text-xs">{badgeInfo.icon}</span>
+                        <span>{badgeInfo.shortName}</span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Node Title Backplate */}
                   <div className="text-center mt-1.5 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-xl border border-slate-200 shadow-sm">
