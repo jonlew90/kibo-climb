@@ -574,6 +574,7 @@ export default function App() {
     });
 
     // Badge Evaluation & Unlock Persistence
+    const starsEarned = calculateStars(accuracyPct, durationInSeconds);
     const sprintResultData = {
       accuracyPct,
       avgLatencySec,
