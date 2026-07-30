@@ -7,6 +7,7 @@ import PlacementIntroModal from './PlacementIntroModal';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 import { getTrickForTier } from '../data/mathTricks';
+import { calculateTierStars } from '../utils/starCalculator';
 
 const TIER_BADGE_MAP = {
   1: { id: 'perfect_sprint', shortName: 'Accuracy Ace', icon: '🎯' },
@@ -328,30 +329,57 @@ export default function WorldMap({
               )}
             </div>
 
-            {/* 4-Segment 25% Step Mastery Meter */}
+            {/* PROMINENT EARNED STARS & MASTERY DISPLAY */}
             {(() => {
-              const p = tierMasteryPercent[selectedTierMeta.tier] !== undefined
-                ? tierMasteryPercent[selectedTierMeta.tier]
-                : (selectedTierMeta.tier < currentTier ? 100 : 0);
-              const filledSegments = Math.round(p / 25);
+              const tierNum = selectedTierMeta.tier;
+              let starsEarned = 0;
+              if (tierNum < currentTier) {
+                starsEarned = 3;
+              } else {
+                const tierHistory = sprintHistory.filter((s) => s.tier === tierNum);
+                if (tierHistory.length > 0) {
+                  starsEarned = Math.max(0, ...tierHistory.map((s) => s.stars || calculateTierStars(s, s.totalTimeSec, selectedTierMeta)));
+                }
+              }
+
+              const p = tierMasteryPercent[tierNum] !== undefined
+                ? tierMasteryPercent[tierNum]
+                : (tierNum < currentTier ? 100 : Math.round((starsEarned / 3) * 100));
 
               return (
-                <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-2.5 space-y-1.5 text-left shadow-sm">
-                  <div className="flex items-center justify-between text-xs font-extrabold text-slate-800">
-                    <span>Tier Progress</span>
-                    <span className="text-purple-700 font-black">{p}% Mastered</span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-1.5 h-3">
-                    {[1, 2, 3, 4].map((seg) => (
-                      <div
-                        key={seg}
-                        className={`h-full rounded-md transition-all duration-300 ${
-                          seg <= filledSegments
-                            ? 'bg-gradient-to-r from-emerald-400 to-teal-500 shadow-sm'
-                            : 'bg-slate-200'
-                        }`}
-                      />
+                <div className="flex flex-col items-center my-2 bg-slate-50 p-3 rounded-2xl border-2 border-slate-200 shadow-sm">
+                  {/* EARNED STAR DISPLAY */}
+                  <div className="flex items-center gap-2 text-3xl mb-1">
+                    {[1, 2, 3].map((starNum) => (
+                      <span key={starNum} className="transition-transform hover:scale-110">
+                        {starNum <= starsEarned ? "⭐" : "⚪"}
+                      </span>
                     ))}
+                  </div>
+
+                  {/* STAR COUNT TEXT */}
+                  <div className="text-sm font-black text-slate-800">
+                    {starsEarned} / 3 Stars Earned
+                  </div>
+
+                  {/* PROGRESS BAR */}
+                  <div className="w-full bg-slate-200 h-3.5 rounded-full overflow-hidden mt-2 border border-slate-300 p-0.5">
+                    <div
+                      className="bg-amber-400 h-full transition-all duration-500 rounded-full shadow-xs"
+                      style={{ width: `${p}%` }}
+                    />
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-500 mt-1">
+                    {p}% Tier Mastery
+                  </span>
+
+                  {/* DYNAMIC CRITERIA SUBTEXT */}
+                  <div className="text-xs font-extrabold text-amber-950 bg-amber-100/90 px-3 py-1 rounded-full border border-amber-300 mt-2">
+                    {starsEarned === 3
+                      ? "🏆 Tier Fully Mastered! 3/3 Stars Earned."
+                      : starsEarned === 0
+                      ? "Target: Complete 1 sprint to earn your 1st Star! ⭐"
+                      : `Target: Achieve ≥90% accuracy on a sprint to earn Star #${starsEarned + 1}! ⭐`}
                   </div>
                 </div>
               );
