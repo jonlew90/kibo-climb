@@ -2,6 +2,7 @@
 
 export const ITEM_CATEGORIES = [
   { id: 'all', label: 'All Items' },
+  { id: 'powerups', label: 'Power-Ups ⚡' },
   { id: 'headwear', label: 'Headwear' },
   { id: 'gear', label: 'Gear' },
   { id: 'outfits', label: 'Outfits' },
@@ -29,6 +30,28 @@ export const RARITY_TIERS = {
 };
 
 export const WORKSHOP_ITEMS = [
+  // CONSUMABLE POWER-UPS (Category: powerups)
+  {
+    id: 'kibo_shield',
+    name: 'Kibo Shield',
+    category: 'powerups',
+    cost: 50,
+    rarity: 'rare',
+    isConsumable: true,
+    icon: '🛡️',
+    description: 'Absorbs 1 incorrect answer per sprint without breaking your accuracy streak.'
+  },
+  {
+    id: 'time_freeze',
+    name: 'Time Freeze Token',
+    category: 'powerups',
+    cost: 30,
+    rarity: 'epic',
+    isConsumable: true,
+    icon: '⏱️',
+    description: 'Pauses the sprint timer for 5 seconds to give you time to think.'
+  },
+
   // HEADWEAR (Slot: headwear)
   {
     id: 'cap',

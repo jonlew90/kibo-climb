@@ -26,7 +26,11 @@ const DEFAULT_PROFILE = {
     lastSprintDate: null,
     practiceQueue: [],
     sprintHistory: [],
-    unlockedBadges: []
+    unlockedBadges: [],
+    consumables: {
+      shieldCount: 1,
+      timeFreezeCount: 0
+    }
   },
   shopState: {
     unlockedItems: ['cap'],

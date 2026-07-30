@@ -145,6 +145,65 @@ export default function App() {
     return storageService.getShopState().equippedItems;
   });
 
+  // Persistent Consumable Power-Ups Inventory (Kibo Shield starter: 1, Time Freeze: 0)
+  const [consumables, setConsumables] = useState(() => {
+    const saved = storageService.getUserData().consumables;
+    return {
+      shieldCount: saved?.shieldCount ?? 1,
+      timeFreezeCount: saved?.timeFreezeCount ?? 0
+    };
+  });
+
+  const [isTimeFrozen, setIsTimeFrozen] = useState(false);
+  const [isShieldProtected, setIsShieldProtected] = useState(false);
+
+  const handleBuyConsumable = (item) => {
+    if (sparks < item.cost) return;
+
+    const newSparks = sparks - item.cost;
+    let nextShieldCount = consumables.shieldCount || 0;
+    let nextFreezeCount = consumables.timeFreezeCount || 0;
+
+    if (item.id === 'kibo_shield') {
+      nextShieldCount += 1;
+    } else if (item.id === 'time_freeze') {
+      nextFreezeCount += 1;
+    }
+
+    const nextConsumables = {
+      shieldCount: nextShieldCount,
+      timeFreezeCount: nextFreezeCount
+    };
+
+    setSparks(newSparks);
+    setConsumables(nextConsumables);
+
+    storageService.saveUserData({
+      sparks: newSparks,
+      consumables: nextConsumables
+    });
+
+    soundFx.playVictory();
+  };
+
+  const handleTriggerTimeFreeze = () => {
+    if (consumables.timeFreezeCount <= 0 || isTimeFrozen) return;
+
+    soundFx.playSparkCollect();
+    const nextFreezeCount = consumables.timeFreezeCount - 1;
+    const nextConsumables = { ...consumables, timeFreezeCount: nextFreezeCount };
+
+    setConsumables(nextConsumables);
+    storageService.saveUserData({ consumables: nextConsumables });
+
+    setIsTimeFrozen(true);
+    problemStartTimeRef.current += 5000;
+
+    setTimeout(() => {
+      setIsTimeFrozen(false);
+    }, 5000);
+  };
+
   // Schedule-Aware Streak Validation on App Startup
   useEffect(() => {
     const lastDateStr = localStorage.getItem('kibo_math_last_date');
@@ -405,12 +464,29 @@ export default function App() {
           (parseFloat(normUserDec) === parseFloat(normTargetDec) && !isNaN(parseFloat(normUserDec)));
       }
 
-      const speedInfo = classifyLatency(rawTarget, latencyMs, isCorrect);
+      let effectiveIsCorrect = isCorrect;
+      let usedShield = false;
+
+      if (!isCorrect && consumables.shieldCount > 0) {
+        usedShield = true;
+        effectiveIsCorrect = true;
+        const nextShieldCount = consumables.shieldCount - 1;
+        const nextConsumables = { ...consumables, shieldCount: nextShieldCount };
+
+        setConsumables(nextConsumables);
+        storageService.saveUserData({ consumables: nextConsumables });
+
+        setIsShieldProtected(true);
+        setTimeout(() => setIsShieldProtected(false), 900);
+      }
+
+      const speedInfo = classifyLatency(rawTarget, latencyMs, effectiveIsCorrect);
 
       const resultRecord = {
         problem: currentProblem,
         userAnswer: rawUser,
-        isCorrect,
+        isCorrect: effectiveIsCorrect,
+        usedShield,
         latencyMs,
         responseTimeSeconds,
         speedInfo
@@ -419,9 +495,14 @@ export default function App() {
       const nextResults = [...results, resultRecord];
       setResults(nextResults);
 
-      if (isCorrect) {
-        soundFx.playCorrect();
-        setMascotMood('correct');
+      if (effectiveIsCorrect) {
+        if (usedShield) {
+          soundFx.playSparkCollect();
+          setMascotMood('excited');
+        } else {
+          soundFx.playCorrect();
+          setMascotMood('correct');
+        }
         setConsecutiveProblemMisses(0);
       } else {
         soundFx.playIncorrect();
@@ -1156,6 +1237,30 @@ export default function App() {
             </div>
           </div>
 
+          {/* Active Power-Ups HUD Controls */}
+          <div className="flex items-center justify-between w-full max-w-sm px-1 my-1">
+            <div className="flex items-center gap-1 bg-amber-100/90 border border-amber-300 px-2.5 py-1 rounded-full text-xs font-black text-amber-950 shadow-xs">
+              <ShieldCheck className="w-4 h-4 text-amber-600 stroke-[2.5]" />
+              <span>Shield: {consumables.shieldCount}</span>
+            </div>
+
+            {consumables.timeFreezeCount > 0 && (
+              <button
+                type="button"
+                onClick={handleTriggerTimeFreeze}
+                disabled={isTimeFrozen}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black transition-all shadow-sm active:scale-95 ${
+                  isTimeFrozen
+                    ? 'bg-cyan-100 border-2 border-cyan-400 text-cyan-900 animate-pulse'
+                    : 'bg-indigo-100 hover:bg-indigo-200 border border-indigo-300 text-indigo-900 cursor-pointer'
+                }`}
+              >
+                <span>⏱️</span>
+                <span>{isTimeFrozen ? 'FROZEN 5s! 🧊' : `Freeze (${consumables.timeFreezeCount})`}</span>
+              </button>
+            )}
+          </div>
+
           {/* Mascot & Math Display Area */}
           <div className="w-full flex flex-col items-center my-auto">
             <Mascot mood={mascotMood} equipped={equippedItems} className="w-20 h-20 sm:w-24 sm:h-24 mb-2" />
@@ -1163,7 +1268,7 @@ export default function App() {
             {/* Problem Card */}
             <div
               className={`w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-5 sm:p-7 text-center shadow-card-3d transition-transform ${
-                isShaking ? 'animate-shake border-rose-400 bg-rose-50' : ''
+                isShaking ? 'animate-shake border-rose-400 bg-rose-50' : isShieldProtected ? 'border-amber-400 bg-amber-50 ring-4 ring-amber-200' : ''
               }`}
             >
               <div className="text-3xl sm:text-4xl font-extrabold tracking-wider text-slate-800 flex items-center justify-center gap-3 flex-wrap">
@@ -1171,10 +1276,22 @@ export default function App() {
                 <span className="text-slate-400 font-bold">=</span>
 
                 {/* Input Box Display */}
-                <span className="inline-block min-w-[70px] px-3 py-1 bg-amber-50 border-3 border-amber-300 rounded-xl text-kibo-teal text-3xl sm:text-4xl font-black shadow-inner">
+                <span className={`inline-block min-w-[70px] px-3 py-1 rounded-xl text-3xl sm:text-4xl font-black shadow-inner transition-all ${
+                  isShieldProtected
+                    ? 'bg-amber-200 border-4 border-amber-400 text-amber-950 scale-105 shadow-amber-300/50'
+                    : isTimeFrozen
+                    ? 'bg-cyan-100 border-3 border-cyan-400 text-cyan-900 shadow-cyan-200/50 animate-pulse'
+                    : 'bg-amber-50 border-3 border-amber-300 text-kibo-teal'
+                }`}>
                   {inputVal ? inputVal : <span className="text-slate-300 font-normal animate-pulse">?</span>}
                 </span>
               </div>
+
+              {isShieldProtected && (
+                <div className="mt-2 text-xs font-black text-amber-950 bg-amber-200 py-1.5 px-3 rounded-full border border-amber-400 animate-pop inline-block shadow-sm">
+                  🛡️ Kibo Shield Absorbed Your Mistake! Streak Saved!
+                </div>
+              )}
 
               {isShaking && (
                 <div className="mt-2 text-xs font-black text-rose-700 bg-rose-100 py-1.5 px-3 rounded-full border border-rose-300 animate-pop inline-block">
@@ -1636,9 +1753,11 @@ export default function App() {
         }}
         sparks={sparks}
         streakShields={streakShields}
+        consumables={consumables}
         unlockedItems={unlockedItems}
         equippedItems={equippedItems}
         onBuyItem={handleBuyItem}
+        onBuyConsumable={handleBuyConsumable}
         onToggleEquip={handleToggleEquip}
       />
 

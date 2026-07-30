@@ -46,9 +46,11 @@ export default function WorkshopModal({
   onClose,
   sparks,
   streakShields = 1,
+  consumables = { shieldCount: 1, timeFreezeCount: 0 },
   unlockedItems = [],
   equippedItems = [],
   onBuyItem,
+  onBuyConsumable,
   onToggleEquip
 }) {
   const INITIAL_PREVIEW_SLOTS = {
@@ -165,13 +167,17 @@ export default function WorkshopModal({
   const handleBuy = (item) => {
     if (sparks >= item.cost) {
       soundFx.playVictory();
-      onBuyItem(item);
-      if (!item.isConsumable) {
-        const cat = item.category;
-        setPreviewSlots((prev) => ({
-          ...prev,
-          [cat]: item.id
-        }));
+      if (item.isConsumable && onBuyConsumable) {
+        onBuyConsumable(item);
+      } else {
+        onBuyItem(item);
+        if (!item.isConsumable) {
+          const cat = item.category;
+          setPreviewSlots((prev) => ({
+            ...prev,
+            [cat]: item.id
+          }));
+        }
       }
     } else {
       soundFx.playIncorrect();
@@ -366,7 +372,11 @@ export default function WorkshopModal({
                     <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{item.name}</h4>
                     
                     {/* Status Badges */}
-                    {isEquippedInApp ? (
+                    {isConsumable ? (
+                      <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                        🎒 OWNED: {item.id === 'kibo_shield' ? (consumables?.shieldCount ?? 1) : (consumables?.timeFreezeCount ?? 0)}
+                      </span>
+                    ) : isEquippedInApp ? (
                       <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5">
                         🟢 EQUIPPED
                       </span>
