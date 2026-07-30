@@ -337,7 +337,8 @@ export default function WorkshopModal({
         <div className="flex-1 overflow-y-auto space-y-3 pr-1 py-1">
           {sortShopItems(currentCategoryItems, sparks, sortMode, unlockedItems, equippedItems).map((item) => {
             const isConsumable = item.isConsumable;
-            const isShieldFull = isConsumable && item.id === 'kibo_shield' && streakShields >= 2;
+            const shieldOwned = consumables?.shieldCount ?? 1;
+            const isShieldFull = isConsumable && item.id === 'kibo_shield' && shieldOwned >= 2;
             const isUnlocked = isConsumable ? false : unlockedItems.includes(item.id);
             const isEquippedInApp = equippedItems.includes(item.id);
             const isPreviewedOnStage = stageEquippedItems.includes(item.id);
@@ -374,7 +375,7 @@ export default function WorkshopModal({
                     {/* Status Badges */}
                     {isConsumable ? (
                       <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
-                        🎒 OWNED: {item.id === 'kibo_shield' ? (consumables?.shieldCount ?? 1) : item.id === 'streak_saver' ? (consumables?.streakSaverCount ?? 0) : (consumables?.doubleCoinPotionCount ?? 0)}
+                        🎒 OWNED: {item.id === 'kibo_shield' ? shieldOwned : item.id === 'streak_saver' ? (consumables?.streakSaverCount ?? 0) : (consumables?.doubleCoinPotionCount ?? 0)}
                       </span>
                     ) : isEquippedInApp ? (
                       <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5">
@@ -383,10 +384,6 @@ export default function WorkshopModal({
                     ) : isUnlocked ? (
                       <span className="text-[9px] font-black uppercase text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-300">
                         🟦 OWNED
-                      </span>
-                    ) : isPreviewedOnStage ? (
-                      <span className="text-[9px] font-black uppercase text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-300 flex items-center gap-1">
-                        <Sparkles className="w-2.5 h-2.5 text-purple-600" /> PREVIEWING
                       </span>
                     ) : canAfford ? (
                       <span className="text-[9px] font-black uppercase text-amber-900 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse">
@@ -402,7 +399,14 @@ export default function WorkshopModal({
                       {rarityInfo.label}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium leading-tight">{item.description}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-xs text-slate-500 font-medium leading-tight">{item.description}</p>
+                    {isConsumable && item.id === 'kibo_shield' && (
+                      <span className="text-[10px] font-extrabold text-amber-900 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                        Capacity: {shieldOwned}/2
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Buy / Equip / Consumable Action Buttons */}
@@ -414,7 +418,7 @@ export default function WorkshopModal({
                         disabled
                         className="bg-slate-200 text-slate-500 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
                       >
-                        Inventory Full (2/2)
+                        Inventory Full ({shieldOwned}/2)
                       </button>
                     ) : canAfford ? (
                       <button
