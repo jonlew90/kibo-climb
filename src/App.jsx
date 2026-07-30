@@ -604,9 +604,6 @@ export default function App() {
     setCurrentIndex(0);
     setInputVal('');
     setResults([]);
-    sprintStartTimeRef.current = Date.now();
-    frozenOffsetMsRef.current = 0;
-    isTimeFrozenRef.current = false;
     setDurationInSeconds(0);
     setMascotMood('happy');
     setAppState('sprint');
