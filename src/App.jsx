@@ -1069,11 +1069,17 @@ export default function App() {
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setAppState('world_map')}
-              className="font-black text-xl tracking-tight text-kibo-orange flex items-center gap-1 hover:scale-105 active:scale-95 transition-transform"
+              className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-transform"
               title="Kibo Math World Map"
             >
-              <span>🏔️</span>
-              <span className="hidden xs:inline">Kibo<span className="text-kibo-teal">Math</span></span>
+              <img
+                src="/logo.png"
+                alt="Kibo Math"
+                className="w-8 h-8 sm:w-9 sm:h-9 object-contain filter drop-shadow-xs"
+              />
+              <span className="font-black text-slate-800 text-base sm:text-lg tracking-tight hidden xs:inline">
+                Kibo<span className="text-kibo-teal">Math</span>
+              </span>
             </button>
 
             {/* Streak Badge */}

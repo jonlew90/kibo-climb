@@ -109,9 +109,14 @@ export default function WorldMap({
     <div className="w-full flex-1 flex flex-col items-center justify-between py-3 px-2 sm:px-4 max-w-lg mx-auto animate-pop relative">
       {/* Top Bar with Test Out Button */}
       <div className="w-full flex items-center justify-between pb-2 border-b-2 border-slate-100 shrink-0">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-black uppercase tracking-wider text-amber-950 bg-amber-100/90 px-3.5 py-1 rounded-full border border-amber-300 shadow-xs">
-            🏔️ Mount Kibo Ascent
+        <div className="flex items-center gap-2">
+          <img
+            src="/logo.png"
+            alt="Kibo Math"
+            className="w-7 h-7 object-contain filter drop-shadow-xs"
+          />
+          <span className="text-xs font-black uppercase tracking-wider text-amber-950 bg-amber-100/90 px-3 py-1 rounded-full border border-amber-300 shadow-xs">
+            Mount Kibo Ascent 🏔️
           </span>
         </div>
 
