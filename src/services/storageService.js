@@ -31,6 +31,9 @@ const DEFAULT_PROFILE = {
       shieldCount: 1,
       timeFreezeCount: 0,
       doubleCoinPotionCount: 0
+    },
+    preferences: {
+      hideSprintTimer: false
     }
   },
   shopState: {

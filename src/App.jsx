@@ -155,12 +155,42 @@ export default function App() {
     };
   });
 
+  const [durationInSeconds, setDurationInSeconds] = useState(0);
+
+  const [preferences, setPreferences] = useState(() => {
+    return storageService.getUserData().preferences || { hideSprintTimer: false };
+  });
+
+  const handleUpdatePreferences = (newPrefs) => {
+    setPreferences(newPrefs);
+    storageService.saveUserData({ preferences: newPrefs });
+  };
+
   const [isTimeFrozen, setIsTimeFrozen] = useState(false);
   const isTimeFrozenRef = useRef(false);
 
   useEffect(() => {
     isTimeFrozenRef.current = isTimeFrozen;
   }, [isTimeFrozen]);
+
+  // Main Sprint Live Elapsed Timer Loop
+  useEffect(() => {
+    if (appState !== 'sprint' || showQuitModal) return;
+
+    const interval = setInterval(() => {
+      if (!isTimeFrozenRef.current) {
+        setDurationInSeconds((prev) => prev + 1);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [appState, showQuitModal]);
+
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   const [isShieldProtected, setIsShieldProtected] = useState(false);
   const [isDoubleCoinActive, setIsDoubleCoinActive] = useState(false);
@@ -610,6 +640,7 @@ export default function App() {
     setCurrentIndex(0);
     setInputVal('');
     setResults([]);
+    setDurationInSeconds(0);
     setMascotMood('happy');
     setAppState('sprint');
     problemStartTimeRef.current = performance.now();
@@ -1276,7 +1307,17 @@ export default function App() {
           {/* Top Progress Bar */}
           <div className="w-full space-y-1.5">
             <div className="flex justify-between items-center text-sm font-bold text-slate-600 px-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                {!preferences?.hideSprintTimer ? (
+                  <div className={`text-base font-extrabold tracking-tight flex items-center gap-1 ${isTimeFrozen ? 'text-cyan-600 animate-pulse font-black' : 'text-slate-800'}`}>
+                    <span>⏱️</span>
+                    <span>{formatTime(durationInSeconds)}</span>
+                  </div>
+                ) : (
+                  <span className="text-[10px] uppercase font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md border border-slate-300">
+                    ⏱️ Zen Mode
+                  </span>
+                )}
                 <span>Problem {currentIndex + 1} of {problems.length}</span>
                 {isTestOut && (
                   <span className="text-[10px] uppercase font-black bg-purple-100 text-purple-900 px-2 py-0.5 rounded-md border border-purple-300">
@@ -1735,6 +1776,8 @@ export default function App() {
         sprintHistory={sprintHistory}
         practiceDays={practiceDays}
         onUpdatePracticeDays={handleUpdatePracticeDays}
+        preferences={preferences}
+        onUpdatePreferences={handleUpdatePreferences}
         unlockedBadges={unlockedBadges}
       />
 
