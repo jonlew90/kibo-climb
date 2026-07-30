@@ -107,18 +107,13 @@ export default function WorldMap({
 
   return (
     <div className="w-full flex-1 flex flex-col items-center justify-between py-3 px-2 sm:px-4 max-w-lg mx-auto animate-pop relative">
-      {/* Top Header Bar */}
-      <div className="w-full flex items-center justify-between pb-3 border-b-2 border-slate-200 shrink-0">
-        <button
-          onClick={onBackToHome}
-          className="flex items-center gap-1 text-slate-600 hover:text-slate-900 font-extrabold text-sm"
-        >
-          <ArrowLeft className="w-5 h-5 stroke-[2.5]" /> Home
-        </button>
-
-        <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 tracking-tight flex items-center gap-1.5">
-          <Compass className="w-6 h-6 text-kibo-orange stroke-[2.5]" /> World Map
-        </h2>
+      {/* Top Bar with Test Out Button */}
+      <div className="w-full flex items-center justify-between pb-2 border-b-2 border-slate-100 shrink-0">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-black uppercase tracking-wider text-amber-950 bg-amber-100/90 px-3.5 py-1 rounded-full border border-amber-300 shadow-xs">
+            🏔️ Mount Kibo Ascent
+          </span>
+        </div>
 
         <button
           onClick={() => {
@@ -135,12 +130,6 @@ export default function WorldMap({
 
       {/* Winding Mount Kibo Trail Container */}
       <div className="w-full flex-1 overflow-y-auto pr-1 my-2 py-4 relative flex flex-col items-center">
-        {/* Summit Peak Header */}
-        <div className="text-center mb-6">
-          <span className="text-xs font-black uppercase tracking-wider text-amber-900 bg-gradient-to-r from-amber-100 via-yellow-200 to-amber-100 px-4 py-1.5 rounded-full border-2 border-amber-300 shadow-sm">
-            🏔️ Mount Kibo Ascent 🏔️
-          </span>
-        </div>
 
         {/* 8-Tier Path Nodes with 3D Clay Badges */}
         <div className="w-full max-w-sm space-y-7 relative px-4 z-10">
@@ -158,7 +147,7 @@ export default function WorldMap({
               const windIdx = (tierItem.tier - 1) % windPositions.length;
               const windClass = windPositions[windIdx];
               const isRightAligned = windIdx === 3;
-              const mascotSideClass = isRightAligned ? '-left-16 sm:-left-20' : '-right-16 sm:-right-20';
+              const mascotSideClass = isRightAligned ? 'left-full ml-3' : 'right-full mr-3';
 
             return (
               <div
@@ -169,14 +158,14 @@ export default function WorldMap({
                 <div className="relative flex flex-col items-center group">
                   {/* Tier Icon Wrapper (Relative Anchor Container) */}
                   <div className="relative flex items-center justify-center tier-icon-wrapper">
-                    {/* Enlarged & Enhanced Kibo Avatar on Active Node */}
+                    {/* Enlarged & Enhanced Kibo Avatar Side-Positioned on Active Node */}
                     {isActiveNode && (
                       <div
                         onClick={(e) => {
                           e.stopPropagation();
                           if (onOpenWorkshop) onOpenWorkshop();
                         }}
-                        className="absolute -top-24 -right-4 z-30 kibo-active-sprite pointer-events-auto flex flex-col items-center select-none cursor-pointer hover:scale-110 active:scale-95 transition-transform"
+                        className={`absolute ${mascotSideClass} -top-2 z-30 kibo-active-sprite pointer-events-auto flex flex-col items-center select-none cursor-pointer hover:scale-110 active:scale-95 transition-transform`}
                         title="Tap Kibo to open Workshop!"
                       >
                         {/* Animated Speech Bubble */}
@@ -186,7 +175,7 @@ export default function WorldMap({
                         </div>
 
                         {/* Scaled-Up Kibo Character Graphic */}
-                        <div className="w-18 h-18 sm:w-22 sm:h-22 filter drop-shadow-xl">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 filter drop-shadow-md">
                           <Mascot mood="happy" equipped={equippedItems} className="w-full h-full" />
                         </div>
                       </div>
