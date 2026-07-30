@@ -1372,12 +1372,6 @@ export default function App() {
                 </span>
               </div>
 
-              {isTimeFrozen && (
-                <div className="mt-2 text-xs font-black text-cyan-950 bg-cyan-200 py-1.5 px-3 rounded-full border border-cyan-400 animate-pulse inline-block shadow-sm">
-                  ❄️ Sprint Clock Frozen for 5 Seconds! 🧊
-                </div>
-              )}
-
               {isShieldProtected && (
                 <div className="mt-2 text-xs font-black text-amber-950 bg-amber-200 py-1.5 px-3 rounded-full border border-amber-400 animate-pop inline-block shadow-sm">
                   🛡️ Kibo Shield Absorbed Your Mistake! Streak Saved!
