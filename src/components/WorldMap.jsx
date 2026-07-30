@@ -30,7 +30,8 @@ export default function WorldMap({
   onSelectTierAndStartSprint,
   onStartTestOut,
   onStartPlacementTest,
-  onBackToHome
+  onBackToHome,
+  onOpenWorkshop
 }) {
   const [selectedNodeTier, setSelectedNodeTier] = useState(null);
   const [showTierIntroModal, setShowTierIntroModal] = useState(false);
@@ -168,13 +169,26 @@ export default function WorldMap({
                 <div className="relative flex flex-col items-center group">
                   {/* Tier Icon Wrapper (Relative Anchor Container) */}
                   <div className="relative flex items-center justify-center tier-icon-wrapper">
-                    {/* Mascot Floating on Active Node Icon Shoulder */}
+                    {/* Enlarged & Enhanced Kibo Avatar on Active Node */}
                     {isActiveNode && (
-                      <div className="absolute -top-8 -right-2 z-30 kibo-active-sprite pointer-events-none flex flex-col items-center select-none">
-                        <Mascot mood="happy" equipped={equippedItems} className="w-12 h-12 sm:w-14 sm:h-14 filter drop-shadow-xl" />
-                        <span className="bg-purple-600 text-white text-[8px] sm:text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full shadow-md border border-purple-300 whitespace-nowrap -mt-1">
-                          Current Base
-                        </span>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onOpenWorkshop) onOpenWorkshop();
+                        }}
+                        className="absolute -top-24 -right-4 z-30 kibo-active-sprite pointer-events-auto flex flex-col items-center select-none cursor-pointer hover:scale-110 active:scale-95 transition-transform"
+                        title="Tap Kibo to open Workshop!"
+                      >
+                        {/* Animated Speech Bubble */}
+                        <div className="bg-white border-2 border-purple-500 text-purple-900 font-extrabold text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-2xl shadow-md whitespace-nowrap animate-bounce mb-1">
+                          Let's practice! ✨
+                          <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2 h-2 bg-white border-r-2 border-b-2 border-purple-500 rotate-45" />
+                        </div>
+
+                        {/* Scaled-Up Kibo Character Graphic */}
+                        <div className="w-18 h-18 sm:w-22 sm:h-22 filter drop-shadow-xl">
+                          <Mascot mood="happy" equipped={equippedItems} className="w-full h-full" />
+                        </div>
                       </div>
                     )}
 

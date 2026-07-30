@@ -28,10 +28,10 @@ import { storageService } from './services/storageService';
 
 export default function App() {
   // App State: 'launch' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
-  const [appState, setAppState] = useState('launch');
+  const [appState, setAppState] = useState('world_map');
   const [isMuted, setIsMuted] = useState(false);
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
-  const [workshopOriginState, setWorkshopOriginState] = useState('launch');
+  const [workshopOriginState, setWorkshopOriginState] = useState('world_map');
 
   const handleOpenWorkshop = (overrideOrigin = null) => {
     soundFx.playKeyTap();
@@ -1062,70 +1062,73 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 safe-pt safe-pb max-w-lg mx-auto relative overflow-hidden">
-      {/* Header */}
-      <header className="w-full flex items-center justify-between py-2 mb-2">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              if (appState === 'sprint') {
-                handleOpenQuitModal();
-              } else {
-                setAppState('launch');
-              }
-            }}
-            className="font-extrabold text-2xl tracking-tight text-kibo-orange drop-shadow-sm hover:opacity-90 transition-opacity active:scale-95 text-left flex items-center gap-1.5"
-            title="Return to Home"
-          >
-            <span>🏔️</span>
-            <span>Kibo<span className="text-kibo-teal">Math</span></span>
-          </button>
-        </div>
+      {/* Sticky Top HUD Header Bar */}
+      {appState !== 'sprint' && (
+        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2.5 py-2 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0">
+          {/* Brand Logo & Stats */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button
+              onClick={() => setAppState('world_map')}
+              className="font-black text-xl tracking-tight text-kibo-orange flex items-center gap-1 hover:scale-105 active:scale-95 transition-transform"
+              title="Kibo Math World Map"
+            >
+              <span>🏔️</span>
+              <span className="hidden xs:inline">Kibo<span className="text-kibo-teal">Math</span></span>
+            </button>
 
-        <div className="flex items-center gap-2">
-          {/* Trail Badges Showcase Button */}
-          <button
-            onClick={() => {
-              soundFx.playKeyTap();
-              setShowBadgesModal(true);
-            }}
-            className="p-2 bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 rounded-2xl text-amber-900 font-extrabold active:scale-95 transition-all shadow-sm flex items-center justify-center"
-            title="View Trail Badges"
-          >
-            <Award className="w-5 h-5 text-amber-700 stroke-[2.5]" />
-          </button>
+            {/* Streak Badge */}
+            <div className="flex items-center gap-1 bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-full text-xs font-black shadow-xs">
+              <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
+              <span>{streak}d</span>
+            </div>
 
-          {/* Combined Shop & Spark Counter Button */}
-          <button
-            onClick={() => handleOpenWorkshop()}
-            className="flex items-center gap-2 px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 rounded-2xl text-amber-900 font-extrabold active:scale-95 transition-all shadow-sm"
-            aria-label="Open Kibo Workshop"
-          >
-            <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
-            <span className="text-base">{sparks}</span>
-            <span className="text-amber-400 font-bold">|</span>
-            <ShoppingBag className="w-4 h-4 text-amber-800 stroke-[2.5]" />
-          </button>
+            {/* Sparks Counter */}
+            <div className="flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full text-xs font-black shadow-xs">
+              <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400 stroke-[2.5]" />
+              <span>{sparks}</span>
+            </div>
+          </div>
 
-          {/* Parent Zone Entry Button */}
-          <button
-            onClick={() => setShowPinGateModal(true)}
-            className="p-2 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-2xl text-purple-700 active:scale-95 transition-all shadow-sm"
-            title="Parent Zone (PIN Protected)"
-            aria-label="Open Parent Zone"
-          >
-            <Lock className="w-5 h-5 stroke-[2.5]" />
-          </button>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => handleOpenWorkshop()}
+              className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-kibo-orange hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs px-2.5 py-1.5 rounded-xl shadow-sm transition-all active:scale-95"
+              aria-label="Open Kibo Workshop"
+            >
+              <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
+              <span className="hidden xs:inline">Workshop</span>
+            </button>
 
-          {/* Sound Toggle Button */}
-          <button
-            onClick={toggleAudio}
-            className="p-2 bg-white rounded-2xl border-2 border-slate-200 text-slate-600 hover:text-slate-900 active:scale-95 transition-all shadow-sm"
-            aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
-          >
-            {isMuted ? <VolumeX className="w-5 h-5 text-rose-500" /> : <Volume2 className="w-5 h-5 text-kibo-teal" />}
-          </button>
-        </div>
-      </header>
+            <button
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowBadgesModal(true);
+              }}
+              className="p-1.5 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl text-amber-900 font-extrabold active:scale-95 transition-all shadow-xs"
+              title="View Trail Badges"
+            >
+              <Award className="w-4 h-4 text-amber-700 stroke-[2.5]" />
+            </button>
+
+            <button
+              onClick={() => setShowPinGateModal(true)}
+              className="p-1.5 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl text-purple-700 active:scale-95 transition-all shadow-xs"
+              title="Parent Zone (PIN Protected)"
+            >
+              <Lock className="w-4 h-4 stroke-[2.5]" />
+            </button>
+
+            <button
+              onClick={toggleAudio}
+              className="p-1.5 bg-white rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 active:scale-95 transition-all shadow-xs"
+              aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4 text-rose-500" /> : <Volume2 className="w-4 h-4 text-kibo-teal" />}
+            </button>
+          </div>
+        </header>
+      )}
 
       {/* WORLD MAP SCREEN */}
       {appState === 'world_map' && (
@@ -1140,6 +1143,7 @@ export default function App() {
           onStartTestOut={startTestOutSprint}
           onStartPlacementTest={startPlacementDiagnostic}
           onBackToHome={() => setAppState('launch')}
+          onOpenWorkshop={() => handleOpenWorkshop('world_map')}
         />
       )}
 
