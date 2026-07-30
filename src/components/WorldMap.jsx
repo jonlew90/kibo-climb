@@ -81,7 +81,9 @@ export default function WorldMap({
   const handleStartSelectedSprint = () => {
     if (selectedNodeTier) {
       soundFx.playVictory();
-      onSelectTierAndStartSprint(selectedNodeTier);
+      const targetTier = selectedNodeTier;
+      setSelectedNodeTier(null);
+      onSelectTierAndStartSprint(targetTier);
     }
   };
 
