@@ -703,20 +703,21 @@ export default function App() {
     const avgLatencySec = parseFloat((totalLatencyMs / (finalResults.length * 1000)).toFixed(2));
 
     if (isTestOut && testOutTargetTier) {
-      const passedTestOut = accuracyPct === 100 && avgLatencySec < 2.5;
+      const passedTestOut = accuracyPct >= 90;
 
       if (passedTestOut) {
-        const newUnlocked = Array.from(new Set([...unlockedTiers, testOutTargetTier]));
+        const nextUnlockedTier = Math.min(8, testOutTargetTier + 1);
+        const newUnlocked = Array.from(new Set([...unlockedTiers, testOutTargetTier, nextUnlockedTier]));
         for (let i = 1; i <= testOutTargetTier; i++) {
           if (!newUnlocked.includes(i)) newUnlocked.push(i);
         }
 
         const updatedSparks = sparks + 30;
-        setTier(testOutTargetTier);
-        setUnlockedTiers(newUnlocked.sort());
+        setTier(nextUnlockedTier);
+        setUnlockedTiers(newUnlocked.sort((a, b) => a - b));
         setSparks(updatedSparks);
 
-        localStorage.setItem('kibo_math_tier', testOutTargetTier.toString());
+        localStorage.setItem('kibo_math_tier', nextUnlockedTier.toString());
         localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(newUnlocked));
         localStorage.setItem('kibo_math_sparks', updatedSparks.toString());
 
