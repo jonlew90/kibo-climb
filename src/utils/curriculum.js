@@ -11,6 +11,15 @@ export const CURRICULUM_TIERS = [
     icon: '🌱',
     color: 'from-emerald-400 to-teal-500',
     description: 'Master single-digit addition and subtraction fluency.',
+    problemCount: 20,
+    targetSpeed: '2.0s or less per question',
+    topics: [
+      'Single-digit addition & subtraction fluency',
+      'Making 10s regrouping strategy (Anchor to 10)',
+      'Plus 9 Hop shortcut (+10 then subtract 1)',
+      'Fact families within 20'
+    ],
+    associatedBadge: { id: 'perfect_sprint', name: 'Accuracy Ace', icon: '🎯' },
     trailTrick: {
       title: 'Making 10s',
       description: 'Split the smaller number to turn the bigger number into 10 first! For 8 + 5, take 2 from 5 to make 10, then add 3 to get 13!',
@@ -37,6 +46,15 @@ export const CURRICULUM_TIERS = [
     icon: '🌲',
     color: 'from-amber-400 to-orange-500',
     description: 'Build core multiplication fluency for factors 0s through 5s.',
+    problemCount: 20,
+    targetSpeed: '2.0s or less per question',
+    topics: [
+      'Multiplication tables for 0s, 1s, 2s, 3s, 4s, and 5s',
+      'The 5s Clock Trick (10x cut in half)',
+      'Reading analog clock faces (hours & 15-min quarters)',
+      'Commutative property (order flip)'
+    ],
+    associatedBadge: { id: 'clock_master', name: 'Clock Master', icon: '⏰' },
     trailTrick: {
       title: 'The 5s Clock Trick',
       description: 'To multiply by 5, multiply by 10 first, then cut the answer in half! For 5 × 8, do 10 × 8 = 80, then half of 80 is 40!',
@@ -63,6 +81,15 @@ export const CURRICULUM_TIERS = [
     icon: '🌊',
     color: 'from-blue-400 to-cyan-500',
     description: 'Master advanced multiplication tables (6s through 9s).',
+    problemCount: 20,
+    targetSpeed: '2.0s or less per question',
+    topics: [
+      'Multiplication tables for 6s, 7s, 8s, and 9s',
+      'The 9s Finger Trick (10-finger magic)',
+      'Counting coin combinations (quarters, dimes, nickels)',
+      'Building products from landmark facts (5x + 2x)'
+    ],
+    associatedBadge: { id: 'coin_counter', name: 'Trail Merchant', icon: '🪙' },
     trailTrick: {
       title: 'The 9s Finger Trick',
       description: 'Fold down the finger you are multiplying by! Count fingers to the left for tens, and fingers to the right for ones!',
@@ -89,6 +116,15 @@ export const CURRICULUM_TIERS = [
     icon: '🏜️',
     color: 'from-purple-400 to-indigo-500',
     description: 'Master multi-digit mental multiplication and the 11s split shortcut.',
+    problemCount: 20,
+    targetSpeed: '2.0s or less per question',
+    topics: [
+      '11s Split & Add mental multiplication shortcut',
+      '2-digit mental addition (left-to-right tens first)',
+      'Finger strategies for 9s and 11s',
+      'Regrouping boundary leaps'
+    ],
+    associatedBadge: { id: 'master_9s', name: '10-Finger Magic', icon: '🖐️' },
     trailTrick: {
       title: '11s Split & Add',
       description: 'For 11 × 35, split the 3 and 5, add them together (3 + 5 = 8), and put the sum in the middle to get 385!',
@@ -115,6 +151,15 @@ export const CURRICULUM_TIERS = [
     icon: '🪙',
     color: 'from-sky-400 to-blue-600',
     description: 'Calculate coin combinations, change under $1.00, and elapsed time jumps.',
+    problemCount: 20,
+    targetSpeed: '2.0s or less per question',
+    topics: [
+      'Calculating change under $1.00 ($1.00 Bridge)',
+      'Elapsed time jumps forward and backward',
+      'Multi-digit mental subtraction',
+      'High-speed velocity recall'
+    ],
+    associatedBadge: { id: 'speed_demon', name: 'Speed Demon', icon: '🏃' },
     trailTrick: {
       title: 'The $1.00 Bridge',
       description: 'Count up to $1.00 (100¢) using benchmark coins! From 65¢, add 5¢ to get to 70¢, then 30¢ to reach $1.00!',
@@ -141,6 +186,15 @@ export const CURRICULUM_TIERS = [
     icon: '⛰️',
     color: 'from-amber-500 to-stone-600',
     description: 'Master division fact families and the halving ladder mental strategy.',
+    problemCount: 20,
+    targetSpeed: '2.0s or less per question',
+    topics: [
+      'Division fact families (reverse multiplication)',
+      'The Halving Ladder mental division strategy (÷4 and ÷8)',
+      'Mental long division estimation',
+      'Elapsed time hours & minutes conversions'
+    ],
+    associatedBadge: { id: 'clock_master', name: 'Clock Master', icon: '⏰' },
     trailTrick: {
       title: 'The Halving Ladder',
       description: 'Dividing by 4? Cut the number in half twice! For 84 ÷ 4, half of 84 is 42, and half of 42 is 21!',
@@ -167,6 +221,15 @@ export const CURRICULUM_TIERS = [
     icon: '🧩',
     color: 'from-teal-400 via-emerald-500 to-cyan-600',
     description: 'Find Least Common Multiples (LCM), Greatest Common Factors (GCF), and decimal percentages.',
+    problemCount: 20,
+    targetSpeed: '2.0s or less per question',
+    topics: [
+      'Least Common Multiples (LCM Summit Sync)',
+      'Greatest Common Factors (GCF Factor Ladder)',
+      'Fraction & decimal equivalents (quarter & tenth rhythms)',
+      'Divisibility rules (2, 3, 5, 9, 10)'
+    ],
+    associatedBadge: { id: 'summit_sync', name: 'Summit Sync', icon: '📐' },
     trailTrick: {
       title: 'The GCF Factor Ladder',
       description: 'To find the GCF of 12 and 18, divide both by shared prime factors (2, then 3). Multiply the divisors (2 × 3 = 6)!',
@@ -193,6 +256,15 @@ export const CURRICULUM_TIERS = [
     icon: '🏔️',
     color: 'from-yellow-400 via-amber-500 to-purple-600',
     description: 'Master exponents (2⁴), square roots (√81), and PEMDAS at the peak of Mount Kibo!',
+    problemCount: 20,
+    targetSpeed: '2.0s or less per question',
+    topics: [
+      'Evaluating exponents (2⁴, 3³, 5²)',
+      'Square roots of perfect squares (√81 = 9)',
+      'Order of Operations (PEMDAS Peak)',
+      'Combining like terms in simple pre-algebra equations'
+    ],
+    associatedBadge: { id: 'exponent_peak', name: 'Power Peak', icon: '⚡' },
     trailTrick: {
       title: 'Power Doubling',
       description: 'An exponent tells you how many times to multiply the base by itself! For 2⁴, double four times: 2 → 4 → 8 → 16!',

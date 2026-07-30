@@ -218,13 +218,17 @@ export default function WorldMap({
                     )}
                   </div>
 
-                  {/* Node Title Backplate */}
-                  <div className="text-center mt-1.5 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-xl border border-slate-200 shadow-sm">
-                    <span className="text-xs font-black text-slate-800 block leading-tight">
+                  {/* Node Title Backplate (Clickable for Topics Breakdown) */}
+                  <div
+                    onClick={() => handleNodeClick(tierItem.tier)}
+                    className="text-center mt-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:bg-amber-50/90 transition-colors group/backplate"
+                    title={`Click to view topics covered in Tier ${tierItem.tier}`}
+                  >
+                    <span className="text-xs font-black text-slate-800 block leading-tight group-hover/backplate:text-amber-900">
                       {tierItem.title}
                     </span>
-                    <span className="text-[10px] font-extrabold text-slate-500 block">
-                      {tierItem.location}
+                    <span className="text-[10px] font-extrabold text-indigo-600 block mt-0.5 group-hover/backplate:underline">
+                      View Topics Covered →
                     </span>
                   </div>
                 </div>
@@ -280,6 +284,36 @@ export default function WorldMap({
                 ? `Complete Tier ${selectedTierMeta.tier - 1} or pass the Tier ${selectedTierMeta.tier} challenge to jump ahead!`
                 : selectedTierMeta.description}
             </p>
+
+            {/* Topics & Concepts Covered Section */}
+            {selectedTierMeta.topics && selectedTierMeta.topics.length > 0 && (
+              <div className="bg-indigo-50/80 border-2 border-indigo-200 rounded-2xl p-3 text-left space-y-1.5 shadow-sm">
+                <span className="text-[10px] font-black uppercase text-indigo-900 tracking-wider block">
+                  📚 Math Topics & Concepts Covered
+                </span>
+                <ul className="space-y-1">
+                  {selectedTierMeta.topics.map((tp, idx) => (
+                    <li key={idx} className="text-xs font-bold text-slate-700 flex items-start gap-1.5 leading-snug">
+                      <span className="text-indigo-600 font-black">•</span>
+                      <span>{tp}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Target Speed & Associated Badge Info */}
+            <div className="flex items-center justify-between bg-slate-50 border border-slate-200 p-2.5 rounded-2xl text-xs font-bold text-slate-700">
+              <span className="flex items-center gap-1">
+                ⏱️ Target: <span className="text-purple-700">{selectedTierMeta.targetSpeed || '2.0s or less / question'}</span>
+              </span>
+              {selectedTierMeta.associatedBadge && (
+                <span className="flex items-center gap-1 bg-amber-100 border border-amber-300 text-amber-950 px-2.5 py-0.5 rounded-full text-[10px] font-black shadow-xs">
+                  <span>{selectedTierMeta.associatedBadge.icon}</span>
+                  <span>{selectedTierMeta.associatedBadge.name}</span>
+                </span>
+              )}
+            </div>
 
             {/* 4-Segment 25% Step Mastery Meter */}
             {(() => {
