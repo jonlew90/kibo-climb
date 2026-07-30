@@ -35,3 +35,15 @@ export function normalizeTimeAnswer(val) {
   // Strip AM/PM suffix for pure clock time comparisons if present
   return str.replace(/\s*(am|pm)/gi, '').trim();
 }
+
+/**
+ * Normalizes decimal and currency strings so ".45", "0.45", and "$0.45" evaluate identically.
+ */
+export function normalizeDecimal(val) {
+  if (val === null || val === undefined) return '';
+  let clean = String(val).replace('$', '').trim();
+  if (clean.startsWith('.')) {
+    clean = '0' + clean;
+  }
+  return clean;
+}

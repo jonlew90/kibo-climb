@@ -298,6 +298,13 @@ export default function App() {
 
       let nextInputStr = current + key;
 
+      // Auto-prepend leading zero when pressing "." on empty or "$" input (e.g. "." -> "0.")
+      if (key === '.') {
+        if (current === '' || current === '$') {
+          nextInputStr = current + '0.';
+        }
+      }
+
       // Time Reading Auto-Formatting Mask (e.g. 315 -> 3:15, 1030 -> 10:30)
       if (isTimeProblem) {
         if (key === ':') {
@@ -361,6 +368,15 @@ export default function App() {
         return clean.replace(/\s*(am|pm)/gi, '').trim();
       };
 
+      const normalizeDec = (str) => {
+        if (!str) return '';
+        let clean = String(str).replace('$', '').trim();
+        if (clean.startsWith('.')) {
+          clean = '0' + clean;
+        }
+        return clean.toLowerCase();
+      };
+
       const isTimeQuestion = Boolean(
         (currentProblem.type && (currentProblem.type.includes('time') || currentProblem.type === 'time_basics')) ||
         rawTarget.includes(':') ||
@@ -380,7 +396,13 @@ export default function App() {
           (digitsUser !== '' && digitsUser === digitsTarget) ||
           rawUser.toLowerCase() === rawTarget.toLowerCase();
       } else {
-        isCorrect = rawUser.toLowerCase() === rawTarget.toLowerCase();
+        const normUserDec = normalizeDec(rawUser);
+        const normTargetDec = normalizeDec(rawTarget);
+
+        isCorrect =
+          rawUser.toLowerCase() === rawTarget.toLowerCase() ||
+          normUserDec === normTargetDec ||
+          (parseFloat(normUserDec) === parseFloat(normTargetDec) && !isNaN(parseFloat(normUserDec)));
       }
 
       const speedInfo = classifyLatency(rawTarget, latencyMs, isCorrect);
