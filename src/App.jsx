@@ -520,6 +520,19 @@ export default function App() {
     setAppState('launch');
   };
 
+  const handleQuitToMap = () => {
+    setShowQuitModal(false);
+    setCurrentIndex(0);
+    setProblems([]);
+    setResults([]);
+    setInputVal('');
+    setIsBossMode(false);
+    setIsPlacementTest(false);
+    setIsTestOut(false);
+    setConsecutiveProblemMisses(0);
+    setAppState('world_map');
+  };
+
   const finishSprint = (finalResults) => {
     const today = getTodayStr();
     const yesterday = getYesterdayStr();
@@ -1435,8 +1448,10 @@ export default function App() {
       {/* QUIT SPRINT CONFIRMATION MODAL */}
       <QuitSprintModal
         isOpen={showQuitModal}
+        isTestOut={isTestOut}
         onKeepPlaying={handleKeepPlaying}
         onQuitToHome={handleQuitToHome}
+        onQuitToMap={handleQuitToMap}
       />
 
       {/* PARENT PIN GATE MODAL */}

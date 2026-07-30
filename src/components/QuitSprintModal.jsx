@@ -1,8 +1,8 @@
 import React from 'react';
-import { AlertCircle, Play, Home } from 'lucide-react';
+import { AlertCircle, Play, Compass, Home } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
-export default function QuitSprintModal({ isOpen, onKeepPlaying, onQuitToHome }) {
+export default function QuitSprintModal({ isOpen, isTestOut, onKeepPlaying, onQuitToHome, onQuitToMap }) {
   if (!isOpen) return null;
 
   const handleKeepPlaying = (e) => {
@@ -18,7 +18,11 @@ export default function QuitSprintModal({ isOpen, onKeepPlaying, onQuitToHome })
     try {
       soundFx.playKeyTap();
     } catch (err) {}
-    onQuitToHome();
+    if (isTestOut && onQuitToMap) {
+      onQuitToMap();
+    } else {
+      onQuitToHome();
+    }
   };
 
   return (
@@ -29,7 +33,9 @@ export default function QuitSprintModal({ isOpen, onKeepPlaying, onQuitToHome })
         </div>
 
         <div className="space-y-1">
-          <h3 className="text-2xl font-black text-slate-800 tracking-tight">Quit Sprint?</h3>
+          <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+            {isTestOut ? 'Quit Test Out Challenge?' : 'Quit Sprint?'}
+          </h3>
           <p className="text-xs text-slate-500 font-semibold">
             Your progress on this set will be lost.
           </p>
@@ -46,14 +52,14 @@ export default function QuitSprintModal({ isOpen, onKeepPlaying, onQuitToHome })
             Keep Playing
           </button>
 
-          {/* Quit to Home */}
+          {/* Quit to World Map or Home */}
           <button
             type="button"
             onClick={handleQuit}
             className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-rose-600 font-extrabold text-sm rounded-2xl border-2 border-slate-200 flex items-center justify-center gap-2 transition-colors active:scale-95"
           >
-            <Home className="w-4 h-4 stroke-[2.5]" />
-            Quit to Home
+            {isTestOut ? <Compass className="w-4 h-4 stroke-[2.5]" /> : <Home className="w-4 h-4 stroke-[2.5]" />}
+            {isTestOut ? 'Quit to World Map 🗺️' : 'Quit to Main Menu 🏠'}
           </button>
         </div>
       </div>
