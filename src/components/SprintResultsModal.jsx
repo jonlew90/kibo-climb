@@ -200,6 +200,12 @@ export default function SprintResultsModal({
 
             {/* Streak & Spark Earnings Banner */}
             <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-2 border-amber-300 p-3 rounded-2xl space-y-1.5 shadow-sm text-center">
+              {(earnedSparksInfo?.potionMultiplier > 1 || earnedSparksInfo?.isDoubleCoinActive) && (
+                <div className="bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 border-2 border-amber-400 p-1.5 rounded-xl text-xs font-black text-amber-950 shadow-md animate-pulse flex items-center justify-center gap-1.5 mb-1">
+                  <span>🧪 2x Coin Boost Active!</span>
+                </div>
+              )}
+
               <div className="flex items-center justify-center gap-3">
                 <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 border border-amber-300 rounded-full font-extrabold text-amber-950 text-xs">
                   <Flame className="w-4 h-4 text-amber-500 fill-amber-400 stroke-[2.5]" />
@@ -218,6 +224,7 @@ export default function SprintResultsModal({
                   {earnedSparksInfo.accuracyBonus > 0 && <span className="text-emerald-700 font-bold">+10 100% Acc</span>}
                   {earnedSparksInfo.speedBonus > 0 && <span className="text-amber-700 font-bold">+5 Lightning</span>}
                   {earnedSparksInfo.multiplier > 1 && <span className="text-purple-700 font-black bg-purple-100 px-1.5 rounded">1.5x Streak Boost!🔥</span>}
+                  {earnedSparksInfo.potionMultiplier > 1 && <span className="text-amber-950 font-black bg-amber-200 border border-amber-400 px-1.5 rounded">🧪 2x Potion Boost!</span>}
                 </div>
               )}
             </div>

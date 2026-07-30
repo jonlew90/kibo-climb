@@ -51,6 +51,16 @@ export const WORKSHOP_ITEMS = [
     icon: '⏱️',
     description: 'Pauses the sprint timer for 5 seconds to give you time to think.'
   },
+  {
+    id: 'double_coin_potion',
+    name: 'Double Coin Potion',
+    category: 'powerups',
+    cost: 40,
+    rarity: 'rare',
+    isConsumable: true,
+    icon: '🧪',
+    description: 'Doubles all Kibo coins earned from your next completed sprint.'
+  },
 
   // HEADWEAR (Slot: headwear)
   {

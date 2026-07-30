@@ -29,7 +29,8 @@ const DEFAULT_PROFILE = {
     unlockedBadges: [],
     consumables: {
       shieldCount: 1,
-      timeFreezeCount: 0
+      timeFreezeCount: 0,
+      doubleCoinPotionCount: 0
     }
   },
   shopState: {

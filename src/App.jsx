@@ -145,17 +145,19 @@ export default function App() {
     return storageService.getShopState().equippedItems;
   });
 
-  // Persistent Consumable Power-Ups Inventory (Kibo Shield starter: 1, Time Freeze: 0)
+  // Persistent Consumable Power-Ups Inventory (Kibo Shield starter: 1, Time Freeze: 0, Double Coin Potion: 0)
   const [consumables, setConsumables] = useState(() => {
     const saved = storageService.getUserData().consumables;
     return {
       shieldCount: saved?.shieldCount ?? 1,
-      timeFreezeCount: saved?.timeFreezeCount ?? 0
+      timeFreezeCount: saved?.timeFreezeCount ?? 0,
+      doubleCoinPotionCount: saved?.doubleCoinPotionCount ?? 0
     };
   });
 
   const [isTimeFrozen, setIsTimeFrozen] = useState(false);
   const [isShieldProtected, setIsShieldProtected] = useState(false);
+  const [isDoubleCoinActive, setIsDoubleCoinActive] = useState(false);
 
   const handleBuyConsumable = (item) => {
     if (sparks < item.cost) return;
@@ -163,16 +165,20 @@ export default function App() {
     const newSparks = sparks - item.cost;
     let nextShieldCount = consumables.shieldCount || 0;
     let nextFreezeCount = consumables.timeFreezeCount || 0;
+    let nextPotionCount = consumables.doubleCoinPotionCount || 0;
 
     if (item.id === 'kibo_shield') {
       nextShieldCount += 1;
     } else if (item.id === 'time_freeze') {
       nextFreezeCount += 1;
+    } else if (item.id === 'double_coin_potion') {
+      nextPotionCount += 1;
     }
 
     const nextConsumables = {
       shieldCount: nextShieldCount,
-      timeFreezeCount: nextFreezeCount
+      timeFreezeCount: nextFreezeCount,
+      doubleCoinPotionCount: nextPotionCount
     };
 
     setSparks(newSparks);
@@ -184,6 +190,20 @@ export default function App() {
     });
 
     soundFx.playVictory();
+  };
+
+  const handleToggleDoubleCoinPotion = () => {
+    if (isDoubleCoinActive) {
+      setIsDoubleCoinActive(false);
+    } else {
+      if (consumables.doubleCoinPotionCount <= 0) return;
+      soundFx.playSparkCollect();
+      const nextPotionCount = consumables.doubleCoinPotionCount - 1;
+      const nextConsumables = { ...consumables, doubleCoinPotionCount: nextPotionCount };
+      setConsumables(nextConsumables);
+      storageService.saveUserData({ consumables: nextConsumables });
+      setIsDoubleCoinActive(true);
+    }
   };
 
   const handleTriggerTimeFreeze = () => {
@@ -694,7 +714,10 @@ export default function App() {
     const subtotalSparks = baseSparks + accuracyBonusSparks + speedBonusSparks;
 
     const hasStreakMultiplier = newStreak >= 5;
-    const totalEarned = hasStreakMultiplier ? Math.floor(subtotalSparks * 1.5) : subtotalSparks;
+    let totalEarned = hasStreakMultiplier ? Math.floor(subtotalSparks * 1.5) : subtotalSparks;
+
+    const potionMultiplier = isDoubleCoinActive ? 2 : 1;
+    totalEarned = totalEarned * potionMultiplier;
 
     const newSparkBalance = sparks + totalEarned;
     setSparks(newSparkBalance);
@@ -704,8 +727,12 @@ export default function App() {
       accuracyBonus: accuracyBonusSparks,
       speedBonus: speedBonusSparks,
       multiplier: hasStreakMultiplier ? 1.5 : 1.0,
+      potionMultiplier,
+      isDoubleCoinActive,
       total: totalEarned
     });
+
+    setIsDoubleCoinActive(false);
 
     let updatedQueue = [...practiceQueue];
     finalResults.forEach((r) => {
@@ -1154,6 +1181,28 @@ export default function App() {
 
           {/* Action Buttons */}
           <div className="w-full max-w-xs space-y-2 mt-1">
+            {(consumables.doubleCoinPotionCount > 0 || isDoubleCoinActive) && (
+              <button
+                type="button"
+                onClick={handleToggleDoubleCoinPotion}
+                className={`w-full py-2.5 px-3 rounded-2xl border-2 font-extrabold text-xs flex items-center justify-between transition-all active:scale-95 ${
+                  isDoubleCoinActive
+                    ? 'bg-amber-100 border-amber-400 text-amber-950 shadow-md ring-2 ring-amber-300'
+                    : 'bg-slate-50 hover:bg-amber-50 border-slate-200 text-slate-700'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <span>🧪</span>
+                  <span>Double Coin Potion ({consumables.doubleCoinPotionCount} owned)</span>
+                </span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                  isDoubleCoinActive ? 'bg-amber-400 text-amber-950 animate-pulse' : 'bg-slate-200 text-slate-600'
+                }`}>
+                  {isDoubleCoinActive ? 'ACTIVE 2X 🧪' : 'ACTIVATE'}
+                </span>
+              </button>
+            )}
+
             <button
               onClick={() => startNewSprint(false)}
               className="btn-3d-orange w-full py-3.5 text-xl sm:text-2xl rounded-2xl flex items-center justify-center gap-3 group shadow-bouncy-orange"
@@ -1238,11 +1287,17 @@ export default function App() {
           </div>
 
           {/* Active Power-Ups HUD Controls */}
-          <div className="flex items-center justify-between w-full max-w-sm px-1 my-1">
+          <div className="flex items-center justify-between w-full max-w-sm px-1 my-1 flex-wrap gap-1">
             <div className="flex items-center gap-1 bg-amber-100/90 border border-amber-300 px-2.5 py-1 rounded-full text-xs font-black text-amber-950 shadow-xs">
               <ShieldCheck className="w-4 h-4 text-amber-600 stroke-[2.5]" />
               <span>Shield: {consumables.shieldCount}</span>
             </div>
+
+            {isDoubleCoinActive && (
+              <span className="flex items-center gap-1 bg-gradient-to-r from-amber-200 to-yellow-300 border border-amber-400 px-2.5 py-1 rounded-full text-xs font-black text-amber-950 shadow-xs animate-pulse">
+                <span>🧪 2x Active!</span>
+              </span>
+            )}
 
             {consumables.timeFreezeCount > 0 && (
               <button
