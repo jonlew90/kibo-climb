@@ -243,8 +243,12 @@ export default function WorkshopModal({
                 </span>
               )}
               {/* Kibo Shield Inventory Counter */}
-              <span className="text-[10px] font-black uppercase text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-amber-600 stroke-[2.5]" /> {streakShields}/2
+              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full inline-flex items-center gap-1 transition-all ${
+                (consumables?.shieldCount ?? 1) === 0
+                  ? 'text-slate-500 bg-slate-200 border border-slate-300 opacity-50'
+                  : 'text-sky-950 bg-sky-100 border border-sky-300'
+              }`}>
+                <ShieldCheck className={`w-3 h-3 stroke-[2.5] ${(consumables?.shieldCount ?? 1) === 0 ? 'text-slate-400' : 'text-sky-600'}`} /> {(consumables?.shieldCount ?? 1)}/2
               </span>
             </div>
 
