@@ -2,7 +2,7 @@
 
 export const ITEM_CATEGORIES = [
   { id: 'all', label: 'All Items' },
-  { id: 'powerups', label: 'Power-Ups ⚡' },
+  { id: 'powerups', label: 'Power-Ups' },
   { id: 'headwear', label: 'Headwear' },
   { id: 'gear', label: 'Gear' },
   { id: 'outfits', label: 'Outfits' },
