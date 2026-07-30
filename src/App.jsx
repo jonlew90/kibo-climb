@@ -156,6 +156,12 @@ export default function App() {
   });
 
   const [isTimeFrozen, setIsTimeFrozen] = useState(false);
+  const isTimeFrozenRef = useRef(false);
+
+  useEffect(() => {
+    isTimeFrozenRef.current = isTimeFrozen;
+  }, [isTimeFrozen]);
+
   const [isShieldProtected, setIsShieldProtected] = useState(false);
   const [isDoubleCoinActive, setIsDoubleCoinActive] = useState(false);
 
@@ -206,11 +212,13 @@ export default function App() {
     }
   };
 
-  const handleTriggerTimeFreeze = () => {
-    if (consumables.timeFreezeCount <= 0 || isTimeFrozen) return;
+  const handleTriggerTimeFreeze = (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    if (isTimeFrozen || (consumables?.timeFreezeCount || 0) <= 0) return;
 
     soundFx.playSparkCollect();
-    const nextFreezeCount = consumables.timeFreezeCount - 1;
+    const nextFreezeCount = Math.max(0, (consumables.timeFreezeCount || 1) - 1);
     const nextConsumables = { ...consumables, timeFreezeCount: nextFreezeCount };
 
     setConsumables(nextConsumables);
@@ -1304,7 +1312,7 @@ export default function App() {
                 type="button"
                 onClick={handleTriggerTimeFreeze}
                 disabled={isTimeFrozen}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-extrabold text-sm shadow-md transition-all ${
+                className={`relative z-20 pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full font-extrabold text-sm shadow-md transition-all ${
                   isTimeFrozen
                     ? 'bg-cyan-300 text-cyan-900 animate-pulse cursor-not-allowed border-2 border-cyan-400'
                     : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:scale-105 active:scale-95 shadow-cyan-500/30 cursor-pointer'
