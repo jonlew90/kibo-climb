@@ -5,6 +5,7 @@ import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
 import { getNotificationPrefs, saveNotificationPrefs, requestNotificationPermission } from '../utils/notifications';
+import { calculateDomainMastery } from '../utils/domainStats';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
@@ -320,88 +321,26 @@ export default function ParentDashboardModal({
               )}
             </div>
 
-            {/* Skill Domain Breakdown */}
+            {/* Skill Domain Breakdown (Rolling 20-Sprint Window) */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
-              <div className="flex items-center gap-2 text-purple-700">
-                <Sparkles className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Skill Domain Breakdown</h4>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-purple-700">
+                  <Sparkles className="w-5 h-5 stroke-[2.5]" />
+                  <h4 className="font-extrabold text-sm text-slate-800">Skill Domain Breakdown</h4>
+                </div>
+                <span className="text-[10px] font-black uppercase text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                  Rolling 20 Sprints
+                </span>
               </div>
 
               <div className="space-y-2.5">
-                {[
-                  {
-                    id: 'add_sub',
-                    name: 'Addition & Subtraction',
-                    icon: '🌱',
-                    subtitle: 'Single-digit fluency & crossing tens boundary',
-                    acc: tier >= 2 ? 92 : 78,
-                    speed: tier >= 2 ? 1.8 : 2.4,
-                    recommendation: tier >= 2
-                      ? 'Great single-digit fluency! Keep building speed crossing tens.'
-                      : 'Tip: Use the Plus 9 Hop (+10 then -1) for fast regrouping.'
-                  },
-                  {
-                    id: 'mult_div',
-                    name: 'Multiplication & Division',
-                    icon: '🌊',
-                    subtitle: 'Fact tables 2-12 & division fact families',
-                    acc: tier >= 5 ? 88 : tier >= 3 ? 74 : 50,
-                    speed: tier >= 5 ? 2.1 : tier >= 3 ? 2.9 : 3.8,
-                    recommendation: tier >= 5
-                      ? 'Solid multiplication mastery! Focus on instant recall for division families.'
-                      : 'Tip: Practice the 10-Finger Magic trick for 9s.'
-                  },
-                  {
-                    id: 'money_time',
-                    name: 'Money & Time',
-                    icon: '🪙',
-                    subtitle: 'Coin combinations, change & clock jumps',
-                    acc: tier >= 6 ? 90 : tier >= 3 ? 80 : 65,
-                    speed: tier >= 6 ? 2.2 : tier >= 3 ? 3.1 : 4.0,
-                    recommendation: tier >= 6
-                      ? 'Excellent money & time skills! Handles dollar change with high accuracy.'
-                      : 'Tip: Use the Quarter Rhythm (25¢, 50¢, 75¢, $1.00) for fast coin counting.'
-                  },
-                  {
-                    id: 'multi_digit',
-                    name: 'Multi-Digit Mental Math',
-                    icon: '⛰️',
-                    subtitle: '2-digit mental addition & subtraction',
-                    acc: tier >= 6 ? 85 : 55,
-                    speed: tier >= 6 ? 2.5 : 3.6,
-                    recommendation: tier >= 6
-                      ? 'Strong double-digit mental math capacity.'
-                      : 'Tip: Break double digits into tens first, then add ones.'
-                  },
-                  {
-                    id: 'number_theory',
-                    name: 'Number Theory & Logic',
-                    icon: '📐',
-                    subtitle: 'LCM, GCF & divisibility rules',
-                    acc: tier >= 7 ? 86 : tier >= 5 ? 70 : 45,
-                    speed: tier >= 7 ? 2.6 : 3.5,
-                    recommendation: tier >= 7
-                      ? 'Mastered LCM Summit Sync and GCF Difference Trick!'
-                      : 'Tip: For GCF(12, 18), subtract the numbers first (18 - 12 = 6).'
-                  },
-                  {
-                    id: 'adv_math',
-                    name: 'Exponents, Roots & PEMDAS',
-                    icon: '🏔️',
-                    subtitle: 'Powers of 10, square roots & order of operations',
-                    acc: tier >= 8 ? 94 : 40,
-                    speed: tier >= 8 ? 1.9 : 4.2,
-                    recommendation: tier >= 8
-                      ? 'Summit Peak Mastered! Exceptional speed on exponents and roots.'
-                      : 'Complete lower tiers to unlock Mount Kibo Summit challenges.'
-                  }
-                ].map((domain) => {
-                  const score = Math.round(domain.acc * 0.6 + (domain.speed <= 2.5 ? 40 : domain.speed <= 3.5 ? 25 : 10));
+                {calculateDomainMastery(sprintHistory, tier).map((domain) => {
+                  const score = Math.round(domain.accuracy * 0.6 + (domain.speed <= 2.5 ? 40 : domain.speed <= 3.5 ? 25 : 10));
                   const isMastered = score >= 85;
                   const isInProgress = score >= 60 && score < 85;
 
-                  // Diagnostic benchmark check (unlocked tier without sprint history for higher domains)
-                  const isDiagnosticVerified = tier > 1 && domain.acc >= 85;
+                  // Diagnostic benchmark check
+                  const isDiagnosticVerified = tier > 1 && domain.accuracy >= 85;
                   const daysSinceLastSprint = 0; // Active current sprint session
 
                   let statusBadge;
