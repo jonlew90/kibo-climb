@@ -145,11 +145,12 @@ export default function App() {
     return storageService.getShopState().equippedItems;
   });
 
-  // Persistent Consumable Power-Ups Inventory (Kibo Shield starter: 1, Time Freeze: 0, Double Coin Potion: 0)
+  // Persistent Consumable Power-Ups Inventory
   const [consumables, setConsumables] = useState(() => {
     const saved = storageService.getUserData().consumables;
     return {
       shieldCount: saved?.shieldCount ?? 1,
+      streakSaverCount: saved?.streakSaverCount ?? 0,
       timeFreezeCount: saved?.timeFreezeCount ?? 0,
       doubleCoinPotionCount: saved?.doubleCoinPotionCount ?? 0
     };
@@ -200,11 +201,14 @@ export default function App() {
 
     const newSparks = sparks - item.cost;
     let nextShieldCount = consumables.shieldCount || 0;
+    let nextStreakSaverCount = consumables.streakSaverCount || 0;
     let nextFreezeCount = consumables.timeFreezeCount || 0;
     let nextPotionCount = consumables.doubleCoinPotionCount || 0;
 
     if (item.id === 'kibo_shield') {
       nextShieldCount += 1;
+    } else if (item.id === 'streak_saver') {
+      nextStreakSaverCount += 1;
     } else if (item.id === 'time_freeze') {
       nextFreezeCount += 1;
     } else if (item.id === 'double_coin_potion') {
@@ -213,6 +217,7 @@ export default function App() {
 
     const nextConsumables = {
       shieldCount: nextShieldCount,
+      streakSaverCount: nextStreakSaverCount,
       timeFreezeCount: nextFreezeCount,
       doubleCoinPotionCount: nextPotionCount
     };
@@ -319,10 +324,18 @@ export default function App() {
     }
 
     if (missedActiveDays >= 1) {
-      if (savedShields > 0) {
-        const newShields = Math.max(0, savedShields - 1);
-        setStreakShields(newShields);
-        localStorage.setItem('kibo_math_shields', newShields.toString());
+      const currentStreakSaverCount = consumables.streakSaverCount || 0;
+      if (currentStreakSaverCount > 0 || savedShields > 0) {
+        if (currentStreakSaverCount > 0) {
+          const nextStreakSavers = Math.max(0, currentStreakSaverCount - 1);
+          const nextConsumables = { ...consumables, streakSaverCount: nextStreakSavers };
+          setConsumables(nextConsumables);
+          storageService.saveUserData({ consumables: nextConsumables });
+        } else {
+          const newShields = Math.max(0, savedShields - 1);
+          setStreakShields(newShields);
+          localStorage.setItem('kibo_math_shields', newShields.toString());
+        }
         setShowStreakSavedModal(true);
       } else {
         setStreak(0);

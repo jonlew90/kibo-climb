@@ -61,6 +61,16 @@ export const WORKSHOP_ITEMS = [
     icon: '🧪',
     description: 'Doubles all Kibo coins earned from your next completed sprint.'
   },
+  {
+    id: 'streak_saver',
+    name: 'Daily Streak Saver',
+    category: 'powerups',
+    cost: 75,
+    rarity: 'rare',
+    isConsumable: true,
+    icon: '🔥',
+    description: 'Protects your daily activity streak from resetting if you miss a day of practice.'
+  },
 
   // HEADWEAR (Slot: headwear)
   {
