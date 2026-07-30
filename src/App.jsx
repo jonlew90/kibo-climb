@@ -212,6 +212,8 @@ export default function App() {
     }
   };
 
+  const freezeBtnRef = useRef(null);
+
   const handleTriggerTimeFreeze = (e) => {
     if (e) {
       if (e.preventDefault) e.preventDefault();
@@ -220,7 +222,7 @@ export default function App() {
 
     if (isTimeFrozen || (consumables?.timeFreezeCount || 0) <= 0) return;
 
-    console.log("Time Freeze Clicked!");
+    console.log("Native Freeze Click Triggered!");
     soundFx.playSparkCollect();
 
     const nextFreezeCount = Math.max(0, (consumables.timeFreezeCount || 1) - 1);
@@ -230,12 +232,35 @@ export default function App() {
     storageService.saveUserData({ consumables: nextConsumables });
 
     setIsTimeFrozen(true);
+    isTimeFrozenRef.current = true;
     problemStartTimeRef.current += 5000;
 
     setTimeout(() => {
       setIsTimeFrozen(false);
+      isTimeFrozenRef.current = false;
     }, 5000);
   };
+
+  useEffect(() => {
+    const btn = freezeBtnRef.current;
+    if (!btn) return;
+
+    const handleNativeFreezeClick = (e) => {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      handleTriggerTimeFreeze(e);
+    };
+
+    btn.addEventListener('click', handleNativeFreezeClick, { capture: true });
+    btn.addEventListener('touchend', handleNativeFreezeClick, { capture: true });
+
+    return () => {
+      btn.removeEventListener('click', handleNativeFreezeClick, { capture: true });
+      btn.removeEventListener('touchend', handleNativeFreezeClick, { capture: true });
+    };
+  }, [consumables?.timeFreezeCount, isTimeFrozen]);
 
   // Schedule-Aware Streak Validation on App Startup
   useEffect(() => {
@@ -1314,6 +1339,7 @@ export default function App() {
 
             {consumables.timeFreezeCount > 0 && (
               <button
+                ref={freezeBtnRef}
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
