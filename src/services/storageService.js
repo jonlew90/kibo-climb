@@ -30,7 +30,6 @@ const DEFAULT_PROFILE = {
     consumables: {
       shieldCount: 1,
       streakSaverCount: 0,
-      timeFreezeCount: 0,
       doubleCoinPotionCount: 0
     },
     preferences: {

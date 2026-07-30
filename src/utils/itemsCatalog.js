@@ -42,16 +42,6 @@ export const WORKSHOP_ITEMS = [
     description: 'Absorbs 1 incorrect answer per sprint without breaking your accuracy streak.'
   },
   {
-    id: 'time_freeze',
-    name: 'Time Freeze Token',
-    category: 'powerups',
-    cost: 30,
-    rarity: 'epic',
-    isConsumable: true,
-    icon: '⏱️',
-    description: 'Pauses the sprint timer for 5 seconds to give you time to think.'
-  },
-  {
     id: 'double_coin_potion',
     name: 'Double Coin Potion',
     category: 'powerups',

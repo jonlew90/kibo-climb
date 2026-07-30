@@ -151,17 +151,11 @@ export default function App() {
     return {
       shieldCount: saved?.shieldCount ?? 1,
       streakSaverCount: saved?.streakSaverCount ?? 0,
-      timeFreezeCount: saved?.timeFreezeCount ?? 0,
       doubleCoinPotionCount: saved?.doubleCoinPotionCount ?? 0
     };
   });
 
-  const sprintStartTimeRef = useRef(null);
-  const frozenOffsetMsRef = useRef(0);
-  const isTimeFrozenRef = useRef(false);
-
   const [durationInSeconds, setDurationInSeconds] = useState(0);
-  const [isTimeFrozen, setIsTimeFrozen] = useState(false);
 
   const [preferences, setPreferences] = useState(() => {
     return storageService.getUserData().preferences || { hideSprintTimer: false };
@@ -172,25 +166,15 @@ export default function App() {
     storageService.saveUserData({ preferences: newPrefs });
   };
 
-  // Main Sprint Live Elapsed Timer Loop (Timestamp Delta Engine)
+  // Main Sprint Live Elapsed Timer Loop
   useEffect(() => {
     if (appState !== 'sprint' || showQuitModal) return;
 
-    if (!sprintStartTimeRef.current) {
-      sprintStartTimeRef.current = Date.now();
-      frozenOffsetMsRef.current = 0;
-      isTimeFrozenRef.current = false;
-    }
+    const interval = setInterval(() => {
+      setDurationInSeconds((prev) => prev + 1);
+    }, 1000);
 
-    const timerInterval = setInterval(() => {
-      if (!isTimeFrozenRef.current && sprintStartTimeRef.current) {
-        const now = Date.now();
-        const elapsedMs = now - sprintStartTimeRef.current - frozenOffsetMsRef.current;
-        setDurationInSeconds(Math.max(0, Math.floor(elapsedMs / 1000)));
-      }
-    }, 200);
-
-    return () => clearInterval(timerInterval);
+    return () => clearInterval(interval);
   }, [appState, showQuitModal]);
 
   const formatTime = (secs) => {
@@ -208,15 +192,12 @@ export default function App() {
     const newSparks = sparks - item.cost;
     let nextShieldCount = consumables.shieldCount || 0;
     let nextStreakSaverCount = consumables.streakSaverCount || 0;
-    let nextFreezeCount = consumables.timeFreezeCount || 0;
     let nextPotionCount = consumables.doubleCoinPotionCount || 0;
 
     if (item.id === 'kibo_shield') {
       nextShieldCount += 1;
     } else if (item.id === 'streak_saver') {
       nextStreakSaverCount += 1;
-    } else if (item.id === 'time_freeze') {
-      nextFreezeCount += 1;
     } else if (item.id === 'double_coin_potion') {
       nextPotionCount += 1;
     }
@@ -224,7 +205,6 @@ export default function App() {
     const nextConsumables = {
       shieldCount: nextShieldCount,
       streakSaverCount: nextStreakSaverCount,
-      timeFreezeCount: nextFreezeCount,
       doubleCoinPotionCount: nextPotionCount
     };
 
@@ -252,61 +232,6 @@ export default function App() {
       setIsDoubleCoinActive(true);
     }
   };
-
-  const freezeBtnRef = useRef(null);
-
-  const handleTriggerTimeFreeze = (e) => {
-    if (e) {
-      if (e.preventDefault) e.preventDefault();
-      if (e.stopPropagation) e.stopPropagation();
-    }
-
-    const currentTokens = consumables?.timeFreezeCount || 0;
-    if (isTimeFrozen || currentTokens <= 0) return;
-
-    console.log("Timestamp Freeze Triggered!");
-    soundFx.playSparkCollect();
-
-    const nextFreezeCount = Math.max(0, currentTokens - 1);
-    const nextConsumables = { ...consumables, timeFreezeCount: nextFreezeCount };
-
-    setConsumables(nextConsumables);
-    storageService.saveUserData({ consumables: nextConsumables });
-
-    isTimeFrozenRef.current = true;
-    setIsTimeFrozen(true);
-
-    const freezeStartedAt = Date.now();
-
-    setTimeout(() => {
-      const freezeDuration = Date.now() - freezeStartedAt;
-      frozenOffsetMsRef.current += freezeDuration;
-
-      isTimeFrozenRef.current = false;
-      setIsTimeFrozen(false);
-    }, 5000);
-  };
-
-  useEffect(() => {
-    const btn = freezeBtnRef.current;
-    if (!btn) return;
-
-    const handleNativeFreezeClick = (e) => {
-      if (e) {
-        e.stopPropagation();
-        e.preventDefault();
-      }
-      handleTriggerTimeFreeze(e);
-    };
-
-    btn.addEventListener('click', handleNativeFreezeClick, { capture: true });
-    btn.addEventListener('touchend', handleNativeFreezeClick, { capture: true });
-
-    return () => {
-      btn.removeEventListener('click', handleNativeFreezeClick, { capture: true });
-      btn.removeEventListener('touchend', handleNativeFreezeClick, { capture: true });
-    };
-  }, [consumables?.timeFreezeCount, isTimeFrozen]);
 
   // Schedule-Aware Streak Validation on App Startup
   useEffect(() => {
@@ -1336,7 +1261,7 @@ export default function App() {
             <div className="flex justify-between items-center text-sm font-bold text-slate-600 px-1">
               <div className="flex items-center gap-2 flex-wrap">
                 {!preferences?.hideSprintTimer ? (
-                  <div className={`text-base font-extrabold tracking-tight flex items-center gap-1 ${isTimeFrozen ? 'text-cyan-600 animate-pulse font-black' : 'text-slate-800'}`}>
+                  <div className="text-base font-extrabold tracking-tight text-slate-800 flex items-center gap-1">
                     <span>⏱️</span>
                     <span>{formatTime(durationInSeconds)}</span>
                   </div>
@@ -1393,7 +1318,7 @@ export default function App() {
           </div>
 
           {/* Active Power-Ups HUD Controls */}
-          <div className="relative z-50 pointer-events-auto flex items-center justify-between w-full max-w-sm px-1 my-1 flex-wrap gap-2">
+          <div className="flex items-center justify-between w-full max-w-sm px-1 my-1 flex-wrap gap-2">
             <div className="flex items-center gap-1 bg-amber-100/90 border border-amber-300 px-2.5 py-1 rounded-full text-xs font-black text-amber-950 shadow-xs">
               <ShieldCheck className="w-4 h-4 text-amber-600 stroke-[2.5]" />
               <span>Shield: {consumables.shieldCount}</span>
@@ -1404,30 +1329,6 @@ export default function App() {
                 <span>🧪 2x Active!</span>
               </span>
             )}
-
-            {consumables.timeFreezeCount > 0 && (
-              <button
-                ref={freezeBtnRef}
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleTriggerTimeFreeze(e);
-                }}
-                disabled={isTimeFrozen}
-                className={`relative z-50 pointer-events-auto cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-full font-extrabold text-sm shadow-md transition-all ${
-                  isTimeFrozen
-                    ? 'bg-cyan-300 text-cyan-900 animate-pulse cursor-not-allowed border-2 border-cyan-400'
-                    : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:scale-105 active:scale-95 shadow-cyan-500/30'
-                }`}
-              >
-                <span className="text-base">❄️</span>
-                <span>{isTimeFrozen ? 'FROZEN!' : 'FREEZE'}</span>
-                <span className="bg-white/20 text-white px-1.5 py-0.5 rounded-full text-xs font-bold">
-                  {consumables.timeFreezeCount}
-                </span>
-              </button>
-            )}
           </div>
 
           {/* Mascot & Math Display Area */}
@@ -1436,14 +1337,12 @@ export default function App() {
 
             {/* Problem Card */}
             <div
-              className={`w-full max-w-sm bg-white border-4 rounded-3xl p-5 sm:p-7 text-center shadow-card-3d transition-transform ${
+              className={`w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-5 sm:p-7 text-center shadow-card-3d transition-transform ${
                 isShaking
                   ? 'animate-shake border-rose-400 bg-rose-50'
                   : isShieldProtected
                   ? 'border-amber-400 bg-amber-50 ring-4 ring-amber-200'
-                  : isTimeFrozen
-                  ? 'border-cyan-400 ring-4 ring-cyan-300 shadow-cyan-200 bg-cyan-50/50'
-                  : 'border-slate-200'
+                  : ''
               }`}
             >
               <div className="text-3xl sm:text-4xl font-extrabold tracking-wider text-slate-800 flex items-center justify-center gap-3 flex-wrap">
@@ -1454,8 +1353,6 @@ export default function App() {
                 <span className={`inline-block min-w-[70px] px-3 py-1 rounded-xl text-3xl sm:text-4xl font-black shadow-inner transition-all ${
                   isShieldProtected
                     ? 'bg-amber-200 border-4 border-amber-400 text-amber-950 scale-105 shadow-amber-300/50'
-                    : isTimeFrozen
-                    ? 'bg-cyan-100 border-4 border-cyan-400 text-cyan-950 shadow-cyan-300/60 ring-2 ring-cyan-200 animate-pulse'
                     : 'bg-amber-50 border-3 border-amber-300 text-kibo-teal'
                 }`}>
                   {inputVal ? inputVal : <span className="text-slate-300 font-normal animate-pulse">?</span>}

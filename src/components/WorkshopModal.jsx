@@ -374,7 +374,7 @@ export default function WorkshopModal({
                     {/* Status Badges */}
                     {isConsumable ? (
                       <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
-                        🎒 OWNED: {item.id === 'kibo_shield' ? (consumables?.shieldCount ?? 1) : item.id === 'streak_saver' ? (consumables?.streakSaverCount ?? 0) : item.id === 'time_freeze' ? (consumables?.timeFreezeCount ?? 0) : (consumables?.doubleCoinPotionCount ?? 0)}
+                        🎒 OWNED: {item.id === 'kibo_shield' ? (consumables?.shieldCount ?? 1) : item.id === 'streak_saver' ? (consumables?.streakSaverCount ?? 0) : (consumables?.doubleCoinPotionCount ?? 0)}
                       </span>
                     ) : isEquippedInApp ? (
                       <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5">
