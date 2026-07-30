@@ -213,11 +213,16 @@ export default function App() {
   };
 
   const handleTriggerTimeFreeze = (e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
+    if (e) {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+    }
 
     if (isTimeFrozen || (consumables?.timeFreezeCount || 0) <= 0) return;
 
+    console.log("Time Freeze Clicked!");
     soundFx.playSparkCollect();
+
     const nextFreezeCount = Math.max(0, (consumables.timeFreezeCount || 1) - 1);
     const nextConsumables = { ...consumables, timeFreezeCount: nextFreezeCount };
 
@@ -1295,7 +1300,7 @@ export default function App() {
           </div>
 
           {/* Active Power-Ups HUD Controls */}
-          <div className="flex items-center justify-between w-full max-w-sm px-1 my-1 flex-wrap gap-2">
+          <div className="relative z-50 pointer-events-auto flex items-center justify-between w-full max-w-sm px-1 my-1 flex-wrap gap-2">
             <div className="flex items-center gap-1 bg-amber-100/90 border border-amber-300 px-2.5 py-1 rounded-full text-xs font-black text-amber-950 shadow-xs">
               <ShieldCheck className="w-4 h-4 text-amber-600 stroke-[2.5]" />
               <span>Shield: {consumables.shieldCount}</span>
@@ -1310,12 +1315,16 @@ export default function App() {
             {consumables.timeFreezeCount > 0 && (
               <button
                 type="button"
-                onClick={handleTriggerTimeFreeze}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleTriggerTimeFreeze(e);
+                }}
                 disabled={isTimeFrozen}
-                className={`relative z-20 pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full font-extrabold text-sm shadow-md transition-all ${
+                className={`relative z-50 pointer-events-auto cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-full font-extrabold text-sm shadow-md transition-all ${
                   isTimeFrozen
                     ? 'bg-cyan-300 text-cyan-900 animate-pulse cursor-not-allowed border-2 border-cyan-400'
-                    : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:scale-105 active:scale-95 shadow-cyan-500/30 cursor-pointer'
+                    : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:scale-105 active:scale-95 shadow-cyan-500/30'
                 }`}
               >
                 <span className="text-base">❄️</span>
