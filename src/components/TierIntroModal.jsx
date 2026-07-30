@@ -18,17 +18,25 @@ export default function TierIntroModal({
   const [tryOutProblem] = useState(() => generateTierProblem(tierLevel || 1));
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && onClose) {
+        onClose();
+      }
+    };
+
     if (isOpen) {
       const userData = storageService.getUserData();
       const isAlreadyMastered = Boolean(userData.masteredTricks && userData.masteredTricks[tierLevel]);
       setTryOutInput('');
       setIsTryOutSuccess(isAlreadyMastered);
       document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
       return () => {
         document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
       };
     }
-  }, [isOpen, tierLevel]);
+  }, [isOpen, tierLevel, onClose]);
 
   if (!isOpen) return null;
 
@@ -40,8 +48,14 @@ export default function TierIntroModal({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
-      <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative max-h-[85vh] overflow-y-auto">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative max-h-[85vh] overflow-y-auto cursor-default"
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"

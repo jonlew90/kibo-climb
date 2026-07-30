@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ShieldCheck, Flame, Check } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
 export default function StreakSavedModal({ isOpen, onClose, streak, remainingShields }) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && onClose) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleClose = () => {
@@ -11,8 +28,14 @@ export default function StreakSavedModal({ isOpen, onClose, streak, remainingShi
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
-      <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-6 text-center shadow-2xl space-y-4">
+    <div
+      onClick={handleClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-6 text-center shadow-2xl space-y-4 cursor-default"
+      >
         <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto border-3 border-amber-300 animate-bounce shadow-md">
           <ShieldCheck className="w-12 h-12 stroke-[2.5]" />
         </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Lock, X } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
@@ -11,6 +11,24 @@ export default function PinGateModal({
   const [pinInput, setPinInput] = useState('');
   const [isShaking, setIsShaking] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && onClose) {
+        handleCloseModal();
+      }
+    };
+
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -56,9 +74,13 @@ export default function PinGateModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
+    <div
+      onClick={handleCloseModal}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
+    >
       <div
-        className={`w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-6 text-center shadow-2xl relative transition-transform ${
+        onClick={(e) => e.stopPropagation()}
+        className={`w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-6 text-center shadow-2xl relative cursor-default transition-transform ${
           isShaking ? 'animate-shake border-rose-400 bg-rose-50' : ''
         }`}
       >

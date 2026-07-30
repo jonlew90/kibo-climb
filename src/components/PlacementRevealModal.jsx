@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Target, Zap, MapPin, Compass, Trophy } from 'lucide-react';
 import Mascot from './Mascot';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
@@ -11,6 +11,23 @@ export default function PlacementRevealModal({
   equippedItems = [],
   onGoToWorldMap
 }) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && onGoToWorldMap) {
+        onGoToWorldMap();
+      }
+    };
+
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpen, onGoToWorldMap]);
+
   if (!isOpen) return null;
 
   const tierMeta = CURRICULUM_TIERS.find((t) => t.tier === placedTier) || CURRICULUM_TIERS[0];
@@ -21,8 +38,14 @@ export default function PlacementRevealModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-4 pt-6 sm:pt-4 bg-slate-900/65 backdrop-blur-sm animate-pop overflow-y-auto">
-      <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-center shadow-2xl space-y-3.5 relative overflow-hidden my-auto max-h-[92vh]">
+    <div
+      onClick={handleGoToMap}
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-4 pt-6 sm:pt-4 bg-slate-900/65 backdrop-blur-sm animate-pop overflow-y-auto cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-center shadow-2xl space-y-3.5 relative overflow-hidden my-auto max-h-[92vh] cursor-default"
+      >
         <ConfettiCanvas />
 
         {/* Mascot Header */}

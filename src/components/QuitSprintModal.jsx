@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AlertCircle, Play, Compass, Home } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
 export default function QuitSprintModal({ isOpen, isTestOut, onKeepPlaying, onQuitToHome, onQuitToMap }) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && onKeepPlaying) {
+        onKeepPlaying();
+      }
+    };
+
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpen, onKeepPlaying]);
+
   if (!isOpen) return null;
 
   const handleKeepPlaying = (e) => {
@@ -26,8 +43,14 @@ export default function QuitSprintModal({ isOpen, isTestOut, onKeepPlaying, onQu
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
-      <div className="w-full max-w-sm bg-white border-4 border-rose-300 rounded-3xl p-6 text-center shadow-2xl space-y-4">
+    <div
+      onClick={handleKeepPlaying}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm bg-white border-4 border-rose-300 rounded-3xl p-6 text-center shadow-2xl space-y-4 cursor-default"
+      >
         <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto border-2 border-rose-200 animate-bounce">
           <AlertCircle className="w-10 h-10 stroke-[2.5]" />
         </div>

@@ -44,6 +44,24 @@ export default function ParentDashboardModal({
   const [pinSuccessMsg, setPinSuccessMsg] = useState('');
   const [pinErrorMsg, setPinErrorMsg] = useState('');
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && onClose) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   // Notification Preferences State
   const [notifPrefs, setNotifPrefs] = useState(() => getNotificationPrefs());
 
@@ -97,8 +115,14 @@ export default function ParentDashboardModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
-      <div className="w-full max-w-lg bg-white border-4 border-purple-300 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg bg-white border-4 border-purple-300 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden cursor-default"
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100">
           <div className="flex items-center gap-2">

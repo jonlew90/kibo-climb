@@ -21,12 +21,24 @@ export default function SprintResultsModal({
 }) {
   const [summaryStep, setSummaryStep] = useState(1);
 
-  // Reset to Step 1 upon modal open
+  // Reset to Step 1 upon modal open and add Escape key listener
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && onContinueClimbing) {
+        onContinueClimbing();
+      }
+    };
+
     if (isOpen) {
       setSummaryStep(1);
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
     }
-  }, [isOpen]);
+  }, [isOpen, onContinueClimbing]);
 
   if (!isOpen) return null;
 
@@ -69,8 +81,14 @@ export default function SprintResultsModal({
   const star3 = totalStars >= 3;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-md animate-pop">
-      <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative max-h-[92vh] overflow-y-auto">
+    <div
+      onClick={handleContinue}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-md animate-pop cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative max-h-[92vh] overflow-y-auto cursor-default"
+      >
         <ConfettiCanvas />
 
         {/* Step Indicator Header */}

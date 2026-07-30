@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Award, Lock, Sparkles, X, CheckCircle2 } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
 import { soundFx } from '../utils/audio';
@@ -9,6 +9,24 @@ export default function BadgesModal({
   unlockedBadges = []
 }) {
   const [activeCategory, setActiveCategory] = useState('all');
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && onClose) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -22,8 +40,14 @@ export default function BadgesModal({
     : BADGES_CATALOG.filter((b) => b.category === activeCategory);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
-      <div className="w-full max-w-md bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-slate-800 shadow-2xl space-y-4 max-h-[92vh] flex flex-col relative overflow-hidden">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/65 backdrop-blur-sm animate-pop cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-slate-800 shadow-2xl space-y-4 max-h-[92vh] flex flex-col relative overflow-hidden cursor-default"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3 shrink-0">
           <div className="flex items-center gap-2">

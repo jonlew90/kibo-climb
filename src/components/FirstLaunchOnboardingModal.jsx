@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Target, Play, Compass, Zap, Flame } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
@@ -9,6 +9,23 @@ export default function FirstLaunchOnboardingModal({
   onStartPlacementTest,
   onStartAtTier1
 }) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && onStartAtTier1) {
+        onStartAtTier1();
+      }
+    };
+
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpen, onStartAtTier1]);
+
   if (!isOpen) return null;
 
   const handlePlacement = () => {
@@ -22,8 +39,14 @@ export default function FirstLaunchOnboardingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-4 pt-6 sm:pt-4 bg-slate-900/70 backdrop-blur-md animate-pop overflow-y-auto">
-      <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-center shadow-2xl space-y-3.5 relative my-auto max-h-[92vh] overflow-y-auto">
+    <div
+      onClick={handleTier1}
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-4 pt-6 sm:pt-4 bg-slate-900/70 backdrop-blur-md animate-pop overflow-y-auto cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-center shadow-2xl space-y-3.5 relative my-auto max-h-[92vh] overflow-y-auto cursor-default"
+      >
         {/* Mascot Greeting */}
         <Mascot mood="happy" equipped={equippedItems} className="w-28 h-28 mx-auto" />
 
