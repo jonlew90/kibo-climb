@@ -31,6 +31,21 @@ export default function App() {
   const [appState, setAppState] = useState('launch');
   const [isMuted, setIsMuted] = useState(false);
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
+  const [workshopOriginState, setWorkshopOriginState] = useState('launch');
+
+  const handleOpenWorkshop = (overrideOrigin = null) => {
+    soundFx.playKeyTap();
+    setWorkshopOriginState(overrideOrigin || appState);
+    setIsWorkshopOpen(true);
+  };
+
+  const handleCloseWorkshop = () => {
+    setIsWorkshopOpen(false);
+    if (workshopOriginState) {
+      setAppState(workshopOriginState);
+    }
+  };
+
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [showSpeedInfoModal, setShowSpeedInfoModal] = useState(false);
   const [showPinGateModal, setShowPinGateModal] = useState(false);
@@ -1083,7 +1098,7 @@ export default function App() {
 
           {/* Combined Shop & Spark Counter Button */}
           <button
-            onClick={() => setIsWorkshopOpen(true)}
+            onClick={() => handleOpenWorkshop()}
             className="flex items-center gap-2 px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 rounded-2xl text-amber-900 font-extrabold active:scale-95 transition-all shadow-sm"
             aria-label="Open Kibo Workshop"
           >
@@ -1180,7 +1195,7 @@ export default function App() {
           </div>
 
           {/* Mascot Header */}
-          <div className="my-1 cursor-pointer" onClick={() => setIsWorkshopOpen(true)} title="Click to customize Kibo!">
+          <div className="my-1 cursor-pointer" onClick={() => handleOpenWorkshop()} title="Click to customize Kibo!">
             <Mascot mood="happy" equipped={equippedItems} className="w-32 h-32 sm:w-36 sm:h-36" />
           </div>
 
@@ -1819,18 +1834,14 @@ export default function App() {
         }}
         onVisitWorkshop={() => {
           setShowSprintResultsModal(false);
-          setAppState('world_map');
-          setIsWorkshopOpen(true);
+          handleOpenWorkshop('world_map');
         }}
       />
 
       {/* Workshop Modal */}
       <WorkshopModal
         isOpen={isWorkshopOpen}
-        onClose={() => {
-          setIsWorkshopOpen(false);
-          setAppState('world_map');
-        }}
+        onClose={handleCloseWorkshop}
         sparks={sparks}
         streakShields={streakShields}
         consumables={consumables}
