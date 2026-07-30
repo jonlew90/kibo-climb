@@ -316,16 +316,29 @@ export function lcm(a, b) {
   return Math.abs(a * b) / gcd(a, b);
 }
 
-// Single Source of Truth for Star Calculation
-export function calculateStars(accuracyPct, durationInSeconds) {
+// Single Source of Truth for Dynamic Star Calculation
+export function calculateStars(accuracyPct, durationInSeconds, tierConfig = null, totalQuestions = 20) {
   const accuracy = Number(accuracyPct) || 0;
   const rawSec = Number(durationInSeconds) || 0;
   const durationSec = rawSec > 1000 ? Math.floor(rawSec / 1000) : rawSec;
 
-  if (accuracy < 80) return 0;
-  if (accuracy < 100) return 1; // 80% - 99% accuracy
-  if (durationSec > 60) return 2; // 100% accuracy but > 60s
-  return 3; // 100% accuracy AND <= 60s
+  const targetSpeed = tierConfig?.targetSpeedPerQuestion || 2.0;
+  const questionsCount = Number(totalQuestions || 20);
+
+  const targetTime3Star = questionsCount * targetSpeed;
+  const targetTime2Star = targetTime3Star * 1.5;
+
+  if (accuracy >= 95 && durationSec <= targetTime3Star) {
+    return 3; // Speed & Accuracy Mastery
+  }
+  if (accuracy >= 90 && durationSec <= targetTime2Star) {
+    return 2; // Proficiency
+  }
+  if (accuracy >= 80) {
+    return 1; // Basic Completion
+  }
+
+  return 0; // Needs Retry
 }
 
 // Helper to calculate normalized key for commutative protection and deduplication

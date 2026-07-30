@@ -344,26 +344,35 @@ export default function WorldMap({
               );
             })()}
 
-            {/* 3-Star Criteria Legend Card */}
-            <div className="bg-amber-50/80 border-2 border-amber-200 rounded-2xl p-2.5 text-left space-y-1">
-              <span className="text-[10px] font-black uppercase text-amber-900 tracking-wider block">
-                ⭐ Star Mastery Criteria
-              </span>
-              <div className="text-[11px] font-semibold text-slate-700 space-y-0.5">
-                <div className="flex items-center justify-between">
-                  <span>⭐ 1 Star</span>
-                  <span className="text-slate-500 font-bold">Pass Sprint (≥80% Accuracy)</span>
+            {/* Dynamic Star Criteria Legend Card */}
+            {(() => {
+              const problemCount = selectedTierMeta.problemCount || 20;
+              const targetSpeed = selectedTierMeta.targetSpeedPerQuestion || 2.0;
+              const time3Star = problemCount * targetSpeed;
+              const time2Star = time3Star * 1.5;
+
+              return (
+                <div className="bg-amber-50/80 border-2 border-amber-200 rounded-2xl p-2.5 text-left space-y-1">
+                  <span className="text-[10px] font-black uppercase text-amber-900 tracking-wider block">
+                    ⭐ Star Mastery Criteria
+                  </span>
+                  <div className="text-[11px] font-semibold text-slate-700 space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <span>⭐ 1 Star</span>
+                      <span className="text-slate-500 font-bold">Pass Sprint (≥80% Accuracy)</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>⭐⭐ 2 Stars</span>
+                      <span className="text-slate-600 font-bold">Proficiency (≥90% in ≤{time2Star}s)</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>⭐⭐⭐ 3 Stars</span>
+                      <span className="text-amber-800 font-extrabold">Mastery (≥95% in ≤{time3Star}s)</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span>⭐⭐ 2 Stars</span>
-                  <span className="text-slate-500 font-bold">Flawless (100% Accuracy)</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>⭐⭐⭐ 3 Stars</span>
-                  <span className="text-amber-700 font-bold">Summit Speed (100% in &lt; 60s)</span>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Kibo Tip 💡 Button */}
             <button

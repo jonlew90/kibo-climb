@@ -699,13 +699,16 @@ export default function App() {
     });
 
     // Badge Evaluation & Unlock Persistence
-    const starsEarned = calculateStars(accuracyPct, durationInSeconds);
+    const activeTierConfig = CURRICULUM_TIERS.find((t) => t.tier === activeTier) || CURRICULUM_TIERS[0];
+    const starsEarned = calculateStars(accuracyPct, durationInSeconds, activeTierConfig, problems.length);
     const sprintResultData = {
       accuracyPct,
       avgLatencySec,
       totalTimeSec: durationInSeconds,
       totalQuestions: problems.length,
-      starsEarned
+      starsEarned,
+      tier: activeTier,
+      tierConfig: activeTierConfig
     };
 
     const currentUserState = {

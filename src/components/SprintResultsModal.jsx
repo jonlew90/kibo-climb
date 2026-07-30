@@ -4,7 +4,7 @@ import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
-import { calculateStars } from '../utils/curriculum';
+import { CURRICULUM_TIERS, calculateStars } from '../utils/curriculum';
 
 export default function SprintResultsModal({
   isOpen,
@@ -56,9 +56,13 @@ export default function SprintResultsModal({
     return mins > 0 ? `${mins}m ${remainderSec}s` : `${sec}s`;
   };
 
+  const currentTierConfig = stats?.tierConfig || CURRICULUM_TIERS.find((t) => t.tier === stats?.tier) || CURRICULUM_TIERS[0];
+  const targetTime3Star = (stats?.totalQuestions || 20) * (currentTierConfig?.targetSpeedPerQuestion || 2.0);
+  const targetTime2Star = targetTime3Star * 1.5;
+
   const totalStars = stats?.starsEarned !== undefined
     ? stats.starsEarned
-    : calculateStars(stats?.accuracyPct, stats?.totalTimeSec);
+    : calculateStars(stats?.accuracyPct, stats?.totalTimeSec, currentTierConfig, stats?.totalQuestions);
 
   const star1 = totalStars >= 1;
   const star2 = totalStars >= 2;
@@ -178,17 +182,17 @@ export default function SprintResultsModal({
 
               <div className="text-xs font-bold space-y-1 pt-1 border-t border-amber-200">
                 <div className={`flex items-center justify-between p-1.5 rounded-xl border transition-all ${star1 ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-extrabold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-                  <span>⭐ 1 Star: Pass Sprint (≥80% Acc)</span>
+                  <span>⭐ 1 Star: Basic Completion (≥80% Acc)</span>
                   {star1 ? <CheckCircle2 className="w-4 h-4 text-emerald-600 stroke-[3]" /> : <span className="text-[10px]">Incomplete</span>}
                 </div>
 
                 <div className={`flex items-center justify-between p-1.5 rounded-xl border transition-all ${star2 ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-extrabold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-                  <span>⭐⭐ 2 Stars: Flawless (100% Acc)</span>
+                  <span>⭐⭐ 2 Stars: Proficiency (≥90% in ≤{targetTime2Star}s)</span>
                   {star2 ? <CheckCircle2 className="w-4 h-4 text-emerald-600 stroke-[3]" /> : <span className="text-[10px]">Incomplete</span>}
                 </div>
 
                 <div className={`flex items-center justify-between p-1.5 rounded-xl border transition-all ${star3 ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-extrabold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-                  <span>⭐⭐⭐ 3 Stars: Summit Speed (100% in &lt;60s)</span>
+                  <span>⭐⭐⭐ 3 Stars: Mastery (≥95% in ≤{targetTime3Star}s)</span>
                   {star3 ? <CheckCircle2 className="w-4 h-4 text-emerald-600 stroke-[3]" /> : <span className="text-[10px]">Incomplete</span>}
                 </div>
               </div>
