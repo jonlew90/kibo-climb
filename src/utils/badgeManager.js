@@ -1,5 +1,6 @@
 // Badge Manager Engine for Kibo Math
 import { BADGES_CATALOG } from '../data/badges';
+import { CURRICULUM_TIERS } from './curriculum';
 import { storageService } from '../services/storageService';
 
 export function evaluateBadges(userState, lastSprintResult = null) {
@@ -67,6 +68,10 @@ export function evaluateBadges(userState, lastSprintResult = null) {
 
       case 'speed_demon':
         if (lastSprintResult) {
+          const sprintTierId = Number(lastSprintResult.tier || lastSprintResult.tierId || userState.tier || 1);
+          const tierMeta = CURRICULUM_TIERS.find((t) => t.tier === sprintTierId) || CURRICULUM_TIERS[0];
+          const targetSpeed = tierMeta?.targetSpeedPerQuestion || 2.0;
+
           const totalQuestions = Number(lastSprintResult.totalQuestions || lastSprintResult.answers?.length || 0);
           const durationSeconds = Number(lastSprintResult.totalTimeSec ?? lastSprintResult.durationInSeconds ?? 0);
           const accuracy = Number(lastSprintResult.accuracyPct ?? lastSprintResult.accuracyPercentage ?? 0);
@@ -75,10 +80,10 @@ export function evaluateBadges(userState, lastSprintResult = null) {
             ? (durationSeconds / totalQuestions)
             : Number(lastSprintResult.avgLatencySec) || 999;
 
-          // STRICT RULE: Must be a full sprint (>= 20 questions), avg time <= 2.0s, and >= 90% accuracy
+          // Qualifies if accuracy >= 90% and average speed meets or beats THAT tier's dynamic target speed
           const qualifiesForSpeedBadge =
-            totalQuestions >= 20 &&
-            avgTimePerQuestion <= 2.0 &&
+            totalQuestions >= 10 &&
+            avgTimePerQuestion <= targetSpeed &&
             accuracy >= 90;
 
           if (qualifiesForSpeedBadge) {
