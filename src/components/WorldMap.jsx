@@ -494,14 +494,6 @@ export default function WorldMap({
         }}
         onClose={() => setShowTierIntroModal(false)}
       />
-
-      {/* Footer Back Button */}
-      <button
-        onClick={onBackToHome}
-        className="btn-3d-teal w-full py-3 mt-2 text-sm rounded-2xl shrink-0 flex items-center justify-center gap-2"
-      >
-        <ArrowLeft className="w-5 h-5 stroke-[2.5]" /> Back to Main Screen
-      </button>
     </div>
   );
 }

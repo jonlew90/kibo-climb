@@ -673,7 +673,7 @@ export default function App() {
     setIsPlacementTest(false);
     setIsTestOut(false);
     setConsecutiveProblemMisses(0);
-    setAppState('launch');
+    setAppState('world_map');
   };
 
   const handleQuitToMap = () => {
@@ -1142,7 +1142,7 @@ export default function App() {
           onSelectTierAndStartSprint={handleSelectTierFromMap}
           onStartTestOut={startTestOutSprint}
           onStartPlacementTest={startPlacementDiagnostic}
-          onBackToHome={() => setAppState('launch')}
+          onBackToHome={() => setAppState('world_map')}
           onOpenWorkshop={() => handleOpenWorkshop('world_map')}
         />
       )}
@@ -1152,7 +1152,7 @@ export default function App() {
         <PlacementTest
           equippedItems={equippedItems}
           onCompletePlacement={handleCompletePlacementTest}
-          onQuitToHome={() => setAppState('launch')}
+          onQuitToHome={() => setAppState('world_map')}
         />
       )}
 
@@ -1163,7 +1163,7 @@ export default function App() {
           unlockedTiers={unlockedTiers}
           onSelectTier={(t) => handleSelectTierFromMap(t)}
           onStartPlacementTest={startPlacementDiagnostic}
-          onBackToHome={() => setAppState('launch')}
+          onBackToHome={() => setAppState('world_map')}
         />
       )}
 
@@ -1565,15 +1565,7 @@ export default function App() {
               onClick={() => setAppState('world_map')}
               className="btn-3d-purple w-full py-2.5 text-sm rounded-2xl flex items-center justify-center gap-2"
             >
-              <Compass className="w-4 h-4 stroke-[2.5]" /> View World Map
-            </button>
-
-            <button
-              onClick={() => setAppState('launch')}
-              className="w-full py-2 text-slate-600 hover:text-slate-900 font-extrabold rounded-2xl flex items-center justify-center gap-2 text-xs transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
-              Back to Home
+              <Compass className="w-4 h-4 stroke-[2.5]" /> Return to World Map 🗺️
             </button>
           </div>
         </main>
