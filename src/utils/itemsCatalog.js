@@ -172,15 +172,6 @@ export const WORKSHOP_ITEMS = [
 
   // COMPANIONS & EFFECTS (Slot: effects)
   {
-    id: 'kibo_shield',
-    name: 'Kibo Shield (Streak Freeze)',
-    category: 'effects',
-    cost: 50,
-    rarity: 'rare',
-    isConsumable: true,
-    description: 'Automatically absorbs 1 missed practice day to protect your streak! (Max 2)'
-  },
-  {
     id: 'firefly',
     name: 'Sparky Firefly Companion',
     category: 'effects',
