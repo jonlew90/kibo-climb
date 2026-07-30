@@ -1287,7 +1287,7 @@ export default function App() {
           </div>
 
           {/* Active Power-Ups HUD Controls */}
-          <div className="flex items-center justify-between w-full max-w-sm px-1 my-1 flex-wrap gap-1">
+          <div className="flex items-center justify-between w-full max-w-sm px-1 my-1 flex-wrap gap-2">
             <div className="flex items-center gap-1 bg-amber-100/90 border border-amber-300 px-2.5 py-1 rounded-full text-xs font-black text-amber-950 shadow-xs">
               <ShieldCheck className="w-4 h-4 text-amber-600 stroke-[2.5]" />
               <span>Shield: {consumables.shieldCount}</span>
@@ -1304,14 +1304,17 @@ export default function App() {
                 type="button"
                 onClick={handleTriggerTimeFreeze}
                 disabled={isTimeFrozen}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black transition-all shadow-sm active:scale-95 ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-extrabold text-sm shadow-md transition-all ${
                   isTimeFrozen
-                    ? 'bg-cyan-100 border-2 border-cyan-400 text-cyan-900 animate-pulse'
-                    : 'bg-indigo-100 hover:bg-indigo-200 border border-indigo-300 text-indigo-900 cursor-pointer'
+                    ? 'bg-cyan-300 text-cyan-900 animate-pulse cursor-not-allowed border-2 border-cyan-400'
+                    : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:scale-105 active:scale-95 shadow-cyan-500/30 cursor-pointer'
                 }`}
               >
-                <span>⏱️</span>
-                <span>{isTimeFrozen ? 'FROZEN 5s! 🧊' : `Freeze (${consumables.timeFreezeCount})`}</span>
+                <span className="text-base">❄️</span>
+                <span>{isTimeFrozen ? 'FROZEN!' : 'FREEZE'}</span>
+                <span className="bg-white/20 text-white px-1.5 py-0.5 rounded-full text-xs font-bold">
+                  {consumables.timeFreezeCount}
+                </span>
               </button>
             )}
           </div>
@@ -1322,8 +1325,14 @@ export default function App() {
 
             {/* Problem Card */}
             <div
-              className={`w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-5 sm:p-7 text-center shadow-card-3d transition-transform ${
-                isShaking ? 'animate-shake border-rose-400 bg-rose-50' : isShieldProtected ? 'border-amber-400 bg-amber-50 ring-4 ring-amber-200' : ''
+              className={`w-full max-w-sm bg-white border-4 rounded-3xl p-5 sm:p-7 text-center shadow-card-3d transition-transform ${
+                isShaking
+                  ? 'animate-shake border-rose-400 bg-rose-50'
+                  : isShieldProtected
+                  ? 'border-amber-400 bg-amber-50 ring-4 ring-amber-200'
+                  : isTimeFrozen
+                  ? 'border-cyan-400 ring-4 ring-cyan-300 shadow-cyan-200 bg-cyan-50/50'
+                  : 'border-slate-200'
               }`}
             >
               <div className="text-3xl sm:text-4xl font-extrabold tracking-wider text-slate-800 flex items-center justify-center gap-3 flex-wrap">
@@ -1335,12 +1344,18 @@ export default function App() {
                   isShieldProtected
                     ? 'bg-amber-200 border-4 border-amber-400 text-amber-950 scale-105 shadow-amber-300/50'
                     : isTimeFrozen
-                    ? 'bg-cyan-100 border-3 border-cyan-400 text-cyan-900 shadow-cyan-200/50 animate-pulse'
+                    ? 'bg-cyan-100 border-4 border-cyan-400 text-cyan-950 shadow-cyan-300/60 ring-2 ring-cyan-200 animate-pulse'
                     : 'bg-amber-50 border-3 border-amber-300 text-kibo-teal'
                 }`}>
                   {inputVal ? inputVal : <span className="text-slate-300 font-normal animate-pulse">?</span>}
                 </span>
               </div>
+
+              {isTimeFrozen && (
+                <div className="mt-2 text-xs font-black text-cyan-950 bg-cyan-200 py-1.5 px-3 rounded-full border border-cyan-400 animate-pulse inline-block shadow-sm">
+                  ❄️ Sprint Clock Frozen for 5 Seconds! 🧊
+                </div>
+              )}
 
               {isShieldProtected && (
                 <div className="mt-2 text-xs font-black text-amber-950 bg-amber-200 py-1.5 px-3 rounded-full border border-amber-400 animate-pop inline-block shadow-sm">
