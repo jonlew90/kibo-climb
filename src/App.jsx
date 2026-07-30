@@ -156,7 +156,12 @@ export default function App() {
     };
   });
 
+  const sprintStartTimeRef = useRef(null);
+  const frozenOffsetMsRef = useRef(0);
+  const isTimeFrozenRef = useRef(false);
+
   const [durationInSeconds, setDurationInSeconds] = useState(0);
+  const [isTimeFrozen, setIsTimeFrozen] = useState(false);
 
   const [preferences, setPreferences] = useState(() => {
     return storageService.getUserData().preferences || { hideSprintTimer: false };
@@ -167,24 +172,25 @@ export default function App() {
     storageService.saveUserData({ preferences: newPrefs });
   };
 
-  const [isTimeFrozen, setIsTimeFrozen] = useState(false);
-  const isTimeFrozenRef = useRef(false);
-
-  useEffect(() => {
-    isTimeFrozenRef.current = isTimeFrozen;
-  }, [isTimeFrozen]);
-
-  // Main Sprint Live Elapsed Timer Loop
+  // Main Sprint Live Elapsed Timer Loop (Timestamp Delta Engine)
   useEffect(() => {
     if (appState !== 'sprint' || showQuitModal) return;
 
-    const interval = setInterval(() => {
-      if (!isTimeFrozenRef.current) {
-        setDurationInSeconds((prev) => prev + 1);
-      }
-    }, 1000);
+    if (!sprintStartTimeRef.current) {
+      sprintStartTimeRef.current = Date.now();
+      frozenOffsetMsRef.current = 0;
+      isTimeFrozenRef.current = false;
+    }
 
-    return () => clearInterval(interval);
+    const timerInterval = setInterval(() => {
+      if (!isTimeFrozenRef.current && sprintStartTimeRef.current) {
+        const now = Date.now();
+        const elapsedMs = now - sprintStartTimeRef.current - frozenOffsetMsRef.current;
+        setDurationInSeconds(Math.max(0, Math.floor(elapsedMs / 1000)));
+      }
+    }, 200);
+
+    return () => clearInterval(timerInterval);
   }, [appState, showQuitModal]);
 
   const formatTime = (secs) => {
@@ -255,24 +261,29 @@ export default function App() {
       if (e.stopPropagation) e.stopPropagation();
     }
 
-    if (isTimeFrozen || (consumables?.timeFreezeCount || 0) <= 0) return;
+    const currentTokens = consumables?.timeFreezeCount || 0;
+    if (isTimeFrozen || currentTokens <= 0) return;
 
-    console.log("Native Freeze Click Triggered!");
+    console.log("Timestamp Freeze Triggered!");
     soundFx.playSparkCollect();
 
-    const nextFreezeCount = Math.max(0, (consumables.timeFreezeCount || 1) - 1);
+    const nextFreezeCount = Math.max(0, currentTokens - 1);
     const nextConsumables = { ...consumables, timeFreezeCount: nextFreezeCount };
 
     setConsumables(nextConsumables);
     storageService.saveUserData({ consumables: nextConsumables });
 
-    setIsTimeFrozen(true);
     isTimeFrozenRef.current = true;
-    problemStartTimeRef.current += 5000;
+    setIsTimeFrozen(true);
+
+    const freezeStartedAt = Date.now();
 
     setTimeout(() => {
-      setIsTimeFrozen(false);
+      const freezeDuration = Date.now() - freezeStartedAt;
+      frozenOffsetMsRef.current += freezeDuration;
+
       isTimeFrozenRef.current = false;
+      setIsTimeFrozen(false);
     }, 5000);
   };
 
@@ -653,6 +664,9 @@ export default function App() {
     setCurrentIndex(0);
     setInputVal('');
     setResults([]);
+    sprintStartTimeRef.current = Date.now();
+    frozenOffsetMsRef.current = 0;
+    isTimeFrozenRef.current = false;
     setDurationInSeconds(0);
     setMascotMood('happy');
     setAppState('sprint');
