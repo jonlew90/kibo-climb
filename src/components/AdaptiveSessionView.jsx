@@ -125,39 +125,10 @@ export default function AdaptiveSessionView({
 
   return (
     <div className="w-full flex-1 flex flex-col items-center justify-between py-2 px-3 max-w-lg mx-auto relative animate-pop">
-      {/* ADAPTIVE COMPETENCE HUD HEADER */}
-      <div className="w-full bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-3.5 border-2 border-indigo-500/40 shadow-xl flex items-center justify-between gap-2 shrink-0 mb-3">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-indigo-500/20 border border-indigo-400/40 rounded-2xl text-amber-300">
-            <Trophy className="w-6 h-6 stroke-[2.5]" />
-          </div>
-          <div className="text-left">
-            <span className="text-[10px] font-black uppercase text-indigo-300 tracking-wider block">
-              Adaptive Mastery Engine
-            </span>
-            <div className="text-sm sm:text-base font-extrabold text-white flex items-center gap-1.5">
-              <span>Competence Rank:</span>
-              <span className="text-amber-300 font-black">{competenceRank}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Live Sparks & Workshop Button */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onOpenWorkshop}
-            className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs px-3 py-1.5 rounded-2xl border border-amber-300 shadow-md transition-all active:scale-95"
-          >
-            <span>🏪</span>
-            <span>Workshop</span>
-          </button>
-        </div>
-      </div>
-
       {/* FEEDBACK NOTIFICATION BANNER (FLOATING OVERLAY - ZERO SHIFT & ZERO CLIPPING) */}
       {feedbackBanner && (
         <div
-          className={`absolute top-16 inset-x-3 z-30 mx-auto max-w-xs pointer-events-none animate-pop shadow-xl rounded-2xl py-2.5 px-3 text-xs font-black text-center border backdrop-blur-md transition-all ${
+          className={`absolute top-2 inset-x-3 z-30 mx-auto max-w-xs pointer-events-none animate-pop shadow-xl rounded-2xl py-2.5 px-3 text-xs font-black text-center border backdrop-blur-md transition-all ${
             feedbackBanner.type === 'success'
               ? 'bg-emerald-600/95 text-white border-emerald-400 shadow-emerald-950/30'
               : 'bg-rose-600/95 text-white border-rose-400 shadow-rose-950/30'
@@ -173,7 +144,7 @@ export default function AdaptiveSessionView({
         <div
           onClick={onOpenWorkshop}
           className="cursor-pointer hover:scale-105 transition-transform"
-          title="Tap Kibo to customize!"
+          title="Tap Kibo to customize in Workshop!"
         >
           <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} equipped={equippedItems} className="w-28 h-28 sm:w-32 sm:h-32 filter drop-shadow-xl" />
         </div>
@@ -184,9 +155,15 @@ export default function AdaptiveSessionView({
             isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''
           }`}
         >
-          <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200 inline-block">
-            ⚡ Question #{questionsAnswered + 1} • Auto-Detection Active ⚡
-          </span>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+              ⚡ Question #{questionsAnswered + 1}
+            </span>
+            <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs">
+              <Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />
+              Competence Rank: {competenceRank}
+            </span>
+          </div>
 
           <div className="text-3xl sm:text-4xl font-extrabold text-slate-800 flex items-center justify-center gap-3 flex-wrap my-1">
             <span>{currentProblem.displayString || `${currentProblem.num1} ${currentProblem.operatorSymbol} ${currentProblem.num2}`}</span>
