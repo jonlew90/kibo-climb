@@ -114,6 +114,26 @@ export default function ParentDashboardModal({
     setConfirmPinInput('');
   };
 
+  const [lastRefreshedAt, setLastRefreshedAt] = useState(() => new Date().toLocaleTimeString());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    soundFx.playKeyTap();
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setLastRefreshedAt(new Date().toLocaleTimeString());
+      setIsRefreshing(false);
+    }, 400);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      setLastRefreshedAt(new Date().toLocaleTimeString());
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
   return (
     <div
       onClick={onClose}
@@ -127,16 +147,34 @@ export default function ParentDashboardModal({
         <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-7 h-7 text-purple-600 stroke-[2.5]" />
-            <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Parent Dashboard</h2>
+            <div>
+              <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Parent Dashboard</h2>
+              <span className="text-[10px] font-bold text-slate-400 block">
+                Last Synchronized: {lastRefreshedAt}
+              </span>
+            </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 bg-slate-100 rounded-xl text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
-            aria-label="Close Parent Dashboard"
-          >
-            <X className="w-6 h-6 stroke-[2.5]" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              className={`flex items-center gap-1 text-xs font-black text-purple-700 bg-purple-50 hover:bg-purple-100 px-2.5 py-1.5 rounded-xl border border-purple-200 shadow-xs transition-all active:scale-95 ${
+                isRefreshing ? 'animate-spin opacity-50' : ''
+              }`}
+              title="Force Refresh Data"
+            >
+              <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Refresh</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 bg-slate-100 rounded-xl text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
+              aria-label="Close Parent Dashboard"
+            >
+              <X className="w-6 h-6 stroke-[2.5]" />
+            </button>
+          </div>
         </div>
 
         {/* Tab Buttons */}
