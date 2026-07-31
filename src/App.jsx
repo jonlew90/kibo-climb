@@ -1254,7 +1254,7 @@ export default function App() {
               className="btn-3d-orange w-full py-3.5 text-xl sm:text-2xl rounded-2xl flex items-center justify-center gap-3 group shadow-bouncy-orange"
             >
               <Play className="w-6 h-6 fill-white stroke-[2.5] group-hover:scale-110 transition-transform" />
-              Start Climb
+              Start Kibo Climb
             </button>
 
             <button

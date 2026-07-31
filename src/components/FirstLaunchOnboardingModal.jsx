@@ -79,7 +79,7 @@ export default function FirstLaunchOnboardingModal({
             className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
           >
             <Play className="w-5 h-5 fill-current stroke-[2.5]" />
-            Start Adaptive Climb! 🚀
+            Start Kibo Climb! 🚀
           </button>
         </div>
       </div>
