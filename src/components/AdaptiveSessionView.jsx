@@ -199,6 +199,37 @@ export default function AdaptiveSessionView({
     setInputVal('');
   };
 
+  // Physical Desktop Keyboard Listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        handleDeleteDigit();
+      } else if (/^[0-9]$/.test(e.key) || e.key === '.' || e.key === ':') {
+        e.preventDefault();
+        handleDigitInput(e.key);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (inputVal) {
+          processAnswerEvaluation(inputVal);
+        }
+      } else if (e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        handleDigitInput('Yes');
+      } else if (e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        handleDigitInput('No');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [inputVal, currentProblem, competenceRank]);
+
   const lastBannerTypeRef = useRef('success');
   const lastBannerTextRef = useRef('');
 
