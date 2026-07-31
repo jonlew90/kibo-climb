@@ -271,7 +271,7 @@ export default function ParentDashboardModal({
                   {recentBadges.length === 0 ? (
                     <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-amber-900 text-xs font-semibold leading-relaxed flex items-center gap-2">
                       <span className="text-base">🏅</span>
-                      <span>No milestones unlocked yet. Completing 20-problem sprints with high accuracy earns trail badges!</span>
+                      <span>No milestones unlocked yet. Completing adaptive climb sessions with high accuracy earns trail badges!</span>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -560,7 +560,7 @@ export default function ParentDashboardModal({
               <div className="flex items-center justify-between bg-white border border-slate-200 p-2.5 rounded-xl">
                 <div>
                   <span className="font-extrabold text-xs text-slate-800 block">Daily Streak Reminder</span>
-                  <span className="text-[10px] text-slate-500 font-medium">Alert child if sprint is incomplete</span>
+                  <span className="text-[10px] text-slate-500 font-medium">Alert child if daily climb is incomplete</span>
                 </div>
 
                 <div className="flex items-center gap-2">
