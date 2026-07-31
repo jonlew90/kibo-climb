@@ -1852,6 +1852,7 @@ export default function App() {
         isBossMode={isBossMode}
         isNewSpeedRecord={isNewSpeedRecord}
         newlyUnlockedBadges={newlyUnlockedBadges}
+        cumulativeCorrectStreak={cumulativeCorrectStreak}
         onStartNextSprint={() => {
           setShowSprintResultsModal(false);
           const nextTier = Math.min(8, tier + 1);
