@@ -269,7 +269,7 @@ export default function SprintResultsModal({
                 onClick={handleStartNextSprint}
                 className="btn-3d-emerald w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-lg text-white"
               >
-                <span>Start Next Sprint 🚀</span>
+                <span>Continue Climb 🚀</span>
               </button>
 
               <div className="flex gap-2">
@@ -278,7 +278,7 @@ export default function SprintResultsModal({
                   className="flex-1 py-2.5 px-3 rounded-xl border-2 border-slate-300 text-slate-700 font-extrabold text-xs hover:bg-slate-100 transition-colors flex items-center justify-center gap-1"
                 >
                   <Compass className="w-4 h-4 text-slate-500 stroke-[2.5]" />
-                  <span>World Map 🗺️</span>
+                  <span>Home 🏔️</span>
                 </button>
 
                 <button

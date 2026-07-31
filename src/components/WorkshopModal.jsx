@@ -528,7 +528,7 @@ export default function WorkshopModal({
           }}
           className="btn-3d-teal w-full py-3 text-sm rounded-2xl shrink-0"
         >
-          Done Customizing & Return to Map 🗺️
+          Done Customizing 🚀
         </button>
       </div>
     </div>
