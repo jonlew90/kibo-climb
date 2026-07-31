@@ -69,6 +69,24 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         }
         break;
 
+      case 'speed_demon':
+        if ((userState.sessionAverageTime && userState.sessionAverageTime < 5.0) || lastSprintResult?.averageTime < 5.0) {
+          unlocked = true;
+        }
+        break;
+
+      case 'flawless_execution':
+        if ((userState.personalRecords?.mostPerfectSessions || 0) >= 3) {
+          unlocked = true;
+        }
+        break;
+
+      case 'streak_legend':
+        if ((userState.cumulativeCorrectStreak || 0) >= 50 || (userState.personalRecords?.highestCorrectStreak || 0) >= 50) {
+          unlocked = true;
+        }
+        break;
+
       default:
         break;
     }

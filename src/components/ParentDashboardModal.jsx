@@ -34,7 +34,8 @@ export default function ParentDashboardModal({
   preferences = { hideSprintTimer: false },
   onUpdatePreferences,
   unlockedBadges = [],
-  totalProblemsSolved = 0
+  totalProblemsSolved = 0,
+  personalRecords = {}
 }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'settings'
 
@@ -230,6 +231,31 @@ export default function ParentDashboardModal({
                 <span className="text-lg font-black text-purple-900">{calculateAdaptiveCompetenceProfile(sprintHistory, tier).adaptiveCompetenceRating} pts</span>
               </div>
             </div>
+
+            {/* Personal Records Summary Card */}
+            <section className="bg-purple-50/60 rounded-2xl p-3 border border-purple-200 text-left space-y-1.5">
+              <div className="flex items-center gap-1.5 text-purple-900 font-extrabold text-xs">
+                <Trophy className="w-4 h-4 text-purple-700 stroke-[2.5]" />
+                <span>Personal Records & High Scores</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold">
+                <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
+                  <span className="text-[9px] text-slate-500 uppercase block font-black">Longest Streak</span>
+                  <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.highestCorrectStreak || 0} Qs</span>
+                </div>
+
+                <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
+                  <span className="text-[9px] text-slate-500 uppercase block font-black">Fastest 10-Q</span>
+                  <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.fastest10QuestionsTime ? `${personalRecords.fastest10QuestionsTime}s` : 'N/A'}</span>
+                </div>
+
+                <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
+                  <span className="text-[9px] text-slate-500 uppercase block font-black">Perfect Runs</span>
+                  <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.mostPerfectSessions || 0} Runs</span>
+                </div>
+              </div>
+            </section>
 
             {/* Recent Milestones & Badges Summary Card */}
             {(() => {

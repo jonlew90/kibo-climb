@@ -143,7 +143,7 @@ export default function AdaptiveSessionView({
     const nextQuestionsAnswered = questionsAnswered + 1;
     setQuestionsAnswered(nextQuestionsAnswered);
     setSessionQuestionIndex((prev) => prev + 1);
-    if (onIncrementLifetimeProblems) onIncrementLifetimeProblems();
+    if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(isCorrect);
     setInputVal('');
 
     // Trigger Kibo Break Overlay every 12 problems solved

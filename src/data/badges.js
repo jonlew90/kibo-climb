@@ -126,6 +126,30 @@ export const BADGES_CATALOG = [
     category: 'resilience',
     icon: '🚀',
     reqText: 'Gain +50 Competence Rank in a Session'
+  },
+  {
+    id: 'speed_demon',
+    title: 'Speed Demon',
+    description: 'Completed an adaptive session block with an average speed under 5s per question!',
+    category: 'resilience',
+    icon: '🏆',
+    reqText: 'Average speed <5s per question in a session'
+  },
+  {
+    id: 'flawless_execution',
+    title: 'Flawless Execution',
+    description: 'Completed 3 Perfect Runs with 100% accuracy!',
+    category: 'skill_mastery',
+    icon: '🎯',
+    reqText: 'Complete 3 Perfect Runs'
+  },
+  {
+    id: 'streak_legend',
+    title: 'Streak Legend',
+    description: 'Reached a 50-answer cumulative correct streak across adaptive climbs!',
+    category: 'resilience',
+    icon: '⚡',
+    reqText: 'Reach a 50-answer cumulative streak'
   }
 ];
 

@@ -88,3 +88,70 @@ export function evaluateAdaptiveAttempt({
     triggerFrustrationCircuit: nextInSessionIncorrectStreak >= 3
   };
 }
+
+/**
+ * Evaluates session-wrap bonus rewards and personal records upon Break Overlay or Session End.
+ * - Perfect Run Bonus: 100% accuracy awards +15 Sparks & increments mostPerfectSessions.
+ * - Speed Run Bonus: average speed < 5s per question awards +10 Sparks.
+ * - Cumulative Streak Milestones: 25, 50, 100 streaks award +25, +50, +100 Sparks.
+ */
+export function evaluateAdaptiveSessionEnd({
+  questionsAnswered = 0,
+  correctCount = 0,
+  totalSessionTimeMs = 0,
+  cumulativeCorrectStreak = 0,
+  personalRecords = {}
+}) {
+  const sessionAccuracy = questionsAnswered > 0 ? (correctCount / questionsAnswered) * 100 : 0;
+  const sessionAverageTimeSec = questionsAnswered > 0 ? (totalSessionTimeMs / 1000) / questionsAnswered : 0;
+
+  let bonusSparks = 0;
+  let isPerfectRun = false;
+  let isSpeedRun = false;
+  let milestonesUnlocked = [];
+
+  const records = {
+    fastest10QuestionsTime: personalRecords?.fastest10QuestionsTime ?? null,
+    highestCorrectStreak: Math.max(personalRecords?.highestCorrectStreak || 0, cumulativeCorrectStreak),
+    mostPerfectSessions: personalRecords?.mostPerfectSessions || 0
+  };
+
+  // 1. Perfect Run Bonus (100% accuracy for 5+ questions)
+  if (questionsAnswered >= 5 && sessionAccuracy === 100) {
+    isPerfectRun = true;
+    bonusSparks += 15;
+    records.mostPerfectSessions += 1;
+  }
+
+  // 2. Speed Run Bonus (< 5.0s average response time for 5+ questions)
+  if (questionsAnswered >= 5 && sessionAverageTimeSec > 0 && sessionAverageTimeSec < 5.0) {
+    isSpeedRun = true;
+    bonusSparks += 10;
+    const sessionTimeSec = Math.round(totalSessionTimeMs / 1000);
+    if (!records.fastest10QuestionsTime || sessionTimeSec < records.fastest10QuestionsTime) {
+      records.fastest10QuestionsTime = sessionTimeSec;
+    }
+  }
+
+  // 3. Cumulative Cross-Session Streak Milestones
+  if (cumulativeCorrectStreak >= 100) {
+    bonusSparks += 100;
+    milestonesUnlocked.push('100-Answer Legend (+100 ⚡)');
+  } else if (cumulativeCorrectStreak >= 50) {
+    bonusSparks += 50;
+    milestonesUnlocked.push('50-Answer Master (+50 ⚡)');
+  } else if (cumulativeCorrectStreak >= 25) {
+    bonusSparks += 25;
+    milestonesUnlocked.push('25-Answer Streak (+25 ⚡)');
+  }
+
+  return {
+    sessionAccuracy,
+    sessionAverageTimeSec,
+    bonusSparks,
+    isPerfectRun,
+    isSpeedRun,
+    milestonesUnlocked,
+    updatedPersonalRecords: records
+  };
+}

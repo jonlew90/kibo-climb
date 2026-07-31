@@ -164,10 +164,36 @@ export default function App() {
     return storageService.getUserData().totalProblemsSolved || 0;
   });
 
-  const handleIncrementLifetimeProblems = () => {
+  const [cumulativeCorrectStreak, setCumulativeCorrectStreak] = useState(() => {
+    return storageService.getUserData().cumulativeCorrectStreak || 0;
+  });
+
+  const [personalRecords, setPersonalRecords] = useState(() => {
+    return storageService.getUserData().personalRecords || {
+      fastest10QuestionsTime: null,
+      highestCorrectStreak: 0,
+      mostPerfectSessions: 0
+    };
+  });
+
+  const handleIncrementLifetimeProblems = (isCorrect = true) => {
     const nextTotal = (totalProblemsSolved || 0) + 1;
     setTotalProblemsSolved(nextTotal);
-    storageService.saveUserData({ totalProblemsSolved: nextTotal });
+
+    let nextStreak = isCorrect ? cumulativeCorrectStreak + 1 : 0;
+    setCumulativeCorrectStreak(nextStreak);
+
+    const nextRecords = {
+      ...personalRecords,
+      highestCorrectStreak: Math.max(personalRecords?.highestCorrectStreak || 0, nextStreak)
+    };
+    setPersonalRecords(nextRecords);
+
+    storageService.saveUserData({
+      totalProblemsSolved: nextTotal,
+      cumulativeCorrectStreak: nextStreak,
+      personalRecords: nextRecords
+    });
   };
 
   // Persistent Consumable Power-Ups Inventory
@@ -1719,6 +1745,7 @@ export default function App() {
         onUpdatePreferences={handleUpdatePreferences}
         unlockedBadges={unlockedBadges}
         totalProblemsSolved={totalProblemsSolved}
+        personalRecords={personalRecords}
       />
 
       {/* TRAIL BADGES SHOWCASE MODAL */}

@@ -24,6 +24,12 @@ const DEFAULT_PROFILE = {
     streakShields: 1,
     sparks: 50,
     totalProblemsSolved: 0,
+    cumulativeCorrectStreak: 0,
+    personalRecords: {
+      fastest10QuestionsTime: null,
+      highestCorrectStreak: 0,
+      mostPerfectSessions: 0
+    },
     lastSprintDate: null,
     practiceQueue: [],
     sprintHistory: [],
