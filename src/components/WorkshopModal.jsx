@@ -398,6 +398,12 @@ export default function WorkshopModal({
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{item.name}</h4>
                     
+                    {item.badgeTag && (
+                      <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 animate-pulse shadow-xs">
+                        🚀 {item.badgeTag}
+                      </span>
+                    )}
+
                     {/* Status Badges */}
                     {isConsumable ? (
                       <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">

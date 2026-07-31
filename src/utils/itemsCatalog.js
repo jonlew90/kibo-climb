@@ -45,11 +45,12 @@ export const WORKSHOP_ITEMS = [
     id: 'double_sparks_potion',
     name: 'Double Sparks Potion',
     category: 'powerups',
-    cost: 40,
+    cost: 12,
     rarity: 'rare',
     isConsumable: true,
     icon: '🧪',
-    description: 'Doubles all Sparks earned from your next completed adaptive session.'
+    badgeTag: 'Profit Booster!',
+    description: 'Costs 12 Sparks. Doubles all Sparks earned in your next adaptive session block!'
   },
   {
     id: 'streak_saver',
