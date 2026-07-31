@@ -182,9 +182,9 @@ export default function ParentDashboardModal({
               </div>
 
               <div className="bg-purple-50 border border-purple-200 rounded-2xl p-2.5">
-                <Layers className="w-5 h-5 text-purple-600 mx-auto mb-1 stroke-[2.5]" />
-                <span className="text-[10px] uppercase font-black text-purple-900 block">Current Tier</span>
-                <span className="text-xl font-black text-purple-900">Tier {tier}</span>
+                <Award className="w-5 h-5 text-purple-600 mx-auto mb-1 stroke-[2.5]" />
+                <span className="text-[10px] uppercase font-black text-purple-900 block">Skill Rating</span>
+                <span className="text-xl font-black text-purple-900">{calculateAdaptiveCompetenceProfile(sprintHistory, tier).adaptiveCompetenceRating} pts</span>
               </div>
             </div>
 
@@ -262,107 +262,19 @@ export default function ParentDashboardModal({
               );
             })()}
 
-            {/* Manual Tier Selector Dropdown (All 8 Tiers) */}
-            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2 text-left">
-              <div className="flex items-center gap-2 text-purple-700">
-                <Layers className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Manual Skill Tier Override</h4>
-              </div>
-
-              <select
-                value={tier}
-                onChange={(e) => {
-                  soundFx.playKeyTap();
-                  onSetTier(parseInt(e.target.value, 10));
-                }}
-                className="w-full p-3 bg-white border-2 border-purple-300 rounded-xl text-xs sm:text-sm font-extrabold text-purple-950 focus:border-purple-600 focus:outline-none shadow-sm cursor-pointer"
-              >
-                {CURRICULUM_TIERS.map((t) => (
-                  <option key={t.tier} value={t.tier}>
-                    Tier {t.tier}: {t.title} ({t.subtitle})
-                  </option>
-                ))}
-              </select>
-
-              <p className="text-[11px] font-medium text-slate-500 italic leading-snug">
-                Manually set your child's current practice tier at any time.
-              </p>
-            </div>
-
-            {/* Target Facts for Review Section */}
-            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2 text-left">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-amber-700">
-                  <Target className="w-5 h-5 stroke-[2.5]" />
-                  <h4 className="font-extrabold text-sm text-slate-800">Target Facts for Review</h4>
-                </div>
-                <span className="text-xs font-extrabold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
-                  {pluralize(practiceQueue ? practiceQueue.length : practiceQueueCount, 'Queued Fact')}
-                </span>
-              </div>
-
-              {!practiceQueue || practiceQueue.length === 0 ? (
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-semibold leading-relaxed flex items-center gap-2">
-                  <span className="text-base">🎉</span>
-                  <span>No problem facts queued! Your child is mastering their current tier facts with high speed and accuracy.</span>
-                </div>
-              ) : (
-                <div className="space-y-1.5 pt-1">
-                  {practiceQueue.slice(0, 5).map((item, idx) => {
-                    const isError = item.reason === 'ERROR' || !item.reason;
-                    const eqStr = item.displayString || `${item.num1} ${item.operatorSymbol || '×'} ${item.num2} = ${item.answer}`;
-
-                    return (
-                      <div key={idx} className="flex justify-between items-center bg-white border border-slate-200 rounded-xl p-2 text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="font-black text-slate-800 text-sm">{eqStr}</span>
-                          {item.tier && (
-                            <span className="text-[10px] font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
-                              T{item.tier}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {isError ? (
-                            <span className="text-[10px] font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200 flex items-center gap-1">
-                              🔴 Needs Accuracy
-                            </span>
-                          ) : (
-                            <span className="text-[10px] font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center gap-1">
-                              🟡 Building Speed
-                            </span>
-                          )}
-
-                          {item.latencyMs && (
-                            <span className="font-mono text-[10px] text-slate-400">
-                              {(item.latencyMs / 1000).toFixed(1)}s
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* MASTERY SNAPSHOT & SKILL PROFILE BREAKDOWN */}
+            {/* ADAPTIVE COMPETENCE SNAPSHOT & TOPIC MASTERY */}
             {(() => {
               const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, tier);
-              const { adaptiveCompetenceRating, masteryDistribution, skillStrandBreakdown } = adaptiveProfile;
+              const { adaptiveCompetenceRating, last30DaysGrowthData, masteryDistribution, skillStrandBreakdown } = adaptiveProfile;
 
               return (
                 <div className="space-y-4">
-                  {/* MASTERY SNAPSHOT */}
-                  <section className="bg-white p-5 rounded-2xl shadow-sm border-2 border-indigo-200 text-left space-y-3">
+                  {/* ADAPTIVE COMPETENCE RATING SNAPSHOT */}
+                  <section className="bg-white p-5 rounded-3xl shadow-sm border-2 border-indigo-200 text-left space-y-3">
                     <div className="flex items-center justify-between border-b border-indigo-100 pb-2">
-                      <div>
-                        <h3 className="text-lg font-black text-slate-800 tracking-tight">Kibo Math Mastery</h3>
-                        <p className="text-xs text-slate-500 font-semibold">A data-driven snapshot of competence and skill distribution.</p>
-                      </div>
-                      <span className="text-xs font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200 shadow-xs">
-                        Adaptive Profile
+                      <h2 className="text-lg font-black text-slate-800 tracking-tight">Current Math Mastery</h2>
+                      <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
+                        Adaptive Elo Rating
                       </span>
                     </div>
 
@@ -372,50 +284,59 @@ export default function ParentDashboardModal({
                           {adaptiveCompetenceRating}
                         </span>
                         <span className="block mt-1 text-[10px] font-black text-indigo-600 tracking-wider uppercase">
-                          CURRENT SKILL RATING
+                          CURRENT COMPETENCE RATING
                         </span>
                       </div>
 
-                      <div className="flex-1 w-full space-y-2.5">
-                        {/* Mastered Bar */}
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs font-black">
-                            <span className="text-emerald-700">🟢 Mastered</span>
-                            <span className="text-slate-700">{masteryDistribution.mastered}%</span>
-                          </div>
-                          <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden border border-slate-300/40">
-                            <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${masteryDistribution.mastered}%` }} />
-                          </div>
-                        </div>
-
-                        {/* Practicing Bar */}
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs font-black">
-                            <span className="text-amber-700">🟡 Practicing</span>
-                            <span className="text-slate-700">{masteryDistribution.practicing}%</span>
-                          </div>
-                          <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden border border-slate-300/40">
-                            <div className="bg-amber-400 h-full rounded-full transition-all duration-500" style={{ width: `${masteryDistribution.practicing}%` }} />
-                          </div>
-                        </div>
-
-                        {/* Challenged Bar */}
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs font-black">
-                            <span className="text-rose-700">🔴 Challenged</span>
-                            <span className="text-slate-700">{masteryDistribution.challenged}%</span>
-                          </div>
-                          <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden border border-slate-300/40">
-                            <div className="bg-rose-500 h-full rounded-full transition-all duration-500" style={{ width: `${masteryDistribution.challenged}%` }} />
-                          </div>
+                      <div className="flex-1 text-xs text-slate-700 leading-relaxed font-medium space-y-1.5">
+                        <p>
+                          Kibo’s adaptive algorithm has identified your child is proficient at a <strong>Rating {adaptiveCompetenceRating}</strong> level, successfully tackling multi-digit operations while regression-reviewing challenged facts in real time.
+                        </p>
+                        <div className="flex items-center gap-3 pt-1 text-[11px] font-bold">
+                          <span className="text-emerald-700">🟢 {masteryDistribution.mastered}% Mastered</span>
+                          <span className="text-amber-700">🟡 {masteryDistribution.practicing}% Practicing</span>
+                          <span className="text-rose-700">🔴 {masteryDistribution.challenged}% Review</span>
                         </div>
                       </div>
                     </div>
                   </section>
 
-                  {/* SKILL PROFILE BREAKDOWN */}
+                  {/* 30-DAY GROWTH CURVE VISUALIZATION */}
+                  <section className="bg-white border-2 border-indigo-100 rounded-2xl p-4 text-left space-y-2 shadow-xs">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <h3 className="font-black text-xs text-slate-800 flex items-center gap-1.5">
+                        <span>📈</span> 30-Day Mastery Growth Trajectory
+                      </h3>
+                      <span className="text-[10px] font-extrabold text-indigo-600">
+                        +{adaptiveCompetenceRating - (last30DaysGrowthData[0]?.rating || 1000)} pts gained
+                      </span>
+                    </div>
+
+                    <div className="flex items-end justify-between gap-3 h-24 pt-4 pb-1 px-2 border-b border-slate-100">
+                      {last30DaysGrowthData.map((pt, idx) => {
+                        const minRating = 900;
+                        const maxRating = 1300;
+                        const heightPct = Math.min(100, Math.max(25, Math.round(((pt.rating - minRating) / (maxRating - minRating)) * 100)));
+
+                        return (
+                          <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                            <span className="text-[9px] font-black text-indigo-700 opacity-80">
+                              {pt.rating}
+                            </span>
+                            <div
+                              className="w-full max-w-[32px] bg-gradient-to-t from-indigo-600 to-purple-500 rounded-t-lg transition-all duration-500 shadow-xs"
+                              style={{ height: `${heightPct}%` }}
+                            />
+                            <span className="text-[9px] font-extrabold text-slate-500 mt-0.5">{pt.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+
+                  {/* MATH TOPICS & COMPETENCE STRANDS */}
                   <section className="text-left space-y-3">
-                    <h3 className="text-base font-extrabold text-slate-800">Detailed Skill Profile Strands</h3>
+                    <h3 className="text-base font-extrabold text-slate-800">Math Topics & Competence</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {Object.entries(skillStrandBreakdown).map(([strandName, data]) => {
                         const isMastered = data.status === 'Mastered';
@@ -443,13 +364,14 @@ export default function ParentDashboardModal({
                             </div>
 
                             <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs font-bold">
-                              <span className="text-slate-500">Strand Rating:</span>
+                              <span className="text-slate-500">Topic Rating:</span>
                               <span className="text-indigo-700 font-black">{data.rating} pts ({data.accuracy}% Acc)</span>
                             </div>
 
-                            {data.challengedSkills && data.challengedSkills.length > 0 && (
-                              <div className="bg-rose-50 border border-rose-200 rounded-xl p-2 text-[10px] font-semibold text-rose-900">
-                                🎯 Target Review: {data.challengedSkills.join(', ')}
+                            {data.challengedFacts && data.challengedFacts.length > 0 && (
+                              <div className="bg-rose-50 border border-rose-200 rounded-xl p-2 text-[10px] font-semibold text-rose-900 flex items-center justify-between">
+                                <span>🎯 Challenged Facts:</span>
+                                <strong className="font-mono text-rose-950 font-black">{data.challengedFacts.join(', ')}</strong>
                               </div>
                             )}
                           </div>
