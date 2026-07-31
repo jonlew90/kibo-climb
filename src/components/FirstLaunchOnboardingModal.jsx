@@ -6,7 +6,9 @@ import { soundFx } from '../utils/audio';
 export default function FirstLaunchOnboardingModal({
   isOpen,
   equippedItems = [],
-  onStartAdaptiveClimb
+  onStartAdaptiveClimb = () => {},
+  onStartPlacementTest,
+  onStartAtTier1
 }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -29,7 +31,9 @@ export default function FirstLaunchOnboardingModal({
 
   const handleStart = () => {
     soundFx.playVictory();
-    onStartAdaptiveClimb();
+    if (typeof onStartAdaptiveClimb === 'function') onStartAdaptiveClimb();
+    else if (typeof onStartAtTier1 === 'function') onStartAtTier1();
+    else if (typeof onStartPlacementTest === 'function') onStartPlacementTest();
   };
 
   return (

@@ -1579,13 +1579,7 @@ export default function App() {
         </main>
       )}
 
-      {/* FIRST LAUNCH ONBOARDING PLACEMENT MODAL */}
-      <FirstLaunchOnboardingModal
-        isOpen={showFirstLaunchOnboardingModal}
-        equippedItems={equippedItems}
-        onStartPlacementTest={handleStartPlacementFromOnboarding}
-        onStartAtTier1={handleStartAtTier1FromOnboarding}
-      />
+
 
       {/* TEST-OUT PASS CELEBRATION MODAL */}
       {showTestOutPassModal && (
