@@ -26,6 +26,8 @@ export default function AdaptiveSessionView({
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [sessionQuestionIndex, setSessionQuestionIndex] = useState(1);
   const [correctCount, setCorrectCount] = useState(0);
+  const [blockCorrectCount, setBlockCorrectCount] = useState(0);
+  const [blockSparksEarned, setBlockSparksEarned] = useState(0);
   const [currentTier, setCurrentTier] = useState(userTier);
   const [inputVal, setInputVal] = useState('');
   const [isShaking, setIsShaking] = useState(false);
@@ -125,7 +127,7 @@ export default function AdaptiveSessionView({
     // Update streak states
     setInSessionStreak(evalResult.nextInSessionStreak);
     setInSessionIncorrectStreak(evalResult.nextInSessionIncorrectStreak);
-
+    let blockEarned = 0;
     if (isCorrect) {
       if (evalResult.nextInSessionStreak >= 3) {
         KiboAudioManager.playStreakSFX();
@@ -137,10 +139,12 @@ export default function AdaptiveSessionView({
       setTimeout(() => setMascotState('idle'), 700);
 
       setCorrectCount((prev) => prev + 1);
+      setBlockCorrectCount((prev) => prev + 1);
       const baseEarned = evalResult.totalSparksEarned;
-      const earned = isDoubleSparksActive ? baseEarned * 2 : baseEarned;
-      setSessionSparksEarned((prev) => prev + earned);
-      if (onAwardSparks) onAwardSparks(earned);
+      blockEarned = isDoubleSparksActive ? baseEarned * 2 : baseEarned;
+      setSessionSparksEarned((prev) => prev + blockEarned);
+      setBlockSparksEarned((prev) => prev + blockEarned);
+      if (onAwardSparks) onAwardSparks(blockEarned);
 
       setCompetenceRank(evalResult.nextCompetenceRank);
       setShowFrustrationCard(false);
@@ -246,7 +250,7 @@ export default function AdaptiveSessionView({
     const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
 
     // Auto-detect instant match
-    if (normUserAns === normTargetAns || isNumMatch) {
+    if (isCorrect) {
       processAnswerEvaluation(newInput);
       return;
     }
@@ -280,6 +284,13 @@ export default function AdaptiveSessionView({
     soundFx.playKeyTap();
     setInputVal('');
   };
+
+  const handleSubmit = () => {
+    if (!inputVal) return;
+    processAnswerEvaluation(inputVal);
+  };
+
+  const currentQuestionNum = ((sessionQuestionIndex - 1) % 12) + 1;
 
   // Physical Desktop Keyboard Listener
   useEffect(() => {
@@ -315,8 +326,7 @@ export default function AdaptiveSessionView({
   const lastBannerTypeRef = useRef('success');
   const lastBannerTextRef = useRef('');
 
-  if (feedbackBanner) {
-    lastBannerTypeRef.current = feedbackBanner.type || 'success';
+  if (feedbackBanner && feedbackBanner.text) {
     lastBannerTextRef.current = feedbackBanner.text || '';
   }
 
@@ -325,8 +335,10 @@ export default function AdaptiveSessionView({
       {/* TIMED KIBO BREAK OVERLAY */}
       {showBreakOverlay && (
         <KiboBreakOverlay
-          problemsSolved={questionsAnswered}
-          sparksEarned={sessionSparksEarned}
+          correctCount={blockCorrectCount}
+          totalCount={12}
+          streak={inSessionStreak}
+          sparksEarned={blockSparksEarned}
           competenceRating={competenceRank}
           equippedItems={equippedItems}
           onOpenWorkshop={() => {
@@ -336,6 +348,8 @@ export default function AdaptiveSessionView({
           onResumeClimb={() => {
             setShowBreakOverlay(false);
             setSessionQuestionIndex(1);
+            setBlockCorrectCount(0);
+            setBlockSparksEarned(0);
           }}
         />
       )}
@@ -348,7 +362,7 @@ export default function AdaptiveSessionView({
       >
         <div
           className={`py-2 px-4 rounded-2xl text-center font-extrabold text-xs sm:text-sm shadow-xl backdrop-blur-md border ${
-            lastBannerTypeRef.current === 'success'
+            feedbackBanner?.type === 'success'
               ? 'bg-emerald-500/95 text-white border-emerald-400 shadow-emerald-950/20'
               : 'bg-rose-500/95 text-white border-rose-400 shadow-rose-950/20'
           }`}
@@ -390,7 +404,7 @@ export default function AdaptiveSessionView({
         >
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-              ⚡ Question #{sessionQuestionIndex} of 12
+              ⚡ Question #{currentQuestionNum} of 12
             </span>
             {inSessionStreak >= 3 && (
               <span className="text-[10px] font-black uppercase text-orange-700 bg-orange-100 px-2.5 py-0.5 rounded-full border border-orange-300 animate-pulse">

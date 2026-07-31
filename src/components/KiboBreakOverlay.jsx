@@ -3,7 +3,9 @@ import { Coffee, ShoppingBag, Play, Trophy, Zap, Flame } from 'lucide-react';
 import Mascot from './Mascot';
 
 export default function KiboBreakOverlay({
-  problemsSolved = 0,
+  correctCount = 12,
+  totalCount = 12,
+  streak = 0,
   sparksEarned = 0,
   competenceRating = 1000,
   equippedItems = [],
@@ -16,33 +18,33 @@ export default function KiboBreakOverlay({
         {/* Header Icon */}
         <div className="flex items-center justify-center gap-2 text-amber-800">
           <Coffee className="w-7 h-7 stroke-[2.5]" />
-          <h2 className="text-2xl font-black tracking-tight">Time for a Breather!</h2>
+          <h2 className="text-2xl font-black tracking-tight">Climb Block Complete!</h2>
         </div>
 
         {/* Resting Mascot */}
         <div className="flex justify-center py-1">
-          <Mascot mood="happy" equipped={equippedItems} className="w-28 h-28 filter drop-shadow-xl animate-bounce" />
+          <Mascot mood="happy" state="break" equipped={equippedItems} className="w-28 h-28 filter drop-shadow-xl animate-bounce" />
         </div>
 
         <p className="text-sm font-bold text-slate-700 leading-relaxed px-2">
-          "Great climbing! Taking a quick break helps your brain build long-term memory." 🏔️✨
+          "Great climbing! Taking a quick breather helps your brain build long-term memory." 🏔️✨
         </p>
 
         {/* Mini Session Stats */}
         <div className="grid grid-cols-3 gap-2 bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center">
           <div>
-            <span className="text-[10px] font-black uppercase text-slate-500 block">Solved</span>
-            <span className="text-lg font-black text-slate-800">{problemsSolved}</span>
+            <span className="text-[10px] font-black uppercase text-slate-500 block">Correct / Total</span>
+            <span className="text-base font-black text-emerald-600">{correctCount} / {totalCount}</span>
+          </div>
+
+          <div>
+            <span className="text-[10px] font-black uppercase text-purple-900 block">Streak</span>
+            <span className="text-base font-black text-purple-700">🔥 {streak} Qs</span>
           </div>
 
           <div>
             <span className="text-[10px] font-black uppercase text-amber-900 block">Earned</span>
-            <span className="text-lg font-black text-amber-600">+{sparksEarned} ⚡</span>
-          </div>
-
-          <div>
-            <span className="text-[10px] font-black uppercase text-purple-900 block">Rating</span>
-            <span className="text-lg font-black text-purple-900">{competenceRating}</span>
+            <span className="text-base font-black text-amber-600">+{sparksEarned} ⚡</span>
           </div>
         </div>
 
