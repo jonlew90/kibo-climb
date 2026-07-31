@@ -418,18 +418,18 @@ export default function ParentDashboardModal({
               );
             })()}
 
-            {/* Sprint Performance History */}
+            {/* Climb Performance History */}
             <div className="space-y-1.5 text-left">
               <span className="text-xs uppercase font-extrabold text-slate-600 tracking-wider block">
-                Recent Sprints Mastery (Last 3)
+                Recent Climb Mastery (Last 3)
               </span>
               {sprintHistory.length === 0 ? (
-                <p className="text-xs text-slate-400 font-medium italic text-center py-2">No completed sprints recorded yet.</p>
+                <p className="text-xs text-slate-400 font-medium italic text-center py-2">No completed climb sessions recorded yet.</p>
               ) : (
                 <div className="space-y-1.5">
                   {sprintHistory.map((rec, idx) => (
                     <div key={idx} className="flex justify-between items-center bg-white border border-slate-200 rounded-xl p-2.5 text-xs">
-                      <span className="font-bold text-slate-700">Sprint #{sprintHistory.length - idx}</span>
+                      <span className="font-bold text-slate-700">Climb #{sprintHistory.length - idx}</span>
                       <div className="flex items-center gap-3">
                         <span className="font-extrabold text-purple-700">{rec.accuracyPct}% Accuracy</span>
                         <span className="font-mono text-slate-500">{rec.avgLatencySec}s avg</span>
@@ -478,12 +478,12 @@ export default function ParentDashboardModal({
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
               <div className="flex items-center gap-2 text-purple-700">
                 <Clock className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Sprint Display Preferences</h4>
+                <h4 className="font-extrabold text-sm text-slate-800">Climb Display Preferences</h4>
               </div>
 
               <div className="flex items-center justify-between bg-white border border-slate-200 p-2.5 rounded-xl">
                 <div>
-                  <span className="font-extrabold text-xs text-slate-800 block">Hide Live Timer During Sprints</span>
+                  <span className="font-extrabold text-xs text-slate-800 block">Hide Live Timer During Climbs</span>
                   <span className="text-[10px] text-slate-500 font-medium">Zen Mode: hides ticking clock during questions</span>
                 </div>
                 <button

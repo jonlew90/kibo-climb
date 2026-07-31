@@ -20,7 +20,7 @@ export const BADGES_CATALOG = [
   {
     id: 'streak_7',
     title: '7-Day Trail Flame',
-    description: 'Completed daily sprints for 7 days in a row! Unstoppable momentum.',
+    description: 'Completed daily climbs for 7 days in a row! Unstoppable momentum.',
     category: 'consistency',
     icon: '💥',
     reqText: 'Reach a 7-Day Streak'

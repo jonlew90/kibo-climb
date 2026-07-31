@@ -1211,7 +1211,7 @@ export default function App() {
 
           <div className="space-y-1">
             <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-              Ready for your Math Sprint?
+              Ready for your Math Climb?
             </h1>
             <div className="flex items-center justify-center gap-2">
               <span className="text-purple-700 font-extrabold text-xs bg-purple-50 px-3 py-1 rounded-xl border border-purple-200 flex items-center gap-1">
@@ -1254,7 +1254,7 @@ export default function App() {
               className="btn-3d-orange w-full py-3.5 text-xl sm:text-2xl rounded-2xl flex items-center justify-center gap-3 group shadow-bouncy-orange"
             >
               <Play className="w-6 h-6 fill-white stroke-[2.5] group-hover:scale-110 transition-transform" />
-              Start Sprint
+              Start Climb
             </button>
 
             <button
@@ -1432,7 +1432,7 @@ export default function App() {
 
           <div className="space-y-0.5">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
-              {isBossMode ? 'Boss Challenge Complete! ⚡' : 'Sprint Complete! 🎉'}
+              {isBossMode ? 'Boss Challenge Complete! ⚡' : 'Climb Complete! 🎉'}
             </h2>
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 p-2.5 rounded-2xl max-w-sm mx-auto space-y-1 shadow-sm">
               <p className="text-amber-900 font-extrabold text-sm flex items-center justify-center gap-1.5">

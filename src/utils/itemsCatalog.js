@@ -39,7 +39,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'rare',
     isConsumable: true,
     icon: '🛡️',
-    description: 'Absorbs 1 incorrect answer per sprint without breaking your accuracy streak.'
+    description: 'Absorbs 1 incorrect answer per adaptive session without breaking your accuracy streak.'
   },
   {
     id: 'double_coin_potion',
@@ -49,7 +49,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'rare',
     isConsumable: true,
     icon: '🧪',
-    description: 'Doubles all Kibo coins earned from your next completed sprint.'
+    description: 'Doubles all Kibo coins earned from your next completed adaptive session.'
   },
   {
     id: 'streak_saver',
@@ -58,8 +58,18 @@ export const WORKSHOP_ITEMS = [
     cost: 75,
     rarity: 'rare',
     isConsumable: true,
-    icon: '🔥',
-    description: 'Protects your daily activity streak from resetting if you miss a day of practice.'
+    icon: '🛡️',
+    description: 'Protects 1 missed calendar day of climbing from resetting your daily streak.'
+  },
+  {
+    id: 'badge_booster',
+    name: 'Badge Booster',
+    category: 'powerups',
+    cost: 60,
+    rarity: 'uncommon',
+    isConsumable: true,
+    icon: '🚀',
+    description: 'Accelerates competence rank gains during active climbs.'
   },
 
   // HEADWEAR (Slot: headwear)
