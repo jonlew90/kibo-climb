@@ -34,46 +34,54 @@ export const BADGES_CATALOG = [
     reqText: 'Reach a 30-Day Streak'
   },
 
-  // SKILL MASTERY BADGES
+  // COMPETENCE RANK MILESTONE BADGES
   {
-    id: 'master_9s',
-    title: '10-Finger Magic',
-    description: 'Mastered 9s multiplication using Kibo’s 10-Finger trick!',
+    id: 'rank_200',
+    title: 'Novice Scholar',
+    description: 'Reached Competence Rank 200+ in Adaptive Mastery Sessions!',
+    category: 'skill_mastery',
+    icon: '🌱',
+    reqText: 'Reach Competence Rank 200'
+  },
+  {
+    id: 'rank_500',
+    title: 'Mathlete Champion',
+    description: 'Reached Competence Rank 500+ across all adaptive math strands!',
+    category: 'skill_mastery',
+    icon: '🏆',
+    reqText: 'Reach Competence Rank 500'
+  },
+  {
+    id: 'rank_1000',
+    title: 'Summit Master',
+    description: 'Reached Competence Rank 1000+! A true Mount Kibo legend.',
+    category: 'skill_mastery',
+    icon: '🏔️',
+    reqText: 'Reach Competence Rank 1000'
+  },
+  {
+    id: 'master_addition',
+    title: 'Addition & Subtraction Ace',
+    description: 'Achieved 80%+ accuracy across single and multi-digit addition & subtraction!',
     category: 'skill_mastery',
     icon: '🖐️',
-    reqText: 'Reach Tier 4 Multiplication'
+    reqText: 'Master Addition & Subtraction Strand'
   },
   {
-    id: 'clock_master',
-    title: 'Clock Master',
-    description: 'Mastered reading clock times and elapsed time jumps on the trail.',
-    category: 'skill_mastery',
-    icon: '⏰',
-    reqText: 'Complete Tier 2 & Tier 6 Time Problems'
-  },
-  {
-    id: 'coin_counter',
-    title: 'Trail Merchant',
-    description: 'Mastered coin counting and making change under $1.00 and $10.00.',
-    category: 'skill_mastery',
-    icon: '🪙',
-    reqText: 'Complete Tier 3 & Tier 6 Money Problems'
-  },
-  {
-    id: 'summit_sync',
-    title: 'Summit Sync (LCM/GCF)',
-    description: 'Found Least Common Multiples and Greatest Common Factors like a pro!',
-    category: 'skill_mastery',
-    icon: '📐',
-    reqText: 'Master Tier 7 Number Theory'
-  },
-  {
-    id: 'exponent_peak',
-    title: 'Power Peak',
-    description: 'Mastered exponents, powers of 10, and square roots at Kibo Summit!',
+    id: 'master_multiplication',
+    title: 'Multiplication Master',
+    description: 'Achieved 80%+ accuracy across multiplication and division facts!',
     category: 'skill_mastery',
     icon: '⚡',
-    reqText: 'Reach Tier 8 Summit Peak'
+    reqText: 'Master Multiplication Strand'
+  },
+  {
+    id: 'master_time_money',
+    title: 'Trail Merchant & Timekeeper',
+    description: 'Mastered clock reading and money change calculations!',
+    category: 'skill_mastery',
+    icon: '🪙',
+    reqText: 'Master Money & Time Strand'
   },
 
   // WORKSHOP BADGES

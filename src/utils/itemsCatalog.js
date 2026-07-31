@@ -109,7 +109,8 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 350,
     rarity: 'epic',
-    description: 'Classic leather safari explorer hat for peak summits.'
+    requiredRank: 500,
+    description: 'Classic leather safari explorer hat for peak summits. Requires Competence Rank 500.'
   },
   {
     id: 'crown',
@@ -117,7 +118,8 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 1500,
     rarity: 'legendary',
-    description: 'Royal jeweled golden crown for math royalty!'
+    requiredRank: 1000,
+    description: 'Royal jeweled golden crown for math royalty! Requires Competence Rank 1000.'
   },
 
   // GEAR (Slot: gear)
@@ -143,7 +145,8 @@ export const WORKSHOP_ITEMS = [
     category: 'gear',
     cost: 250,
     rarity: 'epic',
-    description: 'Futuristic jetpack with fiery thrusters!'
+    requiredRank: 400,
+    description: 'Futuristic jetpack with fiery thrusters! Requires Competence Rank 400.'
   },
   {
     id: 'lantern',
@@ -177,7 +180,8 @@ export const WORKSHOP_ITEMS = [
     category: 'outfits',
     cost: 300,
     rarity: 'epic',
-    description: 'Cozy knitted mountain scarf for high altitude winds.'
+    requiredRank: 300,
+    description: 'Cozy knitted mountain scarf for high altitude winds. Requires Competence Rank 300.'
   },
 
   // COMPANIONS & EFFECTS (Slot: effects)
