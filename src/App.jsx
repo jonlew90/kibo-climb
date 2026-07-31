@@ -15,7 +15,7 @@ import PlacementRevealModal from './components/PlacementRevealModal';
 import MicroHintCard from './components/MicroHintCard';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import SprintResultsModal from './components/SprintResultsModal';
-import BadgesModal from './components/BadgesModal';
+import AdaptiveSessionView from './components/AdaptiveSessionView';
 import { evaluateBadges } from './utils/badgeManager';
 import { generateProblems } from './utils/mathGenerator';
 import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS, calculateStars } from './utils/curriculum';
@@ -27,11 +27,11 @@ import { pluralize, normalizeTimeAnswer } from './utils/formatters';
 import { storageService } from './services/storageService';
 
 export default function App() {
-  // App State: 'launch' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
-  const [appState, setAppState] = useState('world_map');
+  // App State: 'adaptive_session' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
+  const [appState, setAppState] = useState('adaptive_session');
   const [isMuted, setIsMuted] = useState(false);
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
-  const [workshopOriginState, setWorkshopOriginState] = useState('world_map');
+  const [workshopOriginState, setWorkshopOriginState] = useState('adaptive_session');
 
   const handleOpenWorkshop = (overrideOrigin = null) => {
     soundFx.playKeyTap();
@@ -1136,20 +1136,19 @@ export default function App() {
         </header>
       )}
 
-      {/* WORLD MAP SCREEN */}
-      {appState === 'world_map' && (
-        <WorldMap
-          currentTier={tier}
-          unlockedTiers={unlockedTiers}
-          tierMasteryPercent={tierMasteryPercent}
+      {/* PURE ADAPTIVE MASTERY SESSION VIEW */}
+      {appState === 'adaptive_session' && (
+        <AdaptiveSessionView
           equippedItems={equippedItems}
-          sprintHistory={sprintHistory}
-          unlockedBadges={unlockedBadges}
-          onSelectTierAndStartSprint={handleSelectTierFromMap}
-          onStartTestOut={startTestOutSprint}
-          onStartPlacementTest={startPlacementDiagnostic}
-          onBackToHome={() => setAppState('world_map')}
-          onOpenWorkshop={() => handleOpenWorkshop('world_map')}
+          sparks={sparks}
+          streak={streak}
+          userTier={tier}
+          onAwardSparks={(earned) => {
+            const updated = sparks + earned;
+            setSparks(updated);
+            localStorage.setItem('kibo_math_sparks', updated.toString());
+          }}
+          onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
         />
       )}
 
