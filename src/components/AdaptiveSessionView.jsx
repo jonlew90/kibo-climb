@@ -85,10 +85,10 @@ export default function AdaptiveSessionView({
     replenishQueueIfNeeded(nextIdx);
     setCurrentIndex(nextIdx);
 
-    // Auto-dismiss banner after 2s
+    // Auto-dismiss banner after 1.5s
     setTimeout(() => {
       setFeedbackBanner(null);
-    }, 2000);
+    }, 1500);
   };
 
   const handleDigitInput = (val) => {
@@ -125,18 +125,22 @@ export default function AdaptiveSessionView({
 
   return (
     <div className="w-full flex-1 flex flex-col items-center justify-between py-2 px-3 max-w-lg mx-auto relative animate-pop">
-      {/* FEEDBACK NOTIFICATION BANNER (FLOATING OVERLAY - ZERO SHIFT & ZERO CLIPPING) */}
-      {feedbackBanner && (
+      {/* MECHANICAL TRANSIENT FEEDBACK TOAST (SLIDES DOWN FROM TOP HUD) */}
+      <div
+        className={`absolute inset-x-4 z-50 transition-all duration-300 pointer-events-none ${
+          feedbackBanner ? 'top-0 opacity-100 scale-100' : '-top-12 opacity-0 scale-95'
+        }`}
+      >
         <div
-          className={`absolute top-2 inset-x-3 z-30 mx-auto max-w-xs pointer-events-none animate-pop shadow-xl rounded-2xl py-2.5 px-3 text-xs font-black text-center border backdrop-blur-md transition-all ${
-            feedbackBanner.type === 'success'
-              ? 'bg-emerald-600/95 text-white border-emerald-400 shadow-emerald-950/30'
-              : 'bg-rose-600/95 text-white border-rose-400 shadow-rose-950/30'
+          className={`py-2 px-4 rounded-2xl text-center font-extrabold text-xs sm:text-sm shadow-xl backdrop-blur-md border ${
+            feedbackBanner?.type === 'success'
+              ? 'bg-emerald-500/95 text-white border-emerald-400 shadow-emerald-950/20'
+              : 'bg-rose-500/95 text-white border-rose-400 shadow-rose-950/20'
           }`}
         >
-          {feedbackBanner.text}
+          {feedbackBanner?.text}
         </div>
-      )}
+      </div>
 
       {/* MASCOT & PROBLEM CARD CONTAINER */}
       <div className="w-full flex-1 flex flex-col items-center justify-center space-y-4 my-auto">
