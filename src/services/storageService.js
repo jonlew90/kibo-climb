@@ -23,6 +23,7 @@ const DEFAULT_PROFILE = {
     streak: 1,
     streakShields: 1,
     sparks: 50,
+    totalProblemsSolved: 0,
     lastSprintDate: null,
     practiceQueue: [],
     sprintHistory: [],

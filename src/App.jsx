@@ -159,6 +159,17 @@ export default function App() {
     return storageService.getShopState().equippedItems;
   });
 
+  // Persistent Lifetime Problems Solved Tracker
+  const [totalProblemsSolved, setTotalProblemsSolved] = useState(() => {
+    return storageService.getUserData().totalProblemsSolved || 0;
+  });
+
+  const handleIncrementLifetimeProblems = () => {
+    const nextTotal = (totalProblemsSolved || 0) + 1;
+    setTotalProblemsSolved(nextTotal);
+    storageService.saveUserData({ totalProblemsSolved: nextTotal });
+  };
+
   // Persistent Consumable Power-Ups Inventory
   const [consumables, setConsumables] = useState(() => {
     const saved = storageService.getUserData().consumables;
@@ -1150,6 +1161,7 @@ export default function App() {
           userTier={tier}
           isFTUX={showFirstLaunchOnboardingModal}
           isDoubleSparksActive={isDoubleSparksActive}
+          onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onAwardSparks={(earned) => {
             const updated = sparks + earned;
             setSparks(updated);
@@ -1706,6 +1718,7 @@ export default function App() {
         preferences={preferences}
         onUpdatePreferences={handleUpdatePreferences}
         unlockedBadges={unlockedBadges}
+        totalProblemsSolved={totalProblemsSolved}
       />
 
       {/* TRAIL BADGES SHOWCASE MODAL */}

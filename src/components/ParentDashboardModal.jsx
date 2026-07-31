@@ -33,7 +33,8 @@ export default function ParentDashboardModal({
   onUpdatePracticeDays,
   preferences = { hideSprintTimer: false },
   onUpdatePreferences,
-  unlockedBadges = []
+  unlockedBadges = [],
+  totalProblemsSolved = 0
 }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'settings'
 
@@ -204,23 +205,29 @@ export default function ParentDashboardModal({
         {activeTab === 'overview' && (
           <div className="flex-1 overflow-y-auto pr-1 space-y-4 my-1">
             {/* Quick Metrics */}
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-2">
                 <Flame className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
-                <span className="text-[10px] uppercase font-black text-amber-900 block">Streak</span>
-                <span className="text-xl font-black text-slate-800">{pluralize(streak, 'Day')}</span>
+                <span className="text-[9px] uppercase font-black text-amber-900 block">Streak</span>
+                <span className="text-lg font-black text-slate-800">{pluralize(streak, 'Day')}</span>
               </div>
 
-              <div className="bg-amber-100/60 border border-amber-300 rounded-2xl p-2.5">
+              <div className="bg-amber-100/60 border border-amber-300 rounded-2xl p-2">
                 <Zap className="w-5 h-5 text-amber-600 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
-                <span className="text-[10px] uppercase font-black text-amber-900 block">Sparks</span>
-                <span className="text-xl font-black text-slate-800">{sparks} ⚡</span>
+                <span className="text-[9px] uppercase font-black text-amber-900 block">Sparks</span>
+                <span className="text-lg font-black text-slate-800">{sparks} ⚡</span>
               </div>
 
-              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-2.5">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
+                <span className="text-[9px] uppercase font-black text-emerald-900 block">Total Solved</span>
+                <span className="text-lg font-black text-slate-800">{totalProblemsSolved}</span>
+              </div>
+
+              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-2">
                 <Award className="w-5 h-5 text-purple-600 mx-auto mb-1 stroke-[2.5]" />
-                <span className="text-[10px] uppercase font-black text-purple-900 block">Skill Rating</span>
-                <span className="text-xl font-black text-purple-900">{calculateAdaptiveCompetenceProfile(sprintHistory, tier).adaptiveCompetenceRating} pts</span>
+                <span className="text-[9px] uppercase font-black text-purple-900 block">Skill Rating</span>
+                <span className="text-lg font-black text-purple-900">{calculateAdaptiveCompetenceProfile(sprintHistory, tier).adaptiveCompetenceRating} pts</span>
               </div>
             </div>
 

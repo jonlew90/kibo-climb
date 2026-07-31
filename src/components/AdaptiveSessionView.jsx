@@ -15,12 +15,14 @@ export default function AdaptiveSessionView({
   streak = 1,
   onAwardSparks,
   onOpenWorkshop,
+  onIncrementLifetimeProblems,
   userTier = 1,
   isFTUX = false,
   isDoubleSparksActive = false
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => (isFTUX ? 1000 : userTier * 100));
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
+  const [sessionQuestionIndex, setSessionQuestionIndex] = useState(1);
   const [correctCount, setCorrectCount] = useState(0);
   const [currentTier, setCurrentTier] = useState(userTier);
   const [inputVal, setInputVal] = useState('');
@@ -140,6 +142,8 @@ export default function AdaptiveSessionView({
 
     const nextQuestionsAnswered = questionsAnswered + 1;
     setQuestionsAnswered(nextQuestionsAnswered);
+    setSessionQuestionIndex((prev) => prev + 1);
+    if (onIncrementLifetimeProblems) onIncrementLifetimeProblems();
     setInputVal('');
 
     // Trigger Kibo Break Overlay every 12 problems solved
@@ -279,7 +283,10 @@ export default function AdaptiveSessionView({
             setShowBreakOverlay(false);
             if (onOpenWorkshop) onOpenWorkshop();
           }}
-          onResumeClimb={() => setShowBreakOverlay(false)}
+          onResumeClimb={() => {
+            setShowBreakOverlay(false);
+            setSessionQuestionIndex(1);
+          }}
         />
       )}
 
@@ -333,7 +340,7 @@ export default function AdaptiveSessionView({
         >
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-              ⚡ Question #{questionsAnswered + 1}
+              ⚡ Question #{sessionQuestionIndex} of 12
             </span>
             {inSessionStreak >= 3 && (
               <span className="text-[10px] font-black uppercase text-orange-700 bg-orange-100 px-2.5 py-0.5 rounded-full border border-orange-300 animate-pulse">
