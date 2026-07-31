@@ -121,19 +121,19 @@ export const BADGES_CATALOG = [
   // RESILIENCE & ADAPTIVE STREAK BADGES
   {
     id: 'adaptive_streak_20',
-    title: 'Adaptive Streak Master',
-    description: 'Answered 20 consecutive adaptive math problems correctly in a single session!',
+    title: 'Flawless Climb Streak',
+    description: 'Achieved a 12-question perfect streak in a single climb block!',
     category: 'resilience',
     icon: '🎯',
-    reqText: 'Achieve a 20-Question Correct Streak'
+    reqText: 'Achieve a 12-Question Correct Streak'
   },
   {
     id: 'competence_surge',
     title: 'Competence Surge',
-    description: 'Gained +50 Competence Rank points in a single adaptive climb session!',
+    description: 'Gained +40 Competence Rank points in a single climb block!',
     category: 'resilience',
     icon: '🚀',
-    reqText: 'Gain +50 Competence Rank in a Session'
+    reqText: 'Gain +40 Competence Rank in a Climb Block'
   },
   {
     id: 'speed_demon',

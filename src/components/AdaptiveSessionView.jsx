@@ -9,6 +9,8 @@ import { normalizeTimeAnswer, normalizeDecimal } from '../utils/formatters';
 import { evaluateAdaptiveAttempt } from '../utils/AdaptiveEngine';
 import KiboBreakOverlay from './KiboBreakOverlay';
 import { KiboAudioManager } from '../utils/KiboAudioManager';
+import { evaluateBadges } from '../utils/badgeManager';
+import { storageService } from '../services/storageService';
 
 export default function AdaptiveSessionView({
   equippedItems = [],
@@ -28,6 +30,7 @@ export default function AdaptiveSessionView({
   const [correctCount, setCorrectCount] = useState(0);
   const [blockCorrectCount, setBlockCorrectCount] = useState(0);
   const [blockSparksEarned, setBlockSparksEarned] = useState(0);
+  const [blockRatingGain, setBlockRatingGain] = useState(0);
   const [currentTier, setCurrentTier] = useState(userTier);
   const [inputVal, setInputVal] = useState('');
   const [isShaking, setIsShaking] = useState(false);
@@ -170,6 +173,17 @@ export default function AdaptiveSessionView({
         setShowFrustrationCard(true);
       }
     }
+
+    const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
+    setBlockRatingGain(nextBlockRatingGain);
+
+    const activeUserData = storageService.getUserData();
+    evaluateBadges({
+      ...activeUserData,
+      inSessionStreak: evalResult.nextInSessionStreak,
+      competenceRank: evalResult.nextCompetenceRank,
+      blockRatingGain: nextBlockRatingGain
+    });
 
     const nextQuestionsAnswered = questionsAnswered + 1;
     setQuestionsAnswered(nextQuestionsAnswered);

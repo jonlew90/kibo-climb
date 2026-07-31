@@ -61,13 +61,22 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         break;
 
       case 'adaptive_streak_20':
-        if (userState.maxSessionStreak >= 20 || lastSprintResult?.correctStreak >= 20) {
+        if (
+          (userState.inSessionStreak || 0) >= 12 ||
+          (userState.maxSessionStreak || 0) >= 12 ||
+          (userState.cumulativeCorrectStreak || 0) >= 12 ||
+          (lastSprintResult?.correctStreak || 0) >= 12
+        ) {
           unlocked = true;
         }
         break;
 
       case 'competence_surge':
-        if ((userState.competenceRankGain || 0) >= 50 || (userState.competenceRank || 1000) >= 1050) {
+        if (
+          (userState.blockRatingGain || 0) >= 40 ||
+          (userState.competenceRankGain || 0) >= 40 ||
+          (lastSprintResult?.rankGain || 0) >= 40
+        ) {
           unlocked = true;
         }
         break;
