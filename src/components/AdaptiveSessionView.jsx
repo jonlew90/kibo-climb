@@ -7,6 +7,7 @@ import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
 import { normalizeTimeAnswer, normalizeDecimal } from '../utils/formatters';
 import { evaluateAdaptiveAttempt } from '../utils/AdaptiveEngine';
+import KiboBreakOverlay from './KiboBreakOverlay';
 
 export default function AdaptiveSessionView({
   equippedItems = [],
@@ -25,6 +26,12 @@ export default function AdaptiveSessionView({
   const [isShaking, setIsShaking] = useState(false);
   const [feedbackBanner, setFeedbackBanner] = useState(null);
   const [sessionSparksEarned, setSessionSparksEarned] = useState(0);
+
+  // In-session Streaks & Overlays
+  const [inSessionStreak, setInSessionStreak] = useState(0);
+  const [inSessionIncorrectStreak, setInSessionIncorrectStreak] = useState(0);
+  const [showBreakOverlay, setShowBreakOverlay] = useState(false);
+  const [showFrustrationCard, setShowFrustrationCard] = useState(false);
 
   // Generate adaptive problem queue for active tier
   const [problemQueue, setProblemQueue] = useState(() => generateProblems(5, isFTUX ? 1 : userTier, []));
@@ -91,20 +98,29 @@ export default function AdaptiveSessionView({
     const evalResult = evaluateAdaptiveAttempt({
       isCorrect,
       latencyMs,
-      currentCompetenceRank: competenceRank
+      currentCompetenceRank: competenceRank,
+      inSessionStreak,
+      inSessionIncorrectStreak
     });
+
+    // Update streak states
+    setInSessionStreak(evalResult.nextInSessionStreak);
+    setInSessionIncorrectStreak(evalResult.nextInSessionIncorrectStreak);
 
     if (isCorrect) {
       soundFx.playCorrect();
       setCorrectCount((prev) => prev + 1);
-      const earned = 2;
+      const earned = evalResult.totalSparksEarned;
       setSessionSparksEarned((prev) => prev + earned);
       if (onAwardSparks) onAwardSparks(earned);
 
       setCompetenceRank(evalResult.nextCompetenceRank);
+      setShowFrustrationCard(false);
+
+      const toastMsg = evalResult.streakBannerText || `Correct! Competence Rank +${evalResult.rankDelta} ⭐ (${evalResult.fluencyLabel})`;
       setFeedbackBanner({
         type: 'success',
-        text: `Correct! Competence Rank +${evalResult.rankDelta} ⭐ (${evalResult.fluencyLabel})`
+        text: toastMsg
       });
     } else {
       soundFx.playIncorrect();
@@ -113,19 +129,28 @@ export default function AdaptiveSessionView({
 
       setCompetenceRank(evalResult.nextCompetenceRank);
       setFeedbackBanner({ type: 'error', text: `Incorrect! Answer was ${normTargetAns}` });
+
+      if (evalResult.triggerFrustrationCircuit) {
+        setShowFrustrationCard(true);
+      }
     }
 
-    setQuestionsAnswered((prev) => prev + 1);
+    const nextQuestionsAnswered = questionsAnswered + 1;
+    setQuestionsAnswered(nextQuestionsAnswered);
     setInputVal('');
+
+    // Trigger Kibo Break Overlay every 12 problems solved
+    if (nextQuestionsAnswered > 0 && nextQuestionsAnswered % 12 === 0) {
+      setShowBreakOverlay(true);
+    }
 
     const nextIdx = currentIndex + 1;
     replenishQueueIfNeeded(nextIdx);
     setCurrentIndex(nextIdx);
 
-    // Auto-dismiss banner after 1.5s
     setTimeout(() => {
       setFeedbackBanner(null);
-    }, 1500);
+    }, 1800);
   };
 
   const handleDigitInput = (val) => {
@@ -240,6 +265,21 @@ export default function AdaptiveSessionView({
 
   return (
     <div className="w-full flex-1 flex flex-col items-center justify-between py-2 px-3 max-w-lg mx-auto relative animate-pop">
+      {/* TIMED KIBO BREAK OVERLAY */}
+      {showBreakOverlay && (
+        <KiboBreakOverlay
+          problemsSolved={questionsAnswered}
+          sparksEarned={sessionSparksEarned}
+          competenceRating={competenceRank}
+          equippedItems={equippedItems}
+          onOpenWorkshop={() => {
+            setShowBreakOverlay(false);
+            if (onOpenWorkshop) onOpenWorkshop();
+          }}
+          onResumeClimb={() => setShowBreakOverlay(false)}
+        />
+      )}
+
       {/* MECHANICAL TRANSIENT FEEDBACK TOAST (SLIDES DOWN FROM TOP HUD) */}
       <div
         className={`absolute inset-x-4 z-50 transition-all duration-300 pointer-events-none ${
@@ -268,6 +308,20 @@ export default function AdaptiveSessionView({
           <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} equipped={equippedItems} className="w-28 h-28 sm:w-32 sm:h-32 filter drop-shadow-xl" />
         </div>
 
+        {/* FRUSTRATION CIRCUIT BREAKER SUPPORT CARD */}
+        {showFrustrationCard && (
+          <div className="w-full bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3 text-center space-y-1 animate-pop">
+            <p className="text-xs font-black text-indigo-900">
+              💪 Don't give up! Kibo is right here with you. Take your time!
+            </p>
+            {currentProblem.hint && (
+              <p className="text-[11px] font-bold text-indigo-700 italic">
+                {currentProblem.hint}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* ACTIVE ADAPTIVE MATH QUESTION CARD */}
         <div
           className={`w-full bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3 transition-transform ${
@@ -278,6 +332,11 @@ export default function AdaptiveSessionView({
             <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
               ⚡ Question #{questionsAnswered + 1}
             </span>
+            {inSessionStreak >= 3 && (
+              <span className="text-[10px] font-black uppercase text-orange-700 bg-orange-100 px-2.5 py-0.5 rounded-full border border-orange-300 animate-pulse">
+                🔥 {inSessionStreak} Streak ({inSessionStreak >= 5 ? '1.5x ⚡' : '+5 ⚡'})
+              </span>
+            )}
             <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs">
               <Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />
               Competence Rank: {competenceRank}

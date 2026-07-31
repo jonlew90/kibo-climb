@@ -15,7 +15,9 @@
 export function evaluateAdaptiveAttempt({
   isCorrect,
   latencyMs = 0,
-  currentCompetenceRank = 1000
+  currentCompetenceRank = 1000,
+  inSessionStreak = 0,
+  inSessionIncorrectStreak = 0
 }) {
   const responseTimeSec = latencyMs / 1000;
 
@@ -26,14 +28,42 @@ export function evaluateAdaptiveAttempt({
   const isFluent = isCorrect && responseTimeSec < 3.0;
   const fluencyLabel = isFluent ? 'High Fluency (<3s)' : responseTimeSec < 6.0 ? 'Steady Recall' : 'Deliberate Solve';
 
-  // 3. Competence Rank delta (100% driven by correctness, not response time)
+  // 3. In-Session Correct & Incorrect Streak calculations
+  const nextInSessionStreak = isCorrect ? inSessionStreak + 1 : 0;
+  const nextInSessionIncorrectStreak = isCorrect ? 0 : inSessionIncorrectStreak + 1;
+
+  // 4. In-Session Bonus Multipliers & Rewards
+  let baseSparks = isCorrect ? 2 : 0;
+  let bonusSparks = 0;
+  let multiplier = 1.0;
+  let streakBannerText = null;
+
+  if (isCorrect) {
+    if (nextInSessionStreak >= 5) {
+      multiplier = 1.5;
+    }
+    if (nextInSessionStreak === 3) {
+      bonusSparks = 5;
+      streakBannerText = '🔥 On Fire! 3 In-a-Row (+5 Bonus Sparks!)';
+    } else if (nextInSessionStreak === 5) {
+      bonusSparks = 5;
+      streakBannerText = '⚡ 5 Streak! 1.5x Coin Multiplier Activated!';
+    } else if (nextInSessionStreak === 10) {
+      bonusSparks = 10;
+      streakBannerText = '🏆 Precision Streak! 10 Correct in a Row!';
+    }
+  }
+
+  const totalSparksEarned = Math.round(baseSparks * multiplier) + bonusSparks;
+
+  // 5. Competence Rank delta (100% driven by correctness, not response time)
   let rankDelta = 0;
 
   if (isOutlierGuess && !isCorrect) {
     // Ignore rapid accidental button mash from regression
     rankDelta = 0;
   } else if (isCorrect) {
-    // Full +10 rating increase for any correct answer, even 20s+ slow answers
+    // Full +10 rating increase for any correct answer
     rankDelta = 10;
   } else {
     // -5 regression for incorrect answers
@@ -49,6 +79,12 @@ export function evaluateAdaptiveAttempt({
     fluencyLabel,
     responseTimeSec,
     rankDelta,
-    nextCompetenceRank
+    nextCompetenceRank,
+    nextInSessionStreak,
+    nextInSessionIncorrectStreak,
+    totalSparksEarned,
+    multiplier,
+    streakBannerText,
+    triggerFrustrationCircuit: nextInSessionIncorrectStreak >= 3
   };
 }
