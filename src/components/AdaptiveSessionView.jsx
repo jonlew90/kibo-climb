@@ -123,6 +123,14 @@ export default function AdaptiveSessionView({
     setInputVal('');
   };
 
+  const lastBannerTypeRef = useRef('success');
+  const lastBannerTextRef = useRef('');
+
+  if (feedbackBanner) {
+    lastBannerTypeRef.current = feedbackBanner.type || 'success';
+    lastBannerTextRef.current = feedbackBanner.text || '';
+  }
+
   return (
     <div className="w-full flex-1 flex flex-col items-center justify-between py-2 px-3 max-w-lg mx-auto relative animate-pop">
       {/* MECHANICAL TRANSIENT FEEDBACK TOAST (SLIDES DOWN FROM TOP HUD) */}
@@ -133,12 +141,12 @@ export default function AdaptiveSessionView({
       >
         <div
           className={`py-2 px-4 rounded-2xl text-center font-extrabold text-xs sm:text-sm shadow-xl backdrop-blur-md border ${
-            feedbackBanner?.type === 'success'
+            lastBannerTypeRef.current === 'success'
               ? 'bg-emerald-500/95 text-white border-emerald-400 shadow-emerald-950/20'
               : 'bg-rose-500/95 text-white border-rose-400 shadow-rose-950/20'
           }`}
         >
-          {feedbackBanner?.text}
+          {feedbackBanner?.text || lastBannerTextRef.current}
         </div>
       </div>
 
