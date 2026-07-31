@@ -183,14 +183,22 @@ export default function AdaptiveSessionView({
     let newInput = inputVal;
 
     if (val === '.' || val === ':') {
-      if (!newInput.includes(val)) {
-        newInput = newInput + val;
+      if (val === '.') {
+        if (!newInput || newInput === '0') {
+          newInput = '0.';
+        } else if (!newInput.includes('.')) {
+          newInput = newInput + '.';
+        }
+      } else if (val === ':') {
+        if (!newInput.includes(':')) {
+          newInput = newInput + ':';
+        }
       }
     } else {
       if (isMoneyQuestion && targetStr.includes('.')) {
         if (!newInput || newInput === '0') {
           newInput = '0.' + val;
-        } else if (newInput === '0.' && val !== '.') {
+        } else if ((newInput === '0.' || newInput === '.') && val !== '.') {
           newInput = '0.' + val;
         } else {
           newInput = newInput + val;
@@ -208,7 +216,11 @@ export default function AdaptiveSessionView({
           newInput = newInput + val;
         }
       } else {
-        newInput = newInput + val;
+        if (newInput === '.') {
+          newInput = '0.' + val;
+        } else {
+          newInput = newInput + val;
+        }
       }
     }
 
