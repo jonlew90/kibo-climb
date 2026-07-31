@@ -5,26 +5,8 @@ import ItemThumbnail from './ItemThumbnail';
 import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, getItemsByCategory, getItemById } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 
-export function sortShopItems(items, userSparks, sortMode, unlockedItems = [], equippedItems = []) {
-  const rarityRank = { legendary: 1, epic: 2, rare: 3, common: 4 };
-
-  // Filter for 'inventory' mode (owned/unlocked items only)
-  let filteredItems = items;
-  if (sortMode === 'inventory') {
-    filteredItems = items.filter((item) => item.isConsumable || unlockedItems.includes(item.id));
-  }
-
-  return [...filteredItems].sort((a, b) => {
-    if (sortMode === 'rarity') {
-      return (rarityRank[a.rarity] || 5) - (rarityRank[b.rarity] || 5);
-    }
-    if (sortMode === 'inventory') {
-      const aEquipped = equippedItems.includes(a.id);
-      const bEquipped = equippedItems.includes(b.id);
-      if (aEquipped !== bEquipped) return aEquipped ? -1 : 1;
-      return a.cost - b.cost;
-    }
-    // Default: 'recommended' (Affordable First)
+export function sortShopItems(items, userSparks, unlockedItems = [], equippedItems = []) {
+  return [...items].sort((a, b) => {
     const aEquipped = equippedItems.includes(a.id);
     const bEquipped = equippedItems.includes(b.id);
     if (aEquipped !== bEquipped) return aEquipped ? -1 : 1;
@@ -62,7 +44,6 @@ export default function WorkshopModal({
   };
 
   const [activeCategory, setActiveCategory] = useState('powerups');
-  const [sortMode, setSortMode] = useState('recommended'); // 'recommended' | 'rarity' | 'inventory'
   const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
 
   const categoryScrollRef = useRef(null);
@@ -343,25 +324,11 @@ export default function WorkshopModal({
               </button>
             )}
           </div>
-
-          {/* Sort Selector Dropdown */}
-          <select
-            value={sortMode}
-            onChange={(e) => {
-              soundFx.playKeyTap();
-              setSortMode(e.target.value);
-            }}
-            className="py-1.5 px-2 bg-slate-100 border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-800 focus:outline-none cursor-pointer shrink-0"
-          >
-            <option value="recommended">Recommended 💡</option>
-            <option value="rarity">Highest Rarity 💎</option>
-            <option value="inventory">My Inventory 🎒</option>
-          </select>
         </div>
 
         {/* Catalog Items Grid */}
         <div className="flex-1 overflow-y-auto space-y-3 pr-1 py-1">
-          {sortShopItems(currentCategoryItems, sparks, sortMode, unlockedItems, equippedItems).map((item) => {
+          {sortShopItems(currentCategoryItems, sparks, unlockedItems, equippedItems).map((item) => {
             const isConsumable = item.isConsumable;
             const shieldOwned = consumables?.shieldCount ?? 1;
             const isShieldFull = isConsumable && item.id === 'kibo_shield' && shieldOwned >= 2;
