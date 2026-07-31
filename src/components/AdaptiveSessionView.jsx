@@ -8,6 +8,7 @@ import { classifyLatency } from '../utils/latencyEngine';
 import { normalizeTimeAnswer, normalizeDecimal } from '../utils/formatters';
 import { evaluateAdaptiveAttempt } from '../utils/AdaptiveEngine';
 import KiboBreakOverlay from './KiboBreakOverlay';
+import { KiboAudioManager } from '../utils/KiboAudioManager';
 
 export default function AdaptiveSessionView({
   equippedItems = [],
@@ -29,6 +30,9 @@ export default function AdaptiveSessionView({
   const [isShaking, setIsShaking] = useState(false);
   const [feedbackBanner, setFeedbackBanner] = useState(null);
   const [sessionSparksEarned, setSessionSparksEarned] = useState(0);
+
+  // Character Animation & Audio State
+  const [mascotState, setMascotState] = useState('idle');
 
   // In-session Streaks & Overlays
   const [inSessionStreak, setInSessionStreak] = useState(0);
@@ -111,7 +115,15 @@ export default function AdaptiveSessionView({
     setInSessionIncorrectStreak(evalResult.nextInSessionIncorrectStreak);
 
     if (isCorrect) {
-      soundFx.playCorrect();
+      if (evalResult.nextInSessionStreak >= 3) {
+        KiboAudioManager.playStreakSFX();
+        setMascotState('streak');
+      } else {
+        KiboAudioManager.playCorrectSFX();
+        setMascotState('correct');
+      }
+      setTimeout(() => setMascotState('idle'), 700);
+
       setCorrectCount((prev) => prev + 1);
       const baseEarned = evalResult.totalSparksEarned;
       const earned = isDoubleSparksActive ? baseEarned * 2 : baseEarned;
@@ -128,7 +140,10 @@ export default function AdaptiveSessionView({
         text: toastMsg
       });
     } else {
-      soundFx.playIncorrect();
+      KiboAudioManager.playIncorrectSFX();
+      setMascotState('incorrect');
+      setTimeout(() => setMascotState('idle'), 500);
+
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 400);
 
@@ -148,6 +163,8 @@ export default function AdaptiveSessionView({
 
     // Trigger Kibo Break Overlay every 12 problems solved
     if (nextQuestionsAnswered > 0 && nextQuestionsAnswered % 12 === 0) {
+      KiboAudioManager.playBreakSFX();
+      setMascotState('break');
       setShowBreakOverlay(true);
     }
 
@@ -315,7 +332,7 @@ export default function AdaptiveSessionView({
           className="cursor-pointer hover:scale-105 transition-transform"
           title="Tap Kibo to customize in Workshop!"
         >
-          <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} equipped={equippedItems} className="w-28 h-28 sm:w-32 sm:h-32 filter drop-shadow-xl" />
+          <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-28 h-28 sm:w-32 sm:h-32 filter drop-shadow-xl" />
         </div>
 
         {/* FRUSTRATION CIRCUIT BREAKER SUPPORT CARD */}

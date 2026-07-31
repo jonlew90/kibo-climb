@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { soundFx } from '../utils/audio';
 
-export default function Mascot({ mood = 'happy', equipped = [], className = "w-36 h-36" }) {
+export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], className = "w-36 h-36" }) {
   // Equipped item checks
   const isEquipped = (itemId) => equipped.includes(itemId);
 
@@ -87,11 +87,22 @@ export default function Mascot({ mood = 'happy', equipped = [], className = "w-3
     }, 700);
   };
 
+  const stateAnimClass =
+    state === 'correct'
+      ? 'animate-bounce scale-110'
+      : state === 'streak'
+      ? 'animate-pulse scale-110 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]'
+      : state === 'incorrect'
+      ? 'animate-shake rotate-6'
+      : state === 'break'
+      ? 'scale-95 opacity-90'
+      : 'animate-float';
+
   return (
     <div
       onClick={handleTapMascot}
       onTouchStart={handleTapMascot}
-      className={`relative flex items-center justify-center rounded-3xl overflow-hidden cursor-pointer select-none transition-all duration-300 ${className}`}
+      className={`relative flex items-center justify-center rounded-3xl overflow-hidden cursor-pointer select-none transition-all duration-300 ${stateAnimClass} ${className}`}
     >
       {/* 1. BACKGROUND THEME LAYER */}
       {hasCosmicBg && (
