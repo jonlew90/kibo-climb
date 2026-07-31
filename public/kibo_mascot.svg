@@ -1,0 +1,136 @@
+<svg viewBox="0 0 200 200" width="400" height="400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Volumetric 3D Clay Body Gradients -->
+    <radialGradient id="kibo3DBodyGrad" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFAA68" />
+      <stop offset="45%" stop-color="#FF7026" />
+      <stop offset="85%" stop-color="#D94100" />
+      <stop offset="100%" stop-color="#9E2A00" />
+    </radialGradient>
+
+    <radialGradient id="kibo3DSnoutGrad" cx="40%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="60%" stop-color="#FFF3EA" />
+      <stop offset="100%" stop-color="#F5D0B6" />
+    </radialGradient>
+
+    <radialGradient id="kibo3DEarInner" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFD3BD" />
+      <stop offset="70%" stop-color="#FF9B6C" />
+      <stop offset="100%" stop-color="#D65B27" />
+    </radialGradient>
+
+    <!-- Striped 3D Tail Gradient -->
+    <linearGradient id="tailGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF8A48" />
+      <stop offset="50%" stop-color="#E04D00" />
+      <stop offset="100%" stop-color="#872200" />
+    </linearGradient>
+
+    <!-- Tactile 3D Soft Clay Shadows -->
+    <filter id="clayShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#3F1400" flood-opacity="0.35" />
+    </filter>
+
+    <filter id="claySpecular" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- KIBO BASE MASCOT CONTAINER -->
+  <g id="kibo-avatar-container" style="transform-origin: 100px 140px;">
+    <!-- 1. TAIL -->
+    <g id="layer-back">
+      <path
+        d="M 145 130 C 185 130 195 90 170 65 C 150 45 130 75 140 105 Z"
+        fill="url(#tailGrad)"
+        stroke="#6E1B00"
+        stroke-width="3.5"
+        filter="url(#clayShadow)"
+      />
+      <path d="M 165 75 Q 175 88 158 98" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.8" />
+      <path d="M 158 105 Q 172 115 150 124" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.8" />
+    </g>
+
+    <!-- 2. BODY & HEAD -->
+    <g id="layer-body">
+      <!-- Left Ear -->
+      <g filter="url(#clayShadow)">
+        <path
+          d="M 60 65 Q 25 35 48 20 Q 75 35 68 62"
+          fill="url(#kibo3DBodyGrad)"
+          stroke="#7A2000"
+          stroke-width="4"
+        />
+        <path
+          d="M 54 55 Q 38 38 48 30 Q 62 38 58 53"
+          fill="url(#kibo3DEarInner)"
+        />
+      </g>
+
+      <!-- Right Ear -->
+      <g filter="url(#clayShadow)">
+        <path
+          d="M 140 65 Q 175 35 152 20 Q 125 35 132 62"
+          fill="url(#kibo3DBodyGrad)"
+          stroke="#7A2000"
+          stroke-width="4"
+        />
+        <path
+          d="M 146 55 Q 162 38 152 30 Q 138 38 142 53"
+          fill="url(#kibo3DEarInner)"
+        />
+      </g>
+
+      <!-- Main Volumetric Body/Head Sphere -->
+      <g filter="url(#clayShadow)">
+        <ellipse
+          cx="100"
+          cy="110"
+          rx="64"
+          ry="60"
+          fill="url(#kibo3DBodyGrad)"
+          stroke="#6E1B00"
+          stroke-width="4.5"
+        />
+        <ellipse cx="92" cy="74" rx="38" ry="16" fill="#FFFFFF" fill-opacity="0.25" />
+      </g>
+
+      <!-- Tactile 3D Muzzle -->
+      <g filter="url(#claySpecular)">
+        <ellipse
+          cx="100"
+          cy="124"
+          rx="36"
+          ry="26"
+          fill="url(#kibo3DSnoutGrad)"
+          stroke="#D6A785"
+          stroke-width="2.5"
+        />
+        <ellipse cx="98" cy="106" rx="20" ry="8" fill="#FFFFFF" fill-opacity="0.4" />
+
+        <!-- Cute 3D Button Nose -->
+        <ellipse cx="100" cy="112" rx="8" ry="6" fill="#2D1204" />
+        <ellipse cx="98" cy="110" rx="3" ry="2" fill="#FFFFFF" fill-opacity="0.8" />
+      </g>
+
+      <!-- Expressive 3D Eyes -->
+      <g>
+        <ellipse cx="78" cy="98" rx="8" ry="11" fill="#2B1507" />
+        <ellipse cx="76" cy="94" rx="3.5" ry="4.5" fill="#FFFFFF" />
+        <ellipse cx="80" cy="102" rx="1.5" ry="1.5" fill="#FFFFFF" opacity="0.8" />
+
+        <ellipse cx="122" cy="98" rx="8" ry="11" fill="#2B1507" />
+        <ellipse cx="120" cy="94" rx="3.5" ry="4.5" fill="#FFFFFF" />
+        <ellipse cx="124" cy="102" rx="1.5" ry="1.5" fill="#FFFFFF" opacity="0.8" />
+      </g>
+
+      <!-- Happy Smile -->
+      <path d="M 92 124 Q 100 134 108 124" stroke="#2B1507" stroke-width="3" stroke-linecap="round" fill="none" />
+
+      <!-- Soft Rosy Cheeks -->
+      <ellipse cx="64" cy="112" rx="7" ry="4.5" fill="#FF4D6D" opacity="0.45" />
+      <ellipse cx="136" cy="112" rx="7" ry="4.5" fill="#FF4D6D" opacity="0.45" />
+    </g>
+  </g>
+</svg>
