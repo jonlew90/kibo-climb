@@ -70,26 +70,26 @@ export const BADGES_CATALOG = [
   {
     id: 'master_addition',
     title: 'Addition & Subtraction Ace',
-    description: 'Achieved 80%+ accuracy across single and multi-digit addition & subtraction!',
+    description: 'Mastered Sums & Differences to 20 by reaching Competence Rating 1150+!',
     category: 'skill_mastery',
     icon: '🖐️',
-    reqText: 'Master Addition & Subtraction Strand'
+    reqText: 'Reach Competence Rating 1150'
   },
   {
     id: 'master_multiplication',
     title: 'Multiplication Master',
-    description: 'Achieved 80%+ accuracy across multiplication and division facts!',
+    description: 'Mastered Multiplication Foundations & Facts by reaching Competence Rating 1450+!',
     category: 'skill_mastery',
     icon: '⚡',
-    reqText: 'Master Multiplication Strand'
+    reqText: 'Reach Competence Rating 1450'
   },
   {
     id: 'master_time_money',
     title: 'Trail Merchant & Timekeeper',
-    description: 'Mastered clock reading and money change calculations!',
+    description: 'Mastered Money & Elapsed Time Calculations by reaching Competence Rating 1750+!',
     category: 'skill_mastery',
     icon: '🪙',
-    reqText: 'Master Money & Time Strand'
+    reqText: 'Reach Competence Rating 1750'
   },
 
   // WORKSHOP BADGES

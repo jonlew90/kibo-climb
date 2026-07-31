@@ -45,9 +45,13 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         break;
 
       case 'master_addition':
+        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || 1000) >= 1150;
+        break;
       case 'master_multiplication':
+        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || 1000) >= 1450;
+        break;
       case 'master_time_money':
-        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || 1000) >= 1300;
+        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || 1000) >= 1750;
         break;
 
       case 'sparks_100':
