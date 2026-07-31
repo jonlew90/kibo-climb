@@ -489,10 +489,19 @@ export default function App() {
           submitAnswer(nextInputStr, currentProblem);
         }
       } else {
-        // Standard Numeric / Multi-Digit Problems (e.g. 8 + 5 = 13, targetLength = 2)
-        const targetLength = targetAnsStr.length > 0 ? targetAnsStr.length : 1;
+        // Standard Numeric / Multi-Digit / Money Problems (ignoring leading "0." or "." so decimal is not counted as a digit)
+        const extractDigits = (str) => {
+          let s = String(str || '').replace('$', '').replace('¢', '').trim();
+          if (s.startsWith('0.')) s = s.slice(2);
+          else if (s.startsWith('.')) s = s.slice(1);
+          else s = s.replace('.', '');
+          return s.replace(/\D/g, '');
+        };
 
-        if (nextInputStr.length >= targetLength) {
+        const userDigits = extractDigits(nextInputStr);
+        const targetDigits = extractDigits(targetAnsStr);
+
+        if (userDigits.length > 0 && targetDigits.length > 0 && userDigits.length >= targetDigits.length) {
           submitAnswer(nextInputStr, currentProblem);
         }
       }

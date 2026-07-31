@@ -242,10 +242,19 @@ export default function AdaptiveSessionView({
       return;
     }
 
-    // Auto-detect max length mismatch
-    const normTargetClean = normTargetAns.replace(/[^a-zA-Z0-9]/g, '');
-    const normUserClean = normUserAns.replace(/[^a-zA-Z0-9]/g, '');
-    if (normUserClean.length >= normTargetClean.length) {
+    // Auto-detect max length mismatch (excluding leading "0." or "." so decimal is not counted as a digit)
+    const extractDigits = (str) => {
+      let s = String(str || '').replace('$', '').replace('¢', '').trim();
+      if (s.startsWith('0.')) s = s.slice(2);
+      else if (s.startsWith('.')) s = s.slice(1);
+      else s = s.replace('.', '');
+      return s.replace(/\D/g, '');
+    };
+
+    const userDigits = extractDigits(newInput);
+    const targetDigits = extractDigits(targetStr);
+
+    if (userDigits.length > 0 && targetDigits.length > 0 && userDigits.length >= targetDigits.length) {
       processAnswerEvaluation(newInput);
       return;
     }
