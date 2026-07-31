@@ -107,8 +107,8 @@ export default function WorldMap({
 
   return (
     <div className="w-full flex-1 flex flex-col items-center justify-between py-3 px-2 sm:px-4 max-w-lg mx-auto animate-pop relative">
-      {/* Top Bar with Test Out Button */}
-      <div className="w-full flex items-center justify-between pb-2 border-b-2 border-slate-100 shrink-0">
+      {/* Sticky Header with Frosted Glass & Test Out Button */}
+      <header className="sticky top-0 z-50 w-full flex items-center justify-between px-3 py-2.5 bg-white/95 backdrop-blur-md border-b-2 border-slate-100/90 shadow-sm shrink-0 rounded-2xl mb-1.5 transition-all duration-300">
         <div className="flex items-center gap-2">
           <img
             src="/logo.png"
@@ -131,7 +131,7 @@ export default function WorldMap({
           <Target className="w-4 h-4 text-amber-900 fill-amber-300 stroke-[2.5]" />
           <span>Test Out 🎯</span>
         </button>
-      </div>
+      </header>
 
       {/* Winding Mount Kibo Trail Container */}
       <div className="w-full flex-1 overflow-y-auto pr-1 my-2 py-4 relative flex flex-col items-center">
