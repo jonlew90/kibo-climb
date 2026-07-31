@@ -1,15 +1,24 @@
-// Adaptive Engine for Kibo Math: pure correctness-driven difficulty scaling + secondary fluency tracking
+import { getKFactor, getProbeTargetTier } from './SkillTreeConfig.js';
+
+/**
+ * Determines whether a probe question should be served.
+ * - Triggered during Provisional Phase (totalProblemsSolved < 15) when consecutive correct answers >= 3.
+ */
+export function shouldTriggerProbeQuestion({ totalProblemsSolved = 0, inSessionStreak = 0 }) {
+  return totalProblemsSolved < 15 && inSessionStreak >= 3;
+}
 
 /**
  * Evaluates an adaptive math question attempt.
- * - Competence Rank progression/regression (+/- Elo) is driven 100% strictly by correctness.
- * - Response time is evaluated purely as a secondary "Fluency Score" metadata metric.
- * - Button mashing outliers (<0.8s) are ignored from streak/rank gains.
+ * - Dynamic K-Factor volatility scaling:
+ *   - Provisional (<15 problems solved): K = 60
+ *   - Calibration (15–49 problems solved): K = 32
+ *   - Established (>=50 problems solved): K = 16
+ * - Probe Question Triggers:
+ *   - Correct Probe: Teleports user directly (+120 points) into higher topic's rating band.
+ *   - Incorrect Probe: Applies minimal penalty (-10 points) without harsh regression.
  * 
  * @param {Object} params
- * @param {boolean} params.isCorrect - Whether the user's answer was correct
- * @param {number} params.latencyMs - Response time in milliseconds
- * @param {number} params.currentCompetenceRank - Current Elo/Competence rating
  * @returns {Object} Evaluation results
  */
 export function evaluateAdaptiveAttempt({
@@ -17,22 +26,28 @@ export function evaluateAdaptiveAttempt({
   latencyMs = 0,
   currentCompetenceRank = 1000,
   inSessionStreak = 0,
-  inSessionIncorrectStreak = 0
+  inSessionIncorrectStreak = 0,
+  totalProblemsSolved = 0,
+  isProbeQuestion = false
 }) {
   const responseTimeSec = latencyMs / 1000;
 
-  // 1. Check for rapid button mashing outlier (< 0.8 seconds)
+  // 1. Dynamic K-Factor & Phase Determination
+  const kFactor = getKFactor(totalProblemsSolved);
+  const phase = totalProblemsSolved < 15 ? 'Provisional' : totalProblemsSolved < 50 ? 'Calibration' : 'Established';
+
+  // 2. Check for rapid button mashing outlier (< 0.8 seconds)
   const isOutlierGuess = responseTimeSec < 0.8;
 
-  // 2. Secondary Response Time Fluency Score Metadata
+  // 3. Secondary Response Time Fluency Score Metadata
   const isFluent = isCorrect && responseTimeSec < 3.0;
   const fluencyLabel = isFluent ? 'High Fluency (<3s)' : responseTimeSec < 6.0 ? 'Steady Recall' : 'Deliberate Solve';
 
-  // 3. In-Session Correct & Incorrect Streak calculations
+  // 4. In-Session Correct & Incorrect Streak calculations
   const nextInSessionStreak = isCorrect ? inSessionStreak + 1 : 0;
   const nextInSessionIncorrectStreak = isCorrect ? 0 : inSessionIncorrectStreak + 1;
 
-  // 4. In-Session Bonus Multipliers & Rewards
+  // 5. In-Session Bonus Multipliers & Rewards
   let baseSparks = isCorrect ? 2 : 0;
   let bonusSparks = 0;
   let multiplier = 1.0;
@@ -42,7 +57,10 @@ export function evaluateAdaptiveAttempt({
     if (nextInSessionStreak >= 5) {
       multiplier = 1.5;
     }
-    if (nextInSessionStreak === 3) {
+    if (isProbeQuestion) {
+      bonusSparks = 10;
+      streakBannerText = '🚀 Probe Mastered! Skill Jump Unlocked (+120 Competence!)';
+    } else if (nextInSessionStreak === 3) {
       bonusSparks = 5;
       streakBannerText = '🔥 On Fire! 3 In-a-Row (+5 Bonus Sparks!)';
     } else if (nextInSessionStreak === 5) {
@@ -56,18 +74,26 @@ export function evaluateAdaptiveAttempt({
 
   const totalSparksEarned = Math.round(baseSparks * multiplier) + bonusSparks;
 
-  // 5. Competence Rank delta (100% driven by correctness, not response time)
+  // 6. Competence Rank delta (Driven 100% strictly by correctness + dynamic K-Factor)
   let rankDelta = 0;
 
   if (isOutlierGuess && !isCorrect) {
     // Ignore rapid accidental button mash from regression
     rankDelta = 0;
+  } else if (isProbeQuestion) {
+    if (isCorrect) {
+      // Immediate rating teleport (+120 points) into higher skill strand
+      rankDelta = 120;
+    } else {
+      // Minimal rating penalty for probe challenge miss
+      rankDelta = -10;
+    }
   } else if (isCorrect) {
-    // Full +10 rating increase for any correct answer
-    rankDelta = 10;
+    // Standard gain scaled by K-Factor (e.g. +30 for Provisional K=60, +16 for Calibration K=32, +8 for Established K=16)
+    rankDelta = Math.round(kFactor * 0.5);
   } else {
-    // -5 regression for incorrect answers
-    rankDelta = -5;
+    // Standard loss scaled by K-Factor (e.g. -21 for Provisional, -11 for Calibration, -5 for Established)
+    rankDelta = Math.round(-kFactor * 0.35);
   }
 
   const nextCompetenceRank = Math.max(50, currentCompetenceRank + rankDelta);
@@ -76,6 +102,10 @@ export function evaluateAdaptiveAttempt({
     isCorrect,
     isFluent,
     isOutlierGuess,
+    isProbeQuestion,
+    isProbeSuccess: isProbeQuestion && isCorrect,
+    phase,
+    kFactor,
     fluencyLabel,
     responseTimeSec,
     rankDelta,

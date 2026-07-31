@@ -1186,6 +1186,7 @@ export default function App() {
           sparks={sparks}
           streak={streak}
           userTier={tier}
+          totalProblemsSolved={totalProblemsSolved}
           isFTUX={showFirstLaunchOnboardingModal}
           isDoubleSparksActive={isDoubleSparksActive}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}

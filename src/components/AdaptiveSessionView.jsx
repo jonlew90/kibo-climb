@@ -18,6 +18,7 @@ export default function AdaptiveSessionView({
   onOpenWorkshop,
   onIncrementLifetimeProblems,
   userTier = 1,
+  totalProblemsSolved = 0,
   isFTUX = false,
   isDoubleSparksActive = false
 }) {
@@ -107,7 +108,9 @@ export default function AdaptiveSessionView({
       latencyMs,
       currentCompetenceRank: competenceRank,
       inSessionStreak,
-      inSessionIncorrectStreak
+      inSessionIncorrectStreak,
+      totalProblemsSolved,
+      isProbeQuestion: !!currentProblem.isProbe
     });
 
     // Update streak states
