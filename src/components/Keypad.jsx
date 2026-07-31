@@ -94,11 +94,11 @@ export default function Keypad({
   const handleKeyClick = (keyVal) => {
     soundFx.playKeyTap();
     if (keyVal === 'backspace') {
-      onDelete();
+      handleDelete();
     } else if (keyVal === 'clear') {
-      onClear();
+      handleClear();
     } else {
-      onKeyPress(keyVal);
+      handleInputDigit(keyVal);
     }
   };
 
