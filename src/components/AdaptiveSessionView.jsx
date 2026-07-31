@@ -39,9 +39,19 @@ export default function AdaptiveSessionView({
     answerString: '20'
   };
 
+  const targetStr = (currentProblem.answerString || currentProblem.answer?.toString() || '');
+  const isMoneyQuestion = currentProblem.type === 'money' || currentProblem.requiresDecimal || targetStr.includes('.') || currentProblem.operatorSymbol === '🪙' || (currentProblem.displayString && (currentProblem.displayString.includes('$') || currentProblem.displayString.includes('¢') || currentProblem.displayString.includes('Change')));
+  const isTimeQuestion = currentProblem.type === 'time' || currentProblem.requiresColon || targetStr.includes(':') || currentProblem.operatorSymbol === '⏰' || (currentProblem.displayString && (currentProblem.displayString.includes('time') || currentProblem.displayString.includes('Hike started')));
+
   useEffect(() => {
     problemStartTimeRef.current = performance.now();
-  }, [currentIndex]);
+
+    if (isMoneyQuestion && targetStr.startsWith('0.')) {
+      setInputVal('0.');
+    } else {
+      setInputVal('');
+    }
+  }, [currentIndex, currentProblem, isMoneyQuestion, targetStr]);
 
   useEffect(() => {
     if (isFTUX) {
@@ -65,11 +75,16 @@ export default function AdaptiveSessionView({
   };
 
   const processAnswerEvaluation = (userAnsString) => {
-    if (!userAnsString.trim()) return;
+    if (!userAnsString || !userAnsString.trim()) return;
 
-    const normUserAns = normalizeTimeAnswer(userAnsString);
-    const normTargetAns = normalizeTimeAnswer(currentProblem.answerString || currentProblem.answer?.toString());
-    const isCorrect = normUserAns === normTargetAns || Number(userAnsString) === Number(currentProblem.answer);
+    const normUserAns = normalizeTimeAnswer(normalizeDecimal(userAnsString));
+    const normTargetAns = normalizeTimeAnswer(normalizeDecimal(currentProblem.answerString || currentProblem.answer?.toString()));
+
+    const userNum = Number(normalizeDecimal(userAnsString));
+    const targetNum = Number(normalizeDecimal(currentProblem.answerString || currentProblem.answer));
+    const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
+
+    const isCorrect = normUserAns === normTargetAns || isNumMatch;
 
     if (isCorrect) {
       soundFx.playCorrect();
@@ -106,19 +121,58 @@ export default function AdaptiveSessionView({
 
   const handleDigitInput = (val) => {
     soundFx.playKeyTap();
-    const newInput = (inputVal + val).trim();
 
-    const normUserAns = normalizeTimeAnswer(newInput);
-    const normTargetAns = normalizeTimeAnswer(currentProblem.answerString || currentProblem.answer?.toString());
+    let newInput = inputVal;
+
+    if (val === '.' || val === ':') {
+      if (!newInput.includes(val)) {
+        newInput = newInput + val;
+      }
+    } else {
+      if (isMoneyQuestion && targetStr.includes('.')) {
+        if (!newInput || newInput === '0') {
+          newInput = '0.' + val;
+        } else if (newInput === '0.' && val !== '.') {
+          newInput = '0.' + val;
+        } else {
+          newInput = newInput + val;
+        }
+      } else if (isTimeQuestion && targetStr.includes(':')) {
+        const parts = targetStr.split(':');
+        const hourDigits = parts[0] ? parts[0].length : 1;
+        const rawDigits = (newInput + val).replace(/[^0-9]/g, '');
+
+        if (rawDigits.length >= hourDigits && !newInput.includes(':')) {
+          const hours = rawDigits.slice(0, hourDigits);
+          const mins = rawDigits.slice(hourDigits);
+          newInput = `${hours}:${mins}`;
+        } else {
+          newInput = newInput + val;
+        }
+      } else {
+        newInput = newInput + val;
+      }
+    }
+
+    newInput = newInput.trim();
+
+    const normUserAns = normalizeTimeAnswer(normalizeDecimal(newInput));
+    const normTargetAns = normalizeTimeAnswer(normalizeDecimal(targetStr));
+
+    const userNum = Number(normalizeDecimal(newInput));
+    const targetNum = Number(normalizeDecimal(targetStr));
+    const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
 
     // Auto-detect instant match
-    if (normUserAns === normTargetAns || Number(newInput) === Number(currentProblem.answer)) {
+    if (normUserAns === normTargetAns || isNumMatch) {
       processAnswerEvaluation(newInput);
       return;
     }
 
     // Auto-detect max length mismatch
-    if (newInput.length >= normTargetAns.length) {
+    const normTargetClean = normTargetAns.replace(/[^a-zA-Z0-9]/g, '');
+    const normUserClean = normUserAns.replace(/[^a-zA-Z0-9]/g, '');
+    if (normUserClean.length >= normTargetClean.length) {
       processAnswerEvaluation(newInput);
       return;
     }
@@ -202,13 +256,18 @@ export default function AdaptiveSessionView({
         </div>
       </div>
 
-      {/* NUMERIC KEYPAD (AUTO-DETECTING) */}
+      {/* NUMERIC KEYPAD (AUTO-DETECTING & TYPE AWARE) */}
       <div className="w-full max-w-sm mt-3 shrink-0">
         <Keypad
           onDigit={handleDigitInput}
           onDelete={handleDeleteDigit}
           onClear={handleClearInput}
           onSubmit={() => processAnswerEvaluation(inputVal)}
+          problemType={currentProblem.type || (isMoneyQuestion ? 'money' : isTimeQuestion ? 'time' : '')}
+          answerString={currentProblem.answerString || currentProblem.answer?.toString()}
+          displayString={currentProblem.displayString}
+          operatorSymbol={currentProblem.operatorSymbol}
+          options={currentProblem.options}
         />
       </div>
     </div>

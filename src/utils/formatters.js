@@ -41,7 +41,7 @@ export function normalizeTimeAnswer(val) {
  */
 export function normalizeDecimal(val) {
   if (val === null || val === undefined) return '';
-  let clean = String(val).replace('$', '').trim();
+  let clean = String(val).replace('$', '').replace('¢', '').trim();
   if (clean.startsWith('.')) {
     clean = '0' + clean;
   }
