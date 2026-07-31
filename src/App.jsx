@@ -561,10 +561,29 @@ export default function App() {
         const normUserDec = normalizeDec(rawUser);
         const normTargetDec = normalizeDec(rawTarget);
 
+        const isMoneyQuestion = Boolean(
+          (currentProblem.type && (currentProblem.type.includes('money') || currentProblem.type === 'change' || currentProblem.type === 'coins')) ||
+          rawTarget.includes('.') ||
+          currentProblem.operatorSymbol === '🪙' ||
+          (currentProblem.displayString && (currentProblem.displayString.includes('$') || currentProblem.displayString.includes('¢') || currentProblem.displayString.includes('Change')))
+        );
+
+        const userNum = parseFloat(normUserDec);
+        const targetNum = parseFloat(normTargetDec);
+
+        const isMoneyMatch =
+          isMoneyQuestion &&
+          !isNaN(userNum) &&
+          !isNaN(targetNum) &&
+          (Math.abs(userNum - targetNum) < 0.001 ||
+           Math.abs(userNum * 100 - targetNum) < 0.001 ||
+           Math.abs(userNum / 100 - targetNum) < 0.001);
+
         isCorrect =
           rawUser.toLowerCase() === rawTarget.toLowerCase() ||
           normUserDec === normTargetDec ||
-          (parseFloat(normUserDec) === parseFloat(normTargetDec) && !isNaN(parseFloat(normUserDec)));
+          (userNum === targetNum && !isNaN(userNum)) ||
+          isMoneyMatch;
       }
 
       let effectiveIsCorrect = isCorrect;

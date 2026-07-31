@@ -98,9 +98,18 @@ export default function AdaptiveSessionView({
 
     const userNum = Number(normalizeDecimal(userAnsString));
     const targetNum = Number(normalizeDecimal(currentProblem.answerString || currentProblem.answer));
+
+    const isMoneyMatch =
+      isMoneyQuestion &&
+      !isNaN(userNum) &&
+      !isNaN(targetNum) &&
+      (Math.abs(userNum - targetNum) < 0.001 ||
+       Math.abs(userNum * 100 - targetNum) < 0.001 ||
+       Math.abs(userNum / 100 - targetNum) < 0.001);
+
     const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
 
-    const isCorrect = normUserAns === normTargetAns || isNumMatch;
+    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch;
     const latencyMs = performance.now() - problemStartTimeRef.current;
 
     const evalResult = evaluateAdaptiveAttempt({
