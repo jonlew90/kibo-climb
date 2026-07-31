@@ -154,13 +154,13 @@ export default function AdaptiveSessionView({
         </div>
       </div>
 
-      {/* FEEDBACK NOTIFICATION BANNER */}
+      {/* FEEDBACK NOTIFICATION BANNER (FLOATING OVERLAY - ZERO LAYOUT SHIFT) */}
       {feedbackBanner && (
         <div
-          className={`w-full py-2 px-3 rounded-2xl text-xs font-black text-center mb-2 animate-pop shadow-md border ${
+          className={`absolute top-[72px] left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-sm pointer-events-none animate-pop shadow-xl rounded-2xl py-2.5 px-4 text-xs font-black text-center border backdrop-blur-md transition-all ${
             feedbackBanner.type === 'success'
-              ? 'bg-emerald-100 border-emerald-300 text-emerald-950'
-              : 'bg-rose-100 border-rose-300 text-rose-950'
+              ? 'bg-emerald-500/95 text-white border-emerald-400 shadow-emerald-900/20'
+              : 'bg-rose-500/95 text-white border-rose-400 shadow-rose-900/20'
           }`}
         >
           {feedbackBanner.text}
