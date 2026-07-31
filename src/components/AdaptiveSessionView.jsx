@@ -22,7 +22,7 @@ export default function AdaptiveSessionView({
   isFTUX = false,
   isDoubleSparksActive = false
 }) {
-  const [competenceRank, setCompetenceRank] = useState(() => (isFTUX ? 1000 : userTier * 100));
+  const [competenceRank, setCompetenceRank] = useState(1000);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [sessionQuestionIndex, setSessionQuestionIndex] = useState(1);
   const [correctCount, setCorrectCount] = useState(0);

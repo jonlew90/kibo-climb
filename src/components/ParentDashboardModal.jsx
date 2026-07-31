@@ -6,6 +6,7 @@ import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
 import { getNotificationPrefs, saveNotificationPrefs, requestNotificationPermission } from '../utils/notifications';
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
+import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
@@ -339,11 +340,18 @@ export default function ParentDashboardModal({
                 <div className="space-y-4">
                   {/* ADAPTIVE COMPETENCE RATING SNAPSHOT */}
                   <section className="bg-white p-5 rounded-3xl shadow-sm border-2 border-indigo-200 text-left space-y-3">
-                    <div className="flex items-center justify-between border-b border-indigo-100 pb-2">
+                    <div className="flex items-center justify-between border-b border-indigo-100 pb-2 flex-wrap gap-2">
                       <h2 className="text-lg font-black text-slate-800 tracking-tight">Current Math Mastery</h2>
-                      <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
-                        Adaptive Elo Rating
-                      </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
+                          {getCompetenceRankTier(adaptiveCompetenceRating)}{totalProblemsSolved < 15 ? ' • Calibrating' : ''}
+                        </span>
+                        {totalProblemsSolved < 15 && (
+                          <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse">
+                            ⏳ Calibrating
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center gap-6 bg-gradient-to-r from-indigo-50/90 to-purple-50/70 p-4.5 rounded-2xl border border-indigo-100">

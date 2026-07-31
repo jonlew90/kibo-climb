@@ -36,28 +36,36 @@ export const BADGES_CATALOG = [
 
   // COMPETENCE RANK MILESTONE BADGES
   {
-    id: 'rank_200',
-    title: 'Novice Scholar',
-    description: 'Reached Competence Rank 200+ in Adaptive Mastery Sessions!',
+    id: 'rank_1100',
+    title: 'Beginner Mathlete',
+    description: 'Reached Competence Rank 1100+ in Adaptive Mastery Sessions!',
     category: 'skill_mastery',
     icon: '🌱',
-    reqText: 'Reach Competence Rank 200'
+    reqText: 'Reach Competence Rank 1100'
   },
   {
-    id: 'rank_500',
-    title: 'Mathlete Champion',
-    description: 'Reached Competence Rank 500+ across all adaptive math strands!',
+    id: 'rank_1300',
+    title: 'Peak Navigator',
+    description: 'Reached Competence Rank 1300+ across adaptive math strands!',
+    category: 'skill_mastery',
+    icon: '🧭',
+    reqText: 'Reach Competence Rank 1300'
+  },
+  {
+    id: 'rank_1500',
+    title: 'Summit Master',
+    description: 'Reached Competence Rank 1500+ across all adaptive math strands!',
     category: 'skill_mastery',
     icon: '🏆',
-    reqText: 'Reach Competence Rank 500'
+    reqText: 'Reach Competence Rank 1500'
   },
   {
-    id: 'rank_1000',
-    title: 'Summit Master',
-    description: 'Reached Competence Rank 1000+! A true Mount Kibo legend.',
+    id: 'rank_1700',
+    title: 'Kibo Legend',
+    description: 'Reached Competence Rank 1700+! A true Mount Kibo legend.',
     category: 'skill_mastery',
     icon: '🏔️',
-    reqText: 'Reach Competence Rank 1000'
+    reqText: 'Reach Competence Rank 1700'
   },
   {
     id: 'master_addition',

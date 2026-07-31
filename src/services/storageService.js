@@ -15,6 +15,8 @@ const DEFAULT_PROFILE = {
   name: 'Kibo Climber',
   gradeLevel: 'Grade 3',
   userData: {
+    adaptiveCompetenceRating: 1000,
+    competenceRank: 1000,
     tier: 1,
     unlockedTiers: [1],
     tierMasteryPercent: { 1: 0 },
@@ -129,7 +131,31 @@ export const storageService = {
   // User Data (scoped to activeProfileId)
   getUserData() {
     const active = this.getActiveProfile();
-    return active.userData || DEFAULT_PROFILE.userData;
+    const data = active.userData || DEFAULT_PROFILE.userData;
+
+    // Auto-migration: scale legacy ratings (<500) by 10x
+    let modified = false;
+    if (data.adaptiveCompetenceRating && data.adaptiveCompetenceRating < 500) {
+      data.adaptiveCompetenceRating = Math.round(data.adaptiveCompetenceRating * 10);
+      modified = true;
+    } else if (!data.adaptiveCompetenceRating) {
+      data.adaptiveCompetenceRating = 1000;
+      modified = true;
+    }
+
+    if (data.competenceRank && data.competenceRank < 500) {
+      data.competenceRank = Math.round(data.competenceRank * 10);
+      modified = true;
+    } else if (!data.competenceRank) {
+      data.competenceRank = 1000;
+      modified = true;
+    }
+
+    if (modified) {
+      this.saveUserData(data);
+    }
+
+    return data;
   },
   saveUserData(userData) {
     const state = safeGetProfilesState();

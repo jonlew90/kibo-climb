@@ -31,20 +31,23 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         unlocked = streak >= 30;
         break;
 
-      case 'rank_200':
-        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || (tier * 100)) >= 200;
+      case 'rank_1100':
+        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || 1000) >= 1100;
         break;
-      case 'rank_500':
-        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || (tier * 100)) >= 500;
+      case 'rank_1300':
+        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || 1000) >= 1300;
         break;
-      case 'rank_1000':
-        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || (tier * 100)) >= 1000;
+      case 'rank_1500':
+        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || 1000) >= 1500;
+        break;
+      case 'rank_1700':
+        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || 1000) >= 1700;
         break;
 
       case 'master_addition':
       case 'master_multiplication':
       case 'master_time_money':
-        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || (tier * 100)) >= 300;
+        unlocked = (userState.competenceRank || userState.adaptiveCompetenceRating || 1000) >= 1300;
         break;
 
       case 'sparks_100':
