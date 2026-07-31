@@ -1162,14 +1162,7 @@ export default function App() {
         }}
       />
 
-      {/* PLACEMENT TEST SCREEN */}
-      {appState === 'placement_test' && (
-        <PlacementTest
-          equippedItems={equippedItems}
-          onCompletePlacement={handleCompletePlacementTest}
-          onQuitToHome={() => setAppState('world_map')}
-        />
-      )}
+
 
       {/* SKILL MAP ROADMAP SCREEN */}
       {appState === 'skill_map' && (
@@ -1664,16 +1657,7 @@ export default function App() {
         </div>
       )}
 
-      {/* PLACEMENT REVEAL MODAL */}
-      <PlacementRevealModal
-        isOpen={showPlacementRevealModal}
-        placedTier={tier}
-        equippedItems={equippedItems}
-        onGoToWorldMap={() => {
-          setShowPlacementRevealModal(false);
-          setAppState('world_map');
-        }}
-      />
+
 
       {/* STREAK SAVED MODAL */}
       <StreakSavedModal
