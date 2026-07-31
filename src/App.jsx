@@ -15,6 +15,7 @@ import PlacementRevealModal from './components/PlacementRevealModal';
 import MicroHintCard from './components/MicroHintCard';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import SprintResultsModal from './components/SprintResultsModal';
+import BadgesModal from './components/BadgesModal';
 import AdaptiveSessionView from './components/AdaptiveSessionView';
 import { evaluateBadges } from './utils/badgeManager';
 import { generateProblems } from './utils/mathGenerator';
