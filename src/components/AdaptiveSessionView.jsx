@@ -16,7 +16,8 @@ export default function AdaptiveSessionView({
   onAwardSparks,
   onOpenWorkshop,
   userTier = 1,
-  isFTUX = false
+  isFTUX = false,
+  isDoubleSparksActive = false
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => (isFTUX ? 1000 : userTier * 100));
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
@@ -110,14 +111,16 @@ export default function AdaptiveSessionView({
     if (isCorrect) {
       soundFx.playCorrect();
       setCorrectCount((prev) => prev + 1);
-      const earned = evalResult.totalSparksEarned;
+      const baseEarned = evalResult.totalSparksEarned;
+      const earned = isDoubleSparksActive ? baseEarned * 2 : baseEarned;
       setSessionSparksEarned((prev) => prev + earned);
       if (onAwardSparks) onAwardSparks(earned);
 
       setCompetenceRank(evalResult.nextCompetenceRank);
       setShowFrustrationCard(false);
 
-      const toastMsg = evalResult.streakBannerText || `Correct! Competence Rank +${evalResult.rankDelta} ⭐ (${evalResult.fluencyLabel})`;
+      const boostLabel = isDoubleSparksActive ? ' (2x Potion 🧪)' : '';
+      const toastMsg = evalResult.streakBannerText ? `${evalResult.streakBannerText}${boostLabel}` : `Correct! Competence Rank +${evalResult.rankDelta} ⭐ (${evalResult.fluencyLabel})${boostLabel}`;
       setFeedbackBanner({
         type: 'success',
         text: toastMsg
@@ -335,6 +338,11 @@ export default function AdaptiveSessionView({
             {inSessionStreak >= 3 && (
               <span className="text-[10px] font-black uppercase text-orange-700 bg-orange-100 px-2.5 py-0.5 rounded-full border border-orange-300 animate-pulse">
                 🔥 {inSessionStreak} Streak ({inSessionStreak >= 5 ? '1.5x ⚡' : '+5 ⚡'})
+              </span>
+            )}
+            {isDoubleSparksActive && (
+              <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse">
+                🧪 2x Sparks Potion Active!
               </span>
             )}
             <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs">

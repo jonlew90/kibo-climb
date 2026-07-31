@@ -47,7 +47,7 @@ export function evaluateAdaptiveAttempt({
       streakBannerText = '🔥 On Fire! 3 In-a-Row (+5 Bonus Sparks!)';
     } else if (nextInSessionStreak === 5) {
       bonusSparks = 5;
-      streakBannerText = '⚡ 5 Streak! 1.5x Coin Multiplier Activated!';
+      streakBannerText = '⚡ 5 Streak! 1.5x Sparks Multiplier Activated!';
     } else if (nextInSessionStreak === 10) {
       bonusSparks = 10;
       streakBannerText = '🏆 Precision Streak! 10 Correct in a Row!';

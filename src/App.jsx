@@ -165,7 +165,7 @@ export default function App() {
     return {
       shieldCount: saved?.shieldCount ?? 1,
       streakSaverCount: saved?.streakSaverCount ?? 0,
-      doubleCoinPotionCount: saved?.doubleCoinPotionCount ?? 0
+      doubleSparksPotionCount: saved?.doubleSparksPotionCount ?? saved?.doubleCoinPotionCount ?? 0
     };
   });
 
@@ -198,7 +198,7 @@ export default function App() {
   };
 
   const [isShieldProtected, setIsShieldProtected] = useState(false);
-  const [isDoubleCoinActive, setIsDoubleCoinActive] = useState(false);
+  const [isDoubleSparksActive, setIsDoubleSparksActive] = useState(false);
 
   const handleBuyConsumable = (item) => {
     if (sparks < item.cost) return;
@@ -206,19 +206,20 @@ export default function App() {
     const newSparks = sparks - item.cost;
     let nextShieldCount = consumables.shieldCount || 0;
     let nextStreakSaverCount = consumables.streakSaverCount || 0;
-    let nextPotionCount = consumables.doubleCoinPotionCount || 0;
+    let nextPotionCount = consumables.doubleSparksPotionCount || consumables.doubleCoinPotionCount || 0;
 
     if (item.id === 'kibo_shield') {
       nextShieldCount += 1;
     } else if (item.id === 'streak_saver') {
       nextStreakSaverCount += 1;
-    } else if (item.id === 'double_coin_potion') {
+    } else if (item.id === 'double_sparks_potion' || item.id === 'double_coin_potion') {
       nextPotionCount += 1;
     }
 
     const nextConsumables = {
       shieldCount: nextShieldCount,
       streakSaverCount: nextStreakSaverCount,
+      doubleSparksPotionCount: nextPotionCount,
       doubleCoinPotionCount: nextPotionCount
     };
 
@@ -233,17 +234,22 @@ export default function App() {
     soundFx.playVictory();
   };
 
-  const handleToggleDoubleCoinPotion = () => {
-    if (isDoubleCoinActive) {
-      setIsDoubleCoinActive(false);
+  const handleToggleDoubleSparksPotion = () => {
+    if (isDoubleSparksActive) {
+      setIsDoubleSparksActive(false);
     } else {
-      if (consumables.doubleCoinPotionCount <= 0) return;
+      const owned = consumables.doubleSparksPotionCount ?? consumables.doubleCoinPotionCount ?? 0;
+      if (owned <= 0) return;
       soundFx.playSparkCollect();
-      const nextPotionCount = consumables.doubleCoinPotionCount - 1;
-      const nextConsumables = { ...consumables, doubleCoinPotionCount: nextPotionCount };
+      const nextPotionCount = owned - 1;
+      const nextConsumables = {
+        ...consumables,
+        doubleSparksPotionCount: nextPotionCount,
+        doubleCoinPotionCount: nextPotionCount
+      };
       setConsumables(nextConsumables);
       storageService.saveUserData({ consumables: nextConsumables });
-      setIsDoubleCoinActive(true);
+      setIsDoubleSparksActive(true);
     }
   };
 
@@ -1143,6 +1149,7 @@ export default function App() {
           streak={streak}
           userTier={tier}
           isFTUX={showFirstLaunchOnboardingModal}
+          isDoubleSparksActive={isDoubleSparksActive}
           onAwardSparks={(earned) => {
             const updated = sparks + earned;
             setSparks(updated);
@@ -1227,24 +1234,24 @@ export default function App() {
 
           {/* Action Buttons */}
           <div className="w-full max-w-xs space-y-2 mt-1">
-            {(consumables.doubleCoinPotionCount > 0 || isDoubleCoinActive) && (
+            {((consumables.doubleSparksPotionCount > 0 || consumables.doubleCoinPotionCount > 0) || isDoubleSparksActive) && (
               <button
                 type="button"
-                onClick={handleToggleDoubleCoinPotion}
+                onClick={handleToggleDoubleSparksPotion}
                 className={`w-full py-2.5 px-3 rounded-2xl border-2 font-extrabold text-xs flex items-center justify-between transition-all active:scale-95 ${
-                  isDoubleCoinActive
+                  isDoubleSparksActive
                     ? 'bg-amber-100 border-amber-400 text-amber-950 shadow-md ring-2 ring-amber-300'
                     : 'bg-slate-50 hover:bg-amber-50 border-slate-200 text-slate-700'
                 }`}
               >
                 <span className="flex items-center gap-1.5">
                   <span>🧪</span>
-                  <span>Double Coin Potion ({consumables.doubleCoinPotionCount} owned)</span>
+                  <span>Double Sparks Potion ({consumables.doubleSparksPotionCount ?? consumables.doubleCoinPotionCount ?? 0} owned)</span>
                 </span>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                  isDoubleCoinActive ? 'bg-amber-400 text-amber-950 animate-pulse' : 'bg-slate-200 text-slate-600'
+                  isDoubleSparksActive ? 'bg-amber-400 text-amber-950 animate-pulse' : 'bg-slate-200 text-slate-600'
                 }`}>
-                  {isDoubleCoinActive ? 'ACTIVE 2X 🧪' : 'ACTIVATE'}
+                  {isDoubleSparksActive ? 'ACTIVE 2X 🧪' : 'ACTIVATE'}
                 </span>
               </button>
             )}

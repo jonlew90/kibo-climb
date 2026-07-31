@@ -42,14 +42,14 @@ export const WORKSHOP_ITEMS = [
     description: 'Absorbs 1 incorrect answer per adaptive session without breaking your accuracy streak.'
   },
   {
-    id: 'double_coin_potion',
-    name: 'Double Coin Potion',
+    id: 'double_sparks_potion',
+    name: 'Double Sparks Potion',
     category: 'powerups',
     cost: 40,
     rarity: 'rare',
     isConsumable: true,
     icon: '🧪',
-    description: 'Doubles all Kibo coins earned from your next completed adaptive session.'
+    description: 'Doubles all Sparks earned from your next completed adaptive session.'
   },
   {
     id: 'streak_saver',

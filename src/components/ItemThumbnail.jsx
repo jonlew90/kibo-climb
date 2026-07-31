@@ -198,7 +198,7 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'double_coin_potion' && (
+        {(itemId === 'double_sparks_potion' || itemId === 'double_coin_potion') && (
           <g>
             <rect x="42" y="16" width="16" height="12" rx="3" fill="#D97706" stroke="#B45309" strokeWidth="3" />
             <path d="M 38 28 L 62 28 L 78 72 A 10 10 0 0 1 68 85 L 32 85 A 10 10 0 0 1 22 72 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="4" />
