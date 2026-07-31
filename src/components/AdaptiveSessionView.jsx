@@ -154,13 +154,13 @@ export default function AdaptiveSessionView({
         </div>
       </div>
 
-      {/* FEEDBACK NOTIFICATION BANNER (FLOATING OVERLAY - ZERO LAYOUT SHIFT) */}
+      {/* FEEDBACK NOTIFICATION BANNER (FLOATING OVERLAY - ZERO SHIFT & ZERO CLIPPING) */}
       {feedbackBanner && (
         <div
-          className={`absolute top-[72px] left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-sm pointer-events-none animate-pop shadow-xl rounded-2xl py-2.5 px-4 text-xs font-black text-center border backdrop-blur-md transition-all ${
+          className={`absolute top-16 inset-x-3 z-30 mx-auto max-w-xs pointer-events-none animate-pop shadow-xl rounded-2xl py-2.5 px-3 text-xs font-black text-center border backdrop-blur-md transition-all ${
             feedbackBanner.type === 'success'
-              ? 'bg-emerald-500/95 text-white border-emerald-400 shadow-emerald-900/20'
-              : 'bg-rose-500/95 text-white border-rose-400 shadow-rose-900/20'
+              ? 'bg-emerald-600/95 text-white border-emerald-400 shadow-emerald-950/30'
+              : 'bg-rose-600/95 text-white border-rose-400 shadow-rose-950/30'
           }`}
         >
           {feedbackBanner.text}
