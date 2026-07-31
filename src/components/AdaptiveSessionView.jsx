@@ -5,7 +5,7 @@ import Keypad from './Keypad';
 import { generateProblems } from '../utils/mathGenerator';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
-import { normalizeTimeAnswer } from '../utils/formatters';
+import { normalizeTimeAnswer, normalizeDecimal } from '../utils/formatters';
 
 export default function AdaptiveSessionView({
   equippedItems = [],
