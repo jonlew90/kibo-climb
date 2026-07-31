@@ -1417,8 +1417,19 @@ export default function App() {
               }`}
             >
               <div className="text-3xl sm:text-4xl font-extrabold tracking-wider text-slate-800 flex items-center justify-center gap-3 flex-wrap">
-                <span>{problems[currentIndex].displayString || `${problems[currentIndex].num1} ${problems[currentIndex].operatorSymbol} ${problems[currentIndex].num2}`}</span>
-                <span className="text-slate-400 font-bold">=</span>
+                {(() => {
+                  const prob = problems[currentIndex];
+                  const rawDisplay = prob?.displayString || `${prob?.num1} ${prob?.operatorSymbol} ${prob?.num2}`;
+                  const cleanDisplay = rawDisplay.replace(/\s*=\s*\?\s*¢?/gi, '').replace(/\s*=\s*\?\s*cents?/gi, '').trim();
+                  const hasQuestionSuffix = cleanDisplay.endsWith('?') || cleanDisplay.includes('Change?') || cleanDisplay.includes('Leftover?') || cleanDisplay.includes('End time?');
+
+                  return (
+                    <>
+                      <span>{cleanDisplay}</span>
+                      {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
+                    </>
+                  );
+                })()}
 
                 {/* Input Box Display */}
                 <span className={`inline-block min-w-[70px] px-3 py-1 rounded-xl text-3xl sm:text-4xl font-black shadow-inner transition-all ${

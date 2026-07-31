@@ -131,15 +131,15 @@ export default function SprintResultsModal({
             )}
 
             {/* Run Summary Card */}
-            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 text-center space-y-1 shadow-sm">
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 text-center space-y-1.5 shadow-sm">
               <span className="text-[10px] font-black uppercase text-amber-900 tracking-wider block">
-                Run Summary & Earnings
+                Most Recent Run Summary & Earnings
               </span>
               <div className="grid grid-cols-3 gap-1.5 py-1 text-slate-800 border-t border-amber-200/60 pt-2">
                 <div className="border-r border-amber-200 pr-1">
-                  <span className="text-[9px] font-black uppercase text-slate-500 block">Problems Solved</span>
+                  <span className="text-[9px] font-black uppercase text-slate-500 block">Correct / Total</span>
                   <span className="text-sm sm:text-base font-black text-emerald-600">
-                    {stats.correctCount ?? (stats.total - (stats.practiceCount || 0))}/{stats.total || 10}
+                    {stats.correctCount ?? (stats.total - (stats.practiceCount || 0))} / {stats.total || 10} Correct
                   </span>
                 </div>
 
@@ -153,7 +153,7 @@ export default function SprintResultsModal({
                 <div className="pl-1">
                   <span className="text-[9px] font-black uppercase text-slate-500 block">Cumulative Streak</span>
                   <span className="text-sm sm:text-base font-black text-purple-700">
-                    🔥 {cumulativeCorrectStreak} Qs
+                    🔥 {cumulativeCorrectStreak} Qs Streak
                   </span>
                 </div>
               </div>

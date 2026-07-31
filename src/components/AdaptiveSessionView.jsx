@@ -388,8 +388,18 @@ export default function AdaptiveSessionView({
           </div>
 
           <div className="text-3xl sm:text-4xl font-extrabold text-slate-800 flex items-center justify-center gap-3 flex-wrap my-1">
-            <span>{currentProblem.displayString || `${currentProblem.num1} ${currentProblem.operatorSymbol} ${currentProblem.num2}`}</span>
-            <span className="text-slate-400 font-bold">=</span>
+            {(() => {
+              const rawDisplay = currentProblem.displayString || `${currentProblem.num1} ${currentProblem.operatorSymbol} ${currentProblem.num2}`;
+              const cleanDisplay = rawDisplay.replace(/\s*=\s*\?\s*¢?/gi, '').replace(/\s*=\s*\?\s*cents?/gi, '').trim();
+              const hasQuestionSuffix = cleanDisplay.endsWith('?') || cleanDisplay.includes('Change?') || cleanDisplay.includes('Leftover?') || cleanDisplay.includes('End time?');
+
+              return (
+                <>
+                  <span>{cleanDisplay}</span>
+                  {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
+                </>
+              );
+            })()}
 
             {/* Answer Display */}
             <span className="inline-block min-w-[70px] px-3.5 py-1 bg-amber-50 border-3 border-amber-300 rounded-2xl text-kibo-teal font-black text-3xl sm:text-4xl shadow-inner">

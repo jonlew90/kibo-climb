@@ -429,7 +429,7 @@ export function generateTierProblem(tierLevel) {
         num1 = q;
         num2 = d;
         operatorSymbol = '🪙';
-        displayString = `${q} Quarter${q > 1 ? 's' : ''} + ${d} Dime${d > 1 ? 's' : ''} = ? ¢`;
+        displayString = `${q} Quarter${q > 1 ? 's' : ''} + ${d} Dime${d > 1 ? 's' : ''}`;
         hint = 'Hint: Quarters are 25¢, Dimes are 10¢!';
       } else if (type < 0.45) {
         const cost = (Math.floor(Math.random() * 15) + 5) * 5;
@@ -599,7 +599,7 @@ export function generateTierProblem(tierLevel) {
         num2 = exp;
         answer = Math.pow(base, exp);
         operatorSymbol = '^';
-        displayString = `${base}^${exp} = ?`;
+        displayString = `${base}^${exp}`;
         hint = `Hint: Multiply ${base} by itself ${exp} times!`;
       } else if (subType < 0.7) {
         const perfectSquares = [4, 9, 16, 25, 36, 49, 64, 81, 100];
@@ -608,7 +608,7 @@ export function generateTierProblem(tierLevel) {
         num2 = 2;
         answer = Math.sqrt(sq);
         operatorSymbol = '√';
-        displayString = `√${sq} = ?`;
+        displayString = `√${sq}`;
         hint = `Hint: What number times itself equals ${sq}?`;
       } else {
         const a = Math.floor(Math.random() * 5) + 2;
@@ -618,7 +618,7 @@ export function generateTierProblem(tierLevel) {
         num1 = `${a} × ${b}`;
         num2 = c;
         operatorSymbol = '+';
-        displayString = `${a} × ${b} + ${c} = ?`;
+        displayString = `${a} × ${b} + ${c}`;
         hint = 'Hint: Remember PEMDAS! Multiply first, then add.';
       }
       break;
