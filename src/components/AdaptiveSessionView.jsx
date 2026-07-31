@@ -6,6 +6,7 @@ import { generateProblems } from '../utils/mathGenerator';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
 import { normalizeTimeAnswer, normalizeDecimal } from '../utils/formatters';
+import { evaluateAdaptiveAttempt } from '../utils/AdaptiveEngine';
 
 export default function AdaptiveSessionView({
   equippedItems = [],
@@ -85,6 +86,13 @@ export default function AdaptiveSessionView({
     const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
 
     const isCorrect = normUserAns === normTargetAns || isNumMatch;
+    const latencyMs = performance.now() - problemStartTimeRef.current;
+
+    const evalResult = evaluateAdaptiveAttempt({
+      isCorrect,
+      latencyMs,
+      currentCompetenceRank: competenceRank
+    });
 
     if (isCorrect) {
       soundFx.playCorrect();
@@ -93,16 +101,17 @@ export default function AdaptiveSessionView({
       setSessionSparksEarned((prev) => prev + earned);
       if (onAwardSparks) onAwardSparks(earned);
 
-      // Adaptive Competence Rank Increase (+10 points)
-      setCompetenceRank((prev) => prev + 10);
-      setFeedbackBanner({ type: 'success', text: `Correct! Competence Rank +10 ⭐ (+2⚡ Sparks)` });
+      setCompetenceRank(evalResult.nextCompetenceRank);
+      setFeedbackBanner({
+        type: 'success',
+        text: `Correct! Competence Rank +${evalResult.rankDelta} ⭐ (${evalResult.fluencyLabel})`
+      });
     } else {
       soundFx.playIncorrect();
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 400);
 
-      // Adaptive Regression (-5 points)
-      setCompetenceRank((prev) => Math.max(50, prev - 5));
+      setCompetenceRank(evalResult.nextCompetenceRank);
       setFeedbackBanner({ type: 'error', text: `Incorrect! Answer was ${normTargetAns}` });
     }
 
