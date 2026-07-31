@@ -10,8 +10,6 @@ import SkillMapScreen from './components/SkillMapScreen';
 import QuitSprintModal from './components/QuitSprintModal';
 import StreakSavedModal from './components/StreakSavedModal';
 import WorldMap from './components/WorldMap';
-import PlacementTest from './components/PlacementTest';
-import PlacementRevealModal from './components/PlacementRevealModal';
 import MicroHintCard from './components/MicroHintCard';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import SprintResultsModal from './components/SprintResultsModal';
@@ -1144,6 +1142,7 @@ export default function App() {
           sparks={sparks}
           streak={streak}
           userTier={tier}
+          isFTUX={showFirstLaunchOnboardingModal}
           onAwardSparks={(earned) => {
             const updated = sparks + earned;
             setSparks(updated);
@@ -1152,6 +1151,16 @@ export default function App() {
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
         />
       )}
+
+      {/* FIRST LAUNCH ONBOARDING MODAL */}
+      <FirstLaunchOnboardingModal
+        isOpen={showFirstLaunchOnboardingModal}
+        equippedItems={equippedItems}
+        onStartAdaptiveClimb={() => {
+          setShowFirstLaunchOnboardingModal(false);
+          setAppState('adaptive_session');
+        }}
+      />
 
       {/* PLACEMENT TEST SCREEN */}
       {appState === 'placement_test' && (

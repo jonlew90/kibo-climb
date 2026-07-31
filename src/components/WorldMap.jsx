@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { ArrowLeft, Target, Lock, CheckCircle2, Play, Compass, Award, Star, Zap, X, Lightbulb } from 'lucide-react';
 import Mascot from './Mascot';
 import TierIntroModal from './TierIntroModal';
-import PlacementIntroModal from './PlacementIntroModal';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 import { getTrickForTier } from '../data/mathTricks';
@@ -476,16 +475,6 @@ export default function WorldMap({
         </div>,
         document.body
       )}
-
-      {/* PLACEMENT DIAGNOSTIC INTRO MODAL OVERLAY */}
-      <PlacementIntroModal
-        isOpen={showPlacementIntroModal}
-        onClose={() => setShowPlacementIntroModal(false)}
-        onStartDiagnostic={() => {
-          setShowPlacementIntroModal(false);
-          onStartPlacementTest();
-        }}
-      />
 
       {/* TIER INTRO MODAL OVERLAY */}
       <TierIntroModal

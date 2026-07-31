@@ -13,9 +13,10 @@ export default function AdaptiveSessionView({
   streak = 1,
   onAwardSparks,
   onOpenWorkshop,
-  userTier = 1
+  userTier = 1,
+  isFTUX = false
 }) {
-  const [competenceRank, setCompetenceRank] = useState(userTier * 100);
+  const [competenceRank, setCompetenceRank] = useState(() => (isFTUX ? 1000 : userTier * 100));
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [currentTier, setCurrentTier] = useState(userTier);
@@ -25,7 +26,7 @@ export default function AdaptiveSessionView({
   const [sessionSparksEarned, setSessionSparksEarned] = useState(0);
 
   // Generate adaptive problem queue for active tier
-  const [problemQueue, setProblemQueue] = useState(() => generateProblems(5, userTier, []));
+  const [problemQueue, setProblemQueue] = useState(() => generateProblems(5, isFTUX ? 1 : userTier, []));
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const problemStartTimeRef = useRef(performance.now());
@@ -41,6 +42,18 @@ export default function AdaptiveSessionView({
   useEffect(() => {
     problemStartTimeRef.current = performance.now();
   }, [currentIndex]);
+
+  useEffect(() => {
+    if (isFTUX) {
+      setFeedbackBanner({
+        type: 'success',
+        text: "Welcome to Kibo Climb! Let's start your organic climb! 🏔️✨"
+      });
+      setTimeout(() => {
+        setFeedbackBanner(null);
+      }, 3000);
+    }
+  }, [isFTUX]);
 
   // Ensure new problems generated dynamically when queue gets low
   const replenishQueueIfNeeded = (nextIndex) => {
