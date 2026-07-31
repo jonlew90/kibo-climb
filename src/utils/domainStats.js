@@ -116,3 +116,59 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1) => {
     };
   });
 };
+
+export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTier = 1) => {
+  const domains = calculateDomainMastery(sprintHistory, currentTier);
+
+  let masteredCount = 0;
+  let practicingCount = 0;
+  let challengedCount = 0;
+
+  const strandBreakdown = {};
+
+  domains.forEach((d) => {
+    let status = 'Practicing';
+    if (d.accuracy >= 80) {
+      status = 'Mastered';
+      masteredCount++;
+    } else if (d.accuracy >= 65) {
+      status = 'Practicing';
+      practicingCount++;
+    } else {
+      status = 'Challenged';
+      challengedCount++;
+    }
+
+    const rating = Math.round(d.accuracy * 8.5);
+
+    strandBreakdown[d.name] = {
+      id: d.id,
+      strandName: d.name,
+      rating,
+      status,
+      accuracy: d.accuracy,
+      speed: d.speed,
+      icon: d.icon,
+      subtitle: d.subtitle,
+      challengedSkills: status === 'Challenged' ? [`Review ${d.subtitle}`] : []
+    };
+  });
+
+  const total = domains.length || 1;
+  const masteredPct = Math.round((masteredCount / total) * 100) || 70;
+  const practicingPct = Math.round((practicingCount / total) * 100) || 20;
+  const challengedPct = Math.max(0, 100 - masteredPct - practicingPct);
+
+  // Overall competence rating scale (e.g. 520)
+  const adaptiveCompetenceRating = Math.max(100, Math.round(currentTier * 100 + (masteredPct * 2.5)));
+
+  return {
+    adaptiveCompetenceRating,
+    masteryDistribution: {
+      mastered: masteredPct,
+      practicing: practicingPct,
+      challenged: challengedPct
+    },
+    skillStrandBreakdown: strandBreakdown
+  };
+};

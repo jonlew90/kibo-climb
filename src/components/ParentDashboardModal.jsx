@@ -5,7 +5,7 @@ import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
 import { getNotificationPrefs, saveNotificationPrefs, requestNotificationPermission } from '../utils/notifications';
-import { calculateDomainMastery } from '../utils/domainStats';
+import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
@@ -347,129 +347,119 @@ export default function ParentDashboardModal({
               )}
             </div>
 
-            {/* Skill Domain Breakdown (Rolling 20-Sprint Window) */}
-            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-purple-700">
-                  <Sparkles className="w-5 h-5 stroke-[2.5]" />
-                  <h4 className="font-extrabold text-sm text-slate-800">Skill Domain Breakdown</h4>
-                </div>
-                <span className="text-[10px] font-black uppercase text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
-                  Rolling 20 Sprints
-                </span>
-              </div>
+            {/* MASTERY SNAPSHOT & SKILL PROFILE BREAKDOWN */}
+            {(() => {
+              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, tier);
+              const { adaptiveCompetenceRating, masteryDistribution, skillStrandBreakdown } = adaptiveProfile;
 
-              <div className="space-y-2.5">
-                {calculateDomainMastery(sprintHistory, tier).map((domain) => {
-                  const score = Math.round(domain.accuracy * 0.6 + (domain.speed <= 2.5 ? 40 : domain.speed <= 3.5 ? 25 : 10));
-                  const isMastered = score >= 85;
-                  const isInProgress = score >= 60 && score < 85;
+              return (
+                <div className="space-y-4">
+                  {/* MASTERY SNAPSHOT */}
+                  <section className="bg-white p-5 rounded-2xl shadow-sm border-2 border-indigo-200 text-left space-y-3">
+                    <div className="flex items-center justify-between border-b border-indigo-100 pb-2">
+                      <div>
+                        <h3 className="text-lg font-black text-slate-800 tracking-tight">Kibo Math Mastery</h3>
+                        <p className="text-xs text-slate-500 font-semibold">A data-driven snapshot of competence and skill distribution.</p>
+                      </div>
+                      <span className="text-xs font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200 shadow-xs">
+                        Adaptive Profile
+                      </span>
+                    </div>
 
-                  // Diagnostic benchmark check
-                  const isDiagnosticVerified = tier > 1 && domain.accuracy >= 85;
-                  const daysSinceLastSprint = 0; // Active current sprint session
+                    <div className="flex flex-col sm:flex-row items-center gap-6 bg-gradient-to-r from-indigo-50/90 to-purple-50/70 p-4.5 rounded-2xl border border-indigo-100">
+                      <div className="text-center shrink-0">
+                        <span className="font-black text-5xl sm:text-6xl text-indigo-700 tracking-tighter block">
+                          {adaptiveCompetenceRating}
+                        </span>
+                        <span className="block mt-1 text-[10px] font-black text-indigo-600 tracking-wider uppercase">
+                          CURRENT SKILL RATING
+                        </span>
+                      </div>
 
-                  let statusBadge;
-                  if (daysSinceLastSprint > 30 && isMastered) {
-                    statusBadge = (
-                      <span className="text-[9px] font-black uppercase text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
-                        🟡 Needs Warm-Up
-                      </span>
-                    );
-                  } else if (daysSinceLastSprint >= 14 && daysSinceLastSprint <= 30) {
-                    statusBadge = (
-                      <span className="text-[9px] font-black uppercase text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-300">
-                        ⏸️ Practice Paused
-                      </span>
-                    );
-                  } else if (isMastered) {
-                    statusBadge = (
-                      <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
-                        🟢 Mastered {isDiagnosticVerified && <span className="text-[8px] opacity-80">(Benchmark)</span>}
-                      </span>
-                    );
-                  } else if (isInProgress) {
-                    statusBadge = (
-                      <span className="text-[9px] font-black uppercase text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
-                        🟡 In Progress
-                      </span>
-                    );
-                  } else {
-                    statusBadge = (
-                      <span className="text-[9px] font-black uppercase text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-300">
-                        🔵 Needs Practice
-                      </span>
-                    );
-                  }
-
-                  return (
-                    <div key={domain.id} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-base">{domain.icon}</span>
-                          <div>
-                            <h5 className="font-extrabold text-slate-800 text-xs">{domain.name}</h5>
-                            <p className="text-[10px] text-slate-400 font-semibold">{domain.subtitle}</p>
+                      <div className="flex-1 w-full space-y-2.5">
+                        {/* Mastered Bar */}
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs font-black">
+                            <span className="text-emerald-700">🟢 Mastered</span>
+                            <span className="text-slate-700">{masteryDistribution.mastered}%</span>
+                          </div>
+                          <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden border border-slate-300/40">
+                            <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${masteryDistribution.mastered}%` }} />
                           </div>
                         </div>
 
-                        {statusBadge}
-                      </div>
+                        {/* Practicing Bar */}
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs font-black">
+                            <span className="text-amber-700">🟡 Practicing</span>
+                            <span className="text-slate-700">{masteryDistribution.practicing}%</span>
+                          </div>
+                          <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden border border-slate-300/40">
+                            <div className="bg-amber-400 h-full rounded-full transition-all duration-500" style={{ width: `${masteryDistribution.practicing}%` }} />
+                          </div>
+                        </div>
 
-                      {/* Progress Bar */}
-                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            isMastered
-                              ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
-                              : isInProgress
-                              ? 'bg-gradient-to-r from-amber-400 to-yellow-500'
-                              : 'bg-slate-400'
-                          }`}
-                          style={{ width: `${Math.min(100, Math.max(10, score))}%` }}
-                        />
+                        {/* Challenged Bar */}
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs font-black">
+                            <span className="text-rose-700">🔴 Challenged</span>
+                            <span className="text-slate-700">{masteryDistribution.challenged}%</span>
+                          </div>
+                          <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden border border-slate-300/40">
+                            <div className="bg-rose-500 h-full rounded-full transition-all duration-500" style={{ width: `${masteryDistribution.challenged}%` }} />
+                          </div>
+                        </div>
                       </div>
+                    </div>
+                  </section>
 
-                      {/* Metrics & Recommendation Row */}
-                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 border-t border-slate-100 pt-1.5">
-                        <span className="text-slate-700">🎯 Accuracy: <strong className="text-slate-900">{domain.acc}%</strong></span>
-                        <span className="text-slate-700">⚡ Speed: <strong className="text-slate-900">{domain.speed}s / Q</strong></span>
-                      </div>
-
-                      <div className="p-1.5 bg-purple-50/70 border border-purple-200 rounded-lg text-[10px] text-purple-900 font-medium leading-tight">
-                        <strong className="text-purple-800 font-bold block mb-0.5">💡 Parent Recommendation:</strong>
-                        {domain.recommendation}
-                      </div>
-
-                      {/* Parent Coaching Pro Tip Box */}
-                      {(() => {
-                        const tierMap = {
-                          add_sub: 1,
-                          mult_div: 3,
-                          money_time: 5,
-                          multi_digit: 4,
-                          number_theory: 7,
-                          adv_math: 8
-                        };
-                        const targetTierNum = tierMap[domain.id] || 1;
-                        const tierData = CURRICULUM_TIERS.find((t) => t.tier === targetTierNum);
-                        const tip = tierData?.proTip;
-                        if (!tip) return null;
+                  {/* SKILL PROFILE BREAKDOWN */}
+                  <section className="text-left space-y-3">
+                    <h3 className="text-base font-extrabold text-slate-800">Detailed Skill Profile Strands</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Object.entries(skillStrandBreakdown).map(([strandName, data]) => {
+                        const isMastered = data.status === 'Mastered';
+                        const isPracticing = data.status === 'Practicing';
 
                         return (
-                          <div className="p-2 bg-amber-50/80 border border-amber-200 rounded-lg text-[10px] text-amber-950 font-medium leading-tight space-y-0.5">
-                            <strong className="text-amber-900 font-extrabold flex items-center gap-1">
-                              💡 Coaching Pro Tip: {tip.title}
-                            </strong>
-                            <p>{tip.content || tip.summary}</p>
+                          <div key={strandName} className="bg-white border-2 border-slate-200 rounded-2xl p-3.5 shadow-xs hover:border-indigo-300 transition-colors space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">{data.icon}</span>
+                                <div>
+                                  <h4 className="font-extrabold text-xs text-slate-800">{strandName}</h4>
+                                  <p className="text-[10px] font-medium text-slate-500">{data.subtitle}</p>
+                                </div>
+                              </div>
+                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                                isMastered
+                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                  : isPracticing
+                                  ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                  : 'bg-rose-100 text-rose-900 border-rose-300'
+                              }`}>
+                                {data.status}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs font-bold">
+                              <span className="text-slate-500">Strand Rating:</span>
+                              <span className="text-indigo-700 font-black">{data.rating} pts ({data.accuracy}% Acc)</span>
+                            </div>
+
+                            {data.challengedSkills && data.challengedSkills.length > 0 && (
+                              <div className="bg-rose-50 border border-rose-200 rounded-xl p-2 text-[10px] font-semibold text-rose-900">
+                                🎯 Target Review: {data.challengedSkills.join(', ')}
+                              </div>
+                            )}
                           </div>
                         );
-                      })()}
+                      })}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                  </section>
+                </div>
+              );
+            })()}
 
             {/* Sprint Performance History */}
             <div className="space-y-1.5 text-left">
