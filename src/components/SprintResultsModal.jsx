@@ -129,6 +129,28 @@ export default function SprintResultsModal({
               </div>
             )}
 
+            {/* Run Summary Card */}
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 text-center space-y-1 shadow-sm">
+              <span className="text-[10px] font-black uppercase text-amber-900 tracking-wider block">
+                Run Summary & Earnings
+              </span>
+              <div className="flex items-center justify-around py-1 text-slate-800">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-slate-500 block">Problems Solved</span>
+                  <span className="text-lg font-black text-emerald-600">
+                    {stats.correctCount ?? (stats.total - (stats.practiceCount || 0))} / {stats.total || 10} Correct
+                  </span>
+                </div>
+                <div className="border-r border-amber-200 h-8" />
+                <div>
+                  <span className="text-[10px] font-black uppercase text-slate-500 block">Sparks Earned</span>
+                  <span className="text-lg font-black text-amber-600">
+                    +{earnedSparksInfo?.total || 0} ⚡
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* Performance Cards */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3 space-y-2.5 shadow-inner">
               <div className="flex justify-between items-center text-xs font-bold text-slate-700 border-b border-slate-200 pb-2 flex-wrap gap-1">

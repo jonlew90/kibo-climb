@@ -1089,6 +1089,7 @@ export default function App() {
       superFastCount,
       fluentCount,
       practiceCount,
+      correctCount,
       starsEarned,
       total: results.length
     };
