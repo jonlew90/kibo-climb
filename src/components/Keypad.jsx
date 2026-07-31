@@ -3,6 +3,7 @@ import { Delete, RotateCcw, CheckCircle2, XCircle } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
 export default function Keypad({
+  onDigit,
   onKeyPress,
   onDelete,
   onClear,
@@ -14,6 +15,10 @@ export default function Keypad({
   operatorSymbol,
   options
 }) {
+  const handleInputDigit = onDigit || onKeyPress || (() => {});
+  const handleDelete = onDelete || (() => {});
+  const handleClear = onClear || (() => {});
+
   const isBooleanQuestion = Boolean(
     (options && options.includes('Yes')) ||
     (answerString && (
@@ -35,7 +40,7 @@ export default function Keypad({
         <button
           onClick={() => {
             soundFx.playKeyTap();
-            onKeyPress('Yes');
+            handleInputDigit('Yes');
           }}
           className="btn-3d-emerald flex-1 py-4 text-xl sm:text-2xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
           aria-label="Select Yes"
@@ -46,7 +51,7 @@ export default function Keypad({
         <button
           onClick={() => {
             soundFx.playKeyTap();
-            onKeyPress('No');
+            handleInputDigit('No');
           }}
           className="btn-3d-rose flex-1 py-4 text-xl sm:text-2xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
           aria-label="Select No"
