@@ -1070,15 +1070,15 @@ export default function App() {
             <button
               onClick={() => setAppState('world_map')}
               className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-transform"
-              title="Kibo Math World Map"
+              title="Kibo Climb World Map"
             >
               <img
                 src="/logo.png"
-                alt="Kibo Math"
+                alt="Kibo Climb"
                 className="w-8 h-8 sm:w-9 sm:h-9 object-contain filter drop-shadow-xs"
               />
               <span className="font-black text-slate-800 text-base sm:text-lg tracking-tight hidden xs:inline">
-                Kibo<span className="text-kibo-teal">Math</span>
+                Kibo<span className="text-kibo-teal">Climb</span>
               </span>
             </button>
 

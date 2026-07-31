@@ -112,7 +112,7 @@ export default function WorldMap({
         <div className="flex items-center gap-2">
           <img
             src="/logo.png"
-            alt="Kibo Math"
+            alt="Kibo Climb"
             className="w-7 h-7 object-contain filter drop-shadow-xs"
           />
           <span className="text-xs font-black uppercase tracking-wider text-amber-950 bg-amber-100/90 px-3 py-1 rounded-full border border-amber-300 shadow-xs">
