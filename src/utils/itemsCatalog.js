@@ -1,7 +1,6 @@
 // Expanded Workshop Catalog with Categories & Rarity Tiers for Kibo Math
 
 export const ITEM_CATEGORIES = [
-  { id: 'all', label: 'All Items' },
   { id: 'powerups', label: 'Power-Ups' },
   { id: 'headwear', label: 'Headwear' },
   { id: 'gear', label: 'Gear' },

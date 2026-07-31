@@ -61,7 +61,7 @@ export default function WorkshopModal({
     background: null
   };
 
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState('powerups');
   const [sortMode, setSortMode] = useState('recommended'); // 'recommended' | 'rarity' | 'inventory'
   const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
 
