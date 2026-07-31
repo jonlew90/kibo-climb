@@ -51,31 +51,12 @@ export default function AdaptiveSessionView({
     }
   };
 
-  const handleDigitInput = (val) => {
-    soundFx.playKeyTap();
-    if (inputVal.length < 6) {
-      setInputVal((prev) => prev + val);
-    }
-  };
+  const processAnswerEvaluation = (userAnsString) => {
+    if (!userAnsString.trim()) return;
 
-  const handleDeleteDigit = () => {
-    soundFx.playKeyTap();
-    setInputVal((prev) => prev.slice(0, -1));
-  };
-
-  const handleClearInput = () => {
-    soundFx.playKeyTap();
-    setInputVal('');
-  };
-
-  const handleSubmitAnswer = (e) => {
-    if (e) e.preventDefault();
-    if (!inputVal.trim()) return;
-
-    const latencyMs = performance.now() - problemStartTimeRef.current;
-    const normUserAns = normalizeTimeAnswer(inputVal);
+    const normUserAns = normalizeTimeAnswer(userAnsString);
     const normTargetAns = normalizeTimeAnswer(currentProblem.answerString || currentProblem.answer?.toString());
-    const isCorrect = normUserAns === normTargetAns || Number(inputVal) === Number(currentProblem.answer);
+    const isCorrect = normUserAns === normTargetAns || Number(userAnsString) === Number(currentProblem.answer);
 
     if (isCorrect) {
       soundFx.playCorrect();
@@ -104,10 +85,42 @@ export default function AdaptiveSessionView({
     replenishQueueIfNeeded(nextIdx);
     setCurrentIndex(nextIdx);
 
-    // Auto-dismiss banner after 2.5s
+    // Auto-dismiss banner after 2s
     setTimeout(() => {
       setFeedbackBanner(null);
-    }, 2500);
+    }, 2000);
+  };
+
+  const handleDigitInput = (val) => {
+    soundFx.playKeyTap();
+    const newInput = (inputVal + val).trim();
+
+    const normUserAns = normalizeTimeAnswer(newInput);
+    const normTargetAns = normalizeTimeAnswer(currentProblem.answerString || currentProblem.answer?.toString());
+
+    // Auto-detect instant match
+    if (normUserAns === normTargetAns || Number(newInput) === Number(currentProblem.answer)) {
+      processAnswerEvaluation(newInput);
+      return;
+    }
+
+    // Auto-detect max length mismatch
+    if (newInput.length >= normTargetAns.length) {
+      processAnswerEvaluation(newInput);
+      return;
+    }
+
+    setInputVal(newInput);
+  };
+
+  const handleDeleteDigit = () => {
+    soundFx.playKeyTap();
+    setInputVal((prev) => prev.slice(0, -1));
+  };
+
+  const handleClearInput = () => {
+    soundFx.playKeyTap();
+    setInputVal('');
   };
 
   return (
@@ -172,7 +185,7 @@ export default function AdaptiveSessionView({
           }`}
         >
           <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200 inline-block">
-            ⚡ Question #{questionsAnswered + 1} • Tier {Math.min(8, Math.max(1, Math.floor(competenceRank / 100)))}
+            ⚡ Question #{questionsAnswered + 1} • Auto-Detection Active ⚡
           </span>
 
           <div className="text-3xl sm:text-4xl font-extrabold text-slate-800 flex items-center justify-center gap-3 flex-wrap my-1">
@@ -187,23 +200,14 @@ export default function AdaptiveSessionView({
         </div>
       </div>
 
-      {/* NUMERIC KEYPAD & SUBMIT */}
-      <div className="w-full max-w-sm mt-3 space-y-2 shrink-0">
+      {/* NUMERIC KEYPAD (AUTO-DETECTING) */}
+      <div className="w-full max-w-sm mt-3 shrink-0">
         <Keypad
           onDigit={handleDigitInput}
           onDelete={handleDeleteDigit}
           onClear={handleClearInput}
-          onSubmit={handleSubmitAnswer}
+          onSubmit={() => processAnswerEvaluation(inputVal)}
         />
-        <button
-          onClick={handleSubmitAnswer}
-          disabled={!inputVal.trim()}
-          className={`btn-3d-orange w-full py-3 text-lg rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange ${
-            !inputVal.trim() ? 'opacity-50 pointer-events-none' : ''
-          }`}
-        >
-          Submit Answer ⚡
-        </button>
       </div>
     </div>
   );
