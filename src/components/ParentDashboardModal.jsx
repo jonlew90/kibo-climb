@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw } from 'lucide-react';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
@@ -80,8 +80,6 @@ export default function ParentDashboardModal({
     setNotifPrefs(updated);
     saveNotificationPrefs(updated);
   };
-
-  if (!isOpen) return null;
 
   const handleChangePin = (e) => {
     e.preventDefault();
