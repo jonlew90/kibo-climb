@@ -231,23 +231,22 @@ export default function ParentDashboardModal({
 
               const getParentFriendlyDesc = (badge) => {
                 switch (badge.id) {
-                  case 'perfect_sprint':
-                    return '100% Precision: Perfect accuracy on a 20-problem sprint';
-                  case 'clock_master':
-                    return 'Clock & Time: Reading analog clocks & calculating elapsed time';
-                  case 'coin_counter':
-                    return 'Money Math: Rapid coin counting and change calculation';
-                  case 'master_9s':
-                    return 'Multiplication Strategy: 10-finger magic for 9 times tables';
-                  case 'speed_demon':
-                    return 'High Speed Recall: Solved 20 problems in under 40s (≤2.0s/prob)';
+                  case 'rank_200':
+                  case 'rank_500':
+                  case 'rank_1000':
+                    return `Competence Milestone: ${badge.description}`;
+                  case 'master_addition':
+                  case 'master_multiplication':
+                  case 'master_time_money':
+                    return `Topic Mastery: ${badge.description}`;
+                  case 'adaptive_streak_20':
+                    return '20-Question Correct Streak: Answered 20 consecutive adaptive problems without error';
+                  case 'competence_surge':
+                    return 'Competence Surge: Gained +50 rating points in a single session';
                   case 'streak_3':
                   case 'streak_7':
+                  case 'streak_30':
                     return 'Habit Building: Maintained a multi-day practice streak';
-                  case 'summit_sync':
-                    return 'Number Theory: LCM & GCF step-by-step logic';
-                  case 'exponent_peak':
-                    return 'Advanced Algebra: Powers, roots, and order of operations';
                   default:
                     return badge.description || 'Mastered math topic skill badge';
                 }

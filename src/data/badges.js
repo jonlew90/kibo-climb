@@ -110,22 +110,22 @@ export const BADGES_CATALOG = [
     reqText: 'Equip a Kibo Shield'
   },
 
-  // RESILIENCE BADGES
+  // RESILIENCE & ADAPTIVE STREAK BADGES
   {
-    id: 'perfect_sprint',
-    title: 'Accuracy Ace',
-    description: 'Achieved 100% accuracy on a full 20-problem sprint!',
+    id: 'adaptive_streak_20',
+    title: 'Adaptive Streak Master',
+    description: 'Answered 20 consecutive adaptive math problems correctly in a single session!',
     category: 'resilience',
     icon: '🎯',
-    reqText: 'Get 100% Accuracy on a Sprint'
+    reqText: 'Achieve a 20-Question Correct Streak'
   },
   {
-    id: 'speed_demon',
-    title: 'Lightning Climber',
-    description: 'Complete a 20-problem sprint in 40 seconds or less (avg ≤ 2.0s/problem) with at least 90% accuracy!',
+    id: 'competence_surge',
+    title: 'Competence Surge',
+    description: 'Gained +50 Competence Rank points in a single adaptive climb session!',
     category: 'resilience',
-    icon: '🏃',
-    reqText: 'Achieve ≤2.0s Avg Latency on a 20-Problem Sprint'
+    icon: '🚀',
+    reqText: 'Gain +50 Competence Rank in a Session'
   }
 ];
 
