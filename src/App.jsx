@@ -1139,9 +1139,9 @@ export default function App() {
           {/* Brand Logo & Stats */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
-              onClick={() => setAppState('world_map')}
+              onClick={() => setAppState('adaptive_session')}
               className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-transform"
-              title="Kibo Climb World Map"
+              title="Kibo Climb Main Session"
             >
               <img
                 src="/logo.png"
@@ -1207,8 +1207,8 @@ export default function App() {
         </header>
       )}
 
-      {/* PURE ADAPTIVE MASTERY SESSION VIEW */}
-      {appState === 'adaptive_session' && (
+      {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
+      {(appState === 'adaptive_session' || appState === 'world_map' || appState === 'launch' || !['sprint', 'victory', 'skill_map', 'placement_test'].includes(appState)) && (
         <AdaptiveSessionView
           equippedItems={equippedItems}
           sparks={sparks}
