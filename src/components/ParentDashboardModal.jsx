@@ -247,13 +247,15 @@ export default function ParentDashboardModal({
                 </div>
 
                 <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
-                  <span className="text-[9px] text-slate-500 uppercase block font-black">Fastest 10-Q</span>
+                  <span className="text-[9px] text-slate-500 uppercase block font-black">Fastest 10-Q Speed</span>
                   <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.fastest10QuestionsTime ? `${personalRecords.fastest10QuestionsTime}s` : 'N/A'}</span>
+                  <span className="text-[8px] font-bold text-slate-400 block mt-0.5">Best time for 10 Qs</span>
                 </div>
 
                 <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
                   <span className="text-[9px] text-slate-500 uppercase block font-black">Perfect Runs</span>
                   <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.mostPerfectSessions || 0} Runs</span>
+                  <span className="text-[8px] font-bold text-slate-400 block mt-0.5">100% Acc Sessions</span>
                 </div>
               </div>
             </section>
@@ -261,67 +263,52 @@ export default function ParentDashboardModal({
             {/* Recent Milestones & Badges Summary Card */}
             {(() => {
               const unlockedCount = unlockedBadges ? unlockedBadges.length : 0;
-              const totalBadgesCount = BADGES_CATALOG ? BADGES_CATALOG.length : 8;
+              const totalBadgesCount = BADGES_CATALOG ? BADGES_CATALOG.length : 12;
 
-              const getParentFriendlyDesc = (badge) => {
-                switch (badge.id) {
-                  case 'rank_200':
-                  case 'rank_500':
-                  case 'rank_1000':
-                    return `Competence Milestone: ${badge.description}`;
-                  case 'master_addition':
-                  case 'master_multiplication':
-                  case 'master_time_money':
-                    return `Topic Mastery: ${badge.description}`;
-                  case 'adaptive_streak_20':
-                    return '20-Question Correct Streak: Answered 20 consecutive adaptive problems without error';
-                  case 'competence_surge':
-                    return 'Competence Surge: Gained +50 rating points in a single session';
-                  case 'streak_3':
-                  case 'streak_7':
-                  case 'streak_30':
-                    return 'Habit Building: Maintained a multi-day practice streak';
-                  default:
-                    return badge.description || 'Mastered math topic skill badge';
-                }
-              };
-
-              const recentBadges = (BADGES_CATALOG || []).filter((b) => unlockedBadges.includes(b.id)).slice(0, 3);
+              const allEarnedBadges = (BADGES_CATALOG || []).filter((b) => unlockedBadges.includes(b.id));
 
               return (
                 <section className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 text-left space-y-3">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2 flex-wrap gap-2">
                     <div className="flex items-center gap-2 text-amber-700">
                       <Award className="w-5 h-5 stroke-[2.5]" />
-                      <h4 className="font-extrabold text-sm text-slate-800">
-                        Recent Milestones ({unlockedCount}/{totalBadgesCount})
-                      </h4>
+                      <div>
+                        <h4 className="font-extrabold text-sm text-slate-800">
+                          Earned Trail Badges & Requirements ({unlockedCount}/{totalBadgesCount})
+                        </h4>
+                        <p className="text-[10px] text-slate-500 font-medium">Review earned badges and their exact achievement criteria</p>
+                      </div>
                     </div>
                     <span className="text-[11px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
                       {unlockedCount > 0 ? `${Math.round((unlockedCount / totalBadgesCount) * 100)}% Unlocked` : 'Trail Badges'}
                     </span>
                   </div>
 
-                  {recentBadges.length === 0 ? (
+                  {allEarnedBadges.length === 0 ? (
                     <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-amber-900 text-xs font-semibold leading-relaxed flex items-center gap-2">
                       <span className="text-base">🏅</span>
                       <span>No milestones unlocked yet. Completing adaptive climb sessions with high accuracy earns trail badges!</span>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                      {recentBadges.map((badge) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                      {allEarnedBadges.map((badge) => (
                         <div
                           key={badge.id}
-                          className="bg-slate-50 border border-amber-200/80 rounded-xl p-3 flex flex-col justify-between space-y-1.5 shadow-xs hover:border-amber-400 transition-colors"
+                          className="bg-amber-50/60 border-2 border-amber-200 rounded-xl p-3 flex flex-col justify-between space-y-1.5 shadow-xs"
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-2xl filter drop-shadow-xs">{badge.icon}</span>
-                            <h5 className="font-black text-xs text-slate-800 leading-tight">
-                              {badge.name}
-                            </h5>
+                            <div>
+                              <h5 className="font-black text-xs text-slate-800 leading-tight">
+                                {badge.title || badge.name}
+                              </h5>
+                              <span className="text-[9px] font-extrabold text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded-full border border-amber-300 inline-block mt-0.5">
+                                🎯 Required: {badge.reqText || 'Complete math climbs'}
+                              </span>
+                            </div>
                           </div>
-                          <p className="text-[10px] font-semibold text-slate-600 leading-snug">
-                            {getParentFriendlyDesc(badge)}
+                          <p className="text-[10px] font-medium text-slate-600 leading-snug">
+                            {badge.description}
                           </p>
                         </div>
                       ))}
