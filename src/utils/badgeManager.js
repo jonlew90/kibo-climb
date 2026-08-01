@@ -87,7 +87,6 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         if (
           (userState.inSessionStreak || 0) >= 12 ||
           (userState.maxSessionStreak || 0) >= 12 ||
-          (userState.cumulativeCorrectStreak || 0) >= 12 ||
           (lastSprintResult?.correctStreak || 0) >= 12
         ) {
           unlocked = true;
@@ -122,6 +121,7 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         if ((userState.cumulativeCorrectStreak || 0) >= 50 || (userState.personalRecords?.highestCorrectStreak || 0) >= 50) {
           unlocked = true;
         }
+        break;
       default:
         break;
     }

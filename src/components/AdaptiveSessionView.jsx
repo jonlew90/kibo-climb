@@ -308,6 +308,18 @@ export default function AdaptiveSessionView({
 
       storageService.saveUserData({ personalRecords: updatedRecords });
       if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
+
+      // Immediately evaluate and claim any newly met badges at block completion (e.g. 3rd Perfect Run)
+      const postBlockUserData = storageService.getUserData();
+      const blockBadgeEval = evaluateBadges({
+        ...postBlockUserData,
+        inSessionStreak: evalResult.nextInSessionStreak,
+        competenceRank: evalResult.nextCompetenceRank,
+        blockRatingGain: nextBlockRatingGain
+      });
+      if (blockBadgeEval?.updatedUnlocked && onUnlockedBadgesChange) {
+        onUnlockedBadgesChange(blockBadgeEval.updatedUnlocked);
+      }
     }
 
     const nextIdx = currentIndex + 1;
