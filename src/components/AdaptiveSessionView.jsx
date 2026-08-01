@@ -479,18 +479,22 @@ export default function AdaptiveSessionView({
             isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''
           }`}
         >
-          <div className="flex items-center justify-center gap-1.5 min-h-[26px] shrink-0">
+          <div className="h-7 flex items-center justify-center gap-1.5 shrink-0 overflow-hidden">
             <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0">
               ⚡ Q #{currentQuestionNum}/12
             </span>
-            {inSessionStreak >= 3 && (
-              <span className="text-[10px] font-black uppercase text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full border border-orange-300 animate-pulse shrink-0">
-                🔥 {inSessionStreak} Streak {inSessionStreak >= 5 ? '(1.5x⚡)' : '(+5⚡)'}
-              </span>
-            )}
+            <span
+              className={`text-[10px] font-black uppercase rounded-full border shrink-0 transition-all duration-300 ${
+                inSessionStreak >= 3
+                  ? 'opacity-100 scale-100 text-orange-700 bg-orange-100 px-2 py-0.5 border-orange-300 animate-pulse'
+                  : 'opacity-0 scale-90 pointer-events-none px-0 py-0 border-transparent max-w-0 overflow-hidden'
+              }`}
+            >
+              🔥 {inSessionStreak} Streak
+            </span>
             {isDoubleSparksActive && (
               <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0">
-                🧪 2x Sparks
+                🧪 2x
               </span>
             )}
             <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs shrink-0">
