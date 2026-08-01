@@ -214,3 +214,20 @@ export function checkSkillMasteryEvents(prevRating, nextRating, existingEvents =
 
   return newEvents.slice(0, 3);
 }
+
+/**
+ * Evaluates calibration phase completion when totalProblemsSolved reaches 15.
+ * Locks in the user's initial calibrated rating as baselineRating and awards
+ * a single clean "Scout Placement Bonus" (+30 Sparks).
+ */
+export function checkCalibrationCompletion(totalProblemsSolved, currentRating, isAlreadyCalibrated = false) {
+  if (totalProblemsSolved >= 15 && !isAlreadyCalibrated) {
+    return {
+      justCalibrated: true,
+      baselineRating: currentRating,
+      scoutBonusSparks: 30,
+      bannerMessage: '🎯 Placement Calibration Complete! Baseline Rating Locked (+30 Scout Placement Bonus ⚡)'
+    };
+  }
+  return { justCalibrated: false, scoutBonusSparks: 0, baselineRating: null };
+}

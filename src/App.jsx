@@ -207,10 +207,27 @@ export default function App() {
     };
     setPersonalRecords(nextRecords);
 
+    const uData = storageService.getUserData();
+    const currentRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
+    
+    let extraSparks = 0;
+    let newBaseline = uData.baselineRating;
+    let newlyCalibrated = uData.isCalibrated || false;
+
+    if (nextTotal >= 15 && !uData.isCalibrated) {
+      newBaseline = currentRating;
+      newlyCalibrated = true;
+      extraSparks = 30;
+      setSparks((prev) => prev + extraSparks);
+      soundFx.playVictory();
+    }
+
     storageService.saveUserData({
       totalProblemsSolved: nextTotal,
       cumulativeCorrectStreak: nextStreak,
-      personalRecords: nextRecords
+      personalRecords: nextRecords,
+      ...(extraSparks > 0 ? { sparks: (sparks || 0) + extraSparks } : {}),
+      ...(newlyCalibrated ? { baselineRating: newBaseline, isCalibrated: true } : {})
     });
   };
 
