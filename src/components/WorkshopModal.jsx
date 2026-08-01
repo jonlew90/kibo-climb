@@ -391,6 +391,11 @@ export default function WorkshopModal({
                         Capacity: {shieldOwned}/2
                       </span>
                     )}
+                    {isConsumable && (item.id === 'double_sparks_potion' || item.id === 'double_coin_potion') && (
+                      <span className="text-[10px] font-extrabold text-purple-900 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+                        Owned: {consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -412,7 +417,7 @@ export default function WorkshopModal({
                         className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5"
                       >
                         <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                        Buy for {item.cost} ⚡
+                        Buy ({item.cost} ⚡)
                       </button>
                     ) : (
                       <button

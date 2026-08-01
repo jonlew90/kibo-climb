@@ -1236,6 +1236,8 @@ export default function App() {
           totalProblemsSolved={totalProblemsSolved}
           isFTUX={showFirstLaunchOnboardingModal}
           isDoubleSparksActive={isDoubleSparksActive}
+          consumables={consumables}
+          onToggleDoubleSparksPotion={handleToggleDoubleSparksPotion}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
           onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
