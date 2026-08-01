@@ -317,8 +317,15 @@ export default function WorkshopModal({
       {/* DEDICATED INDEPENDENT ITEM GRID SCROLL CONTAINER */}
       <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6">
         <div className="space-y-3 pb-6">
-          {sortShopItems(currentCategoryItems, sparks, unlockedItems, equippedItems).map((item) => {
-            const isConsumable = item.isConsumable;
+          {currentCategoryItems.length === 0 ? (
+            <div className="py-12 text-center text-slate-500 font-bold space-y-2 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-6">
+              <ShoppingBag className="w-10 h-10 mx-auto text-slate-400 stroke-[1.5]" />
+              <p className="text-sm font-black text-slate-700">No items available in this category yet!</p>
+              <p className="text-xs text-slate-500">Check back soon for new gear and power-ups.</p>
+            </div>
+          ) : (
+            sortShopItems(currentCategoryItems, sparks, unlockedItems, equippedItems).map((item) => {
+              const isConsumable = item.isConsumable;
             const shieldOwned = consumables?.shieldCount ?? 1;
             const isShieldFull = isConsumable && item.id === 'kibo_shield' && shieldOwned >= 2;
             const isUnlocked = isConsumable ? false : unlockedItems.includes(item.id);
@@ -497,7 +504,8 @@ export default function WorkshopModal({
                 </div>
               </div>
             );
-          })}
+          })
+          )}
         </div>
       </main>
 

@@ -1226,11 +1226,12 @@ export default function App() {
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => handleOpenWorkshop()}
-              className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-kibo-orange hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs px-2.5 py-1.5 rounded-xl shadow-sm transition-all active:scale-95"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-kibo-orange hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs px-2.5 py-1.5 rounded-xl shadow-sm transition-all active:scale-95 shrink-0"
               aria-label="Open Kibo Workshop"
+              title="Open Kibo Workshop & Gear"
             >
-              <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-              <span className="hidden xs:inline">Workshop</span>
+              <ShoppingBag className="w-4 h-4 text-white stroke-[2.5]" />
+              <span className="inline">Workshop</span>
             </button>
 
             <button
