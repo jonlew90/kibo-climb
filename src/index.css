@@ -186,6 +186,29 @@
   pointer-events: none;
 }
 
+@keyframes slotPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.6);
+  }
+  25% {
+    opacity: 1;
+    transform: translate(-50%, -6px) scale(1.25);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(-50%, -10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -18px) scale(0.85);
+  }
+}
+
+.animate-slot-pop {
+  animation: slotPop 1.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
 /* Prevent unwanted double-tap zoom & text selection on mobile/tablet */
 html, body {
   touch-action: manipulation;

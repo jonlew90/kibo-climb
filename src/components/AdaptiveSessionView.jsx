@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame } from 'lucide-react';
 import Mascot from './Mascot';
 import Keypad from './Keypad';
+import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
 import { generateProblems } from '../utils/mathGenerator';
 import { soundFx } from '../utils/audio';
@@ -213,7 +214,7 @@ export default function AdaptiveSessionView({
       setCompetenceRank(evalResult.nextCompetenceRank);
       setShowFrustrationCard(false);
 
-      const toastMsg = evalResult.streakBannerText ? evalResult.streakBannerText : `Correct! Competence Rank +${evalResult.rankDelta} ⭐ (${evalResult.fluencyLabel})`;
+      const toastMsg = evalResult.streakBannerText ? evalResult.streakBannerText : `Correct! (${evalResult.fluencyLabel})`;
       triggerToastBanner({
         type: 'success',
         text: toastMsg
@@ -683,9 +684,12 @@ export default function AdaptiveSessionView({
                     </span>
                   );
                 })()}
-                <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs shrink-0">
-                  <Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />
-                  Rank: {competenceRank}
+                <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs shrink-0 relative">
+                  <RollingNumberTicker
+                    value={competenceRank}
+                    label="Rank:"
+                    icon={<Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />}
+                  />
                 </span>
               </div>
 

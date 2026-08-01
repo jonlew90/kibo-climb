@@ -16,6 +16,7 @@ import SprintResultsModal from './components/SprintResultsModal';
 import BadgesModal from './components/BadgesModal';
 import AdaptiveSessionView from './components/AdaptiveSessionView';
 import DevControlPanel from './components/DevControlPanel';
+import RollingNumberTicker from './components/RollingNumberTicker';
 import { useDevState } from './hooks/useDevState';
 import { evaluateBadges } from './utils/badgeManager';
 import { BADGES_CATALOG } from './data/badges';
@@ -1213,9 +1214,11 @@ export default function App() {
             </div>
 
             {/* Sparks Counter */}
-            <div className="flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full text-xs font-black shadow-xs">
-              <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400 stroke-[2.5]" />
-              <span>{sparks}</span>
+            <div className="flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-full text-xs font-black shadow-xs relative">
+              <RollingNumberTicker
+                value={sparks}
+                icon={<Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400 stroke-[2.5]" />}
+              />
             </div>
           </div>
 
