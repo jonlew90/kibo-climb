@@ -127,14 +127,18 @@ export default function AdaptiveSessionView({
 
   const bannerTimerRef = useRef(null);
 
-  useEffect(() => {
-    setFeedbackBanner({
-      type: 'success',
-      text: "Welcome to Kibo Climb! Let's start your organic climb! 🏔️✨"
-    });
+  const triggerToastBanner = (bannerObj, durationMs = 1800) => {
+    setFeedbackBanner(bannerObj);
     if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
     bannerTimerRef.current = setTimeout(() => {
       setFeedbackBanner(null);
+    }, durationMs);
+  };
+
+  useEffect(() => {
+    triggerToastBanner({
+      type: 'success',
+      text: "Welcome to Kibo Climb! Let's start your organic climb! 🏔️✨"
     }, 7500);
 
     return () => {
@@ -210,10 +214,10 @@ export default function AdaptiveSessionView({
 
       const boostLabel = isDoubleSparksActive ? ' (2x Potion 🧪)' : '';
       const toastMsg = evalResult.streakBannerText ? `${evalResult.streakBannerText}${boostLabel}` : `Correct! Competence Rank +${evalResult.rankDelta} ⭐ (${evalResult.fluencyLabel})${boostLabel}`;
-      setFeedbackBanner({
+      triggerToastBanner({
         type: 'success',
         text: toastMsg
-      });
+      }, 1800);
     } else {
       KiboAudioManager.playIncorrectSFX();
       setMascotState('incorrect');
@@ -223,7 +227,7 @@ export default function AdaptiveSessionView({
       setTimeout(() => setIsShaking(false), 400);
 
       setCompetenceRank(evalResult.nextCompetenceRank);
-      setFeedbackBanner({ type: 'error', text: `Incorrect! Answer was ${normTargetAns}` });
+      triggerToastBanner({ type: 'error', text: `Incorrect! Answer was ${normTargetAns}` }, 2000);
 
       if (evalResult.triggerFrustrationCircuit) {
         setShowFrustrationCard(true);
