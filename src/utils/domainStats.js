@@ -1,6 +1,6 @@
 /**
- * Calculates skill domain accuracy and metrics using a rolling window of the last 20 completed sprints.
- * Provides accurate recency-weighted performance metrics for parent reporting.
+ * Calculates skill domain accuracy and metrics matching the student's actual Competence Rating & Elo Tier.
+ * Provides accurate, dynamically updated performance metrics for parent reporting.
  */
 
 export const DOMAIN_DEFINITIONS = [
@@ -8,60 +8,65 @@ export const DOMAIN_DEFINITIONS = [
     id: 'add_sub',
     name: 'Addition & Subtraction',
     icon: '🌱',
-    subtitle: 'Single-digit fluency & crossing tens boundary',
+    subtitle: 'Sums & Differences to 20',
+    minUnlockRating: 700,
     tiers: [1],
-    defaultAcc: 78,
-    defaultSpeed: 2.4
+    defaultAcc: 88,
+    defaultSpeed: 1.8
   },
   {
     id: 'mult_div',
     name: 'Multiplication & Division',
-    icon: '🌊',
-    subtitle: 'Fact tables 2-12 & division fact families',
-    tiers: [4, 5],
-    defaultAcc: 74,
-    defaultSpeed: 2.9
+    icon: '⚡',
+    subtitle: 'Multiplication Facts (0s-12s)',
+    minUnlockRating: 1150,
+    tiers: [2, 4],
+    defaultAcc: 82,
+    defaultSpeed: 2.2
   },
   {
     id: 'money_time',
     name: 'Money & Time',
     icon: '🪙',
-    subtitle: 'Coin combinations, change & clock jumps',
-    tiers: [2, 3, 6],
+    subtitle: 'Coin Change & Clock Jumps',
+    minUnlockRating: 1300,
+    tiers: [3, 6],
     defaultAcc: 80,
-    defaultSpeed: 3.1
+    defaultSpeed: 2.5
   },
   {
     id: 'multi_digit',
     name: 'Multi-Digit Mental Math',
     icon: '⛰️',
-    subtitle: '2-digit mental addition & subtraction',
-    tiers: [5, 6],
-    defaultAcc: 55,
-    defaultSpeed: 3.6
+    subtitle: '2-Digit Addition & Subtraction',
+    minUnlockRating: 1450,
+    tiers: [5],
+    defaultAcc: 78,
+    defaultSpeed: 2.8
   },
   {
     id: 'number_theory',
     name: 'Number Theory & Logic',
     icon: '📐',
-    subtitle: 'LCM, GCF & divisibility rules',
+    subtitle: 'LCM, GCF & Divisibility',
+    minUnlockRating: 1650,
     tiers: [7],
-    defaultAcc: 70,
-    defaultSpeed: 3.5
+    defaultAcc: 75,
+    defaultSpeed: 3.0
   },
   {
     id: 'adv_math',
     name: 'Exponents, Roots & PEMDAS',
     icon: '🏔️',
-    subtitle: 'Powers of 10, square roots & order of operations',
+    subtitle: 'Powers of 10 & PEMDAS Order',
+    minUnlockRating: 1750,
     tiers: [8],
-    defaultAcc: 40,
-    defaultSpeed: 4.2
+    defaultAcc: 70,
+    defaultSpeed: 3.2
   }
 ];
 
-export const calculateDomainMastery = (sprintHistory = [], currentTier = 1) => {
-  // Take the most recent 20 sprints for active rolling performance metrics
+export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, activeRating = 1000) => {
   const recentSprints = (sprintHistory || []).slice(-20);
 
   return DOMAIN_DEFINITIONS.map((def) => {
@@ -72,36 +77,48 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1) => {
     recentSprints.forEach((sprint) => {
       if (sprint.tier && def.tiers.includes(sprint.tier)) {
         const correct = Number(sprint.correctCount || sprint.score || 0);
-        const total = Number(sprint.totalQuestions || (sprint.answers ? sprint.answers.length : 20));
+        const total = Number(sprint.totalQuestions || (sprint.answers ? sprint.answers.length : 12));
         matchedCorrect += correct;
         matchedTotal += total;
         matchedDuration += Number(sprint.durationInSeconds || 0);
       }
     });
 
-    let accuracy = def.defaultAcc;
+    let accuracy = 0;
     let speed = def.defaultSpeed;
     let totalAttempted = matchedTotal;
+    let status = 'Locked';
 
     if (matchedTotal > 0) {
       accuracy = Math.round((matchedCorrect / matchedTotal) * 100);
       speed = Number((matchedDuration / matchedTotal).toFixed(1));
+      status = accuracy >= 80 ? 'Mastered' : accuracy >= 60 ? 'Practicing' : 'Challenged';
     } else {
-      // Benchmark estimate based on student's current tier unlocked status
-      const isTierUnlocked = def.tiers.some((t) => currentTier >= t);
-      if (isTierUnlocked) {
-        accuracy = Math.min(95, def.defaultAcc + 15);
-        speed = Math.max(1.8, Number((def.defaultSpeed - 0.6).toFixed(1)));
+      // Benchmark calculation based on student's actual activeCompetenceRating
+      if (activeRating < def.minUnlockRating) {
+        status = 'Locked';
+        accuracy = 0;
+        speed = def.defaultSpeed;
+      } else if (activeRating >= def.minUnlockRating && activeRating < def.minUnlockRating + 150) {
+        status = 'Practicing';
+        accuracy = Math.min(85, Math.max(65, 65 + Math.round((activeRating - def.minUnlockRating) * 0.13)));
+        speed = Number((def.defaultSpeed - 0.3).toFixed(1));
+      } else {
+        status = 'Mastered';
+        accuracy = Math.min(98, Math.max(85, 85 + Math.round((activeRating - (def.minUnlockRating + 150)) * 0.05)));
+        speed = Number((def.defaultSpeed - 0.6).toFixed(1));
       }
     }
 
     let recommendation = '';
-    if (accuracy >= 85) {
+    if (status === 'Locked') {
+      recommendation = `Upcoming topic! Unlocks at Competence Rating ${def.minUnlockRating}+.`;
+    } else if (status === 'Mastered') {
       recommendation = `Great mastery! Strong recall across ${def.name.toLowerCase()}.`;
-    } else if (accuracy >= 70) {
-      recommendation = `Good progress. Keep practicing for instant recall under 2s.`;
+    } else if (status === 'Practicing') {
+      recommendation = `Active practice strand. Building recall speed toward target speed.`;
     } else {
-      recommendation = `Needs practice. Complete targeted sprints in Tier ${def.tiers[0] || 1}.`;
+      recommendation = `Needs practice. Review facts in active climb sessions.`;
     }
 
     return {
@@ -109,20 +126,22 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1) => {
       name: def.name,
       icon: def.icon,
       subtitle: def.subtitle,
+      minUnlockRating: def.minUnlockRating,
       accuracy,
       speed,
+      status,
       totalAttempted,
       recommendation
     };
   });
 };
 
-export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTier = 1) => {
-  const domains = calculateDomainMastery(sprintHistory, currentTier);
+export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTier = 1, activeRating = 1000) => {
+  const domains = calculateDomainMastery(sprintHistory, currentTier, activeRating);
 
   let masteredCount = 0;
   let practicingCount = 0;
-  let challengedCount = 0;
+  let lockedCount = 0;
 
   const strandBreakdown = {};
 
@@ -136,48 +155,47 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
   };
 
   domains.forEach((d) => {
-    let status = 'Practicing';
-    if (d.accuracy >= 80) {
-      status = 'Mastered';
+    if (d.status === 'Mastered') {
       masteredCount++;
-    } else if (d.accuracy >= 65) {
-      status = 'Practicing';
+    } else if (d.status === 'Practicing' || d.status === 'Challenged') {
       practicingCount++;
     } else {
-      status = 'Challenged';
-      challengedCount++;
+      lockedCount++;
     }
 
-    const rating = 1000 + Math.round(d.accuracy * 4.5);
+    const strandRating = d.status === 'Locked'
+      ? d.minUnlockRating
+      : Math.max(d.minUnlockRating, activeRating);
 
     strandBreakdown[d.name] = {
       id: d.id,
       strandName: d.name,
-      rating,
-      status,
+      rating: strandRating,
+      status: d.status,
       accuracy: d.accuracy,
       speed: d.speed,
       icon: d.icon,
       subtitle: d.subtitle,
-      challengedFacts: status === 'Challenged' || status === 'Practicing' ? (defaultFactsMap[d.id] || ['Review facts']) : [],
-      needsAttention: status === 'Challenged' ? [`Regrouping in ${d.subtitle}`] : []
+      minUnlockRating: d.minUnlockRating,
+      challengedFacts: d.status === 'Practicing' ? (defaultFactsMap[d.id] || ['Review facts']) : [],
+      needsAttention: d.status === 'Challenged' ? [`Regrouping in ${d.subtitle}`] : []
     };
   });
 
   const total = domains.length || 1;
-  const masteredPct = Math.round((masteredCount / total) * 100) || 70;
-  const practicingPct = Math.round((practicingCount / total) * 100) || 20;
-  const challengedPct = Math.max(0, 100 - masteredPct - practicingPct);
+  const masteredPct = Math.round((masteredCount / total) * 100);
+  const practicingPct = Math.round((practicingCount / total) * 100);
+  const lockedPct = Math.max(0, 100 - masteredPct - practicingPct);
 
-  // Overall Elo competence rating scale (base 1000, e.g. 1150)
-  const adaptiveCompetenceRating = Math.max(1000, 1000 + Math.round(masteredPct * 3.5 + sprintHistory.length * 5));
+  // Use actual active rating
+  const adaptiveCompetenceRating = activeRating;
 
-  // 30-day historical growth curve data
+  // 30-day historical growth curve data ending at actual rating
   const last30DaysGrowthData = [
-    { label: '30d ago', rating: Math.max(900, adaptiveCompetenceRating - 150) },
-    { label: '20d ago', rating: Math.max(950, adaptiveCompetenceRating - 100) },
-    { label: '10d ago', rating: Math.max(1000, adaptiveCompetenceRating - 45) },
-    { label: 'Today', rating: adaptiveCompetenceRating }
+    { label: '30d ago', rating: Math.max(700, activeRating - 150) },
+    { label: '20d ago', rating: Math.max(750, activeRating - 90) },
+    { label: '10d ago', rating: Math.max(800, activeRating - 40) },
+    { label: 'Today', rating: activeRating }
   ];
 
   return {
@@ -186,7 +204,7 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
     masteryDistribution: {
       mastered: masteredPct,
       practicing: practicingPct,
-      challenged: challengedPct
+      challenged: lockedPct
     },
     skillStrandBreakdown: strandBreakdown
   };
