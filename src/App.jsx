@@ -16,6 +16,7 @@ import SprintResultsModal from './components/SprintResultsModal';
 import BadgesModal from './components/BadgesModal';
 import AdaptiveSessionView from './components/AdaptiveSessionView';
 import { evaluateBadges } from './utils/badgeManager';
+import { BADGES_CATALOG } from './data/badges';
 import { generateProblems } from './utils/mathGenerator';
 import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS, calculateStars } from './utils/curriculum';
 import { getItemById } from './utils/itemsCatalog';
@@ -1182,10 +1183,11 @@ export default function App() {
                 soundFx.playKeyTap();
                 setShowBadgesModal(true);
               }}
-              className="p-1.5 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl text-amber-900 font-extrabold active:scale-95 transition-all shadow-xs"
-              title="View Trail Badges"
+              className="px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl text-amber-900 font-extrabold text-xs active:scale-95 transition-all shadow-xs flex items-center gap-1.5"
+              title="View Trophies & Records"
             >
               <Award className="w-4 h-4 text-amber-700 stroke-[2.5]" />
+              <span>{unlockedBadges.length}/{BADGES_CATALOG.length}</span>
             </button>
 
             <button

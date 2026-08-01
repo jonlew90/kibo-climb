@@ -158,25 +158,30 @@ export default function BadgesModal({
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            🌟 All Badges
+            🌟 All Badges ({unlockedCount}/{totalBadges})
           </button>
 
-          {Object.entries(BADGE_CATEGORIES).map(([key, cat]) => (
-            <button
-              key={key}
-              onClick={() => {
-                soundFx.playKeyTap();
-                setActiveCategory(key);
-              }}
-              className={`py-1.5 px-3 text-[11px] font-extrabold rounded-xl shrink-0 transition-all ${
-                activeCategory === key
-                  ? 'bg-amber-500 text-white shadow-sm scale-[1.02]'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {cat.icon} {cat.label}
-            </button>
-          ))}
+          {Object.entries(BADGE_CATEGORIES).map(([key, cat]) => {
+            const catBadges = BADGES_CATALOG.filter((b) => b.category === key);
+            const catUnlocked = catBadges.filter((b) => unlockedSet.has(b.id)).length;
+
+            return (
+              <button
+                key={key}
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setActiveCategory(key);
+                }}
+                className={`py-1.5 px-3 text-[11px] font-extrabold rounded-xl shrink-0 transition-all ${
+                  activeCategory === key
+                    ? 'bg-amber-500 text-white shadow-sm scale-[1.02]'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {cat.icon} {cat.label} ({catUnlocked}/{catBadges.length})
+              </button>
+            );
+          })}
         </div>
 
         {/* Badge Grid */}

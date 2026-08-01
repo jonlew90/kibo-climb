@@ -264,7 +264,7 @@ export default function ParentDashboardModal({
             {/* Recent Milestones & Badges Summary Card */}
             {(() => {
               const unlockedCount = unlockedBadges ? unlockedBadges.length : 0;
-              const totalBadgesCount = BADGES_CATALOG ? BADGES_CATALOG.length : 12;
+              const totalBadgesCount = BADGES_CATALOG.length;
 
               const allEarnedBadges = (BADGES_CATALOG || []).filter((b) => unlockedBadges.includes(b.id));
 
@@ -496,7 +496,7 @@ export default function ParentDashboardModal({
                   <h4 className="font-extrabold text-sm text-slate-800">Earned Trail Badges</h4>
                 </div>
                 <span className="text-xs font-extrabold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
-                  {unlockedBadges.length} Unlocked
+                  {unlockedBadges.length} / {BADGES_CATALOG.length} Unlocked
                 </span>
               </div>
 
