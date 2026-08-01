@@ -39,6 +39,9 @@ export default function WorkshopModal({
     headwear: null,
     gear: null,
     outfits: null,
+    pets: null,
+    fx: null,
+    skins: null,
     effects: null,
     background: null
   };
@@ -98,7 +101,7 @@ export default function WorkshopModal({
   const computeStageEquipped = () => {
     const stageItems = [];
 
-    ['headwear', 'gear', 'outfits', 'effects', 'background'].forEach((cat) => {
+    ['headwear', 'gear', 'outfits', 'pets', 'fx', 'skins', 'effects', 'background'].forEach((cat) => {
       if (previewSlots[cat] !== null && previewSlots[cat] !== undefined) {
         if (previewSlots[cat]) {
           stageItems.push(previewSlots[cat]);

@@ -14,12 +14,24 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasCrystalCaveBg = isEquipped('bg_crystal_cave');
   const hasGoldenPalaceBg = isEquipped('bg_golden_palace');
 
-  // Auras & FX
-  const hasSparkleDust = isEquipped('sparkle_dust');
-  const hasStarlightAura = isEquipped('starlight_aura');
+  // Skins
+  const hasGoldenSkin = isEquipped('golden_skin');
+  const hasSnowWhiteSkin = isEquipped('snow_white_skin');
+  const hasMidnightSkin = isEquipped('midnight_shadow_skin');
+  const hasJadeSkin = isEquipped('emerald_jade_skin');
+
+  // Pets
+  const hasSnowyOwl = isEquipped('snowy_owl');
+  const hasAlpineFox = isEquipped('alpine_fox');
   const hasPhoenixPet = isEquipped('phoenix_pet');
   const hasFrostDragon = isEquipped('frost_dragon');
-  const hasGoldenSkin = isEquipped('golden_skin');
+  const hasCosmicGriffin = isEquipped('cosmic_griffin');
+
+  // Visual FX
+  const hasSparkleDust = isEquipped('sparkle_dust');
+  const hasStarlightAura = isEquipped('starlight_aura');
+  const hasLightningSparks = isEquipped('lightning_sparks');
+  const hasRainbowNebula = isEquipped('rainbow_nebula');
 
   // Headwear
   const hasCap = isEquipped('cap');
@@ -215,6 +227,27 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <stop offset="100%" stopColor="#78350F" />
           </linearGradient>
 
+          {/* WINTER FROST WHITE FUR GRADIENT */}
+          <linearGradient id="snowWhiteBodyGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="60%" stopColor="#F0F9FF" />
+            <stop offset="100%" stopColor="#BAE6FD" />
+          </linearGradient>
+
+          {/* MIDNIGHT OBSIDIAN FUR GRADIENT */}
+          <linearGradient id="midnightBodyGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#475569" />
+            <stop offset="55%" stopColor="#1E293B" />
+            <stop offset="100%" stopColor="#0F172A" />
+          </linearGradient>
+
+          {/* MYSTIC JADE EMERALD FUR GRADIENT */}
+          <linearGradient id="jadeBodyGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#A7F3D0" />
+            <stop offset="55%" stopColor="#10B981" />
+            <stop offset="100%" stopColor="#047857" />
+          </linearGradient>
+
           {/* Neon Headphones Gradient */}
           <linearGradient id="neonHeadphoneGrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#22D3EE" />
@@ -298,25 +331,39 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         )}
 
         {/* ==================================================== */}
-        {/* COMPANION PETS (Phoenix / Dragon)                    */}
+        {/* COMPANION PETS (Owl, Fox, Phoenix, Dragon, Griffin)  */}
         {/* ==================================================== */}
+        {hasSnowyOwl && (
+          <g className="animate-bounce" style={{ animationDuration: '3s' }} filter="url(#clayShadow)">
+            <ellipse cx="165" cy="130" rx="11" ry="14" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="2" />
+            <circle cx="165" cy="116" r="9" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="2" />
+            <polygon points="165,116 169,120 161,120" fill="#F59E0B" />
+            <circle cx="161" cy="114" r="2.5" fill="#FBBF24" />
+            <circle cx="169" cy="114" r="2.5" fill="#FBBF24" />
+            <circle cx="161" cy="114" r="1" fill="#000000" />
+            <circle cx="169" cy="114" r="1" fill="#000000" />
+          </g>
+        )}
+
+        {hasAlpineFox && (
+          <g className="animate-pulse" style={{ animationDuration: '2.8s' }} filter="url(#clayShadow)">
+            <ellipse cx="36" cy="148" rx="14" ry="10" fill="#F97316" stroke="#C2410C" strokeWidth="2" />
+            <circle cx="26" cy="142" r="8" fill="#F97316" stroke="#C2410C" strokeWidth="2" />
+            <polygon points="22,136 20,126 27,133" fill="#F97316" stroke="#C2410C" strokeWidth="1.5" />
+            <polygon points="29,136 32,126 33,134" fill="#F97316" stroke="#C2410C" strokeWidth="1.5" />
+            <ellipse cx="23" cy="145" rx="3" ry="2" fill="#FFFFFF" />
+            <circle cx="23" cy="142" r="1" fill="#000000" />
+          </g>
+        )}
+
         {hasPhoenixPet && (
           <g className="animate-bounce" style={{ animationDuration: '2.2s' }} filter="url(#clayShadow)">
-            {/* Phoenix Trailing Flame Tail */}
             <path d="M 158 75 Q 142 92 148 108 Q 160 96 162 80 Z" fill="#EF4444" />
             <path d="M 160 78 Q 148 94 154 105" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round" />
-            
-            {/* Phoenix Body */}
             <ellipse cx="165" cy="62" rx="14" ry="18" fill="url(#thumbLavaGrad)" stroke="#9A3412" strokeWidth="2.5" />
-            
-            {/* Phoenix Head & Crest */}
             <circle cx="165" cy="46" r="11" fill="#EA580C" stroke="#9A3412" strokeWidth="2" />
             <polygon points="165,35 169,22 163,31 158,24" fill="#FBBF24" stroke="#D97706" strokeWidth="1.5" />
-            
-            {/* Wing */}
             <path d="M 165 56 Q 192 46 186 74 Q 168 74 165 63 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
-            
-            {/* Beak & Eye */}
             <polygon points="172,46 184,50 172,53" fill="#FBBF24" stroke="#D97706" strokeWidth="1.5" />
             <circle cx="162" cy="44" r="3" fill="#FFFFFF" />
             <circle cx="162" cy="44" r="1.5" fill="#451A03" />
@@ -325,24 +372,42 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
         {hasFrostDragon && (
           <g className="animate-pulse" style={{ animationDuration: '2.5s' }} filter="url(#clayShadow)">
-            {/* Frost Dragon Tail */}
             <path d="M 42 75 Q 58 92 50 108 Q 40 96 38 80 Z" fill="#0EA5E9" />
-            
-            {/* Frost Dragon Body */}
             <ellipse cx="35" cy="62" rx="14" ry="18" fill="url(#thumbAuroraGrad)" stroke="#065F46" strokeWidth="2.5" />
-            
-            {/* Head & Horns */}
             <circle cx="35" cy="46" r="11" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" />
             <polygon points="30,38 24,24 34,34" fill="#A5F3FC" stroke="#0891B2" strokeWidth="1.5" />
             <polygon points="38,38 44,24 39,34" fill="#A5F3FC" stroke="#0891B2" strokeWidth="1.5" />
-            
-            {/* Crystal Wing */}
             <path d="M 35 56 Q 8 46 14 74 Q 32 74 35 63 Z" fill="#7DD3FC" stroke="#0284C7" strokeWidth="2" />
-            
-            {/* Snout & Eye */}
             <ellipse cx="27" cy="49" rx="5" ry="3.5" fill="#E0F2FE" />
             <circle cx="37" cy="44" r="3" fill="#FFFFFF" />
             <circle cx="37" cy="44" r="1.5" fill="#0C4A6E" />
+          </g>
+        )}
+
+        {hasCosmicGriffin && (
+          <g className="animate-bounce" style={{ animationDuration: '2.6s' }} filter="url(#clayShadow)">
+            <path d="M 162 65 Q 185 45 178 85 Q 165 82 162 70 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
+            <ellipse cx="165" cy="58" rx="13" ry="16" fill="url(#goldBodyGrad)" stroke="#B45309" strokeWidth="2.5" />
+            <circle cx="165" cy="44" r="10" fill="#FEF08A" stroke="#B45309" strokeWidth="2" />
+            <polygon points="170,44 184,48 170,51" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+            <circle cx="161" cy="42" r="3" fill="#FFFFFF" />
+            <circle cx="161" cy="42" r="1.5" fill="#78350F" />
+          </g>
+        )}
+
+        {/* VISUAL FX (Lightning Sparks & Rainbow Nebula) */}
+        {hasLightningSparks && (
+          <g className="animate-pulse">
+            <polygon points="40,30 46,45 38,45 44,60" fill="#FACC15" stroke="#EAB308" strokeWidth="1" />
+            <polygon points="160,35 165,48 158,48 164,62" fill="#38BDF8" stroke="#0284C7" strokeWidth="1" />
+            <polygon points="35,110 42,122 36,122 40,135" fill="#FACC15" stroke="#EAB308" strokeWidth="1" />
+          </g>
+        )}
+
+        {hasRainbowNebula && (
+          <g className="animate-spin" style={{ animationDuration: '10s' }}>
+            <ellipse cx="100" cy="115" rx="72" ry="24" fill="none" stroke="url(#thumbLavaGrad)" strokeWidth="3" strokeDasharray="12 8" opacity="0.8" />
+            <ellipse cx="100" cy="115" rx="64" ry="20" fill="none" stroke="url(#thumbAuroraGrad)" strokeWidth="2" strokeDasharray="8 6" opacity="0.8" />
           </g>
         )}
 

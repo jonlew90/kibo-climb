@@ -254,6 +254,46 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
+        {itemId === 'lightning_sparks' && (
+          <g>
+            <ellipse cx="50" cy="50" rx="36" ry="36" fill="none" stroke="#38BDF8" strokeWidth="2" strokeDasharray="4 4" opacity="0.6" />
+            <polygon points="45,20 54,42 42,42 50,65 38,48 48,48" fill="#FACC15" stroke="#EAB308" strokeWidth="1.5" />
+            <polygon points="62,40 68,54 60,54 66,72" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
+          </g>
+        )}
+
+        {itemId === 'rainbow_nebula' && (
+          <g>
+            <circle cx="50" cy="50" r="32" fill="none" stroke="url(#thumbLavaGrad)" strokeWidth="6" opacity="0.8" />
+            <circle cx="50" cy="50" r="24" fill="none" stroke="url(#thumbAuroraGrad)" strokeWidth="4" opacity="0.8" />
+            <polygon points="50,26 53,34 60,36 55,41 56,48 50,44 44,48 45,41 40,36 47,34" fill="#FEF08A" />
+          </g>
+        )}
+
+        {/* --- PETS --- */}
+        {itemId === 'snowy_owl' && (
+          <g>
+            <ellipse cx="50" cy="58" rx="20" ry="24" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="3" />
+            <circle cx="50" cy="38" r="16" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="3" />
+            <polygon points="50,38 56,44 44,44" fill="#F59E0B" />
+            <circle cx="43" cy="34" r="4" fill="#FBBF24" />
+            <circle cx="57" cy="34" r="4" fill="#FBBF24" />
+            <circle cx="43" cy="34" r="2" fill="#000000" />
+            <circle cx="57" cy="34" r="2" fill="#000000" />
+          </g>
+        )}
+
+        {itemId === 'alpine_fox' && (
+          <g>
+            <ellipse cx="56" cy="62" rx="22" ry="16" fill="#F97316" stroke="#C2410C" strokeWidth="3" />
+            <circle cx="38" cy="50" r="14" fill="#F97316" stroke="#C2410C" strokeWidth="3" />
+            <polygon points="30,40 25,22 36,34" fill="#F97316" stroke="#C2410C" strokeWidth="2" />
+            <polygon points="44,40 48,22 50,35" fill="#F97316" stroke="#C2410C" strokeWidth="2" />
+            <ellipse cx="32" cy="54" rx="5" ry="3" fill="#FFFFFF" />
+            <circle cx="33" cy="48" r="2" fill="#000000" />
+          </g>
+        )}
+
         {itemId === 'phoenix_pet' && (
           <g>
             {/* Phoenix Tail */}
@@ -288,6 +328,45 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
             <ellipse cx="38" cy="40" rx="7" ry="4" fill="#E0F2FE" />
             <circle cx="52" cy="34" r="3.5" fill="#FFFFFF" />
             <circle cx="52" cy="34" r="2" fill="#0C4A6E" />
+          </g>
+        )}
+
+        {itemId === 'cosmic_griffin' && (
+          <g>
+            <path d="M 45 60 Q 72 40 68 85 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2.5" />
+            <ellipse cx="50" cy="55" rx="16" ry="20" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="3" />
+            <circle cx="50" cy="36" r="14" fill="#FEF08A" stroke="#B45309" strokeWidth="2.5" />
+            <polygon points="56,36 74,40 56,45" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
+            <circle cx="44" cy="34" r="3.5" fill="#FFFFFF" />
+            <circle cx="44" cy="34" r="2" fill="#78350F" />
+          </g>
+        )}
+
+        {/* --- SKINS --- */}
+        {itemId === 'snow_white_skin' && (
+          <g>
+            <circle cx="50" cy="50" r="32" fill="#FFFFFF" stroke="#0284C7" strokeWidth="4" />
+            <ellipse cx="50" cy="58" rx="20" ry="14" fill="#E0F2FE" />
+            <circle cx="40" cy="42" r="3" fill="#0284C7" />
+            <circle cx="60" cy="42" r="3" fill="#0284C7" />
+          </g>
+        )}
+
+        {itemId === 'midnight_shadow_skin' && (
+          <g>
+            <circle cx="50" cy="50" r="32" fill="#1E293B" stroke="#0F172A" strokeWidth="4" />
+            <ellipse cx="50" cy="58" rx="20" ry="14" fill="#334155" />
+            <circle cx="40" cy="42" r="3" fill="#38BDF8" />
+            <circle cx="60" cy="42" r="3" fill="#38BDF8" />
+          </g>
+        )}
+
+        {itemId === 'emerald_jade_skin' && (
+          <g>
+            <circle cx="50" cy="50" r="32" fill="#10B981" stroke="#047857" strokeWidth="4" />
+            <ellipse cx="50" cy="58" rx="20" ry="14" fill="#A7F3D0" />
+            <circle cx="40" cy="42" r="3" fill="#064E3B" />
+            <circle cx="60" cy="42" r="3" fill="#064E3B" />
           </g>
         )}
 
