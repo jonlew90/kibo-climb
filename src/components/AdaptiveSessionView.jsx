@@ -623,7 +623,7 @@ export default function AdaptiveSessionView({
                     );
                   }
                   if (owned <= 0) return null;
-                  if (sessionQuestionIndex === 1) {
+                  if (currentQuestionNum === 1) {
                     return (
                       <button
                         type="button"
