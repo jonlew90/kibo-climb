@@ -322,7 +322,7 @@ export default function ParentDashboardModal({
             {/* ADAPTIVE COMPETENCE SNAPSHOT & TOPIC MASTERY */}
             {(() => {
               const activeUserData = storageService.getUserData();
-              const actualRating = userRating || activeUserData.subjects?.math?.adaptiveCompetenceRating || 1000;
+              const actualRating = activeUserData.subjects?.math?.adaptiveCompetenceRating || 1000;
               const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, tier, actualRating);
               const { adaptiveCompetenceRating, last30DaysGrowthData, masteryDistribution, skillStrandBreakdown } = adaptiveProfile;
 
