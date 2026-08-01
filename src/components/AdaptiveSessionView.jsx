@@ -12,6 +12,42 @@ import { KiboAudioManager } from '../utils/KiboAudioManager';
 import { evaluateBadges } from '../utils/badgeManager';
 import { storageService } from '../services/storageService';
 
+function getStreakTierConfig(streak) {
+  if (streak >= 15) {
+    return {
+      label: `⚡ ${streak} ULTRA INFERNO (3x)`,
+      pillClass: 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 text-white border-yellow-300 shadow-md shadow-purple-500/40 ring-2 ring-yellow-300 animate-pulse',
+      cardGlow: 'shadow-[0_0_35px_rgba(168,85,247,0.4)] border-purple-400 bg-gradient-to-b from-white via-purple-50/20 to-amber-50/30'
+    };
+  }
+  if (streak >= 10) {
+    return {
+      label: `💥 ${streak} SUPER NOVA (2x)`,
+      pillClass: 'bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 text-white border-red-300 shadow-md shadow-orange-500/30 ring-2 ring-orange-400 animate-pulse',
+      cardGlow: 'shadow-[0_0_25px_rgba(249,115,22,0.35)] border-orange-400 bg-gradient-to-b from-white via-orange-50/20 to-amber-50/30'
+    };
+  }
+  if (streak >= 5) {
+    return {
+      label: `🔥 ${streak} Streak (1.5x)`,
+      pillClass: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white border-amber-300 shadow-sm ring-1 ring-amber-400 animate-pulse',
+      cardGlow: 'shadow-[0_0_15px_rgba(245,158,11,0.25)] border-amber-400'
+    };
+  }
+  if (streak >= 3) {
+    return {
+      label: `🔥 ${streak} Streak`,
+      pillClass: 'text-orange-700 bg-orange-100 border-orange-300 animate-pulse shadow-xs',
+      cardGlow: 'border-amber-300 shadow-2xl'
+    };
+  }
+  return {
+    label: `🔥 ${streak} Streak`,
+    pillClass: 'text-slate-500 bg-slate-100 border-slate-200',
+    cardGlow: 'border-amber-300 shadow-2xl'
+  };
+}
+
 export default function AdaptiveSessionView({
   equippedItems = [],
   sparks = 0,
@@ -474,34 +510,43 @@ export default function AdaptiveSessionView({
         )}
 
         {/* ACTIVE ADAPTIVE MATH QUESTION CARD */}
-        <div
-          className={`w-full bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3 transition-transform ${
-            isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''
-          }`}
-        >
-          <div className="h-7 flex items-center justify-center gap-1.5 shrink-0 overflow-hidden">
-            <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0">
-              ⚡ Q #{currentQuestionNum}/12
-            </span>
-            <span
-              className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all duration-300 ${
-                inSessionStreak >= 3
-                  ? 'text-orange-700 bg-orange-100 border-orange-300 animate-pulse shadow-xs'
-                  : 'text-slate-500 bg-slate-100 border-slate-200'
-              }`}
+        {(() => {
+          const streakCfg = getStreakTierConfig(inSessionStreak);
+
+          return (
+            <div
+              className={`w-full bg-white border-4 rounded-3xl p-5 text-center transition-all duration-500 space-y-3 relative ${
+                streakCfg.cardGlow
+              } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''}`}
             >
-              🔥 {inSessionStreak} Streak
-            </span>
-            {isDoubleSparksActive && (
-              <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0">
-                🧪 2x
-              </span>
-            )}
-            <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs shrink-0">
-              <Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />
-              Rank: {competenceRank}
-            </span>
-          </div>
+              {/* Floating Ambient Sparkles for High Streaks */}
+              {inSessionStreak >= 5 && (
+                <div className="absolute -top-3 left-4 right-4 flex justify-between pointer-events-none z-10">
+                  <span className="text-sm animate-bounce text-amber-400 filter drop-shadow-xs">✨</span>
+                  <span className="text-sm animate-pulse text-orange-500 filter drop-shadow-xs">🔥</span>
+                  <span className="text-sm animate-bounce text-yellow-400 filter drop-shadow-xs">⚡</span>
+                </div>
+              )}
+
+              <div className="h-7 flex items-center justify-center gap-1.5 shrink-0 overflow-hidden">
+                <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0">
+                  ⚡ Q #{currentQuestionNum}/12
+                </span>
+                <span
+                  className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all duration-300 ${streakCfg.pillClass}`}
+                >
+                  {streakCfg.label}
+                </span>
+                {isDoubleSparksActive && (
+                  <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0">
+                    🧪 2x
+                  </span>
+                )}
+                <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs shrink-0">
+                  <Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />
+                  Rank: {competenceRank}
+                </span>
+              </div>
 
           <div className="text-3xl sm:text-4xl font-extrabold text-slate-800 flex items-center justify-center gap-3 flex-wrap my-1">
             {(() => {
@@ -521,8 +566,10 @@ export default function AdaptiveSessionView({
             <span className="inline-block min-w-[70px] px-3.5 py-1 bg-amber-50 border-3 border-amber-300 rounded-2xl text-kibo-teal font-black text-3xl sm:text-4xl shadow-inner">
               {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
             </span>
+            </div>
           </div>
-        </div>
+        );
+      })()}
       </div>
 
       {/* NUMERIC KEYPAD (AUTO-DETECTING & TYPE AWARE) */}
