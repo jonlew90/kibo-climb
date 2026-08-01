@@ -360,7 +360,7 @@ export default function WorkshopModal({
                     {/* Status Badges */}
                     {isConsumable ? (
                       <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
-                        🎒 OWNED: {item.id === 'kibo_shield' ? shieldOwned : item.id === 'streak_saver' ? (consumables?.streakSaverCount ?? 0) : (consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0)}
+                        🎒 OWNED: {item.id === 'kibo_shield' ? shieldOwned : item.id === 'streak_saver' ? (consumables?.streakSaverCount ?? 0) : item.id === 'hint_scroll' ? (consumables?.hintScrollCount ?? 0) : (consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0)}
                       </span>
                     ) : isEquippedInApp ? (
                       <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5">
@@ -394,6 +394,11 @@ export default function WorkshopModal({
                     {isConsumable && (item.id === 'double_sparks_potion' || item.id === 'double_coin_potion') && (
                       <span className="text-[10px] font-extrabold text-purple-900 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
                         Owned: {consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0}
+                      </span>
+                    )}
+                    {isConsumable && item.id === 'hint_scroll' && (
+                      <span className="text-[10px] font-extrabold text-indigo-900 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
+                        Owned: {consumables?.hintScrollCount ?? 0}
                       </span>
                     )}
                   </div>
