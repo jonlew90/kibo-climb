@@ -471,7 +471,7 @@ export default function AdaptiveSessionView({
   const activeBannerType = feedbackBanner ? (feedbackBanner.type || 'success') : lastBannerTypeRef.current;
 
   return (
-    <div className="w-full flex-1 flex flex-col items-center justify-between py-2 px-3 max-w-lg mx-auto relative animate-pop">
+    <div className="w-full h-full flex-1 flex flex-col items-center justify-between py-1 px-1 sm:px-2 max-w-lg mx-auto relative overflow-hidden animate-pop">
       {/* TIMED KIBO BREAK OVERLAY */}
       {showBreakOverlay && (
         <KiboBreakOverlay
@@ -570,7 +570,9 @@ export default function AdaptiveSessionView({
           className="cursor-pointer hover:scale-105 transition-transform"
           title="Tap Kibo to customize in Workshop!"
         >
-          <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-28 h-28 sm:w-32 sm:h-32 filter drop-shadow-xl" />
+          <div className="flex justify-center my-0.5 shrink-0">
+            <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-20 h-20 sm:w-24 sm:h-24 filter drop-shadow-lg" />
+          </div>
         </div>
 
         {/* FRUSTRATION CIRCUIT BREAKER SUPPORT CARD */}
