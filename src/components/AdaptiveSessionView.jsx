@@ -469,21 +469,21 @@ export default function AdaptiveSessionView({
             isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''
           }`}
         >
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+          <div className="flex items-center justify-center gap-2 h-7 shrink-0 overflow-x-auto scrollbar-none">
+            <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200 shrink-0">
               ⚡ Question #{currentQuestionNum} of 12
             </span>
             {inSessionStreak >= 3 && (
-              <span className="text-[10px] font-black uppercase text-orange-700 bg-orange-100 px-2.5 py-0.5 rounded-full border border-orange-300 animate-pulse">
+              <span className="text-[10px] font-black uppercase text-orange-700 bg-orange-100 px-2.5 py-0.5 rounded-full border border-orange-300 animate-pulse shrink-0">
                 🔥 {inSessionStreak} Streak ({inSessionStreak >= 5 ? '1.5x ⚡' : '+5 ⚡'})
               </span>
             )}
             {isDoubleSparksActive && (
-              <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse">
-                🧪 2x Sparks Potion Active!
+              <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0">
+                🧪 2x Sparks
               </span>
             )}
-            <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs">
+            <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs shrink-0">
               <Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />
               Competence Rank: {competenceRank}
             </span>
