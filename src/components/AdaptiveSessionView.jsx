@@ -688,6 +688,7 @@ export default function AdaptiveSessionView({
                   <RollingNumberTicker
                     value={competenceRank}
                     label="Rank:"
+                    showDeltaBadge={false}
                     icon={<Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />}
                   />
                 </span>

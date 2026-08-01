@@ -10,7 +10,8 @@ export default function RollingNumberTicker({
   suffix = '',
   label = '',
   className = '',
-  icon = null
+  icon = null,
+  showDeltaBadge = true
 }) {
   const [displayValue, setDisplayValue] = useState(value);
   const [deltaEffect, setDeltaEffect] = useState(null);
@@ -62,7 +63,7 @@ export default function RollingNumberTicker({
   return (
     <div className={`relative inline-flex items-center gap-1 select-none ${className}`}>
       {/* Floating Slot Machine Delta Badge (+12 / -8) */}
-      {deltaEffect && (
+      {showDeltaBadge && deltaEffect && (
         <span
           key={deltaEffect.id}
           className={`absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-black px-2 py-0.5 rounded-full border shadow-md animate-slot-pop z-50 pointer-events-none whitespace-nowrap ${
