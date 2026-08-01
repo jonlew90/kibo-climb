@@ -469,38 +469,40 @@ export default function AdaptiveSessionView({
 
   const activeBannerType = feedbackBanner ? (feedbackBanner.type || 'success') : lastBannerTypeRef.current;
 
+  if (showBreakOverlay) {
+    return (
+      <KiboBreakOverlay
+        correctCount={blockCorrectCount}
+        totalCount={12}
+        streak={inSessionStreak}
+        sparksEarned={blockSparksEarned}
+        blockRatingGain={blockRatingGain}
+        competenceRating={competenceRank}
+        equippedItems={equippedItems}
+        onOpenWorkshop={() => {
+          setShowBreakOverlay(false);
+          if (onOpenWorkshop) onOpenWorkshop();
+        }}
+        onResumeClimb={() => {
+          setShowBreakOverlay(false);
+          if (onResetDoubleSparks) onResetDoubleSparks();
+          setSessionQuestionIndex(1);
+          setBlockCorrectCount(0);
+          setBlockSparksEarned(0);
+          setBlockRatingGain(0);
+          blockSeenKeysRef.current.clear();
+          blockStartTimeRef.current = performance.now();
+          const nextTier = getTierFromRating(competenceRank);
+          const freshBatch = generateProblems(15, nextTier, [], blockSeenKeysRef.current);
+          setProblemQueue(freshBatch);
+          setCurrentIndex(0);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="w-full h-full flex-1 min-h-0 flex flex-col items-center justify-between py-1 px-1 sm:px-2 max-w-lg mx-auto relative overflow-hidden animate-pop">
-      {/* TIMED KIBO BREAK OVERLAY */}
-      {showBreakOverlay && (
-        <KiboBreakOverlay
-          correctCount={blockCorrectCount}
-          totalCount={12}
-          streak={inSessionStreak}
-          sparksEarned={blockSparksEarned}
-          blockRatingGain={blockRatingGain}
-          competenceRating={competenceRank}
-          equippedItems={equippedItems}
-          onOpenWorkshop={() => {
-            setShowBreakOverlay(false);
-            if (onOpenWorkshop) onOpenWorkshop();
-          }}
-          onResumeClimb={() => {
-            setShowBreakOverlay(false);
-            if (onResetDoubleSparks) onResetDoubleSparks();
-            setSessionQuestionIndex(1);
-            setBlockCorrectCount(0);
-            setBlockSparksEarned(0);
-            setBlockRatingGain(0);
-            blockSeenKeysRef.current.clear();
-            blockStartTimeRef.current = performance.now();
-            const nextTier = getTierFromRating(competenceRank);
-            const freshBatch = generateProblems(15, nextTier, [], blockSeenKeysRef.current);
-            setProblemQueue(freshBatch);
-            setCurrentIndex(0);
-          }}
-        />
-      )}
 
       {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
       {celebrationEvent && (
