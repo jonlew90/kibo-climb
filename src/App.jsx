@@ -1238,6 +1238,7 @@ export default function App() {
           isDoubleSparksActive={isDoubleSparksActive}
           consumables={consumables}
           onToggleDoubleSparksPotion={handleToggleDoubleSparksPotion}
+          onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
           onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}

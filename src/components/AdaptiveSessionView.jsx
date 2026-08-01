@@ -63,7 +63,8 @@ export default function AdaptiveSessionView({
   isFTUX = false,
   isDoubleSparksActive = false,
   consumables = {},
-  onToggleDoubleSparksPotion
+  onToggleDoubleSparksPotion,
+  onResetDoubleSparks
 }) {
   const [competenceRank, setCompetenceRank] = useState(1000);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
@@ -481,6 +482,7 @@ export default function AdaptiveSessionView({
           }}
           onResumeClimb={() => {
             setShowBreakOverlay(false);
+            if (onResetDoubleSparks) onResetDoubleSparks();
             setSessionQuestionIndex(1);
             setBlockCorrectCount(0);
             setBlockSparksEarned(0);
@@ -611,7 +613,7 @@ export default function AdaptiveSessionView({
                   <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs">
                     🧪 2x Active!
                   </span>
-                ) : (
+                ) : sessionQuestionIndex === 1 ? (
                   <button
                     type="button"
                     onClick={() => {
@@ -620,7 +622,7 @@ export default function AdaptiveSessionView({
                         onToggleDoubleSparksPotion();
                         setFeedbackBanner({
                           type: 'success',
-                          text: 'Double Sparks Potion Activated! Earn 2x Sparks on all correct answers! 🧪⚡'
+                          text: 'Double Sparks Potion Activated for this climb! 🧪⚡'
                         });
                       } else if (onOpenWorkshop) {
                         onOpenWorkshop();
@@ -633,12 +635,16 @@ export default function AdaptiveSessionView({
                     }`}
                     title={
                       ((consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0) > 0)
-                        ? 'Tap to drink 2x Sparks Potion!'
+                        ? 'Tap to drink 2x Sparks Potion at start of climb!'
                         : 'Get 2x Sparks Potions in Kibo Workshop'
                     }
                   >
                     🧪 {((consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0) > 0) ? `Drink 2x (${consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount})` : '2x Potion'}
                   </button>
+                ) : (
+                  <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shrink-0 opacity-60 cursor-not-allowed" title="Potions must be consumed at the start of a climb!">
+                    🧪 2x (Start Only)
+                  </span>
                 )}
                 <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs shrink-0">
                   <Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />
