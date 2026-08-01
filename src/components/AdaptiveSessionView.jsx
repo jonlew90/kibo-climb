@@ -479,6 +479,7 @@ export default function AdaptiveSessionView({
           totalCount={12}
           streak={inSessionStreak}
           sparksEarned={blockSparksEarned}
+          blockRatingGain={blockRatingGain}
           competenceRating={competenceRank}
           equippedItems={equippedItems}
           onOpenWorkshop={() => {
