@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Lock, Sparkles, X, CheckCircle2 } from 'lucide-react';
+import { Award, Lock, Sparkles, X, CheckCircle2, Trophy, Flame, Zap, Target } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
+import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { soundFx } from '../utils/audio';
 
 export default function BadgesModal({
   isOpen,
   onClose,
-  unlockedBadges = []
+  unlockedBadges = [],
+  personalRecords = {},
+  userState = {}
 }) {
   const [activeCategory, setActiveCategory] = useState('all');
 
@@ -35,6 +38,13 @@ export default function BadgesModal({
   const unlockedCount = unlockedSet.size;
   const progressPct = Math.round((unlockedCount / totalBadges) * 100);
 
+  const userRating = userState.competenceRank || userState.adaptiveCompetenceRating || 1000;
+  const bestStreak = personalRecords?.highestCorrectStreak || userState.cumulativeCorrectStreak || 0;
+  const fastestTime = personalRecords?.fastest12QuestionsTime || personalRecords?.fastest10QuestionsTime || null;
+  const perfectRuns = personalRecords?.mostPerfectSessions || 0;
+
+  const recentUnlockedBadges = BADGES_CATALOG.filter((b) => unlockedSet.has(b.id)).slice(-3).reverse();
+
   const filteredBadges = activeCategory === 'all'
     ? BADGES_CATALOG
     : BADGES_CATALOG.filter((b) => b.category === activeCategory);
@@ -46,17 +56,17 @@ export default function BadgesModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-slate-800 shadow-2xl space-y-4 max-h-[92vh] flex flex-col relative overflow-hidden cursor-default"
+        className="w-full max-w-md bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-slate-800 shadow-2xl space-y-3.5 max-h-[92vh] flex flex-col relative overflow-hidden cursor-default"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3 shrink-0">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-amber-100 text-amber-700 rounded-2xl border border-amber-200">
-              <Award className="w-6 h-6 stroke-[2.5]" />
+              <Trophy className="w-6 h-6 stroke-[2.5]" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">Trail Badges</h2>
-              <p className="text-xs text-slate-500 font-semibold">Earn badges as you conquer Mount Kibo!</p>
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">My Trophies & Records</h2>
+              <p className="text-xs text-slate-500 font-semibold">Your personal bests & trail badge showcase!</p>
             </div>
           </div>
 
@@ -67,6 +77,53 @@ export default function BadgesModal({
             <X className="w-6 h-6 stroke-[2.5]" />
           </button>
         </div>
+
+        {/* TOP PERSONAL BEST SHOWCASE HEADER SECTION */}
+        <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-amber-50 border-2 border-purple-200 rounded-2xl p-3.5 space-y-2.5 shrink-0 shadow-xs text-left">
+          <div className="flex items-center justify-between flex-wrap gap-1">
+            <span className="text-xs font-black text-purple-900 flex items-center gap-1.5 uppercase tracking-wider">
+              <Trophy className="w-4 h-4 text-purple-700 stroke-[2.5]" />
+              Personal Best Showcase
+            </span>
+            <span className="text-[10px] font-black uppercase text-purple-800 bg-purple-100 px-2.5 py-0.5 rounded-full border border-purple-200">
+              {getCompetenceRankTier(userRating)} • {userRating} pts
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold">
+            <div className="bg-white/90 p-2 rounded-xl border border-purple-100 shadow-xs">
+              <span className="text-[9px] text-slate-500 uppercase block font-black">Best Streak</span>
+              <span className="text-purple-900 font-black text-xs sm:text-sm">{bestStreak} in a row 🔥</span>
+            </div>
+
+            <div className="bg-white/90 p-2 rounded-xl border border-purple-100 shadow-xs">
+              <span className="text-[9px] text-slate-500 uppercase block font-black">Fastest 12-Q Block</span>
+              <span className="text-purple-900 font-black text-xs sm:text-sm">{fastestTime ? `${fastestTime}s ⚡` : 'N/A'}</span>
+            </div>
+
+            <div className="bg-white/90 p-2 rounded-xl border border-purple-100 shadow-xs">
+              <span className="text-[9px] text-slate-500 uppercase block font-black">Perfect Runs</span>
+              <span className="text-purple-900 font-black text-xs sm:text-sm">{perfectRuns} Runs 🎯</span>
+            </div>
+          </div>
+        </div>
+
+        {/* RECENT MILESTONES FEED */}
+        {recentUnlockedBadges.length > 0 && (
+          <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-2.5 space-y-1.5 shrink-0 text-left">
+            <span className="text-[10px] font-black text-amber-900 uppercase tracking-wider block">
+              ✨ Recent Milestone Unlocks
+            </span>
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-0.5">
+              {recentUnlockedBadges.map((badge) => (
+                <div key={badge.id} className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-amber-300 text-xs font-bold shrink-0 shadow-xs">
+                  <span>{badge.icon}</span>
+                  <span className="text-slate-800 text-[11px] font-black">{badge.title || badge.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Progress Bar Header */}
         <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-2xl p-3 space-y-1.5 shrink-0">
@@ -150,7 +207,7 @@ export default function BadgesModal({
                 {/* Badge Content */}
                 <div className="flex-1 text-left min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <h4 className="font-black text-slate-800 text-sm truncate">{badge.title}</h4>
+                    <h4 className="font-black text-slate-800 text-sm truncate">{badge.title || badge.name}</h4>
                     {isUnlocked ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-100 shrink-0" />
                     ) : (

@@ -1794,6 +1794,15 @@ export default function App() {
         isOpen={showBadgesModal}
         onClose={() => setShowBadgesModal(false)}
         unlockedBadges={unlockedBadges}
+        personalRecords={personalRecords}
+        userState={{
+          competenceRank: competenceRank,
+          adaptiveCompetenceRating: competenceRank,
+          tier: tier,
+          totalProblemsSolved: totalProblemsSolved,
+          streak: streak,
+          cumulativeCorrectStreak: cumulativeCorrectStreak
+        }}
       />
 
       {/* PARENT SPEED INFO MODAL (ℹ️) */}
