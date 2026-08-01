@@ -31,45 +31,45 @@ export const RARITY_TIERS = {
 export const WORKSHOP_ITEMS = [
   // CONSUMABLE POWER-UPS (Category: powerups)
   {
-    id: 'kibo_shield',
-    name: 'Kibo Shield',
-    category: 'powerups',
-    cost: 50,
-    rarity: 'rare',
-    isConsumable: true,
-    icon: '🛡️',
-    description: 'Absorbs 1 incorrect answer per adaptive session without breaking your accuracy streak.'
-  },
-  {
     id: 'double_sparks_potion',
     name: 'Double Sparks Potion',
     category: 'powerups',
     cost: 12,
-    rarity: 'rare',
+    rarity: 'common',
     isConsumable: true,
     icon: '🧪',
-    badgeTag: 'Profit Booster!',
-    description: 'Costs 12 Sparks. Doubles all Sparks earned in your next adaptive session block!'
-  },
-  {
-    id: 'streak_saver',
-    name: 'Daily Streak Saver',
-    category: 'powerups',
-    cost: 75,
-    rarity: 'rare',
-    isConsumable: true,
-    icon: '🛡️',
-    description: 'Protects 1 missed calendar day of climbing from resetting your daily streak.'
+    badgeTag: '2x Profit!',
+    description: 'Costs 12 Sparks. Doubles all Sparks earned in your next climb session!'
   },
   {
     id: 'badge_booster',
     name: 'Badge Booster',
     category: 'powerups',
-    cost: 60,
-    rarity: 'uncommon',
+    cost: 45,
+    rarity: 'rare',
     isConsumable: true,
     icon: '🚀',
     description: 'Accelerates competence rank gains during active climbs.'
+  },
+  {
+    id: 'kibo_shield',
+    name: 'Kibo Shield',
+    category: 'powerups',
+    cost: 90,
+    rarity: 'epic',
+    isConsumable: true,
+    icon: '🛡️',
+    description: 'Absorbs 1 incorrect answer per climb streak without breaking accuracy.'
+  },
+  {
+    id: 'streak_saver',
+    name: 'Daily Streak Saver',
+    category: 'powerups',
+    cost: 200,
+    rarity: 'legendary',
+    isConsumable: true,
+    icon: '🔥',
+    description: 'Protects 1 missed calendar day of climbing from resetting your daily streak.'
   },
 
   // HEADWEAR (Slot: headwear)
@@ -93,8 +93,8 @@ export const WORKSHOP_ITEMS = [
     id: 'goggles',
     name: 'Aviator Goggles',
     category: 'headwear',
-    cost: 75,
-    rarity: 'common',
+    cost: 85,
+    rarity: 'rare',
     description: 'Retro golden aviator flight goggles.'
   },
   {
@@ -109,18 +109,18 @@ export const WORKSHOP_ITEMS = [
     id: 'wizard_hat',
     name: 'Wizard Hat',
     category: 'headwear',
-    cost: 120,
-    rarity: 'rare',
-    description: 'Mystical starry purple wizard hat.'
+    cost: 350,
+    rarity: 'epic',
+    description: 'Mystical starry purple archmage wizard hat.'
   },
   {
     id: 'explorer_hat',
     name: 'Explorer Fedora',
     category: 'headwear',
-    cost: 350,
+    cost: 550,
     rarity: 'epic',
-    requiredRank: 1300,
-    description: 'Classic leather safari explorer hat for peak summits. Requires Competence Rank 1300.'
+    requiredRank: 1200,
+    description: 'Classic leather safari explorer hat for peak summits. Requires Competence Rank 1200.'
   },
   {
     id: 'crown',
@@ -128,8 +128,8 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 1500,
     rarity: 'legendary',
-    requiredRank: 1700,
-    description: 'Royal jeweled golden crown for math royalty! Requires Competence Rank 1700.'
+    requiredRank: 1600,
+    description: 'Royal jeweled golden crown for math royalty! Requires Competence Rank 1600.'
   },
 
   // GEAR (Slot: gear)
@@ -137,7 +137,7 @@ export const WORKSHOP_ITEMS = [
     id: 'canteen',
     name: 'Water Canteen',
     category: 'gear',
-    cost: 75,
+    cost: 45,
     rarity: 'common',
     description: 'Hydrating trail canteen for long climb sprints.'
   },
@@ -145,18 +145,9 @@ export const WORKSHOP_ITEMS = [
     id: 'backpack',
     name: 'Explorer Backpack',
     category: 'gear',
-    cost: 200,
+    cost: 160,
     rarity: 'rare',
     description: 'Sturdy mountain climbing pack.'
-  },
-  {
-    id: 'jetpack',
-    name: 'Rocket Jetpack',
-    category: 'gear',
-    cost: 250,
-    rarity: 'epic',
-    requiredRank: 1400,
-    description: 'Futuristic jetpack with fiery thrusters! Requires Competence Rank 1400.'
   },
   {
     id: 'lantern',
@@ -165,6 +156,24 @@ export const WORKSHOP_ITEMS = [
     cost: 450,
     rarity: 'epic',
     description: 'Glowing warm lantern for night climbs.'
+  },
+  {
+    id: 'jetpack',
+    name: 'Rocket Jetpack',
+    category: 'gear',
+    cost: 750,
+    rarity: 'epic',
+    requiredRank: 1350,
+    description: 'Futuristic jetpack with fiery thrusters! Requires Competence Rank 1350.'
+  },
+  {
+    id: 'golden_compass',
+    name: '24K Golden Compass',
+    category: 'gear',
+    cost: 1600,
+    rarity: 'legendary',
+    requiredRank: 1550,
+    description: 'Enchanted solid 24k gold navigational compass. Requires Competence Rank 1550.'
   },
 
   // OUTFITS (Slot: outfits)
@@ -180,7 +189,7 @@ export const WORKSHOP_ITEMS = [
     id: 'vest',
     name: 'Padded Vest',
     category: 'outfits',
-    cost: 180,
+    cost: 140,
     rarity: 'rare',
     description: 'Warm mountain puffer vest.'
   },
@@ -188,28 +197,54 @@ export const WORKSHOP_ITEMS = [
     id: 'summit_scarf',
     name: 'Summit Scarf',
     category: 'outfits',
-    cost: 300,
+    cost: 350,
     rarity: 'epic',
     requiredRank: 1100,
     description: 'Cozy knitted mountain scarf for high altitude winds. Requires Competence Rank 1100.'
   },
+  {
+    id: 'royal_cape',
+    name: 'Royal Velvet Cape',
+    category: 'outfits',
+    cost: 1400,
+    rarity: 'legendary',
+    requiredRank: 1500,
+    description: 'Majestic purple velvet cape with golden trim. Requires Competence Rank 1500.'
+  },
 
   // COMPANIONS & EFFECTS (Slot: effects)
   {
-    id: 'firefly',
-    name: 'Sparky Firefly Companion',
+    id: 'sparkle_dust',
+    name: 'Trail Sparkle Dust',
     category: 'effects',
-    cost: 600,
-    rarity: 'epic',
-    description: 'A friendly glowing firefly that orbits Kibo on the trail.'
+    cost: 75,
+    rarity: 'common',
+    description: 'Magical sparkle dust floating around Kibo.'
   },
   {
-    id: 'lightning_aura',
-    name: 'Lightning Speed Trail',
+    id: 'starlight_aura',
+    name: 'Starlight Cosmic Halo',
     category: 'effects',
-    cost: 1000,
+    cost: 300,
+    rarity: 'rare',
+    description: 'Shimmering orbital starlight halo around Kibo.'
+  },
+  {
+    id: 'phoenix_pet',
+    name: 'Phoenix Flame Pet',
+    category: 'effects',
+    cost: 650,
     rarity: 'epic',
-    description: 'Electrifying speed aura for ultra-fast solvers.'
+    description: 'A mythical fiery phoenix companion floating beside Kibo!'
+  },
+  {
+    id: 'frost_dragon',
+    name: 'Frost Dragon Pet',
+    category: 'effects',
+    cost: 900,
+    rarity: 'epic',
+    requiredRank: 1300,
+    description: 'Mystic ice dragon companion floating beside Kibo with frost sparkles!'
   },
   {
     id: 'golden_skin',
@@ -217,25 +252,67 @@ export const WORKSHOP_ITEMS = [
     category: 'effects',
     cost: 2500,
     rarity: 'legendary',
+    requiredRank: 1700,
     description: 'Shimmering solid 24k gold metallic Kibo skin!'
   },
 
   // SPRINT BACKGROUNDS (Slot: background)
   {
-    id: 'bg_sunset',
-    name: 'Sunset Meadow',
+    id: 'bg_alpine',
+    name: 'Alpine Meadow',
     category: 'background',
-    cost: 150,
+    cost: 40,
+    rarity: 'common',
+    description: 'Classic sunlit alpine mountain meadow.'
+  },
+  {
+    id: 'bg_sunset',
+    name: 'Sunset Horizon',
+    category: 'background',
+    cost: 90,
+    rarity: 'common',
+    description: 'Warm golden sunset backdrop over mountain peaks.'
+  },
+  {
+    id: 'bg_aurora',
+    name: 'Emerald Aurora',
+    category: 'background',
+    cost: 220,
     rarity: 'rare',
-    description: 'Warm golden sunset backdrop.'
+    description: 'Shimmering northern emerald aurora borealis.'
+  },
+  {
+    id: 'bg_volcano',
+    name: 'Mount Lava Summit',
+    category: 'background',
+    cost: 380,
+    rarity: 'rare',
+    description: 'Fiery volcano peak with molten lava glow.'
   },
   {
     id: 'bg_cosmic',
     name: 'Cosmic Galaxy',
     category: 'background',
-    cost: 300,
+    cost: 650,
     rarity: 'epic',
-    description: 'Deep space galaxy background with twinkling stars.'
+    description: 'Deep space galaxy backdrop with twinkling stars.'
+  },
+  {
+    id: 'bg_crystal_cave',
+    name: 'Crystal Cavern',
+    category: 'background',
+    cost: 880,
+    rarity: 'epic',
+    description: 'Glowing amethyst and sapphire crystal cavern.'
+  },
+  {
+    id: 'bg_golden_palace',
+    name: 'Golden Citadel Peak',
+    category: 'background',
+    cost: 1800,
+    rarity: 'legendary',
+    requiredRank: 1650,
+    description: 'Royal golden palace floating in the clouds! Requires Competence Rank 1650.'
   }
 ];
 

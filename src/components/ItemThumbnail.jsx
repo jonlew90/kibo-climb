@@ -1,7 +1,6 @@
 import React from 'react';
 
 export default function ItemThumbnail({ itemId, rarity = 'common', className = "w-12 h-12" }) {
-  // Rarity Container Gradient Classes
   const containerClasses = {
     common: 'bg-gradient-to-br from-slate-100 to-slate-200 border-slate-300 text-slate-700',
     rare: 'bg-gradient-to-br from-sky-100 via-teal-100 to-teal-200 border-teal-300 text-teal-800',
@@ -15,7 +14,7 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
     <div className={`relative flex items-center justify-center rounded-2xl border-2 shadow-inner shrink-0 overflow-hidden p-1.5 ${currentClass} ${className}`}>
       <svg
         viewBox="0 0 100 100"
-        className="w-full h-full drop-shadow-sm overflow-visible"
+        className="w-full h-full drop-shadow-xs overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -37,9 +36,54 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
             <stop offset="50%" stopColor="#64748B" />
             <stop offset="100%" stopColor="#1E293B" />
           </linearGradient>
+
+          <linearGradient id="thumbLavaGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#EF4444" />
+            <stop offset="50%" stopColor="#F97316" />
+            <stop offset="100%" stopColor="#7C2D12" />
+          </linearGradient>
+
+          <linearGradient id="thumbAuroraGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#10B981" />
+            <stop offset="50%" stopColor="#06B6D4" />
+            <stop offset="100%" stopColor="#3B82F6" />
+          </linearGradient>
         </defs>
 
-        {/* --- HEADWEAR PREVIEWS --- */}
+        {/* --- POWER-UPS --- */}
+        {(itemId === 'double_sparks_potion' || itemId === 'double_coin_potion') && (
+          <g>
+            <rect x="42" y="16" width="16" height="12" rx="3" fill="#D97706" stroke="#B45309" strokeWidth="3" />
+            <path d="M 38 28 L 62 28 L 78 72 A 10 10 0 0 1 68 85 L 32 85 A 10 10 0 0 1 22 72 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="4" />
+            <path d="M 28 58 L 72 58 L 75 70 A 8 8 0 0 1 67 80 L 33 80 A 8 8 0 0 1 25 70 Z" fill="#FEF08A" opacity="0.9" />
+            <text x="50" y="74" textAnchor="middle" fontSize="22" fontWeight="900" fill="#B45309">2x</text>
+          </g>
+        )}
+
+        {itemId === 'badge_booster' && (
+          <g>
+            <polygon points="50,15 65,45 95,45 70,65 80,95 50,75 20,95 30,65 5,45 35,45" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="3" />
+            <path d="M 50 25 L 58 45 L 75 45" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
+          </g>
+        )}
+
+        {itemId === 'kibo_shield' && (
+          <g>
+            <path d="M 50 15 C 70 15, 80 25, 80 45 C 80 70, 50 88, 50 88 C 50 88, 20 70, 20 45 C 20 25, 30 15, 50 15 Z" fill="#0EA5E9" stroke="#0284C7" strokeWidth="4" />
+            <path d="M 50 22 C 65 22, 73 30, 73 45 C 73 64, 50 78, 50 78 C 50 78, 27 64, 27 45 C 27 30, 35 22, 50 22 Z" fill="#38BDF8" />
+            <path d="M 42 48 L 48 54 L 60 40" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          </g>
+        )}
+
+        {itemId === 'streak_saver' && (
+          <g>
+            <path d="M 50 15 Q 70 35 68 55 A 20 20 0 1 1 32 55 Q 30 35 50 15 Z" fill="#F97316" stroke="#EA580C" strokeWidth="4" />
+            <path d="M 50 32 Q 62 48 60 60 A 12 12 0 1 1 40 60 Q 38 48 50 32 Z" fill="#FACC15" />
+            <path d="M 50 48 Q 55 56 54 62 A 5 5 0 1 1 46 62 Q 45 56 50 48 Z" fill="#FFFFFF" />
+          </g>
+        )}
+
+        {/* --- HEADWEAR --- */}
         {itemId === 'cap' && (
           <g>
             <path d="M 20 65 Q 50 35 80 65 Z" fill="#2563EB" stroke="#1D4ED8" strokeWidth="4" />
@@ -97,7 +141,7 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {/* --- GEAR PREVIEWS --- */}
+        {/* --- GEAR --- */}
         {itemId === 'canteen' && (
           <g>
             <ellipse cx="50" cy="55" rx="22" ry="26" fill="#0284C7" stroke="#075985" strokeWidth="4" />
@@ -112,6 +156,14 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
+        {itemId === 'lantern' && (
+          <g>
+            <rect x="35" y="30" width="30" height="42" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="4" />
+            <rect x="42" y="38" width="16" height="26" rx="4" fill="#FEF08A" />
+            <path d="M 40 22 C 40 10 60 10 60 22" stroke="#78350F" strokeWidth="4" fill="none" />
+          </g>
+        )}
+
         {itemId === 'jetpack' && (
           <g>
             <rect x="25" y="25" width="22" height="50" rx="8" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3" />
@@ -121,15 +173,15 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'lantern' && (
+        {itemId === 'golden_compass' && (
           <g>
-            <rect x="35" y="30" width="30" height="42" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="4" />
-            <rect x="42" y="38" width="16" height="26" rx="4" fill="#FEF08A" />
-            <path d="M 40 22 C 40 10 60 10 60 22" stroke="#78350F" strokeWidth="4" fill="none" />
+            <circle cx="50" cy="50" r="30" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="4" />
+            <polygon points="50,26 56,50 50,74 44,50" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+            <polygon points="50,50 74,50 50,56 26,50" fill="#0EA5E9" />
           </g>
         )}
 
-        {/* --- OUTFIT PREVIEWS --- */}
+        {/* --- OUTFITS --- */}
         {itemId === 'bowtie' && (
           <g>
             <polygon points="50,50 25,35 25,65" fill="#EF4444" stroke="#991B1B" strokeWidth="3" />
@@ -151,26 +203,44 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {/* --- COMPANION & EFFECT PREVIEWS --- */}
-        {itemId === 'kibo_shield' && (
+        {itemId === 'royal_cape' && (
           <g>
-            <path d="M 50 18 L 80 32 C 80 62 50 85 50 85 C 50 85 20 62 20 32 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="4" />
-            <path d="M 50 28 L 70 38 C 70 58 50 74 50 74 C 50 74 30 58 30 38 Z" fill="#FEF08A" />
-            <path d="M 50 35 L 50 65 M 35 50 L 65 50" stroke="#B45309" strokeWidth="5" strokeLinecap="round" />
+            <path d="M 25 30 Q 50 20 75 30 L 85 85 Q 50 95 15 85 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="4" />
+            <path d="M 25 30 L 75 30" stroke="#F59E0B" strokeWidth="6" />
           </g>
         )}
 
-        {itemId === 'firefly' && (
+        {/* --- COMPANIONS & FX --- */}
+        {itemId === 'sparkle_dust' && (
           <g>
-            <ellipse cx="50" cy="50" rx="16" ry="12" fill="#FBBF24" stroke="#D97706" strokeWidth="3" />
-            <ellipse cx="46" cy="46" rx="5" ry="3" fill="#FFFFFF" />
-            <circle cx="50" cy="50" r="28" fill="#FEF08A" opacity="0.35" />
+            <circle cx="35" cy="35" r="5" fill="#FBBF24" />
+            <circle cx="65" cy="30" r="7" fill="#38BDF8" />
+            <circle cx="50" cy="65" r="6" fill="#F472B6" />
+            <path d="M 30 65 L 35 60 L 40 65 L 35 70 Z" fill="#FBBF24" />
           </g>
         )}
 
-        {itemId === 'lightning_aura' && (
+        {itemId === 'starlight_aura' && (
           <g>
-            <polygon points="55,15 25,55 45,55 35,85 75,45 55,45" fill="#FBBF24" stroke="#D97706" strokeWidth="3" />
+            <ellipse cx="50" cy="50" rx="35" ry="15" fill="none" stroke="#FDE047" strokeWidth="4" strokeDasharray="6 4" />
+            <circle cx="20" cy="45" r="4" fill="#38BDF8" />
+            <circle cx="80" cy="55" r="5" fill="#F472B6" />
+          </g>
+        )}
+
+        {itemId === 'phoenix_pet' && (
+          <g>
+            <path d="M 50 30 C 35 15, 15 35, 30 60 C 40 75, 60 75, 70 60 C 85 35, 65 15, 50 30 Z" fill="url(#thumbLavaGrad)" stroke="#9A3412" strokeWidth="3" />
+            <circle cx="45" cy="38" r="3" fill="#FFFFFF" />
+            <polygon points="50,42 62,45 50,48" fill="#FBBF24" />
+          </g>
+        )}
+
+        {itemId === 'frost_dragon' && (
+          <g>
+            <path d="M 50 25 C 30 10, 10 30, 25 60 C 35 80, 65 80, 75 60 C 90 30, 70 10, 50 25 Z" fill="url(#thumbAuroraGrad)" stroke="#065F46" strokeWidth="3" />
+            <circle cx="45" cy="35" r="3" fill="#FFFFFF" />
+            <polygon points="50,38 60,40 50,44" fill="#A7F3D0" />
           </g>
         )}
 
@@ -181,37 +251,34 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {/* --- CONSUMABLE POWER-UPS --- */}
-        {itemId === 'kibo_shield' && (
+        {/* --- BACKGROUNDS --- */}
+        {itemId === 'bg_alpine' && (
           <g>
-            <path d="M 50 15 C 70 15, 80 25, 80 45 C 80 70, 50 88, 50 88 C 50 88, 20 70, 20 45 C 20 25, 30 15, 50 15 Z" fill="#0EA5E9" stroke="#0284C7" strokeWidth="4" />
-            <path d="M 50 22 C 65 22, 73 30, 73 45 C 73 64, 50 78, 50 78 C 50 78, 27 64, 27 45 C 27 30, 35 22, 50 22 Z" fill="#38BDF8" />
-            <path d="M 42 48 L 48 54 L 60 40" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <rect x="10" y="10" width="80" height="80" rx="16" fill="#ECFDF5" stroke="#10B981" strokeWidth="3" />
+            <polygon points="20,75 40,45 60,75" fill="#059669" />
+            <polygon points="45,75 65,35 85,75" fill="#047857" />
           </g>
         )}
 
-        {itemId === 'streak_saver' && (
-          <g>
-            <path d="M 50 15 Q 70 35 68 55 A 20 20 0 1 1 32 55 Q 30 35 50 15 Z" fill="#F97316" stroke="#EA580C" strokeWidth="4" />
-            <path d="M 50 32 Q 62 48 60 60 A 12 12 0 1 1 40 60 Q 38 48 50 32 Z" fill="#FACC15" />
-            <path d="M 50 48 Q 55 56 54 62 A 5 5 0 1 1 46 62 Q 45 56 50 48 Z" fill="#FFFFFF" />
-          </g>
-        )}
-
-        {(itemId === 'double_sparks_potion' || itemId === 'double_coin_potion') && (
-          <g>
-            <rect x="42" y="16" width="16" height="12" rx="3" fill="#D97706" stroke="#B45309" strokeWidth="3" />
-            <path d="M 38 28 L 62 28 L 78 72 A 10 10 0 0 1 68 85 L 32 85 A 10 10 0 0 1 22 72 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="4" />
-            <path d="M 28 58 L 72 58 L 75 70 A 8 8 0 0 1 67 80 L 33 80 A 8 8 0 0 1 25 70 Z" fill="#FEF08A" opacity="0.9" />
-            <text x="50" y="74" textAnchor="middle" fontSize="22" fontWeight="900" fill="#B45309">2x</text>
-          </g>
-        )}
-
-        {/* --- BACKGROUND PREVIEWS --- */}
         {itemId === 'bg_sunset' && (
           <g>
             <rect x="10" y="10" width="80" height="80" rx="16" fill="url(#thumbGoldGrad)" stroke="#D97706" strokeWidth="3" />
             <circle cx="50" cy="50" r="18" fill="#FFFFFF" opacity="0.9" />
+          </g>
+        )}
+
+        {itemId === 'bg_aurora' && (
+          <g>
+            <rect x="10" y="10" width="80" height="80" rx="16" fill="url(#thumbAuroraGrad)" stroke="#047857" strokeWidth="3" />
+            <path d="M 20 40 Q 50 20 80 40" stroke="#A7F3D0" strokeWidth="6" fill="none" opacity="0.8" />
+          </g>
+        )}
+
+        {itemId === 'bg_volcano' && (
+          <g>
+            <rect x="10" y="10" width="80" height="80" rx="16" fill="url(#thumbLavaGrad)" stroke="#7C2D12" strokeWidth="3" />
+            <polygon points="25,85 50,45 75,85" fill="#7C2D12" />
+            <circle cx="50" cy="45" r="6" fill="#FACC15" />
           </g>
         )}
 
@@ -221,6 +288,22 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
             <circle cx="30" cy="30" r="3" fill="#FFFFFF" />
             <circle cx="70" cy="40" r="2" fill="#FDE047" />
             <circle cx="40" cy="70" r="2.5" fill="#67E8F9" />
+          </g>
+        )}
+
+        {itemId === 'bg_crystal_cave' && (
+          <g>
+            <rect x="10" y="10" width="80" height="80" rx="16" fill="#312E81" stroke="#4338CA" strokeWidth="3" />
+            <polygon points="30,80 40,40 50,80" fill="#A855F7" />
+            <polygon points="55,80 65,30 75,80" fill="#38BDF8" />
+          </g>
+        )}
+
+        {itemId === 'bg_golden_palace' && (
+          <g>
+            <rect x="10" y="10" width="80" height="80" rx="16" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="3" />
+            <rect x="35" y="45" width="30" height="35" fill="#FFFBEB" stroke="#B45309" strokeWidth="3" />
+            <polygon points="50,20 30,45 70,45" fill="#FEF08A" stroke="#B45309" strokeWidth="3" />
           </g>
         )}
       </svg>
