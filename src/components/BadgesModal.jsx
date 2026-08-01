@@ -110,15 +110,40 @@ export default function BadgesModal({
 
         {/* RECENT MILESTONES FEED */}
         {recentUnlockedBadges.length > 0 && (
-          <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-2.5 space-y-1.5 shrink-0 text-left">
-            <span className="text-[10px] font-black text-amber-900 uppercase tracking-wider block">
-              ✨ Recent Milestone Unlocks
-            </span>
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-0.5">
+          <div className="bg-gradient-to-r from-amber-500/10 via-yellow-400/10 to-amber-500/10 border-2 border-amber-300 rounded-2xl p-3 space-y-2 shrink-0 text-left shadow-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-300" />
+                ✨ Recent Milestone Unlocks
+              </span>
+              <span className="text-[10px] font-extrabold text-amber-900 bg-amber-200/90 px-2 py-0.5 rounded-full border border-amber-400">
+                Last {recentUnlockedBadges.length} Earned
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {recentUnlockedBadges.map((badge) => (
-                <div key={badge.id} className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-amber-300 text-xs font-bold shrink-0 shadow-xs">
-                  <span>{badge.icon}</span>
-                  <span className="text-slate-800 text-[11px] font-black">{badge.title || badge.name}</span>
+                <div
+                  key={badge.id}
+                  className="bg-white/95 border border-amber-300 rounded-xl p-2.5 flex flex-col justify-between space-y-1.5 shadow-xs hover:border-amber-400 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl shrink-0 filter drop-shadow-xs">{badge.icon}</span>
+                    <div className="min-w-0 flex-1">
+                      <h5 className="font-extrabold text-slate-800 text-xs truncate leading-snug">
+                        {badge.title || badge.name}
+                      </h5>
+                      <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded-md border border-emerald-300 inline-block">
+                        ✓ Unlocked
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-600 font-medium leading-snug">
+                    {badge.description}
+                  </p>
+                  <div className="text-[9px] font-bold text-amber-900 bg-amber-100/90 px-2 py-0.5 rounded-lg border border-amber-300 truncate">
+                    🎯 Required: {badge.reqText || 'Complete math climbs'}
+                  </div>
                 </div>
               ))}
             </div>
