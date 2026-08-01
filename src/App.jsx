@@ -61,6 +61,14 @@ export default function App() {
   });
   const [newlyUnlockedBadges, setNewlyUnlockedBadges] = useState([]);
 
+  useEffect(() => {
+    const activeUserData = storageService.getUserData();
+    const evalRes = evaluateBadges(activeUserData);
+    if (evalRes?.updatedUnlocked) {
+      setUnlockedBadges(evalRes.updatedUnlocked);
+    }
+  }, []);
+
   // First-Time User Onboarding Modal State
   const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
     return !localStorage.getItem('kibo_math_has_onboarded') && !localStorage.getItem('kibo_math_tier');
@@ -1221,6 +1229,7 @@ export default function App() {
           isDoubleSparksActive={isDoubleSparksActive}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
+          onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
           onAwardSparks={(earned) => {
             const updated = sparks + earned;
             setSparks(updated);

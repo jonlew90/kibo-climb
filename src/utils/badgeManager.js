@@ -101,8 +101,6 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         if ((userState.cumulativeCorrectStreak || 0) >= 50 || (userState.personalRecords?.highestCorrectStreak || 0) >= 50) {
           unlocked = true;
         }
-        break;
-
       default:
         break;
     }
@@ -112,12 +110,13 @@ export function evaluateBadges(userState, lastSprintResult = null) {
     }
   });
 
+  const updatedUnlocked = Array.from(new Set([...currentUnlocked, ...newlyUnlocked.map((b) => b.id)]));
+
   if (newlyUnlocked.length > 0) {
-    const updatedUnlocked = Array.from(new Set([...currentUnlocked, ...newlyUnlocked.map((b) => b.id)]));
     const userData = storageService.getUserData();
     userData.unlockedBadges = updatedUnlocked;
     storageService.saveUserData(userData);
   }
 
-  return newlyUnlocked;
+  return { newlyUnlocked, updatedUnlocked };
 }

@@ -20,6 +20,7 @@ export default function AdaptiveSessionView({
   onOpenWorkshop,
   onIncrementLifetimeProblems,
   onUpdatePersonalRecords,
+  onUnlockedBadgesChange,
   userTier = 1,
   totalProblemsSolved = 0,
   isFTUX = false,
@@ -187,12 +188,16 @@ export default function AdaptiveSessionView({
     setBlockRatingGain(nextBlockRatingGain);
 
     const activeUserData = storageService.getUserData();
-    evaluateBadges({
+    const badgeEvalRes = evaluateBadges({
       ...activeUserData,
       inSessionStreak: evalResult.nextInSessionStreak,
       competenceRank: evalResult.nextCompetenceRank,
       blockRatingGain: nextBlockRatingGain
     });
+
+    if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
+      onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
+    }
 
     const existingMastery = activeUserData.recentSkillMastery || [];
     const updatedMastery = checkSkillMasteryEvents(competenceRank, evalResult.nextCompetenceRank, existingMastery);
