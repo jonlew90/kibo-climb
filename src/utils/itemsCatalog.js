@@ -41,16 +41,7 @@ export const WORKSHOP_ITEMS = [
     badgeTag: '2x Profit!',
     description: 'Costs 12 Sparks. Doubles all Sparks earned in your next climb session!'
   },
-  {
-    id: 'badge_booster',
-    name: 'Badge Booster',
-    category: 'powerups',
-    cost: 45,
-    rarity: 'rare',
-    isConsumable: true,
-    icon: '🚀',
-    description: 'Accelerates competence rank gains during active climbs.'
-  },
+
   {
     id: 'kibo_shield',
     name: 'Kibo Shield',

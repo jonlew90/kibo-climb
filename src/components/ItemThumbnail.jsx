@@ -60,12 +60,7 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'badge_booster' && (
-          <g>
-            <polygon points="50,15 65,45 95,45 70,65 80,95 50,75 20,95 30,65 5,45 35,45" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="3" />
-            <path d="M 50 25 L 58 45 L 75 45" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
-          </g>
-        )}
+
 
         {itemId === 'kibo_shield' && (
           <g>
