@@ -180,8 +180,14 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   return (
     <div
       onClick={handleMascotTap}
-      className={`relative select-none cursor-pointer transition-transform duration-300 ${
-        isTapped ? 'scale-110 rotate-3' : 'hover:scale-105'
+      className={`relative select-none cursor-pointer transition-all duration-300 ${
+        isTapped
+          ? 'animate-mascot-squash'
+          : isTwirling
+          ? 'animate-victory-spin'
+          : hasCloudFloat
+          ? 'animate-cloud-float'
+          : 'animate-mascot-breathe'
       } ${state === 'climbing' ? 'animate-bounce-slow' : ''} ${className}`}
     >
       {/* AURAS & FX OUTER GLOW */}
@@ -458,20 +464,40 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           </g>
         )}
 
-        {/* VISUAL FX (Cloud Float, Lightning Sparks, Speed Trail, Nebula, Orbit Moons) */}
+        {/* VISUAL FX (Cloud Levitator, Victory Spin, Speed Trail, Nebula, Orbit Moons) */}
         {hasCloudFloat && (
-          <g className="animate-bounce" style={{ animationDuration: '2.5s' }} filter="url(#clayShadow)">
-            <ellipse cx="100" cy="178" rx="55" ry="16" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="2.5" />
-            <circle cx="65" cy="172" r="18" fill="#F8FAFC" />
-            <circle cx="135" cy="172" r="18" fill="#F8FAFC" />
-            <circle cx="100" cy="168" r="22" fill="#FFFFFF" />
+          <g filter="url(#clayShadow)">
+            {/* Fluffy Volumetric 3D Levitating Cloud Platform */}
+            <ellipse cx="100" cy="182" rx="64" ry="18" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="3" />
+            <circle cx="50" cy="176" r="22" fill="#F8FAFC" />
+            <circle cx="150" cy="176" r="22" fill="#F8FAFC" />
+            <circle cx="80" cy="168" r="26" fill="#FFFFFF" />
+            <circle cx="120" cy="168" r="26" fill="#FFFFFF" />
+            <circle cx="100" cy="162" r="28" fill="#FFFFFF" />
+
+            {/* Glowing Cloud Embers */}
+            <circle cx="45" cy="160" r="3" fill="#FCD34D" className="animate-ping" />
+            <circle cx="155" cy="160" r="3" fill="#38BDF8" className="animate-ping" />
+          </g>
+        )}
+
+        {hasSpinDance && (
+          <g className="animate-spin" style={{ animationDuration: '6s' }}>
+            <ellipse cx="100" cy="165" rx="68" ry="18" fill="none" stroke="#F59E0B" strokeWidth="4" strokeDasharray="16 10" />
+            <ellipse cx="100" cy="165" rx="60" ry="15" fill="none" stroke="#FCD34D" strokeWidth="2" strokeDasharray="8 6" />
+            <polygon points="32,165 42,158 42,172" fill="#F59E0B" />
+            <polygon points="168,165 158,158 158,172" fill="#F59E0B" />
           </g>
         )}
 
         {hasSpeedTrail && (
-          <g className="animate-pulse">
-            <path d="M 20 90 L 55 90 M 15 115 L 50 115 M 25 140 L 60 140" stroke="#06B6D4" strokeWidth="3.5" strokeLinecap="round" opacity="0.8" />
-            <path d="M 180 90 L 145 90 M 185 115 L 150 115 M 175 140 L 140 140" stroke="#06B6D4" strokeWidth="3.5" strokeLinecap="round" opacity="0.8" />
+          <g className="animate-speed-streaks">
+            {/* Sonic Energy Afterimage Aura */}
+            <ellipse cx="100" cy="115" rx="76" ry="56" fill="none" stroke="#06B6D4" strokeWidth="5" opacity="0.4" strokeDasharray="12 8" />
+            {/* High-Speed Streaks */}
+            <path d="M 5 70 L 45 70 M 0 95 L 40 95 M 8 120 L 48 120 M 2 145 L 42 145" stroke="#38BDF8" strokeWidth="4" strokeLinecap="round" opacity="0.9" />
+            <path d="M 195 70 L 155 70 M 200 95 L 160 95 M 192 120 L 152 120 M 198 145 L 158 145" stroke="#38BDF8" strokeWidth="4" strokeLinecap="round" opacity="0.9" />
+            <polygon points="35,65 50,55 45,65 55,65" fill="#FACC15" />
           </g>
         )}
 
@@ -491,10 +517,18 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         )}
 
         {hasOrbitMoons && (
-          <g className="animate-spin" style={{ animationDuration: '8s' }}>
-            <circle cx="35" cy="55" r="7" fill="#FDE047" stroke="#CA8A04" strokeWidth="1.5" />
-            <circle cx="165" cy="145" r="9" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
-            <circle cx="100" cy="182" r="6" fill="#F472B6" stroke="#DB2777" strokeWidth="1.5" />
+          <g className="animate-spin" style={{ animationDuration: '7s' }}>
+            {/* 3D Angled Orbital Track */}
+            <ellipse cx="100" cy="115" rx="82" ry="32" fill="none" stroke="#60A5FA" strokeWidth="3" strokeDasharray="12 8" opacity="0.75" />
+            {/* Moon 1: Golden Sun Moon */}
+            <circle cx="20" cy="115" r="10" fill="#FDE047" stroke="#CA8A04" strokeWidth="2" filter="url(#clayShadow)" />
+            <circle cx="17" cy="112" r="3" fill="#FFFFFF" />
+            {/* Moon 2: Cyan Crystal Moon */}
+            <circle cx="180" cy="115" r="12" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" filter="url(#clayShadow)" />
+            <circle cx="176" cy="111" r="3.5" fill="#FFFFFF" />
+            {/* Moon 3: Plasma Pink Moon */}
+            <circle cx="100" cy="147" r="9" fill="#F472B6" stroke="#DB2777" strokeWidth="2" filter="url(#clayShadow)" />
+            <circle cx="97" cy="144" r="2.5" fill="#FFFFFF" />
           </g>
         )}
 
