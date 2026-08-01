@@ -338,7 +338,7 @@ export default function ParentDashboardModal({
               const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = Math.min(8, Math.max(1, Math.floor((actualRating - 900) / 100) + 1));
-              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating);
+              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating, activeUserData.ratingHistory || []);
               const { adaptiveCompetenceRating, last30DaysGrowthData, masteryDistribution, skillStrandBreakdown } = adaptiveProfile;
               const rankTitle = getCompetenceRankTier(adaptiveCompetenceRating);
 
@@ -389,37 +389,52 @@ export default function ParentDashboardModal({
                     </div>
                   </section>
 
-                  {/* 30-DAY GROWTH CURVE VISUALIZATION */}
+                  {/* AUTHENTIC MASTERY GROWTH TRAJECTORY */}
                   <section className="bg-white border-2 border-indigo-100 rounded-2xl p-4 text-left space-y-2 shadow-xs">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2 flex-wrap gap-2">
                       <h3 className="font-black text-xs text-slate-800 flex items-center gap-1.5">
-                        <span>📈</span> 30-Day Mastery Growth Trajectory
+                        <span>📈</span> Authentic Mastery Growth Trajectory
                       </h3>
                       <span className="text-[10px] font-extrabold text-indigo-600">
-                        +{adaptiveCompetenceRating - (last30DaysGrowthData[0]?.rating || 1000)} pts gained
+                        {last30DaysGrowthData.length <= 1
+                          ? 'Day 1 Baseline'
+                          : `+${adaptiveCompetenceRating - (last30DaysGrowthData[0]?.rating || 1000)} pts gained`}
                       </span>
                     </div>
 
-                    <div className="flex items-end justify-between gap-3 h-24 pt-4 pb-1 px-2 border-b border-slate-100">
-                      {last30DaysGrowthData.map((pt, idx) => {
-                        const minRating = 900;
-                        const maxRating = 1300;
-                        const heightPct = Math.min(100, Math.max(25, Math.round(((pt.rating - minRating) / (maxRating - minRating)) * 100)));
+                    {last30DaysGrowthData.length <= 1 ? (
+                      <div className="p-3 bg-indigo-50/70 border border-indigo-200 rounded-xl text-indigo-900 text-xs font-medium leading-relaxed flex items-center justify-between gap-3">
+                        <div>
+                          <span className="font-black text-sm text-indigo-700 block">Started Today! 🚀</span>
+                          <span className="text-[11px] text-slate-600 block mt-0.5">
+                            Day 1 baseline established at <strong className="text-indigo-950">{adaptiveCompetenceRating} Rating</strong>. Daily progress points will plot here automatically as climbs continue over time!
+                          </span>
+                        </div>
+                        <span className="text-2xl shrink-0">📊</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-end justify-between gap-3 h-24 pt-4 pb-1 px-2 border-b border-slate-100">
+                        {last30DaysGrowthData.map((pt, idx) => {
+                          const ratingsList = last30DaysGrowthData.map((p) => p.rating);
+                          const minRating = Math.max(500, Math.min(...ratingsList) - 50);
+                          const maxRating = Math.max(1200, Math.max(...ratingsList) + 50);
+                          const heightPct = Math.min(100, Math.max(30, Math.round(((pt.rating - minRating) / (maxRating - minRating)) * 100)));
 
-                        return (
-                          <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
-                            <span className="text-[9px] font-black text-indigo-700 opacity-80">
-                              {pt.rating}
-                            </span>
-                            <div
-                              className="w-full max-w-[32px] bg-gradient-to-t from-indigo-600 to-purple-500 rounded-t-lg transition-all duration-500 shadow-xs"
-                              style={{ height: `${heightPct}%` }}
-                            />
-                            <span className="text-[9px] font-extrabold text-slate-500 mt-0.5">{pt.label}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
+                          return (
+                            <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                              <span className="text-[9px] font-black text-indigo-700 opacity-80">
+                                {pt.rating}
+                              </span>
+                              <div
+                                className="w-full max-w-[32px] bg-gradient-to-t from-indigo-600 to-purple-500 rounded-t-lg transition-all duration-500 shadow-xs"
+                                style={{ height: `${heightPct}%` }}
+                              />
+                              <span className="text-[9px] font-extrabold text-slate-500 mt-0.5">{pt.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </section>
 
                   {/* MATH TOPICS & COMPETENCE STRANDS */}

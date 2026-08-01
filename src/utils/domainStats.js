@@ -136,7 +136,7 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
   });
 };
 
-export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTier = 1, activeRating = 1000) => {
+export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = []) => {
   const domains = calculateDomainMastery(sprintHistory, currentTier, activeRating);
 
   let masteredCount = 0;
@@ -190,13 +190,14 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
   // Use actual active rating
   const adaptiveCompetenceRating = activeRating;
 
-  // 30-day historical growth curve data ending at actual rating
-  const last30DaysGrowthData = [
-    { label: '30d ago', rating: Math.max(700, activeRating - 150) },
-    { label: '20d ago', rating: Math.max(750, activeRating - 90) },
-    { label: '10d ago', rating: Math.max(800, activeRating - 40) },
-    { label: 'Today', rating: activeRating }
-  ];
+  // Use authentic recorded ratingHistory if available
+  const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const last30DaysGrowthData = (Array.isArray(rawRatingHistory) && rawRatingHistory.length > 0)
+    ? rawRatingHistory.map((h) => ({
+        label: h.label || h.date || todayLabel,
+        rating: h.rating || activeRating
+      }))
+    : [{ label: todayLabel, rating: activeRating }];
 
   return {
     adaptiveCompetenceRating,

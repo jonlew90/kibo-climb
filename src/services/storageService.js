@@ -163,9 +163,28 @@ export const storageService = {
     if (!state.profiles[activeId]) {
       state.profiles[activeId] = { ...DEFAULT_PROFILE, id: activeId };
     }
+
+    const currentProfileData = state.profiles[activeId].userData || {};
+    const updatedData = { ...currentProfileData, ...userData };
+
+    const activeRating = updatedData.adaptiveCompetenceRating || updatedData.competenceRank || 1000;
+    const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    let history = Array.isArray(currentProfileData.ratingHistory) ? [...currentProfileData.ratingHistory] : [];
+    if (history.length === 0) {
+      history = [{ label: todayLabel, rating: activeRating }];
+    } else {
+      const existingIdx = history.findIndex((h) => h.label === todayLabel || h.date === todayLabel);
+      if (existingIdx >= 0) {
+        history[existingIdx] = { label: todayLabel, rating: activeRating };
+      } else {
+        history.push({ label: todayLabel, rating: activeRating });
+      }
+    }
+
     state.profiles[activeId].userData = {
-      ...state.profiles[activeId].userData,
-      ...userData
+      ...updatedData,
+      ratingHistory: history
     };
     safeSaveProfilesState(state);
   },
