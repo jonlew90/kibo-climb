@@ -247,57 +247,22 @@ export default function AdaptiveSessionView({
       onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
     }
 
-    // --- CELEBRATION REWARDS FOR BADGES, PERSONAL RECORDS & MILESTONES ---
-    if (isCorrect) {
-      if (badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
-        const newBadge = badgeEvalRes.newlyUnlocked[0];
-        const bonusSparks = 25;
-        if (onAwardSparks) onAwardSparks(bonusSparks);
-        setSessionSparksEarned((prev) => prev + bonusSparks);
-        setBlockSparksEarned((prev) => prev + bonusSparks);
-        soundFx.playVictory();
-        setCelebrationEvent({
-          type: 'badge',
-          title: '🏆 NEW BADGE UNLOCKED!',
-          icon: newBadge.icon || '🏅',
-          name: newBadge.title || newBadge.name,
-          description: newBadge.description,
-          bonusSparks: bonusSparks
-        });
-      } else {
-        const currentStreakRec = activeUserData.personalRecords?.highestCorrectStreak || 0;
-        const isNewStreakRecord = evalResult.nextInSessionStreak > currentStreakRec && evalResult.nextInSessionStreak >= 5;
-
-        if (isNewStreakRecord) {
-          const bonusSparks = 15;
-          if (onAwardSparks) onAwardSparks(bonusSparks);
-          setSessionSparksEarned((prev) => prev + bonusSparks);
-          setBlockSparksEarned((prev) => prev + bonusSparks);
-          soundFx.playVictory();
-          setCelebrationEvent({
-            type: 'record',
-            title: '🌟 NEW PERSONAL RECORD!',
-            icon: '🔥',
-            name: `${evalResult.nextInSessionStreak} Question Streak!`,
-            description: `You set a brand new personal record for consecutive correct math answers!`,
-            bonusSparks: bonusSparks
-          });
-        } else if ([5, 10, 15, 20].includes(evalResult.nextInSessionStreak)) {
-          const bonusSparks = 10;
-          if (onAwardSparks) onAwardSparks(bonusSparks);
-          setSessionSparksEarned((prev) => prev + bonusSparks);
-          setBlockSparksEarned((prev) => prev + bonusSparks);
-          soundFx.playVictory();
-          setCelebrationEvent({
-            type: 'milestone',
-            title: `⚡ ${evalResult.nextInSessionStreak}-STREAK MILESTONE!`,
-            icon: evalResult.nextInSessionStreak >= 10 ? '💥' : '🔥',
-            name: `${evalResult.nextInSessionStreak} In A Row!`,
-            description: `Unstoppable momentum! You've solved ${evalResult.nextInSessionStreak} consecutive math problems!`,
-            bonusSparks: bonusSparks
-          });
-        }
-      }
+    // --- CELEBRATION REWARDS (ONLY FOR NEW BADGE UNLOCKS TO PREVENT POPUP FATIGUE) ---
+    if (isCorrect && badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
+      const newBadge = badgeEvalRes.newlyUnlocked[0];
+      const bonusSparks = 25;
+      if (onAwardSparks) onAwardSparks(bonusSparks);
+      setSessionSparksEarned((prev) => prev + bonusSparks);
+      setBlockSparksEarned((prev) => prev + bonusSparks);
+      soundFx.playVictory();
+      setCelebrationEvent({
+        type: 'badge',
+        title: '🏆 NEW BADGE UNLOCKED!',
+        icon: newBadge.icon || '🏅',
+        name: newBadge.title || newBadge.name,
+        description: newBadge.description,
+        bonusSparks: bonusSparks
+      });
     }
 
     const existingMastery = activeUserData.recentSkillMastery || [];
