@@ -212,8 +212,7 @@ export default function AdaptiveSessionView({
       setCompetenceRank(evalResult.nextCompetenceRank);
       setShowFrustrationCard(false);
 
-      const boostLabel = isDoubleSparksActive ? ' (2x Potion 🧪)' : '';
-      const toastMsg = evalResult.streakBannerText ? `${evalResult.streakBannerText}${boostLabel}` : `Correct! Competence Rank +${evalResult.rankDelta} ⭐ (${evalResult.fluencyLabel})${boostLabel}`;
+      const toastMsg = evalResult.streakBannerText ? evalResult.streakBannerText : `Correct! Competence Rank +${evalResult.rankDelta} ⭐ (${evalResult.fluencyLabel})`;
       triggerToastBanner({
         type: 'success',
         text: toastMsg
