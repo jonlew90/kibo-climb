@@ -18,7 +18,7 @@ export default function KiboBreakOverlay({
   const accuracyPct = Math.round((correctCount / Math.max(1, totalCount)) * 100);
 
   return (
-    <div className="fixed inset-0 z-[999] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-amber-50 via-sky-50 to-indigo-50 text-slate-800 flex flex-col justify-center items-center p-3 sm:p-4 overflow-y-auto select-none animate-pop">
+    <div className="fixed inset-0 z-[999] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-center items-center p-3 sm:p-4 overflow-y-auto select-none animate-pop">
       <ConfettiCanvas />
 
       <div className="w-full max-w-sm sm:max-w-md mx-auto my-auto space-y-2.5 relative z-10 text-center py-2">
