@@ -212,11 +212,10 @@ export default function WorkshopModal({
         </div>
       </header>
 
-      {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
-      <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-
+      {/* PINNED TOP STAGE & CATEGORY FILTERS */}
+      <div className="w-full max-w-4xl mx-auto p-4 sm:px-6 sm:pt-4 sm:pb-3 shrink-0 space-y-3 bg-slate-50 border-b border-slate-200 shadow-xs z-10">
         {/* Live Try-On Preview Mascot Stage Header */}
-        <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3 flex items-center justify-around shrink-0 shadow-inner relative">
+        <div className="bg-white border-2 border-slate-200 rounded-2xl p-3 flex items-center justify-around shadow-sm relative">
           <Mascot mood="happy" equipped={stageEquippedItems} className="w-24 h-24 sm:w-28 sm:h-28" />
 
           <div className="text-left space-y-1.5 max-w-[195px]">
@@ -310,9 +309,11 @@ export default function WorkshopModal({
             )}
           </div>
         </div>
+      </div>
 
-        {/* Catalog Items Grid */}
-        <div className="flex-1 overflow-y-auto space-y-3 pr-1 py-1">
+      {/* DEDICATED INDEPENDENT ITEM GRID SCROLL CONTAINER */}
+      <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6">
+        <div className="space-y-3 pb-6">
           {sortShopItems(currentCategoryItems, sparks, unlockedItems, equippedItems).map((item) => {
             const isConsumable = item.isConsumable;
             const shieldOwned = consumables?.shieldCount ?? 1;
