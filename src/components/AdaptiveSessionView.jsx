@@ -127,7 +127,7 @@ export default function AdaptiveSessionView({
 
   const bannerTimerRef = useRef(null);
 
-  const triggerToastBanner = (bannerObj, durationMs = 1800) => {
+  const triggerToastBanner = (bannerObj, durationMs = 1100) => {
     setFeedbackBanner(bannerObj);
     if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
     bannerTimerRef.current = setTimeout(() => {
@@ -139,7 +139,7 @@ export default function AdaptiveSessionView({
     triggerToastBanner({
       type: 'success',
       text: "Welcome to Kibo Climb! Let's start your organic climb! 🏔️✨"
-    }, 7500);
+    }, 4500);
 
     return () => {
       if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
@@ -217,7 +217,7 @@ export default function AdaptiveSessionView({
       triggerToastBanner({
         type: 'success',
         text: toastMsg
-      }, 1800);
+      }, 1100);
     } else {
       KiboAudioManager.playIncorrectSFX();
       setMascotState('incorrect');
@@ -227,7 +227,7 @@ export default function AdaptiveSessionView({
       setTimeout(() => setIsShaking(false), 400);
 
       setCompetenceRank(evalResult.nextCompetenceRank);
-      triggerToastBanner({ type: 'error', text: `Incorrect! Answer was ${normTargetAns}` }, 2000);
+      triggerToastBanner({ type: 'error', text: `Incorrect! Answer was ${normTargetAns}` }, 1400);
 
       if (evalResult.triggerFrustrationCircuit) {
         setShowFrustrationCard(true);
@@ -630,10 +630,10 @@ export default function AdaptiveSessionView({
                         onClick={() => {
                           if (onToggleDoubleSparksPotion) {
                             onToggleDoubleSparksPotion();
-                            setFeedbackBanner({
+                            triggerToastBanner({
                               type: 'success',
                               text: 'Double Sparks Potion Activated for this climb! 🧪⚡'
-                            });
+                            }, 1100);
                           }
                         }}
                         className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 bg-amber-200 text-amber-950 border-amber-400 hover:bg-amber-300 shadow-sm animate-bounce"
