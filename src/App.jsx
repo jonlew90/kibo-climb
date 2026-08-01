@@ -1973,7 +1973,7 @@ export default function App() {
       />
 
       {/* Footer with Parent Zone Link */}
-      <footer className="w-full text-center text-xs font-bold text-slate-400 py-2 border-t border-slate-200/60 mt-auto flex items-center justify-between">
+      <footer className="w-full text-center text-xs font-bold text-slate-700 py-2.5 px-4 border-t border-slate-200/80 mt-auto flex items-center justify-between">
         <span>{BRAND_CONFIG.appName} by {BRAND_CONFIG.rootBrand} • math.kiboclimb.com</span>
         <button
           onClick={() => setShowPinGateModal(true)}

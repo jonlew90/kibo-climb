@@ -44,7 +44,7 @@ function getStreakTierConfig(streak) {
   }
   return {
     label: `🔥 ${streak} Streak`,
-    pillClass: 'text-slate-500 bg-slate-100 border-slate-200',
+    pillClass: 'text-slate-700 bg-slate-100 border-slate-300 font-extrabold shadow-xs',
     cardGlow: 'border-amber-300 shadow-2xl'
   };
 }
@@ -543,8 +543,8 @@ export default function AdaptiveSessionView({
         <div
           className={`py-2.5 px-4 rounded-2xl text-center font-extrabold text-xs sm:text-sm shadow-xl backdrop-blur-md border flex items-center justify-between gap-2 ${
             activeBannerType === 'success'
-              ? 'bg-emerald-500/95 text-white border-emerald-400 shadow-emerald-950/20'
-              : 'bg-rose-500/95 text-white border-rose-400 shadow-rose-950/20'
+              ? 'bg-emerald-900 text-white border-emerald-700 shadow-emerald-950/40'
+              : 'bg-rose-900 text-white border-rose-700 shadow-rose-950/40'
           }`}
         >
           <span className="flex-1 text-center leading-snug">{feedbackBanner?.text || lastBannerTextRef.current}</span>

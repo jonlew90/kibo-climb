@@ -264,13 +264,13 @@ export default function ParentDashboardModal({
                 <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
                   <span className="text-[9px] text-slate-500 uppercase block font-black">Fastest 12-Q Block</span>
                   <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.fastest12QuestionsTime || personalRecords?.fastest10QuestionsTime ? `${personalRecords.fastest12QuestionsTime || personalRecords.fastest10QuestionsTime}s` : 'N/A'}</span>
-                  <span className="text-[8px] font-bold text-slate-400 block mt-0.5">Best time for 12 Qs</span>
+                  <span className="text-[8px] font-bold text-slate-600 block mt-0.5">Best time for 12 Qs</span>
                 </div>
 
                 <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
                   <span className="text-[9px] text-slate-500 uppercase block font-black">Perfect Runs</span>
                   <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.mostPerfectSessions || 0} Runs</span>
-                  <span className="text-[8px] font-bold text-slate-400 block mt-0.5">100% Acc Sessions</span>
+                  <span className="text-[8px] font-bold text-slate-600 block mt-0.5">100% Acc Sessions</span>
                 </div>
               </div>
             </section>
