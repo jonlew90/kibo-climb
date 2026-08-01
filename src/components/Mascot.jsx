@@ -48,7 +48,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const [isTapped, setIsTapped] = useState(false);
   const [sparkParticles, setSparkParticles] = useState([]);
 
-  // Random Idle Blinks & Ear Twitches Loop (every 4-7 seconds)
+  // Random Idle Blinks & Ear Twitches Loop
   useEffect(() => {
     let timeoutId;
 
@@ -104,34 +104,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         isTapped ? 'scale-110 rotate-3' : 'hover:scale-105'
       } ${state === 'climbing' ? 'animate-bounce-slow' : ''} ${className}`}
     >
-      {/* 1. DYNAMIC BACKGROUND THEME OVERLAY */}
-      {hasAlpineBg && (
-        <div className="absolute inset-0 rounded-3xl bg-emerald-100/90 border-2 border-emerald-300 -z-10 shadow-inner overflow-hidden flex items-end justify-center">
-          <span className="text-4xl opacity-30">⛰️</span>
-        </div>
-      )}
-      {hasSunsetBg && (
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-amber-500 via-orange-400 to-rose-400 -z-10 shadow-inner opacity-90" />
-      )}
-      {hasAuroraBg && (
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-emerald-600 via-teal-700 to-slate-900 -z-10 shadow-inner opacity-90 animate-pulse" />
-      )}
-      {hasVolcanoBg && (
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-red-700 via-orange-600 to-slate-900 -z-10 shadow-inner opacity-90" />
-      )}
-      {hasCosmicBg && (
-        <div className="absolute inset-0 rounded-3xl bg-slate-950 border border-purple-500/40 -z-10 shadow-inner opacity-95 overflow-hidden flex items-center justify-center">
-          <span className="text-3xl opacity-40 animate-pulse">🪐</span>
-        </div>
-      )}
-      {hasCrystalCaveBg && (
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-purple-900 via-indigo-900 to-slate-900 -z-10 shadow-inner opacity-90 border border-purple-400/40" />
-      )}
-      {hasGoldenPalaceBg && (
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-amber-300 via-yellow-200 to-amber-100 -z-10 shadow-inner opacity-95 border-2 border-amber-400" />
-      )}
-
-      {/* 2. AURAS & FX */}
+      {/* AURAS & FX OUTER GLOW */}
       {hasGoldenSkin && (
         <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 opacity-90 blur-xl animate-pulse pointer-events-none scale-125" />
       )}
@@ -145,7 +118,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         </div>
       )}
 
-      {/* 3. REACTIVE FLOATING SPARK ⚡ PARTICLES */}
+      {/* REACTIVE FLOATING SPARK ⚡ PARTICLES */}
       {sparkParticles.map((spark) => (
         <div
           key={spark.id}
@@ -156,7 +129,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         </div>
       ))}
 
-      {/* 4. BASE 3D VOLUMETRIC KIBO SVG */}
+      {/* MAIN 3D MASCOT SVG WITH INTEGRATED BACKGROUND & PET LAYERS */}
       <svg
         viewBox="0 0 200 200"
         className="w-full h-full relative z-10 drop-shadow-lg overflow-visible"
@@ -183,6 +156,43 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <stop offset="70%" stopColor="#FF9B6C" />
             <stop offset="100%" stopColor="#D65B27" />
           </radialGradient>
+
+          {/* Background Theme Gradients */}
+          <linearGradient id="svgSunsetGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FB923C" />
+            <stop offset="50%" stopColor="#F43F5E" />
+            <stop offset="100%" stopColor="#881337" />
+          </linearGradient>
+
+          <linearGradient id="svgAuroraGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#059669" />
+            <stop offset="50%" stopColor="#0D9488" />
+            <stop offset="100%" stopColor="#0F172A" />
+          </linearGradient>
+
+          <linearGradient id="svgLavaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#EF4444" />
+            <stop offset="50%" stopColor="#F97316" />
+            <stop offset="100%" stopColor="#451A03" />
+          </linearGradient>
+
+          <linearGradient id="svgCosmicGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#312E81" />
+            <stop offset="50%" stopColor="#1E1B4B" />
+            <stop offset="100%" stopColor="#020617" />
+          </linearGradient>
+
+          <linearGradient id="svgCaveGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#581C87" />
+            <stop offset="50%" stopColor="#312E81" />
+            <stop offset="100%" stopColor="#0F172A" />
+          </linearGradient>
+
+          <linearGradient id="svgPalaceGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FEF08A" />
+            <stop offset="50%" stopColor="#F59E0B" />
+            <stop offset="100%" stopColor="#B45309" />
+          </linearGradient>
 
           {/* Striped 3D Tail Gradient */}
           <linearGradient id="tailGrad" x1="0" y1="0" x2="1" y2="1">
@@ -219,23 +229,91 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         </defs>
 
         {/* ==================================================== */}
+        {/* LAYER 0: BACKGROUND THEME GRAPHICS                    */}
+        {/* ==================================================== */}
+        {hasAlpineBg && (
+          <g>
+            <rect x="5" y="5" width="190" height="190" rx="32" fill="#ECFDF5" stroke="#10B981" strokeWidth="4" />
+            <polygon points="20,180 70,90 120,180" fill="#059669" opacity="0.85" />
+            <polygon points="80,180 135,70 190,180" fill="#047857" opacity="0.9" />
+            <circle cx="150" cy="45" r="16" fill="#FACC15" />
+          </g>
+        )}
+
+        {hasSunsetBg && (
+          <g>
+            <rect x="5" y="5" width="190" height="190" rx="32" fill="url(#svgSunsetGrad)" stroke="#E11D48" strokeWidth="4" />
+            <circle cx="100" cy="115" r="60" fill="#FFFBEB" opacity="0.35" />
+            <polygon points="10,185 60,130 110,185" fill="#4C0519" opacity="0.7" />
+            <polygon points="80,185 140,110 195,185" fill="#4C0519" opacity="0.8" />
+          </g>
+        )}
+
+        {hasAuroraBg && (
+          <g>
+            <rect x="5" y="5" width="190" height="190" rx="32" fill="url(#svgAuroraGrad)" stroke="#0D9488" strokeWidth="4" />
+            <path d="M 15 60 Q 80 20 185 60" stroke="#5EEAD4" strokeWidth="12" fill="none" opacity="0.75" />
+            <circle cx="40" cy="35" r="2" fill="#FFFFFF" />
+            <circle cx="160" cy="45" r="2.5" fill="#FFFFFF" />
+          </g>
+        )}
+
+        {hasVolcanoBg && (
+          <g>
+            <rect x="5" y="5" width="190" height="190" rx="32" fill="url(#svgLavaGrad)" stroke="#9A3412" strokeWidth="4" />
+            <polygon points="25,190 100,80 175,190" fill="#451A03" />
+            <circle cx="100" cy="80" r="12" fill="#F97316" />
+          </g>
+        )}
+
+        {hasCosmicBg && (
+          <g>
+            <rect x="5" y="5" width="190" height="190" rx="32" fill="url(#svgCosmicGrad)" stroke="#6366F1" strokeWidth="4" />
+            <circle cx="35" cy="40" r="3" fill="#FFFFFF" />
+            <circle cx="165" cy="55" r="2.5" fill="#FDE047" />
+            <circle cx="140" cy="140" r="4" fill="#67E8F9" />
+            <ellipse cx="140" cy="140" rx="12" ry="4" fill="none" stroke="#67E8F9" strokeWidth="1.5" />
+          </g>
+        )}
+
+        {hasCrystalCaveBg && (
+          <g>
+            <rect x="5" y="5" width="190" height="190" rx="32" fill="url(#svgCaveGrad)" stroke="#7C3AED" strokeWidth="4" />
+            <polygon points="20,185 45,95 70,185" fill="#C084FC" />
+            <polygon points="130,185 155,80 180,185" fill="#38BDF8" />
+          </g>
+        )}
+
+        {hasGoldenPalaceBg && (
+          <g>
+            <rect x="5" y="5" width="190" height="190" rx="32" fill="url(#svgPalaceGrad)" stroke="#B45309" strokeWidth="4" />
+            <rect x="50" y="90" width="100" height="95" fill="#FFFBEB" opacity="0.9" stroke="#B45309" strokeWidth="3" />
+            <polygon points="100,40 50,90 150,90" fill="#FBBF24" stroke="#B45309" strokeWidth="3" />
+          </g>
+        )}
+
+        {/* ==================================================== */}
         {/* COMPANION PETS (Phoenix / Dragon)                    */}
         {/* ==================================================== */}
         {hasPhoenixPet && (
-          <g className="animate-bounce" style={{ animationDuration: '2s' }}>
-            <ellipse cx="165" cy="70" rx="14" ry="10" fill="#EF4444" stroke="#9A3412" strokeWidth="2" />
-            <circle cx="160" cy="65" r="2" fill="#FFFFFF" />
-            <polygon points="168,70 178,72 168,76" fill="#FBBF24" />
-            <path d="M 155 75 Q 145 85 150 95" stroke="#F97316" strokeWidth="3" fill="none" />
+          <g className="animate-bounce" style={{ animationDuration: '2.5s' }} filter="url(#clayShadow)">
+            <path d="M 155 45 C 140 25, 125 50, 140 75 C 150 90, 175 90, 185 75 C 195 50, 180 25, 165 45 Z" fill="url(#svgLavaGrad)" stroke="#9A3412" strokeWidth="2.5" />
+            <path d="M 175 60 L 192 63 L 175 70 Z" fill="#FBBF24" />
+            <circle cx="160" cy="52" r="3" fill="#FFFFFF" />
+            <circle cx="160" cy="52" r="1.5" fill="#000000" />
+            <path d="M 145 75 Q 135 90 142 102" stroke="#F97316" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+            <path d="M 155 78 Q 148 95 155 105" stroke="#FBBF24" strokeWidth="3" fill="none" strokeLinecap="round" />
           </g>
         )}
 
         {hasFrostDragon && (
-          <g className="animate-pulse">
-            <ellipse cx="35" cy="70" rx="14" ry="10" fill="#06B6D4" stroke="#0891B2" strokeWidth="2" />
-            <circle cx="40" cy="65" r="2" fill="#FFFFFF" />
-            <polygon points="32,70 22,72 32,76" fill="#A7F3D0" />
-            <path d="M 45 75 Q 55 85 50 95" stroke="#38BDF8" strokeWidth="3" fill="none" />
+          <g className="animate-pulse" filter="url(#clayShadow)">
+            <path d="M 45 45 C 30 25, 15 50, 30 75 C 40 90, 65 90, 75 75 C 85 50, 70 25, 55 45 Z" fill="url(#svgAuroraGrad)" stroke="#065F46" strokeWidth="2.5" />
+            <polygon points="25,58 10,61 25,68" fill="#A7F3D0" />
+            <circle cx="40" cy="52" r="3" fill="#FFFFFF" />
+            <circle cx="40" cy="52" r="1.5" fill="#000000" />
+            <polygon points="50,35 48,22 55,30" fill="#67E8F9" />
+            <polygon points="62,38 64,25 68,34" fill="#67E8F9" />
           </g>
         )}
 
@@ -256,6 +334,13 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <g filter="url(#clayShadow)">
               <rect x="45" y="80" width="110" height="70" rx="20" fill="#B45309" stroke="#78350F" strokeWidth="4" />
               <rect x="65" y="110" width="70" height="35" rx="10" fill="#D97706" stroke="#78350F" strokeWidth="3" />
+            </g>
+          )}
+
+          {hasRoyalCape && (
+            <g filter="url(#clayShadow)">
+              <path d="M 64 96 L 44 165 Q 100 180 156 165 L 136 96 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3.5" />
+              <path d="M 64 96 Q 100 90 136 96" stroke="#F59E0B" strokeWidth="6" strokeLinecap="round" />
             </g>
           )}
         </g>
@@ -339,34 +424,28 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         </g>
 
         {/* ==================================================== */}
-        {/* LAYER 3: OUTFITS (Vest, Scarf, Bowtie, Cape)         */}
+        {/* LAYER 3: OUTFITS (Vest, Scarf, Bowtie)               */}
         {/* ==================================================== */}
         <g id="layer-outfits">
-          {hasRoyalCape && (
-            <g filter="url(#clayShadow)">
-              <path d="M 60 100 Q 100 90 140 100 L 155 160 Q 100 175 45 160 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3" />
-              <path d="M 60 100 L 140 100" stroke="#F59E0B" strokeWidth="5" />
-            </g>
-          )}
-
           {hasVest && (
             <g filter="url(#clayShadow)">
-              <path d="M 60 98 L 80 98 L 100 120 L 120 98 L 140 98 L 140 145 L 60 145 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="3" />
+              <path d="M 66 98 L 84 98 L 100 118 L 116 98 L 134 98 L 134 146 L 66 146 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="3.5" />
+              <line x1="100" y1="118" x2="100" y2="146" stroke="#0284C7" strokeWidth="3" />
             </g>
           )}
 
           {hasSummitScarf && (
             <g filter="url(#clayShadow)">
-              <ellipse cx="100" cy="98" rx="42" ry="16" fill="#E11D48" stroke="#9F1239" strokeWidth="3" />
-              <path d="M 115 102 L 132 140 L 105 140 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="2.5" />
+              <ellipse cx="100" cy="98" rx="38" ry="14" fill="#E11D48" stroke="#9F1239" strokeWidth="3.5" />
+              <path d="M 115 102 L 132 145 L 106 145 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="3" />
             </g>
           )}
 
           {hasBowtie && (
             <g filter="url(#clayShadow)">
-              <polygon points="100,105 75,90 75,120" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
-              <polygon points="100,105 125,90 125,120" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
-              <circle cx="100" cy="105" r="7" fill="#DC2626" />
+              <polygon points="100,105 78,92 78,118" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+              <polygon points="100,105 122,92 122,118" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+              <circle cx="100" cy="105" r="7" fill="#DC2626" stroke="#991B1B" strokeWidth="2" />
             </g>
           )}
         </g>
