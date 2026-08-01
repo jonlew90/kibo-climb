@@ -6,7 +6,7 @@ import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
 import { getNotificationPrefs, saveNotificationPrefs, requestNotificationPermission } from '../utils/notifications';
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
-import { getCompetenceRankTier } from '../utils/GameEconomyModel';
+import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 
 const DAYS_OF_WEEK = [
@@ -354,9 +354,9 @@ export default function ParentDashboardModal({
                         </span>
                       </div>
 
-                      <div className="flex-1 text-xs text-slate-700 leading-relaxed font-medium space-y-1.5">
-                        <p>
-                          Kibo’s adaptive algorithm has identified your child is proficient at a <strong>Rating {adaptiveCompetenceRating}</strong> level, successfully tackling multi-digit operations while regression-reviewing challenged facts in real time.
+                      <div className="flex-1 text-xs text-slate-700 leading-relaxed font-medium space-y-1.5 text-left">
+                        <p className="font-bold text-indigo-950 bg-white/80 p-2.5 rounded-xl border border-indigo-100/80 shadow-xs">
+                          {getCompetenceDescription(adaptiveCompetenceRating, totalProblemsSolved)}
                         </p>
                         <div className="flex items-center gap-3 pt-1 text-[11px] font-bold">
                           <span className="text-emerald-700">🟢 {masteryDistribution.mastered}% Mastered</span>
