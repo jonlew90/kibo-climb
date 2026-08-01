@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Lock, Sparkles, X, CheckCircle2, Trophy, Flame, Zap, Target } from 'lucide-react';
+import { Award, Lock, Sparkles, ArrowLeft, CheckCircle2, Trophy, Flame, Zap, Target } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { soundFx } from '../utils/audio';
@@ -50,98 +50,97 @@ export default function BadgesModal({
     : BADGES_CATALOG.filter((b) => b.category === activeCategory);
 
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/65 backdrop-blur-sm animate-pop cursor-pointer"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-slate-800 shadow-2xl space-y-3.5 max-h-[92vh] flex flex-col relative overflow-hidden cursor-default"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-amber-100 text-amber-700 rounded-2xl border border-amber-200">
-              <Trophy className="w-6 h-6 stroke-[2.5]" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">My Trophies & Records</h2>
-              <p className="text-xs text-slate-500 font-semibold">Your personal bests & trail badge showcase!</p>
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
+      {/* STICKY TOP HEADER BAR */}
+      <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
+        <button
+          onClick={() => {
+            soundFx.playKeyTap();
+            onClose();
+          }}
+          className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-extrabold text-sm px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all active:scale-95"
+        >
+          <ArrowLeft className="w-4 h-4 stroke-[3]" />
+          <span>Back</span>
+        </button>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition-colors"
-          >
-            <X className="w-6 h-6 stroke-[2.5]" />
-          </button>
+        <div className="flex items-center gap-2 text-slate-800">
+          <Trophy className="w-5 h-5 text-amber-500 stroke-[2.5]" />
+          <h2 className="text-base sm:text-lg font-black tracking-tight">My Trophies & Records</h2>
         </div>
 
+        <div className="flex items-center gap-1.5 bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1 rounded-full text-xs font-black shadow-xs">
+          <Award className="w-4 h-4 text-amber-700 stroke-[2.5]" />
+          <span>{unlockedCount}/{totalBadges}</span>
+        </div>
+      </header>
+
+      {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
+      <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         {/* TOP PERSONAL BEST SHOWCASE HEADER SECTION */}
-        <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-amber-50 border-2 border-purple-200 rounded-2xl p-3.5 space-y-2.5 shrink-0 shadow-xs text-left">
-          <div className="flex items-center justify-between flex-wrap gap-1">
-            <span className="text-xs font-black text-purple-900 flex items-center gap-1.5 uppercase tracking-wider">
-              <Trophy className="w-4 h-4 text-purple-700 stroke-[2.5]" />
+        <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-amber-50 border-2 border-purple-200 rounded-3xl p-4 sm:p-5 space-y-3 shrink-0 shadow-xs text-left">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <span className="text-xs sm:text-sm font-black text-purple-900 flex items-center gap-2 uppercase tracking-wider">
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-purple-700 stroke-[2.5]" />
               Personal Best Showcase
             </span>
-            <span className="text-[10px] font-black uppercase text-purple-800 bg-purple-100 px-2.5 py-0.5 rounded-full border border-purple-200">
+            <span className="text-xs font-black uppercase text-purple-800 bg-purple-100 px-3 py-1 rounded-full border border-purple-200 shadow-xs">
               {getCompetenceRankTier(userRating)} • {userRating} pts
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold">
-            <div className="bg-white/90 p-2 rounded-xl border border-purple-100 shadow-xs">
-              <span className="text-[9px] text-slate-500 uppercase block font-black">Best Streak</span>
-              <span className="text-purple-900 font-black text-xs sm:text-sm">{bestStreak} in a row 🔥</span>
+          <div className="grid grid-cols-3 gap-3 text-center text-xs font-bold pt-1">
+            <div className="bg-white/90 p-3 rounded-2xl border border-purple-100 shadow-xs">
+              <span className="text-[10px] text-slate-500 uppercase block font-black">Best Streak</span>
+              <span className="text-purple-900 font-black text-sm sm:text-base mt-0.5 block">{bestStreak} in a row 🔥</span>
             </div>
 
-            <div className="bg-white/90 p-2 rounded-xl border border-purple-100 shadow-xs">
-              <span className="text-[9px] text-slate-500 uppercase block font-black">Fastest 12-Q Block</span>
-              <span className="text-purple-900 font-black text-xs sm:text-sm">{fastestTime ? `${fastestTime}s ⚡` : 'N/A'}</span>
+            <div className="bg-white/90 p-3 rounded-2xl border border-purple-100 shadow-xs">
+              <span className="text-[10px] text-slate-500 uppercase block font-black">Fastest 12-Q Block</span>
+              <span className="text-purple-900 font-black text-sm sm:text-base mt-0.5 block">{fastestTime ? `${fastestTime}s ⚡` : 'N/A'}</span>
             </div>
 
-            <div className="bg-white/90 p-2 rounded-xl border border-purple-100 shadow-xs">
-              <span className="text-[9px] text-slate-500 uppercase block font-black">Perfect Runs</span>
-              <span className="text-purple-900 font-black text-xs sm:text-sm">{perfectRuns} Runs 🎯</span>
+            <div className="bg-white/90 p-3 rounded-2xl border border-purple-100 shadow-xs">
+              <span className="text-[10px] text-slate-500 uppercase block font-black">Perfect Runs</span>
+              <span className="text-purple-900 font-black text-sm sm:text-base mt-0.5 block">{perfectRuns} Runs 🎯</span>
             </div>
           </div>
         </div>
 
         {/* RECENT MILESTONES FEED */}
         {recentUnlockedBadges.length > 0 && (
-          <div className="bg-gradient-to-r from-amber-500/10 via-yellow-400/10 to-amber-500/10 border-2 border-amber-300 rounded-2xl p-3 space-y-2 shrink-0 text-left shadow-xs">
+          <div className="bg-gradient-to-r from-amber-500/10 via-yellow-400/10 to-amber-500/10 border-2 border-amber-300 rounded-3xl p-4 space-y-3 shrink-0 text-left shadow-xs">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-300" />
+              <span className="text-xs font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-amber-600 fill-amber-300" />
                 ✨ Recent Milestone Unlocks
               </span>
-              <span className="text-[10px] font-extrabold text-amber-900 bg-amber-200/90 px-2 py-0.5 rounded-full border border-amber-400">
+              <span className="text-xs font-extrabold text-amber-900 bg-amber-200/90 px-2.5 py-0.5 rounded-full border border-amber-400">
                 Last {recentUnlockedBadges.length} Earned
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {recentUnlockedBadges.map((badge) => (
                 <div
                   key={badge.id}
-                  className="bg-white/95 border border-amber-300 rounded-xl p-2.5 flex flex-col justify-between space-y-1.5 shadow-xs hover:border-amber-400 transition-colors"
+                  className="bg-white/95 border-2 border-amber-300 rounded-2xl p-3 flex flex-col justify-between space-y-2 shadow-xs hover:border-amber-400 transition-colors"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl shrink-0 filter drop-shadow-xs">{badge.icon}</span>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-3xl shrink-0 filter drop-shadow-xs">{badge.icon}</span>
                     <div className="min-w-0 flex-1">
-                      <h5 className="font-extrabold text-slate-800 text-xs truncate leading-snug">
+                      <h5 className="font-extrabold text-slate-800 text-xs sm:text-sm truncate leading-snug">
                         {badge.title || badge.name}
                       </h5>
-                      <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded-md border border-emerald-300 inline-block">
+                      <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-300 inline-block mt-0.5">
                         ✓ Unlocked
                       </span>
                     </div>
                   </div>
-                  <p className="text-[10px] text-slate-600 font-medium leading-snug">
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed">
                     {badge.description}
                   </p>
-                  <div className="text-[9px] font-bold text-amber-900 bg-amber-100/90 px-2 py-0.5 rounded-lg border border-amber-300 truncate">
+                  <div className="text-[10px] font-bold text-amber-900 bg-amber-100/90 px-2.5 py-1 rounded-xl border border-amber-300 truncate">
                     🎯 Required: {badge.reqText || 'Complete math climbs'}
                   </div>
                 </div>
@@ -151,18 +150,18 @@ export default function BadgesModal({
         )}
 
         {/* Progress Bar Header */}
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-2xl p-3 space-y-1.5 shrink-0">
-          <div className="flex items-center justify-between text-xs font-black text-amber-950">
-            <span className="flex items-center gap-1">
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-3xl p-4 space-y-2 shrink-0 text-left">
+          <div className="flex items-center justify-between text-xs sm:text-sm font-black text-amber-950">
+            <span className="flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-amber-600 fill-amber-300" />
               Badge Showcase Progress
             </span>
-            <span className="bg-amber-200 px-2 py-0.5 rounded-full border border-amber-300">
+            <span className="bg-amber-200 px-3 py-0.5 rounded-full border border-amber-300">
               {unlockedCount} / {totalBadges} Badges ({progressPct}%)
             </span>
           </div>
 
-          <div className="w-full bg-amber-200/60 h-2.5 rounded-full overflow-hidden border border-amber-300">
+          <div className="w-full bg-amber-200/60 h-3.5 rounded-full overflow-hidden border border-amber-300">
             <div
               className="bg-gradient-to-r from-amber-400 to-yellow-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${progressPct}%` }}
@@ -171,16 +170,16 @@ export default function BadgesModal({
         </div>
 
         {/* Filter Category Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 shrink-0">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 shrink-0">
           <button
             onClick={() => {
               soundFx.playKeyTap();
               setActiveCategory('all');
             }}
-            className={`py-1.5 px-3 text-[11px] font-extrabold rounded-xl shrink-0 transition-all ${
+            className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-all ${
               activeCategory === 'all'
-                ? 'bg-amber-500 text-white shadow-sm scale-[1.02]'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-amber-500 text-white shadow-md scale-[1.02]'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             🌟 All Badges ({unlockedCount}/{totalBadges})
@@ -197,10 +196,10 @@ export default function BadgesModal({
                   soundFx.playKeyTap();
                   setActiveCategory(key);
                 }}
-                className={`py-1.5 px-3 text-[11px] font-extrabold rounded-xl shrink-0 transition-all ${
+                className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-all ${
                   activeCategory === key
-                    ? 'bg-amber-500 text-white shadow-sm scale-[1.02]'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-amber-500 text-white shadow-md scale-[1.02]'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                 }`}
               >
                 {cat.icon} {cat.label} ({catUnlocked}/{catBadges.length})
@@ -209,23 +208,22 @@ export default function BadgesModal({
           })}
         </div>
 
-        {/* Badge Grid */}
-        <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 py-1">
+        {/* Badge Grid Catalog */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-6">
           {filteredBadges.map((badge) => {
             const isUnlocked = unlockedSet.has(badge.id);
 
             return (
               <div
                 key={badge.id}
-                className={`p-3 rounded-2xl border-2 transition-all flex items-center gap-3 relative ${
+                className={`p-4 rounded-3xl border-2 transition-all flex items-center gap-3.5 relative ${
                   isUnlocked
-                    ? 'bg-gradient-to-r from-amber-50/80 via-white to-yellow-50/80 border-amber-300 shadow-sm'
-                    : 'bg-slate-50 border-slate-200 opacity-60'
+                    ? 'bg-white border-amber-300 shadow-xs'
+                    : 'bg-slate-100/70 border-slate-200 opacity-60'
                 }`}
               >
-                {/* Badge Icon */}
                 <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 border-2 shadow-inner ${
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 border-2 shadow-inner ${
                     isUnlocked
                       ? 'bg-gradient-to-b from-amber-300 via-yellow-400 to-amber-500 border-amber-600 text-amber-950 shadow-clay-amber'
                       : 'bg-slate-200 border-slate-300 text-slate-400 grayscale'
@@ -234,30 +232,44 @@ export default function BadgesModal({
                   {badge.icon}
                 </div>
 
-                {/* Badge Content */}
-                <div className="flex-1 text-left min-w-0">
+                <div className="flex-1 text-left min-w-0 space-y-1">
                   <div className="flex items-center gap-1.5">
-                    <h4 className="font-black text-slate-800 text-sm truncate">{badge.title || badge.name}</h4>
+                    <h4 className="font-extrabold text-slate-800 text-sm sm:text-base truncate">{badge.title || badge.name}</h4>
                     {isUnlocked ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-100 shrink-0" />
                     ) : (
                       <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">
+                  <p className="text-xs text-slate-600 font-medium leading-snug">
                     {badge.description}
                   </p>
-                  {!isUnlocked && (
-                    <span className="text-[9px] font-black uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300 inline-block mt-1">
-                      Target: {badge.reqText}
-                    </span>
-                  )}
+                  <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border inline-block mt-0.5 ${
+                    isUnlocked
+                      ? 'text-emerald-900 bg-emerald-100 border-emerald-300'
+                      : 'text-amber-800 bg-amber-100 border-amber-300'
+                  }`}>
+                    {isUnlocked ? `🎯 Earned: ${badge.reqText}` : `Target: ${badge.reqText}`}
+                  </span>
                 </div>
               </div>
             );
           })}
         </div>
-      </div>
+      </main>
+
+      {/* STICKY BOTTOM ACTION FOOTER */}
+      <footer className="w-full bg-white/95 border-t-2 border-slate-200 p-3 sm:p-4 backdrop-blur-md shrink-0 flex items-center justify-center z-10">
+        <button
+          onClick={() => {
+            soundFx.playKeyTap();
+            onClose();
+          }}
+          className="w-full max-w-sm bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-base py-3 px-8 rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-amber-700 active:translate-y-0.5 active:border-b-0 transition-all text-center"
+        >
+          Return to Climb
+        </button>
+      </footer>
     </div>
   );
 }

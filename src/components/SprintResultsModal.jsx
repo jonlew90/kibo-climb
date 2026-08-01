@@ -82,25 +82,29 @@ export default function SprintResultsModal({
   const star3 = totalStars >= 3;
 
   return (
-    <div
-      onClick={handleContinue}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-md animate-pop cursor-pointer"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative max-h-[92vh] overflow-y-auto cursor-default"
-      >
-        <ConfettiCanvas />
+    <div className="fixed inset-0 z-50 bg-slate-900 text-white flex flex-col w-full h-full overflow-hidden animate-fade-in">
+      <ConfettiCanvas />
 
-        {/* Step Indicator Header */}
-        <div className="flex items-center justify-between px-2 text-xs font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">
-          <span className={summaryStep === 1 ? 'text-amber-600 font-extrabold' : 'text-slate-400'}>
-            Step 1: Stats & Accuracy
+      {/* STICKY TOP HEADER BAR */}
+      <header className="bg-slate-900/90 border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
+        <div className="flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-amber-400 stroke-[2.5]" />
+          <h2 className="text-base sm:text-lg font-black tracking-tight text-white">Climb Summary</h2>
+        </div>
+
+        <div className="flex items-center gap-3 text-xs font-black">
+          <span className={summaryStep === 1 ? 'text-amber-400 font-extrabold bg-amber-950/80 px-2.5 py-0.5 rounded-full border border-amber-500/40' : 'text-slate-500'}>
+            Step 1: Stats
           </span>
-          <span className={summaryStep === 2 ? 'text-amber-600 font-extrabold' : 'text-slate-400'}>
-            Step 2: Rewards & Stars
+          <span className={summaryStep === 2 ? 'text-amber-400 font-extrabold bg-amber-950/80 px-2.5 py-0.5 rounded-full border border-amber-500/40' : 'text-slate-500'}>
+            Step 2: Rewards
           </span>
         </div>
+      </header>
+
+      {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
+      <main className="flex-1 overflow-y-auto w-full max-w-xl mx-auto p-4 sm:p-6 space-y-6 flex flex-col items-center justify-center text-slate-800">
+        <div className="w-full bg-white border-4 border-amber-300 rounded-3xl p-5 sm:p-6 text-center shadow-2xl space-y-4">
 
         {/* Mascot Header */}
         <div className="relative mx-auto w-24 h-24 sm:w-28 sm:h-28">
@@ -322,7 +326,8 @@ export default function SprintResultsModal({
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

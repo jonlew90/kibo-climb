@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft } from 'lucide-react';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
@@ -150,56 +150,51 @@ export default function ParentDashboardModal({
   if (!isOpen) return null;
 
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg bg-white border-4 border-purple-300 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden cursor-default"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-7 h-7 text-purple-600 stroke-[2.5]" />
-            <div>
-              <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Parent Dashboard</h2>
-              <span className="text-[10px] font-bold text-slate-400 block">
-                Last Synchronized: {lastRefreshedAt}
-              </span>
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
+      {/* STICKY TOP HEADER BAR */}
+      <header className="bg-white border-b-2 border-purple-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
+        <button
+          onClick={() => {
+            soundFx.playKeyTap();
+            onClose();
+          }}
+          className="flex items-center gap-1.5 text-purple-700 hover:text-purple-900 font-extrabold text-sm px-3 py-1.5 bg-purple-50 hover:bg-purple-100 rounded-xl transition-all active:scale-95 border border-purple-200"
+        >
+          <ArrowLeft className="w-4 h-4 stroke-[3]" />
+          <span>Exit Parent Zone</span>
+        </button>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleRefresh}
-              className={`flex items-center gap-1 text-xs font-black text-purple-700 bg-purple-50 hover:bg-purple-100 px-2.5 py-1.5 rounded-xl border border-purple-200 shadow-xs transition-all active:scale-95 ${
-                isRefreshing ? 'animate-spin opacity-50' : ''
-              }`}
-              title="Force Refresh Data"
-            >
-              <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Refresh</span>
-            </button>
-
-            <button
-              onClick={onClose}
-              className="p-1.5 bg-slate-100 rounded-xl text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
-              aria-label="Close Parent Dashboard"
-            >
-              <X className="w-6 h-6 stroke-[2.5]" />
-            </button>
+        <div className="flex items-center gap-2 text-slate-800">
+          <ShieldCheck className="w-6 h-6 text-purple-600 stroke-[2.5]" />
+          <div>
+            <h2 className="text-base sm:text-lg font-black tracking-tight">Parent Dashboard</h2>
+            <span className="text-[9px] font-bold text-slate-400 block hidden sm:block">
+              Synced: {lastRefreshedAt}
+            </span>
           </div>
         </div>
 
-        {/* Tab Buttons */}
-        <div className="flex bg-slate-100 p-1 rounded-2xl my-3 font-extrabold text-xs sm:text-sm">
+        <button
+          onClick={handleRefresh}
+          className={`flex items-center gap-1 text-xs font-black text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-xl border border-purple-200 shadow-xs transition-all active:scale-95 ${
+            isRefreshing ? 'animate-spin opacity-50' : ''
+          }`}
+          title="Force Refresh Data"
+        >
+          <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
+          <span>Refresh</span>
+        </button>
+      </header>
+
+      {/* TAB SELECTOR HEADER */}
+      <div className="w-full max-w-4xl mx-auto px-4 pt-3 shrink-0">
+        <div className="flex bg-slate-200/80 p-1 rounded-2xl font-extrabold text-xs sm:text-sm shadow-inner">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 ${
               activeTab === 'overview'
                 ? 'bg-white text-purple-700 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Layers className="w-4 h-4 stroke-[2.5]" /> Child Overview
@@ -207,15 +202,19 @@ export default function ParentDashboardModal({
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 ${
               activeTab === 'settings'
                 ? 'bg-white text-purple-700 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Settings className="w-4 h-4 stroke-[2.5]" /> PIN & Schedule Settings
           </button>
         </div>
+      </div>
+
+      {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
+      <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
 
         {/* TAB 1: CHILD OVERVIEW */}
         {activeTab === 'overview' && (
@@ -763,14 +762,20 @@ export default function ParentDashboardModal({
           </div>
         )}
 
-        {/* Footer */}
+      </main>
+
+      {/* STICKY BOTTOM ACTION FOOTER */}
+      <footer className="w-full bg-white/95 border-t-2 border-purple-200 p-3 sm:p-4 backdrop-blur-md shrink-0 flex items-center justify-center z-10">
         <button
-          onClick={onClose}
-          className="btn-3d-purple w-full py-3 mt-3 text-sm rounded-2xl"
+          onClick={() => {
+            soundFx.playKeyTap();
+            onClose();
+          }}
+          className="w-full max-w-sm bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-base py-3 px-8 rounded-2xl shadow-lg shadow-purple-500/30 border-b-4 border-purple-800 active:translate-y-0.5 active:border-b-0 transition-all text-center"
         >
-          Exit Parent Dashboard
+          Exit Parent Zone 🔒
         </button>
-      </div>
+      </footer>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
 import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, getItemsByCategory, getItemById } from '../utils/itemsCatalog';
@@ -187,48 +187,33 @@ export default function WorkshopModal({
   };
 
   return (
-    <div
-      onClick={() => {
-        soundFx.playKeyTap();
-        onClose();
-      }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/65 backdrop-blur-sm animate-pop cursor-pointer"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-white border-4 border-amber-300 rounded-3xl p-4 sm:p-5 text-slate-800 shadow-2xl space-y-4 max-h-[92vh] flex flex-col relative overflow-hidden cursor-default"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-amber-100 text-amber-700 rounded-2xl border border-amber-200">
-              <ShoppingBag className="w-6 h-6 stroke-[2.5]" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">Kibo's Workshop</h2>
-              <p className="text-xs text-slate-500 font-semibold">Try on & unlock gear with Sparks!</p>
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
+      {/* STICKY TOP HEADER BAR */}
+      <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
+        <button
+          onClick={() => {
+            soundFx.playKeyTap();
+            onClose();
+          }}
+          className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-extrabold text-sm px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all active:scale-95"
+        >
+          <ArrowLeft className="w-4 h-4 stroke-[3]" />
+          <span>Back</span>
+        </button>
 
-          <div className="flex items-center gap-3">
-            {/* Spark Balance Counter */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 border-2 border-amber-300 rounded-2xl text-amber-900 font-extrabold text-sm shadow-sm">
-              <Zap className="w-4 h-4 text-amber-500 fill-amber-400 stroke-[2.5]" />
-              <span>{sparks}</span>
-            </div>
-
-            <button
-              onClick={() => {
-                soundFx.playKeyTap();
-                onClose();
-              }}
-              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition-colors"
-              aria-label="Close Workshop"
-            >
-              <X className="w-6 h-6 stroke-[2.5]" />
-            </button>
-          </div>
+        <div className="flex items-center gap-2 text-slate-800">
+          <ShoppingBag className="w-5 h-5 text-amber-500 stroke-[2.5]" />
+          <h2 className="text-base sm:text-lg font-black tracking-tight">Kibo's Workshop & Gear</h2>
         </div>
+
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 border-2 border-amber-300 rounded-full text-amber-900 font-black text-xs shadow-xs">
+          <Zap className="w-4 h-4 text-amber-500 fill-amber-400 stroke-[2.5]" />
+          <span>{sparks}</span>
+        </div>
+      </header>
+
+      {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
+      <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
 
         {/* Live Try-On Preview Mascot Stage Header */}
         <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3 flex items-center justify-around shrink-0 shadow-inner relative">
@@ -486,18 +471,20 @@ export default function WorkshopModal({
             );
           })}
         </div>
+      </main>
 
-        {/* Footer Close Button */}
+      {/* STICKY BOTTOM ACTION FOOTER */}
+      <footer className="w-full bg-white/95 border-t-2 border-slate-200 p-3 sm:p-4 backdrop-blur-md shrink-0 flex items-center justify-center z-10">
         <button
           onClick={() => {
             soundFx.playKeyTap();
             onClose();
           }}
-          className="btn-3d-teal w-full py-3 text-sm rounded-2xl shrink-0"
+          className="w-full max-w-sm bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-base py-3 px-8 rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-amber-700 active:translate-y-0.5 active:border-b-0 transition-all text-center"
         >
           Done Customizing 🚀
         </button>
-      </div>
+      </footer>
     </div>
   );
 }
