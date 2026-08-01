@@ -1994,7 +1994,7 @@ export default function App() {
 
       {/* Footer with Parent Zone Link */}
       <footer className="w-full text-center text-xs font-bold text-slate-700 py-2.5 px-4 border-t border-slate-200/80 mt-auto flex items-center justify-between">
-        <span>{BRAND_CONFIG.appName} by {BRAND_CONFIG.rootBrand} • math.kiboclimb.com</span>
+        <span>{BRAND_CONFIG.appName} by {BRAND_CONFIG.rootBrand} • {BRAND_CONFIG.tagline}</span>
         <button
           onClick={() => setShowPinGateModal(true)}
           className="text-purple-600 hover:text-purple-800 flex items-center gap-1 font-extrabold"
