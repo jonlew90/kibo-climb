@@ -141,7 +141,7 @@ export function evaluateAdaptiveSessionEnd({
   let milestonesUnlocked = [];
 
   const records = {
-    fastest10QuestionsTime: personalRecords?.fastest10QuestionsTime ?? null,
+    fastest12QuestionsTime: personalRecords?.fastest12QuestionsTime ?? personalRecords?.fastest10QuestionsTime ?? null,
     highestCorrectStreak: Math.max(personalRecords?.highestCorrectStreak || 0, cumulativeCorrectStreak),
     mostPerfectSessions: personalRecords?.mostPerfectSessions || 0
   };
@@ -158,8 +158,8 @@ export function evaluateAdaptiveSessionEnd({
     isSpeedRun = true;
     bonusSparks += 10;
     const sessionTimeSec = Math.round(totalSessionTimeMs / 1000);
-    if (!records.fastest10QuestionsTime || sessionTimeSec < records.fastest10QuestionsTime) {
-      records.fastest10QuestionsTime = sessionTimeSec;
+    if (!records.fastest12QuestionsTime || sessionTimeSec < records.fastest12QuestionsTime) {
+      records.fastest12QuestionsTime = sessionTimeSec;
     }
   }
 

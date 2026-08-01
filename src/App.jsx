@@ -170,7 +170,7 @@ export default function App() {
 
   const [personalRecords, setPersonalRecords] = useState(() => {
     return storageService.getUserData().personalRecords || {
-      fastest10QuestionsTime: null,
+      fastest12QuestionsTime: null,
       highestCorrectStreak: 0,
       mostPerfectSessions: 0
     };

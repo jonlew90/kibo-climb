@@ -28,7 +28,7 @@ const DEFAULT_PROFILE = {
     totalProblemsSolved: 0,
     cumulativeCorrectStreak: 0,
     personalRecords: {
-      fastest10QuestionsTime: null,
+      fastest12QuestionsTime: null,
       highestCorrectStreak: 0,
       mostPerfectSessions: 0
     },

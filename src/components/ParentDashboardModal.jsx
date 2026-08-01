@@ -247,9 +247,9 @@ export default function ParentDashboardModal({
                 </div>
 
                 <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
-                  <span className="text-[9px] text-slate-500 uppercase block font-black">Fastest 10-Q Speed</span>
-                  <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.fastest10QuestionsTime ? `${personalRecords.fastest10QuestionsTime}s` : 'N/A'}</span>
-                  <span className="text-[8px] font-bold text-slate-400 block mt-0.5">Best time for 10 Qs</span>
+                  <span className="text-[9px] text-slate-500 uppercase block font-black">Fastest 12-Q Block</span>
+                  <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.fastest12QuestionsTime || personalRecords?.fastest10QuestionsTime ? `${personalRecords.fastest12QuestionsTime || personalRecords.fastest10QuestionsTime}s` : 'N/A'}</span>
+                  <span className="text-[8px] font-bold text-slate-400 block mt-0.5">Best time for 12 Qs</span>
                 </div>
 
                 <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
