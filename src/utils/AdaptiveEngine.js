@@ -185,3 +185,32 @@ export function evaluateAdaptiveSessionEnd({
     updatedPersonalRecords: records
   };
 }
+
+export const MASTERY_THRESHOLDS = [
+  { threshold: 1150, skillName: 'Sums & Differences to 20' },
+  { threshold: 1300, skillName: 'Multiplication Facts (0s-12s)' },
+  { threshold: 1450, skillName: 'Money & Elapsed Time' },
+  { threshold: 1600, skillName: 'Multi-Digit Mental Math' },
+  { threshold: 1700, skillName: 'Number Theory & Logic' },
+  { threshold: 1750, skillName: 'Exponents, Roots & PEMDAS' }
+];
+
+export function checkSkillMasteryEvents(prevRating, nextRating, existingEvents = []) {
+  const newEvents = [...(existingEvents || [])];
+
+  MASTERY_THRESHOLDS.forEach(({ threshold, skillName }) => {
+    if (prevRating < threshold && nextRating >= threshold) {
+      const exists = newEvents.some((ev) => ev.skillName === skillName);
+      if (!exists) {
+        newEvents.unshift({
+          skillName,
+          date: new Date().toISOString(),
+          startingRating: prevRating,
+          currentRating: nextRating
+        });
+      }
+    }
+  });
+
+  return newEvents.slice(0, 3);
+}

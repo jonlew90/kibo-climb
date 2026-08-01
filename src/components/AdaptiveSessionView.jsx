@@ -6,7 +6,7 @@ import { generateProblems } from '../utils/mathGenerator';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
 import { normalizeTimeAnswer, normalizeDecimal } from '../utils/formatters';
-import { evaluateAdaptiveAttempt } from '../utils/AdaptiveEngine';
+import { evaluateAdaptiveAttempt, checkSkillMasteryEvents } from '../utils/AdaptiveEngine';
 import KiboBreakOverlay from './KiboBreakOverlay';
 import { KiboAudioManager } from '../utils/KiboAudioManager';
 import { evaluateBadges } from '../utils/badgeManager';
@@ -193,6 +193,12 @@ export default function AdaptiveSessionView({
       competenceRank: evalResult.nextCompetenceRank,
       blockRatingGain: nextBlockRatingGain
     });
+
+    const existingMastery = activeUserData.recentSkillMastery || [];
+    const updatedMastery = checkSkillMasteryEvents(competenceRank, evalResult.nextCompetenceRank, existingMastery);
+    if (updatedMastery.length !== existingMastery.length) {
+      storageService.saveUserData({ recentSkillMastery: updatedMastery });
+    }
 
     const nextQuestionsAnswered = questionsAnswered + 1;
     setQuestionsAnswered(nextQuestionsAnswered);

@@ -448,27 +448,44 @@ export default function ParentDashboardModal({
               );
             })()}
 
-            {/* Climb Performance History */}
-            <div className="space-y-1.5 text-left">
-              <span className="text-xs uppercase font-extrabold text-slate-600 tracking-wider block">
-                Recent Climb Mastery (Last 3)
-              </span>
-              {sprintHistory.length === 0 ? (
-                <p className="text-xs text-slate-400 font-medium italic text-center py-2">No completed climb sessions recorded yet.</p>
-              ) : (
-                <div className="space-y-1.5">
-                  {sprintHistory.map((rec, idx) => (
-                    <div key={idx} className="flex justify-between items-center bg-white border border-slate-200 rounded-xl p-2.5 text-xs">
-                      <span className="font-bold text-slate-700">Climb #{sprintHistory.length - idx}</span>
-                      <div className="flex items-center gap-3">
-                        <span className="font-extrabold text-purple-700">{rec.accuracyPct}% Accuracy</span>
-                        <span className="font-mono text-slate-500">{rec.avgLatencySec}s avg</span>
-                      </div>
+            {/* Recent Skill Mastery Section */}
+            {(() => {
+              const activeUserData = storageService.getUserData();
+              const recentSkillMastery = activeUserData.recentSkillMastery || [];
+
+              return (
+                <div className="space-y-2 text-left">
+                  <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">
+                    Recent Skill Mastery
+                  </span>
+                  {recentSkillMastery.length === 0 ? (
+                    <div className="p-3.5 bg-purple-50/70 border-2 border-purple-200 rounded-2xl text-purple-900 text-xs font-semibold leading-relaxed flex items-center gap-2.5">
+                      <span className="text-xl shrink-0">🎯</span>
+                      <span>Kibo is currently evaluating skill mastery! Check back after a few adaptive climbing sessions.</span>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="space-y-2">
+                      {recentSkillMastery.slice(0, 3).map((item, idx) => (
+                        <div key={idx} className="flex justify-between items-center bg-gradient-to-r from-purple-50 via-white to-amber-50 border-2 border-purple-200 rounded-2xl p-3 text-xs shadow-xs">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-lg">🌟</span>
+                            <div>
+                              <h5 className="font-extrabold text-slate-800 text-xs leading-tight">{item.skillName}</h5>
+                              <span className="text-[10px] text-slate-500 font-bold block mt-0.5">
+                                {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="font-black text-xs text-purple-900 bg-purple-100 px-2.5 py-1 rounded-full border border-purple-300 shrink-0">
+                            +{item.currentRating - item.startingRating} Rating ({item.currentRating})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Earned Trail Badges Showcase */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2 text-left">
