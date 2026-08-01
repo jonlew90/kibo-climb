@@ -188,22 +188,34 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
         {/* --- OUTFITS --- */}
         {itemId === 'bowtie' && (
           <g>
-            <polygon points="50,50 25,35 25,65" fill="#EF4444" stroke="#991B1B" strokeWidth="3" />
-            <polygon points="50,50 75,35 75,65" fill="#EF4444" stroke="#991B1B" strokeWidth="3" />
-            <circle cx="50" cy="50" r="7" fill="#DC2626" />
+            <polygon points="50,50 20,32 18,68" fill="#EF4444" stroke="#991B1B" strokeWidth="3" />
+            <polygon points="50,50 80,32 82,68" fill="#EF4444" stroke="#991B1B" strokeWidth="3" />
+            <polygon points="50,50 28,38 26,62" fill="#F87171" />
+            <polygon points="50,50 72,38 74,62" fill="#F87171" />
+            <rect x="42" y="42" width="16" height="16" rx="5" fill="#DC2626" stroke="#7F1D1D" strokeWidth="3" />
           </g>
         )}
 
         {itemId === 'vest' && (
           <g>
-            <path d="M 25 25 L 40 25 L 50 45 L 60 25 L 75 25 L 75 75 L 25 75 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="4" />
+            <path d="M 22 24 C 22 24, 50 32, 78 24 L 78 78 C 78 78, 50 86, 22 78 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="4" />
+            <path d="M 23 42 Q 50 50 77 42" stroke="#0284C7" strokeWidth="3.5" fill="none" />
+            <path d="M 22 60 Q 50 68 78 60" stroke="#0284C7" strokeWidth="3.5" fill="none" />
+            <line x1="50" y1="28" x2="50" y2="82" stroke="#38BDF8" strokeWidth="3.5" />
+            <circle cx="36" cy="48" r="5" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
           </g>
         )}
 
         {itemId === 'summit_scarf' && (
           <g>
-            <ellipse cx="50" cy="45" rx="32" ry="14" fill="#E11D48" stroke="#9F1239" strokeWidth="4" />
-            <path d="M 60 50 L 72 80 L 50 80 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="3" />
+            <path d="M 18 32 Q 50 52 82 32 L 78 48 Q 50 68 22 48 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="3.5" />
+            <path d="M 20 28 Q 50 48 80 28 Q 50 40 20 28 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="3" />
+            <path d="M 38 36 L 42 48 M 62 36 L 66 48" stroke="#FBBF24" strokeWidth="3" />
+            <path d="M 60 48 L 74 88 L 52 88 L 46 50 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="3.5" />
+            <rect x="50" y="74" width="22" height="6" fill="#FBBF24" />
+            <line x1="54" y1="88" x2="54" y2="94" stroke="#F59E0B" strokeWidth="2.5" />
+            <line x1="62" y1="88" x2="62" y2="94" stroke="#F59E0B" strokeWidth="2.5" />
+            <line x1="70" y1="88" x2="70" y2="94" stroke="#F59E0B" strokeWidth="2.5" />
           </g>
         )}
 
@@ -234,17 +246,38 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
 
         {itemId === 'phoenix_pet' && (
           <g>
-            <path d="M 50 30 C 35 15, 15 35, 30 60 C 40 75, 60 75, 70 60 C 85 35, 65 15, 50 30 Z" fill="url(#thumbLavaGrad)" stroke="#9A3412" strokeWidth="3" />
-            <circle cx="45" cy="38" r="3" fill="#FFFFFF" />
-            <polygon points="50,42 62,45 50,48" fill="#FBBF24" />
+            {/* Phoenix Tail */}
+            <path d="M 40 60 Q 22 80 32 94 Q 44 82 46 65 Z" fill="#EF4444" />
+            {/* Phoenix Body */}
+            <ellipse cx="50" cy="55" rx="16" ry="20" fill="url(#thumbLavaGrad)" stroke="#9A3412" strokeWidth="3" />
+            {/* Head & Crest */}
+            <circle cx="50" cy="36" r="14" fill="#EA580C" stroke="#9A3412" strokeWidth="2.5" />
+            <polygon points="50,22 55,8 48,18 42,10" fill="#FBBF24" stroke="#D97706" strokeWidth="1.5" />
+            {/* Wing */}
+            <path d="M 50 48 Q 82 36 75 70 Q 55 70 50 58 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2.5" />
+            {/* Beak & Eye */}
+            <polygon points="58,36 74,40 58,45" fill="#FBBF24" stroke="#D97706" strokeWidth="2" />
+            <circle cx="46" cy="34" r="3.5" fill="#FFFFFF" />
+            <circle cx="46" cy="34" r="2" fill="#451A03" />
           </g>
         )}
 
         {itemId === 'frost_dragon' && (
           <g>
-            <path d="M 50 25 C 30 10, 10 30, 25 60 C 35 80, 65 80, 75 60 C 90 30, 70 10, 50 25 Z" fill="url(#thumbAuroraGrad)" stroke="#065F46" strokeWidth="3" />
-            <circle cx="45" cy="35" r="3" fill="#FFFFFF" />
-            <polygon points="50,38 60,40 50,44" fill="#A7F3D0" />
+            {/* Dragon Tail */}
+            <path d="M 60 60 Q 78 80 68 94 Q 56 82 54 65 Z" fill="#0EA5E9" />
+            {/* Dragon Body */}
+            <ellipse cx="50" cy="55" rx="16" ry="20" fill="url(#thumbAuroraGrad)" stroke="#065F46" strokeWidth="3" />
+            {/* Head & Horns */}
+            <circle cx="50" cy="36" r="14" fill="#38BDF8" stroke="#0284C7" strokeWidth="2.5" />
+            <polygon points="42,26 34,8 47,20" fill="#A5F3FC" stroke="#0891B2" strokeWidth="2" />
+            <polygon points="55,26 63,8 57,20" fill="#A5F3FC" stroke="#0891B2" strokeWidth="2" />
+            {/* Crystal Wing */}
+            <path d="M 50 48 Q 18 36 25 70 Q 45 70 50 58 Z" fill="#7DD3FC" stroke="#0284C7" strokeWidth="2.5" />
+            {/* Snout & Eye */}
+            <ellipse cx="38" cy="40" rx="7" ry="4" fill="#E0F2FE" />
+            <circle cx="52" cy="34" r="3.5" fill="#FFFFFF" />
+            <circle cx="52" cy="34" r="2" fill="#0C4A6E" />
           </g>
         )}
 

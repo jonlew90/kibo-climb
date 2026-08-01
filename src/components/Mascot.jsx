@@ -301,24 +301,48 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         {/* COMPANION PETS (Phoenix / Dragon)                    */}
         {/* ==================================================== */}
         {hasPhoenixPet && (
-          <g className="animate-bounce" style={{ animationDuration: '2.5s' }} filter="url(#clayShadow)">
-            <path d="M 155 45 C 140 25, 125 50, 140 75 C 150 90, 175 90, 185 75 C 195 50, 180 25, 165 45 Z" fill="url(#svgLavaGrad)" stroke="#9A3412" strokeWidth="2.5" />
-            <path d="M 175 60 L 192 63 L 175 70 Z" fill="#FBBF24" />
-            <circle cx="160" cy="52" r="3" fill="#FFFFFF" />
-            <circle cx="160" cy="52" r="1.5" fill="#000000" />
-            <path d="M 145 75 Q 135 90 142 102" stroke="#F97316" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-            <path d="M 155 78 Q 148 95 155 105" stroke="#FBBF24" strokeWidth="3" fill="none" strokeLinecap="round" />
+          <g className="animate-bounce" style={{ animationDuration: '2.2s' }} filter="url(#clayShadow)">
+            {/* Phoenix Trailing Flame Tail */}
+            <path d="M 158 75 Q 142 92 148 108 Q 160 96 162 80 Z" fill="#EF4444" />
+            <path d="M 160 78 Q 148 94 154 105" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round" />
+            
+            {/* Phoenix Body */}
+            <ellipse cx="165" cy="62" rx="14" ry="18" fill="url(#thumbLavaGrad)" stroke="#9A3412" strokeWidth="2.5" />
+            
+            {/* Phoenix Head & Crest */}
+            <circle cx="165" cy="46" r="11" fill="#EA580C" stroke="#9A3412" strokeWidth="2" />
+            <polygon points="165,35 169,22 163,31 158,24" fill="#FBBF24" stroke="#D97706" strokeWidth="1.5" />
+            
+            {/* Wing */}
+            <path d="M 165 56 Q 192 46 186 74 Q 168 74 165 63 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
+            
+            {/* Beak & Eye */}
+            <polygon points="172,46 184,50 172,53" fill="#FBBF24" stroke="#D97706" strokeWidth="1.5" />
+            <circle cx="162" cy="44" r="3" fill="#FFFFFF" />
+            <circle cx="162" cy="44" r="1.5" fill="#451A03" />
           </g>
         )}
 
         {hasFrostDragon && (
-          <g className="animate-pulse" filter="url(#clayShadow)">
-            <path d="M 45 45 C 30 25, 15 50, 30 75 C 40 90, 65 90, 75 75 C 85 50, 70 25, 55 45 Z" fill="url(#svgAuroraGrad)" stroke="#065F46" strokeWidth="2.5" />
-            <polygon points="25,58 10,61 25,68" fill="#A7F3D0" />
-            <circle cx="40" cy="52" r="3" fill="#FFFFFF" />
-            <circle cx="40" cy="52" r="1.5" fill="#000000" />
-            <polygon points="50,35 48,22 55,30" fill="#67E8F9" />
-            <polygon points="62,38 64,25 68,34" fill="#67E8F9" />
+          <g className="animate-pulse" style={{ animationDuration: '2.5s' }} filter="url(#clayShadow)">
+            {/* Frost Dragon Tail */}
+            <path d="M 42 75 Q 58 92 50 108 Q 40 96 38 80 Z" fill="#0EA5E9" />
+            
+            {/* Frost Dragon Body */}
+            <ellipse cx="35" cy="62" rx="14" ry="18" fill="url(#thumbAuroraGrad)" stroke="#065F46" strokeWidth="2.5" />
+            
+            {/* Head & Horns */}
+            <circle cx="35" cy="46" r="11" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" />
+            <polygon points="30,38 24,24 34,34" fill="#A5F3FC" stroke="#0891B2" strokeWidth="1.5" />
+            <polygon points="38,38 44,24 39,34" fill="#A5F3FC" stroke="#0891B2" strokeWidth="1.5" />
+            
+            {/* Crystal Wing */}
+            <path d="M 35 56 Q 8 46 14 74 Q 32 74 35 63 Z" fill="#7DD3FC" stroke="#0284C7" strokeWidth="2" />
+            
+            {/* Snout & Eye */}
+            <ellipse cx="27" cy="49" rx="5" ry="3.5" fill="#E0F2FE" />
+            <circle cx="37" cy="44" r="3" fill="#FFFFFF" />
+            <circle cx="37" cy="44" r="1.5" fill="#0C4A6E" />
           </g>
         )}
 
@@ -434,23 +458,42 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         <g id="layer-outfits">
           {hasVest && (
             <g filter="url(#clayShadow)">
-              <path d="M 66 98 L 84 98 L 100 118 L 116 98 L 134 98 L 134 146 L 66 146 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="3.5" />
-              <line x1="100" y1="118" x2="100" y2="146" stroke="#0284C7" strokeWidth="3" />
+              {/* Padded Climber Vest Body */}
+              <path d="M 62 106 C 62 106, 100 116, 138 106 L 138 152 C 138 152, 100 162, 62 152 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="3.5" />
+              {/* Quilted Puffer Lines */}
+              <path d="M 63 120 Q 100 130 137 120" stroke="#0284C7" strokeWidth="3.5" fill="none" />
+              <path d="M 62 136 Q 100 146 138 136" stroke="#0284C7" strokeWidth="3.5" fill="none" />
+              {/* Zipper & Collar */}
+              <line x1="100" y1="110" x2="100" y2="157" stroke="#38BDF8" strokeWidth="3" />
+              <circle cx="100" cy="116" r="3" fill="#FFFFFF" />
+              {/* Climber Crest Badge */}
+              <circle cx="80" cy="126" r="5" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
             </g>
           )}
 
           {hasSummitScarf && (
             <g filter="url(#clayShadow)">
-              <ellipse cx="100" cy="98" rx="38" ry="14" fill="#E11D48" stroke="#9F1239" strokeWidth="3.5" />
-              <path d="M 115 102 L 132 145 L 106 145 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="3" />
+              {/* Wrapped Neck Scarf */}
+              <path d="M 62 110 Q 100 128 138 110 L 136 122 Q 100 140 64 122 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="3" />
+              <path d="M 64 108 Q 100 124 136 108 Q 100 118 64 108 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="2.5" />
+              <path d="M 80 114 L 84 124 M 116 114 L 120 124" stroke="#FBBF24" strokeWidth="3" />
+              {/* Dangling Scarf Tail */}
+              <path d="M 114 122 L 130 162 L 110 162 L 102 124 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="3" />
+              <rect x="108" y="150" width="22" height="5" fill="#FBBF24" />
+              <line x1="112" y1="162" x2="112" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
+              <line x1="118" y1="162" x2="118" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
+              <line x1="124" y1="162" x2="124" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
             </g>
           )}
 
           {hasBowtie && (
             <g filter="url(#clayShadow)">
-              <polygon points="100,105 78,92 78,118" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
-              <polygon points="100,105 122,92 122,118" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
-              <circle cx="100" cy="105" r="7" fill="#DC2626" stroke="#991B1B" strokeWidth="2" />
+              {/* 3D Red Bowtie on Collar */}
+              <polygon points="100,122 74,110 72,134" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+              <polygon points="100,122 126,110 128,134" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+              <polygon points="100,122 80,114 78,130" fill="#F87171" />
+              <polygon points="100,122 120,114 122,130" fill="#F87171" />
+              <rect x="94" y="116" width="12" height="12" rx="4" fill="#DC2626" stroke="#7F1D1D" strokeWidth="2.5" />
             </g>
           )}
         </g>
