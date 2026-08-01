@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame } from 'lucide-react';
 import Mascot from './Mascot';
 import Keypad from './Keypad';
+import ConfettiCanvas from './ConfettiCanvas';
 import { generateProblems } from '../utils/mathGenerator';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
@@ -83,6 +84,7 @@ export default function AdaptiveSessionView({
   const [inSessionIncorrectStreak, setInSessionIncorrectStreak] = useState(0);
   const [showBreakOverlay, setShowBreakOverlay] = useState(false);
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
+  const [celebrationEvent, setCelebrationEvent] = useState(null);
 
   const blockSeenKeysRef = useRef(new Set());
   const blockStartTimeRef = useRef(performance.now());
@@ -243,6 +245,59 @@ export default function AdaptiveSessionView({
 
     if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
       onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
+    }
+
+    // --- CELEBRATION REWARDS FOR BADGES, PERSONAL RECORDS & MILESTONES ---
+    if (isCorrect) {
+      if (badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
+        const newBadge = badgeEvalRes.newlyUnlocked[0];
+        const bonusSparks = 25;
+        if (onAwardSparks) onAwardSparks(bonusSparks);
+        setSessionSparksEarned((prev) => prev + bonusSparks);
+        setBlockSparksEarned((prev) => prev + bonusSparks);
+        soundFx.playVictory();
+        setCelebrationEvent({
+          type: 'badge',
+          title: '🏆 NEW BADGE UNLOCKED!',
+          icon: newBadge.icon || '🏅',
+          name: newBadge.title || newBadge.name,
+          description: newBadge.description,
+          bonusSparks: bonusSparks
+        });
+      } else {
+        const currentStreakRec = activeUserData.personalRecords?.highestCorrectStreak || 0;
+        const isNewStreakRecord = evalResult.nextInSessionStreak > currentStreakRec && evalResult.nextInSessionStreak >= 5;
+
+        if (isNewStreakRecord) {
+          const bonusSparks = 15;
+          if (onAwardSparks) onAwardSparks(bonusSparks);
+          setSessionSparksEarned((prev) => prev + bonusSparks);
+          setBlockSparksEarned((prev) => prev + bonusSparks);
+          soundFx.playVictory();
+          setCelebrationEvent({
+            type: 'record',
+            title: '🌟 NEW PERSONAL RECORD!',
+            icon: '🔥',
+            name: `${evalResult.nextInSessionStreak} Question Streak!`,
+            description: `You set a brand new personal record for consecutive correct math answers!`,
+            bonusSparks: bonusSparks
+          });
+        } else if ([5, 10, 15, 20].includes(evalResult.nextInSessionStreak)) {
+          const bonusSparks = 10;
+          if (onAwardSparks) onAwardSparks(bonusSparks);
+          setSessionSparksEarned((prev) => prev + bonusSparks);
+          setBlockSparksEarned((prev) => prev + bonusSparks);
+          soundFx.playVictory();
+          setCelebrationEvent({
+            type: 'milestone',
+            title: `⚡ ${evalResult.nextInSessionStreak}-STREAK MILESTONE!`,
+            icon: evalResult.nextInSessionStreak >= 10 ? '💥' : '🔥',
+            name: `${evalResult.nextInSessionStreak} In A Row!`,
+            description: `Unstoppable momentum! You've solved ${evalResult.nextInSessionStreak} consecutive math problems!`,
+            bonusSparks: bonusSparks
+          });
+        }
+      }
     }
 
     const existingMastery = activeUserData.recentSkillMastery || [];
@@ -471,6 +526,43 @@ export default function AdaptiveSessionView({
             setCurrentIndex(0);
           }}
         />
+      )}
+
+      {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
+      {celebrationEvent && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-pop">
+          <ConfettiCanvas />
+          <div className="w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-amber-50 via-white to-yellow-50 border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative overflow-hidden text-slate-800">
+            <div className="space-y-1">
+              <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 inline-block shadow-xs">
+                {celebrationEvent.title}
+              </span>
+            </div>
+
+            <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-b from-amber-300 via-yellow-400 to-amber-500 border-2 border-amber-600 flex items-center justify-center text-4xl shadow-clay-amber animate-pulse">
+              {celebrationEvent.icon}
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="font-extrabold text-slate-900 text-base sm:text-lg leading-snug">{celebrationEvent.name}</h3>
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                {celebrationEvent.description}
+              </p>
+            </div>
+
+            <div className="bg-amber-100 border-2 border-amber-300 rounded-2xl p-2.5 flex items-center justify-center gap-2 text-amber-950 font-black text-xs sm:text-sm shadow-xs animate-pulse">
+              <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
+              <span>+{celebrationEvent.bonusSparks} Bonus Sparks Awarded! ⚡</span>
+            </div>
+
+            <button
+              onClick={() => setCelebrationEvent(null)}
+              className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-sm sm:text-base py-3 px-6 rounded-2xl shadow-md border-b-4 border-amber-700 active:translate-y-0.5 active:border-b-0 transition-all"
+            >
+              Keep Climbing 🚀
+            </button>
+          </div>
+        </div>
       )}
 
       {/* MECHANICAL TRANSIENT FEEDBACK TOAST (SLIDES DOWN FROM TOP HUD) */}
