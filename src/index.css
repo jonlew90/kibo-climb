@@ -79,6 +79,14 @@
   }
 }
 
+/* Compact Viewport Scaling (Height <= 600px) */
+@media (max-height: 600px) {
+  .mascot-compact-auto {
+    height: 3rem !important;
+    width: 3rem !important;
+  }
+}
+
 /* --- LIVING MASCOT ANIMATIONS (GPU-ACCELERATED) --- */
 
 /* 1. Gentle Idle Breathing (3s smooth loop) */

@@ -570,7 +570,7 @@ export default function AdaptiveSessionView({
           title="Tap Kibo to customize in Workshop!"
         >
           <div className="flex justify-center my-0.5 shrink-0">
-            <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-20 h-20 sm:w-24 sm:h-24 filter drop-shadow-lg" />
+            <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-16 h-16 sm:w-24 sm:h-24 mascot-compact-auto filter drop-shadow-lg" />
           </div>
         </div>
 
