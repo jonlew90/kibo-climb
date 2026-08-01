@@ -7,6 +7,7 @@ import { pluralize } from '../utils/formatters';
 import { getNotificationPrefs, saveNotificationPrefs, requestNotificationPermission } from '../utils/notifications';
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
+import { storageService } from '../services/storageService';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
