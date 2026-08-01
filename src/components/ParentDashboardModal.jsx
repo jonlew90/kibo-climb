@@ -242,7 +242,9 @@ export default function ParentDashboardModal({
               <div className="bg-purple-50 border border-purple-200 rounded-2xl p-2">
                 <Award className="w-5 h-5 text-purple-600 mx-auto mb-1 stroke-[2.5]" />
                 <span className="text-[9px] uppercase font-black text-purple-900 block">Skill Rating</span>
-                <span className="text-lg font-black text-purple-900">{calculateAdaptiveCompetenceProfile(sprintHistory, tier).adaptiveCompetenceRating} pts</span>
+                <span className="text-lg font-black text-purple-900">
+                  {liveUserData?.adaptiveCompetenceRating || liveUserData?.competenceRank || storageService.getUserData().adaptiveCompetenceRating || storageService.getUserData().competenceRank || 1000} pts
+                </span>
               </div>
             </div>
 
@@ -335,7 +337,7 @@ export default function ParentDashboardModal({
             {(() => {
               const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
-              const currentMathTier = activeUserData.tier || tier || 1;
+              const currentMathTier = Math.min(8, Math.max(1, Math.floor((actualRating - 900) / 100) + 1));
               const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating);
               const { adaptiveCompetenceRating, last30DaysGrowthData, masteryDistribution, skillStrandBreakdown } = adaptiveProfile;
               const rankTitle = getCompetenceRankTier(adaptiveCompetenceRating);
@@ -529,7 +531,9 @@ export default function ParentDashboardModal({
                       <span className="text-2xl">{badge.icon}</span>
                       <div>
                         <span className="font-extrabold text-slate-800 text-xs block leading-snug">{badge.title}</span>
-                        <span className="text-[9px] text-amber-800 font-bold uppercase block">{badge.category}</span>
+                        <span className="text-[9px] text-amber-800 font-bold uppercase block">
+                          {badge.category ? badge.category.replace(/_/g, ' ') : 'Milestone'}
+                        </span>
                       </div>
                     </div>
                   ))
