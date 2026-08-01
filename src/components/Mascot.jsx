@@ -20,6 +20,48 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasMidnightSkin = isEquipped('midnight_shadow_skin');
   const hasJadeSkin = isEquipped('emerald_jade_skin');
 
+  const hasCustomSkin = hasGoldenSkin || hasSnowWhiteSkin || hasMidnightSkin || hasJadeSkin;
+
+  const bodyFill = hasGoldenSkin
+    ? 'url(#goldBodyGrad)'
+    : hasSnowWhiteSkin
+    ? 'url(#snowWhiteBodyGrad)'
+    : hasMidnightSkin
+    ? 'url(#midnightBodyGrad)'
+    : hasJadeSkin
+    ? 'url(#jadeBodyGrad)'
+    : 'url(#kibo3DBodyGrad)';
+
+  const bodyStroke = hasGoldenSkin
+    ? '#B45309'
+    : hasSnowWhiteSkin
+    ? '#0284C7'
+    : hasMidnightSkin
+    ? '#0F172A'
+    : hasJadeSkin
+    ? '#047857'
+    : '#8A2500';
+
+  const footStroke = hasGoldenSkin
+    ? '#B45309'
+    : hasSnowWhiteSkin
+    ? '#0284C7'
+    : hasMidnightSkin
+    ? '#0F172A'
+    : hasJadeSkin
+    ? '#047857'
+    : '#9E2A00';
+
+  const earInnerFill = hasGoldenSkin
+    ? '#FDE047'
+    : hasSnowWhiteSkin
+    ? '#BAE6FD'
+    : hasMidnightSkin
+    ? '#334155'
+    : hasJadeSkin
+    ? '#6EE7B7'
+    : 'url(#kibo3DEarInner)';
+
   // Pets
   const hasSnowyOwl = isEquipped('snowy_owl');
   const hasAlpineFox = isEquipped('alpine_fox');
@@ -466,8 +508,8 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           {/* Animated 3D Tail */}
           <path
             d="M 155 125 C 185 105, 195 145, 175 165 C 160 178, 145 155, 148 142 Z"
-            fill={hasGoldenSkin ? 'url(#goldBodyGrad)' : 'url(#tailGrad)'}
-            stroke={hasGoldenSkin ? '#B45309' : '#872200'}
+            fill={hasCustomSkin ? bodyFill : 'url(#tailGrad)'}
+            stroke={hasCustomSkin ? bodyStroke : '#872200'}
             strokeWidth="3.5"
             filter="url(#clayShadow)"
             className="transition-transform duration-300 origin-bottom-left"
@@ -479,8 +521,8 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             cy="165"
             rx="18"
             ry="12"
-            fill={hasGoldenSkin ? 'url(#goldBodyGrad)' : 'url(#kibo3DBodyGrad)'}
-            stroke={hasGoldenSkin ? '#B45309' : '#9E2A00'}
+            fill={bodyFill}
+            stroke={footStroke}
             strokeWidth="3"
             filter="url(#clayShadow)"
           />
@@ -491,8 +533,8 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             cy="165"
             rx="18"
             ry="12"
-            fill={hasGoldenSkin ? 'url(#goldBodyGrad)' : 'url(#kibo3DBodyGrad)'}
-            stroke={hasGoldenSkin ? '#B45309' : '#9E2A00'}
+            fill={bodyFill}
+            stroke={footStroke}
             strokeWidth="3"
             filter="url(#clayShadow)"
           />
@@ -502,14 +544,14 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             cx="100"
             cy="115"
             r="54"
-            fill={hasGoldenSkin ? 'url(#goldBodyGrad)' : 'url(#kibo3DBodyGrad)'}
-            stroke={hasGoldenSkin ? '#B45309' : '#8A2500'}
+            fill={bodyFill}
+            stroke={bodyStroke}
             strokeWidth="4"
             filter="url(#clayShadow)"
           />
 
           {/* Cream Tummy Patch */}
-          {!hasGoldenSkin && (
+          {!hasCustomSkin && (
             <ellipse cx="100" cy="126" rx="34" ry="26" fill="url(#kibo3DSnoutGrad)" opacity="0.95" />
           )}
 
@@ -518,22 +560,22 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             {/* Left Ear */}
             <path
               d="M 58 78 C 38 42, 68 28, 76 60 Z"
-              fill={hasGoldenSkin ? 'url(#goldBodyGrad)' : 'url(#kibo3DBodyGrad)'}
-              stroke={hasGoldenSkin ? '#B45309' : '#9E2A00'}
+              fill={bodyFill}
+              stroke={footStroke}
               strokeWidth="3.5"
               filter="url(#clayShadow)"
             />
-            <path d="M 62 72 C 48 48, 68 38, 73 62 Z" fill={hasGoldenSkin ? '#FDE047' : 'url(#kibo3DEarInner)'} />
+            <path d="M 62 72 C 48 48, 68 38, 73 62 Z" fill={earInnerFill} />
 
             {/* Right Ear */}
             <path
               d="M 142 78 C 162 42, 132 28, 124 60 Z"
-              fill={hasGoldenSkin ? 'url(#goldBodyGrad)' : 'url(#kibo3DBodyGrad)'}
-              stroke={hasGoldenSkin ? '#B45309' : '#9E2A00'}
+              fill={bodyFill}
+              stroke={footStroke}
               strokeWidth="3.5"
               filter="url(#clayShadow)"
             />
-            <path d="M 138 72 C 152 48, 132 38, 127 62 Z" fill={hasGoldenSkin ? '#FDE047' : 'url(#kibo3DEarInner)'} />
+            <path d="M 138 72 C 152 48, 132 38, 127 62 Z" fill={earInnerFill} />
           </g>
         </g>
 
