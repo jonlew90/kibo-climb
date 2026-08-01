@@ -328,19 +328,15 @@ export default function WorkshopModal({
             return (
               <div
                 key={item.id}
-                onClick={() => {
-                  if (!isConsumable) {
-                    handlePreviewToggle(item);
-                  }
-                }}
-                className={`p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 ${
-                  !isConsumable && isPreviewedOnStage
-                    ? 'bg-purple-50/90 border-purple-400 shadow-md ring-2 ring-purple-200 cursor-pointer'
+                onClick={() => handlePreviewToggle(item)}
+                className={`p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                  isPreviewedOnStage
+                    ? 'bg-purple-50/90 border-purple-400 shadow-md ring-2 ring-purple-200'
                     : isUnlocked
-                    ? 'bg-white border-slate-200 shadow-sm hover:border-slate-300 cursor-pointer'
+                    ? 'bg-white border-slate-200 shadow-sm hover:border-slate-300'
                     : canAfford
-                    ? 'bg-amber-50/40 border-amber-300 shadow-sm hover:border-amber-400 cursor-pointer'
-                    : 'bg-slate-50 border-slate-200 opacity-95 hover:border-slate-300 cursor-pointer'
+                    ? 'bg-amber-50/40 border-amber-300 shadow-sm hover:border-amber-400'
+                    : 'bg-slate-50 border-slate-200 opacity-95 hover:border-slate-300'
                 }`}
               >
                 {/* SVG Item Thumbnail Graphic */}
@@ -351,6 +347,11 @@ export default function WorkshopModal({
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{item.name}</h4>
                     
+                    {/* ALWAYS-VISIBLE PRICE TAG */}
+                    <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 shadow-2xs">
+                      ⚡ {item.cost} Sparks
+                    </span>
+
                     {item.badgeTag && (
                       <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 animate-pulse shadow-xs">
                         🚀 {item.badgeTag}
@@ -413,7 +414,7 @@ export default function WorkshopModal({
                         disabled
                         className="bg-slate-200 text-slate-500 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
                       >
-                        Inventory Full ({shieldOwned}/2)
+                        Full ({shieldOwned}/2)
                       </button>
                     ) : canAfford ? (
                       <button
@@ -430,7 +431,7 @@ export default function WorkshopModal({
                         disabled
                         className="bg-slate-100 text-rose-600 border-2 border-slate-300 text-[11px] px-3 py-2 rounded-xl font-bold cursor-not-allowed"
                       >
-                        Need {shortfall} More ⚡
+                        Need {shortfall} ⚡ More
                       </button>
                     )
                   ) : isUnlocked ? (
@@ -452,13 +453,26 @@ export default function WorkshopModal({
                       )}
                     </button>
                   ) : isPreviewedOnStage ? (
-                    <button
-                      type="button"
-                      onClick={() => handlePreviewToggle(item)}
-                      className="bg-purple-100 hover:bg-purple-200 text-purple-900 border-2 border-purple-300 px-3.5 py-2 text-xs rounded-xl font-extrabold flex items-center gap-1"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" /> Remove Preview
-                    </button>
+                    <div className="flex flex-col gap-1 items-end">
+                      <button
+                        type="button"
+                        onClick={() => handleBuy(item)}
+                        disabled={!canAfford}
+                        className={`px-3.5 py-1.5 text-xs rounded-xl flex items-center gap-1.5 font-extrabold ${
+                          canAfford ? 'btn-3d-purple' : 'bg-slate-100 text-slate-400 border border-slate-300 cursor-not-allowed'
+                        }`}
+                      >
+                        <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                        Buy ({item.cost} ⚡)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handlePreviewToggle(item)}
+                        className="text-[10px] text-purple-700 hover:underline font-bold flex items-center gap-0.5"
+                      >
+                        <RotateCcw className="w-3 h-3" /> Remove Preview
+                      </button>
+                    </div>
                   ) : canAfford ? (
                     <button
                       type="button"
@@ -474,7 +488,7 @@ export default function WorkshopModal({
                       onClick={() => handlePreviewToggle(item)}
                       className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 text-[11px] px-3 py-2 rounded-xl font-extrabold"
                     >
-                      Try On
+                      Preview ({item.cost} ⚡)
                     </button>
                   )}
                 </div>

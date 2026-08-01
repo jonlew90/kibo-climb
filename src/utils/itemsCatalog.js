@@ -58,21 +58,21 @@ export const WORKSHOP_ITEMS = [
     id: 'kibo_shield',
     name: 'Kibo Shield',
     category: 'powerups',
-    cost: 90,
+    cost: 50,
     rarity: 'epic',
     isConsumable: true,
     icon: '🛡️',
-    description: 'Absorbs 1 incorrect answer per climb streak without breaking accuracy.'
+    description: 'Costs 50 Sparks. Absorbs 1 incorrect answer per climb streak without breaking accuracy.'
   },
   {
     id: 'streak_saver',
     name: 'Daily Streak Saver',
     category: 'powerups',
-    cost: 200,
+    cost: 100,
     rarity: 'legendary',
     isConsumable: true,
     icon: '🔥',
-    description: 'Protects 1 missed calendar day of climbing from resetting your daily streak.'
+    description: 'Costs 100 Sparks. Protects 1 missed calendar day of climbing from resetting your daily streak.'
   },
 
   // HEADWEAR (Slot: headwear)

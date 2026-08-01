@@ -42,6 +42,11 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasSummitScarf = isEquipped('summit_scarf');
   const hasRoyalCape = isEquipped('royal_cape');
 
+  // Consumable Power-Ups Stage Previews
+  const hasKiboShield = isEquipped('kibo_shield');
+  const hasDoubleSparksPotion = isEquipped('double_sparks_potion') || isEquipped('double_coin_potion');
+  const hasHintScroll = isEquipped('hint_scroll');
+
   // --- LIVING MASCOT ANIMATION STATES ---
   const [isBlinking, setIsBlinking] = useState(false);
   const [isEarTwitching, setIsEarTwitching] = useState(false);
@@ -515,6 +520,30 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <g filter="url(#clayShadow)" className="animate-pulse">
               <rect x="54" y="140" width="16" height="22" rx="4" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
               <rect x="58" y="144" width="8" height="14" rx="2" fill="#FEF08A" />
+            </g>
+          )}
+
+          {hasKiboShield && (
+            <g filter="url(#clayShadow)">
+              <path d="M 160 115 C 172 115, 178 122, 178 135 C 178 152, 160 165, 160 165 C 160 165, 142 152, 142 135 C 142 122, 148 115, 160 115 Z" fill="#0EA5E9" stroke="#0284C7" strokeWidth="2.5" />
+              <path d="M 160 120 C 169 120, 174 125, 174 135 C 174 148, 160 158, 160 158 C 160 158, 146 148, 146 135 C 146 125, 151 120, 160 120 Z" fill="#38BDF8" />
+              <path d="M 155 137 L 159 141 L 167 131" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            </g>
+          )}
+
+          {hasDoubleSparksPotion && (
+            <g filter="url(#clayShadow)">
+              <rect x="156" y="125" width="8" height="6" rx="1.5" fill="#D97706" stroke="#B45309" strokeWidth="1.5" />
+              <path d="M 154 131 L 166 131 L 173 152 A 5 5 0 0 1 168 158 L 152 158 A 5 5 0 0 1 147 152 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="2" />
+              <text x="160" y="153" textAnchor="middle" fontSize="9" fontWeight="900" fill="#B45309">2x</text>
+            </g>
+          )}
+
+          {hasHintScroll && (
+            <g filter="url(#clayShadow)">
+              <rect x="145" y="130" width="28" height="28" rx="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="2" />
+              <path d="M 149 138 L 169 138 M 149 144 L 169 144 M 149 150 L 161 150" stroke="#B45309" strokeWidth="2" strokeLinecap="round" />
+              <text x="166" y="153" textAnchor="middle" fontSize="7" fontWeight="900">💡</text>
             </g>
           )}
         </g>
