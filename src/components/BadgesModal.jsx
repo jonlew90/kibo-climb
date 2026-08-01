@@ -76,7 +76,7 @@ export default function BadgesModal({
       </header>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
-      <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+      <main className="flex-1 min-h-0 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         {/* TOP PERSONAL BEST SHOWCASE HEADER SECTION */}
         <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-amber-50 border-2 border-purple-200 rounded-3xl p-4 sm:p-5 space-y-3 shrink-0 shadow-xs text-left">
           <div className="flex items-center justify-between flex-wrap gap-2">

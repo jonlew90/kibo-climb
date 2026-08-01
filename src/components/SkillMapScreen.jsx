@@ -50,7 +50,7 @@ export default function SkillMapScreen({
       </header>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
-      <main className="flex-1 overflow-y-auto w-full max-w-2xl mx-auto p-4 sm:p-6 space-y-4">
+      <main className="flex-1 min-h-0 overflow-y-auto w-full max-w-2xl mx-auto p-4 sm:p-6 space-y-4">
         {/* Hero Placement Test Banner */}
         <div className="w-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 rounded-3xl p-4 border-3 border-amber-300 shadow-md flex items-center justify-between">
           <div className="space-y-1 text-left max-w-[220px]">

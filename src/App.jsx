@@ -1186,7 +1186,7 @@ export default function App() {
   const currentTierMeta = getTierMeta(tier);
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] flex flex-col items-center justify-between p-2 sm:p-4 safe-pt safe-pb max-w-lg mx-auto relative overflow-hidden bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
+    <div className="app-viewport-root p-2 sm:p-4 safe-pt safe-pb max-w-lg mx-auto relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
       {/* Sticky Top HUD Header Bar */}
       {appState !== 'sprint' && (
         <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2.5 py-2 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0">

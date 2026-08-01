@@ -470,7 +470,7 @@ export default function AdaptiveSessionView({
   const activeBannerType = feedbackBanner ? (feedbackBanner.type || 'success') : lastBannerTypeRef.current;
 
   return (
-    <div className="w-full h-full flex-1 flex flex-col items-center justify-between py-1 px-1 sm:px-2 max-w-lg mx-auto relative overflow-hidden animate-pop">
+    <div className="w-full h-full flex-1 min-h-0 flex flex-col items-center justify-between py-1 px-1 sm:px-2 max-w-lg mx-auto relative overflow-hidden animate-pop">
       {/* TIMED KIBO BREAK OVERLAY */}
       {showBreakOverlay && (
         <KiboBreakOverlay

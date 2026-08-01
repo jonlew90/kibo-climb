@@ -214,7 +214,7 @@ export default function ParentDashboardModal({
       </div>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
-      <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+      <main className="flex-1 min-h-0 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
 
         {/* TAB 1: CHILD OVERVIEW */}
         {activeTab === 'overview' && (
