@@ -595,7 +595,7 @@ export default function AdaptiveSessionView({
 
           return (
             <div
-              className={`w-full bg-white border-4 rounded-3xl p-5 text-center transition-all duration-500 space-y-3 relative ${
+              className={`w-full bg-white border-4 rounded-3xl p-3 sm:p-4 text-center transition-all duration-500 space-y-2 relative ${
                 streakCfg.cardGlow
               } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''}`}
             >
