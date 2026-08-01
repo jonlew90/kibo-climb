@@ -46,8 +46,15 @@ export default function AdaptiveSessionView({
   const [showBreakOverlay, setShowBreakOverlay] = useState(false);
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
 
+  const blockSeenKeysRef = useRef(new Set());
+
   // Generate adaptive problem queue for active tier
-  const [problemQueue, setProblemQueue] = useState(() => generateProblems(5, isFTUX ? 1 : userTier, []));
+  const [problemQueue, setProblemQueue] = useState(() => {
+    const seen = new Set();
+    const batch = generateProblems(15, isFTUX ? 1 : userTier, [], seen);
+    blockSeenKeysRef.current = seen;
+    return batch;
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const problemStartTimeRef = useRef(performance.now());
@@ -86,11 +93,11 @@ export default function AdaptiveSessionView({
     }
   }, [isFTUX]);
 
-  // Ensure new problems generated dynamically when queue gets low
+  // Ensure new problems generated dynamically when queue gets low (deduplicated across active block)
   const replenishQueueIfNeeded = (nextIndex) => {
-    if (nextIndex >= problemQueue.length - 2) {
+    if (nextIndex >= problemQueue.length - 3) {
       const nextTier = Math.min(8, Math.max(1, Math.floor(competenceRank / 100)));
-      const newBatch = generateProblems(5, nextTier, []);
+      const newBatch = generateProblems(6, nextTier, [], blockSeenKeysRef.current);
       setProblemQueue((prev) => [...prev, ...newBatch]);
     }
   };
@@ -376,6 +383,12 @@ export default function AdaptiveSessionView({
             setSessionQuestionIndex(1);
             setBlockCorrectCount(0);
             setBlockSparksEarned(0);
+            setBlockRatingGain(0);
+            blockSeenKeysRef.current.clear();
+            const nextTier = Math.min(8, Math.max(1, Math.floor(competenceRank / 100)));
+            const freshBatch = generateProblems(15, nextTier, [], blockSeenKeysRef.current);
+            setProblemQueue(freshBatch);
+            setCurrentIndex(0);
           }}
         />
       )}

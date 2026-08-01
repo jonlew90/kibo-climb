@@ -2,9 +2,9 @@
 
 import { generateTierProblem, getNormalizedProblemKey } from './curriculum';
 
-export function generateProblems(count = 20, tier = 1, practiceQueue = []) {
+export function generateProblems(count = 20, tier = 1, practiceQueue = [], seenKeysSet = null) {
   const problems = [];
-  const seenKeys = new Set();
+  const seenKeys = seenKeysSet instanceof Set ? seenKeysSet : new Set();
 
   const maxPracticeToInject = Math.min(6, practiceQueue.length);
 
@@ -16,7 +16,7 @@ export function generateProblems(count = 20, tier = 1, practiceQueue = []) {
       if (!seenKeys.has(normKey)) {
         seenKeys.add(normKey);
         problems.push({
-          id: `practice-${i + 1}-${Date.now()}`,
+          id: `practice-${i + 1}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
           num1: item.num1,
           num2: item.num2,
           operatorSymbol: item.operatorSymbol,
@@ -42,12 +42,12 @@ export function generateProblems(count = 20, tier = 1, practiceQueue = []) {
       probData = generateTierProblem(tier);
       normKey = getNormalizedProblemKey(probData);
       attempts++;
-    } while (seenKeys.has(normKey) && attempts < 60);
+    } while (seenKeys.has(normKey) && attempts < 100);
 
     seenKeys.add(normKey);
 
     problems.push({
-      id: `gen-${i + 1}-${Date.now()}`,
+      id: `gen-${i + 1}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       ...probData,
       isPracticeItem: false
     });
