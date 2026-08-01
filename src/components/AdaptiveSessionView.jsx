@@ -604,12 +604,12 @@ export default function AdaptiveSessionView({
                 </div>
               )}
 
-              <div className="h-7 flex items-center justify-center gap-1.5 shrink-0 overflow-hidden">
-                <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0">
+              <div className="w-full flex flex-wrap items-center justify-center gap-1.5 py-0.5">
+                <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0 shadow-2xs">
                   ⚡ Q #{currentQuestionNum}/12
                 </span>
                 <span
-                  className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all duration-300 ${streakCfg.pillClass}`}
+                  className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
                 >
                   {streakCfg.label}
                 </span>
