@@ -484,10 +484,10 @@ export default function AdaptiveSessionView({
               ⚡ Q #{currentQuestionNum}/12
             </span>
             <span
-              className={`text-[10px] font-black uppercase rounded-full border shrink-0 transition-all duration-300 ${
+              className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all duration-300 ${
                 inSessionStreak >= 3
-                  ? 'opacity-100 scale-100 text-orange-700 bg-orange-100 px-2 py-0.5 border-orange-300 animate-pulse'
-                  : 'opacity-0 scale-90 pointer-events-none px-0 py-0 border-transparent max-w-0 overflow-hidden'
+                  ? 'text-orange-700 bg-orange-100 border-orange-300 animate-pulse shadow-xs'
+                  : 'text-slate-500 bg-slate-100 border-slate-200'
               }`}
             >
               🔥 {inSessionStreak} Streak
