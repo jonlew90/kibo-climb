@@ -15,6 +15,8 @@ import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal'
 import SprintResultsModal from './components/SprintResultsModal';
 import BadgesModal from './components/BadgesModal';
 import AdaptiveSessionView from './components/AdaptiveSessionView';
+import DevControlPanel from './components/DevControlPanel';
+import { useDevState } from './hooks/useDevState';
 import { evaluateBadges } from './utils/badgeManager';
 import { BADGES_CATALOG } from './data/badges';
 import { generateProblems } from './utils/mathGenerator';
@@ -32,6 +34,13 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
   const [workshopOriginState, setWorkshopOriginState] = useState('adaptive_session');
+
+  const devState = useDevState(() => {
+    const uData = storageService.getUserData();
+    const sData = storageService.getShopState();
+    setSparks(uData.sparks || 0);
+    setUnlockedItems(sData.unlockedItems || ['cap']);
+  });
 
   const handleOpenWorkshop = (overrideOrigin = null) => {
     soundFx.playKeyTap();
@@ -1945,6 +1954,22 @@ export default function App() {
         onBuyItem={handleBuyItem}
         onBuyConsumable={handleBuyConsumable}
         onToggleEquip={handleToggleEquip}
+      />
+
+      {/* DEV CONTROL PANEL (TRIGGERED BY SECRET KEYSTROKE CODE 'kibodev') */}
+      <DevControlPanel
+        isOpen={devState.isDevPanelOpen}
+        onClose={() => devState.setIsDevPanelOpen(false)}
+        onResetAllStats={devState.resetAllStats}
+        onSetRating={devState.setRating}
+        onAdjustSparks={devState.adjustSparks}
+        onUnlockAllWorkshopItems={devState.unlockAllWorkshopItems}
+        onStateRefresh={() => {
+          const uData = storageService.getUserData();
+          const sData = storageService.getShopState();
+          setSparks(uData.sparks || 0);
+          setUnlockedItems(sData.unlockedItems || ['cap']);
+        }}
       />
 
       {/* Footer with Parent Zone Link */}
