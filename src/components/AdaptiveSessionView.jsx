@@ -120,17 +120,22 @@ export default function AdaptiveSessionView({
     }
   }, [currentIndex, currentProblem, isMoneyQuestion, targetStr]);
 
+  const bannerTimerRef = useRef(null);
+
   useEffect(() => {
-    if (isFTUX) {
-      setFeedbackBanner({
-        type: 'success',
-        text: "Welcome to Kibo Climb! Let's start your organic climb! 🏔️✨"
-      });
-      setTimeout(() => {
-        setFeedbackBanner(null);
-      }, 3000);
-    }
-  }, [isFTUX]);
+    setFeedbackBanner({
+      type: 'success',
+      text: "Welcome to Kibo Climb! Let's start your organic climb! 🏔️✨"
+    });
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    bannerTimerRef.current = setTimeout(() => {
+      setFeedbackBanner(null);
+    }, 7500);
+
+    return () => {
+      if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    };
+  }, []);
 
   // Ensure new problems generated dynamically when queue gets low (deduplicated across active block)
   const replenishQueueIfNeeded = (nextIndex) => {
@@ -282,9 +287,10 @@ export default function AdaptiveSessionView({
     replenishQueueIfNeeded(nextIdx);
     setCurrentIndex(nextIdx);
 
-    setTimeout(() => {
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    bannerTimerRef.current = setTimeout(() => {
       setFeedbackBanner(null);
-    }, 1800);
+    }, 3500);
   };
 
   const handleDigitInput = (val) => {
@@ -469,18 +475,23 @@ export default function AdaptiveSessionView({
 
       {/* MECHANICAL TRANSIENT FEEDBACK TOAST (SLIDES DOWN FROM TOP HUD) */}
       <div
-        className={`absolute inset-x-4 z-50 transition-all duration-300 pointer-events-none ${
-          feedbackBanner ? 'top-0 opacity-100 scale-100' : '-top-12 opacity-0 scale-95'
+        onClick={() => {
+          if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+          setFeedbackBanner(null);
+        }}
+        className={`absolute inset-x-4 z-50 transition-all duration-300 ${
+          feedbackBanner ? 'top-0 opacity-100 scale-100 pointer-events-auto cursor-pointer' : '-top-12 opacity-0 scale-95 pointer-events-none'
         }`}
       >
         <div
-          className={`py-2 px-4 rounded-2xl text-center font-extrabold text-xs sm:text-sm shadow-xl backdrop-blur-md border ${
+          className={`py-2.5 px-4 rounded-2xl text-center font-extrabold text-xs sm:text-sm shadow-xl backdrop-blur-md border flex items-center justify-between gap-2 ${
             activeBannerType === 'success'
               ? 'bg-emerald-500/95 text-white border-emerald-400 shadow-emerald-950/20'
               : 'bg-rose-500/95 text-white border-rose-400 shadow-rose-950/20'
           }`}
         >
-          {feedbackBanner?.text || lastBannerTextRef.current}
+          <span className="flex-1 text-center leading-snug">{feedbackBanner?.text || lastBannerTextRef.current}</span>
+          <span className="text-xs font-black opacity-80 hover:opacity-100 bg-black/20 px-2 py-0.5 rounded-full shrink-0">✕</span>
         </div>
       </div>
 
