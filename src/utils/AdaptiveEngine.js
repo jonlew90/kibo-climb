@@ -153,12 +153,12 @@ export function evaluateAdaptiveSessionEnd({
     records.mostPerfectSessions += 1;
   }
 
-  // 2. Speed Run Bonus (< 5.0s average response time for 5+ questions)
-  if (questionsAnswered >= 5 && sessionAverageTimeSec > 0 && sessionAverageTimeSec < 5.0) {
+  // 2. Speed Run Bonus (< 5.0s average response time with 100% accuracy)
+  if (questionsAnswered >= 5 && sessionAccuracy === 100 && sessionAverageTimeSec > 0 && sessionAverageTimeSec < 5.0) {
     isSpeedRun = true;
     bonusSparks += 10;
     const sessionTimeSec = Math.round(totalSessionTimeMs / 1000);
-    if (!records.fastest12QuestionsTime || sessionTimeSec < records.fastest12QuestionsTime) {
+    if (questionsAnswered >= 12 && (!records.fastest12QuestionsTime || sessionTimeSec < records.fastest12QuestionsTime)) {
       records.fastest12QuestionsTime = sessionTimeSec;
     }
   }

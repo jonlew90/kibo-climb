@@ -298,7 +298,7 @@ export default function AdaptiveSessionView({
 
       const updatedRecords = {
         ...currentRecords,
-        fastest12QuestionsTime: (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime)
+        fastest12QuestionsTime: (isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime))
           ? blockTimeSec
           : currentRecords.fastest12QuestionsTime,
         mostPerfectSessions: isPerfectBlock
