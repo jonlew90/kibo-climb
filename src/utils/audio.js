@@ -140,6 +140,37 @@ class SoundSystem {
       osc.stop(now + n.time + n.duration);
     });
   }
+
+  // Play energetic spark collection chime
+  playSparkCollect() {
+    triggerHaptic([20, 20]);
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const notes = [
+      { freq: 880, duration: 0.08, time: 0 },
+      { freq: 1318.5, duration: 0.15, time: 0.07 }
+    ];
+
+    notes.forEach((n) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(n.freq, now + n.time);
+
+      gain.gain.setValueAtTime(0.25, now + n.time);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + n.time + n.duration);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now + n.time);
+      osc.stop(now + n.time + n.duration);
+    });
+  }
 }
 
 export const soundFx = new SoundSystem();

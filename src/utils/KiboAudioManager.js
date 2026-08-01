@@ -103,6 +103,10 @@ class KiboAudioManagerEngine {
     osc.start(now);
     osc.stop(now + 0.35);
   }
+
+  playSparkCollect() {
+    this.soundFx.playSparkCollect();
+  }
 }
 
 export const KiboAudioManager = new KiboAudioManagerEngine();
