@@ -18,31 +18,28 @@ export default function KiboBreakOverlay({
   const accuracyPct = Math.round((correctCount / Math.max(1, totalCount)) * 100);
 
   return (
-    <div className="fixed inset-0 z-[999] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-slate-950 via-purple-950 to-slate-900 flex flex-col justify-between p-3 sm:p-4 overflow-y-auto text-white select-none animate-pop">
+    <div className="fixed inset-0 z-[999] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-slate-950 via-purple-950 to-slate-900 flex flex-col justify-between p-3 sm:p-4 overflow-hidden text-white select-none animate-pop">
       <ConfettiCanvas />
 
-      <div className="w-full max-w-md mx-auto my-auto flex flex-col justify-between py-1 relative z-10 text-center space-y-2.5">
-        {/* Fullscreen Banner Header */}
+      <div className="w-full max-w-md mx-auto h-full flex flex-col justify-between py-1 relative z-10 text-center space-y-2">
+        {/* Compact Banner Header */}
         <div className="space-y-0.5 shrink-0">
           <span className="text-[10px] font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 px-3 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block tracking-wider animate-pulse">
             🏔️ Ascent Checkpoint Reached
           </span>
-          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-md">
+          <h1 className="text-lg sm:text-xl font-black text-white tracking-tight drop-shadow-md">
             Climb Block Complete!
           </h1>
-          <p className="text-[11px] font-semibold text-purple-200">
-            You completed 12 adaptive problems on Mount Kibo!
-          </p>
         </div>
 
         {/* Basecamp Mascot Stage */}
         <div className="relative py-0.5 flex justify-center items-center shrink-0">
-          <div className="absolute w-28 h-28 rounded-full bg-purple-500/20 blur-xl animate-pulse pointer-events-none" />
+          <div className="absolute w-24 h-24 rounded-full bg-purple-500/20 blur-xl animate-pulse pointer-events-none" />
           <Mascot
             mood="happy"
             state="break"
             equipped={equippedItems}
-            className="w-18 h-18 sm:w-22 sm:h-22 filter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] animate-bounce"
+            className="w-16 h-16 sm:w-20 sm:h-20 filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.5)] animate-bounce"
           />
         </div>
 
@@ -91,33 +88,33 @@ export default function KiboBreakOverlay({
         </div>
 
         {/* Live Updated Competence Rank Banner */}
-        <div className="bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-amber-500/20 border border-amber-400/40 rounded-xl p-2 flex items-center justify-between shadow-sm shrink-0">
-          <span className="text-[11px] font-black text-amber-200 flex items-center gap-1 uppercase">
-            <Trophy className="w-3.5 h-3.5 text-amber-400 fill-amber-400 stroke-[2.5]" /> Competence Rank
+        <div className="bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-amber-500/20 border border-amber-400/40 rounded-xl p-1.5 px-3 flex items-center justify-between shadow-sm shrink-0">
+          <span className="text-[10px] font-black text-amber-200 flex items-center gap-1 uppercase">
+            <Trophy className="w-3 h-3 text-amber-400 fill-amber-400 stroke-[2.5]" /> Competence Rank
           </span>
-          <span className="text-sm font-black text-white bg-slate-900/90 px-2.5 py-0.5 rounded-lg border border-amber-300/40 shadow-inner">
+          <span className="text-xs font-black text-white bg-slate-900/90 px-2 py-0.5 rounded-lg border border-amber-300/40 shadow-inner">
             <RollingNumberTicker value={competenceRating} showDeltaBadge={false} suffix=" ⭐" />
           </span>
         </div>
 
-        {/* Action Buttons - Highlighted & Prominent */}
-        <div className="space-y-2 shrink-0 pt-1">
+        {/* Side-by-Side Action Buttons - 100% Visible & Prominent */}
+        <div className="flex items-center gap-2 shrink-0 pt-1 pb-1">
           <button
             type="button"
             onClick={onResumeClimb}
-            className="btn-3d-orange w-full py-3 text-base sm:text-lg font-black rounded-xl flex items-center justify-center gap-2 shadow-bouncy-orange active:scale-95 transition-transform"
+            className="btn-3d-orange flex-1 py-3 text-sm sm:text-base font-black rounded-xl flex items-center justify-center gap-1.5 shadow-bouncy-orange active:scale-95 transition-transform"
           >
-            <Play className="w-5 h-5 fill-white stroke-[2.5]" />
+            <Play className="w-4 h-4 fill-white stroke-[2.5]" />
             Keep Climbing! 🏔️
           </button>
 
           <button
             type="button"
             onClick={onOpenWorkshop}
-            className="btn-3d-purple w-full py-2.5 text-xs sm:text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-bouncy-purple active:scale-95 transition-transform"
+            className="btn-3d-purple px-3 py-3 text-xs sm:text-sm font-extrabold rounded-xl flex items-center justify-center gap-1.5 shadow-bouncy-purple active:scale-95 transition-transform shrink-0"
           >
             <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-            Visit Kibo Workshop 🏪
+            Workshop 🏪
           </button>
         </div>
       </div>
