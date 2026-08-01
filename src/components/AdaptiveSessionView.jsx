@@ -609,43 +609,42 @@ export default function AdaptiveSessionView({
                 >
                   {streakCfg.label}
                 </span>
-                {isDoubleSparksActive ? (
-                  <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs">
-                    🧪 2x Active!
-                  </span>
-                ) : sessionQuestionIndex === 1 ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const owned = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
-                      if (owned > 0 && onToggleDoubleSparksPotion) {
-                        onToggleDoubleSparksPotion();
-                        setFeedbackBanner({
-                          type: 'success',
-                          text: 'Double Sparks Potion Activated for this climb! 🧪⚡'
-                        });
-                      } else if (onOpenWorkshop) {
-                        onOpenWorkshop();
-                      }
-                    }}
-                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
-                      ((consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0) > 0)
-                        ? 'bg-amber-200 text-amber-950 border-amber-400 hover:bg-amber-300 shadow-sm animate-bounce'
-                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
-                    }`}
-                    title={
-                      ((consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0) > 0)
-                        ? 'Tap to drink 2x Sparks Potion at start of climb!'
-                        : 'Get 2x Sparks Potions in Kibo Workshop'
-                    }
-                  >
-                    🧪 {((consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0) > 0) ? `Drink 2x (${consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount})` : '2x Potion'}
-                  </button>
-                ) : (
-                  <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shrink-0 opacity-60 cursor-not-allowed" title="Potions must be consumed at the start of a climb!">
-                    🧪 2x (Start Only)
-                  </span>
-                )}
+                {(() => {
+                  const owned = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
+                  if (isDoubleSparksActive) {
+                    return (
+                      <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs">
+                        🧪 2x Active!
+                      </span>
+                    );
+                  }
+                  if (owned <= 0) return null;
+                  if (sessionQuestionIndex === 1) {
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onToggleDoubleSparksPotion) {
+                            onToggleDoubleSparksPotion();
+                            setFeedbackBanner({
+                              type: 'success',
+                              text: 'Double Sparks Potion Activated for this climb! 🧪⚡'
+                            });
+                          }
+                        }}
+                        className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 bg-amber-200 text-amber-950 border-amber-400 hover:bg-amber-300 shadow-sm animate-bounce"
+                        title="Tap to drink 2x Sparks Potion at start of climb!"
+                      >
+                        🧪 Drink 2x ({owned})
+                      </button>
+                    );
+                  }
+                  return (
+                    <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shrink-0 opacity-60 cursor-not-allowed" title="Potions must be consumed at the start of a climb!">
+                      🧪 2x (Start Only)
+                    </span>
+                  );
+                })()}
                 <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs shrink-0">
                   <Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />
                   Rank: {competenceRank}
