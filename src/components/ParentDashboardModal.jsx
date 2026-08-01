@@ -48,6 +48,19 @@ export default function ParentDashboardModal({
   const [pinSuccessMsg, setPinSuccessMsg] = useState('');
   const [pinErrorMsg, setPinErrorMsg] = useState('');
 
+  const [liveUserData, setLiveUserData] = useState(() => storageService.getUserData());
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setLiveUserData(storageService.getUserData());
+    const interval = setInterval(() => {
+      setLiveUserData(storageService.getUserData());
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isOpen]);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen && onClose) {
@@ -321,20 +334,28 @@ export default function ParentDashboardModal({
 
             {/* ADAPTIVE COMPETENCE SNAPSHOT & TOPIC MASTERY */}
             {(() => {
-              const activeUserData = storageService.getUserData();
+              const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.subjects?.math?.adaptiveCompetenceRating || 1000;
-              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, tier, actualRating);
+              const currentMathTier = activeUserData.tier || tier || 1;
+              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating);
               const { adaptiveCompetenceRating, last30DaysGrowthData, masteryDistribution, skillStrandBreakdown } = adaptiveProfile;
+              const rankTitle = getCompetenceRankTier(adaptiveCompetenceRating);
 
               return (
                 <div className="space-y-4">
                   {/* ADAPTIVE COMPETENCE RATING SNAPSHOT */}
                   <section className="bg-white p-5 rounded-3xl shadow-sm border-2 border-indigo-200 text-left space-y-3">
                     <div className="flex items-center justify-between border-b border-indigo-100 pb-2 flex-wrap gap-2">
-                      <h2 className="text-lg font-black text-slate-800 tracking-tight">Current Math Mastery</h2>
+                      <div>
+                        <h2 className="text-lg font-black text-slate-800 tracking-tight">Current Math Mastery</h2>
+                        <span className="text-[10px] text-indigo-600 font-bold block">
+                          Level {currentMathTier} • {rankTitle} ({adaptiveCompetenceRating} Rating)
+                        </span>
+                      </div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
-                          {getCompetenceRankTier(adaptiveCompetenceRating)}{totalProblemsSolved < 15 ? ' • Calibrating' : ''}
+                        <span className="text-xs font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200 shadow-xs flex items-center gap-1.5">
+                          <Trophy className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5]" />
+                          {rankTitle}
                         </span>
                         {totalProblemsSolved < 15 && (
                           <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse">
