@@ -352,17 +352,37 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         <g id="layer-back">
           {hasJetpack && (
             <g filter="url(#clayShadow)">
-              <rect x="42" y="75" width="22" height="52" rx="8" fill="url(#tailGrad)" stroke="#521300" strokeWidth="3" />
-              <rect x="136" y="75" width="22" height="52" rx="8" fill="url(#tailGrad)" stroke="#521300" strokeWidth="3" />
-              <path d="M 46 127 L 60 127 L 53 145 Z" fill="#FF4500" className="animate-pulse" />
-              <path d="M 140 127 L 154 127 L 147 145 Z" fill="#FF4500" className="animate-pulse" />
+              {/* Left Rocket Thruster */}
+              <rect x="26" y="62" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
+              <rect x="32" y="72" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
+              <circle cx="41" cy="97" r="6" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+              
+              {/* Right Rocket Thruster */}
+              <rect x="144" y="62" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
+              <rect x="150" y="72" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
+              <circle cx="159" cy="97" r="6" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+
+              {/* Fiery Exhaust Flames */}
+              <path d="M 31 132 Q 41 175 51 132 Z" fill="#FF4500" className="animate-pulse" />
+              <path d="M 35 132 Q 41 160 47 132 Z" fill="#FBBF24" className="animate-pulse" />
+              <path d="M 149 132 Q 159 175 169 132 Z" fill="#FF4500" className="animate-pulse" />
+              <path d="M 153 132 Q 159 160 165 132 Z" fill="#FBBF24" className="animate-pulse" />
             </g>
           )}
 
           {hasBackpack && (
             <g filter="url(#clayShadow)">
-              <rect x="45" y="80" width="110" height="70" rx="20" fill="#B45309" stroke="#78350F" strokeWidth="4" />
-              <rect x="65" y="110" width="70" height="35" rx="10" fill="#D97706" stroke="#78350F" strokeWidth="3" />
+              {/* Top Sleeping Mat Roll */}
+              <rect x="50" y="55" width="100" height="24" rx="10" fill="#15803D" stroke="#166534" strokeWidth="3" />
+              <rect x="72" y="53" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+              <rect x="121" y="53" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+
+              {/* Main Heavy Duty Expedition Backpack Body */}
+              <rect x="34" y="74" width="132" height="82" rx="24" fill="#B45309" stroke="#78350F" strokeWidth="4" />
+              
+              {/* Side Water Bottle Pockets */}
+              <rect x="25" y="98" width="16" height="44" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
+              <rect x="159" y="98" width="16" height="44" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
             </g>
           )}
 
@@ -560,9 +580,20 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           )}
 
           {hasLantern && (
-            <g filter="url(#clayShadow)" className="animate-pulse">
-              <rect x="54" y="140" width="16" height="22" rx="4" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
-              <rect x="58" y="144" width="8" height="14" rx="2" fill="#FEF08A" />
+            <g filter="url(#clayShadow)">
+              {/* Glowing Ambient Aura */}
+              <circle cx="48" cy="138" r="26" fill="#FDE047" opacity="0.35" className="animate-pulse" />
+              
+              {/* Brass Handle Loop */}
+              <path d="M 38 120 C 38 106 58 106 58 120" stroke="#78350F" strokeWidth="3.5" fill="none" />
+              
+              {/* Main Golden Lantern Housing */}
+              <rect x="34" y="120" width="28" height="36" rx="8" fill="#D97706" stroke="#78350F" strokeWidth="3" />
+              
+              {/* Glass Chamber & Radiant Flame */}
+              <rect x="39" y="126" width="18" height="24" rx="4" fill="#FEF08A" stroke="#B45309" strokeWidth="2" />
+              <path d="M 48 144 Q 53 136 48 130 Q 43 136 48 144 Z" fill="#EF4444" className="animate-pulse" />
+              <path d="M 48 142 Q 51 137 48 133 Q 45 137 48 142 Z" fill="#FBBF24" className="animate-pulse" />
             </g>
           )}
 

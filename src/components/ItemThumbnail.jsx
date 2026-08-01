@@ -155,25 +155,35 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
 
         {itemId === 'backpack' && (
           <g>
-            <rect x="25" y="25" width="50" height="55" rx="12" fill="#B45309" stroke="#78350F" strokeWidth="4" />
-            <rect x="33" y="45" width="34" height="25" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="3" />
+            <rect x="25" y="16" width="50" height="16" rx="6" fill="#15803D" stroke="#166534" strokeWidth="3" />
+            <rect x="36" y="14" width="5" height="20" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
+            <rect x="59" y="14" width="5" height="20" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
+            <rect x="18" y="28" width="64" height="58" rx="16" fill="#B45309" stroke="#78350F" strokeWidth="4" />
+            <rect x="28" y="52" width="44" height="26" rx="8" fill="#D97706" stroke="#78350F" strokeWidth="3" />
           </g>
         )}
 
         {itemId === 'lantern' && (
           <g>
-            <rect x="35" y="30" width="30" height="42" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="4" />
-            <rect x="42" y="38" width="16" height="26" rx="4" fill="#FEF08A" />
-            <path d="M 40 22 C 40 10 60 10 60 22" stroke="#78350F" strokeWidth="4" fill="none" />
+            <circle cx="50" cy="52" r="32" fill="#FDE047" opacity="0.3" />
+            <path d="M 36 26 C 36 12 64 12 64 26" stroke="#78350F" strokeWidth="4" fill="none" />
+            <rect x="30" y="26" width="40" height="52" rx="10" fill="#D97706" stroke="#78350F" strokeWidth="4" />
+            <rect x="38" y="34" width="24" height="36" rx="6" fill="#FEF08A" stroke="#B45309" strokeWidth="2.5" />
+            <path d="M 50 60 Q 58 48 50 40 Q 42 48 50 60 Z" fill="#EF4444" />
+            <path d="M 50 57 Q 55 49 50 43 Q 45 49 50 57 Z" fill="#FBBF24" />
           </g>
         )}
 
         {itemId === 'jetpack' && (
           <g>
-            <rect x="25" y="25" width="22" height="50" rx="8" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3" />
-            <rect x="53" y="25" width="22" height="50" rx="8" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3" />
-            <path d="M 30 75 L 42 75 L 36 85 Z" fill="#FF4500" />
-            <path d="M 58 75 L 70 75 L 64 85 Z" fill="#FF4500" />
+            <rect x="18" y="18" width="28" height="58" rx="10" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
+            <rect x="24" y="26" width="16" height="42" rx="5" fill="#E2E8F0" opacity="0.4" />
+            <circle cx="32" cy="47" r="5" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+            <rect x="54" y="18" width="28" height="58" rx="10" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
+            <rect x="60" y="26" width="16" height="42" rx="5" fill="#E2E8F0" opacity="0.4" />
+            <circle cx="68" cy="47" r="5" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+            <path d="M 23 76 Q 32 94 41 76 Z" fill="#FF4500" />
+            <path d="M 59 76 Q 68 94 77 76 Z" fill="#FF4500" />
           </g>
         )}
 
