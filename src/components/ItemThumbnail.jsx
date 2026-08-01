@@ -60,6 +60,15 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
+        {itemId === 'hint_scroll' && (
+          <g>
+            <rect x="25" y="25" width="50" height="50" rx="8" fill="#FEF3C7" stroke="#D97706" strokeWidth="4" />
+            <path d="M 32 38 L 68 38 M 32 50 L 68 50 M 32 62 L 54 62" stroke="#B45309" strokeWidth="4" strokeLinecap="round" />
+            <circle cx="64" cy="62" r="7" fill="#F59E0B" />
+            <text x="64" y="65" textAnchor="middle" fontSize="10" fontWeight="900" fill="#FFFFFF">💡</text>
+          </g>
+        )}
+
 
 
         {itemId === 'kibo_shield' && (

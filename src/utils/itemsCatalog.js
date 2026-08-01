@@ -43,6 +43,18 @@ export const WORKSHOP_ITEMS = [
   },
 
   {
+    id: 'hint_scroll',
+    name: 'Wisdom Hint Scroll',
+    category: 'powerups',
+    cost: 8,
+    rarity: 'common',
+    isConsumable: true,
+    icon: '📜',
+    badgeTag: 'Instant Hint!',
+    description: 'Costs 8 Sparks. Instantly reveals a helpful step-by-step Kibo hint for any active problem!'
+  },
+
+  {
     id: 'kibo_shield',
     name: 'Kibo Shield',
     category: 'powerups',

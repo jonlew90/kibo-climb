@@ -237,7 +237,8 @@ export default function App() {
     return {
       shieldCount: saved?.shieldCount ?? 1,
       streakSaverCount: saved?.streakSaverCount ?? 0,
-      doubleSparksPotionCount: saved?.doubleSparksPotionCount ?? saved?.doubleCoinPotionCount ?? 0
+      doubleSparksPotionCount: saved?.doubleSparksPotionCount ?? saved?.doubleCoinPotionCount ?? 0,
+      hintScrollCount: saved?.hintScrollCount ?? 2
     };
   });
 
@@ -279,6 +280,7 @@ export default function App() {
     let nextShieldCount = consumables.shieldCount || 0;
     let nextStreakSaverCount = consumables.streakSaverCount || 0;
     let nextPotionCount = consumables.doubleSparksPotionCount || consumables.doubleCoinPotionCount || 0;
+    let nextHintScrollCount = consumables.hintScrollCount || 0;
 
     if (item.id === 'kibo_shield') {
       nextShieldCount += 1;
@@ -286,13 +288,16 @@ export default function App() {
       nextStreakSaverCount += 1;
     } else if (item.id === 'double_sparks_potion' || item.id === 'double_coin_potion') {
       nextPotionCount += 1;
+    } else if (item.id === 'hint_scroll') {
+      nextHintScrollCount += 1;
     }
 
     const nextConsumables = {
       shieldCount: nextShieldCount,
       streakSaverCount: nextStreakSaverCount,
       doubleSparksPotionCount: nextPotionCount,
-      doubleCoinPotionCount: nextPotionCount
+      doubleCoinPotionCount: nextPotionCount,
+      hintScrollCount: nextHintScrollCount
     };
 
     setSparks(newSparks);
@@ -304,6 +309,19 @@ export default function App() {
     });
 
     soundFx.playVictory();
+  };
+
+  const handleConsumeHintScroll = () => {
+    const owned = consumables.hintScrollCount ?? 0;
+    if (owned <= 0) return false;
+    soundFx.playKeyTap();
+    const nextConsumables = {
+      ...consumables,
+      hintScrollCount: owned - 1
+    };
+    setConsumables(nextConsumables);
+    storageService.saveUserData({ consumables: nextConsumables });
+    return true;
   };
 
   const handleToggleDoubleSparksPotion = () => {
@@ -1255,6 +1273,7 @@ export default function App() {
           isDoubleSparksActive={isDoubleSparksActive}
           consumables={consumables}
           onToggleDoubleSparksPotion={handleToggleDoubleSparksPotion}
+          onConsumeHintScroll={handleConsumeHintScroll}
           onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}

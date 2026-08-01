@@ -64,6 +64,7 @@ export default function AdaptiveSessionView({
   isDoubleSparksActive = false,
   consumables = {},
   onToggleDoubleSparksPotion,
+  onConsumeHintScroll,
   onResetDoubleSparks
 }) {
   const [competenceRank, setCompetenceRank] = useState(1000);
@@ -612,6 +613,40 @@ export default function AdaptiveSessionView({
                 >
                   {streakCfg.label}
                 </span>
+
+                {/* MANUAL WISDOM HINT SCROLL BUTTON */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (showFrustrationCard) return;
+                    const owned = consumables?.hintScrollCount ?? 0;
+                    if (owned > 0 && onConsumeHintScroll) {
+                      onConsumeHintScroll();
+                      setShowFrustrationCard(true);
+                      triggerToastBanner({
+                        type: 'success',
+                        text: 'Kibo Wisdom Hint Unlocked! 📜💡'
+                      }, 1200);
+                    } else if (onOpenWorkshop) {
+                      onOpenWorkshop();
+                    }
+                  }}
+                  className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                    showFrustrationCard
+                      ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
+                      : (consumables?.hintScrollCount ?? 0) > 0
+                      ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
+                      : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                  }`}
+                  title={
+                    (consumables?.hintScrollCount ?? 0) > 0
+                      ? 'Use Wisdom Scroll to reveal a hint!'
+                      : 'Get Hint Scrolls in Kibo Workshop'
+                  }
+                >
+                  📜 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Get Hint'}
+                </button>
+
                 {(() => {
                   const owned = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
                   if (isDoubleSparksActive) {
