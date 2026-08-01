@@ -22,19 +22,19 @@ export function getCompetenceDescription(rating = 1000, totalProblemsSolved = 0)
   }
 
   if (rating < 900) {
-    return 'Building foundational counting, single-digit addition, and number sense.';
+    return 'Building foundational single-digit addition, subtraction, and number sense.';
   }
   if (rating <= 1090) {
     return 'Developing confidence with double-digit mental math, place value, and skip counting.';
   }
   if (rating <= 1290) {
-    return 'Mastering regrouping in addition/subtraction and introducing basic multiplication facts.';
+    return 'Mastering regrouping in addition/subtraction and core multiplication facts (0s-12s).';
   }
   if (rating <= 1490) {
-    return 'Solving multi-digit operations, multi-step word problems, and intro fraction concepts.';
+    return 'Solving inverse division facts, coin change calculations, and elapsed time jumps.';
   }
   if (rating <= 1690) {
-    return 'Handling unlike fractions, decimals, basic order of operations, and pre-algebra concepts.';
+    return 'Handling multi-digit mental arithmetic, LCM/GCF number theory, and divisibility rules.';
   }
-  return 'Demonstrating advanced problem-solving, complex fractions, and pre-algebraic reasoning.';
+  return 'Demonstrating summit mastery in mental calculation speed, exponents, square roots, and PEMDAS order of operations.';
 }
