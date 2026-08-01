@@ -104,24 +104,45 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   // --- LIVING MASCOT ANIMATION STATES ---
   const [isBlinking, setIsBlinking] = useState(false);
   const [isEarTwitching, setIsEarTwitching] = useState(false);
+  const [isSniffing, setIsSniffing] = useState(false);
+  const [isTwirling, setIsTwirling] = useState(false);
   const [isTapped, setIsTapped] = useState(false);
   const [sparkParticles, setSparkParticles] = useState([]);
 
-  // Random Idle Blinks & Ear Twitches Loop
+  // Advanced Movement Visual FX items
+  const hasCloudFloat = isEquipped('fx_float_bounce');
+  const hasSpinDance = isEquipped('fx_spin_dance');
+  const hasSpeedTrail = isEquipped('fx_hyper_speed');
+  const hasOrbitMoons = isEquipped('fx_orbit_moons');
+
+  // Periodic Victory Twirl for Victory Spin FX
+  useEffect(() => {
+    if (!hasSpinDance) return;
+    const interval = setInterval(() => {
+      setIsTwirling(true);
+      setTimeout(() => setIsTwirling(false), 850);
+    }, 5500);
+    return () => clearInterval(interval);
+  }, [hasSpinDance]);
+
+  // Random Natural Micro-Actions Loop (Blinks, Ear Twitches, Nose Sniffs)
   useEffect(() => {
     let timeoutId;
 
     const scheduleMicroAction = () => {
-      const delay = Math.floor(Math.random() * 3000) + 4000;
+      const delay = Math.floor(Math.random() * 2500) + 3000;
       timeoutId = setTimeout(() => {
-        const actionType = Math.random() > 0.5 ? 'blink' : 'twitch';
+        const rand = Math.random();
 
-        if (actionType === 'blink') {
+        if (rand < 0.4) {
           setIsBlinking(true);
-          setTimeout(() => setIsBlinking(false), 220);
-        } else {
+          setTimeout(() => setIsBlinking(false), 200);
+        } else if (rand < 0.75) {
           setIsEarTwitching(true);
-          setTimeout(() => setIsEarTwitching(false), 350);
+          setTimeout(() => setIsEarTwitching(false), 380);
+        } else {
+          setIsSniffing(true);
+          setTimeout(() => setIsSniffing(false), 420);
         }
 
         scheduleMicroAction();
@@ -437,7 +458,23 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           </g>
         )}
 
-        {/* VISUAL FX (Lightning Sparks & Rainbow Nebula) */}
+        {/* VISUAL FX (Cloud Float, Lightning Sparks, Speed Trail, Nebula, Orbit Moons) */}
+        {hasCloudFloat && (
+          <g className="animate-bounce" style={{ animationDuration: '2.5s' }} filter="url(#clayShadow)">
+            <ellipse cx="100" cy="178" rx="55" ry="16" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="2.5" />
+            <circle cx="65" cy="172" r="18" fill="#F8FAFC" />
+            <circle cx="135" cy="172" r="18" fill="#F8FAFC" />
+            <circle cx="100" cy="168" r="22" fill="#FFFFFF" />
+          </g>
+        )}
+
+        {hasSpeedTrail && (
+          <g className="animate-pulse">
+            <path d="M 20 90 L 55 90 M 15 115 L 50 115 M 25 140 L 60 140" stroke="#06B6D4" strokeWidth="3.5" strokeLinecap="round" opacity="0.8" />
+            <path d="M 180 90 L 145 90 M 185 115 L 150 115 M 175 140 L 140 140" stroke="#06B6D4" strokeWidth="3.5" strokeLinecap="round" opacity="0.8" />
+          </g>
+        )}
+
         {hasLightningSparks && (
           <g className="animate-pulse">
             <polygon points="40,30 46,45 38,45 44,60" fill="#FACC15" stroke="#EAB308" strokeWidth="1" />
@@ -450,6 +487,14 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           <g className="animate-spin" style={{ animationDuration: '10s' }}>
             <ellipse cx="100" cy="115" rx="72" ry="24" fill="none" stroke="url(#thumbLavaGrad)" strokeWidth="3" strokeDasharray="12 8" opacity="0.8" />
             <ellipse cx="100" cy="115" rx="64" ry="20" fill="none" stroke="url(#thumbAuroraGrad)" strokeWidth="2" strokeDasharray="8 6" opacity="0.8" />
+          </g>
+        )}
+
+        {hasOrbitMoons && (
+          <g className="animate-spin" style={{ animationDuration: '8s' }}>
+            <circle cx="35" cy="55" r="7" fill="#FDE047" stroke="#CA8A04" strokeWidth="1.5" />
+            <circle cx="165" cy="145" r="9" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
+            <circle cx="100" cy="182" r="6" fill="#F472B6" stroke="#DB2777" strokeWidth="1.5" />
           </g>
         )}
 

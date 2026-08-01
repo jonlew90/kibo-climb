@@ -246,11 +246,30 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
+        {itemId === 'fx_float_bounce' && (
+          <g>
+            <ellipse cx="50" cy="72" rx="30" ry="10" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="2.5" />
+            <circle cx="32" cy="68" r="10" fill="#F8FAFC" />
+            <circle cx="68" cy="68" r="10" fill="#F8FAFC" />
+            <circle cx="50" cy="65" r="12" fill="#FFFFFF" />
+            <path d="M 50 25 L 45 42 L 55 42 Z" fill="#38BDF8" />
+          </g>
+        )}
+
         {itemId === 'starlight_aura' && (
           <g>
             <ellipse cx="50" cy="50" rx="35" ry="15" fill="none" stroke="#FDE047" strokeWidth="4" strokeDasharray="6 4" />
             <circle cx="20" cy="45" r="4" fill="#38BDF8" />
             <circle cx="80" cy="55" r="5" fill="#F472B6" />
+          </g>
+        )}
+
+        {itemId === 'fx_spin_dance' && (
+          <g>
+            <circle cx="50" cy="50" r="28" fill="none" stroke="#F59E0B" strokeWidth="4" strokeDasharray="14 10" />
+            <polygon points="50,15 60,25 40,25" fill="#F59E0B" />
+            <polygon points="50,85 40,75 60,75" fill="#F59E0B" />
+            <circle cx="50" cy="50" r="8" fill="#FCD34D" />
           </g>
         )}
 
@@ -262,11 +281,27 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
+        {itemId === 'fx_hyper_speed' && (
+          <g>
+            <path d="M 15 35 L 55 35 M 10 50 L 70 50 M 20 65 L 60 65" stroke="#06B6D4" strokeWidth="4" strokeLinecap="round" />
+            <polygon points="65,50 82,38 74,50 85,50 68,66 74,53" fill="#FACC15" />
+          </g>
+        )}
+
         {itemId === 'rainbow_nebula' && (
           <g>
             <circle cx="50" cy="50" r="32" fill="none" stroke="url(#thumbLavaGrad)" strokeWidth="6" opacity="0.8" />
             <circle cx="50" cy="50" r="24" fill="none" stroke="url(#thumbAuroraGrad)" strokeWidth="4" opacity="0.8" />
             <polygon points="50,26 53,34 60,36 55,41 56,48 50,44 44,48 45,41 40,36 47,34" fill="#FEF08A" />
+          </g>
+        )}
+
+        {itemId === 'fx_orbit_moons' && (
+          <g>
+            <ellipse cx="50" cy="50" rx="32" ry="16" fill="none" stroke="#60A5FA" strokeWidth="2.5" strokeDasharray="6 4" />
+            <circle cx="20" cy="45" r="5" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" />
+            <circle cx="80" cy="55" r="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="1" />
+            <circle cx="50" cy="34" r="4" fill="#F472B6" stroke="#DB2777" strokeWidth="1" />
           </g>
         )}
 

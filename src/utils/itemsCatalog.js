@@ -271,12 +271,29 @@ export const WORKSHOP_ITEMS = [
     description: 'Magical sparkle dust floating around Kibo.'
   },
   {
+    id: 'fx_float_bounce',
+    name: 'Cloud Levitator Float',
+    category: 'fx',
+    cost: 160,
+    rarity: 'rare',
+    description: 'Causes Kibo to gently levitate and float up and down on a fluffy cloud!'
+  },
+  {
     id: 'starlight_aura',
     name: 'Starlight Cosmic Halo',
     category: 'fx',
     cost: 220,
     rarity: 'rare',
     description: 'Shimmering orbital starlight halo around Kibo.'
+  },
+  {
+    id: 'fx_spin_dance',
+    name: 'Victory Spin & Twirl',
+    category: 'fx',
+    cost: 480,
+    rarity: 'epic',
+    requiredRank: 1150,
+    description: 'Kibo performs periodic victory twirls and joyful spins as you climb! Requires Rank 1150.'
   },
   {
     id: 'lightning_sparks',
@@ -288,6 +305,15 @@ export const WORKSHOP_ITEMS = [
     description: 'High-voltage electric lightning energy crackling around Kibo! Requires Rank 1200.'
   },
   {
+    id: 'fx_hyper_speed',
+    name: 'Sonic Speed Trail',
+    category: 'fx',
+    cost: 750,
+    rarity: 'epic',
+    requiredRank: 1350,
+    description: 'Speedster motion blur energy lines pulsating behind Kibo! Requires Rank 1350.'
+  },
+  {
     id: 'rainbow_nebula',
     name: 'Rainbow Cosmic Nebula',
     category: 'fx',
@@ -295,6 +321,15 @@ export const WORKSHOP_ITEMS = [
     rarity: 'legendary',
     requiredRank: 1550,
     description: 'Prismatic glowing celestial galaxy aura! Requires Competence Rank 1550.'
+  },
+  {
+    id: 'fx_orbit_moons',
+    name: 'Orbital Moon Satellites',
+    category: 'fx',
+    cost: 1600,
+    rarity: 'legendary',
+    requiredRank: 1600,
+    description: 'Three miniature glowing moons orbit continuously around Kibo in 3D space! Requires Rank 1600.'
   },
 
   // KIBO SKINS (Category: skins)
