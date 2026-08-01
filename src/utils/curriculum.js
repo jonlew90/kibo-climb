@@ -1,4 +1,14 @@
-// 8-Tier Skill Roadmap Curriculum Engine for Kibo Math
+export function getTierFromRating(rating = 1000) {
+  const numRating = Number(rating) || 1000;
+  if (numRating < 1200) return 1; // Tier 1: Sums & Differences to 20 (Addition & Subtraction only)
+  if (numRating < 1400) return 2; // Tier 2: Multiplication 0s-5s
+  if (numRating < 1600) return 3; // Tier 3: Advanced Multiplication (6s-9s) & Time Math
+  if (numRating < 1800) return 4; // Tier 4: Division & Fraction Foundations
+  if (numRating < 2000) return 5; // Tier 5: Decimals & Money
+  if (numRating < 2200) return 6; // Tier 6: Multi-Digit Multiplication & Long Division
+  if (numRating < 2400) return 7; // Tier 7: Pre-Algebra & Order of Operations
+  return 8;                       // Tier 8: Exponents, Square Roots & Peak Algebra
+}
 
 export const CURRICULUM_TIERS = [
   {

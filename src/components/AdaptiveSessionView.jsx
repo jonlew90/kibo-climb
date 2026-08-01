@@ -5,6 +5,7 @@ import Keypad from './Keypad';
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
 import { generateProblems } from '../utils/mathGenerator';
+import { getTierFromRating } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
 import { normalizeTimeAnswer, normalizeDecimal } from '../utils/formatters';
@@ -31,31 +32,24 @@ function getStreakTierConfig(streak) {
   }
   if (streak >= 5) {
     return {
-      label: `🔥 ${streak} Streak (1.5x)`,
-      pillClass: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white border-amber-300 shadow-sm ring-1 ring-amber-400 animate-pulse',
+      label: `🔥 ${streak} ON FIRE`,
+      pillClass: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-300 shadow-sm animate-pulse',
       cardGlow: 'shadow-[0_0_15px_rgba(245,158,11,0.25)] border-amber-400'
     };
   }
-  if (streak >= 3) {
-    return {
-      label: `🔥 ${streak} Streak`,
-      pillClass: 'text-orange-700 bg-orange-100 border-orange-300 animate-pulse shadow-xs',
-      cardGlow: 'border-amber-300 shadow-2xl'
-    };
-  }
   return {
-    label: `🔥 ${streak} Streak`,
-    pillClass: 'text-slate-700 bg-slate-100 border-slate-300 font-extrabold shadow-xs',
-    cardGlow: 'border-amber-300 shadow-2xl'
+    label: `🔥 ${streak} STREAK`,
+    pillClass: 'bg-slate-100 text-slate-700 border-slate-300',
+    cardGlow: 'border-slate-300 hover:border-slate-400'
   };
 }
 
 export default function AdaptiveSessionView({
   equippedItems = [],
   sparks = 0,
-  streak = 1,
-  onAwardSparks,
+  streak = 0,
   onOpenWorkshop,
+  onAwardSparks,
   onIncrementLifetimeProblems,
   onUpdatePersonalRecords,
   onUnlockedBadgesChange,
@@ -68,14 +62,17 @@ export default function AdaptiveSessionView({
   onConsumeHintScroll,
   onResetDoubleSparks
 }) {
-  const [competenceRank, setCompetenceRank] = useState(1000);
+  const [competenceRank, setCompetenceRank] = useState(() => {
+    return storageService.getUserData().adaptiveCompetenceRating || storageService.getUserData().competenceRank || 1000;
+  });
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [sessionQuestionIndex, setSessionQuestionIndex] = useState(1);
   const [correctCount, setCorrectCount] = useState(0);
   const [blockCorrectCount, setBlockCorrectCount] = useState(0);
   const [blockSparksEarned, setBlockSparksEarned] = useState(0);
   const [blockRatingGain, setBlockRatingGain] = useState(0);
-  const [currentTier, setCurrentTier] = useState(userTier);
+  const [mistakeCount, setMistakeCount] = useState(0);
+
   const [inputVal, setInputVal] = useState('');
   const [isShaking, setIsShaking] = useState(false);
   const [feedbackBanner, setFeedbackBanner] = useState(null);
@@ -94,10 +91,12 @@ export default function AdaptiveSessionView({
   const blockSeenKeysRef = useRef(new Set());
   const blockStartTimeRef = useRef(performance.now());
 
-  // Generate adaptive problem queue for active tier
+  // Generate adaptive problem queue for active tier based on competence rating
   const [problemQueue, setProblemQueue] = useState(() => {
     const seen = new Set();
-    const batch = generateProblems(15, isFTUX ? 1 : userTier, [], seen);
+    const currentRating = storageService.getUserData().adaptiveCompetenceRating || storageService.getUserData().competenceRank || 1000;
+    const activeTier = isFTUX ? 1 : getTierFromRating(currentRating);
+    const batch = generateProblems(15, activeTier, [], seen);
     blockSeenKeysRef.current = seen;
     return batch;
   });
@@ -495,7 +494,7 @@ export default function AdaptiveSessionView({
             setBlockRatingGain(0);
             blockSeenKeysRef.current.clear();
             blockStartTimeRef.current = performance.now();
-            const nextTier = Math.min(8, Math.max(1, Math.floor(competenceRank / 100)));
+            const nextTier = getTierFromRating(competenceRank);
             const freshBatch = generateProblems(15, nextTier, [], blockSeenKeysRef.current);
             setProblemQueue(freshBatch);
             setCurrentIndex(0);
