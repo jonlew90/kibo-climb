@@ -335,7 +335,7 @@ export default function ParentDashboardModal({
             {/* ADAPTIVE COMPETENCE SNAPSHOT & TOPIC MASTERY */}
             {(() => {
               const activeUserData = liveUserData || storageService.getUserData();
-              const actualRating = activeUserData.subjects?.math?.adaptiveCompetenceRating || 1000;
+              const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = activeUserData.tier || tier || 1;
               const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating);
               const { adaptiveCompetenceRating, last30DaysGrowthData, masteryDistribution, skillStrandBreakdown } = adaptiveProfile;

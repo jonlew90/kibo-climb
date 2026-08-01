@@ -1809,7 +1809,7 @@ export default function App() {
         personalRecords={personalRecords}
         userState={(() => {
           const uData = storageService.getUserData();
-          const rating = uData.subjects?.math?.adaptiveCompetenceRating || 1000;
+          const rating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
           return {
             competenceRank: rating,
             adaptiveCompetenceRating: rating,

@@ -187,6 +187,11 @@ export default function AdaptiveSessionView({
     const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
     setBlockRatingGain(nextBlockRatingGain);
 
+    storageService.saveUserData({
+      adaptiveCompetenceRating: evalResult.nextCompetenceRank,
+      competenceRank: evalResult.nextCompetenceRank
+    });
+
     const activeUserData = storageService.getUserData();
     const badgeEvalRes = evaluateBadges({
       ...activeUserData,
