@@ -19,6 +19,7 @@ export default function AdaptiveSessionView({
   onAwardSparks,
   onOpenWorkshop,
   onIncrementLifetimeProblems,
+  onUpdatePersonalRecords,
   userTier = 1,
   totalProblemsSolved = 0,
   isFTUX = false,
@@ -47,6 +48,7 @@ export default function AdaptiveSessionView({
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
 
   const blockSeenKeysRef = useRef(new Set());
+  const blockStartTimeRef = useRef(performance.now());
 
   // Generate adaptive problem queue for active tier
   const [problemQueue, setProblemQueue] = useState(() => {
@@ -198,11 +200,30 @@ export default function AdaptiveSessionView({
     if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(isCorrect);
     setInputVal('');
 
-    // Trigger Kibo Break Overlay every 12 problems solved
+    // Trigger Kibo Break Overlay every 12 problems solved & record personal bests
     if (nextQuestionsAnswered > 0 && nextQuestionsAnswered % 12 === 0) {
       KiboAudioManager.playBreakSFX();
       setMascotState('break');
       setShowBreakOverlay(true);
+
+      const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
+      const finalBlockCorrect = isCorrect ? blockCorrectCount + 1 : blockCorrectCount;
+      const isPerfectBlock = finalBlockCorrect === 12;
+
+      const currentRecords = activeUserData.personalRecords || {};
+
+      const updatedRecords = {
+        ...currentRecords,
+        fastest12QuestionsTime: (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime)
+          ? blockTimeSec
+          : currentRecords.fastest12QuestionsTime,
+        mostPerfectSessions: isPerfectBlock
+          ? (currentRecords.mostPerfectSessions || 0) + 1
+          : (currentRecords.mostPerfectSessions || 0)
+      };
+
+      storageService.saveUserData({ personalRecords: updatedRecords });
+      if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
     }
 
     const nextIdx = currentIndex + 1;
@@ -385,6 +406,7 @@ export default function AdaptiveSessionView({
             setBlockSparksEarned(0);
             setBlockRatingGain(0);
             blockSeenKeysRef.current.clear();
+            blockStartTimeRef.current = performance.now();
             const nextTier = Math.min(8, Math.max(1, Math.floor(competenceRank / 100)));
             const freshBatch = generateProblems(15, nextTier, [], blockSeenKeysRef.current);
             setProblemQueue(freshBatch);

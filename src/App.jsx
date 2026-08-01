@@ -1218,6 +1218,7 @@ export default function App() {
           isFTUX={showFirstLaunchOnboardingModal}
           isDoubleSparksActive={isDoubleSparksActive}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
+          onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
           onAwardSparks={(earned) => {
             const updated = sparks + earned;
             setSparks(updated);
