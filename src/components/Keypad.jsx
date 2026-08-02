@@ -62,11 +62,10 @@ export default function Keypad({
     );
   }
 
-  const isTimeQuestion = Boolean(
-    (problemType && problemType.includes('time')) ||
-    (answerString && answerString.includes(':')) ||
-    (displayString && (displayString.includes(':') || displayString.includes('time') || displayString.includes('Time'))) ||
-    operatorSymbol === '⏰'
+  const isFractionQuestion = Boolean(
+    (problemType && (problemType.includes('fraction') || problemType.includes('rational'))) ||
+    (answerString && answerString.includes('/')) ||
+    (displayString && displayString.includes('/'))
   );
 
   const isMoneyOrDecimal = Boolean(
@@ -82,7 +81,7 @@ export default function Keypad({
     operatorSymbol === '🪙'
   );
 
-  const bottomLeftKey = isTimeQuestion ? ':' : isMoneyOrDecimal ? '.' : 'clear';
+  const bottomLeftKey = isTimeQuestion ? ':' : isFractionQuestion ? '/' : isMoneyOrDecimal ? '.' : 'clear';
 
   const keyGrid = [
     ['1', '2', '3'],
@@ -114,6 +113,19 @@ export default function Keypad({
               aria-label="Colon time separator"
             >
               :
+            </button>
+          );
+        }
+
+        if (keyVal === '/') {
+          return (
+            <button
+              key={`${keyVal}-${idx}`}
+              onClick={() => handleKeyClick('/')}
+              className="btn-3d-key text-teal-700 font-black text-3xl hover:bg-teal-50 border-teal-200"
+              aria-label="Fraction slash separator"
+            >
+              /
             </button>
           );
         }

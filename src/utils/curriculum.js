@@ -476,7 +476,7 @@ export function generateTierProblem(targetTier) {
     }
     case 5: {
       const type = Math.random();
-      if (type < 0.40) {
+      if (type < 0.35) {
         const items = ['Trail Bar', 'Water Bottle', 'Carabiner', 'Compass', 'Trail Map', 'Kibo Badge'];
         const item = items[Math.floor(Math.random() * items.length)];
         const centsList = [15, 25, 35, 45, 55, 65, 75, 85];
@@ -517,7 +517,40 @@ export function generateTierProblem(targetTier) {
           requiresDecimal: true,
           hint: 'Hint: Enter exact dollar decimal amount (e.g. 0.35)!'
         };
-      } else if (type < 0.70) {
+      } else if (type < 0.65) {
+        // General Decimal Addition & Subtraction
+        const isAdd = Math.random() > 0.5;
+        const a = (Math.floor(Math.random() * 45) + 10) / 10;
+        const b = (Math.floor(Math.random() * 35) + 10) / 10;
+        let ansNum, dispText;
+
+        if (isAdd) {
+          ansNum = Number((a + b).toFixed(2));
+          dispText = `${a} + ${b}`;
+          num1 = a;
+          num2 = b;
+          operatorSymbol = '+';
+        } else {
+          num1 = Number((a + b).toFixed(2));
+          num2 = b;
+          ansNum = a;
+          dispText = `${num1} − ${num2}`;
+          operatorSymbol = '−';
+        }
+
+        return {
+          tier: effectiveTier,
+          num1,
+          num2,
+          operatorSymbol,
+          answer: ansNum.toString(),
+          answerString: ansNum.toString(),
+          displayString: dispText,
+          type: 'decimal',
+          requiresDecimal: true,
+          hint: 'Hint: Align the decimal points and compute!'
+        };
+      } else {
         const divisors = [2, 3, 5, 10];
         const divisor = divisors[Math.floor(Math.random() * divisors.length)];
         const mult = Math.floor(Math.random() * 30) + 10;
@@ -529,18 +562,21 @@ export function generateTierProblem(targetTier) {
         displayString = `Is ${num1} divisible by ${divisor}?`;
         options = ['Yes', 'No'];
         hint = `Hint: Check the digit rule for ${divisor}!`;
-      } else {
-        num2 = Math.floor(Math.random() * 9) + 2;
-        answer = Math.floor(Math.random() * 9) + 1;
-        num1 = num2 * answer;
-        operatorSymbol = '÷';
-        displayString = `${num1} ${operatorSymbol} ${num2}`;
       }
       break;
     }
     case 6: {
       const subType = Math.random();
-      if (subType < 0.2) {
+      if (subType < 0.35) {
+        // Explicit Long Division
+        const divisors = [4, 6, 7, 8, 9, 12, 14, 15];
+        num2 = divisors[Math.floor(Math.random() * divisors.length)];
+        answer = Math.floor(Math.random() * 25) + 11;
+        num1 = num2 * answer;
+        operatorSymbol = '÷';
+        displayString = `${num1} ÷ ${num2}`;
+        hint = `Hint: Long division! How many times does ${num2} fit into ${num1}?`;
+      } else if (subType < 0.65) {
         const startHour = Math.floor(Math.random() * 4) + 1;
         const startMin = 30;
         const durHours = 1;
@@ -554,12 +590,6 @@ export function generateTierProblem(targetTier) {
         operatorSymbol = '⏰';
         displayString = `Hike started at ${startHour}:${startMin} PM. Duration: 1 hr ${durMins} mins. End time?`;
         hint = 'Hint: Add hours first, then add minutes!';
-      } else if (subType < 0.6) {
-        num1 = Math.floor(Math.random() * 40) + 20;
-        num2 = Math.floor(Math.random() * 40) + 15;
-        answer = num1 + num2;
-        operatorSymbol = '+';
-        displayString = `${num1} ${operatorSymbol} ${num2}`;
       } else {
         num1 = Math.floor(Math.random() * 50) + 40;
         num2 = Math.floor(Math.random() * 30) + 10;
@@ -571,7 +601,53 @@ export function generateTierProblem(targetTier) {
     }
     case 7: {
       const subType = Math.random();
-      if (subType < 0.35) {
+      if (subType < 0.30) {
+        // Fraction Addition & Subtraction
+        const den = [4, 5, 6, 8, 10][Math.floor(Math.random() * 5)];
+        const n1 = Math.floor(Math.random() * (den - 2)) + 1;
+        const n2 = Math.floor(Math.random() * (den - n1 - 1)) + 1;
+        const isAdd = Math.random() > 0.5;
+
+        let ansFrac;
+        if (isAdd) {
+          const numSum = n1 + n2;
+          const g = gcd(numSum, den);
+          const simpN = numSum / g;
+          const simpD = den / g;
+          ansFrac = simpD === 1 ? `${simpN}` : `${simpN}/${simpD}`;
+          num1 = `${n1}/${den}`;
+          num2 = `${n2}/${den}`;
+          operatorSymbol = '+';
+          displayString = `${n1}/${den} + ${n2}/${den}`;
+          hint = `Hint: Keep the denominator (${den}) and add the numerators!`;
+        } else {
+          const nBig = Math.max(n1 + 1, n2 + 1);
+          const nSmall = Math.min(n1, n2);
+          const numDiff = nBig - nSmall;
+          const g = gcd(numDiff, den);
+          const simpN = numDiff / g;
+          const simpD = den / g;
+          ansFrac = simpD === 1 ? `${simpN}` : `${simpN}/${simpD}`;
+          num1 = `${nBig}/${den}`;
+          num2 = `${nSmall}/${den}`;
+          operatorSymbol = '−';
+          displayString = `${nBig}/${den} − ${nSmall}/${den}`;
+          hint = `Hint: Keep the denominator (${den}) and subtract the numerators!`;
+        }
+
+        return {
+          tier: effectiveTier,
+          num1,
+          num2,
+          operatorSymbol,
+          answer: ansFrac,
+          answerString: ansFrac,
+          displayString,
+          type: 'fraction',
+          requiresFraction: true,
+          hint
+        };
+      } else if (subType < 0.55) {
         const pairs = [
           [4, 6], [3, 5], [6, 8], [4, 10], [5, 10], [6, 9], [8, 12]
         ];
@@ -582,7 +658,7 @@ export function generateTierProblem(targetTier) {
         operatorSymbol = 'LCM';
         displayString = `Find LCM(${num1}, ${num2})`;
         hint = `Hint: Skip count by ${Math.max(num1, num2)} until ${Math.min(num1, num2)} divides evenly!`;
-      } else if (subType < 0.7) {
+      } else if (subType < 0.80) {
         const gcfPairs = [
           [12, 18], [16, 24], [20, 30], [15, 25], [14, 21], [18, 27]
         ];
