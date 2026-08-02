@@ -149,10 +149,7 @@ export default function ParentDashboardModal({
         <div className="flex items-center gap-2 text-slate-800">
           <ShieldCheck className="w-6 h-6 text-purple-600 stroke-[2.5]" />
           <div>
-            <h2 className="text-base sm:text-lg font-black tracking-tight">Parent Dashboard</h2>
-            <span className="text-[9px] font-bold font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 inline-block">
-              🟢 Live Auto-Synced
-            </span>
+            <h2 className="text-base sm:text-lg font-black tracking-tight leading-tight">Parent Dashboard</h2>
           </div>
         </div>
       </header>
