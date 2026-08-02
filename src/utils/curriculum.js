@@ -472,13 +472,55 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
       break;
     }
     case 4: {
-      const tables = [3, 4, 6, 7, 8, 9, 11, 12];
-      num1 = tables[Math.floor(Math.random() * tables.length)];
-      num2 = Math.floor(Math.random() * 9) + 1;
-      answer = num1 * num2;
-      operatorSymbol = '×';
-      displayString = `${num1} ${operatorSymbol} ${num2}`;
-      break;
+      const type = Math.random();
+      if (type < 0.50) {
+        // Intermediate: Comparing Fractions
+        const pairs = [
+          { f1: '3/4', f2: '5/8', larger: '3/4' },
+          { f1: '1/2', f2: '3/8', larger: '1/2' },
+          { f1: '2/3', f2: '3/5', larger: '2/3' },
+          { f1: '4/5', f2: '7/10', larger: '4/5' },
+          { f1: '5/6', f2: '3/4', larger: '5/6' }
+        ];
+        const p = pairs[Math.floor(Math.random() * pairs.length)];
+        return {
+          tier: effectiveTier,
+          num1: p.f1,
+          num2: p.f2,
+          operatorSymbol: '>',
+          answer: p.larger,
+          answerString: p.larger,
+          displayString: `Which is larger: ${p.f1} or ${p.f2}?`,
+          type: 'fraction',
+          requiresFraction: true,
+          hint: `Hint: Compare fractions by finding a common denominator!`
+        };
+      } else {
+        // Intermediate: Simplifying Fractions
+        const unreducedList = [
+          [2, 4], [3, 6], [4, 8], [6, 8], [4, 10], [6, 9], [8, 12], [10, 15]
+        ];
+        const frac = unreducedList[Math.floor(Math.random() * unreducedList.length)];
+        const n = frac[0];
+        const d = frac[1];
+        const g = gcd(n, d);
+        const simpN = n / g;
+        const simpD = d / g;
+        const ansStr = simpD === 1 ? `${simpN}` : `${simpN}/${simpD}`;
+
+        return {
+          tier: effectiveTier,
+          num1: n,
+          num2: d,
+          operatorSymbol: '⚡',
+          answer: ansStr,
+          answerString: ansStr,
+          displayString: `Reduce ${n}/${d} to lowest terms`,
+          type: 'fraction',
+          requiresFraction: true,
+          hint: `Hint: Divide top and bottom by their GCF (${g})!`
+        };
+      }
     }
     case 5: {
       const type = Math.random();
@@ -557,11 +599,10 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
           hint: 'Hint: Align the decimal points and compute!'
         };
       } else {
-        const divisors = [2, 3, 5, 10];
-        const divisor = divisors[Math.floor(Math.random() * divisors.length)];
-        const mult = Math.floor(Math.random() * 30) + 10;
+        const divisor = [2, 3, 5, 9, 10][Math.floor(Math.random() * 5)];
+        const mult = Math.floor(Math.random() * 40) + 10;
         const isDivisible = Math.random() > 0.3;
-        num1 = isDivisible ? divisor * mult : divisor * mult + (Math.floor(Math.random() * (divisor - 1)) + 1);
+        num1 = isDivisible ? divisor * mult : divisor * mult + 1;
         num2 = divisor;
         answer = isDivisible ? 'Yes' : 'No';
         operatorSymbol = '÷';
@@ -572,46 +613,66 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
       break;
     }
     case 6: {
+      // Advanced Phase: Applied Math (Percentages, Ratios & Basic Probability)
       const subType = Math.random();
       if (subType < 0.35) {
-        // Explicit Long Division
-        const divisors = [4, 6, 7, 8, 9, 12, 14, 15];
-        num2 = divisors[Math.floor(Math.random() * divisors.length)];
-        answer = Math.floor(Math.random() * 25) + 11;
-        num1 = num2 * answer;
-        operatorSymbol = '÷';
-        displayString = `${num1} ÷ ${num2}`;
-        hint = `Hint: Long division! How many times does ${num2} fit into ${num1}?`;
-      } else if (subType < 0.65) {
-        // Tier 5: Progressive Exact Minute Time Math with Hour Boundary Crossing
-        const startHour = Math.floor(Math.random() * 8) + 1;
-        const startMin = Math.floor(Math.random() * 45) + 10; // e.g. 38
-        const durHours = Math.floor(Math.random() * 2) + 1;  // 1-2 hrs
-        const durMins = Math.floor(Math.random() * 35) + 15;  // e.g. 27 mins
-        num1 = startHour;
-        num2 = durMins;
+        // Applied Math: Ratios
+        const r1 = [2, 3, 4][Math.floor(Math.random() * 3)];
+        const r2 = [3, 5, 7][Math.floor(Math.random() * 3)];
+        const mult = Math.floor(Math.random() * 4) + 2;
+        const given1 = r1 * mult;
+        const targetAns = r2 * mult;
 
-        const totalMinutes = startMin + durMins;
-        const extraHours = Math.floor(totalMinutes / 60);
-        const finalMin = totalMinutes % 60;
-        let endHourRaw = startHour + durHours + extraHours;
-        const isPM = endHourRaw >= 12;
-        const displayHour = endHourRaw > 12 ? endHourRaw - 12 : endHourRaw;
-        const minFormatted = finalMin < 10 ? `0${finalMin}` : `${finalMin}`;
+        return {
+          tier: effectiveTier,
+          num1: given1,
+          num2: targetAns,
+          operatorSymbol: ':',
+          answer: targetAns.toString(),
+          answerString: targetAns.toString(),
+          displayString: `Ratio ${r1}:${r2}. If there are ${given1} items, how many target?`,
+          type: 'applied',
+          hint: `Hint: Multiply ${r2} by the scale factor ${mult}!`
+        };
+      } else if (subType < 0.70) {
+        // Applied Math: Basic Probability
+        const red = Math.floor(Math.random() * 4) + 2;
+        const blue = Math.floor(Math.random() * 5) + 3;
+        const total = red + blue;
+        const g = gcd(blue, total);
+        const simpN = blue / g;
+        const simpD = total / g;
+        const ansStr = simpD === 1 ? `${simpN}` : `${simpN}/${simpD}`;
 
-        answer = `${displayHour}:${minFormatted} ${isPM ? 'PM' : 'AM'}`;
-        answerString = `${displayHour}:${minFormatted}`;
-        operatorSymbol = '⏰';
-        displayString = `Start: ${startHour}:${startMin < 10 ? '0' + startMin : startMin} PM (+${durHours} hr ${durMins} m). End time?`;
-        hint = 'Hint: Add hours first, then add minutes and adjust for 60 mins!';
+        return {
+          tier: effectiveTier,
+          num1: blue,
+          num2: total,
+          operatorSymbol: 'P',
+          answer: ansStr,
+          answerString: ansStr,
+          displayString: `Bag has ${red} red & ${blue} blue. Probability of blue?`,
+          type: 'fraction',
+          requiresFraction: true,
+          hint: `Hint: Blue marbles (${blue}) divided by total marbles (${total})!`
+        };
       } else {
-        num1 = Math.floor(Math.random() * 50) + 40;
-        num2 = Math.floor(Math.random() * 30) + 10;
-        answer = num1 - num2;
-        operatorSymbol = '−';
-        displayString = `${num1} ${operatorSymbol} ${num2}`;
+        // Applied Math: Percentages
+        const p = [10, 20, 25, 50][Math.floor(Math.random() * 4)];
+        const total = [40, 60, 80, 100, 200][Math.floor(Math.random() * 5)];
+        const ansVal = (p / 100) * total;
+        return {
+          tier: effectiveTier,
+          num1: p,
+          num2: total,
+          operatorSymbol: '%',
+          answer: ansVal.toString(),
+          answerString: ansVal.toString(),
+          displayString: `What is ${p}% of ${total}?`,
+          type: 'applied',
+          hint: `Hint: Multiply ${total} by ${p / 100}!`
+        };
       }
-      break;
     }
     case 7: {
       const subType = Math.random();
