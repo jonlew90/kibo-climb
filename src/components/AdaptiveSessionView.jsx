@@ -445,6 +445,7 @@ export default function AdaptiveSessionView({
     const normTargetAns = normalizeTimeAnswer(normalizeDecimal(targetStr));
     const userNum = Number(normalizeDecimal(newInput));
     const targetNum = Number(normalizeDecimal(targetStr));
+    const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
     const isMoneyMatch =
       isMoneyQuestion &&
       !isNaN(userNum) &&
