@@ -1190,35 +1190,32 @@ export default function App() {
     <div className="app-viewport-root p-2 sm:p-4 safe-pt safe-pb max-w-lg mx-auto relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
       {/* Sticky Top HUD Header Bar */}
       {appState !== 'sprint' && (
-        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2.5 py-2 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0">
+        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1 overflow-x-hidden">
           {/* Brand Logo & Stats */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 overflow-hidden">
             <button
               onClick={() => setAppState('adaptive_session')}
-              className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-transform"
+              className="flex items-center gap-1 hover:scale-105 active:scale-95 transition-transform shrink-0"
               title="Kibo Climb Main Session"
             >
               <img
                 src="/logo.png"
                 alt="Kibo Climb"
-                className="w-8 h-8 sm:w-9 sm:h-9 object-contain filter drop-shadow-xs"
+                className="w-7 h-7 sm:w-8 sm:h-8 object-contain filter drop-shadow-xs"
               />
-              <span className="font-black text-slate-800 text-base sm:text-lg tracking-tight hidden xs:inline">
-                Kibo<span className="text-kibo-teal">Climb</span>
-              </span>
             </button>
 
             {/* Streak Badge */}
-            <div className="flex items-center gap-1 bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-full text-xs font-black shadow-xs">
-              <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
+            <div className="flex items-center gap-0.5 bg-amber-50 text-amber-900 border border-amber-200 px-1.5 py-0.5 rounded-full text-[11px] font-black shadow-2xs shrink-0">
+              <Flame className="w-3 h-3 text-amber-500 fill-amber-400" />
               <span>{streak}d</span>
             </div>
 
             {/* Sparks Counter */}
-            <div className="flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-full text-xs font-black shadow-xs relative">
+            <div className="flex items-center gap-0.5 bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full text-[11px] font-black shadow-2xs relative shrink-0">
               <RollingNumberTicker
                 value={sparks}
-                icon={<Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400 stroke-[2.5]" />}
+                icon={<Zap className="w-3 h-3 text-amber-500 fill-amber-400 stroke-[2.5]" />}
               />
             </div>
 
@@ -1233,27 +1230,26 @@ export default function App() {
                     soundFx.playKeyTap();
                     setShowBadgesModal(true);
                   }}
-                  className="flex items-center gap-1 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 px-2 py-0.5 rounded-full text-xs font-black shadow-xs transition-all active:scale-95 shrink-0"
+                  className="flex items-center gap-1 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 px-2 py-0.5 rounded-full text-[11px] font-black shadow-2xs transition-all active:scale-95 shrink-0"
                   title={`Competence Rank: ${activeRating} pts (${rankTitle})`}
                 >
-                  <Trophy className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
-                  <span className="hidden sm:inline">{rankTitle}</span>
-                  <span className="text-[10px] text-purple-700 bg-purple-200/70 px-1.5 py-0.2 rounded-full font-extrabold">{activeRating}</span>
+                  <Trophy className="w-3 h-3 text-purple-600 stroke-[2.5]" />
+                  <span className="text-[10px] text-purple-800 font-extrabold">{activeRating}</span>
                 </button>
               );
             })()}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => handleOpenWorkshop()}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-kibo-orange hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs px-2.5 py-1.5 rounded-xl shadow-sm transition-all active:scale-95 shrink-0"
+              className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-kibo-orange hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs px-2 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 shrink-0"
               aria-label="Open Kibo Workshop"
               title="Open Kibo Workshop & Gear"
             >
-              <ShoppingBag className="w-4 h-4 text-white stroke-[2.5]" />
-              <span className="inline">Workshop</span>
+              <ShoppingBag className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+              <span className="hidden sm:inline">Shop</span>
             </button>
 
             <button
@@ -1261,27 +1257,27 @@ export default function App() {
                 soundFx.playKeyTap();
                 setShowBadgesModal(true);
               }}
-              className="px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl text-amber-900 font-extrabold text-xs active:scale-95 transition-all shadow-xs flex items-center gap-1.5"
+              className="px-2 py-1.5 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl text-amber-900 font-extrabold text-xs active:scale-95 transition-all shadow-2xs flex items-center gap-1 shrink-0"
               title="View Trophies & Records"
             >
-              <Award className="w-4 h-4 text-amber-700 stroke-[2.5]" />
-              <span>{unlockedBadges.length}/{BADGES_CATALOG.length}</span>
+              <Award className="w-3.5 h-3.5 text-amber-700 stroke-[2.5]" />
+              <span className="text-[10px]">{unlockedBadges.length}</span>
             </button>
 
             <button
               onClick={() => setShowPinGateModal(true)}
-              className="p-1.5 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl text-purple-700 active:scale-95 transition-all shadow-xs"
+              className="p-1.5 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl text-purple-700 active:scale-95 transition-all shadow-2xs shrink-0"
               title="Parent Zone (PIN Protected)"
             >
-              <Lock className="w-4 h-4 stroke-[2.5]" />
+              <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
             </button>
 
             <button
               onClick={toggleAudio}
-              className="p-1.5 bg-white rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 active:scale-95 transition-all shadow-xs"
+              className="p-1.5 bg-white rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 active:scale-95 transition-all shadow-2xs shrink-0"
               aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
             >
-              {isMuted ? <VolumeX className="w-4 h-4 text-rose-500" /> : <Volume2 className="w-4 h-4 text-kibo-teal" />}
+              {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-500" /> : <Volume2 className="w-3.5 h-3.5 text-kibo-teal" />}
             </button>
           </div>
         </header>
