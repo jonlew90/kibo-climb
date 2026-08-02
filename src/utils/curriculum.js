@@ -506,7 +506,7 @@ export function generateTierProblem(targetTier) {
         }
 
         return {
-          tier: tierLevel,
+          tier: effectiveTier,
           num1: numA,
           num2: numB,
           operatorSymbol: '🪙',
