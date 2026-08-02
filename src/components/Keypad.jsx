@@ -62,6 +62,13 @@ export default function Keypad({
     );
   }
 
+  const isTimeQuestion = Boolean(
+    (problemType && problemType.includes('time')) ||
+    (answerString && answerString.includes(':')) ||
+    (displayString && (displayString.includes(':') || displayString.includes('time') || displayString.includes('Time'))) ||
+    operatorSymbol === '⏰'
+  );
+
   const isFractionQuestion = Boolean(
     (problemType && (problemType.includes('fraction') || problemType.includes('rational'))) ||
     (answerString && answerString.includes('/')) ||
