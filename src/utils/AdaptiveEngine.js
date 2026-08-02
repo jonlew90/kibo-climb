@@ -5,7 +5,10 @@ import { getKFactor, getProbeTargetTier } from './SkillTreeConfig.js';
  * - Triggered during Provisional Phase (totalProblemsSolved < 15) when consecutive correct answers >= 3.
  */
 export function shouldTriggerProbeQuestion({ totalProblemsSolved = 0, inSessionStreak = 0 }) {
-  return totalProblemsSolved < 15 && inSessionStreak >= 3;
+  if (totalProblemsSolved < 15) {
+    return inSessionStreak >= 3;
+  }
+  return inSessionStreak >= 4 && inSessionStreak % 4 === 0;
 }
 
 /**
@@ -114,7 +117,18 @@ export function evaluateAdaptiveAttempt({
     }
   } else if (isCorrect) {
     const rawGain = Math.round(kFactor * 0.5);
-    rankDelta = Math.max(1, Math.round(rawGain * difficultyGainFactor));
+    // Dynamic Streak & Fluency Acceleration: 100% accuracy streaks boost rating velocity
+    let streakMultiplier = 1.0;
+    if (nextInSessionStreak >= 5) {
+      streakMultiplier = 2.0;
+    } else if (nextInSessionStreak >= 3) {
+      streakMultiplier = 1.5;
+    }
+    if (isFluent) {
+      streakMultiplier *= 1.25;
+    }
+
+    rankDelta = Math.max(1, Math.round(rawGain * difficultyGainFactor * streakMultiplier));
   } else {
     rankDelta = Math.round(-kFactor * 0.35);
   }
