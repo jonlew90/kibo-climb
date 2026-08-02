@@ -129,24 +129,6 @@ export default function ParentDashboardModal({
     setConfirmPinInput('');
   };
 
-  const [lastRefreshedAt, setLastRefreshedAt] = useState(() => new Date().toLocaleTimeString());
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefresh = () => {
-    soundFx.playKeyTap();
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setLastRefreshedAt(new Date().toLocaleTimeString());
-      setIsRefreshing(false);
-    }, 400);
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      setLastRefreshedAt(new Date().toLocaleTimeString());
-    }
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   return (
@@ -168,22 +150,11 @@ export default function ParentDashboardModal({
           <ShieldCheck className="w-6 h-6 text-purple-600 stroke-[2.5]" />
           <div>
             <h2 className="text-base sm:text-lg font-black tracking-tight">Parent Dashboard</h2>
-            <span className="text-[9px] font-bold text-slate-400 block hidden sm:block">
-              Synced: {lastRefreshedAt}
+            <span className="text-[9px] font-bold font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 inline-block">
+              🟢 Live Auto-Synced
             </span>
           </div>
         </div>
-
-        <button
-          onClick={handleRefresh}
-          className={`flex items-center gap-1 text-xs font-black text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-xl border border-purple-200 shadow-xs transition-all active:scale-95 ${
-            isRefreshing ? 'animate-spin opacity-50' : ''
-          }`}
-          title="Force Refresh Data"
-        >
-          <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>Refresh</span>
-        </button>
       </header>
 
       {/* TAB SELECTOR HEADER */}
