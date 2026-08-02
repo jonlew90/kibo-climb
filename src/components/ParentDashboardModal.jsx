@@ -243,6 +243,79 @@ export default function ParentDashboardModal({
               </div>
             </section>
 
+            {/* DEDICATED STRUGGLE & REVIEW ALERTS CARD */}
+            {(() => {
+              const queueItems = practiceQueue || [];
+              const activeUserData = liveUserData || storageService.getUserData();
+              const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
+              const currentMathTier = Math.min(8, Math.max(1, Math.floor((actualRating - 900) / 100) + 1));
+              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating, activeUserData.ratingHistory || []);
+              
+              const struggleStrands = Object.entries(adaptiveProfile.skillStrandBreakdown || {})
+                .filter(([_, data]) => data.status === 'Needs Review' || (data.challengedFacts && data.challengedFacts.length > 0));
+
+              const totalAlertCount = queueItems.length + struggleStrands.length;
+
+              return (
+                <section className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100/60 rounded-2xl p-4 border-2 border-amber-300 text-left space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-amber-200/80 pb-2">
+                    <div className="flex items-center gap-2 text-amber-900">
+                      <AlertCircle className="w-5 h-5 text-amber-600 stroke-[2.5]" />
+                      <h4 className="font-black text-sm text-slate-800 tracking-tight">Active Review & Struggle Alerts</h4>
+                    </div>
+                    <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
+                      totalAlertCount > 0
+                        ? 'bg-amber-200 text-amber-950 border-amber-400'
+                        : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                    }`}>
+                      {totalAlertCount > 0 ? `🚨 ${totalAlertCount} Alert${totalAlertCount > 1 ? 's' : ''}` : '✅ Zero Active Struggles'}
+                    </span>
+                  </div>
+
+                  {totalAlertCount === 0 ? (
+                    <div className="p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-semibold flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 stroke-[2.5]" />
+                      <span>All math strands are on track! No struggle alerts reported during recent climbs.</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {struggleStrands.map(([strandName, data]) => (
+                        <div key={strandName} className="p-2.5 bg-white border border-amber-200 rounded-xl text-xs space-y-1 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
+                              <span>{data.icon}</span> {strandName} Focus Area
+                            </span>
+                            <span className="text-[9px] font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                              {data.accuracy}% Accuracy
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-600 font-medium">
+                            Target Facts: <strong className="font-mono text-slate-900">{data.challengedFacts?.join(', ') || 'Recent missed problems'}</strong>
+                          </p>
+                        </div>
+                      ))}
+
+                      {queueItems.length > 0 && struggleStrands.length === 0 && (
+                        <div className="p-2.5 bg-white border border-amber-200 rounded-xl text-xs space-y-1 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
+                              🎯 Re-queued Practice Items
+                            </span>
+                            <span className="text-[9px] font-extrabold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                              {queueItems.length} queued
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-600 font-medium leading-snug">
+                            {queueItems.length} specific problem{queueItems.length > 1 ? 's are' : ' is'} automatically queued into future daily climb blocks for reinforced memory practice.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </section>
+              );
+            })()}
+
             {/* ADAPTIVE COMPETENCE SNAPSHOT & TOPIC MASTERY */}
             {(() => {
               const activeUserData = liveUserData || storageService.getUserData();
