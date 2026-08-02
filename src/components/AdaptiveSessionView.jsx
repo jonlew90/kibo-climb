@@ -54,6 +54,7 @@ export default function AdaptiveSessionView({
   onIncrementLifetimeProblems,
   onUpdatePersonalRecords,
   onUnlockedBadgesChange,
+  onUpdateCompetenceRating,
   userTier = 1,
   totalProblemsSolved = 0,
   isFTUX = false,
