@@ -583,19 +583,27 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
         displayString = `${num1} ÷ ${num2}`;
         hint = `Hint: Long division! How many times does ${num2} fit into ${num1}?`;
       } else if (subType < 0.65) {
-        const startHour = Math.floor(Math.random() * 4) + 1;
-        const startMin = 30;
-        const durHours = 1;
-        const durMins = [15, 30, 45][Math.floor(Math.random() * 3)];
+        // Tier 5: Progressive Exact Minute Time Math with Hour Boundary Crossing
+        const startHour = Math.floor(Math.random() * 8) + 1;
+        const startMin = Math.floor(Math.random() * 45) + 10; // e.g. 38
+        const durHours = Math.floor(Math.random() * 2) + 1;  // 1-2 hrs
+        const durMins = Math.floor(Math.random() * 35) + 15;  // e.g. 27 mins
         num1 = startHour;
         num2 = durMins;
-        const endMinTotal = startMin + durMins;
-        const endHour = startHour + durHours + Math.floor(endMinTotal / 60);
-        const finalMin = endMinTotal % 60;
-        answer = `${endHour}:${finalMin === 0 ? '00' : finalMin} PM`;
+
+        const totalMinutes = startMin + durMins;
+        const extraHours = Math.floor(totalMinutes / 60);
+        const finalMin = totalMinutes % 60;
+        let endHourRaw = startHour + durHours + extraHours;
+        const isPM = endHourRaw >= 12;
+        const displayHour = endHourRaw > 12 ? endHourRaw - 12 : endHourRaw;
+        const minFormatted = finalMin < 10 ? `0${finalMin}` : `${finalMin}`;
+
+        answer = `${displayHour}:${minFormatted} ${isPM ? 'PM' : 'AM'}`;
+        answerString = `${displayHour}:${minFormatted}`;
         operatorSymbol = '⏰';
-        displayString = `Start: ${startHour}:${startMin} PM (+1 hr ${durMins} m). End time?`;
-        hint = 'Hint: Add hours first, then add minutes!';
+        displayString = `Start: ${startHour}:${startMin < 10 ? '0' + startMin : startMin} PM (+${durHours} hr ${durMins} m). End time?`;
+        hint = 'Hint: Add hours first, then add minutes and adjust for 60 mins!';
       } else {
         num1 = Math.floor(Math.random() * 50) + 40;
         num2 = Math.floor(Math.random() * 30) + 10;
