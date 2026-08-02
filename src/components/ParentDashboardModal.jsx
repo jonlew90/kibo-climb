@@ -264,7 +264,7 @@ export default function ParentDashboardModal({
                       <div className="bg-white/90 p-2.5 rounded-xl border border-sky-100 shadow-2xs">
                         <span className="text-[9px] font-black uppercase text-slate-500 block">Avg Session Length</span>
                         <span className="text-base font-black text-teal-900">{formatLearningTime(avgSessionSec)}</span>
-                        <span className="text-[9px] text-teal-700 font-bold block">The 3-Minute Daily Ascent 🎯</span>
+                        <span className="text-[9px] text-teal-700 font-bold block">Bite-Sized Ascents (~3 Mins) 🎯</span>
                       </div>
                     </div>
                     <p className="text-[10px] font-medium text-slate-600 italic leading-tight pt-0.5">
