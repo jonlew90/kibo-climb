@@ -49,6 +49,16 @@ export default function ParentDashboardModal({
   const [pinErrorMsg, setPinErrorMsg] = useState('');
 
   const [liveUserData, setLiveUserData] = useState(() => storageService.getUserData());
+  const [dismissedAlerts, setDismissedAlerts] = useState(() => {
+    return storageService.getUserData().dismissedAlerts || [];
+  });
+
+  const handleDismissAlert = (alertId) => {
+    soundFx.playKeyTap();
+    const updated = [...dismissedAlerts, alertId];
+    setDismissedAlerts(updated);
+    storageService.saveUserData({ dismissedAlerts: updated });
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -304,16 +314,20 @@ export default function ParentDashboardModal({
 
             {/* DEDICATED STRUGGLE & REVIEW ALERTS CARD */}
             {(() => {
-              const queueItems = practiceQueue || [];
               const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = Math.min(8, Math.max(1, Math.floor((actualRating - 900) / 100) + 1));
               const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating, activeUserData.ratingHistory || []);
               
               const struggleStrands = Object.entries(adaptiveProfile.skillStrandBreakdown || {})
-                .filter(([_, data]) => data.status === 'Needs Review' || (data.challengedFacts && data.challengedFacts.length > 0));
+                .filter(([strandName, data]) => {
+                  const alertId = `strand_${strandName}`;
+                  if (dismissedAlerts.includes(alertId)) return false;
+                  return data.status === 'Needs Review' || (data.challengedFacts && data.challengedFacts.length > 0);
+                });
 
-              const totalAlertCount = queueItems.length + struggleStrands.length;
+              const activeQueueItems = (practiceQueue || []).filter((_, idx) => !dismissedAlerts.includes(`queue_${idx}`));
+              const totalAlertCount = activeQueueItems.length + struggleStrands.length;
 
               return (
                 <section className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100/60 rounded-2xl p-4 border-2 border-amber-300 text-left space-y-3 shadow-xs">
@@ -334,7 +348,7 @@ export default function ParentDashboardModal({
                   {totalAlertCount === 0 ? (
                     <div className="p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-semibold flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 stroke-[2.5]" />
-                      <span>All math strands are on track! No struggle alerts reported during recent climbs.</span>
+                      <span>All math strands are on track! No unhandled struggle alerts reported.</span>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -348,24 +362,44 @@ export default function ParentDashboardModal({
                               {data.accuracy}% Accuracy
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-600 font-medium">
-                            Target Facts: <strong className="font-mono text-slate-900">{data.challengedFacts?.join(', ') || 'Recent missed problems'}</strong>
-                          </p>
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-100 gap-2">
+                            <p className="text-[11px] text-slate-600 font-medium leading-tight">
+                              Target Facts: <strong className="font-mono text-slate-900">{data.challengedFacts?.join(', ') || 'Recent missed problems'}</strong>
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => handleDismissAlert(`strand_${strandName}`)}
+                              className="text-[10px] font-extrabold text-amber-900 hover:text-amber-950 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-lg border border-amber-300 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                              title="Mark alert as reviewed and dismiss"
+                            >
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600 stroke-[3]" /> Dismiss
+                            </button>
+                          </div>
                         </div>
                       ))}
 
-                      {queueItems.length > 0 && struggleStrands.length === 0 && (
+                      {activeQueueItems.length > 0 && struggleStrands.length === 0 && (
                         <div className="p-2.5 bg-white border border-amber-200 rounded-xl text-xs space-y-1 shadow-2xs">
                           <div className="flex items-center justify-between">
                             <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
                               🎯 Re-queued Practice Items
                             </span>
-                            <span className="text-[9px] font-extrabold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
-                              {queueItems.length} queued
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[9px] font-extrabold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                                {activeQueueItems.length} queued
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleDismissAlert(`queue_0`)}
+                                className="text-[10px] font-extrabold text-amber-900 hover:text-amber-950 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-lg border border-amber-300 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                                title="Dismiss practice queue alert"
+                              >
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600 stroke-[3]" /> Dismiss
+                              </button>
+                            </div>
                           </div>
                           <p className="text-[11px] text-slate-600 font-medium leading-snug">
-                            {queueItems.length} specific problem{queueItems.length > 1 ? 's are' : ' is'} automatically queued into future daily climb blocks for reinforced memory practice.
+                            {activeQueueItems.length} specific problem{activeQueueItems.length > 1 ? 's are' : ' is'} automatically queued into future daily climb blocks for reinforced memory practice.
                           </p>
                         </div>
                       )}
