@@ -630,7 +630,7 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
           operatorSymbol: ':',
           answer: targetAns.toString(),
           answerString: targetAns.toString(),
-          displayString: `Ratio ${r1}:${r2}. If A = ${given1}, what is B?`,
+          displayString: `${r1} is to ${r2} as ${given1} is to ?`,
           type: 'applied',
           hint: `Hint: Multiply ${r2} by the scale factor ${mult}!`
         };
