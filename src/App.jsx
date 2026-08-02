@@ -28,6 +28,7 @@ import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
 import { pluralize, normalizeTimeAnswer } from './utils/formatters';
 import { storageService } from './services/storageService';
+import { getCompetenceRankTier } from './utils/GameEconomyModel';
 
 export default function App() {
   // App State: 'adaptive_session' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
@@ -1220,6 +1221,27 @@ export default function App() {
                 icon={<Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400 stroke-[2.5]" />}
               />
             </div>
+
+            {/* Always-Visible Competence Rank Badge */}
+            {(() => {
+              const uData = storageService.getUserData();
+              const activeRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
+              const rankTitle = getCompetenceRankTier(activeRating);
+              return (
+                <button
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setShowBadgesModal(true);
+                  }}
+                  className="flex items-center gap-1 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 px-2 py-0.5 rounded-full text-xs font-black shadow-xs transition-all active:scale-95 shrink-0"
+                  title={`Competence Rank: ${activeRating} pts (${rankTitle})`}
+                >
+                  <Trophy className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
+                  <span className="hidden sm:inline">{rankTitle}</span>
+                  <span className="text-[10px] text-purple-700 bg-purple-200/70 px-1.5 py-0.2 rounded-full font-extrabold">{activeRating}</span>
+                </button>
+              );
+            })()}
           </div>
 
           {/* Action Buttons */}
