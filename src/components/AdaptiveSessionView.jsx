@@ -203,7 +203,8 @@ export default function AdaptiveSessionView({
       inSessionStreak,
       inSessionIncorrectStreak,
       totalProblemsSolved,
-      isProbeQuestion: !!currentProblem.isProbe
+      isProbeQuestion: !!currentProblem.isProbe,
+      problemTier: currentProblem.tier || getTierFromRating(competenceRank)
     });
 
     // Update streak states
@@ -285,7 +286,9 @@ export default function AdaptiveSessionView({
       ...activeUserData,
       inSessionStreak: evalResult.nextInSessionStreak,
       competenceRank: evalResult.nextCompetenceRank,
-      blockRatingGain: nextBlockRatingGain
+      blockRatingGain: nextBlockRatingGain,
+      lastProblemType: currentProblem.type,
+      lastProblemTier: currentProblem.tier || getTierFromRating(evalResult.nextCompetenceRank)
     });
 
     if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {

@@ -21,6 +21,20 @@ export function shouldTriggerProbeQuestion({ totalProblemsSolved = 0, inSessionS
  * @param {Object} params
  * @returns {Object} Evaluation results
  */
+export function getTierTargetRating(tier = 1) {
+  const targets = {
+    1: 300,   // Tier 1 (100–499)
+    2: 625,   // Tier 2 (500–749)
+    3: 875,   // Tier 3 (750–999)
+    4: 1125,  // Tier 4 (1000–1249)
+    5: 1375,  // Tier 5 (1250–1499)
+    6: 1625,  // Tier 6 (1500–1749)
+    7: 1875,  // Tier 7 (1750–1999)
+    8: 2200   // Tier 8 (2000+)
+  };
+  return targets[tier] || 1000;
+}
+
 export function evaluateAdaptiveAttempt({
   isCorrect,
   latencyMs = 0,
@@ -28,7 +42,8 @@ export function evaluateAdaptiveAttempt({
   inSessionStreak = 0,
   inSessionIncorrectStreak = 0,
   totalProblemsSolved = 0,
-  isProbeQuestion = false
+  isProbeQuestion = false,
+  problemTier = 1
 }) {
   const responseTimeSec = latencyMs / 1000;
 
@@ -74,7 +89,16 @@ export function evaluateAdaptiveAttempt({
 
   const totalSparksEarned = Math.round(baseSparks * multiplier) + bonusSparks;
 
-  // 6. Competence Rank delta (Driven 100% strictly by correctness + dynamic K-Factor)
+  // 6. Difficulty Scaling: prevent climbing to high ranks by grinding basic addition
+  const problemTierTarget = getTierTargetRating(problemTier || 1);
+  const ratingDeltaTier = currentCompetenceRank - problemTierTarget;
+
+  let difficultyGainFactor = 1.0;
+  if (ratingDeltaTier > 250) {
+    difficultyGainFactor = Math.max(0.02, 1 / (1 + Math.pow(10, ratingDeltaTier / 400)));
+  }
+
+  // 7. Competence Rank delta
   let rankDelta = 0;
 
   if (isOutlierGuess && !isCorrect) {
@@ -89,10 +113,9 @@ export function evaluateAdaptiveAttempt({
       rankDelta = -10;
     }
   } else if (isCorrect) {
-    // Standard gain scaled by K-Factor (e.g. +30 for Provisional K=60, +16 for Calibration K=32, +8 for Established K=16)
-    rankDelta = Math.round(kFactor * 0.5);
+    const rawGain = Math.round(kFactor * 0.5);
+    rankDelta = Math.max(1, Math.round(rawGain * difficultyGainFactor));
   } else {
-    // Standard loss scaled by K-Factor (e.g. -21 for Provisional, -11 for Calibration, -5 for Established)
     rankDelta = Math.round(-kFactor * 0.35);
   }
 

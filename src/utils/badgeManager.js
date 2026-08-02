@@ -82,21 +82,31 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         }
         break;
 
-      // DOMAIN MASTERY BADGES
+      // DOMAIN MASTERY BADGES (Requires both Rating threshold AND actual problem solving in that domain)
       case 'master_addition':
-        if (!isCalibrating) unlocked = currentRating >= 1000;
+        if (!isCalibrating) {
+          unlocked = currentRating >= 1000 && (userState.lastProblemTier === 1 || userState.lastProblemTier === 2 || userState.lastProblemType === 'addition');
+        }
         break;
       case 'master_multiplication':
-        if (!isCalibrating) unlocked = currentRating >= 1200;
+        if (!isCalibrating) {
+          unlocked = currentRating >= 1200 && (userState.lastProblemTier === 3 || userState.lastProblemTier === 4 || userState.lastProblemType === 'multiplication');
+        }
         break;
       case 'master_time_money':
-        if (!isCalibrating) unlocked = currentRating >= 1800;
+        if (!isCalibrating) {
+          unlocked = currentRating >= 1800 && (userState.lastProblemTier === 5 || ['money', 'time'].includes(userState.lastProblemType));
+        }
         break;
       case 'master_fractions':
-        if (!isCalibrating) unlocked = currentRating >= 2200;
+        if (!isCalibrating) {
+          unlocked = currentRating >= 2200 && (userState.lastProblemTier === 7 || ['fraction', 'rational'].includes(userState.lastProblemType));
+        }
         break;
       case 'master_prealgebra':
-        if (!isCalibrating) unlocked = currentRating >= 2400;
+        if (!isCalibrating) {
+          unlocked = currentRating >= 2400 && (userState.lastProblemTier === 8 || ['prealgebra', 'signed', 'exponent'].includes(userState.lastProblemType));
+        }
         break;
 
       // WORKSHOP & SHOPPING BADGES
