@@ -1320,7 +1320,11 @@ export default function App() {
       <FirstLaunchOnboardingModal
         isOpen={showFirstLaunchOnboardingModal}
         equippedItems={equippedItems}
-        onOpenParentZone={() => setShowPinGateModal(true)}
+        onOpenParentZone={() => {
+          setShowFirstLaunchOnboardingModal(false);
+          localStorage.setItem('kibo_math_has_onboarded', 'true');
+          setShowPinGateModal(true);
+        }}
         onStartAdaptiveClimb={() => {
           setShowFirstLaunchOnboardingModal(false);
           setAppState('adaptive_session');
