@@ -644,7 +644,7 @@ export default function AdaptiveSessionView({
       </div>
 
       {/* MASCOT & PROBLEM CARD CONTAINER */}
-      <div className="w-full flex-1 flex flex-col items-center justify-center space-y-4 my-auto">
+      <div className="w-full flex-1 flex flex-col items-center justify-center space-y-2 sm:space-y-3 my-auto">
         {/* Animated Kibo Avatar */}
         <div
           onClick={onOpenWorkshop}
@@ -652,13 +652,13 @@ export default function AdaptiveSessionView({
           title="Tap Kibo to customize in Workshop!"
         >
           <div className="flex justify-center my-0.5 shrink-0">
-            <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-16 h-16 sm:w-24 sm:h-24 mascot-compact-auto filter drop-shadow-lg" />
+            <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-12 h-12 sm:w-16 sm:h-16 mascot-compact-auto filter drop-shadow-md" />
           </div>
         </div>
 
         {/* FRUSTRATION CIRCUIT BREAKER SUPPORT CARD */}
         {showFrustrationCard && (
-          <div className="w-full bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3 text-center space-y-1 animate-pop">
+          <div className="w-full bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-2.5 text-center space-y-0.5 animate-pop">
             <p className="text-xs font-black text-indigo-900">
               💪 Don't give up! Kibo is right here with you. Take your time!
             </p>
@@ -676,7 +676,7 @@ export default function AdaptiveSessionView({
 
           return (
             <div
-              className={`w-full bg-white border-4 rounded-3xl p-3 sm:p-4 text-center transition-all duration-500 space-y-2 relative ${
+              className={`w-full bg-white border-4 rounded-3xl p-2.5 sm:p-3.5 text-center transition-all duration-500 space-y-1.5 relative ${
                 streakCfg.cardGlow
               } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''}`}
             >
@@ -775,28 +775,31 @@ export default function AdaptiveSessionView({
                 })()}
               </div>
 
-          <div className="text-3xl sm:text-4xl font-extrabold text-slate-800 flex items-center justify-center gap-3 flex-wrap my-1">
-            {(() => {
-              const rawDisplay = currentProblem.displayString || `${currentProblem.num1} ${currentProblem.operatorSymbol} ${currentProblem.num2}`;
-              const cleanDisplay = rawDisplay.replace(/\s*=\s*\?\s*¢?/gi, '').replace(/\s*=\s*\?\s*cents?/gi, '').trim();
-              const hasQuestionSuffix = cleanDisplay.endsWith('?') || cleanDisplay.includes('Change?') || cleanDisplay.includes('Leftover?') || cleanDisplay.includes('End time?');
+              {(() => {
+                const rawDisplay = currentProblem.displayString || `${currentProblem.num1} ${currentProblem.operatorSymbol} ${currentProblem.num2}`;
+                const cleanDisplay = rawDisplay.replace(/\s*=\s*\?\s*¢?/gi, '').replace(/\s*=\s*\?\s*cents?/gi, '').trim();
+                const hasQuestionSuffix = cleanDisplay.endsWith('?') || cleanDisplay.includes('Change?') || cleanDisplay.includes('Leftover?') || cleanDisplay.includes('End time?');
+                const isLongProblem = cleanDisplay.length > 35;
 
-              return (
-                <>
-                  <span>{cleanDisplay}</span>
-                  {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
-                </>
-              );
-            })()}
+                return (
+                  <div className="w-full flex flex-col items-center justify-center gap-1.5 my-0.5">
+                    <div className={`w-full flex items-center justify-center gap-2 flex-wrap text-center leading-snug max-h-24 overflow-y-auto px-1 ${
+                      isLongProblem ? 'text-sm sm:text-base font-bold text-slate-700' : 'text-2xl sm:text-3xl font-extrabold text-slate-800'
+                    }`}>
+                      <span>{cleanDisplay}</span>
+                      {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
+                    </div>
 
-            {/* Answer Display */}
-            <span className="inline-block min-w-[70px] px-3.5 py-1 bg-amber-50 border-3 border-amber-300 rounded-2xl text-kibo-teal font-black text-3xl sm:text-4xl shadow-inner">
-              {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
-            </span>
+                    {/* Answer Display */}
+                    <span className="inline-block min-w-[65px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-2xl sm:text-3xl shadow-inner">
+                      {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
       </div>
 
       {/* NUMERIC KEYPAD (AUTO-DETECTING & TYPE AWARE) */}
