@@ -445,7 +445,13 @@ export default function AdaptiveSessionView({
     const normTargetAns = normalizeTimeAnswer(normalizeDecimal(targetStr));
     const userNum = Number(normalizeDecimal(newInput));
     const targetNum = Number(normalizeDecimal(targetStr));
-    const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
+    const isMoneyMatch =
+      isMoneyQuestion &&
+      !isNaN(userNum) &&
+      !isNaN(targetNum) &&
+      (Math.abs(userNum - targetNum) < 0.001 ||
+       Math.abs(userNum * 100 - targetNum) < 0.001 ||
+       Math.abs(userNum / 100 - targetNum) < 0.001);
 
     const userFracVal = parseFractionValue(newInput);
     const targetFracVal = parseFractionValue(targetStr);
