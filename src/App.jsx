@@ -326,6 +326,19 @@ export default function App() {
     return true;
   };
 
+  const handleConsumeShield = () => {
+    const owned = consumables.shieldCount ?? 0;
+    if (owned <= 0) return false;
+    soundFx.playVictory();
+    const nextConsumables = {
+      ...consumables,
+      shieldCount: owned - 1
+    };
+    setConsumables(nextConsumables);
+    storageService.saveUserData({ consumables: nextConsumables });
+    return true;
+  };
+
   const handleToggleDoubleSparksPotion = () => {
     if (isDoubleSparksActive) {
       setIsDoubleSparksActive(false);
@@ -1316,6 +1329,7 @@ export default function App() {
           consumables={consumables}
           onToggleDoubleSparksPotion={handleToggleDoubleSparksPotion}
           onConsumeHintScroll={handleConsumeHintScroll}
+          onConsumeShield={handleConsumeShield}
           onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}

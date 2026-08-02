@@ -280,22 +280,44 @@ export default function AdaptiveSessionView({
         text: toastMsg
       }, 1100);
     } else {
-      KiboAudioManager.playIncorrectSFX();
-      setMascotState('incorrect');
-      setTimeout(() => setMascotState('idle'), 500);
+      let isShieldAbsorbed = false;
+      const ownedShields = (consumables?.shieldCount || 0) + (consumables?.streakSaverCount || 0);
 
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 400);
+      if (ownedShields > 0 && onConsumeShield) {
+        isShieldAbsorbed = onConsumeShield();
+        if (isShieldAbsorbed) {
+          // Protect the streak!
+          setInSessionStreak(inSessionStreak);
+        }
+      }
+
+      if (isShieldAbsorbed) {
+        KiboAudioManager.playStreakSFX();
+        setMascotState('streak');
+        setTimeout(() => setMascotState('idle'), 700);
+
+        triggerToastBanner({
+          type: 'success',
+          text: `🛡️ Kibo Shield Absorbed the Mistake! (Streak Protected ✨)`
+        }, 1800);
+      } else {
+        KiboAudioManager.playIncorrectSFX();
+        setMascotState('incorrect');
+        setTimeout(() => setMascotState('idle'), 500);
+
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 400);
+
+        const isProbe = currentProblem.isProbe;
+        const toastMessage = isProbe
+          ? `🚀 Probe missed! Active tier maintained (Answer: ${normTargetAns})`
+          : `Incorrect! Answer was ${normTargetAns}`;
+
+        triggerToastBanner({ type: 'error', text: toastMessage }, 1600);
+      }
 
       setCompetenceRank(evalResult.nextCompetenceRank);
       if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
-
-      const isProbe = currentProblem.isProbe;
-      const toastMessage = isProbe
-        ? `🚀 Probe missed! Active tier maintained (Answer: ${normTargetAns})`
-        : `Incorrect! Answer was ${normTargetAns}`;
-
-      triggerToastBanner({ type: 'error', text: toastMessage }, 1600);
 
       if (evalResult.triggerFrustrationCircuit) {
         setShowFrustrationCard(true);
