@@ -298,7 +298,7 @@ export default function AdaptiveSessionView({
 
       const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
       const finalBlockCorrect = Math.min(12, isCorrect ? blockCorrectCount + 1 : blockCorrectCount);
-      const finalBlockSparks = blockSparksEarned + sparksAwarded;
+      const finalBlockSparks = blockSparksEarned + blockEarned;
       const isPerfectBlock = finalBlockCorrect === 12;
 
       setCompletedBlockStats({
