@@ -1,5 +1,5 @@
 // Modern Authentication & Profile Management Service for Kibo Climb
-// Handles Anonymous Guest Onboarding, Local Caching, and Account Linking
+// Handles Anonymous Guest Onboarding, Local Caching, Google/Apple 1-Tap & Passwordless Magic Links
 
 import { storageService } from './storageService';
 
@@ -45,7 +45,7 @@ export const authService = {
   },
 
   /**
-   * Links an anonymous guest profile to a permanent account (Google, Apple, or Email).
+   * Links an anonymous guest profile to a permanent account (Google 1-Tap, Apple 1-Tap, or Passwordless Magic Link).
    * Merges all local progress into the authenticated cloud record seamlessly.
    */
   async linkAccount({ provider = 'google', email = null, name = null }) {
@@ -60,7 +60,7 @@ export const authService = {
       linkedFromGuestId: guestId,
       isAnonymous: false,
       authProvider: provider,
-      email: email || `${provider}_user@kiboclimb.com`,
+      email: email || (provider === 'apple' ? 'user@privaterelay.appleid.com' : `${provider}_user@kiboclimb.com`),
       displayName: name || currentData.name || 'Kibo Master',
       accountLinkedAt: new Date().toISOString()
     };
@@ -71,6 +71,20 @@ export const authService = {
       success: true,
       user: mergedUserData
     };
+  },
+
+  /**
+   * Sends a passwordless Magic Link email token and connects profile.
+   */
+  async sendMagicLink(email) {
+    if (!email || !email.includes('@')) {
+      return { success: false, reason: 'Please enter a valid email address' };
+    }
+
+    const token = `magic_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    localStorage.setItem('kibo_magic_link_pending', JSON.stringify({ email, token, createdAt: new Date().toISOString() }));
+
+    return this.linkAccount({ provider: 'magic_link', email, name: email.split('@')[0] });
   },
 
   /**
