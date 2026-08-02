@@ -156,7 +156,7 @@ export default function AdaptiveSessionView({
   // Ensure new problems generated dynamically when queue gets low (deduplicated across active block)
   const replenishQueueIfNeeded = (nextIndex) => {
     if (nextIndex >= problemQueue.length - 3) {
-      const nextTier = Math.min(8, Math.max(1, Math.floor(competenceRank / 100)));
+      const nextTier = getTierFromRating(competenceRank);
       const newBatch = generateProblems(6, nextTier, [], blockSeenKeysRef.current);
       setProblemQueue((prev) => [...prev, ...newBatch]);
     }

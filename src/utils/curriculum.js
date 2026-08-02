@@ -367,11 +367,17 @@ export function getNormalizedProblemKey(probData) {
   return displayString || `${num1}${operatorSymbol}${num2}`;
 }
 
-// Problem generator per Tier
-export function generateTierProblem(tierLevel) {
+// Problem generator per Tier (with cumulative topic review for higher tiers)
+export function generateTierProblem(targetTier) {
+  let effectiveTier = targetTier;
+  // For tiers > 1, 55% chance current tier, 45% chance of any unlocked lower tier (including fractions, decimals, division)
+  if (targetTier > 1 && Math.random() < 0.45) {
+    effectiveTier = Math.floor(Math.random() * (targetTier - 1)) + 1;
+  }
+
   let num1, num2, answer, operatorSymbol, displayString, options, hint;
 
-  switch (tierLevel) {
+  switch (effectiveTier) {
     case 1: {
       if (Math.random() > 0.4) {
         num1 = Math.floor(Math.random() * 9) + 1;
