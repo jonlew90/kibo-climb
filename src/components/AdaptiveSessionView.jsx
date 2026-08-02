@@ -218,6 +218,7 @@ export default function AdaptiveSessionView({
       if (onAwardSparks) onAwardSparks(blockEarned);
 
       setCompetenceRank(evalResult.nextCompetenceRank);
+      if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
       setShowFrustrationCard(false);
 
       // Rapid initial calibration: inject Probe Challenge during Provisional Phase (<15 solved) on 3+ streak
@@ -252,6 +253,7 @@ export default function AdaptiveSessionView({
       setTimeout(() => setIsShaking(false), 400);
 
       setCompetenceRank(evalResult.nextCompetenceRank);
+      if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
       triggerToastBanner({ type: 'error', text: `Incorrect! Answer was ${normTargetAns}` }, 1400);
 
       if (evalResult.triggerFrustrationCircuit) {

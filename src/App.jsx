@@ -1186,13 +1186,18 @@ export default function App() {
 
   const currentTierMeta = getTierMeta(tier);
 
+  const [liveCompetenceRating, setLiveCompetenceRating] = useState(() => {
+    const uData = storageService.getUserData();
+    return uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
+  });
+
   return (
     <div className="app-viewport-root p-2 sm:p-4 safe-pt safe-pb max-w-lg mx-auto relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
       {/* Sticky Top HUD Header Bar */}
       {appState !== 'sprint' && (
-        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1 overflow-x-hidden">
+        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1 overflow-visible">
           {/* Brand Logo & Stats */}
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 overflow-hidden">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 overflow-visible">
             <button
               onClick={() => setAppState('adaptive_session')}
               className="flex items-center gap-1 hover:scale-105 active:scale-95 transition-transform shrink-0"
@@ -1212,7 +1217,7 @@ export default function App() {
             </div>
 
             {/* Sparks Counter */}
-            <div className="flex items-center gap-0.5 bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full text-[11px] font-black shadow-2xs relative shrink-0">
+            <div className="flex items-center gap-0.5 bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full text-[11px] font-black shadow-2xs relative shrink-0 overflow-visible">
               <RollingNumberTicker
                 value={sparks}
                 icon={<Zap className="w-3 h-3 text-amber-500 fill-amber-400 stroke-[2.5]" />}
@@ -1221,20 +1226,21 @@ export default function App() {
 
             {/* Always-Visible Competence Rank Badge */}
             {(() => {
-              const uData = storageService.getUserData();
-              const activeRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
-              const rankTitle = getCompetenceRankTier(activeRating);
+              const rankTitle = getCompetenceRankTier(liveCompetenceRating);
               return (
                 <button
                   onClick={() => {
                     soundFx.playKeyTap();
                     setShowBadgesModal(true);
                   }}
-                  className="flex items-center gap-1 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 px-2 py-0.5 rounded-full text-[11px] font-black shadow-2xs transition-all active:scale-95 shrink-0"
-                  title={`Competence Rank: ${activeRating} pts (${rankTitle})`}
+                  className="flex items-center gap-1 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 px-2 py-0.5 rounded-full text-[11px] font-black shadow-2xs transition-all active:scale-95 shrink-0 relative overflow-visible"
+                  title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
                 >
-                  <Trophy className="w-3 h-3 text-purple-600 stroke-[2.5]" />
-                  <span className="text-[10px] text-purple-800 font-extrabold">{activeRating}</span>
+                  <RollingNumberTicker
+                    value={liveCompetenceRating}
+                    showDeltaBadge={true}
+                    icon={<Trophy className="w-3 h-3 text-purple-600 stroke-[2.5]" />}
+                  />
                 </button>
               );
             })()}
@@ -1300,6 +1306,7 @@ export default function App() {
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
           onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
+          onUpdateCompetenceRating={(newRating) => setLiveCompetenceRating(newRating)}
           onAwardSparks={(earned) => {
             const updated = sparks + earned;
             setSparks(updated);
