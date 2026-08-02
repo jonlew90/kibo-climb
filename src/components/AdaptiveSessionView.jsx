@@ -841,13 +841,12 @@ export default function AdaptiveSessionView({
                   const owned = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
                   if (isDoubleSparksActive) {
                     return (
-                      <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs">
-                        🧪 2x Active!
+                      <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
+                        🧪 2x Active! ⚡⚡
                       </span>
                     );
                   }
-                  if (owned <= 0) return null;
-                  if (currentQuestionNum === 1) {
+                  if (owned > 0) {
                     return (
                       <button
                         type="button"
@@ -857,20 +856,27 @@ export default function AdaptiveSessionView({
                             triggerToastBanner({
                               type: 'success',
                               text: 'Double Sparks Potion Activated for this climb! 🧪⚡'
-                            }, 1100);
+                            }, 1400);
                           }
                         }}
-                        className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 bg-amber-200 text-amber-950 border-amber-400 hover:bg-amber-300 shadow-sm animate-bounce"
-                        title="Tap to drink 2x Sparks Potion at start of climb!"
+                        className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
+                        title="Tap to activate Double Sparks Potion for this climb!"
                       >
-                        🧪 Drink 2x ({owned})
+                        🧪 Use 2x ({owned})
                       </button>
                     );
                   }
                   return (
-                    <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shrink-0 opacity-60 cursor-not-allowed" title="Potions must be consumed at the start of a climb!">
-                      🧪 2x (Start Only)
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onOpenWorkshop) onOpenWorkshop();
+                      }}
+                      className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full border border-slate-300 bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
+                      title="Get 2x Sparks Potions in Kibo's Corner"
+                    >
+                      🧪 Get 2x
+                    </button>
                   );
                 })()}
               </div>

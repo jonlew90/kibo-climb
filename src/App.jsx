@@ -1215,9 +1215,19 @@ export default function App() {
             </button>
 
             {/* Streak Badge */}
-            <div className="flex items-center gap-0.5 bg-amber-50 text-amber-900 border border-amber-200 px-1.5 py-0.5 rounded-full text-[11px] font-black shadow-2xs shrink-0">
+            <div
+              className="flex items-center gap-0.5 bg-amber-50 text-amber-900 border border-amber-200 px-1.5 py-0.5 rounded-full text-[11px] font-black shadow-2xs shrink-0 cursor-pointer"
+              title={(consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0 ? "Daily Streak & Shield Active! 🛡️" : `Daily Streak: ${streak} days`}
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowBadgesModal(true);
+              }}
+            >
               <Flame className="w-3 h-3 text-amber-500 fill-amber-400" />
               <span>{streak}d</span>
+              {((consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0) && (
+                <span className="text-[10px] ml-0.5 animate-pulse" title="Kibo Shield Active">🛡️</span>
+              )}
             </div>
 
             {/* Sparks Counter */}
