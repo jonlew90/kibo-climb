@@ -188,33 +188,92 @@ export default function ParentDashboardModal({
         {activeTab === 'overview' && (
           <div className="flex-1 overflow-y-auto pr-1 space-y-4 my-1">
             {/* Quick Metrics */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-2">
-                <Flame className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
-                <span className="text-[9px] uppercase font-black text-amber-900 block">Streak</span>
-                <span className="text-lg font-black text-slate-800">{pluralize(streak, 'Day')}</span>
-              </div>
+            {/* Quick Metrics */}
+            {(() => {
+              const activeLearningTimeSec = (sprintHistory || []).reduce((acc, curr) => acc + (curr.totalTimeSec || 0), 0);
+              const totalCompletedSprints = (sprintHistory || []).length;
+              const avgSessionSec = totalCompletedSprints > 0 ? Math.round(activeLearningTimeSec / totalCompletedSprints) : 180;
 
-              <div className="bg-amber-100/60 border border-amber-300 rounded-2xl p-2">
-                <Zap className="w-5 h-5 text-amber-600 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
-                <span className="text-[9px] uppercase font-black text-amber-900 block">Sparks</span>
-                <span className="text-lg font-black text-slate-800">{sparks} ⚡</span>
-              </div>
+              const formatLearningTime = (sec) => {
+                if (!sec || sec <= 0) return '0m';
+                const mins = Math.floor(sec / 60);
+                const remainingSec = sec % 60;
+                if (mins >= 60) {
+                  const hrs = Math.floor(mins / 60);
+                  const remMins = mins % 60;
+                  return `${hrs}h ${remMins}m`;
+                }
+                return mins > 0 ? `${mins}m ${remainingSec > 0 ? `${remainingSec}s` : ''}`.trim() : `${remainingSec}s`;
+              };
 
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
-                <span className="text-[9px] uppercase font-black text-emerald-900 block">Total Solved</span>
-                <span className="text-lg font-black text-slate-800">{totalProblemsSolved}</span>
-              </div>
+              return (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-2">
+                      <Flame className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
+                      <span className="text-[9px] uppercase font-black text-amber-900 block">Streak</span>
+                      <span className="text-base sm:text-lg font-black text-slate-800">{pluralize(streak, 'Day')}</span>
+                    </div>
 
-              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-2">
-                <Award className="w-5 h-5 text-purple-600 mx-auto mb-1 stroke-[2.5]" />
-                <span className="text-[9px] uppercase font-black text-purple-900 block">Skill Rating</span>
-                <span className="text-lg font-black text-purple-900">
-                  {liveUserData?.adaptiveCompetenceRating || liveUserData?.competenceRank || storageService.getUserData().adaptiveCompetenceRating || storageService.getUserData().competenceRank || 1000} pts
-                </span>
-              </div>
-            </div>
+                    <div className="bg-amber-100/60 border border-amber-300 rounded-2xl p-2">
+                      <Zap className="w-5 h-5 text-amber-600 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
+                      <span className="text-[9px] uppercase font-black text-amber-900 block">Sparks</span>
+                      <span className="text-base sm:text-lg font-black text-slate-800">{sparks} ⚡</span>
+                    </div>
+
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-2">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
+                      <span className="text-[9px] uppercase font-black text-emerald-900 block">Total Solved</span>
+                      <span className="text-base sm:text-lg font-black text-slate-800">{totalProblemsSolved}</span>
+                    </div>
+
+                    <div className="bg-sky-50 border border-sky-200 rounded-2xl p-2">
+                      <Clock className="w-5 h-5 text-sky-600 mx-auto mb-1 stroke-[2.5]" />
+                      <span className="text-[9px] uppercase font-black text-sky-900 block">Math Time</span>
+                      <span className="text-base sm:text-lg font-black text-sky-950">{formatLearningTime(activeLearningTimeSec)}</span>
+                    </div>
+
+                    <div className="bg-purple-50 border border-purple-200 rounded-2xl p-2 col-span-2 sm:col-span-1">
+                      <Award className="w-5 h-5 text-purple-600 mx-auto mb-1 stroke-[2.5]" />
+                      <span className="text-[9px] uppercase font-black text-purple-900 block">Skill Rating</span>
+                      <span className="text-base sm:text-lg font-black text-purple-900">
+                        {liveUserData?.adaptiveCompetenceRating || liveUserData?.competenceRank || storageService.getUserData().adaptiveCompetenceRating || storageService.getUserData().competenceRank || 1000} pts
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* ACTIVE MATH PRACTICE TIME HIGHLIGHT CARD */}
+                  <section className="bg-gradient-to-r from-sky-50 via-teal-50 to-indigo-50/70 rounded-2xl p-3.5 border-2 border-sky-200 text-left space-y-2 shadow-xs">
+                    <div className="flex items-center justify-between border-b border-sky-200/80 pb-1.5 flex-wrap gap-2">
+                      <div className="flex items-center gap-2 text-sky-950">
+                        <Clock className="w-4 h-4 text-sky-700 stroke-[2.5]" />
+                        <h4 className="font-black text-xs sm:text-sm tracking-tight">Active Math Learning Time</h4>
+                      </div>
+                      <span className="text-[9px] font-extrabold uppercase text-sky-950 bg-sky-200/80 px-2 py-0.5 rounded-full border border-sky-300">
+                        ⚡ 100% High-Focus Learning
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-white/90 p-2.5 rounded-xl border border-sky-100 shadow-2xs">
+                        <span className="text-[9px] font-black uppercase text-slate-500 block">Total Active Practice</span>
+                        <span className="text-base font-black text-sky-950">{formatLearningTime(activeLearningTimeSec)}</span>
+                        <span className="text-[9px] text-slate-500 font-medium block">Spent solving math problems</span>
+                      </div>
+
+                      <div className="bg-white/90 p-2.5 rounded-xl border border-sky-100 shadow-2xs">
+                        <span className="text-[9px] font-black uppercase text-slate-500 block">Avg Session Length</span>
+                        <span className="text-base font-black text-teal-900">{formatLearningTime(avgSessionSec)}</span>
+                        <span className="text-[9px] text-teal-700 font-bold block">The 3-Minute Daily Ascent 🎯</span>
+                      </div>
+                    </div>
+                    <p className="text-[10px] font-medium text-slate-600 italic leading-tight pt-0.5">
+                      💡 Measures active problem-solving time only. Zero filler, zero ad bloat—100% productive math learning!
+                    </p>
+                  </section>
+                </div>
+              );
+            })()}
 
             {/* Personal Records Summary Card */}
             <section className="bg-purple-50/60 rounded-2xl p-3 border border-purple-200 text-left space-y-1.5">
