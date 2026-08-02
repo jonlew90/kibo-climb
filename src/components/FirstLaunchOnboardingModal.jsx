@@ -7,6 +7,7 @@ import { soundFx } from '../utils/audio';
 export default function FirstLaunchOnboardingModal({
   isOpen,
   equippedItems = [],
+  onOpenParentZone,
   onStartAdaptiveClimb = () => {},
   onStartPlacementTest,
   onStartAtTier1
