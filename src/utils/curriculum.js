@@ -487,7 +487,7 @@ export function generateTierProblem(targetTier) {
         let ansStr, dispStr, numA, numB;
 
         if (templateType === 0) {
-          dispStr = `${item} costs $0.${costCents}. Change from $1.00?`;
+          dispStr = `Buy ${item} ($0.${costCents}). Change from $1.00?`;
           ansStr = (changeCents / 100).toFixed(2);
           numA = 100;
           numB = costCents;
@@ -499,7 +499,7 @@ export function generateTierProblem(targetTier) {
         } else {
           const p1 = [10, 20, 25, 30][Math.floor(Math.random() * 4)];
           const p2 = [15, 25, 35, 40][Math.floor(Math.random() * 4)];
-          dispStr = `Saved $0.${p1} & $0.${p2}. Total saved?`;
+          dispStr = `Saved $0.${p1} + $0.${p2}. Total?`;
           ansStr = ((p1 + p2) / 100).toFixed(2);
           numA = p1;
           numB = p2;
@@ -588,7 +588,7 @@ export function generateTierProblem(targetTier) {
         const finalMin = endMinTotal % 60;
         answer = `${endHour}:${finalMin === 0 ? '00' : finalMin} PM`;
         operatorSymbol = '⏰';
-        displayString = `Hike started at ${startHour}:${startMin} PM. Duration: 1 hr ${durMins} mins. End time?`;
+        displayString = `Start: ${startHour}:${startMin} PM (+1 hr ${durMins} m). End time?`;
         hint = 'Hint: Add hours first, then add minutes!';
       } else {
         num1 = Math.floor(Math.random() * 50) + 40;
