@@ -100,11 +100,11 @@ export const BADGES_CATALOG = [
     reqText: 'Reach Competence Rating 2400+'
   },
 
-  // DOMAIN MASTERY BADGES
+  // DOMAIN MASTERY BADGES (Synced with Tiers 1-8)
   {
     id: 'master_addition',
     title: 'Sums & Differences Ace',
-    description: 'Mastered Sums & Differences to 20 by reaching Rating 1000+!',
+    description: 'Mastered Sums & Differences to 20 in Sunny Meadow!',
     category: 'skill_mastery',
     icon: '🖐️',
     reqText: 'Reach Rating 1000+'
@@ -112,15 +112,15 @@ export const BADGES_CATALOG = [
   {
     id: 'master_multiplication',
     title: 'Multiplication Master',
-    description: 'Mastered Multiplication Foundations by reaching Rating 1200+!',
+    description: 'Mastered Multiplication Tables 0s–12s & Multi-Digit Shortcuts!',
     category: 'skill_mastery',
     icon: '⚡',
-    reqText: 'Reach Rating 1200+'
+    reqText: 'Reach Rating 1400+'
   },
   {
     id: 'master_time_money',
     title: 'Trail Merchant & Timekeeper',
-    description: 'Mastered Money Decimals & Elapsed Time by reaching Rating 1800+!',
+    description: 'Mastered Money Decimals & Elapsed Time!',
     category: 'skill_mastery',
     icon: '⏰',
     reqText: 'Reach Rating 1800+'
@@ -128,7 +128,7 @@ export const BADGES_CATALOG = [
   {
     id: 'master_fractions',
     title: 'Fraction & GCF Master',
-    description: 'Mastered Fraction Reduction, Multiplication/Division, %, & GCF/LCM by reaching Rating 2200+!',
+    description: 'Mastered Fraction Reduction, Multiplication/Division, %, & GCF/LCM!',
     category: 'skill_mastery',
     icon: '🧩',
     reqText: 'Reach Rating 2200+'
@@ -136,7 +136,7 @@ export const BADGES_CATALOG = [
   {
     id: 'master_prealgebra',
     title: 'Pre-Algebra & Signed Master',
-    description: 'Mastered 2-Step Pre-Algebra Equations, Signed (-/+) Numbers, & Exponents by reaching Rating 2400+!',
+    description: 'Mastered 2-Step Equations, Signed (-/+) Numbers & Exponents!',
     category: 'skill_mastery',
     icon: '👑',
     reqText: 'Reach Rating 2400+'

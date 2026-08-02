@@ -90,7 +90,7 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         break;
       case 'master_multiplication':
         if (!isCalibrating) {
-          unlocked = currentRating >= 1200 && (totalSolved >= 15 || userState.lastProblemTier === 3 || userState.lastProblemTier === 4 || userState.lastProblemType === 'multiplication');
+          unlocked = currentRating >= 1400 && (totalSolved >= 15 || userState.lastProblemTier === 3 || userState.lastProblemTier === 4 || userState.lastProblemType === 'multiplication');
         }
         break;
       case 'master_time_money':
