@@ -122,7 +122,7 @@ export default function AdaptiveSessionView({
   };
 
   const targetStr = (currentProblem.answerString || currentProblem.answer?.toString() || '');
-  const isMoneyQuestion = currentProblem.type === 'money' || currentProblem.requiresDecimal || targetStr.includes('.') || currentProblem.operatorSymbol === '🪙' || (currentProblem.displayString && (currentProblem.displayString.includes('$') || currentProblem.displayString.includes('¢') || currentProblem.displayString.includes('Change')));
+  const isMoneyQuestion = currentProblem.type === 'money' || currentProblem.operatorSymbol === '🪙' || (currentProblem.displayString && (currentProblem.displayString.includes('$') || currentProblem.displayString.includes('¢') || currentProblem.displayString.includes('Change')));
   const isTimeQuestion = currentProblem.type === 'time' || currentProblem.requiresColon || targetStr.includes(':') || currentProblem.operatorSymbol === '⏰' || (currentProblem.displayString && (currentProblem.displayString.includes('time') || currentProblem.displayString.includes('Hike started')));
 
   const [shouldPulseHint, setShouldPulseHint] = useState(false);
@@ -505,7 +505,7 @@ export default function AdaptiveSessionView({
         }
       }
     } else {
-      if (isMoneyQuestion && targetStr.includes('.')) {
+      if (isMoneyQuestion && targetStr.startsWith('0.')) {
         if (!newInput || newInput === '0') {
           newInput = '0.' + val;
         } else if ((newInput === '0.' || newInput === '.') && val !== '.') {
