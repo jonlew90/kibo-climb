@@ -89,13 +89,13 @@ export function evaluateAdaptiveAttempt({
 
   const totalSparksEarned = Math.round(baseSparks * multiplier) + bonusSparks;
 
-  // 6. Difficulty Scaling: prevent climbing to high ranks by grinding basic addition
+  // 6. Universal Difficulty Scaling: prevent climbing ranks by grinding math below current tier level
   const problemTierTarget = getTierTargetRating(problemTier || 1);
   const ratingDeltaTier = currentCompetenceRank - problemTierTarget;
 
   let difficultyGainFactor = 1.0;
-  if (ratingDeltaTier > 250) {
-    difficultyGainFactor = Math.max(0.02, 1 / (1 + Math.pow(10, ratingDeltaTier / 400)));
+  if (ratingDeltaTier > 100) {
+    difficultyGainFactor = Math.max(0.01, 1 / (1 + Math.pow(10, (ratingDeltaTier - 100) / 300)));
   }
 
   // 7. Competence Rank delta

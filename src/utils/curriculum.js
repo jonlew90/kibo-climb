@@ -367,11 +367,17 @@ export function getNormalizedProblemKey(probData) {
   return displayString || `${num1}${operatorSymbol}${num2}`;
 }
 
+// Checks if a player's rating is within 1 climb question (35 pts) of crossing into the next curriculum tier
+export function isNearTierThreshold(currentRating) {
+  const boundaries = [500, 750, 1000, 1250, 1500, 1750, 2000];
+  return boundaries.some((threshold) => currentRating >= threshold - 35 && currentRating < threshold);
+}
+
 // Problem generator per Tier (with cumulative topic review for higher tiers)
-export function generateTierProblem(targetTier) {
+export function generateTierProblem(targetTier, isNearThreshold = false) {
   let effectiveTier = targetTier;
-  // For tiers > 1, 55% chance current tier, 45% chance of any unlocked lower tier (including fractions, decimals, division)
-  if (targetTier > 1 && Math.random() < 0.45) {
+  // If 1 question away from next tier threshold, force 100% current tier difficulty (no lower tier review blending)
+  if (!isNearThreshold && targetTier > 1 && Math.random() < 0.40) {
     effectiveTier = Math.floor(Math.random() * (targetTier - 1)) + 1;
   }
 

@@ -5,7 +5,7 @@ import Keypad from './Keypad';
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
 import { generateProblems } from '../utils/mathGenerator';
-import { getTierFromRating, generateTierProblem } from '../utils/curriculum';
+import { getTierFromRating, generateTierProblem, isNearTierThreshold } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
 import { normalizeTimeAnswer, normalizeDecimal, parseFractionValue } from '../utils/formatters';
@@ -696,6 +696,11 @@ export default function AdaptiveSessionView({
                 <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0 shadow-2xs">
                   ⚡ Q #{currentQuestionNum}/12
                 </span>
+                {isNearTierThreshold(competenceRank) && !currentProblem.isProbe && (
+                  <span className="text-[10px] font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-0.5 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
+                    ⚡ TIER GATEKEEPER
+                  </span>
+                )}
                 {currentProblem.isProbe && (
                   <span className="text-[10px] font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-0.5 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
                     🚀 SKILL PROBE (+120)
