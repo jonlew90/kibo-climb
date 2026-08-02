@@ -193,7 +193,21 @@ export default function AdaptiveSessionView({
       Math.abs(userFracVal - targetFracVal) < 0.0001 &&
       (!isReductionQuestion || normUserAns === normTargetAns);
 
-    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch;
+    // Decimal implicit match (e.g. user typed "62" for "6.2" or "35" for "0.35")
+    let isDecimalImplicitMatch = false;
+    const targetAnsStr = String(currentProblem.answerString || currentProblem.answer || '');
+    if (targetAnsStr.includes('.') && !userAnsString.includes('.')) {
+      const decIndex = targetAnsStr.indexOf('.');
+      const decPlaces = targetAnsStr.length - decIndex - 1;
+      if (decPlaces > 0 && !isNaN(userNum) && !isNaN(targetNum)) {
+        const scaledUserVal = userNum / Math.pow(10, decPlaces);
+        if (Math.abs(scaledUserVal - targetNum) < 0.0001) {
+          isDecimalImplicitMatch = true;
+        }
+      }
+    }
+
+    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch || isDecimalImplicitMatch;
     const latencyMs = performance.now() - problemStartTimeRef.current;
 
     const evalResult = evaluateAdaptiveAttempt({
@@ -467,7 +481,20 @@ export default function AdaptiveSessionView({
       Math.abs(userFracVal - targetFracVal) < 0.0001 &&
       (!isReductionQuestion || normUserAns === normTargetAns);
 
-    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch;
+    // Decimal implicit match (e.g. user typed "62" for "6.2" or "35" for "0.35")
+    let isDecimalImplicitMatch = false;
+    if (targetStr.includes('.') && !newInput.includes('.')) {
+      const decIndex = targetStr.indexOf('.');
+      const decPlaces = targetStr.length - decIndex - 1;
+      if (decPlaces > 0 && !isNaN(userNum) && !isNaN(targetNum)) {
+        const scaledUserVal = userNum / Math.pow(10, decPlaces);
+        if (Math.abs(scaledUserVal - targetNum) < 0.0001) {
+          isDecimalImplicitMatch = true;
+        }
+      }
+    }
+
+    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch || isDecimalImplicitMatch;
 
     // Auto-detect instant match
     if (isCorrect) {
@@ -487,7 +514,8 @@ export default function AdaptiveSessionView({
     const userDigits = extractDigits(newInput);
     const targetDigits = extractDigits(targetStr);
 
-    if (!targetStr.includes('/')) {
+    // Only auto-submit length mismatch if target isn't a fraction or a decimal (unless user has typed decimal point)
+    if (!targetStr.includes('/') && (!targetStr.includes('.') || newInput.includes('.'))) {
       if (userDigits.length > 0 && targetDigits.length > 0 && userDigits.length >= targetDigits.length) {
         processAnswerEvaluation(newInput);
         return;
