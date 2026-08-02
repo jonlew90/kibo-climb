@@ -783,7 +783,7 @@ export default function AdaptiveSessionView({
 
               <div className="w-full flex flex-wrap items-center justify-center gap-1.5 py-0.5">
                 <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0 shadow-2xs">
-                  ⚡ Q #{currentQuestionNum}/12
+                  🎯 Q #{currentQuestionNum}/12
                 </span>
                 {isNearTierThreshold(competenceRank) && !currentProblem.isProbe && (
                   <span className="text-[10px] font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-0.5 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
@@ -801,7 +801,7 @@ export default function AdaptiveSessionView({
                   {streakCfg.label}
                 </span>
 
-                {/* MANUAL WISDOM HINT SCROLL BUTTON */}
+                {/* MANUAL WISDOM HINT BUTTON */}
                 <button
                   type="button"
                   onClick={() => {
@@ -813,7 +813,7 @@ export default function AdaptiveSessionView({
                       setShowFrustrationCard(true);
                       triggerToastBanner({
                         type: 'success',
-                        text: 'Kibo Wisdom Hint Unlocked! 📜💡'
+                        text: 'Kibo Wisdom Hint Unlocked! 💡'
                       }, 1200);
                     } else if (onOpenWorkshop) {
                       onOpenWorkshop();
@@ -834,7 +834,7 @@ export default function AdaptiveSessionView({
                       : 'Get Hint Scrolls in Kibo\'s Corner'
                   }
                 >
-                  📜 {showFrustrationCard ? 'Hint Active' : shouldPulseHint ? '💡 Need a Hint?' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Get Hint'}
+                  💡 {showFrustrationCard ? 'Hint Active' : shouldPulseHint ? 'Need a Hint?' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Get Hint'}
                 </button>
 
                 {(() => {
@@ -842,7 +842,7 @@ export default function AdaptiveSessionView({
                   if (isDoubleSparksActive) {
                     return (
                       <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
-                        🧪 2x Active! ⚡⚡
+                        ⚡ 2x Active!
                       </span>
                     );
                   }
@@ -855,14 +855,14 @@ export default function AdaptiveSessionView({
                             onToggleDoubleSparksPotion();
                             triggerToastBanner({
                               type: 'success',
-                              text: 'Double Sparks Potion Activated for this climb! 🧪⚡'
+                              text: 'Double Sparks Potion Activated for this climb! ⚡'
                             }, 1400);
                           }
                         }}
                         className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
-                        title="Tap to activate Double Sparks Potion for this climb!"
+                        title="Tap to activate Double Sparks for this climb!"
                       >
-                        🧪 Use 2x ({owned})
+                        ⚡ Use 2x ({owned})
                       </button>
                     );
                   }
@@ -875,7 +875,7 @@ export default function AdaptiveSessionView({
                       className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full border border-slate-300 bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
                       title="Get 2x Sparks Potions in Kibo's Corner"
                     >
-                      🧪 Get 2x
+                      ⚡ Get 2x
                     </button>
                   );
                 })()}
