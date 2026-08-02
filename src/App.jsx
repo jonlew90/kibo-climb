@@ -1199,15 +1199,15 @@ export default function App() {
           {/* Brand Logo & Stats */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 overflow-visible">
             <button
-              onClick={() => setAppState('adaptive_session')}
-              className="flex items-center gap-1 hover:scale-105 active:scale-95 transition-transform shrink-0"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setAppState('adaptive_session');
+              }}
+              className="flex items-center gap-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 font-black text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border border-amber-300"
               title="Kibo Climb Main Session"
             >
-              <img
-                src="/logo.png"
-                alt="Kibo Climb"
-                className="w-7 h-7 sm:w-8 sm:h-8 object-contain filter drop-shadow-xs"
-              />
+              <span className="text-sm">🏔️</span>
+              <span className="tracking-tight font-black hidden xs:inline">Kibo</span>
             </button>
 
             {/* Streak Badge */}
