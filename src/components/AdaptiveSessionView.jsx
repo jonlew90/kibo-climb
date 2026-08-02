@@ -280,7 +280,13 @@ export default function AdaptiveSessionView({
 
       setCompetenceRank(evalResult.nextCompetenceRank);
       if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
-      triggerToastBanner({ type: 'error', text: `Incorrect! Answer was ${normTargetAns}` }, 1400);
+
+      const isProbe = currentProblem.isProbe;
+      const toastMessage = isProbe
+        ? `🚀 Probe missed! Active tier maintained (Answer: ${normTargetAns})`
+        : `Incorrect! Answer was ${normTargetAns}`;
+
+      triggerToastBanner({ type: 'error', text: toastMessage }, 1600);
 
       if (evalResult.triggerFrustrationCircuit) {
         setShowFrustrationCard(true);
