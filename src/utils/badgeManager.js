@@ -127,7 +127,6 @@ export function evaluateBadges(userState, lastSprintResult = null) {
       case 'adaptive_streak_20':
         if (
           (userState.inSessionStreak || 0) >= 12 ||
-          (userState.maxSessionStreak || 0) >= 12 ||
           (lastSprintResult?.correctStreak || 0) >= 12
         ) {
           unlocked = true;
