@@ -86,7 +86,7 @@ export const BADGES_CATALOG = [
   {
     id: 'rank_tier7',
     title: 'Fraction Specialist',
-    description: 'Unlocked Fraction Falls (Rating 2200+)! Mastered Fractions, Decimals, % & GCF/LCM.',
+    description: 'Unlocked Fraction Falls (Rating 2200+)! Mastered Fraction Reduction, Fraction × / ÷, %, & GCF/LCM.',
     category: 'skill_mastery',
     icon: '🧩',
     reqText: 'Reach Competence Rating 2200+'
@@ -94,7 +94,7 @@ export const BADGES_CATALOG = [
   {
     id: 'rank_tier8',
     title: 'Kibo Summit Legend',
-    description: 'Conquered Mount Kibo Summit (Rating 2400+)! Mastered Exponents, Square Roots & PEMDAS.',
+    description: 'Conquered Mount Kibo Summit (Rating 2400+)! Mastered 2-Step Equations, Signed (-/+) Numbers & Exponents.',
     category: 'skill_mastery',
     icon: '🏔️',
     reqText: 'Reach Competence Rating 2400+'
@@ -128,10 +128,18 @@ export const BADGES_CATALOG = [
   {
     id: 'master_fractions',
     title: 'Fraction & GCF Master',
-    description: 'Mastered Fractions, Decimals, % & GCF/LCM by reaching Rating 2200+!',
+    description: 'Mastered Fraction Reduction, Multiplication/Division, %, & GCF/LCM by reaching Rating 2200+!',
     category: 'skill_mastery',
     icon: '🧩',
     reqText: 'Reach Rating 2200+'
+  },
+  {
+    id: 'master_prealgebra',
+    title: 'Pre-Algebra & Signed Master',
+    description: 'Mastered 2-Step Pre-Algebra Equations, Signed (-/+) Numbers, & Exponents by reaching Rating 2400+!',
+    category: 'skill_mastery',
+    icon: '👑',
+    reqText: 'Reach Rating 2400+'
   },
 
   // WORKSHOP & CUSTOMIZATION BADGES

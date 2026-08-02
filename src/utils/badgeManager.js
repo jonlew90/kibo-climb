@@ -95,6 +95,9 @@ export function evaluateBadges(userState, lastSprintResult = null) {
       case 'master_fractions':
         if (!isCalibrating) unlocked = currentRating >= 2200;
         break;
+      case 'master_prealgebra':
+        if (!isCalibrating) unlocked = currentRating >= 2400;
+        break;
 
       // WORKSHOP & SHOPPING BADGES
       case 'sparks_100':

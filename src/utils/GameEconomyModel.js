@@ -38,13 +38,13 @@ export function getCompetenceDescription(rating = 1000, totalProblemsSolved = 0)
     return 'Executing multi-digit mental arithmetic, left-to-right tens addition, and the 11s split-and-add mental shortcut.';
   }
   if (numRating < 2000) {
-    return 'Calculating money decimals ($1.00 bridge & change under $1.00), decimal addition, and divisibility rules.';
+    return 'Calculating money decimals ($1.00 bridge & change under $1.00), general decimal addition/subtraction, and divisibility rules.';
   }
   if (numRating < 2200) {
-    return 'Mastering inverse division fact families, long division mental estimation, and the halving ladder strategy (÷4, ÷8).';
+    return 'Mastering inverse division fact families, explicit long division (e.g. 168 ÷ 7 = 24), and elapsed time duration jumps.';
   }
   if (numRating < 2400) {
-    return 'Solving fraction & decimal equivalents, percentages (% of numbers), Least Common Multiples (LCM), and Greatest Common Factors (GCF).';
+    return 'Solving fraction reduction to lowest terms, fraction multiplication/division (× / ÷), percentages, LCM, and GCF.';
   }
-  return 'Demonstrating peak summit mastery in exponents (2⁴), square roots (√81), PEMDAS order of operations, and pre-algebra linear expressions.';
+  return 'Demonstrating peak summit mastery in 2-step pre-algebra equations (3x + 5 = 20), signed negative numbers (-/+), exponents (2⁴), square roots (√81), and PEMDAS.';
 }

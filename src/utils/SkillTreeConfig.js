@@ -4,57 +4,57 @@ export const SKILL_STRANDS = [
   {
     tier: 1,
     id: 'sums_differences_20',
-    name: 'Sums & Differences to 20',
-    ratingBand: { min: 1000, max: 1150 },
+    name: 'Sums & Differences to 20 (Making 10s)',
+    ratingBand: { min: 0, max: 1199 },
     probeTargetTier: 3
   },
   {
     tier: 2,
     id: 'multiplication_0_5',
-    name: 'Multiplication Foundations (0s–5s)',
-    ratingBand: { min: 1150, max: 1300 },
+    name: 'Multiplication Foundations (0s–5s) & Clock Math',
+    ratingBand: { min: 1200, max: 1399 },
     probeTargetTier: 4
   },
   {
     tier: 3,
     id: 'advanced_multiplication_time',
-    name: 'Advanced Multiplication (6s–9s) & Time Math',
-    ratingBand: { min: 1300, max: 1450 },
+    name: 'Advanced Multiplication (6s–9s) & Coins',
+    ratingBand: { min: 1400, max: 1599 },
     probeTargetTier: 5
   },
   {
     tier: 4,
     id: 'multi_digit_11s',
-    name: 'Multi-Digit & 11s Trick',
-    ratingBand: { min: 1450, max: 1600 },
+    name: 'Multi-Digit Tens & 11s Split Shortcut',
+    ratingBand: { min: 1600, max: 1799 },
     probeTargetTier: 6
   },
   {
     tier: 5,
-    id: 'money_elapsed_time',
-    name: 'Money & Elapsed Time Jumps',
-    ratingBand: { min: 1600, max: 1750 },
+    id: 'money_decimals',
+    name: 'Money Decimals & Decimal Arithmetic',
+    ratingBand: { min: 1800, max: 1999 },
     probeTargetTier: 7
   },
   {
     tier: 6,
-    id: 'divisibility_fractions',
-    name: 'Divisibility Rules & Equivalent Fractions',
-    ratingBand: { min: 1750, max: 1900 },
+    id: 'long_division_time',
+    name: 'Explicit Long Division & Elapsed Time',
+    ratingBand: { min: 2000, max: 2199 },
     probeTargetTier: 8
   },
   {
     tier: 7,
-    id: 'order_operations_percents',
-    name: 'Order of Operations & Percentages',
-    ratingBand: { min: 1900, max: 2100 },
+    id: 'fractions_lcm_gcf',
+    name: 'Fraction Reduction, × / ÷, %, LCM & GCF',
+    ratingBand: { min: 2200, max: 2399 },
     probeTargetTier: 8
   },
   {
     tier: 8,
-    id: 'exponents_square_roots',
-    name: 'Exponents, Square Roots & Pre-Algebra',
-    ratingBand: { min: 2100, max: 2500 },
+    id: 'prealgebra_signed_exponents',
+    name: '2-Step Linear Equations, Signed (+/-) & Exponents',
+    ratingBand: { min: 2400, max: 9999 },
     probeTargetTier: 8
   }
 ];
