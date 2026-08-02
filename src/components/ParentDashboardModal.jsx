@@ -200,8 +200,11 @@ export default function ParentDashboardModal({
             {/* Quick Metrics */}
             {/* Quick Metrics */}
             {(() => {
-              const activeLearningTimeSec = (sprintHistory || []).reduce((acc, curr) => acc + (curr.totalTimeSec || 0), 0);
-              const totalCompletedSprints = (sprintHistory || []).length;
+              const historyList = (sprintHistory && sprintHistory.length > 0)
+                ? sprintHistory
+                : (storageService.getUserData().sprintHistory || []);
+              const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec) || 0), 0);
+              const totalCompletedSprints = historyList.length;
               const avgSessionSec = totalCompletedSprints > 0 ? Math.round(activeLearningTimeSec / totalCompletedSprints) : 180;
 
               const formatLearningTime = (sec) => {

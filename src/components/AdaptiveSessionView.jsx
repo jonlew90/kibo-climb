@@ -408,6 +408,23 @@ export default function AdaptiveSessionView({
       const finalBlockSparks = blockSparksEarned + blockEarned;
       const isPerfectBlock = finalBlockCorrect === 12;
 
+      // RECORD COMPLETED CLIMB BLOCK INTO SPRINT HISTORY FOR ACCURATE PRACTICE TIME TRACKING
+      const newSessionRecord = {
+        id: `session-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0],
+        tier: getTierFromRating(evalResult.nextCompetenceRank),
+        totalTimeSec: blockTimeSec,
+        correctCount: finalBlockCorrect,
+        totalQuestions: 12,
+        sparksEarned: finalBlockSparks,
+        accuracyPct: Math.round((finalBlockCorrect / 12) * 100),
+        ratingGain: nextBlockRatingGain
+      };
+
+      const existingHistory = activeUserData.sprintHistory || [];
+      const updatedHistory = [newSessionRecord, ...existingHistory];
+
       setCompletedBlockStats({
         correctCount: finalBlockCorrect,
         sparksEarned: finalBlockSparks,
@@ -431,7 +448,10 @@ export default function AdaptiveSessionView({
           : (currentRecords.mostPerfectSessions || 0)
       };
 
-      storageService.saveUserData({ personalRecords: updatedRecords });
+      storageService.saveUserData({
+        sprintHistory: updatedHistory,
+        personalRecords: updatedRecords
+      });
       if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
 
       // Immediately evaluate and claim any newly met badges at block completion (e.g. 3rd Perfect Run)
