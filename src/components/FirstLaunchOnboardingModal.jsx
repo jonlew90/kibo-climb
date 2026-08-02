@@ -115,6 +115,19 @@ export default function FirstLaunchOnboardingModal({
             Start Kibo Climb! 🚀
           </button>
 
+          {onOpenParentZone && (
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                onOpenParentZone();
+              }}
+              className="text-xs font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 rounded-xl transition-colors inline-flex items-center gap-1 cursor-pointer"
+            >
+              🔒 Parent Zone (Optional Setup)
+            </button>
+          )}
+
           <span className="text-xs sm:text-sm font-extrabold text-slate-500 block text-center pt-1">
             Kibo Math by Kibo Climb • The 3-Minute Daily Ascent
           </span>

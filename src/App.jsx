@@ -1320,6 +1320,7 @@ export default function App() {
       <FirstLaunchOnboardingModal
         isOpen={showFirstLaunchOnboardingModal}
         equippedItems={equippedItems}
+        onOpenParentZone={() => setShowPinGateModal(true)}
         onStartAdaptiveClimb={() => {
           setShowFirstLaunchOnboardingModal(false);
           setAppState('adaptive_session');
