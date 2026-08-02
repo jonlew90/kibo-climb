@@ -856,7 +856,7 @@ export default function AdaptiveSessionView({
                       : 'Get Hint Scrolls in Kibo\'s Corner'
                   }
                 >
-                  💡 {showFrustrationCard ? 'Hint Active' : shouldPulseHint ? 'Need a Hint?' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Get Hint'}
+                  💡 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
                 </button>
 
                 {(() => {
@@ -908,7 +908,7 @@ export default function AdaptiveSessionView({
                     className="text-[10px] font-black uppercase text-sky-950 bg-sky-100 px-2.5 py-0.5 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
                     title="Kibo Shield Active: Your climb & streak are protected!"
                   >
-                    🛡️ Shield Active ({consumables.shieldCount || consumables.streakSaverCount})
+                    🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
                   </span>
                 )}
               </div>
