@@ -206,7 +206,7 @@ export default function WorkshopModal({
 
         <div className="flex items-center gap-2 text-slate-800">
           <ShoppingBag className="w-5 h-5 text-amber-500 stroke-[2.5]" />
-          <h2 className="text-base sm:text-lg font-black tracking-tight">Kibo's Workshop & Gear</h2>
+          <h2 className="text-base sm:text-lg font-black tracking-tight">Kibo's Corner 🐾</h2>
         </div>
 
         <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 border-2 border-amber-300 rounded-full text-amber-900 font-black text-xs shadow-xs">

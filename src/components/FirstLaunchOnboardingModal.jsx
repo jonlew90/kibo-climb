@@ -96,7 +96,7 @@ export default function FirstLaunchOnboardingModal({
             <div className="flex sm:flex-col items-start gap-3 bg-purple-50/90 border border-purple-200 rounded-2xl p-3 sm:p-3.5 transition-transform hover:scale-[1.02]">
               <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 shrink-0 mt-0.5 sm:mt-0" />
               <div>
-                <h4 className="text-xs sm:text-sm font-black text-slate-800">Gear Workshop</h4>
+                <h4 className="text-xs sm:text-sm font-black text-slate-800">Kibo's Corner 🐾</h4>
                 <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-snug mt-0.5">
                   Unlock hats, outfits, pets, backgrounds, and power-up items!
                 </p>

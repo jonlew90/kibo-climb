@@ -320,7 +320,7 @@ export default function SprintResultsModal({
                   className="flex-1 py-2.5 px-3 rounded-xl bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 text-purple-900 font-extrabold text-xs transition-colors flex items-center justify-center gap-1"
                 >
                   <ShoppingBag className="w-4 h-4 text-purple-700 stroke-[2.5]" />
-                  <span>Workshop 🎒</span>
+                  <span>Kibo's Corner 🐾</span>
                 </button>
               </div>
             </div>

@@ -706,7 +706,7 @@ export default function AdaptiveSessionView({
         <div
           onClick={onOpenWorkshop}
           className="cursor-pointer hover:scale-105 transition-transform"
-          title="Tap Kibo to customize in Workshop!"
+          title="Tap Kibo to open Kibo's Corner!"
         >
           <div className="flex justify-center my-0.5 shrink-0">
             <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-16 h-16 sm:w-24 sm:h-24 mascot-compact-auto filter drop-shadow-lg" />
@@ -793,7 +793,7 @@ export default function AdaptiveSessionView({
                   title={
                     (consumables?.hintScrollCount ?? 0) > 0
                       ? 'Use Wisdom Scroll to reveal a hint!'
-                      : 'Get Hint Scrolls in Kibo Workshop'
+                      : 'Get Hint Scrolls in Kibo\'s Corner'
                   }
                 >
                   📜 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Get Hint'}

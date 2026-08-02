@@ -122,7 +122,7 @@ export default function KiboBreakOverlay({
             className="btn-3d-purple w-full h-12 min-h-[48px] py-3 text-xs sm:text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-bouncy-purple active:scale-95 transition-transform"
           >
             <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-            Visit Kibo Workshop 🏪
+            Visit Kibo's Corner 🐾
           </button>
 
           <span className="text-[10px] sm:text-xs font-bold text-slate-500 block text-center pt-1">
