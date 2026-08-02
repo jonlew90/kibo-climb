@@ -181,7 +181,7 @@ export default function AdaptiveSessionView({
        Math.abs(userNum * 100 - targetNum) < 0.001 ||
        Math.abs(userNum / 100 - targetNum) < 0.001);
 
-    const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
+    const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && (userNum === targetNum || Math.abs(userNum - targetNum) < 0.0001);
 
     const userFracVal = parseFractionValue(userAnsString);
     const targetFracVal = parseFractionValue(currentProblem.answerString || currentProblem.answer);
@@ -463,7 +463,7 @@ export default function AdaptiveSessionView({
     const normTargetAns = normalizeTimeAnswer(normalizeDecimal(targetStr));
     const userNum = Number(normalizeDecimal(newInput));
     const targetNum = Number(normalizeDecimal(targetStr));
-    const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
+    const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && (userNum === targetNum || Math.abs(userNum - targetNum) < 0.0001);
     const isMoneyMatch =
       isMoneyQuestion &&
       !isNaN(userNum) &&
