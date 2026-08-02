@@ -228,8 +228,7 @@ export default function AdaptiveSessionView({
         const probeProblem = {
           ...probeData,
           id: `probe-${Date.now()}`,
-          isProbe: true,
-          displayString: `🚀 SKILL PROBE: ${probeData.displayString}`
+          isProbe: true
         };
 
         setProblemQueue((prev) => {
@@ -375,7 +374,7 @@ export default function AdaptiveSessionView({
 
     let newInput = inputVal;
 
-    if (val === '.' || val === ':') {
+    if (val === '.' || val === ':' || val === '/' || val === '-') {
       if (val === '.') {
         if (!newInput || newInput === '0') {
           newInput = '0.';
@@ -385,6 +384,16 @@ export default function AdaptiveSessionView({
       } else if (val === ':') {
         if (!newInput.includes(':')) {
           newInput = newInput + ':';
+        }
+      } else if (val === '/') {
+        if (!newInput.includes('/')) {
+          newInput = newInput + '/';
+        }
+      } else if (val === '-') {
+        if (newInput.startsWith('-')) {
+          newInput = newInput.slice(1);
+        } else {
+          newInput = '-' + newInput;
         }
       }
     } else {
@@ -488,7 +497,7 @@ export default function AdaptiveSessionView({
       if (e.key === 'Backspace' || e.key === 'Delete') {
         e.preventDefault();
         handleDeleteDigit();
-      } else if (/^[0-9]$/.test(e.key) || e.key === '.' || e.key === ':') {
+      } else if (/^[0-9]$/.test(e.key) || e.key === '.' || e.key === ':' || e.key === '/' || e.key === '-') {
         e.preventDefault();
         handleDigitInput(e.key);
       } else if (e.key === 'Enter') {
@@ -660,6 +669,11 @@ export default function AdaptiveSessionView({
                 <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0 shadow-2xs">
                   ⚡ Q #{currentQuestionNum}/12
                 </span>
+                {currentProblem.isProbe && (
+                  <span className="text-[10px] font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-0.5 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
+                    🚀 SKILL PROBE (+120)
+                  </span>
+                )}
                 <span
                   className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
                 >
