@@ -624,9 +624,9 @@ export default function ParentDashboardModal({
                   </button>
                 </div>
                 {notifPrefs.struggleAlertsEnabled && (
-                  <p className="text-[10px] text-amber-950 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200 mt-1 leading-snug">
-                    ⚡ <strong>Timing:</strong> Sent <strong>immediately post-session</strong>.<br />
-                    ⚠️ <strong>Triggers:</strong> Session accuracy &lt; 65%, 3+ consecutive misses, or active frustration circuit with actionable review tips.
+                  <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2 rounded-lg border border-purple-200 mt-1 leading-snug">
+                    🛡️ <strong>Child-Safe Privacy:</strong> Displayed exclusively inside <strong>🔒 Parent Zone Dashboard</strong> (never shown on child's screen!).<br />
+                    ⚠️ <strong>Triggers:</strong> Accuracy &lt; 65%, 3+ consecutive misses, or frustration triggers with actionable review tips.
                   </p>
                 )}
               </div>
