@@ -8,7 +8,7 @@ import { generateProblems } from '../utils/mathGenerator';
 import { getTierFromRating, generateTierProblem } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
-import { normalizeTimeAnswer, normalizeDecimal } from '../utils/formatters';
+import { normalizeTimeAnswer, normalizeDecimal, parseFractionValue } from '../utils/formatters';
 import { evaluateAdaptiveAttempt, checkSkillMasteryEvents, shouldTriggerProbeQuestion } from '../utils/AdaptiveEngine';
 import { getProbeTargetTier } from '../utils/SkillTreeConfig';
 import KiboBreakOverlay from './KiboBreakOverlay';
@@ -183,7 +183,17 @@ export default function AdaptiveSessionView({
 
     const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
 
-    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch;
+    const userFracVal = parseFractionValue(userAnsString);
+    const targetFracVal = parseFractionValue(currentProblem.answerString || currentProblem.answer);
+    const isReductionQuestion = currentProblem.displayString?.toLowerCase().includes('reduce') || currentProblem.operatorSymbol === '⚡';
+
+    const isFractionMatch =
+      userFracVal !== null &&
+      targetFracVal !== null &&
+      Math.abs(userFracVal - targetFracVal) < 0.0001 &&
+      (!isReductionQuestion || normUserAns === normTargetAns);
+
+    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch;
     const latencyMs = performance.now() - problemStartTimeRef.current;
 
     const evalResult = evaluateAdaptiveAttempt({
@@ -437,15 +447,17 @@ export default function AdaptiveSessionView({
     const targetNum = Number(normalizeDecimal(targetStr));
     const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && userNum === targetNum;
 
-    const isMoneyMatch =
-      isMoneyQuestion &&
-      !isNaN(userNum) &&
-      !isNaN(targetNum) &&
-      (Math.abs(userNum - targetNum) < 0.001 ||
-       Math.abs(userNum * 100 - targetNum) < 0.001 ||
-       Math.abs(userNum / 100 - targetNum) < 0.001);
+    const userFracVal = parseFractionValue(newInput);
+    const targetFracVal = parseFractionValue(targetStr);
+    const isReductionQuestion = currentProblem.displayString?.toLowerCase().includes('reduce') || currentProblem.operatorSymbol === '⚡';
 
-    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch;
+    const isFractionMatch =
+      userFracVal !== null &&
+      targetFracVal !== null &&
+      Math.abs(userFracVal - targetFracVal) < 0.0001 &&
+      (!isReductionQuestion || normUserAns === normTargetAns);
+
+    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch;
 
     // Auto-detect instant match
     if (isCorrect) {
@@ -465,9 +477,11 @@ export default function AdaptiveSessionView({
     const userDigits = extractDigits(newInput);
     const targetDigits = extractDigits(targetStr);
 
-    if (userDigits.length > 0 && targetDigits.length > 0 && userDigits.length >= targetDigits.length) {
-      processAnswerEvaluation(newInput);
-      return;
+    if (!targetStr.includes('/')) {
+      if (userDigits.length > 0 && targetDigits.length > 0 && userDigits.length >= targetDigits.length) {
+        processAnswerEvaluation(newInput);
+        return;
+      }
     }
 
     setInputVal(newInput);
