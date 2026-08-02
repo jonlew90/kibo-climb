@@ -38,10 +38,10 @@ export const BADGES_CATALOG = [
   {
     id: 'rank_tier1',
     title: 'Meadow Scout',
-    description: 'Foundation Phase (Rating 1000+): Mastered Single & Double-Digit Addition & Subtraction.',
+    description: 'Foundation Phase: Completed your 1st Climb in Sunny Meadow!',
     category: 'skill_mastery',
     icon: '🌱',
-    reqText: 'Reach Competence Rating 1000+'
+    reqText: 'Complete 1st Climb in Sunny Meadow (Tier 1)'
   },
   {
     id: 'rank_tier2',

@@ -39,9 +39,7 @@ export function evaluateBadges(userState, lastSprintResult = null) {
       // CURRICULUM RANK & TIER BADGES
       case 'rank_tier1':
       case 'rank_1100':
-        if (!isCalibrating) {
-          unlocked = currentRating >= 1000;
-        }
+        unlocked = totalSolved >= 1 || currentRating >= 1050;
         break;
       case 'rank_tier2':
       case 'rank_1300':
