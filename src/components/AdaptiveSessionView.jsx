@@ -529,19 +529,29 @@ export default function AdaptiveSessionView({
     }
 
     // Auto-detect max length mismatch for fractions, numbers, and decimals
-    if (targetStr.includes('/') && newInput.includes('/')) {
-      const [userNumPart, userDenomPart] = newInput.split('/');
+    if (targetStr.includes('/')) {
       const [targetNumPart, targetDenomPart] = targetStr.split('/');
-      if (
-        userNumPart && targetNumPart &&
-        userDenomPart && targetDenomPart &&
-        userNumPart.length >= targetNumPart.length &&
-        userDenomPart.length >= targetDenomPart.length
-      ) {
-        processAnswerEvaluation(newInput);
-        return;
+      if (newInput.includes('/')) {
+        const [userNumPart, userDenomPart] = newInput.split('/');
+        if (
+          userNumPart && targetNumPart &&
+          userDenomPart && targetDenomPart &&
+          userNumPart.length >= targetNumPart.length &&
+          userDenomPart.length >= targetDenomPart.length
+        ) {
+          processAnswerEvaluation(newInput);
+          return;
+        }
+      } else {
+        // Player is typing digits without a slash for a fraction question!
+        const totalTargetDigits = (targetNumPart ? targetNumPart.length : 1) + (targetDenomPart ? targetDenomPart.length : 1);
+        const userDigits = newInput.replace(/\D/g, '');
+        if (userDigits.length >= totalTargetDigits + 1) {
+          processAnswerEvaluation(newInput);
+          return;
+        }
       }
-    } else if (!targetStr.includes('/') && (!targetStr.includes('.') || newInput.includes('.'))) {
+    } else if (!targetStr.includes('.') || newInput.includes('.')) {
       const extractDigits = (str) => {
         let s = String(str || '').replace('$', '').replace('¢', '').trim();
         if (s.startsWith('0.')) s = s.slice(2);
