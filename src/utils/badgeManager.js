@@ -36,51 +36,89 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         unlocked = streak >= 30;
         break;
 
+      // CURRICULUM RANK & TIER BADGES
+      case 'rank_tier1':
       case 'rank_1100':
         if (!isCalibrating) {
-          unlocked = currentRating >= 1100 && (baselineRating <= 1100 || currentRating >= baselineRating + 50);
+          unlocked = currentRating >= 1000;
         }
         break;
+      case 'rank_tier2':
       case 'rank_1300':
         if (!isCalibrating) {
-          unlocked = currentRating >= 1300 && (baselineRating <= 1300 || currentRating >= baselineRating + 50);
+          unlocked = currentRating >= 1200;
         }
         break;
+      case 'rank_tier3':
+        if (!isCalibrating) {
+          unlocked = currentRating >= 1400;
+        }
+        break;
+      case 'rank_tier4':
       case 'rank_1500':
         if (!isCalibrating) {
-          unlocked = currentRating >= 1500 && (baselineRating <= 1500 || currentRating >= baselineRating + 50);
+          unlocked = currentRating >= 1600;
         }
         break;
+      case 'rank_tier5':
+        if (!isCalibrating) {
+          unlocked = currentRating >= 1800;
+        }
+        break;
+      case 'rank_tier6':
       case 'rank_1700':
         if (!isCalibrating) {
-          unlocked = currentRating >= 1700 && (baselineRating <= 1700 || currentRating >= baselineRating + 50);
+          unlocked = currentRating >= 2000;
+        }
+        break;
+      case 'rank_tier7':
+        if (!isCalibrating) {
+          unlocked = currentRating >= 2200;
+        }
+        break;
+      case 'rank_tier8':
+        if (!isCalibrating) {
+          unlocked = currentRating >= 2400;
         }
         break;
 
+      // DOMAIN MASTERY BADGES
       case 'master_addition':
-        if (!isCalibrating) {
-          unlocked = currentRating >= 1150 && (baselineRating <= 1150 || currentRating >= baselineRating + 50);
-        }
+        if (!isCalibrating) unlocked = currentRating >= 1000;
         break;
       case 'master_multiplication':
-        if (!isCalibrating) {
-          unlocked = currentRating >= 1450 && (baselineRating <= 1450 || currentRating >= baselineRating + 50);
-        }
+        if (!isCalibrating) unlocked = currentRating >= 1200;
         break;
       case 'master_time_money':
-        if (!isCalibrating) {
-          unlocked = currentRating >= 1750 && (baselineRating <= 1750 || currentRating >= baselineRating + 50);
-        }
+        if (!isCalibrating) unlocked = currentRating >= 1800;
+        break;
+      case 'master_fractions':
+        if (!isCalibrating) unlocked = currentRating >= 2200;
         break;
 
+      // WORKSHOP & SHOPPING BADGES
       case 'sparks_100':
         unlocked = sparks >= 100;
+        break;
+      case 'sparks_500':
+        unlocked = sparks >= 500;
+        break;
+      case 'sparks_1000':
+        unlocked = sparks >= 1000;
         break;
       case 'fashionista':
         unlocked = unlockedItems.length >= 3;
         break;
+      case 'pet_owner':
+        unlocked = (unlockedItems || []).some((id) => ['snowy_owl', 'alpine_fox', 'summit_husky', 'cosmic_dragon'].includes(id));
+        break;
       case 'shield_pro':
-        unlocked = streakShields >= 2 || unlockedItems.includes('kibo_shield');
+        unlocked = streakShields >= 2 || (unlockedItems || []).includes('kibo_shield');
+        break;
+
+      // RESILIENCE, PROBE & SPEED BADGES
+      case 'probe_master':
+        unlocked = !!userState.hasMasteredProbe || !!lastSprintResult?.isProbeCorrect;
         break;
 
       case 'adaptive_streak_20':
@@ -113,6 +151,12 @@ export function evaluateBadges(userState, lastSprintResult = null) {
 
       case 'flawless_execution':
         if ((userState.personalRecords?.mostPerfectSessions || 0) >= 3) {
+          unlocked = true;
+        }
+        break;
+
+      case 'flawless_10':
+        if ((userState.personalRecords?.mostPerfectSessions || 0) >= 10) {
           unlocked = true;
         }
         break;

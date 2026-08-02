@@ -2,9 +2,9 @@
 
 export const BADGE_CATEGORIES = {
   consistency: { label: 'Streak & Consistency', icon: '🔥' },
-  skill_mastery: { label: 'Skill Mastery', icon: '🎯' },
-  shop: { label: 'Workshop & Fashion', icon: '🎒' },
-  resilience: { label: 'Climb Resilience', icon: '⚡' }
+  skill_mastery: { label: 'Curriculum & Tier Mastery', icon: '🎯' },
+  shop: { label: 'Workshop & Customization', icon: '🎒' },
+  resilience: { label: 'Climb Speed & Resilience', icon: '⚡' }
 };
 
 export const BADGES_CATALOG = [
@@ -15,7 +15,7 @@ export const BADGES_CATALOG = [
     description: 'Maintained a daily climb streak for 3 consecutive days!',
     category: 'consistency',
     icon: '⚡',
-    reqText: 'Reach a 3-Day Streak'
+    reqText: 'Reach a 3-Day Daily Streak'
   },
   {
     id: 'streak_7',
@@ -23,7 +23,7 @@ export const BADGES_CATALOG = [
     description: 'Completed daily climbs for 7 days in a row! Unstoppable momentum.',
     category: 'consistency',
     icon: '💥',
-    reqText: 'Reach a 7-Day Streak'
+    reqText: 'Reach a 7-Day Daily Streak'
   },
   {
     id: 'streak_30',
@@ -31,68 +31,110 @@ export const BADGES_CATALOG = [
     description: '30 days of daily math climbs! Truly a Mount Kibo Legend.',
     category: 'consistency',
     icon: '🏔️',
-    reqText: 'Reach a 30-Day Streak'
+    reqText: 'Reach a 30-Day Daily Streak'
   },
 
-  // COMPETENCE RANK MILESTONE BADGES
+  // CURRICULUM RANK & TIER MILESTONE BADGES (Synced with Tiers 1-8)
   {
-    id: 'rank_1100',
-    title: 'Beginner Mathlete',
-    description: 'Reached Competence Rank 1100+ in Adaptive Mastery Sessions!',
+    id: 'rank_tier1',
+    title: 'Meadow Scout',
+    description: 'Completed baseline calibration and reached Sunny Meadow (Rating 1000+)!',
     category: 'skill_mastery',
     icon: '🌱',
-    reqText: 'Reach Competence Rank 1100'
+    reqText: 'Reach Competence Rating 1000+'
   },
   {
-    id: 'rank_1300',
-    title: 'Peak Navigator',
-    description: 'Reached Competence Rank 1300+ across adaptive math strands!',
+    id: 'rank_tier2',
+    title: 'Trail Navigator',
+    description: 'Unlocked Forest Trail (Rating 1200+)! Mastered Multiplication 0s–5s & Clock Math.',
     category: 'skill_mastery',
-    icon: '🧭',
-    reqText: 'Reach Competence Rank 1300'
+    icon: '🌲',
+    reqText: 'Reach Competence Rating 1200+'
   },
   {
-    id: 'rank_1500',
-    title: 'Summit Master',
-    description: 'Reached Competence Rank 1500+ across all adaptive math strands!',
+    id: 'rank_tier3',
+    title: 'River Mathlete',
+    description: 'Unlocked Multiplication River (Rating 1400+)! Mastered Tables 6s–9s & Coin Math.',
     category: 'skill_mastery',
-    icon: '🏆',
-    reqText: 'Reach Competence Rank 1500'
+    icon: '🌊',
+    reqText: 'Reach Competence Rating 1400+'
   },
   {
-    id: 'rank_1700',
-    title: 'Kibo Legend',
-    description: 'Reached Competence Rank 1700+! A true Mount Kibo legend.',
+    id: 'rank_tier4',
+    title: 'Canyon Strategist',
+    description: 'Unlocked Factor Canyon (Rating 1600+)! Mastered Multi-Digit Tens & 11s Split Shortcut.',
+    category: 'skill_mastery',
+    icon: '🏜️',
+    reqText: 'Reach Competence Rating 1600+'
+  },
+  {
+    id: 'rank_tier5',
+    title: 'Falls Decimalist',
+    description: 'Unlocked Division Falls (Rating 1800+)! Mastered Money Decimals & $1.00 Change Bridge.',
+    category: 'skill_mastery',
+    icon: '🪙',
+    reqText: 'Reach Competence Rating 1800+'
+  },
+  {
+    id: 'rank_tier6',
+    title: 'Ridge Divisionist',
+    description: 'Unlocked Boulder Ridge (Rating 2000+)! Mastered Inverse Division & Halving Ladder.',
+    category: 'skill_mastery',
+    icon: '⛰️',
+    reqText: 'Reach Competence Rating 2000+'
+  },
+  {
+    id: 'rank_tier7',
+    title: 'Fraction Specialist',
+    description: 'Unlocked Fraction Falls (Rating 2200+)! Mastered Fractions, Decimals, % & GCF/LCM.',
+    category: 'skill_mastery',
+    icon: '🧩',
+    reqText: 'Reach Competence Rating 2200+'
+  },
+  {
+    id: 'rank_tier8',
+    title: 'Kibo Summit Legend',
+    description: 'Conquered Mount Kibo Summit (Rating 2400+)! Mastered Exponents, Square Roots & PEMDAS.',
     category: 'skill_mastery',
     icon: '🏔️',
-    reqText: 'Reach Competence Rank 1700'
+    reqText: 'Reach Competence Rating 2400+'
   },
+
+  // DOMAIN MASTERY BADGES
   {
     id: 'master_addition',
-    title: 'Addition & Subtraction Ace',
-    description: 'Mastered Sums & Differences to 20 by reaching Competence Rating 1150+!',
+    title: 'Sums & Differences Ace',
+    description: 'Mastered Sums & Differences to 20 by reaching Rating 1000+!',
     category: 'skill_mastery',
     icon: '🖐️',
-    reqText: 'Reach Competence Rating 1150'
+    reqText: 'Reach Rating 1000+'
   },
   {
     id: 'master_multiplication',
     title: 'Multiplication Master',
-    description: 'Mastered Multiplication Foundations & Facts by reaching Competence Rating 1450+!',
+    description: 'Mastered Multiplication Foundations by reaching Rating 1200+!',
     category: 'skill_mastery',
     icon: '⚡',
-    reqText: 'Reach Competence Rating 1450'
+    reqText: 'Reach Rating 1200+'
   },
   {
     id: 'master_time_money',
     title: 'Trail Merchant & Timekeeper',
-    description: 'Mastered Money & Elapsed Time Calculations by reaching Competence Rating 1750+!',
+    description: 'Mastered Money Decimals & Elapsed Time by reaching Rating 1800+!',
     category: 'skill_mastery',
-    icon: '🪙',
-    reqText: 'Reach Competence Rating 1750'
+    icon: '⏰',
+    reqText: 'Reach Rating 1800+'
+  },
+  {
+    id: 'master_fractions',
+    title: 'Fraction & GCF Master',
+    description: 'Mastered Fractions, Decimals, % & GCF/LCM by reaching Rating 2200+!',
+    category: 'skill_mastery',
+    icon: '🧩',
+    reqText: 'Reach Rating 2200+'
   },
 
-  // WORKSHOP BADGES
+  // WORKSHOP & CUSTOMIZATION BADGES
   {
     id: 'sparks_100',
     title: 'Sparks Saver',
@@ -100,6 +142,22 @@ export const BADGES_CATALOG = [
     category: 'shop',
     icon: '⚡',
     reqText: 'Accumulate 100 Sparks'
+  },
+  {
+    id: 'sparks_500',
+    title: 'Sparks Collector',
+    description: 'Accumulated 500+ Sparks climbing Mount Kibo!',
+    category: 'shop',
+    icon: '✨',
+    reqText: 'Accumulate 500 Sparks'
+  },
+  {
+    id: 'sparks_1000',
+    title: 'Sparks Treasure Chest',
+    description: 'Accumulated 1,000+ Sparks! A true workshop tycoon.',
+    category: 'shop',
+    icon: '💎',
+    reqText: 'Accumulate 1,000 Sparks'
   },
   {
     id: 'fashionista',
@@ -110,6 +168,14 @@ export const BADGES_CATALOG = [
     reqText: 'Unlock 3 Workshop Items'
   },
   {
+    id: 'pet_owner',
+    title: 'Pet Companion',
+    description: 'Adopted a loyal pet companion in Kibo’s Workshop!',
+    category: 'shop',
+    icon: '🐾',
+    reqText: 'Adopt any Workshop Pet'
+  },
+  {
     id: 'shield_pro',
     title: 'Streak Shielded',
     description: 'Purchased a Kibo Shield to safeguard your streak from rest days.',
@@ -118,45 +184,61 @@ export const BADGES_CATALOG = [
     reqText: 'Equip a Kibo Shield'
   },
 
-  // RESILIENCE & ADAPTIVE STREAK BADGES
+  // RESILIENCE, PROBE & SPEED BADGES
+  {
+    id: 'probe_master',
+    title: 'Probe Teleporter',
+    description: 'Successfully answered a Skill Probe Challenge during calibration!',
+    category: 'resilience',
+    icon: '🚀',
+    reqText: 'Answer a Skill Probe Challenge correctly'
+  },
   {
     id: 'adaptive_streak_20',
-    title: 'Flawless Climb Streak',
+    title: 'Flawless Climb Block',
     description: 'Achieved a 12-question perfect streak in a single climb block!',
     category: 'resilience',
     icon: '🎯',
-    reqText: 'Achieve a 12-Question Correct Streak'
+    reqText: 'Achieve a 12-Question Correct Block'
   },
   {
     id: 'competence_surge',
     title: 'Competence Surge',
     description: 'Gained +40 Competence Rank points in a single climb block!',
     category: 'resilience',
-    icon: '🚀',
-    reqText: 'Gain +40 Competence Rank in a Climb Block'
+    icon: '⚡',
+    reqText: 'Gain +40 Competence Rank in a Block'
   },
   {
     id: 'speed_demon',
     title: 'Speed Demon',
-    description: 'Completed an adaptive session block with an average speed under 5s per question!',
+    description: 'Completed a climb block with an average speed under 5s per question!',
     category: 'resilience',
-    icon: '🏆',
-    reqText: 'Average speed <5s per question in a session'
+    icon: '🏃',
+    reqText: 'Average speed < 5s per question'
   },
   {
     id: 'flawless_execution',
     title: 'Flawless Execution',
     description: 'Completed 3 Perfect Runs with 100% accuracy!',
     category: 'skill_mastery',
-    icon: '🎯',
+    icon: '🏆',
     reqText: 'Complete 3 Perfect Runs'
+  },
+  {
+    id: 'flawless_10',
+    title: 'Perfectionist',
+    description: 'Completed 10 Perfect Runs with 100% accuracy!',
+    category: 'skill_mastery',
+    icon: '👑',
+    reqText: 'Complete 10 Perfect Runs'
   },
   {
     id: 'streak_legend',
     title: 'Streak Legend',
     description: 'Reached a 50-answer cumulative correct streak across adaptive climbs!',
     category: 'resilience',
-    icon: '⚡',
+    icon: '🔥',
     reqText: 'Reach a 50-answer cumulative streak'
   }
 ];
