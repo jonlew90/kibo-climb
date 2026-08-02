@@ -443,16 +443,18 @@ export default function ParentDashboardModal({
                                   ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                                   : isPracticing
                                   ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                  : data.status === 'Locked'
+                                  ? 'bg-slate-100 text-slate-500 border-slate-300'
                                   : 'bg-rose-100 text-rose-900 border-rose-300'
                               }`}>
-                                {data.status}
+                                {data.status === 'Locked' ? '🔒 Locked' : data.status}
                               </span>
                             </div>
 
                             <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs font-bold">
-                              <span className="text-slate-500">Topic Rating:</span>
+                              <span className="text-slate-500">{data.status === 'Locked' ? 'Curriculum Stage:' : 'Topic Rating:'}</span>
                               {data.status === 'Locked' || (data.accuracy === 0 && !data.attempts) ? (
-                                <span className="text-slate-400 font-extrabold italic">🔒 Unlocked at Higher Tiers</span>
+                                <span className="text-slate-500 font-extrabold italic">Future Curriculum Milestone</span>
                               ) : (
                                 <span className="text-indigo-700 font-black">{data.rating} pts ({data.accuracy}% Acc)</span>
                               )}
