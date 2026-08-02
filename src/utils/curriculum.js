@@ -630,7 +630,7 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
           operatorSymbol: ':',
           answer: targetAns.toString(),
           answerString: targetAns.toString(),
-          displayString: `Ratio ${r1}:${r2}. If there are ${given1} items, how many target?`,
+          displayString: `Ratio ${r1}:${r2}. If A = ${given1}, what is B?`,
           type: 'applied',
           hint: `Hint: Multiply ${r2} by the scale factor ${mult}!`
         };
