@@ -5,11 +5,12 @@ import Keypad from './Keypad';
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
 import { generateProblems } from '../utils/mathGenerator';
-import { getTierFromRating } from '../utils/curriculum';
+import { getTierFromRating, generateTierProblem } from '../utils/curriculum';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
 import { normalizeTimeAnswer, normalizeDecimal } from '../utils/formatters';
-import { evaluateAdaptiveAttempt, checkSkillMasteryEvents } from '../utils/AdaptiveEngine';
+import { evaluateAdaptiveAttempt, checkSkillMasteryEvents, shouldTriggerProbeQuestion } from '../utils/AdaptiveEngine';
+import { getProbeTargetTier } from '../utils/SkillTreeConfig';
 import KiboBreakOverlay from './KiboBreakOverlay';
 import { KiboAudioManager } from '../utils/KiboAudioManager';
 import { evaluateBadges } from '../utils/badgeManager';
@@ -218,6 +219,25 @@ export default function AdaptiveSessionView({
 
       setCompetenceRank(evalResult.nextCompetenceRank);
       setShowFrustrationCard(false);
+
+      // Rapid initial calibration: inject Probe Challenge during Provisional Phase (<15 solved) on 3+ streak
+      if (shouldTriggerProbeQuestion({ totalProblemsSolved: totalProblemsSolved + 1, inSessionStreak: evalResult.nextInSessionStreak })) {
+        const curTier = getTierFromRating(evalResult.nextCompetenceRank);
+        const probeTier = getProbeTargetTier(curTier);
+        const probeData = generateTierProblem(probeTier);
+        const probeProblem = {
+          ...probeData,
+          id: `probe-${Date.now()}`,
+          isProbe: true,
+          displayString: `🚀 SKILL PROBE: ${probeData.displayString}`
+        };
+
+        setProblemQueue((prev) => {
+          const updated = [...prev];
+          updated.splice(currentIndex + 1, 0, probeProblem);
+          return updated;
+        });
+      }
 
       const toastMsg = evalResult.streakBannerText ? evalResult.streakBannerText : `Correct! (${evalResult.fluencyLabel})`;
       triggerToastBanner({

@@ -3,38 +3,48 @@
 export const INITIAL_COMPETENCE_RATING = 1000;
 
 export const COMPETENCE_RANK_TIERS = [
-  { min: 700, max: 890, name: 'Base Climber' },
-  { min: 900, max: 1090, name: 'Trail Scout' },
-  { min: 1100, max: 1290, name: 'Beginner Mathlete' },
-  { min: 1300, max: 1490, name: 'Peak Navigator' },
-  { min: 1500, max: 1690, name: 'Summit Master' },
-  { min: 1700, max: 9999, name: 'Kibo Legend' }
+  { min: 0, max: 1199, tier: 1, name: 'Meadow Scout', location: 'Sunny Meadow' },
+  { min: 1200, max: 1399, tier: 2, name: 'Trail Navigator', location: 'Forest Trail' },
+  { min: 1400, max: 1599, tier: 3, name: 'River Mathlete', location: 'Multiplication River' },
+  { min: 1600, max: 1799, tier: 4, name: 'Canyon Strategist', location: 'Factor Canyon' },
+  { min: 1800, max: 1999, tier: 5, name: 'Falls Decimalist', location: 'Division Falls' },
+  { min: 2000, max: 2199, tier: 6, name: 'Ridge Divisionist', location: 'Boulder Ridge' },
+  { min: 2200, max: 2399, tier: 7, name: 'Fraction Specialist', location: 'Fraction Falls' },
+  { min: 2400, max: 9999, tier: 8, name: 'Kibo Summit Legend', location: 'Mount Kibo Summit' }
 ];
 
 export function getCompetenceRankTier(rating = 1000) {
-  const tier = COMPETENCE_RANK_TIERS.find(t => rating >= t.min && rating <= t.max);
-  return tier ? tier.name : (rating >= 1700 ? 'Kibo Legend' : 'Base Climber');
+  const numRating = Number(rating) || 1000;
+  const tier = COMPETENCE_RANK_TIERS.find(t => numRating >= t.min && numRating <= t.max);
+  return tier ? tier.name : 'Meadow Scout';
 }
 
 export function getCompetenceDescription(rating = 1000, totalProblemsSolved = 0) {
   if (totalProblemsSolved < 15) {
-    return 'Calibrating... Initial skill baseline is currently being established.';
+    return 'Calibrating baseline... Kibo is actively measuring initial speed and accuracy across math topics to pinpoint exact skill placement.';
   }
 
-  if (rating < 900) {
-    return 'Building foundational single-digit addition, subtraction, and number sense.';
+  const numRating = Number(rating) || 1000;
+  if (numRating < 1200) {
+    return 'Mastering single-digit addition, subtraction, making-10s regrouping, and foundational number sense.';
   }
-  if (rating <= 1090) {
-    return 'Developing confidence with double-digit mental math, place value, and skip counting.';
+  if (numRating < 1400) {
+    return 'Building core multiplication fluency (0s–5s), 5s clock tricks, and quarter-hour analog time reading.';
   }
-  if (rating <= 1290) {
-    return 'Mastering regrouping in addition/subtraction and core multiplication facts (0s-12s).';
+  if (numRating < 1600) {
+    return 'Mastering advanced multiplication tables (6s–9s), 9s finger shortcuts, coin counting, and elapsed time jumps.';
   }
-  if (rating <= 1490) {
-    return 'Solving inverse division facts, coin change calculations, and elapsed time jumps.';
+  if (numRating < 1800) {
+    return 'Executing multi-digit mental arithmetic, left-to-right tens addition, and the 11s split-and-add mental shortcut.';
   }
-  if (rating <= 1690) {
-    return 'Handling multi-digit mental arithmetic, LCM/GCF number theory, and divisibility rules.';
+  if (numRating < 2000) {
+    return 'Calculating money decimals ($1.00 bridge & change under $1.00), decimal addition, and divisibility rules.';
   }
-  return 'Demonstrating summit mastery in mental calculation speed, exponents, square roots, and PEMDAS order of operations.';
+  if (numRating < 2200) {
+    return 'Mastering inverse division fact families, long division mental estimation, and the halving ladder strategy (÷4, ÷8).';
+  }
+  if (numRating < 2400) {
+    return 'Solving fraction & decimal equivalents, percentages (% of numbers), Least Common Multiples (LCM), and Greatest Common Factors (GCF).';
+  }
+  return 'Demonstrating peak summit mastery in exponents (2⁴), square roots (√81), PEMDAS order of operations, and pre-algebra linear expressions.';
 }
