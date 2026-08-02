@@ -770,19 +770,7 @@ export default function AdaptiveSessionView({
           </div>
         </div>
 
-        {/* FRUSTRATION CIRCUIT BREAKER SUPPORT CARD */}
-        {showFrustrationCard && (
-          <div className="w-full bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3 text-center space-y-1 animate-pop">
-            <p className="text-xs font-black text-indigo-900">
-              💪 Don't give up! Kibo is right here with you. Take your time!
-            </p>
-            {currentProblem.hint && (
-              <p className="text-[11px] font-bold text-indigo-700 italic">
-                {currentProblem.hint}
-              </p>
-            )}
-          </div>
-        )}
+
 
         {/* ACTIVE ADAPTIVE MATH QUESTION CARD */}
         {(() => {
@@ -920,16 +908,26 @@ export default function AdaptiveSessionView({
             const isLongText = cleanDisplay.length > 22;
 
             return (
-              <div className={`w-full flex items-center justify-center gap-2 sm:gap-3 flex-wrap my-1 ${
-                isLongText ? 'text-sm sm:text-base leading-tight font-bold' : 'text-2xl sm:text-3xl font-extrabold'
-              } text-slate-800`}>
-                <span className="max-w-full text-center leading-tight">{cleanDisplay}</span>
-                {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
+              <div className="space-y-1.5 w-full">
+                <div className={`w-full flex items-center justify-center gap-2 sm:gap-3 flex-wrap my-1 ${
+                  isLongText ? 'text-sm sm:text-base leading-tight font-bold' : 'text-2xl sm:text-3xl font-extrabold'
+                } text-slate-800`}>
+                  <span className="max-w-full text-center leading-tight">{cleanDisplay}</span>
+                  {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
 
-                {/* Answer Display */}
-                <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-2xl sm:text-3xl shadow-inner shrink-0">
-                  {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
-                </span>
+                  {/* Answer Display */}
+                  <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-2xl sm:text-3xl shadow-inner shrink-0">
+                    {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
+                  </span>
+                </div>
+
+                {/* INTEGRATED KIBO HINT */}
+                {showFrustrationCard && (
+                  <div className="w-full pt-1.5 border-t border-indigo-100 text-[11px] font-bold text-indigo-900 bg-indigo-50/90 p-2 rounded-2xl animate-pop text-center space-y-0.5 mt-1">
+                    <span className="block font-black text-indigo-950">💪 Kibo Wisdom Hint:</span>
+                    <span className="italic block text-indigo-800">{currentProblem.hint || "Take your time! Break the problem into simple steps."}</span>
+                  </div>
+                )}
               </div>
             );
           })()}
