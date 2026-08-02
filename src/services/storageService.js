@@ -46,8 +46,8 @@ const DEFAULT_PROFILE = {
     }
   },
   shopState: {
-    unlockedItems: ['cap'],
-    equippedItems: ['cap']
+    equippedItems: [],
+    unlockedItems: [],
   }
 };
 

@@ -124,14 +124,23 @@ export default function AdaptiveSessionView({
   const isMoneyQuestion = currentProblem.type === 'money' || currentProblem.requiresDecimal || targetStr.includes('.') || currentProblem.operatorSymbol === '🪙' || (currentProblem.displayString && (currentProblem.displayString.includes('$') || currentProblem.displayString.includes('¢') || currentProblem.displayString.includes('Change')));
   const isTimeQuestion = currentProblem.type === 'time' || currentProblem.requiresColon || targetStr.includes(':') || currentProblem.operatorSymbol === '⏰' || (currentProblem.displayString && (currentProblem.displayString.includes('time') || currentProblem.displayString.includes('Hike started')));
 
+  const [shouldPulseHint, setShouldPulseHint] = useState(false);
+
   useEffect(() => {
     problemStartTimeRef.current = performance.now();
+    setShouldPulseHint(false);
+
+    const hintTimer = setTimeout(() => {
+      setShouldPulseHint(true);
+    }, 7000);
 
     if (isMoneyQuestion && targetStr.startsWith('0.')) {
       setInputVal('0.');
     } else {
       setInputVal('');
     }
+
+    return () => clearTimeout(hintTimer);
   }, [currentIndex, currentProblem, isMoneyQuestion, targetStr]);
 
   const bannerTimerRef = useRef(null);
@@ -796,6 +805,7 @@ export default function AdaptiveSessionView({
                 <button
                   type="button"
                   onClick={() => {
+                    setShouldPulseHint(false);
                     if (showFrustrationCard) return;
                     const owned = consumables?.hintScrollCount ?? 0;
                     if (owned > 0 && onConsumeHintScroll) {
@@ -809,9 +819,11 @@ export default function AdaptiveSessionView({
                       onOpenWorkshop();
                     }
                   }}
-                  className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                  className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                     showFrustrationCard
                       ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
+                      : shouldPulseHint
+                      ? 'bg-amber-300 text-amber-950 border-amber-500 animate-pulse ring-4 ring-amber-400/80 shadow-md scale-105'
                       : (consumables?.hintScrollCount ?? 0) > 0
                       ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
                       : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
@@ -822,7 +834,7 @@ export default function AdaptiveSessionView({
                       : 'Get Hint Scrolls in Kibo\'s Corner'
                   }
                 >
-                  📜 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Get Hint'}
+                  📜 {showFrustrationCard ? 'Hint Active' : shouldPulseHint ? '💡 Need a Hint?' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Get Hint'}
                 </button>
 
                 {(() => {
