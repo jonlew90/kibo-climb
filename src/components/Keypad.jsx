@@ -81,7 +81,12 @@ export default function Keypad({
     operatorSymbol === '🪙'
   );
 
-  const bottomLeftKey = isTimeQuestion ? ':' : isFractionQuestion ? '/' : isMoneyOrDecimal ? '.' : 'clear';
+  const isNegativeQuestion = Boolean(
+    (problemType && (problemType.includes('signed') || problemType.includes('negative'))) ||
+    (answerString && answerString.startsWith('-'))
+  );
+
+  const bottomLeftKey = isTimeQuestion ? ':' : isFractionQuestion ? '/' : isNegativeQuestion ? '-' : isMoneyOrDecimal ? '.' : 'clear';
 
   const keyGrid = [
     ['1', '2', '3'],
@@ -126,6 +131,19 @@ export default function Keypad({
               aria-label="Fraction slash separator"
             >
               /
+            </button>
+          );
+        }
+
+        if (keyVal === '-') {
+          return (
+            <button
+              key={`${keyVal}-${idx}`}
+              onClick={() => handleKeyClick('-')}
+              className="btn-3d-key text-indigo-700 font-black text-3xl hover:bg-indigo-50 border-indigo-200"
+              aria-label="Negative sign"
+            >
+              −
             </button>
           );
         }

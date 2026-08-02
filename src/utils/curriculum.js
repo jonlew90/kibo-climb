@@ -601,7 +601,7 @@ export function generateTierProblem(targetTier) {
     }
     case 7: {
       const subType = Math.random();
-      if (subType < 0.30) {
+      if (subType < 0.25) {
         // Fraction Addition & Subtraction
         const den = [4, 5, 6, 8, 10][Math.floor(Math.random() * 5)];
         const n1 = Math.floor(Math.random() * (den - 2)) + 1;
@@ -647,7 +647,84 @@ export function generateTierProblem(targetTier) {
           requiresFraction: true,
           hint
         };
-      } else if (subType < 0.55) {
+      } else if (subType < 0.45) {
+        // Fraction Reduction / Simplification
+        const unreducedList = [
+          [2, 4], [3, 6], [4, 8], [6, 8], [4, 10], [6, 9], [8, 12], [10, 15], [6, 10], [9, 12]
+        ];
+        const frac = unreducedList[Math.floor(Math.random() * unreducedList.length)];
+        const n = frac[0];
+        const d = frac[1];
+        const g = gcd(n, d);
+        const simpN = n / g;
+        const simpD = d / g;
+        const ansStr = simpD === 1 ? `${simpN}` : `${simpN}/${simpD}`;
+
+        return {
+          tier: effectiveTier,
+          num1: n,
+          num2: d,
+          operatorSymbol: '⚡',
+          answer: ansStr,
+          answerString: ansStr,
+          displayString: `Reduce ${n}/${d} to lowest terms`,
+          type: 'fraction',
+          requiresFraction: true,
+          hint: `Hint: Divide top and bottom by their GCF (${g})!`
+        };
+      } else if (subType < 0.65) {
+        // Fraction Multiplication & Division
+        const isMult = Math.random() > 0.5;
+        if (isMult) {
+          const n1 = Math.floor(Math.random() * 3) + 1;
+          const d1 = Math.floor(Math.random() * 3) + 2;
+          const n2 = Math.floor(Math.random() * 3) + 1;
+          const d2 = Math.floor(Math.random() * 3) + 2;
+          const top = n1 * n2;
+          const bottom = d1 * d2;
+          const g = gcd(top, bottom);
+          const simpN = top / g;
+          const simpD = bottom / g;
+          const ansStr = simpD === 1 ? `${simpN}` : `${simpN}/${simpD}`;
+
+          return {
+            tier: effectiveTier,
+            num1: `${n1}/${d1}`,
+            num2: `${n2}/${d2}`,
+            operatorSymbol: '×',
+            answer: ansStr,
+            answerString: ansStr,
+            displayString: `${n1}/${d1} × ${n2}/${d2}`,
+            type: 'fraction',
+            requiresFraction: true,
+            hint: 'Hint: Multiply top × top, and bottom × bottom!'
+          };
+        } else {
+          const n1 = 1;
+          const d1 = [2, 3, 4][Math.floor(Math.random() * 3)];
+          const n2 = 1;
+          const d2 = [2, 4, 8][Math.floor(Math.random() * 3)];
+          const top = n1 * d2;
+          const bottom = d1 * n2;
+          const g = gcd(top, bottom);
+          const simpN = top / g;
+          const simpD = bottom / g;
+          const ansStr = simpD === 1 ? `${simpN}` : `${simpN}/${simpD}`;
+
+          return {
+            tier: effectiveTier,
+            num1: `${n1}/${d1}`,
+            num2: `${n2}/${d2}`,
+            operatorSymbol: '÷',
+            answer: ansStr,
+            answerString: ansStr,
+            displayString: `${n1}/${d1} ÷ ${n2}/${d2}`,
+            type: 'fraction',
+            requiresFraction: true,
+            hint: 'Hint: Keep-Change-Flip! Multiply by the reciprocal of the second fraction.'
+          };
+        }
+      } else if (subType < 0.85) {
         const pairs = [
           [4, 6], [3, 5], [6, 8], [4, 10], [5, 10], [6, 9], [8, 12]
         ];
@@ -658,17 +735,6 @@ export function generateTierProblem(targetTier) {
         operatorSymbol = 'LCM';
         displayString = `Find LCM(${num1}, ${num2})`;
         hint = `Hint: Skip count by ${Math.max(num1, num2)} until ${Math.min(num1, num2)} divides evenly!`;
-      } else if (subType < 0.80) {
-        const gcfPairs = [
-          [12, 18], [16, 24], [20, 30], [15, 25], [14, 21], [18, 27]
-        ];
-        const pair = gcfPairs[Math.floor(Math.random() * gcfPairs.length)];
-        num1 = pair[0];
-        num2 = pair[1];
-        answer = gcd(num1, num2);
-        operatorSymbol = 'GCF';
-        displayString = `Find GCF(${num1}, ${num2})`;
-        hint = `Hint: Find the largest number that divides into both ${num1} and ${num2}!`;
       } else {
         const p = [10, 20, 25, 50][Math.floor(Math.random() * 4)];
         const total = [40, 60, 80, 100, 200][Math.floor(Math.random() * 5)];
@@ -683,7 +749,7 @@ export function generateTierProblem(targetTier) {
     }
     case 8: {
       const subType = Math.random();
-      if (subType < 0.35) {
+      if (subType < 0.25) {
         const bases = [2, 3, 5, 10];
         const base = bases[Math.floor(Math.random() * bases.length)];
         const exp = base === 10 ? Math.floor(Math.random() * 3) + 1 : Math.floor(Math.random() * 2) + 2;
@@ -693,7 +759,7 @@ export function generateTierProblem(targetTier) {
         operatorSymbol = '^';
         displayString = `${base}^${exp}`;
         hint = `Hint: Multiply ${base} by itself ${exp} times!`;
-      } else if (subType < 0.7) {
+      } else if (subType < 0.50) {
         const perfectSquares = [4, 9, 16, 25, 36, 49, 64, 81, 100];
         const sq = perfectSquares[Math.floor(Math.random() * perfectSquares.length)];
         num1 = sq;
@@ -702,16 +768,46 @@ export function generateTierProblem(targetTier) {
         operatorSymbol = '√';
         displayString = `√${sq}`;
         hint = `Hint: What number times itself equals ${sq}?`;
+      } else if (subType < 0.75) {
+        // Pre-Algebra 2-Step Linear Equations
+        const a = Math.floor(Math.random() * 4) + 2;
+        const ansX = Math.floor(Math.random() * 9) + 2;
+        const b = Math.floor(Math.random() * 8) + 1;
+        const rhs = a * ansX + b;
+        num1 = a;
+        num2 = rhs;
+        answer = ansX;
+        operatorSymbol = '=';
+        displayString = `Solve for x: ${a}x + ${b} = ${rhs}`;
+        hint = `Hint: Subtract ${b} from ${rhs}, then divide by ${a}!`;
       } else {
-        const a = Math.floor(Math.random() * 5) + 2;
-        const b = Math.floor(Math.random() * 4) + 2;
-        const c = Math.floor(Math.random() * 5) + 1;
-        answer = a * b + c;
-        num1 = `${a} × ${b}`;
-        num2 = c;
-        operatorSymbol = '+';
-        displayString = `${a} × ${b} + ${c}`;
-        hint = 'Hint: Remember PEMDAS! Multiply first, then add.';
+        // Signed Negative Integer Operations
+        const isAdd = Math.random() > 0.5;
+        let valA = (Math.floor(Math.random() * 9) + 1) * -1;
+        let valB = Math.floor(Math.random() * 9) + 1;
+        if (Math.random() > 0.5) valB *= -1;
+
+        let ansVal, dispText;
+        if (isAdd) {
+          ansVal = valA + valB;
+          dispText = `${valA} + (${valB})`;
+        } else {
+          ansVal = valA * valB;
+          dispText = `${valA} × (${valB})`;
+        }
+
+        return {
+          tier: effectiveTier,
+          num1: valA,
+          num2: valB,
+          operatorSymbol: isAdd ? '+' : '×',
+          answer: ansVal.toString(),
+          answerString: ansVal.toString(),
+          displayString: dispText,
+          type: 'signed',
+          requiresNegative: true,
+          hint: 'Hint: Remember signed rules! (-) × (-) = (+), (-) × (+) = (-).'
+        };
       }
       break;
     }
