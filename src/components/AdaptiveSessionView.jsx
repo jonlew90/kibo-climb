@@ -73,6 +73,12 @@ export default function AdaptiveSessionView({
   const [blockRatingGain, setBlockRatingGain] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
 
+  const [completedBlockStats, setCompletedBlockStats] = useState({
+    correctCount: 12,
+    sparksEarned: 0,
+    blockRatingGain: 0
+  });
+
   const [inputVal, setInputVal] = useState('');
   const [isShaking, setIsShaking] = useState(false);
   const [feedbackBanner, setFeedbackBanner] = useState(null);
@@ -291,8 +297,20 @@ export default function AdaptiveSessionView({
       setShowBreakOverlay(true);
 
       const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
-      const finalBlockCorrect = isCorrect ? blockCorrectCount + 1 : blockCorrectCount;
+      const finalBlockCorrect = Math.min(12, isCorrect ? blockCorrectCount + 1 : blockCorrectCount);
+      const finalBlockSparks = blockSparksEarned + sparksAwarded;
       const isPerfectBlock = finalBlockCorrect === 12;
+
+      setCompletedBlockStats({
+        correctCount: finalBlockCorrect,
+        sparksEarned: finalBlockSparks,
+        blockRatingGain: nextBlockRatingGain
+      });
+
+      // Immediately reset block counters to 0 for the next 12-question block
+      setBlockCorrectCount(0);
+      setBlockSparksEarned(0);
+      setBlockRatingGain(0);
 
       const currentRecords = activeUserData.personalRecords || {};
 
@@ -484,11 +502,11 @@ export default function AdaptiveSessionView({
   if (showBreakOverlay) {
     return (
       <KiboBreakOverlay
-        correctCount={blockCorrectCount}
+        correctCount={completedBlockStats.correctCount}
         totalCount={12}
         streak={inSessionStreak}
-        sparksEarned={blockSparksEarned}
-        blockRatingGain={blockRatingGain}
+        sparksEarned={completedBlockStats.sparksEarned}
+        blockRatingGain={completedBlockStats.blockRatingGain}
         competenceRating={competenceRank}
         equippedItems={equippedItems}
         onOpenWorkshop={() => {
@@ -499,9 +517,6 @@ export default function AdaptiveSessionView({
           setShowBreakOverlay(false);
           if (onResetDoubleSparks) onResetDoubleSparks();
           setSessionQuestionIndex(1);
-          setBlockCorrectCount(0);
-          setBlockSparksEarned(0);
-          setBlockRatingGain(0);
           blockSeenKeysRef.current.clear();
           blockStartTimeRef.current = performance.now();
           const nextTier = getTierFromRating(competenceRank);

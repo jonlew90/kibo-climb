@@ -15,7 +15,8 @@ export default function KiboBreakOverlay({
   onOpenWorkshop,
   onResumeClimb
 }) {
-  const accuracyPct = Math.round((correctCount / Math.max(1, totalCount)) * 100);
+  const displayCorrect = Math.min(12, Math.max(0, correctCount));
+  const accuracyPct = Math.round((displayCorrect / Math.max(1, totalCount)) * 100);
 
   return (
     <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-hidden select-none animate-pop border-none">
@@ -57,7 +58,7 @@ export default function KiboBreakOverlay({
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Accuracy
               </span>
               <div className="flex items-baseline justify-between">
-                <span className="text-2xl sm:text-3xl font-black text-emerald-700">{correctCount} / {totalCount}</span>
+                <span className="text-2xl sm:text-3xl font-black text-emerald-700">{displayCorrect} / {totalCount}</span>
                 <span className="text-xs sm:text-sm font-extrabold text-emerald-600">{accuracyPct}%</span>
               </div>
             </div>
