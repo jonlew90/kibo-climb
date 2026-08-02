@@ -498,39 +498,7 @@ export default function ParentDashboardModal({
         {/* TAB 2: PIN & SCHEDULE SETTINGS */}
         {activeTab === 'settings' && (
           <div className="flex-1 overflow-y-auto pr-1 space-y-4 my-1">
-            {/* Gameplay & Display Preferences */}
-            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
-              <div className="flex items-center gap-2 text-purple-700">
-                <Clock className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Climb Display Preferences</h4>
-              </div>
 
-              <div className="flex items-center justify-between bg-white border border-slate-200 p-2.5 rounded-xl">
-                <div>
-                  <span className="font-extrabold text-xs text-slate-800 block">Hide Live Timer During Climbs</span>
-                  <span className="text-[10px] text-slate-500 font-medium">Zen Mode: hides ticking clock during questions</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    if (onUpdatePreferences) {
-                      onUpdatePreferences({
-                        ...preferences,
-                        hideSprintTimer: !preferences.hideSprintTimer
-                      });
-                    }
-                  }}
-                  className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
-                    preferences?.hideSprintTimer ? 'bg-purple-600' : 'bg-slate-300'
-                  }`}
-                >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
-                    preferences?.hideSprintTimer ? 'translate-x-5' : 'translate-x-0'
-                  }`} />
-                </button>
-              </div>
-            </div>
 
             {/* Custom 7-Day Practice Schedule */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2.5 text-left">
