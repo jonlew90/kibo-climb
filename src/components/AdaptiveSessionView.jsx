@@ -879,6 +879,16 @@ export default function AdaptiveSessionView({
                     </button>
                   );
                 })()}
+
+                {/* KIBO SHIELD ACTIVE PILL */}
+                {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
+                  <span
+                    className="text-[10px] font-black uppercase text-sky-950 bg-sky-100 px-2.5 py-0.5 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
+                    title="Kibo Shield Active: Your climb & streak are protected!"
+                  >
+                    🛡️ Shield Active ({consumables.shieldCount || consumables.streakSaverCount})
+                  </span>
+                )}
               </div>
 
           {(() => {
