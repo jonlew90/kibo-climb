@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, X } from 'lucide-react';
 import { soundFx } from '../utils/audio';
+import { parentChildService } from '../services/parentChildService';
 
 export default function PinGateModal({
   isOpen,
@@ -52,7 +53,8 @@ export default function PinGateModal({
       setErrorMsg('');
 
       if (nextPin.length === 4) {
-        if (nextPin === currentPin) {
+        const challengeRes = parentChildService.verifyParentGateChallenge(nextPin);
+        if (challengeRes.granted) {
           soundFx.playVictory();
           onUnlockSuccess();
           resetState();
