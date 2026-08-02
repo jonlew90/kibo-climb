@@ -311,8 +311,27 @@ export default function AdaptiveSessionView({
 
     // --- CELEBRATION REWARDS (ONLY FOR NEW BADGE UNLOCKS TO PREVENT POPUP FATIGUE) ---
     if (isCorrect && badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
-      // Pick the highest / most significant newly unlocked badge (last in array when multiple unlock)
-      const highestBadge = badgeEvalRes.newlyUnlocked[badgeEvalRes.newlyUnlocked.length - 1];
+      // Priority sorting: pick the highest tier/prestigious badge among all newly unlocked badges
+      const priorityOrder = [
+        'rank_tier8', 'master_prealgebra',
+        'rank_tier7', 'master_fractions',
+        'rank_tier6',
+        'rank_tier5', 'master_time_money',
+        'rank_tier4',
+        'rank_tier3', 'master_multiplication',
+        'rank_tier2',
+        'rank_tier1', 'master_addition'
+      ];
+
+      const highestBadge = badgeEvalRes.newlyUnlocked.slice().sort((a, b) => {
+        const idxA = priorityOrder.indexOf(a.id);
+        const idxB = priorityOrder.indexOf(b.id);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return 0;
+      })[0] || badgeEvalRes.newlyUnlocked[badgeEvalRes.newlyUnlocked.length - 1];
+
       const bonusSparks = 25;
       if (onAwardSparks) onAwardSparks(bonusSparks);
       setSessionSparksEarned((prev) => prev + bonusSparks);
