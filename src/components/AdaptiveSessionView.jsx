@@ -62,6 +62,7 @@ export default function AdaptiveSessionView({
   consumables = {},
   onToggleDoubleSparksPotion,
   onConsumeHintScroll,
+  onConsumeShield,
   onResetDoubleSparks
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
