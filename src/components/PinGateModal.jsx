@@ -14,21 +14,33 @@ export default function PinGateModal({
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen && onClose) {
+      if (!isOpen) return;
+
+      if (e.key === 'Escape' && onClose) {
+        e.preventDefault();
+        e.stopPropagation();
         handleCloseModal();
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        e.stopPropagation();
+        handleDelete();
+      } else if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleDigitTap(e.key);
       }
     };
 
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keydown', handleKeyDown, true);
     }
 
     return () => {
       document.body.style.overflow = '';
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, pinInput, currentPin, onClose]);
 
   if (!isOpen) return null;
 
@@ -76,11 +88,11 @@ export default function PinGateModal({
   return (
     <div
       onClick={handleCloseModal}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
+      className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-purple-50 via-slate-50 to-indigo-50 text-slate-800 flex flex-col justify-center items-center p-4 sm:p-6 overflow-y-auto overflow-x-hidden select-none animate-pop cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-6 text-center shadow-2xl relative cursor-default transition-transform ${
+        className={`w-full max-w-md bg-white border-4 border-purple-200 rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative cursor-default transition-transform my-auto ${
           isShaking ? 'animate-shake border-rose-400 bg-rose-50' : ''
         }`}
       >

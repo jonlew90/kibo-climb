@@ -571,7 +571,12 @@ export default function AdaptiveSessionView({
   // Physical Desktop Keyboard Listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      if (
+        e.target.tagName === 'INPUT' ||
+        e.target.tagName === 'TEXTAREA' ||
+        document.body.style.overflow === 'hidden' ||
+        document.querySelector('.z-\\[1000\\]')
+      ) {
         return;
       }
 
