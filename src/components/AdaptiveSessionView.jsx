@@ -749,14 +749,6 @@ export default function AdaptiveSessionView({
                     </span>
                   );
                 })()}
-                <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1 shadow-xs shrink-0 relative">
-                  <RollingNumberTicker
-                    value={competenceRank}
-                    label="Rank:"
-                    showDeltaBadge={false}
-                    icon={<Trophy className="w-3 h-3 text-amber-600 stroke-[2.5]" />}
-                  />
-                </span>
               </div>
 
           <div className="text-3xl sm:text-4xl font-extrabold text-slate-800 flex items-center justify-center gap-3 flex-wrap my-1">
