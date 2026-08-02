@@ -29,6 +29,10 @@ import { BRAND_CONFIG } from './config/brand';
 import { pluralize, normalizeTimeAnswer } from './utils/formatters';
 import { storageService } from './services/storageService';
 import { getCompetenceRankTier } from './utils/GameEconomyModel';
+import { authService } from './services/authService';
+import { syncService } from './services/syncService';
+import { shopLedgerService } from './services/shopLedgerService';
+import AccountLinkModal from './components/AccountLinkModal';
 
 export default function App() {
   // App State: 'adaptive_session' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
@@ -66,6 +70,14 @@ export default function App() {
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
   const [showSprintResultsModal, setShowSprintResultsModal] = useState(false);
   const [showBadgesModal, setShowBadgesModal] = useState(false);
+  const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
+  const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
+
+  // Initialize Silent Anonymous Guest Auth & Offline Background Sync Queue on Launch
+  useEffect(() => {
+    authService.initAnonymousGuest();
+    syncService.initBackgroundSync();
+  }, []);
 
   const [unlockedBadges, setUnlockedBadges] = useState(() => {
     return storageService.getUserData().unlockedBadges || [];
@@ -1067,20 +1079,14 @@ export default function App() {
   };
 
   const handleBuyItem = (item) => {
-    if (sparks < item.cost) return;
-
-    if (item.isConsumable && item.id === 'kibo_shield') {
-      if (streakShields >= 2) return;
-      const updatedSparks = sparks - item.cost;
-      const newShields = Math.min(2, streakShields + 1);
-      setSparks(updatedSparks);
-      setStreakShields(newShields);
-      storageService.saveUserData({ sparks: updatedSparks, streakShields: newShields });
+    const res = shopLedgerService.purchaseItem(item.id, item.cost);
+    if (!res.success) {
+      console.warn('Purchase rejected by authoritative ledger:', res.reason);
       return;
     }
 
-    const updatedSparks = sparks - item.cost;
-    const updatedUnlocked = Array.from(new Set([...unlockedItems, item.id]));
+    setSparks(res.newSparks);
+    setUnlockedItems(res.unlockedItems);
 
     const currentSlotCat = item.category;
     const filteredSameSlot = equippedItems.filter((id) => {
@@ -1089,13 +1095,17 @@ export default function App() {
     });
 
     const updatedEquipped = [...filteredSameSlot, item.id];
-
-    setSparks(updatedSparks);
-    setUnlockedItems(updatedUnlocked);
     setEquippedItems(updatedEquipped);
 
-    storageService.saveUserData({ sparks: updatedSparks });
-    storageService.saveShopState(updatedEquipped, updatedUnlocked);
+    storageService.saveShopState(updatedEquipped, res.unlockedItems);
+    soundFx.playVictory();
+
+    // Trigger AccountLinkModal if user reaches 2+ gear unlocks to protect progress!
+    const authState = authService.getAuthState();
+    if (authState.isAnonymous && res.unlockedItems.length >= 2) {
+      setLinkModalMilestone('New Kibo Outfit Unlocked');
+      setShowAccountLinkModal(true);
+    }
   };
 
   const handleToggleEquip = (itemId) => {
@@ -2055,6 +2065,14 @@ export default function App() {
         onBuyItem={handleBuyItem}
         onBuyConsumable={handleBuyConsumable}
         onToggleEquip={handleToggleEquip}
+      />
+
+      {/* Account Link Modal */}
+      <AccountLinkModal
+        isOpen={showAccountLinkModal}
+        onClose={() => setShowAccountLinkModal(false)}
+        triggerMilestone={linkModalMilestone}
+        onAccountLinked={() => setShowAccountLinkModal(false)}
       />
 
       {/* DEV CONTROL PANEL (TRIGGERED BY SECRET KEYSTROKE CODE 'kibodev') */}

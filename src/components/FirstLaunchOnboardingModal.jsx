@@ -51,10 +51,10 @@ export default function FirstLaunchOnboardingModal({
             🏔️ Welcome to Kibo Climb
           </span>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight drop-shadow-xs leading-tight">
-            Bite-Sized Daily Climbs (~3 Mins)
+            Strategic Mental Math Puzzles for Adults & Students
           </h1>
           <p className="text-sm sm:text-base md:text-lg font-extrabold text-purple-900 max-w-lg mx-auto leading-normal">
-            Build math mastery with adaptive daily climbs & earn rewards!
+            Bite-Sized Daily Ascents (~3 Mins) — Adaptive Math Training That Evolves With Your Mind
           </p>
         </div>
 
