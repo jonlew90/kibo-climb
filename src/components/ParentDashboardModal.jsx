@@ -451,7 +451,11 @@ export default function ParentDashboardModal({
 
                             <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs font-bold">
                               <span className="text-slate-500">Topic Rating:</span>
-                              <span className="text-indigo-700 font-black">{data.rating} pts ({data.accuracy}% Acc)</span>
+                              {data.status === 'Locked' || (data.accuracy === 0 && !data.attempts) ? (
+                                <span className="text-slate-400 font-extrabold italic">🔒 Unlocked at Higher Tiers</span>
+                              ) : (
+                                <span className="text-indigo-700 font-black">{data.rating} pts ({data.accuracy}% Acc)</span>
+                              )}
                             </div>
 
                             {data.challengedFacts && data.challengedFacts.length > 0 && (
