@@ -34,11 +34,11 @@ export const BADGES_CATALOG = [
     reqText: 'Reach a 30-Day Daily Streak'
   },
 
-  // CURRICULUM RANK & TIER MILESTONE BADGES (Synced with Tiers 1-8)
+  // CURRICULUM RANK & TIER MILESTONE BADGES (Synced with 4 Macro-Phases & Tiers 1-8)
   {
     id: 'rank_tier1',
     title: 'Meadow Scout',
-    description: 'Completed baseline calibration and reached Sunny Meadow (Rating 1000+)!',
+    description: 'Foundation Phase (Rating 1000+): Mastered Single & Double-Digit Addition & Subtraction.',
     category: 'skill_mastery',
     icon: '🌱',
     reqText: 'Reach Competence Rating 1000+'
@@ -46,7 +46,7 @@ export const BADGES_CATALOG = [
   {
     id: 'rank_tier2',
     title: 'Trail Navigator',
-    description: 'Unlocked Forest Trail (Rating 1200+)! Mastered Multiplication 0s–5s & Clock Math.',
+    description: 'Foundation Phase (Rating 1200+): Mastered Multiplication Facts (0s–5s) & Clock Math.',
     category: 'skill_mastery',
     icon: '🌲',
     reqText: 'Reach Competence Rating 1200+'
@@ -54,7 +54,7 @@ export const BADGES_CATALOG = [
   {
     id: 'rank_tier3',
     title: 'River Mathlete',
-    description: 'Unlocked Multiplication River (Rating 1400+)! Mastered Tables 6s–9s & Coin Math.',
+    description: 'Foundation Phase (Rating 1400+): Mastered Multiplication Tables (6s–12s) & Multi-Digit Division.',
     category: 'skill_mastery',
     icon: '🌊',
     reqText: 'Reach Competence Rating 1400+'
@@ -62,7 +62,7 @@ export const BADGES_CATALOG = [
   {
     id: 'rank_tier4',
     title: 'Canyon Strategist',
-    description: 'Unlocked Factor Canyon (Rating 1600+)! Mastered Multi-Digit Tens & 11s Split Shortcut.',
+    description: 'Intermediate Phase (Rating 1600+): Mastered Comparing & Simplifying Fractions.',
     category: 'skill_mastery',
     icon: '🏜️',
     reqText: 'Reach Competence Rating 1600+'
@@ -70,23 +70,23 @@ export const BADGES_CATALOG = [
   {
     id: 'rank_tier5',
     title: 'Falls Decimalist',
-    description: 'Unlocked Division Falls (Rating 1800+)! Mastered Money Decimals & $1.00 Change Bridge.',
+    description: 'Intermediate Phase (Rating 1800+): Mastered Basic Operations with Decimals & Money.',
     category: 'skill_mastery',
     icon: '🪙',
     reqText: 'Reach Competence Rating 1800+'
   },
   {
     id: 'rank_tier6',
-    title: 'Ridge Divisionist',
-    description: 'Unlocked Boulder Ridge (Rating 2000+)! Mastered Inverse Division & Halving Ladder.',
+    title: 'Ridge Strategist',
+    description: 'Advanced Phase (Rating 2000+): Mastered Applied Math: Percentages, Ratios, & Basic Probability.',
     category: 'skill_mastery',
     icon: '⛰️',
     reqText: 'Reach Competence Rating 2000+'
   },
   {
     id: 'rank_tier7',
-    title: 'Fraction Specialist',
-    description: 'Unlocked Fraction Falls (Rating 2200+)! Mastered Fraction Reduction, Fraction × / ÷, %, & GCF/LCM.',
+    title: 'Fraction & Order Specialist',
+    description: 'Expert Phase (Rating 2200+): Mastered Fraction Arithmetic & PEMDAS Order of Operations.',
     category: 'skill_mastery',
     icon: '🧩',
     reqText: 'Reach Competence Rating 2200+'
@@ -94,49 +94,49 @@ export const BADGES_CATALOG = [
   {
     id: 'rank_tier8',
     title: 'Kibo Summit Legend',
-    description: 'Conquered Mount Kibo Summit (Rating 2400+)! Mastered 2-Step Equations, Signed (-/+) Numbers & Exponents.',
+    description: 'Expert Pre-Algebra Phase (Rating 2400+): Mastered Single-Variable Equations (4x + 2 = 18), Exponents, & Signed Numbers.',
     category: 'skill_mastery',
     icon: '🏔️',
     reqText: 'Reach Competence Rating 2400+'
   },
 
-  // DOMAIN MASTERY BADGES (Synced with Tiers 1-8)
+  // DOMAIN MASTERY BADGES (Synced with 4 Macro-Phases)
   {
     id: 'master_addition',
-    title: 'Sums & Differences Ace',
-    description: 'Mastered Sums & Differences to 20 in Sunny Meadow!',
+    title: 'Basic Arithmetic Ace',
+    description: 'Mastered Single & Double-Digit Addition, Subtraction, & Basic Arithmetic!',
     category: 'skill_mastery',
     icon: '🖐️',
     reqText: 'Reach Rating 1000+'
   },
   {
     id: 'master_multiplication',
-    title: 'Multiplication Master',
-    description: 'Mastered Multiplication Tables 0s–12s & Multi-Digit Shortcuts!',
+    title: 'Multiplication & Division Master',
+    description: 'Mastered Multiplication Tables 0s–12s & Multi-Digit Long Division!',
     category: 'skill_mastery',
     icon: '⚡',
     reqText: 'Reach Rating 1400+'
   },
   {
     id: 'master_time_money',
-    title: 'Trail Merchant & Timekeeper',
-    description: 'Mastered Money Decimals & Elapsed Time!',
+    title: 'Fractions & Decimals Master',
+    description: 'Mastered Comparing Fractions, Simplifying, & Decimal Operations!',
     category: 'skill_mastery',
     icon: '⏰',
     reqText: 'Reach Rating 1800+'
   },
   {
     id: 'master_fractions',
-    title: 'Fraction & GCF Master',
-    description: 'Mastered Fraction Reduction, Multiplication/Division, %, & GCF/LCM!',
+    title: 'Applied Math Strategist',
+    description: 'Mastered Applied Math: Percentages, Ratios, & Basic Probability!',
     category: 'skill_mastery',
     icon: '🧩',
     reqText: 'Reach Rating 2200+'
   },
   {
     id: 'master_prealgebra',
-    title: 'Pre-Algebra & Signed Master',
-    description: 'Mastered 2-Step Equations, Signed (-/+) Numbers & Exponents!',
+    title: 'Pre-Algebra Summit Champion',
+    description: 'Mastered Single-Variable Equations (4x + 2 = 18), PEMDAS, & Exponents!',
     category: 'skill_mastery',
     icon: '👑',
     reqText: 'Reach Rating 2400+'
