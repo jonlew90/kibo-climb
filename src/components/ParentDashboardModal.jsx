@@ -610,41 +610,57 @@ export default function ParentDashboardModal({
               </div>
 
               {/* Weekly Digest */}
-              <div className="flex items-center justify-between bg-white border border-slate-200 p-2.5 rounded-xl">
-                <div>
-                  <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary</span>
-                  <span className="text-[10px] text-slate-500 font-medium">Weekly mastery breakdown digest</span>
+              <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Weekly mastery breakdown digest</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleNotifPref('weeklyDigestEnabled')}
+                    className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                      notifPrefs.weeklyDigestEnabled ? 'bg-purple-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                      notifPrefs.weeklyDigestEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleToggleNotifPref('weeklyDigestEnabled')}
-                  className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
-                    notifPrefs.weeklyDigestEnabled ? 'bg-purple-600' : 'bg-slate-300'
-                  }`}
-                >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
-                    notifPrefs.weeklyDigestEnabled ? 'translate-x-5' : 'translate-x-0'
-                  }`} />
-                </button>
+                {notifPrefs.weeklyDigestEnabled && (
+                  <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2 rounded-lg border border-purple-200 mt-1 leading-snug">
+                    📅 <strong>Schedule:</strong> Sent every <strong>Sunday at 6:00 PM</strong>.<br />
+                    📊 <strong>Includes:</strong> Weekly problems solved, rating gain, recall latency breakdown, mastered topics & unlocked badges.
+                  </p>
+                )}
               </div>
 
               {/* Struggle / Target Fact Alerts */}
-              <div className="flex items-center justify-between bg-white border border-slate-200 p-2.5 rounded-xl">
-                <div>
-                  <span className="font-extrabold text-xs text-slate-800 block">Struggle & Review Alerts</span>
-                  <span className="text-[10px] text-slate-500 font-medium">Alert when accuracy or speed drops on target facts</span>
+              <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-extrabold text-xs text-slate-800 block">Struggle & Review Alerts</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Real-time alerts when accuracy drops or frustration triggers</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleNotifPref('struggleAlertsEnabled')}
+                    className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                      notifPrefs.struggleAlertsEnabled ? 'bg-purple-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                      notifPrefs.struggleAlertsEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleToggleNotifPref('struggleAlertsEnabled')}
-                  className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
-                    notifPrefs.struggleAlertsEnabled ? 'bg-purple-600' : 'bg-slate-300'
-                  }`}
-                >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
-                    notifPrefs.struggleAlertsEnabled ? 'translate-x-5' : 'translate-x-0'
-                  }`} />
-                </button>
+                {notifPrefs.struggleAlertsEnabled && (
+                  <p className="text-[10px] text-amber-950 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200 mt-1 leading-snug">
+                    ⚡ <strong>Timing:</strong> Sent <strong>immediately post-session</strong>.<br />
+                    ⚠️ <strong>Triggers:</strong> Session accuracy &lt; 65%, 3+ consecutive misses, or active frustration circuit with actionable review tips.
+                  </p>
+                )}
               </div>
             </div>
 
