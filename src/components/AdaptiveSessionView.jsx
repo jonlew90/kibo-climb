@@ -528,20 +528,31 @@ export default function AdaptiveSessionView({
       return;
     }
 
-    // Auto-detect max length mismatch (excluding leading "0." or "." so decimal is not counted as a digit)
-    const extractDigits = (str) => {
-      let s = String(str || '').replace('$', '').replace('¢', '').trim();
-      if (s.startsWith('0.')) s = s.slice(2);
-      else if (s.startsWith('.')) s = s.slice(1);
-      else s = s.replace('.', '');
-      return s.replace(/\D/g, '');
-    };
+    // Auto-detect max length mismatch for fractions, numbers, and decimals
+    if (targetStr.includes('/') && newInput.includes('/')) {
+      const [userNumPart, userDenomPart] = newInput.split('/');
+      const [targetNumPart, targetDenomPart] = targetStr.split('/');
+      if (
+        userNumPart && targetNumPart &&
+        userDenomPart && targetDenomPart &&
+        userNumPart.length >= targetNumPart.length &&
+        userDenomPart.length >= targetDenomPart.length
+      ) {
+        processAnswerEvaluation(newInput);
+        return;
+      }
+    } else if (!targetStr.includes('/') && (!targetStr.includes('.') || newInput.includes('.'))) {
+      const extractDigits = (str) => {
+        let s = String(str || '').replace('$', '').replace('¢', '').trim();
+        if (s.startsWith('0.')) s = s.slice(2);
+        else if (s.startsWith('.')) s = s.slice(1);
+        else s = s.replace('.', '');
+        return s.replace(/\D/g, '');
+      };
 
-    const userDigits = extractDigits(newInput);
-    const targetDigits = extractDigits(targetStr);
+      const userDigits = extractDigits(newInput);
+      const targetDigits = extractDigits(targetStr);
 
-    // Only auto-submit length mismatch if target isn't a fraction or a decimal (unless user has typed decimal point)
-    if (!targetStr.includes('/') && (!targetStr.includes('.') || newInput.includes('.'))) {
       if (userDigits.length > 0 && targetDigits.length > 0 && userDigits.length >= targetDigits.length) {
         processAnswerEvaluation(newInput);
         return;
