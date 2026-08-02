@@ -311,7 +311,8 @@ export default function AdaptiveSessionView({
 
     // --- CELEBRATION REWARDS (ONLY FOR NEW BADGE UNLOCKS TO PREVENT POPUP FATIGUE) ---
     if (isCorrect && badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
-      const newBadge = badgeEvalRes.newlyUnlocked[0];
+      // Pick the highest / most significant newly unlocked badge (last in array when multiple unlock)
+      const highestBadge = badgeEvalRes.newlyUnlocked[badgeEvalRes.newlyUnlocked.length - 1];
       const bonusSparks = 25;
       if (onAwardSparks) onAwardSparks(bonusSparks);
       setSessionSparksEarned((prev) => prev + bonusSparks);
@@ -320,9 +321,9 @@ export default function AdaptiveSessionView({
       setCelebrationEvent({
         type: 'badge',
         title: '🏆 NEW BADGE UNLOCKED!',
-        icon: newBadge.icon || '🏅',
-        name: newBadge.title || newBadge.name,
-        description: newBadge.description,
+        icon: highestBadge.icon || '🏅',
+        name: highestBadge.title || highestBadge.name,
+        description: highestBadge.description,
         bonusSparks: bonusSparks
       });
     }
