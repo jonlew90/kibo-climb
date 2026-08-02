@@ -62,10 +62,55 @@ export default function Keypad({
     );
   }
 
+  const choiceOptions = options || (displayString && (displayString.includes(' or ') || displayString.includes(' vs ')) ? (() => {
+    const match = displayString.match(/:\s*([^\?]+)\?/i) || displayString.match(/(.+)/);
+    if (match) {
+      const parts = match[1].split(/\s+or\s+|\s+vs\s+/i).map((s) => s.trim()).filter(Boolean);
+      if (parts.length >= 2) return parts;
+    }
+    return null;
+  })() : null);
+
+  const isChoiceQuestion = Boolean(
+    (choiceOptions && choiceOptions.length >= 2) ||
+    (displayString && (
+      displayString.toLowerCase().includes('which is larger') ||
+      displayString.toLowerCase().includes('which is smaller') ||
+      displayString.toLowerCase().includes('which is greater')
+    ))
+  );
+
+  if (isChoiceQuestion && choiceOptions && choiceOptions.length >= 2) {
+    return (
+      <div className="w-full max-w-sm mx-auto flex items-center justify-center gap-3 p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner">
+        {choiceOptions.map((opt, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              handleInputDigit(opt);
+              if (onSubmit) {
+                setTimeout(() => onSubmit(), 50);
+              }
+            }}
+            className={`flex-1 py-4 text-xl sm:text-2xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all cursor-pointer ${
+              idx === 0
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-b-4 border-amber-700'
+                : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 border-b-4 border-indigo-700'
+            }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   const isTimeQuestion = Boolean(
     (problemType && problemType.includes('time')) ||
     (answerString && answerString.includes(':')) ||
-    (displayString && (displayString.includes(':') || displayString.includes('time') || displayString.includes('Time'))) ||
+    (displayString && /\d+:\d+/.test(displayString)) ||
     operatorSymbol === '⏰'
   );
 
