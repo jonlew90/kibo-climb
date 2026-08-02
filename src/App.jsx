@@ -1203,10 +1203,14 @@ export default function App() {
                 soundFx.playKeyTap();
                 setAppState('adaptive_session');
               }}
-              className="flex items-center gap-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 font-black text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border border-amber-300"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 font-black text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border border-amber-300"
               title="Kibo Climb Main Session"
             >
-              <span className="text-sm">🏔️</span>
+              <img
+                src="/kibo_mascot.svg"
+                alt="Kibo Mascot"
+                className="w-5 h-5 sm:w-6 sm:h-6 object-contain filter drop-shadow-2xs"
+              />
               <span className="tracking-tight font-black hidden xs:inline">Kibo</span>
             </button>
 
