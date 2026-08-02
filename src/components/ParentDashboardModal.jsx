@@ -264,7 +264,7 @@ export default function ParentDashboardModal({
                 <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
                   <span className="text-[9px] text-slate-500 uppercase block font-black">Fastest 12-Q Block</span>
                   <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.fastest12QuestionsTime || personalRecords?.fastest10QuestionsTime ? `${personalRecords.fastest12QuestionsTime || personalRecords.fastest10QuestionsTime}s` : 'N/A'}</span>
-                  <span className="text-[8px] font-bold text-slate-600 block mt-0.5">Best time for 12 Qs</span>
+                  <span className="text-[8px] font-extrabold text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded-md border border-amber-300 block mt-0.5">⚡ Requires 100% Acc</span>
                 </div>
 
                 <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
@@ -524,37 +524,6 @@ export default function ParentDashboardModal({
                 </div>
               );
             })()}
-
-            {/* Earned Trail Badges Showcase */}
-            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2 text-left">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-amber-700">
-                  <Award className="w-5 h-5 stroke-[2.5]" />
-                  <h4 className="font-extrabold text-sm text-slate-800">Earned Trail Badges</h4>
-                </div>
-                <span className="text-xs font-extrabold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
-                  {unlockedBadges.length} / {BADGES_CATALOG.length} Unlocked
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
-                {BADGES_CATALOG.filter((b) => unlockedBadges.includes(b.id)).length === 0 ? (
-                  <p className="text-xs text-slate-400 font-medium italic py-1">No badges unlocked yet. Keep climbing!</p>
-                ) : (
-                  BADGES_CATALOG.filter((b) => unlockedBadges.includes(b.id)).map((badge) => (
-                    <div key={badge.id} className="bg-white border border-amber-300 p-2.5 rounded-xl flex items-center gap-2 shrink-0 shadow-sm">
-                      <span className="text-2xl">{badge.icon}</span>
-                      <div>
-                        <span className="font-extrabold text-slate-800 text-xs block leading-snug">{badge.title}</span>
-                        <span className="text-[9px] text-amber-800 font-bold uppercase block">
-                          {badge.category ? badge.category.replace(/_/g, ' ') : 'Milestone'}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
           </div>
         )}
 

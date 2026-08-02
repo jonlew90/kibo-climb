@@ -98,6 +98,7 @@ export default function BadgesModal({
             <div className="bg-white/90 p-3 rounded-2xl border border-purple-100 shadow-xs">
               <span className="text-[10px] text-slate-500 uppercase block font-black">Fastest 12-Q Block</span>
               <span className="text-purple-900 font-black text-sm sm:text-base mt-0.5 block">{fastestTime ? `${fastestTime}s ⚡` : 'N/A'}</span>
+              <span className="text-[9px] font-extrabold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300 inline-block mt-1">⚡ Requires 100% Accuracy</span>
             </div>
 
             <div className="bg-white/90 p-3 rounded-2xl border border-purple-100 shadow-xs">
