@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, UserPlus } from 'lucide-react';
-import { CURRICULUM_TIERS, getGradeLevelFromRating } from '../utils/curriculum';
+import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating } from '../utils/curriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
