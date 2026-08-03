@@ -57,12 +57,15 @@ export default function ParentDashboardModal({
   const [showNewChildInput, setShowNewChildInput] = useState(false);
   const [newChildName, setNewChildName] = useState('');
   const [newChildGrade, setNewChildGrade] = useState('Grade 3');
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editChildName, setEditChildName] = useState('');
 
   const handleSwitchProfile = (pId) => {
     soundFx.playKeyTap();
     storageService.setActiveProfileId(pId);
     setActiveProfileId(pId);
     setLiveUserData(storageService.getUserData());
+    setShowEditProfile(false);
   };
 
   const handleCreateProfile = (e) => {
@@ -75,6 +78,40 @@ export default function ParentDashboardModal({
     setLiveUserData(storageService.getUserData());
     setNewChildName('');
     setShowNewChildInput(false);
+  };
+
+  const handleOpenEditProfile = () => {
+    soundFx.playKeyTap();
+    const activeProf = profilesList.find((p) => p.id === activeProfileId) || storageService.getActiveProfile();
+    setEditChildName(activeProf.name || 'Kibo Climber');
+    setShowEditProfile((prev) => !prev);
+  };
+
+  const handleSaveEditProfile = (e) => {
+    e.preventDefault();
+    if (!editChildName.trim()) return;
+    soundFx.playVictory();
+    storageService.updateProfile(activeProfileId, { name: editChildName.trim() });
+    setProfilesList(storageService.getAllProfiles());
+    setLiveUserData(storageService.getUserData());
+    setShowEditProfile(false);
+  };
+
+  const handleDeleteProfile = (pId) => {
+    if (profilesList.length <= 1) {
+      alert('Cannot delete sole profile. Create another profile first.');
+      return;
+    }
+    if (window.confirm('Are you sure you want to delete this child profile and its progress?')) {
+      soundFx.playIncorrect();
+      storageService.deleteProfile(pId);
+      const updatedList = storageService.getAllProfiles();
+      setProfilesList(updatedList);
+      const newActive = storageService.getActiveProfileId();
+      setActiveProfileId(newActive);
+      setLiveUserData(storageService.getUserData());
+      setShowEditProfile(false);
+    }
   };
 
   const [dismissedAlerts, setDismissedAlerts] = useState(() => {
@@ -200,14 +237,55 @@ export default function ParentDashboardModal({
               <Users className="w-4 h-4 stroke-[2.5]" />
               <span className="text-xs font-black uppercase tracking-wider">Active Child Profile</span>
             </div>
-            <button
-              onClick={() => setShowNewChildInput((prev) => !prev)}
-              className="text-[11px] font-extrabold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-200 flex items-center gap-1 transition-all"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              {showNewChildInput ? 'Cancel' : '+ Add Child Profile'}
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleOpenEditProfile}
+                className="text-[11px] font-extrabold text-slate-700 hover:text-purple-900 bg-slate-100 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-slate-200 flex items-center gap-1 transition-all"
+              >
+                ✏️ {showEditProfile ? 'Cancel Edit' : 'Rename / Edit'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowEditProfile(false);
+                  setShowNewChildInput((prev) => !prev);
+                }}
+                className="text-[11px] font-extrabold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-200 flex items-center gap-1 transition-all"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                {showNewChildInput ? 'Cancel' : '+ Add Profile'}
+              </button>
+            </div>
           </div>
+
+          {/* Edit / Rename Active Profile Form */}
+          {showEditProfile && (
+            <form onSubmit={handleSaveEditProfile} className="flex items-center gap-2 pt-2 border-t border-purple-100 bg-purple-50/60 p-2 rounded-xl">
+              <span className="text-xs font-black text-purple-900 shrink-0">Rename:</span>
+              <input
+                type="text"
+                value={editChildName}
+                onChange={(e) => setEditChildName(e.target.value)}
+                placeholder="Enter Child's Name (e.g. Leo)"
+                required
+                className="flex-1 px-3 py-1.5 bg-white border border-purple-300 rounded-xl text-xs font-bold focus:outline-none focus:border-purple-600"
+              />
+              <button type="submit" className="btn-3d-purple px-3.5 py-1.5 text-xs rounded-xl font-black">
+                Save Name
+              </button>
+              {profilesList.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteProfile(activeProfileId)}
+                  className="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 font-extrabold text-xs rounded-xl border border-rose-300 transition-colors shrink-0"
+                  title="Delete this profile"
+                >
+                  🗑️ Delete
+                </button>
+              )}
+            </form>
+          )}
 
           {/* New Profile Input Form */}
           {showNewChildInput && (

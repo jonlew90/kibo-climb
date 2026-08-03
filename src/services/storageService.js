@@ -128,6 +128,31 @@ export const storageService = {
     return newProfile;
   },
 
+  updateProfile(profileId, updates = {}) {
+    const state = safeGetProfilesState();
+    if (state.profiles[profileId]) {
+      state.profiles[profileId] = {
+        ...state.profiles[profileId],
+        ...updates
+      };
+      safeSaveProfilesState(state);
+    }
+    return state.profiles[profileId];
+  },
+
+  deleteProfile(profileId) {
+    const state = safeGetProfilesState();
+    const keys = Object.keys(state.profiles);
+    if (keys.length <= 1) return false;
+
+    delete state.profiles[profileId];
+    if (state.activeProfileId === profileId) {
+      state.activeProfileId = Object.keys(state.profiles)[0];
+    }
+    safeSaveProfilesState(state);
+    return true;
+  },
+
   // User Data (scoped to activeProfileId)
   getUserData() {
     const active = this.getActiveProfile();
