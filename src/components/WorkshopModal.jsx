@@ -48,6 +48,7 @@ export default function WorkshopModal({
 
   const [activeCategory, setActiveCategory] = useState('powerups');
   const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
+  const [recentlyPurchasedId, setRecentlyPurchasedId] = useState(null);
 
   const categoryScrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -164,6 +165,9 @@ export default function WorkshopModal({
   const handleBuy = (item) => {
     if (sparks >= item.cost) {
       soundFx.playVictory();
+      setRecentlyPurchasedId(item.id);
+      setTimeout(() => setRecentlyPurchasedId(null), 1400);
+
       if (item.isConsumable && onBuyConsumable) {
         onBuyConsumable(item);
       } else {
@@ -337,12 +341,16 @@ export default function WorkshopModal({
               const shortfall = item.cost - sparks;
               const rarityInfo = RARITY_TIERS[item.rarity] || RARITY_TIERS.common;
 
+              const isJustPurchased = recentlyPurchasedId === item.id;
+
               return (
                 <div
                   key={item.id}
                   onClick={() => handlePreviewToggle(item)}
-                  className={`p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 cursor-pointer ${
-                    isPreviewedOnStage
+                  className={`p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 cursor-pointer relative ${
+                    isJustPurchased
+                      ? 'ring-4 ring-emerald-400 border-emerald-500 bg-emerald-50/90 shadow-xl scale-[1.01]'
+                      : isPreviewedOnStage
                       ? 'bg-purple-50/90 border-purple-400 shadow-md ring-2 ring-purple-200'
                       : isUnlocked
                       ? 'bg-white border-slate-200 shadow-sm hover:border-slate-300'
@@ -351,6 +359,13 @@ export default function WorkshopModal({
                       : 'bg-slate-50 border-slate-200 opacity-95 hover:border-slate-300'
                   }`}
                 >
+                  {/* Floating +1 Purchase Notification Badge */}
+                  {isJustPurchased && (
+                    <span className="absolute -top-3 right-6 text-[10px] font-black text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-0.5 rounded-full border-2 border-white shadow-lg animate-bounce flex items-center gap-1 z-30">
+                      ✨ +1 Purchased!
+                    </span>
+                  )}
+
                   {/* SVG Item Thumbnail Graphic */}
                   <ItemThumbnail itemId={item.id} rarity={item.rarity} className="w-12 h-12 shrink-0" />
 
@@ -367,7 +382,11 @@ export default function WorkshopModal({
 
                       {/* Status Badges */}
                       {isConsumable ? (
-                        <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border transition-all duration-300 ${
+                          isJustPurchased
+                            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-600 scale-110 ring-4 ring-emerald-300 shadow-md animate-pulse'
+                            : 'text-amber-950 bg-amber-100 border-amber-300'
+                        }`}>
                           🎒 OWNED: {item.id === 'kibo_shield' ? shieldOwned : item.id === 'streak_saver' ? (consumables?.streakSaverCount ?? 0) : item.id === 'hint_scroll' ? (consumables?.hintScrollCount ?? 0) : (consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0)}
                         </span>
                       ) : isEquippedInApp ? (
@@ -402,17 +421,29 @@ export default function WorkshopModal({
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-xs text-slate-500 font-medium leading-tight">{item.description}</p>
                       {isConsumable && item.id === 'kibo_shield' && (
-                        <span className="text-[10px] font-extrabold text-amber-900 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border transition-all duration-300 ${
+                          isJustPurchased
+                            ? 'bg-emerald-400 text-white font-black border-emerald-600 scale-110 ring-2 ring-emerald-300 animate-bounce'
+                            : 'text-amber-900 bg-amber-50 border-amber-200'
+                        }`}>
                           Capacity: {shieldOwned}/2
                         </span>
                       )}
                       {isConsumable && (item.id === 'double_sparks_potion' || item.id === 'double_coin_potion') && (
-                        <span className="text-[10px] font-extrabold text-purple-900 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border transition-all duration-300 ${
+                          isJustPurchased
+                            ? 'bg-purple-500 text-white font-black border-purple-700 scale-110 ring-2 ring-purple-300 animate-bounce'
+                            : 'text-purple-900 bg-purple-50 border-purple-200'
+                        }`}>
                           Owned: {consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0}
                         </span>
                       )}
                       {isConsumable && item.id === 'hint_scroll' && (
-                        <span className="text-[10px] font-extrabold text-indigo-900 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
+                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border transition-all duration-300 ${
+                          isJustPurchased
+                            ? 'bg-indigo-500 text-white font-black border-indigo-700 scale-110 ring-2 ring-indigo-300 animate-bounce'
+                            : 'text-indigo-900 bg-indigo-50 border-indigo-200'
+                        }`}>
                           Owned: {consumables?.hintScrollCount ?? 0}
                         </span>
                       )}
