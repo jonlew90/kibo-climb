@@ -114,19 +114,26 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
       speed = Number((matchedDuration / matchedTotal).toFixed(1));
       status = accuracy >= 80 ? 'Mastered' : accuracy >= 60 ? 'Practicing' : 'Challenged';
     } else {
-      // Benchmark calculation based on student's actual activeCompetenceRating
+      // Real-time calculation based on actual problem history
+      const hasAnyHistory = (sprintHistory || []).length > 0;
+      
       if (activeRating < def.minUnlockRating) {
         status = 'Locked';
         accuracy = 0;
         speed = def.defaultSpeed;
-      } else if (activeRating >= def.minUnlockRating && activeRating < def.minUnlockRating + 150) {
-        status = 'Practicing';
-        accuracy = Math.min(85, Math.max(65, 65 + Math.round((activeRating - def.minUnlockRating) * 0.13)));
-        speed = Number((def.defaultSpeed - 0.3).toFixed(1));
+      } else if (!hasAnyHistory) {
+        // Brand new user with 0 completed climbs
+        if (def.minUnlockRating < 1200) {
+          status = 'Ready for Placement';
+          accuracy = 0;
+        } else {
+          status = 'Locked';
+          accuracy = 0;
+        }
       } else {
-        status = 'Mastered';
-        accuracy = Math.min(98, Math.max(85, 85 + Math.round((activeRating - (def.minUnlockRating + 150)) * 0.05)));
-        speed = Number((def.defaultSpeed - 0.6).toFixed(1));
+        // Active unlocked strand without recent sprint data
+        status = 'Ready for Practice';
+        accuracy = 0;
       }
     }
 
@@ -137,8 +144,10 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
       recommendation = `Great mastery! Strong recall across ${def.name.toLowerCase()}.`;
     } else if (status === 'Practicing') {
       recommendation = `Active practice strand. Building recall speed toward target speed.`;
+    } else if (status === 'Ready for Placement') {
+      recommendation = `Active starting topic! Complete your first climb to establish baseline accuracy.`;
     } else {
-      recommendation = `Needs practice. Review facts in active climb sessions.`;
+      recommendation = `Active strand ready for climbing practice.`;
     }
 
     return {

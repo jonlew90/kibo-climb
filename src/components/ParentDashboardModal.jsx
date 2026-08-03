@@ -381,8 +381,9 @@ export default function ParentDashboardModal({
                         <span className="text-[9px] text-teal-700 font-bold block">Bite-Sized Ascents (~3 Mins) 🎯</span>
                       </div>
                     </div>
-                    <p className="text-[10px] font-medium text-slate-600 italic leading-tight pt-0.5">
-                      💡 Measures active problem-solving time only. Zero filler, zero ad bloat—100% productive math learning!
+                    <p className="text-[10px] font-medium text-slate-600 italic leading-tight pt-0.5 flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5 text-sky-700 stroke-[2.5] shrink-0" />
+                      <span>Measures active problem-solving time only. Zero filler, zero ad bloat—100% productive math learning!</span>
                     </p>
                   </section>
                 </div>
@@ -420,7 +421,7 @@ export default function ParentDashboardModal({
             {(() => {
               const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
-              const currentMathTier = Math.min(8, Math.max(1, Math.floor((actualRating - 900) / 100) + 1));
+              const currentMathTier = getTierFromRating(actualRating);
               const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating, activeUserData.ratingHistory || []);
               
               const struggleStrands = Object.entries(adaptiveProfile.skillStrandBreakdown || {})
@@ -517,7 +518,7 @@ export default function ParentDashboardModal({
             {(() => {
               const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
-              const currentMathTier = Math.min(8, Math.max(1, Math.floor((actualRating - 900) / 100) + 1));
+              const currentMathTier = getTierFromRating(actualRating);
               const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating, activeUserData.ratingHistory || []);
               const { adaptiveCompetenceRating, last30DaysGrowthData, masteryDistribution, skillStrandBreakdown } = adaptiveProfile;
               const rankTitle = getCompetenceRankTier(adaptiveCompetenceRating);
@@ -530,7 +531,7 @@ export default function ParentDashboardModal({
                       <div>
                         <h2 className="text-lg font-black text-slate-800 tracking-tight">Current Math Mastery</h2>
                         <span className="text-[10px] text-indigo-600 font-bold block">
-                          Level {currentMathTier} • {rankTitle} ({adaptiveCompetenceRating} Rating)
+                          Tier {currentMathTier} • {rankTitle} ({adaptiveCompetenceRating} Rating)
                         </span>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
@@ -560,11 +561,14 @@ export default function ParentDashboardModal({
                         <p className="font-bold text-indigo-950 bg-white/80 p-2.5 rounded-xl border border-indigo-100/80 shadow-xs">
                           {getCompetenceDescription(adaptiveCompetenceRating, totalProblemsSolved)}
                         </p>
-                        <div className="flex items-center gap-3 pt-1 text-[11px] font-bold">
+                        <div className="flex items-center gap-3 pt-1 text-[11px] font-bold flex-wrap">
                           <span className="text-emerald-700">🟢 {masteryDistribution.mastered}% Mastered</span>
                           <span className="text-amber-700">🟡 {masteryDistribution.practicing}% Practicing</span>
-                          <span className="text-rose-700">🔴 {masteryDistribution.challenged}% Review</span>
+                          <span className="text-purple-700">🟣 {masteryDistribution.challenged}% Review & Placement</span>
                         </div>
+                        <p className="text-[10px] text-purple-950 font-medium bg-purple-100/70 p-2 rounded-xl border border-purple-200 mt-1 leading-snug">
+                          ℹ️ <strong>Review & Placement Stat:</strong> Represents topics currently queued for ongoing practice, placement calibration, or active memory reinforcement.
+                        </p>
                       </div>
                     </div>
                   </section>
