@@ -1349,13 +1349,7 @@ export default function App() {
             const authState = authService.getAuthState();
             if (authState.isAnonymous) {
               const hasPrompted1200 = localStorage.getItem('kibo_prompted_link_1200');
-              const hasPrompted1600 = localStorage.getItem('kibo_prompted_link_1600');
-
-              if (newRating >= 1600 && !hasPrompted1600) {
-                localStorage.setItem('kibo_prompted_link_1600', 'true');
-                setLinkModalMilestone('Tier 4 Milestone (Rating 1600+)');
-                setShowAccountLinkModal(true);
-              } else if (newRating >= 1200 && !hasPrompted1200) {
+              if (newRating >= 1200 && !hasPrompted1200) {
                 localStorage.setItem('kibo_prompted_link_1200', 'true');
                 setLinkModalMilestone('Tier 2 Milestone (Rating 1200+)');
                 setShowAccountLinkModal(true);
