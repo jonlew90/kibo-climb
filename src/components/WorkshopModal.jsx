@@ -380,14 +380,16 @@ export default function WorkshopModal({
                         </span>
                       )}
 
-                      {/* Status Badges */}
+                      {/* Status Badges (DEDUPED SINGLE BADGE PER POWERUP) */}
                       {isConsumable ? (
                         <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border transition-all duration-300 ${
                           isJustPurchased
                             ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-600 scale-110 ring-4 ring-emerald-300 shadow-md animate-pulse'
                             : 'text-amber-950 bg-amber-100 border-amber-300'
                         }`}>
-                          🎒 OWNED: {item.id === 'kibo_shield' ? shieldOwned : item.id === 'streak_saver' ? (consumables?.streakSaverCount ?? 0) : item.id === 'hint_scroll' ? (consumables?.hintScrollCount ?? 0) : (consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0)}
+                          {item.id === 'kibo_shield'
+                            ? `🛡️ CAPACITY: ${shieldOwned}/2`
+                            : `🎒 OWNED: ${item.id === 'streak_saver' ? (consumables?.streakSaverCount ?? 0) : item.id === 'hint_scroll' ? (consumables?.hintScrollCount ?? 0) : (consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0)}`}
                         </span>
                       ) : isEquippedInApp ? (
                         <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5">
@@ -420,33 +422,6 @@ export default function WorkshopModal({
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-xs text-slate-500 font-medium leading-tight">{item.description}</p>
-                      {isConsumable && item.id === 'kibo_shield' && (
-                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border transition-all duration-300 ${
-                          isJustPurchased
-                            ? 'bg-emerald-400 text-white font-black border-emerald-600 scale-110 ring-2 ring-emerald-300 animate-bounce'
-                            : 'text-amber-900 bg-amber-50 border-amber-200'
-                        }`}>
-                          Capacity: {shieldOwned}/2
-                        </span>
-                      )}
-                      {isConsumable && (item.id === 'double_sparks_potion' || item.id === 'double_coin_potion') && (
-                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border transition-all duration-300 ${
-                          isJustPurchased
-                            ? 'bg-purple-500 text-white font-black border-purple-700 scale-110 ring-2 ring-purple-300 animate-bounce'
-                            : 'text-purple-900 bg-purple-50 border-purple-200'
-                        }`}>
-                          Owned: {consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0}
-                        </span>
-                      )}
-                      {isConsumable && item.id === 'hint_scroll' && (
-                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border transition-all duration-300 ${
-                          isJustPurchased
-                            ? 'bg-indigo-500 text-white font-black border-indigo-700 scale-110 ring-2 ring-indigo-300 animate-bounce'
-                            : 'text-indigo-900 bg-indigo-50 border-indigo-200'
-                        }`}>
-                          Owned: {consumables?.hintScrollCount ?? 0}
-                        </span>
-                      )}
                     </div>
                   </div>
 
