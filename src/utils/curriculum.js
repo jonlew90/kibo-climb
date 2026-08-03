@@ -10,6 +10,15 @@ export function getTierFromRating(rating = 1000) {
   return 8;                       // Tier 8: Exponents, Square Roots & Peak Algebra
 }
 
+export function getGradeLevelFromRating(rating = 1000) {
+  const numRating = Number(rating) || 1000;
+  if (numRating < 1200) return 'Grade 1–2';
+  if (numRating < 1600) return 'Grade 3';
+  if (numRating < 2000) return 'Grade 4';
+  if (numRating < 2400) return 'Grade 5';
+  return 'Grade 6+';
+}
+
 export const CURRICULUM_TIERS = [
   {
     tier: 1,

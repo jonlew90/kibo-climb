@@ -13,7 +13,7 @@ const DEFAULT_PROFILE_ID = 'default_child';
 const DEFAULT_PROFILE = {
   id: DEFAULT_PROFILE_ID,
   name: 'Kibo Climber',
-  gradeLevel: 'Grade 3',
+  gradeLevel: 'Grade 1–2',
   userData: {
     adaptiveCompetenceRating: 1000,
     competenceRank: 1000,
@@ -113,7 +113,7 @@ export const storageService = {
     const state = safeGetProfilesState();
     return Object.values(state.profiles);
   },
-  createProfile(name = 'New Climber', gradeLevel = 'Grade 3') {
+  createProfile(name = 'New Climber', gradeLevel = 'Grade 1–2') {
     const state = safeGetProfilesState();
     const id = `profile_${Date.now()}`;
     const newProfile = {
