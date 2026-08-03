@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, X } from 'lucide-react';
+import { Lock, X, Key } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import { parentChildService } from '../services/parentChildService';
 
@@ -61,7 +61,7 @@ export default function PinGateModal({
         } else {
           soundFx.playIncorrect();
           setIsShaking(true);
-          setErrorMsg('Incorrect PIN. Default is 1234.');
+          setErrorMsg('Incorrect Parent PIN. Default is 1234.');
           setTimeout(() => {
             setIsShaking(false);
             setPinInput('');
@@ -119,8 +119,8 @@ export default function PinGateModal({
                 : 'Enter your 4-digit Parent PIN to access settings'}
             </p>
             {currentPin === '1234' && (
-              <span className="text-[10px] font-extrabold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 inline-block mt-1">
-                💡 First time? Enter default PIN 1234 to unlock!
+              <span className="text-[10px] font-extrabold text-purple-900 bg-purple-100 px-3 py-1 rounded-full border border-purple-300 inline-flex items-center gap-1.5 mt-1 shadow-2xs">
+                <Key className="w-3.5 h-3.5 text-purple-700 stroke-[2.5]" /> First time? Enter default PIN 1234 to unlock!
               </span>
             )}
           </div>
