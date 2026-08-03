@@ -3,6 +3,8 @@ import { Lock, X, Key } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import { parentChildService } from '../services/parentChildService';
 
+const PARENT_VISITED_KEY = 'kibo_parent_visited';
+
 export default function PinGateModal({
   isOpen,
   onClose,
@@ -12,6 +14,8 @@ export default function PinGateModal({
   const [pinInput, setPinInput] = useState('');
   const [isShaking, setIsShaking] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const hasVisitedBefore = localStorage.getItem(PARENT_VISITED_KEY) === 'true';
+  const isFirstTime = currentPin === '1234' && !hasVisitedBefore;
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -56,12 +60,13 @@ export default function PinGateModal({
         const challengeRes = parentChildService.verifyParentGateChallenge(nextPin);
         if (challengeRes.granted) {
           soundFx.playVictory();
+          localStorage.setItem(PARENT_VISITED_KEY, 'true');
           onUnlockSuccess();
           resetState();
         } else {
           soundFx.playIncorrect();
           setIsShaking(true);
-          setErrorMsg('Incorrect Parent PIN. Default is 1234.');
+          setErrorMsg(hasVisitedBefore ? 'Incorrect Parent PIN.' : 'Incorrect PIN. Default is 1234.');
           setTimeout(() => {
             setIsShaking(false);
             setPinInput('');
@@ -114,13 +119,11 @@ export default function PinGateModal({
           <div className="space-y-1">
             <h3 className="text-2xl font-black text-slate-800 tracking-tight">Parent Zone</h3>
             <p className="text-xs text-slate-500 font-semibold">
-              {currentPin === '1234'
-                ? 'Enter your 4-digit Parent PIN (Default: 1234)'
-                : 'Enter your 4-digit Parent PIN to access settings'}
+              Enter your 4-digit Parent PIN to access settings
             </p>
-            {currentPin === '1234' && (
+            {isFirstTime && (
               <span className="text-[10px] font-extrabold text-purple-900 bg-purple-100 px-3 py-1 rounded-full border border-purple-300 inline-flex items-center gap-1.5 mt-1 shadow-2xs">
-                <Key className="w-3.5 h-3.5 text-purple-700 stroke-[2.5]" /> First time? Enter default PIN 1234 to unlock!
+                <Key className="w-3.5 h-3.5 text-purple-700 stroke-[2.5]" /> First time? Enter default PIN: 1234
               </span>
             )}
           </div>
