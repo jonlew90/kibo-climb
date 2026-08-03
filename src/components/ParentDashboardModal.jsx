@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, UserPlus } from 'lucide-react';
 import { CURRICULUM_TIERS } from '../utils/curriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
@@ -8,6 +8,8 @@ import { getNotificationPrefs, saveNotificationPrefs, requestNotificationPermiss
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
+import { authService } from '../services/authService';
+import AccountLinkModal from './AccountLinkModal';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
@@ -49,6 +51,32 @@ export default function ParentDashboardModal({
   const [pinErrorMsg, setPinErrorMsg] = useState('');
 
   const [liveUserData, setLiveUserData] = useState(() => storageService.getUserData());
+  const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
+  const [profilesList, setProfilesList] = useState(() => storageService.getAllProfiles());
+  const [activeProfileId, setActiveProfileId] = useState(() => storageService.getActiveProfileId());
+  const [showNewChildInput, setShowNewChildInput] = useState(false);
+  const [newChildName, setNewChildName] = useState('');
+  const [newChildGrade, setNewChildGrade] = useState('Grade 3');
+
+  const handleSwitchProfile = (pId) => {
+    soundFx.playKeyTap();
+    storageService.setActiveProfileId(pId);
+    setActiveProfileId(pId);
+    setLiveUserData(storageService.getUserData());
+  };
+
+  const handleCreateProfile = (e) => {
+    e.preventDefault();
+    if (!newChildName.trim()) return;
+    soundFx.playVictory();
+    const newProf = storageService.createProfile(newChildName.trim(), newChildGrade);
+    setProfilesList(storageService.getAllProfiles());
+    setActiveProfileId(newProf.id);
+    setLiveUserData(storageService.getUserData());
+    setNewChildName('');
+    setShowNewChildInput(false);
+  };
+
   const [dismissedAlerts, setDismissedAlerts] = useState(() => {
     return storageService.getUserData().dismissedAlerts || [];
   });
@@ -163,6 +191,77 @@ export default function ParentDashboardModal({
           </div>
         </div>
       </header>
+
+      {/* CHILD PROFILE SELECTOR BAR */}
+      <div className="w-full max-w-4xl mx-auto px-4 pt-3 pb-1 shrink-0">
+        <div className="bg-white border-2 border-purple-200 rounded-2xl p-3 shadow-xs space-y-2 text-left">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-purple-800">
+              <Users className="w-4 h-4 stroke-[2.5]" />
+              <span className="text-xs font-black uppercase tracking-wider">Active Child Profile</span>
+            </div>
+            <button
+              onClick={() => setShowNewChildInput((prev) => !prev)}
+              className="text-[11px] font-extrabold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-200 flex items-center gap-1 transition-all"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              {showNewChildInput ? 'Cancel' : '+ Add Child Profile'}
+            </button>
+          </div>
+
+          {/* New Profile Input Form */}
+          {showNewChildInput && (
+            <form onSubmit={handleCreateProfile} className="flex items-center gap-2 pt-1 border-t border-slate-100">
+              <input
+                type="text"
+                value={newChildName}
+                onChange={(e) => setNewChildName(e.target.value)}
+                placeholder="Child's Name (e.g. Leo)"
+                required
+                className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:border-purple-500"
+              />
+              <select
+                value={newChildGrade}
+                onChange={(e) => setNewChildGrade(e.target.value)}
+                className="px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-extrabold focus:outline-none"
+              >
+                <option value="Grade 1">Grade 1</option>
+                <option value="Grade 2">Grade 2</option>
+                <option value="Grade 3">Grade 3</option>
+                <option value="Grade 4">Grade 4</option>
+                <option value="Grade 5+">Grade 5+</option>
+              </select>
+              <button type="submit" className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-black">
+                Save
+              </button>
+            </form>
+          )}
+
+          {/* Profile Selector Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {profilesList.map((p) => {
+              const isActive = p.id === activeProfileId;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => handleSwitchProfile(p.id)}
+                  className={`px-3 py-1.5 rounded-xl border-2 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all ${
+                    isActive
+                      ? 'bg-purple-600 text-white border-purple-700 shadow-sm scale-105'
+                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-purple-300'
+                  }`}
+                >
+                  <span>{p.name || 'Child'}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${isActive ? 'bg-purple-800 text-purple-100' : 'bg-slate-200 text-slate-600'}`}>
+                    {p.gradeLevel || 'Grade 3'}
+                  </span>
+                  {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       {/* TAB SELECTOR HEADER */}
       <div className="w-full max-w-4xl mx-auto px-4 pt-3 shrink-0">
@@ -874,10 +973,55 @@ export default function ParentDashboardModal({
                 Update PIN
               </button>
             </form>
+
+            {/* Cloud Sync & Account Linking Card */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
+              <div className="flex items-center gap-2 text-purple-700">
+                <Cloud className="w-5 h-5 stroke-[2.5]" />
+                <h4 className="font-extrabold text-sm text-slate-800">Cloud Backup & Account Sync</h4>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-black text-slate-800 block">
+                      {authService.getAuthState().isAnonymous ? '☁️ Anonymous Guest Account' : `✅ Account Linked (${authService.getAuthState().provider || 'Email'})`}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-medium block">
+                      {authService.getAuthState().isAnonymous
+                        ? 'Link with Google, Apple, or Email to back up progress across devices'
+                        : `User ID: ${authService.getAuthState().uid}`}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowAccountLinkModal(true);
+                    }}
+                    className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-extrabold shrink-0"
+                  >
+                    {authService.getAuthState().isAnonymous ? '🔗 Link Account' : '⚙️ Manage Account'}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
       </main>
+
+      {/* Account Link Modal */}
+      <AccountLinkModal
+        isOpen={showAccountLinkModal}
+        onClose={() => setShowAccountLinkModal(false)}
+        milestoneName="Parent Zone Request"
+        onLinkedSuccess={() => {
+          setShowAccountLinkModal(false);
+          setLiveUserData(storageService.getUserData());
+        }}
+      />
 
       {/* STICKY BOTTOM ACTION FOOTER */}
       <footer className="w-full bg-white/95 border-t-2 border-purple-200 p-3 sm:p-4 backdrop-blur-md shrink-0 flex items-center justify-center z-10">
