@@ -1100,11 +1100,15 @@ export default function App() {
     storageService.saveShopState(updatedEquipped, res.unlockedItems);
     soundFx.playVictory();
 
-    // Trigger AccountLinkModal if user reaches 2+ gear unlocks to protect progress!
+    // Trigger AccountLinkModal when user unlocks their first gear item to protect progress!
     const authState = authService.getAuthState();
-    if (authState.isAnonymous && res.unlockedItems.length >= 2) {
-      setLinkModalMilestone('New Kibo Outfit Unlocked');
-      setShowAccountLinkModal(true);
+    if (authState.isAnonymous) {
+      const hasPromptedGear = localStorage.getItem('kibo_prompted_link_gear');
+      if (res.unlockedItems.length >= 1 && !hasPromptedGear) {
+        localStorage.setItem('kibo_prompted_link_gear', 'true');
+        setLinkModalMilestone('First Kibo Outfit Unlocked');
+        setShowAccountLinkModal(true);
+      }
     }
   };
 
