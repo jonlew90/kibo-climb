@@ -2,13 +2,24 @@ import React, { useState } from 'react';
 import { ShieldCheck, Sparkles, CheckCircle2, Lock, X, ArrowRight, Mail } from 'lucide-react';
 import { authService } from '../services/authService';
 
-export default function AccountLinkModal({ isOpen, onClose, onAccountLinked, triggerMilestone = 'Tier 2 Milestone' }) {
+export default function AccountLinkModal({
+  isOpen,
+  onClose,
+  onAccountLinked,
+  triggerMilestone,
+  milestoneName
+}) {
   const [loadingProvider, setLoadingProvider] = useState(null);
   const [emailInput, setEmailInput] = useState('');
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   if (!isOpen) return null;
+
+  const milestone = triggerMilestone || milestoneName || 'Cloud Account Sync';
+  const badgeText = milestone.toLowerCase().includes('milestone') || milestone.toLowerCase().includes('unlocked')
+    ? (milestone.toLowerCase().includes('unlocked') ? milestone : `${milestone} Unlocked!`)
+    : milestone;
 
   const handleLinkProvider = async (provider) => {
     setLoadingProvider(provider);
@@ -47,10 +58,10 @@ export default function AccountLinkModal({ isOpen, onClose, onAccountLinked, tri
           <X className="w-5 h-5" />
         </button>
 
-        {/* Milestone Badge */}
+        {/* Dynamic Context Badge */}
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-950 border border-amber-300 rounded-full text-xs font-black uppercase">
           <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-          <span>{triggerMilestone} Unlocked!</span>
+          <span>{badgeText}</span>
         </div>
 
         {/* Title & Headline */}
