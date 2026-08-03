@@ -114,15 +114,12 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
       speed = Number((matchedDuration / matchedTotal).toFixed(1));
       status = accuracy >= 80 ? 'Mastered' : accuracy >= 60 ? 'Practicing' : 'Challenged';
     } else {
-      // Real-time calculation based on actual problem history
       const hasAnyHistory = (sprintHistory || []).length > 0;
-      
       if (activeRating < def.minUnlockRating) {
         status = 'Locked';
         accuracy = 0;
         speed = def.defaultSpeed;
       } else if (!hasAnyHistory) {
-        // Brand new user with 0 completed climbs
         if (def.minUnlockRating < 1200) {
           status = 'Ready for Placement';
           accuracy = 0;
@@ -131,7 +128,6 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
           accuracy = 0;
         }
       } else {
-        // Active unlocked strand without recent sprint data
         status = 'Ready for Practice';
         accuracy = 0;
       }
