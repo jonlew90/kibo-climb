@@ -306,7 +306,7 @@ export default function ParentDashboardModal({
                 : (storageService.getUserData().sprintHistory || []);
               const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec) || 0), 0);
               const totalCompletedSprints = historyList.length;
-              const avgSessionSec = totalCompletedSprints > 0 ? Math.round(activeLearningTimeSec / totalCompletedSprints) : 180;
+              const avgSessionSec = totalCompletedSprints > 0 ? Math.round(activeLearningTimeSec / totalCompletedSprints) : 0;
 
               const formatLearningTime = (sec) => {
                 if (!sec || sec <= 0) return '0m';
