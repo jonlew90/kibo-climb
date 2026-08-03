@@ -376,15 +376,17 @@ export default function ParentDashboardModal({
         {/* TAB 1: CHILD OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="flex-1 overflow-y-auto pr-1 space-y-4 my-1">
-            {/* Quick Metrics */}
-            {/* Quick Metrics */}
+            {/* Quick Metrics — updates instantly when a child profile is switched above */}
             {(() => {
-              const historyList = (sprintHistory && sprintHistory.length > 0)
-                ? sprintHistory
-                : (storageService.getUserData().sprintHistory || []);
+              const activeUserData = liveUserData || storageService.getUserData();
+              const historyList = activeUserData.sprintHistory || [];
               const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec) || 0), 0);
               const totalCompletedSprints = historyList.length;
               const avgSessionSec = totalCompletedSprints > 0 ? Math.round(activeLearningTimeSec / totalCompletedSprints) : 0;
+              const childStreak = activeUserData.streak ?? streak ?? 1;
+              const childSparks = activeUserData.sparks ?? sparks ?? 0;
+              const childTotalSolved = activeUserData.totalProblemsSolved ?? totalProblemsSolved ?? 0;
+              const childRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
 
               const formatLearningTime = (sec) => {
                 if (!sec || sec <= 0) return '0m';
@@ -404,19 +406,19 @@ export default function ParentDashboardModal({
                     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-2">
                       <Flame className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
                       <span className="text-[9px] uppercase font-black text-amber-900 block">Streak</span>
-                      <span className="text-base sm:text-lg font-black text-slate-800">{pluralize(streak, 'Day')}</span>
+                      <span className="text-base sm:text-lg font-black text-slate-800">{pluralize(childStreak, 'Day')}</span>
                     </div>
 
                     <div className="bg-amber-100/60 border border-amber-300 rounded-2xl p-2">
                       <Zap className="w-5 h-5 text-amber-600 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
                       <span className="text-[9px] uppercase font-black text-amber-900 block">Sparks</span>
-                      <span className="text-base sm:text-lg font-black text-slate-800">{sparks} ⚡</span>
+                      <span className="text-base sm:text-lg font-black text-slate-800">{childSparks} ⚡</span>
                     </div>
 
                     <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-2">
                       <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
                       <span className="text-[9px] uppercase font-black text-emerald-900 block">Total Solved</span>
-                      <span className="text-base sm:text-lg font-black text-slate-800">{totalProblemsSolved}</span>
+                      <span className="text-base sm:text-lg font-black text-slate-800">{childTotalSolved}</span>
                     </div>
 
                     <div className="bg-sky-50 border border-sky-200 rounded-2xl p-2">
@@ -429,7 +431,7 @@ export default function ParentDashboardModal({
                       <Award className="w-5 h-5 text-purple-600 mx-auto mb-1 stroke-[2.5]" />
                       <span className="text-[9px] uppercase font-black text-purple-900 block">Skill Rating</span>
                       <span className="text-base sm:text-lg font-black text-purple-900">
-                        {liveUserData?.adaptiveCompetenceRating || liveUserData?.competenceRank || storageService.getUserData().adaptiveCompetenceRating || storageService.getUserData().competenceRank || 1000} pts
+                        {childRating} pts
                       </span>
                     </div>
                   </div>
@@ -857,6 +859,27 @@ export default function ParentDashboardModal({
         {activeTab === 'settings' && (
           <div className="flex-1 overflow-y-auto pr-1 space-y-4 my-1">
 
+            {/* Scope Banner */}
+            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3 flex flex-col sm:flex-row gap-2 text-left">
+              <div className="flex items-start gap-2 flex-1">
+                <span className="text-base shrink-0">👤</span>
+                <div>
+                  <span className="text-xs font-black text-purple-900 block">Practice Schedule & Notifications</span>
+                  <span className="text-[10px] font-medium text-purple-700 leading-snug">
+                    Applies to the <strong>currently selected child profile</strong> — switching profiles above will apply these settings to a different child.
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-start gap-2 flex-1 sm:border-l sm:border-purple-200 sm:pl-3">
+                <span className="text-base shrink-0">🔒</span>
+                <div>
+                  <span className="text-xs font-black text-purple-900 block">Parent PIN</span>
+                  <span className="text-[10px] font-medium text-purple-700 leading-snug">
+                    Shared across <strong>all child profiles</strong> on this device — one PIN protects the entire Parent Zone.
+                  </span>
+                </div>
+              </div>
+            </div>
 
             {/* Custom 7-Day Practice Schedule */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2.5 text-left">
