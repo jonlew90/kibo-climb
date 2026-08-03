@@ -89,7 +89,7 @@ export default function BadgesModal({
                 {getCompetenceRankTier(userRating)} · {userRating} pts
               </span>
               <span className="bg-amber-200 px-3 py-0.5 rounded-full border border-amber-300">
-                {unlockedCount} / {totalBadges} ({progressPct}%)
+                {progressPct}% unlocked
               </span>
             </div>
           </div>
