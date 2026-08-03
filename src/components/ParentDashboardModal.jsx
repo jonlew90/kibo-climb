@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, UserPlus } from 'lucide-react';
-import { CURRICULUM_TIERS } from '../utils/curriculum';
+import { CURRICULUM_TIERS, getGradeLevelFromRating } from '../utils/curriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
@@ -241,6 +241,8 @@ export default function ParentDashboardModal({
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             {profilesList.map((p) => {
               const isActive = p.id === activeProfileId;
+              const childRating = p.userData?.adaptiveCompetenceRating || p.userData?.competenceRank || 1000;
+              const displayGrade = getGradeLevelFromRating(childRating);
               return (
                 <button
                   key={p.id}
@@ -253,7 +255,7 @@ export default function ParentDashboardModal({
                 >
                   <span>{p.name || 'Child'}</span>
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${isActive ? 'bg-purple-800 text-purple-100' : 'bg-slate-200 text-slate-600'}`}>
-                    {p.gradeLevel || 'Grade 3'}
+                    {displayGrade}
                   </span>
                   {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
                 </button>
