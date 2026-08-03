@@ -376,482 +376,123 @@ export default function ParentDashboardModal({
         {/* TAB 1: CHILD OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="flex-1 overflow-y-auto pr-1 space-y-4 my-1">
-            {/* Quick Metrics — updates instantly when a child profile is switched above */}
+
+            {/* STAT SUMMARY ROW */}
             {(() => {
               const activeUserData = liveUserData || storageService.getUserData();
               const historyList = activeUserData.sprintHistory || [];
               const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec) || 0), 0);
-              const totalCompletedSprints = historyList.length;
-              const avgSessionSec = totalCompletedSprints > 0 ? Math.round(activeLearningTimeSec / totalCompletedSprints) : 0;
               const childStreak = activeUserData.streak ?? streak ?? 1;
-              const childSparks = activeUserData.sparks ?? sparks ?? 0;
               const childTotalSolved = activeUserData.totalProblemsSolved ?? totalProblemsSolved ?? 0;
               const childRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
+              const currentMathTier = getTierFromRating(childRating);
+              const rankTitle = getCompetenceRankTier(childRating);
 
-              const formatLearningTime = (sec) => {
+              const formatTime = (sec) => {
                 if (!sec || sec <= 0) return '0m';
                 const mins = Math.floor(sec / 60);
-                const remainingSec = sec % 60;
-                if (mins >= 60) {
-                  const hrs = Math.floor(mins / 60);
-                  const remMins = mins % 60;
-                  return `${hrs}h ${remMins}m`;
-                }
-                return mins > 0 ? `${mins}m ${remainingSec > 0 ? `${remainingSec}s` : ''}`.trim() : `${remainingSec}s`;
+                if (mins >= 60) return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+                return mins > 0 ? `${mins}m` : `${sec}s`;
               };
 
               return (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-2">
-                      <Flame className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
-                      <span className="text-[9px] uppercase font-black text-amber-900 block">Streak</span>
-                      <span className="text-base sm:text-lg font-black text-slate-800">{pluralize(childStreak, 'Day')}</span>
-                    </div>
-
-                    <div className="bg-amber-100/60 border border-amber-300 rounded-2xl p-2">
-                      <Zap className="w-5 h-5 text-amber-600 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
-                      <span className="text-[9px] uppercase font-black text-amber-900 block">Sparks</span>
-                      <span className="text-base sm:text-lg font-black text-slate-800">{childSparks} ⚡</span>
-                    </div>
-
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-2">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
-                      <span className="text-[9px] uppercase font-black text-emerald-900 block">Total Solved</span>
-                      <span className="text-base sm:text-lg font-black text-slate-800">{childTotalSolved}</span>
-                    </div>
-
-                    <div className="bg-sky-50 border border-sky-200 rounded-2xl p-2">
-                      <Clock className="w-5 h-5 text-sky-600 mx-auto mb-1 stroke-[2.5]" />
-                      <span className="text-[9px] uppercase font-black text-sky-900 block">Math Time</span>
-                      <span className="text-base sm:text-lg font-black text-sky-950">{formatLearningTime(activeLearningTimeSec)}</span>
-                    </div>
-
-                    <div className="bg-purple-50 border border-purple-200 rounded-2xl p-2 col-span-2 sm:col-span-1">
-                      <Award className="w-5 h-5 text-purple-600 mx-auto mb-1 stroke-[2.5]" />
-                      <span className="text-[9px] uppercase font-black text-purple-900 block">Skill Rating</span>
-                      <span className="text-base sm:text-lg font-black text-purple-900">
-                        {childRating} pts
-                      </span>
-                    </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3">
+                    <Flame className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
+                    <span className="text-[9px] uppercase font-black text-amber-900 block">Streak</span>
+                    <span className="text-lg font-black text-slate-800">{pluralize(childStreak, 'Day')}</span>
                   </div>
-
-                  {/* ACTIVE MATH PRACTICE TIME HIGHLIGHT CARD */}
-                  <section className="bg-gradient-to-r from-sky-50 via-teal-50 to-indigo-50/70 rounded-2xl p-3.5 border-2 border-sky-200 text-left space-y-2 shadow-xs">
-                    <div className="flex items-center justify-between border-b border-sky-200/80 pb-1.5 flex-wrap gap-2">
-                      <div className="flex items-center gap-2 text-sky-950">
-                        <Clock className="w-4 h-4 text-sky-700 stroke-[2.5]" />
-                        <h4 className="font-black text-xs sm:text-sm tracking-tight">Active Math Learning Time</h4>
-                      </div>
-                      <span className="text-[9px] font-extrabold uppercase text-sky-950 bg-sky-200/80 px-2 py-0.5 rounded-full border border-sky-300">
-                        ⚡ 100% High-Focus Learning
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="bg-white/90 p-2.5 rounded-xl border border-sky-100 shadow-2xs">
-                        <span className="text-[9px] font-black uppercase text-slate-500 block">Total Active Practice</span>
-                        <span className="text-base font-black text-sky-950">{formatLearningTime(activeLearningTimeSec)}</span>
-                        <span className="text-[9px] text-slate-500 font-medium block">Spent solving math problems</span>
-                      </div>
-
-                      <div className="bg-white/90 p-2.5 rounded-xl border border-sky-100 shadow-2xs">
-                        <span className="text-[9px] font-black uppercase text-slate-500 block">Avg Session Length</span>
-                        <span className="text-base font-black text-teal-900">{formatLearningTime(avgSessionSec)}</span>
-                        <span className="text-[9px] text-teal-700 font-bold block">Bite-Sized Ascents (~3 Mins) 🎯</span>
-                      </div>
-                    </div>
-                    <p className="text-[10px] font-medium text-slate-600 italic leading-tight pt-0.5 flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-sky-700 stroke-[2.5] shrink-0" />
-                      <span>Measures active problem-solving time only. Zero filler, zero ad bloat—100% productive math learning!</span>
-                    </p>
-                  </section>
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
+                    <span className="text-[9px] uppercase font-black text-emerald-900 block">Problems Solved</span>
+                    <span className="text-lg font-black text-slate-800">{childTotalSolved}</span>
+                  </div>
+                  <div className="bg-sky-50 border border-sky-200 rounded-2xl p-3">
+                    <Clock className="w-5 h-5 text-sky-600 mx-auto mb-1 stroke-[2.5]" />
+                    <span className="text-[9px] uppercase font-black text-sky-900 block">Math Time</span>
+                    <span className="text-lg font-black text-sky-950">{formatTime(activeLearningTimeSec)}</span>
+                  </div>
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-3">
+                    <Award className="w-5 h-5 text-indigo-600 mx-auto mb-1 stroke-[2.5]" />
+                    <span className="text-[9px] uppercase font-black text-indigo-900 block">Skill Rating</span>
+                    <span className="text-lg font-black text-indigo-900">{childRating}</span>
+                  </div>
                 </div>
               );
             })()}
 
-            {/* Personal Records Summary Card */}
-            <section className="bg-purple-50/60 rounded-2xl p-3 border border-purple-200 text-left space-y-1.5">
-              <div className="flex items-center gap-1.5 text-purple-900 font-extrabold text-xs">
-                <Trophy className="w-4 h-4 text-purple-700 stroke-[2.5]" />
-                <span>Personal Records & High Scores</span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold">
-                <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
-                  <span className="text-[9px] text-slate-500 uppercase block font-black">Longest Streak</span>
-                  <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.highestCorrectStreak || 0} Qs</span>
-                </div>
-
-                <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
-                  <span className="text-[9px] text-slate-500 uppercase block font-black">Fastest 12-Q Block</span>
-                  <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.fastest12QuestionsTime || personalRecords?.fastest10QuestionsTime ? `${personalRecords.fastest12QuestionsTime || personalRecords.fastest10QuestionsTime}s` : 'N/A'}</span>
-                  <span className="text-[8px] font-extrabold text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded-md border border-amber-300 block mt-0.5">⚡ Requires 100% Acc</span>
-                </div>
-
-                <div className="bg-white p-2 rounded-xl border border-purple-100 shadow-xs">
-                  <span className="text-[9px] text-slate-500 uppercase block font-black">Perfect Runs</span>
-                  <span className="text-purple-900 font-black text-xs sm:text-sm">{personalRecords?.mostPerfectSessions || 0} Runs</span>
-                  <span className="text-[8px] font-bold text-slate-600 block mt-0.5">100% Acc Sessions</span>
-                </div>
-              </div>
-            </section>
-
-            {/* DEDICATED STRUGGLE & REVIEW ALERTS CARD */}
+            {/* MATH MASTERY SNAPSHOT */}
             {(() => {
               const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = getTierFromRating(actualRating);
-              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating, activeUserData.ratingHistory || []);
-              
-              const struggleStrands = Object.entries(adaptiveProfile.skillStrandBreakdown || {})
-                .filter(([strandName, data]) => {
-                  const alertId = `strand_${strandName}`;
-                  if (dismissedAlerts.includes(alertId)) return false;
-                  return data.status === 'Needs Review' || (data.challengedFacts && data.challengedFacts.length > 0);
-                });
-
-              const activeQueueItems = (practiceQueue || []).filter((_, idx) => !dismissedAlerts.includes(`queue_${idx}`));
-              const totalAlertCount = activeQueueItems.length + struggleStrands.length;
+              const childTotalSolved = activeUserData.totalProblemsSolved ?? totalProblemsSolved ?? 0;
+              const rankTitle = getCompetenceRankTier(actualRating);
+              const gradeLvl = getGradeLevelFromRating(actualRating);
 
               return (
-                <section className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100/60 rounded-2xl p-4 border-2 border-amber-300 text-left space-y-3 shadow-xs">
-                  <div className="flex items-center justify-between border-b border-amber-200/80 pb-2">
-                    <div className="flex items-center gap-2 text-amber-900">
-                      <AlertCircle className="w-5 h-5 text-amber-600 stroke-[2.5]" />
-                      <h4 className="font-black text-sm text-slate-800 tracking-tight">Active Review & Struggle Alerts</h4>
+                <section className="bg-white rounded-2xl p-4 border-2 border-indigo-200 text-left space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <h2 className="text-sm font-black text-slate-800">Math Mastery</h2>
+                      <span className="text-[10px] text-indigo-600 font-bold block">{gradeLvl} level · Tier {currentMathTier} Climber</span>
                     </div>
-                    <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
-                      totalAlertCount > 0
-                        ? 'bg-amber-200 text-amber-950 border-amber-400'
-                        : 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                    }`}>
-                      {totalAlertCount > 0 ? `🚨 ${totalAlertCount} Alert${totalAlertCount > 1 ? 's' : ''}` : '✅ Zero Active Struggles'}
-                    </span>
-                  </div>
-
-                  {totalAlertCount === 0 ? (
-                    <div className="p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-semibold flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 stroke-[2.5]" />
-                      <span>All math strands are on track! No unhandled struggle alerts reported.</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {struggleStrands.map(([strandName, data]) => (
-                        <div key={strandName} className="p-2.5 bg-white border border-amber-200 rounded-xl text-xs space-y-1 shadow-2xs">
-                          <div className="flex items-center justify-between">
-                            <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
-                              <span>{data.icon}</span> {strandName} Focus Area
-                            </span>
-                            <span className="text-[9px] font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-                              {data.accuracy}% Accuracy
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between pt-1 border-t border-slate-100 gap-2">
-                            <p className="text-[11px] text-slate-600 font-medium leading-tight">
-                              Target Facts: <strong className="font-mono text-slate-900">{data.challengedFacts?.join(', ') || 'Recent missed problems'}</strong>
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => handleDismissAlert(`strand_${strandName}`)}
-                              className="text-[10px] font-extrabold text-amber-900 hover:text-amber-950 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-lg border border-amber-300 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
-                              title="Mark alert as reviewed and dismiss"
-                            >
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600 stroke-[3]" /> Dismiss
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-
-                      {activeQueueItems.length > 0 && struggleStrands.length === 0 && (
-                        <div className="p-2.5 bg-white border border-amber-200 rounded-xl text-xs space-y-1 shadow-2xs">
-                          <div className="flex items-center justify-between">
-                            <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
-                              🎯 Re-queued Practice Items
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[9px] font-extrabold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
-                                {activeQueueItems.length} queued
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleDismissAlert(`queue_0`)}
-                                className="text-[10px] font-extrabold text-amber-900 hover:text-amber-950 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-lg border border-amber-300 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
-                                title="Dismiss practice queue alert"
-                              >
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600 stroke-[3]" /> Dismiss
-                              </button>
-                            </div>
-                          </div>
-                          <p className="text-[11px] text-slate-600 font-medium leading-snug">
-                            {activeQueueItems.length} specific problem{activeQueueItems.length > 1 ? 's are' : ' is'} automatically queued into future daily climb blocks for reinforced memory practice.
-                          </p>
-                        </div>
+                    <div className="flex items-center gap-1.5">
+                      {childTotalSolved < 15 && (
+                        <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse">⏳ Calibrating</span>
                       )}
+                      <span className="text-xs font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200 flex items-center gap-1">
+                        <Trophy className="w-3.5 h-3.5 stroke-[2.5]" />{rankTitle}
+                      </span>
                     </div>
-                  )}
+                  </div>
+                  <p className="text-xs font-semibold text-slate-700 bg-indigo-50/60 p-2.5 rounded-xl border border-indigo-100 leading-relaxed">
+                    {getCompetenceDescription(actualRating, childTotalSolved)}
+                  </p>
                 </section>
               );
             })()}
 
-            {/* ADAPTIVE COMPETENCE SNAPSHOT & TOPIC MASTERY */}
+            {/* MATH TOPICS — compact strand list */}
             {(() => {
               const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = getTierFromRating(actualRating);
               const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating, activeUserData.ratingHistory || []);
-              const { adaptiveCompetenceRating, last30DaysGrowthData, masteryDistribution, skillStrandBreakdown } = adaptiveProfile;
-              const rankTitle = getCompetenceRankTier(adaptiveCompetenceRating);
+              const { skillStrandBreakdown } = adaptiveProfile;
+
+              const statusColor = (status) => {
+                if (status === 'Mastered') return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                if (status === 'Practicing') return 'bg-amber-100 text-amber-900 border-amber-300';
+                if (status === 'Locked') return 'bg-slate-100 text-slate-500 border-slate-300';
+                return 'bg-indigo-100 text-indigo-800 border-indigo-300';
+              };
 
               return (
-                <div className="space-y-4">
-                  {/* ADAPTIVE COMPETENCE RATING SNAPSHOT */}
-                  <section className="bg-white p-5 rounded-3xl shadow-sm border-2 border-indigo-200 text-left space-y-3">
-                    <div className="flex items-center justify-between border-b border-indigo-100 pb-2 flex-wrap gap-2">
-                      <div>
-                        <h2 className="text-lg font-black text-slate-800 tracking-tight">Current Math Mastery</h2>
-                        <span className="text-[10px] text-indigo-600 font-bold block">
-                          Tier {currentMathTier} • {rankTitle} ({adaptiveCompetenceRating} Rating)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200 shadow-xs flex items-center gap-1.5">
-                          <Trophy className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5]" />
-                          {rankTitle}
-                        </span>
-                        {totalProblemsSolved < 15 && (
-                          <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse">
-                            ⏳ Calibrating
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-center gap-6 bg-gradient-to-r from-indigo-50/90 to-purple-50/70 p-4.5 rounded-2xl border border-indigo-100">
-                      <div className="text-center shrink-0">
-                        <span className="font-black text-5xl sm:text-6xl text-indigo-700 tracking-tighter block">
-                          {adaptiveCompetenceRating}
-                        </span>
-                        <span className="block mt-1 text-[10px] font-black text-indigo-600 tracking-wider uppercase">
-                          CURRENT COMPETENCE RATING
-                        </span>
-                      </div>
-
-                      <div className="flex-1 text-xs text-slate-700 leading-relaxed font-medium space-y-1.5 text-left">
-                        <p className="font-bold text-indigo-950 bg-white/80 p-2.5 rounded-xl border border-indigo-100/80 shadow-xs">
-                          {getCompetenceDescription(adaptiveCompetenceRating, totalProblemsSolved)}
-                        </p>
-                        <div className="flex items-center gap-3 pt-1 text-[11px] font-bold flex-wrap">
-                          <span className="text-emerald-700">🟢 {masteryDistribution.mastered}% Mastered</span>
-                          <span className="text-amber-700">🟡 {masteryDistribution.practicing}% Practicing</span>
-                          <span className="text-purple-700">🟣 {masteryDistribution.challenged}% Review & Placement</span>
-                        </div>
-                        <p className="text-[10px] text-purple-950 font-medium bg-purple-100/70 p-2 rounded-xl border border-purple-200 mt-1 leading-snug">
-                          ℹ️ <strong>Review & Placement Stat:</strong> Represents topics currently queued for ongoing practice, placement calibration, or active memory reinforcement.
-                        </p>
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* AUTHENTIC MASTERY GROWTH TRAJECTORY */}
-                  <section className="bg-white border-2 border-indigo-100 rounded-2xl p-4 text-left space-y-2 shadow-xs">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-2 flex-wrap gap-2">
-                      <h3 className="font-black text-xs text-slate-800 flex items-center gap-1.5">
-                        <span>📈</span> Authentic Mastery Growth Trajectory
-                      </h3>
-                      <span className="text-[10px] font-extrabold text-indigo-600">
-                        {last30DaysGrowthData.length <= 1
-                          ? 'Day 1 Baseline'
-                          : `+${adaptiveCompetenceRating - (last30DaysGrowthData[0]?.rating || 1000)} pts gained`}
-                      </span>
-                    </div>
-
-                    {last30DaysGrowthData.length <= 1 ? (
-                      <div className="p-3 bg-indigo-50/70 border border-indigo-200 rounded-xl text-indigo-900 text-xs font-medium leading-relaxed flex items-center justify-between gap-3">
-                        <div>
-                          <span className="font-black text-sm text-indigo-700 block">Started Today! 🚀</span>
-                          <span className="text-[11px] text-slate-600 block mt-0.5">
-                            Day 1 baseline established at <strong className="text-indigo-950">{adaptiveCompetenceRating} Rating</strong>. Daily progress points will plot here automatically as climbs continue over time!
-                          </span>
-                        </div>
-                        <span className="text-2xl shrink-0">📊</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-end justify-between gap-3 h-24 pt-4 pb-1 px-2 border-b border-slate-100">
-                        {last30DaysGrowthData.map((pt, idx) => {
-                          const ratingsList = last30DaysGrowthData.map((p) => p.rating);
-                          const minRating = Math.max(500, Math.min(...ratingsList) - 50);
-                          const maxRating = Math.max(1200, Math.max(...ratingsList) + 50);
-                          const heightPct = Math.min(100, Math.max(30, Math.round(((pt.rating - minRating) / (maxRating - minRating)) * 100)));
-
-                          return (
-                            <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
-                              <span className="text-[9px] font-black text-indigo-700 opacity-80">
-                                {pt.rating}
-                              </span>
-                              <div
-                                className="w-full max-w-[32px] bg-gradient-to-t from-indigo-600 to-purple-500 rounded-t-lg transition-all duration-500 shadow-xs"
-                                style={{ height: `${heightPct}%` }}
-                              />
-                              <span className="text-[9px] font-extrabold text-slate-500 mt-0.5">{pt.label}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </section>
-
-                  {/* MATH TOPICS & COMPETENCE STRANDS */}
-                  <section className="text-left space-y-3">
-                    <h3 className="text-base font-extrabold text-slate-800">Math Topics & Competence</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {Object.entries(skillStrandBreakdown).map(([strandName, data]) => {
-                        const isMastered = data.status === 'Mastered';
-                        const isPracticing = data.status === 'Practicing';
-
-                        return (
-                          <div key={strandName} className="bg-white border-2 border-slate-200 rounded-2xl p-3.5 shadow-xs hover:border-indigo-300 transition-colors space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="text-2xl">{data.icon}</span>
-                                <div>
-                                  <h4 className="font-extrabold text-xs text-slate-800">{strandName}</h4>
-                                  <p className="text-[10px] font-medium text-slate-500">{data.subtitle}</p>
-                                </div>
-                              </div>
-                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                                isMastered
-                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                                  : isPracticing
-                                  ? 'bg-amber-100 text-amber-900 border-amber-300'
-                                  : data.status === 'Locked'
-                                  ? 'bg-slate-100 text-slate-500 border-slate-300'
-                                  : 'bg-rose-100 text-rose-900 border-rose-300'
-                              }`}>
-                                {data.status === 'Locked' ? '🔒 Locked' : data.status}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs font-bold">
-                              <span className="text-slate-500">{data.status === 'Locked' ? 'Curriculum Stage:' : 'Topic Rating:'}</span>
-                              {data.status === 'Locked' || (data.accuracy === 0 && !data.attempts) ? (
-                                <span className="text-slate-500 font-extrabold italic">Future Curriculum Milestone</span>
-                              ) : (
-                                <span className="text-indigo-700 font-black">{data.rating} pts ({data.accuracy}% Acc)</span>
-                              )}
-                            </div>
-
-                            {data.challengedFacts && data.challengedFacts.length > 0 && (
-                              <div className="bg-rose-50 border border-rose-200 rounded-xl p-2 text-[10px] font-semibold text-rose-900 flex items-center justify-between">
-                                <span>🎯 Challenged Facts:</span>
-                                <strong className="font-mono text-rose-950 font-black">{data.challengedFacts.join(', ')}</strong>
-                              </div>
+                <section className="text-left space-y-2">
+                  <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Math Topics</h3>
+                  <div className="space-y-1.5">
+                    {Object.entries(skillStrandBreakdown).map(([strandName, data]) => (
+                      <div key={strandName} className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-3 py-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-lg shrink-0">{data.icon}</span>
+                          <div className="min-w-0">
+                            <span className="text-xs font-extrabold text-slate-800 block truncate">{strandName}</span>
+                            {data.accuracy > 0 && (
+                              <span className="text-[10px] text-slate-500 font-medium">{data.accuracy}% accuracy</span>
                             )}
                           </div>
-                        );
-                      })}
-                    </div>
-                  </section>
-                </div>
-              );
-            })()}
-
-            {/* Recent Skill Mastery Section */}
-            {(() => {
-              const activeUserData = storageService.getUserData();
-              const recentSkillMastery = activeUserData.recentSkillMastery || [];
-
-              return (
-                <div className="space-y-2 text-left">
-                  <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">
-                    Recent Skill Mastery
-                  </span>
-                  {recentSkillMastery.length === 0 ? (
-                    <div className="p-3.5 bg-purple-50/70 border-2 border-purple-200 rounded-2xl text-purple-900 text-xs font-semibold leading-relaxed flex items-center gap-2.5">
-                      <span className="text-xl shrink-0">🎯</span>
-                      <span>Kibo is currently evaluating skill mastery! Check back after a few adaptive climbing sessions.</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {recentSkillMastery.slice(0, 3).map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-center bg-gradient-to-r from-purple-50 via-white to-amber-50 border-2 border-purple-200 rounded-2xl p-3 text-xs shadow-xs">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-lg">🌟</span>
-                            <div>
-                              <h5 className="font-extrabold text-slate-800 text-xs leading-tight">{item.skillName}</h5>
-                              <span className="text-[10px] text-slate-500 font-bold block mt-0.5">
-                                {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                              </span>
-                            </div>
-                          </div>
-                          <span className="font-black text-xs text-purple-900 bg-purple-100 px-2.5 py-1 rounded-full border border-purple-300 shrink-0">
-                            +{item.currentRating - item.startingRating} Rating ({item.currentRating})
-                          </span>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Earned Trail Badges & Requirements Card */}
-            {(() => {
-              const unlockedCount = unlockedBadges ? unlockedBadges.length : 0;
-              const totalBadgesCount = BADGES_CATALOG.length;
-
-              const allEarnedBadges = (BADGES_CATALOG || []).filter((b) => unlockedBadges.includes(b.id));
-
-              return (
-                <section className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 text-left space-y-3">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2 flex-wrap gap-2">
-                    <div className="flex items-center gap-2 text-amber-700">
-                      <Award className="w-5 h-5 stroke-[2.5]" />
-                      <div>
-                        <h4 className="font-extrabold text-sm text-slate-800">
-                          Earned Trail Badges & Requirements ({unlockedCount}/{totalBadgesCount})
-                        </h4>
-                        <p className="text-[10px] text-slate-500 font-medium">Review earned badges and their exact achievement criteria</p>
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0 ml-2 ${statusColor(data.status)}`}>
+                          {data.status === 'Locked' ? '🔒 Locked' : data.status}
+                        </span>
                       </div>
-                    </div>
-                    <span className="text-[11px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
-                      {unlockedCount > 0 ? `${Math.round((unlockedCount / totalBadgesCount) * 100)}% Unlocked` : 'Trail Badges'}
-                    </span>
+                    ))}
                   </div>
-
-                  {allEarnedBadges.length === 0 ? (
-                    <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-amber-900 text-xs font-semibold leading-relaxed flex items-center gap-2">
-                      <span className="text-base">🏅</span>
-                      <span>No milestones unlocked yet. Completing adaptive climb sessions with high accuracy earns trail badges!</span>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pr-1">
-                      {allEarnedBadges.map((badge) => (
-                        <div
-                          key={badge.id}
-                          className="bg-amber-50/60 border-2 border-amber-200 rounded-xl p-3 flex flex-col justify-between space-y-1.5 shadow-xs"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-2xl filter drop-shadow-xs">{badge.icon}</span>
-                            <div>
-                              <h5 className="font-black text-xs text-slate-800 leading-tight">
-                                {badge.title || badge.name}
-                              </h5>
-                              <span className="text-[9px] font-extrabold text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded-full border border-amber-300 inline-block mt-0.5">
-                                🎯 Required: {badge.reqText || 'Complete math climbs'}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-[10px] font-medium text-slate-600 leading-snug">
-                            {badge.description}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </section>
               );
             })()}
+
           </div>
         )}
 

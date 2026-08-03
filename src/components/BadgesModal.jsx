@@ -77,89 +77,21 @@ export default function BadgesModal({
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
       <main className="flex-1 min-h-0 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-        {/* TOP PERSONAL BEST SHOWCASE HEADER SECTION */}
-        <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-amber-50 border-2 border-purple-200 rounded-3xl p-4 sm:p-5 space-y-3 shrink-0 shadow-xs text-left">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <span className="text-xs sm:text-sm font-black text-purple-900 flex items-center gap-2 uppercase tracking-wider">
-              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-purple-700 stroke-[2.5]" />
-              Personal Best Showcase
-            </span>
-            <span className="text-xs font-black uppercase text-purple-800 bg-purple-100 px-3 py-1 rounded-full border border-purple-200 shadow-xs">
-              {getCompetenceRankTier(userRating)} • {userRating} pts
-            </span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3 text-center text-xs font-bold pt-1">
-            <div className="bg-white/90 p-3 rounded-2xl border border-purple-100 shadow-xs">
-              <span className="text-[10px] text-slate-500 uppercase block font-black">Best Streak</span>
-              <span className="text-purple-900 font-black text-sm sm:text-base mt-0.5 block">{bestStreak} in a row 🔥</span>
-            </div>
-
-            <div className="bg-white/90 p-3 rounded-2xl border border-purple-100 shadow-xs">
-              <span className="text-[10px] text-slate-500 uppercase block font-black">Fastest 12-Q Block</span>
-              <span className="text-purple-900 font-black text-sm sm:text-base mt-0.5 block">{fastestTime ? `${fastestTime}s ⚡` : 'N/A'}</span>
-              <span className="text-[9px] font-extrabold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300 inline-block mt-1">⚡ Requires 100% Accuracy</span>
-            </div>
-
-            <div className="bg-white/90 p-3 rounded-2xl border border-purple-100 shadow-xs">
-              <span className="text-[10px] text-slate-500 uppercase block font-black">Perfect Runs</span>
-              <span className="text-purple-900 font-black text-sm sm:text-base mt-0.5 block">{perfectRuns} Runs 🎯</span>
-            </div>
-          </div>
-        </div>
-
-        {/* RECENT MILESTONES FEED */}
-        {recentUnlockedBadges.length > 0 && (
-          <div className="bg-gradient-to-r from-amber-500/10 via-yellow-400/10 to-amber-500/10 border-2 border-amber-300 rounded-3xl p-4 space-y-3 shrink-0 text-left shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amber-600 fill-amber-300" />
-                ✨ Recent Milestone Unlocks
-              </span>
-              <span className="text-xs font-extrabold text-amber-900 bg-amber-200/90 px-2.5 py-0.5 rounded-full border border-amber-400">
-                Last {recentUnlockedBadges.length} Earned
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {recentUnlockedBadges.map((badge) => (
-                <div
-                  key={badge.id}
-                  className="bg-white/95 border-2 border-amber-300 rounded-2xl p-3 flex flex-col justify-between space-y-2 shadow-xs hover:border-amber-400 transition-colors"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-3xl shrink-0 filter drop-shadow-xs">{badge.icon}</span>
-                    <div className="min-w-0 flex-1">
-                      <h5 className="font-extrabold text-slate-800 text-xs sm:text-sm truncate leading-snug">
-                        {badge.title || badge.name}
-                      </h5>
-                      <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-300 inline-block mt-0.5">
-                        ✓ Unlocked
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                    {badge.description}
-                  </p>
-                  <div className="text-[10px] font-bold text-amber-900 bg-amber-100/90 px-2.5 py-1 rounded-xl border border-amber-300 truncate">
-                    🎯 Required: {badge.reqText || 'Complete math climbs'}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Progress Bar Header */}
+        {/* Compact rating + progress bar */}
         <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-3xl p-4 space-y-2 shrink-0 text-left">
           <div className="flex items-center justify-between text-xs sm:text-sm font-black text-amber-950">
             <span className="flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-amber-600 fill-amber-300" />
-              Badge Showcase Progress
+              Trail Badges
             </span>
-            <span className="bg-amber-200 px-3 py-0.5 rounded-full border border-amber-300">
-              {unlockedCount} / {totalBadges} Badges ({progressPct}%)
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                {getCompetenceRankTier(userRating)} · {userRating} pts
+              </span>
+              <span className="bg-amber-200 px-3 py-0.5 rounded-full border border-amber-300">
+                {unlockedCount} / {totalBadges} ({progressPct}%)
+              </span>
+            </div>
           </div>
 
           <div className="w-full bg-amber-200/60 h-3.5 rounded-full overflow-hidden border border-amber-300">
@@ -169,6 +101,7 @@ export default function BadgesModal({
             />
           </div>
         </div>
+
 
         {/* Filter Category Bar */}
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 shrink-0">
