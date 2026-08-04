@@ -13,6 +13,7 @@ const DEFAULT_PROFILE_ID = 'default_child';
 const DEFAULT_PROFILE = {
   id: DEFAULT_PROFILE_ID,
   name: 'Kibo Climber',
+  username: '',          // leaderboard handle — set during first-launch onboarding
   gradeLevel: 'Grade 1–2',
   practiceDays: [1, 2, 3, 4, 5],
   userData: {
@@ -152,6 +153,20 @@ export const storageService = {
     }
     safeSaveProfilesState(state);
     return true;
+  },
+  // Username (leaderboard handle, scoped to active profile)
+  getUsername() {
+    return this.getActiveProfile().username || '';
+  },
+  saveUsername(username) {
+    const state = safeGetProfilesState();
+    const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[activeId]) {
+      state.profiles[activeId] = { ...DEFAULT_PROFILE, id: activeId };
+    }
+    state.profiles[activeId].username = username;
+    state.profiles[activeId].name = username; // keep display name in sync
+    safeSaveProfilesState(state);
   },
 
   // User Data (scoped to activeProfileId)

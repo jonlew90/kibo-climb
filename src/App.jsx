@@ -1373,6 +1373,11 @@ export default function App() {
       <FirstLaunchOnboardingModal
         isOpen={showFirstLaunchOnboardingModal}
         equippedItems={equippedItems}
+        onUsernameSet={(username) => {
+          // Username is already persisted by the modal via storageService.saveUsername().
+          // Sync the active profile's display name in the parent dashboard list as well.
+          storageService.updateProfile(storageService.getActiveProfileId(), { name: username });
+        }}
         onOpenParentZone={() => {
           setShowFirstLaunchOnboardingModal(false);
           localStorage.setItem('kibo_math_has_onboarded', 'true');
