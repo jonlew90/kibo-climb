@@ -35,6 +35,7 @@ export default function ParentDashboardModal({
   sprintHistory,
   practiceDays = [1, 2, 3, 4, 5],
   onUpdatePracticeDays,
+  onProfileSwitch,
   preferences = { hideSprintTimer: false },
   onUpdatePreferences,
   unlockedBadges = [],
@@ -66,6 +67,7 @@ export default function ParentDashboardModal({
     setActiveProfileId(pId);
     setLiveUserData(storageService.getUserData());
     setShowEditProfile(false);
+    if (onProfileSwitch) onProfileSwitch();
   };
 
   const handleCreateProfile = (e) => {

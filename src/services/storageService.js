@@ -14,6 +14,7 @@ const DEFAULT_PROFILE = {
   id: DEFAULT_PROFILE_ID,
   name: 'Kibo Climber',
   gradeLevel: 'Grade 1–2',
+  practiceDays: [1, 2, 3, 4, 5],
   userData: {
     adaptiveCompetenceRating: 1000,
     competenceRank: 1000,
@@ -246,10 +247,35 @@ export const storageService = {
     }
   },
 
-  // Parent Settings (PIN & Schedule)
+  // Practice Days (scoped to active profile)
+  getProfilePracticeDays() {
+    const active = this.getActiveProfile();
+    // Migrate from legacy global key if profile has no setting yet
+    if (!active.practiceDays) {
+      try {
+        const legacy = localStorage.getItem(KEYS.PRACTICE_DAYS);
+        return legacy ? JSON.parse(legacy) : [1, 2, 3, 4, 5];
+      } catch (e) {
+        return [1, 2, 3, 4, 5];
+      }
+    }
+    return active.practiceDays;
+  },
+  saveProfilePracticeDays(days) {
+    const state = safeGetProfilesState();
+    const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[activeId]) {
+      state.profiles[activeId] = { ...DEFAULT_PROFILE, id: activeId };
+    }
+    state.profiles[activeId].practiceDays = days;
+    safeSaveProfilesState(state);
+  },
+
+  // Parent Settings (PIN only — schedule is now per-profile)
   getParentSettings() {
     try {
       const pin = localStorage.getItem(KEYS.PARENT_PIN) || DEFAULT_PARENT_SETTINGS.pin;
+      // Legacy: read practiceDays for callers that still use this signature
       const daysRaw = localStorage.getItem(KEYS.PRACTICE_DAYS);
       const practiceDays = daysRaw ? JSON.parse(daysRaw) : DEFAULT_PARENT_SETTINGS.practiceDays;
       return { pin, practiceDays };
@@ -257,10 +283,9 @@ export const storageService = {
       return DEFAULT_PARENT_SETTINGS;
     }
   },
-  saveParentSettings(pin, practiceDays) {
+  saveParentSettings(pin) {
     try {
       if (pin) localStorage.setItem(KEYS.PARENT_PIN, pin);
-      if (practiceDays) localStorage.setItem(KEYS.PRACTICE_DAYS, JSON.stringify(practiceDays));
       return true;
     } catch (e) {
       console.error('StorageService: error writing parent settings', e);

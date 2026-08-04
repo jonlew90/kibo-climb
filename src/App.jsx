@@ -130,9 +130,9 @@ export default function App() {
     return storageService.getUserData().streakShields ?? 1;
   });
 
-  // Persistent Custom 7-Day Practice Schedule (Default [1, 2, 3, 4, 5] = Mon-Fri)
+  // Persistent Custom 7-Day Practice Schedule (per child profile)
   const [practiceDays, setPracticeDays] = useState(() => {
-    return storageService.getParentSettings().practiceDays;
+    return storageService.getProfilePracticeDays();
   });
 
   // Persistent Daily Streak
@@ -1133,12 +1133,12 @@ export default function App() {
 
   const handleUpdatePin = (newPin) => {
     setParentPin(newPin);
-    storageService.saveParentSettings(newPin, practiceDays);
+    storageService.saveParentSettings(newPin);
   };
 
   const handleUpdatePracticeDays = (newDays) => {
     setPracticeDays(newDays);
-    storageService.saveParentSettings(parentPin, newDays);
+    storageService.saveProfilePracticeDays(newDays);
   };
 
   const handleSetTierManual = (newTier) => {
@@ -1929,6 +1929,7 @@ export default function App() {
         sprintHistory={sprintHistory}
         practiceDays={practiceDays}
         onUpdatePracticeDays={handleUpdatePracticeDays}
+        onProfileSwitch={() => setPracticeDays(storageService.getProfilePracticeDays())}
         preferences={preferences}
         onUpdatePreferences={handleUpdatePreferences}
         unlockedBadges={unlockedBadges}
