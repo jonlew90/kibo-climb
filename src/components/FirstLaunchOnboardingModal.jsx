@@ -118,8 +118,7 @@ export default function FirstLaunchOnboardingModal({
               What should we<br />call you, Climber?
             </h1>
             <p className="text-sm text-slate-300 font-medium leading-relaxed">
-              Pick a username for the <strong className="text-amber-400">global leaderboard</strong>.<br />
-              You can't change this easily later.
+              Pick a username for the <strong className="text-amber-400">global leaderboard</strong>.
             </p>
           </div>
 
@@ -158,7 +157,7 @@ export default function FirstLaunchOnboardingModal({
             )}
 
             <p className="text-[10px] text-slate-500 font-medium text-left px-1">
-              3–20 characters · Letters, numbers, underscores only · Used on the leaderboard
+              3–20 characters · Letters, numbers, and underscores only · Your leaderboard name
             </p>
 
             <button
