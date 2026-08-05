@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, UserPlus } from 'lucide-react';
-import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating } from '../utils/curriculum';
+import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/curriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
@@ -57,7 +57,7 @@ export default function ParentDashboardModal({
   const [activeProfileId, setActiveProfileId] = useState(() => storageService.getActiveProfileId());
   const [showNewChildInput, setShowNewChildInput] = useState(false);
   const [newChildName, setNewChildName] = useState('');
-  const [newChildGrade, setNewChildGrade] = useState('Grade 3');
+  const [newChildGrade, setNewChildGrade] = useState('Grade 1–2');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editChildName, setEditChildName] = useState('');
 
@@ -305,11 +305,9 @@ export default function ParentDashboardModal({
                 onChange={(e) => setNewChildGrade(e.target.value)}
                 className="px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-extrabold focus:outline-none"
               >
-                <option value="Grade 1">Grade 1</option>
-                <option value="Grade 2">Grade 2</option>
-                <option value="Grade 3">Grade 3</option>
-                <option value="Grade 4">Grade 4</option>
-                <option value="Grade 5+">Grade 5+</option>
+                {Object.keys(GRADE_STARTING_RATINGS).map((g) => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
               </select>
               <button type="submit" className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-black">
                 Save

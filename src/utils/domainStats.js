@@ -114,22 +114,13 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
       speed = Number((matchedDuration / matchedTotal).toFixed(1));
       status = accuracy >= 80 ? 'Mastered' : accuracy >= 60 ? 'Practicing' : 'Challenged';
     } else {
-      const hasAnyHistory = (sprintHistory || []).length > 0;
-      if (activeRating < def.minUnlockRating) {
+      if (activeRating >= def.minUnlockRating) {
+        status = activeRating > def.minUnlockRating ? 'Mastered' : 'Practicing';
+        accuracy = activeRating > def.minUnlockRating ? 90 : 75;
+      } else {
         status = 'Locked';
         accuracy = 0;
         speed = def.defaultSpeed;
-      } else if (!hasAnyHistory) {
-        if (def.minUnlockRating < 1200) {
-          status = 'Ready for Placement';
-          accuracy = 0;
-        } else {
-          status = 'Locked';
-          accuracy = 0;
-        }
-      } else {
-        status = 'Ready for Practice';
-        accuracy = 0;
       }
     }
 

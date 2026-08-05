@@ -3,16 +3,9 @@ import { Plus, Lock, ChevronRight, Flame, Star, Zap, ArrowLeft, CheckCircle2, Us
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
+import { GRADE_STARTING_RATINGS } from '../utils/curriculum';
 
-const GRADE_OPTIONS = [
-  'Kindergarten',
-  'Grade 1–2',
-  'Grade 3–4',
-  'Grade 5–6',
-  'Grade 7–8',
-  'Pre-Algebra / Middle School',
-  'Algebra & Beyond',
-];
+const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 
 function ProfileCard({ profile, onSelect, isSelected }) {
   const userData = profile.userData || {};
@@ -237,15 +230,15 @@ export default function ProfileSelectorScreen({ onSelectProfile }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[900] h-[100dvh] bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 flex flex-col items-center justify-between overflow-y-auto select-none">
+    <div className="fixed inset-0 z-[900] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 flex flex-col items-center justify-center p-4 select-none overflow-hidden">
 
       <div className="absolute top-0 left-1/4 w-80 h-80 rounded-full bg-purple-600/10 blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-amber-500/8 blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center gap-6 p-6 py-10">
+      <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center justify-center gap-4 sm:gap-5 p-4 py-6 max-h-[98dvh] overflow-hidden">
 
         {/* Header */}
-        <div className="text-center space-y-1">
+        <div className="text-center space-y-1 shrink-0">
           <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/80">
             🏔️ Kibo Climb
           </span>
@@ -260,7 +253,7 @@ export default function ProfileSelectorScreen({ onSelectProfile }) {
         </div>
 
         {/* Profile grid */}
-        <div className={`w-full grid gap-3 ${
+        <div className={`w-full max-h-[48vh] overflow-y-auto custom-scrollbar p-1 grid gap-3 shrink ${
           profiles.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' :
           profiles.length === 2 ? 'grid-cols-2' :
           'grid-cols-2 sm:grid-cols-3'

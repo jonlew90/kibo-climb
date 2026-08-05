@@ -19,13 +19,13 @@ function validateUsername(val) {
 }
 
 const GRADE_DESCRIPTIONS = {
-  'Kindergarten':                 'Counting, number sense, very simple addition',
-  'Grade 1–2':                    'Addition & subtraction fluency up to 20',
-  'Grade 3–4':                    'Multiplication tables & early division',
-  'Grade 5–6':                    'Fractions, decimals & multi-step problems',
-  'Grade 7–8':                    'Ratios, percentages & pre-algebra concepts',
-  'Pre-Algebra / Middle School':  'Equations, expressions & order of operations',
-  'Algebra & Beyond':             'Algebra, exponents, square roots & PEMDAS',
+  'Kindergarten':                 'Counting, basic single-digit addition & subtraction',
+  'Grade 1–2':                    'Sums & differences to 20, making 10s regrouping',
+  'Grade 3–4':                    'Multiplication tables (0s–9s) & quarter-hour time',
+  'Grade 5–6':                    'Money decimals ($1.00 bridge) & decimal addition/subtraction',
+  'Pre-Algebra / Middle School':  'Multi-digit mental arithmetic & explicit long division',
+  'Grade 7–8':                    'Fraction operations, percentages & PEMDAS order of operations',
+  'Algebra & Beyond':             '2-step algebra equations, negative numbers, exponents & square roots',
 };
 
 export default function FirstLaunchOnboardingModal({
@@ -204,53 +204,53 @@ export default function FirstLaunchOnboardingModal({
   // ─── STEP 2: Grade Selection ──────────────────────────────────────────────
   if (step === 2) {
     return (
-      <div className="fixed inset-0 z-[1000] h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-6 select-none animate-pop overflow-y-auto">
+      <div className="fixed inset-0 z-[1000] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-4 sm:p-6 select-none animate-pop overflow-hidden">
         <div className="absolute w-96 h-96 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
 
-        <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-5 text-center py-6">
+        <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-3 sm:gap-4 text-center max-h-[96dvh] overflow-hidden py-2">
           {/* Step indicator */}
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 shrink-0">
             <span className="text-slate-600">Step 1</span>
             <span>/</span>
             <span className="text-amber-400">Step 2</span>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1 shrink-0">
             <div className="flex items-center justify-center gap-2 text-amber-400">
-              <GraduationCap className="w-5 h-5 stroke-[2]" />
-              <span className="text-[10px] font-black uppercase tracking-widest bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full">
+              <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
+              <span className="text-[10px] font-black uppercase tracking-widest bg-amber-400/10 border border-amber-400/30 px-3 py-0.5 rounded-full">
                 Grade Level
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-tight">
               What grade is<br />{usernameInput || 'the climber'} in?
             </h1>
-            <p className="text-sm text-slate-300 font-medium">
-              Sets the starting difficulty so the first problems feel just right.
+            <p className="text-xs text-slate-300 font-medium">
+              Sets starting difficulty so problems feel just right.
             </p>
           </div>
 
-          {/* Grade option tiles */}
-          <div className="w-full space-y-2">
+          {/* Bounded Vertically Scrollable Grade Option Tiles */}
+          <div className="w-full max-h-40 sm:max-h-48 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar shrink">
             {GRADE_OPTIONS.map((grade) => (
               <button
                 key={grade}
                 type="button"
                 onClick={() => handleGradeSelect(grade)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 sm:py-2.5 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
                   selectedGrade === grade
-                    ? 'border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-500/10'
-                    : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/8'
+                    ? 'border-amber-400 bg-amber-400/15 shadow-md shadow-amber-500/10'
+                    : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10'
                 }`}
               >
-                <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
+                <div className={`w-3.5 h-3.5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
                   selectedGrade === grade ? 'border-amber-400 bg-amber-400' : 'border-slate-600'
                 }`}>
                   {selectedGrade === grade && <div className="w-1.5 h-1.5 rounded-full bg-slate-900" />}
                 </div>
-                <div className="min-w-0">
-                  <span className="block text-sm font-black text-white">{grade}</span>
-                  <span className="block text-[11px] text-slate-400 font-medium leading-snug">
+                <div className="min-w-0 flex-1">
+                  <span className="block text-xs sm:text-sm font-black text-white truncate">{grade}</span>
+                  <span className="block text-[10px] text-slate-400 font-medium leading-tight truncate">
                     {GRADE_DESCRIPTIONS[grade]}
                   </span>
                 </div>
@@ -262,7 +262,7 @@ export default function FirstLaunchOnboardingModal({
             type="button"
             onClick={handleGradeConfirm}
             disabled={!selectedGrade}
-            className={`w-full h-14 font-black text-base rounded-2xl border-b-4 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 ${
+            className={`w-full h-12 sm:h-13 font-black text-sm sm:text-base rounded-2xl border-b-4 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 shrink-0 ${
               selectedGrade
                 ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/30 border-orange-700 cursor-pointer'
                 : 'bg-slate-800 text-slate-600 border-slate-900 cursor-not-allowed'
@@ -277,7 +277,7 @@ export default function FirstLaunchOnboardingModal({
 
   // ─── STEP 3: Welcome Splash ───────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-y-auto overflow-x-hidden select-none animate-pop border-none">
+    <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-hidden overflow-x-hidden select-none animate-pop border-none">
       <ConfettiCanvas />
 
       <div className="w-full max-w-2xl mx-auto min-h-full flex flex-col justify-between p-4 sm:p-6 md:p-8 box-border relative z-10 text-center gap-4">

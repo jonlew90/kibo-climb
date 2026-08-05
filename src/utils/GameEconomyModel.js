@@ -26,25 +26,25 @@ export function getCompetenceDescription(rating = 1000, totalProblemsSolved = 0)
 
   const numRating = Number(rating) || 1000;
   if (numRating < 1200) {
-    return 'Mastering single-digit addition, subtraction, making-10s regrouping, and foundational number sense.';
+    return 'Mastering single-digit addition, subtraction, making-10s regrouping, and foundational number sense. (K–Grade 2)';
   }
   if (numRating < 1400) {
-    return 'Building core multiplication fluency (0s–5s), 5s clock tricks, and quarter-hour analog time reading.';
+    return 'Building core multiplication fluency (0s–5s), 5s clock tricks, and quarter-hour analog time reading. (Grade 3)';
   }
   if (numRating < 1600) {
-    return 'Mastering advanced multiplication tables (6s–9s), 9s finger shortcuts, coin counting, and elapsed time jumps.';
+    return 'Mastering advanced multiplication tables (6s–9s), 9s finger shortcuts, coin counting, and elapsed time jumps. (Grade 3–4)';
   }
   if (numRating < 1800) {
-    return 'Executing multi-digit mental arithmetic, left-to-right tens addition, and the 11s split-and-add mental shortcut.';
+    return 'Executing multi-step division, fraction foundations (equal parts, simple equivalents), and fact family relationships. (Grade 4–5)';
   }
   if (numRating < 2000) {
-    return 'Calculating money decimals ($1.00 bridge & change under $1.00), general decimal addition/subtraction, and divisibility rules.';
+    return 'Calculating money decimals ($1.00 bridge & change under $1.00), general decimal addition/subtraction, and divisibility rules. (Grade 4–5)';
   }
   if (numRating < 2200) {
-    return 'Mastering inverse division fact families, explicit long division (e.g. 168 ÷ 7 = 24), and elapsed time duration jumps.';
+    return 'Mastering multi-digit mental arithmetic, long division (e.g. 168 ÷ 7), and left-to-right tens addition strategies. (Grade 5–6)';
   }
   if (numRating < 2400) {
-    return 'Solving fraction reduction to lowest terms, fraction multiplication/division (× / ÷), percentages, LCM, and GCF.';
+    return 'Solving fraction reduction to lowest terms, fraction multiplication/division (× / ÷), percentages, LCM, GCF, and order of operations (PEMDAS). (Grade 6–7)';
   }
-  return 'Demonstrating peak summit mastery in 2-step pre-algebra equations (3x + 5 = 20), signed negative numbers (-/+), exponents (2⁴), square roots (√81), and PEMDAS.';
+  return 'Demonstrating peak summit mastery in 2-step pre-algebra equations (3x + 5 = 20), signed negative numbers (-/+), exponents (2⁴), square roots (√81), and PEMDAS. (Grade 7–8+)';
 }

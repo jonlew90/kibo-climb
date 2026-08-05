@@ -336,10 +336,42 @@ export default function App() {
     setSparks(newSparks);
     setConsumables(nextConsumables);
 
+    const activeData = storageService.getUserData();
+    const newPurchasesCount = (activeData.shopPurchasesCount || 0) + 1;
+    const currentRarities = Array.isArray(activeData.purchasedRarities) ? activeData.purchasedRarities : [];
+    const itemRarity = item.rarity || 'common';
+    const newRarities = Array.from(new Set([...currentRarities, itemRarity]));
+
     storageService.saveUserData({
       sparks: newSparks,
-      consumables: nextConsumables
+      consumables: nextConsumables,
+      shopPurchasesCount: newPurchasesCount,
+      purchasedRarities: newRarities
     });
+
+    const refreshedUserData = storageService.getUserData();
+    if (!refreshedUserData.hasPromptedSaveProgress && newPurchasesCount >= 2) {
+      storageService.saveUserData({ hasPromptedSaveProgress: true });
+      setLinkModalMilestone('2 Shop Items Purchased');
+      setShowAccountLinkModal(true);
+    }
+
+    const userStateForBadges = {
+      streak,
+      sparks: newSparks,
+      purchasedItemsCount: newPurchasesCount,
+      purchasedRarities: newRarities,
+      hasBoughtGemsWithRealMoney: refreshedUserData.hasBoughtGemsWithRealMoney || false,
+      perfectClimbsCount: refreshedUserData.perfectClimbsCount || 0,
+      consecutivePerfectClimbsCount: refreshedUserData.consecutivePerfectClimbsCount || 0,
+      cumulativeCorrectStreak: refreshedUserData.cumulativeCorrectStreak || 0,
+      unlockedBadges
+    };
+    const badgeEvalRes = evaluateBadges(userStateForBadges);
+    if ((badgeEvalRes.newlyUnlocked || []).length > 0) {
+      setUnlockedBadges(badgeEvalRes.updatedUnlocked);
+      setNewlyUnlockedBadges(badgeEvalRes.newlyUnlocked);
+    }
 
     soundFx.playVictory();
   };
@@ -1003,11 +1035,31 @@ export default function App() {
     }
     setIsNewSpeedRecord(isNewRecord);
 
+    const activeUserData = storageService.getUserData();
+    const newCompletedClimbs = (activeUserData.completedClimbsCount || 0) + 1;
+    const isPerfectRun = accuracyPct === 100;
+    const newPerfectClimbsCount = isPerfectRun ? (activeUserData.perfectClimbsCount || 0) + 1 : (activeUserData.perfectClimbsCount || 0);
+    const newConsecutivePerfect = isPerfectRun ? (activeUserData.consecutivePerfectClimbsCount || 0) + 1 : 0;
+    const currentCorrectStreak = activeUserData.cumulativeCorrectStreak || 0;
+    const newCumulativeCorrectStreak = Math.max(currentCorrectStreak, currentUserState?.cumulativeCorrectStreak || 0);
+
     storageService.saveUserData({
+      streak: newStreak,
       tierMasteryPercent: updatedMastery,
       unlockedTiers: updatedUnlocked,
-      tierBestTimes: updatedBestTimes
+      tierBestTimes: updatedBestTimes,
+      completedClimbsCount: newCompletedClimbs,
+      perfectClimbsCount: newPerfectClimbsCount,
+      consecutivePerfectClimbsCount: newConsecutivePerfect
     });
+
+    // Per-profile check for Save Progress Across All Devices modal (2 climbs completed)
+    const refreshedUserData = storageService.getUserData();
+    if (!refreshedUserData.hasPromptedSaveProgress && newCompletedClimbs >= 2) {
+      storageService.saveUserData({ hasPromptedSaveProgress: true });
+      setLinkModalMilestone('2 Climbs Completed');
+      setShowAccountLinkModal(true);
+    }
 
     // Badge Evaluation & Unlock Persistence
     const activeTierConfig = CURRICULUM_TIERS.find((t) => t.tier === activeTier) || CURRICULUM_TIERS[0];
@@ -1023,18 +1075,24 @@ export default function App() {
     };
 
     const currentUserState = {
-      streak,
+      streak: newStreak,
       tier: activeTier,
-      sparks,
-      unlockedItems: equippedItems,
-      streakShields: 1,
+      sparks: newSparkBalance,
+      purchasedItemsCount: refreshedUserData.shopPurchasesCount || 0,
+      purchasedRarities: refreshedUserData.purchasedRarities || [],
+      hasBoughtGemsWithRealMoney: refreshedUserData.hasBoughtGemsWithRealMoney || false,
+      hasSetPersonalRecord: isNewRecord,
+      isNewSpeedRecord: isNewRecord,
+      perfectClimbsCount: newPerfectClimbsCount,
+      consecutivePerfectClimbsCount: newConsecutivePerfect,
+      cumulativeCorrectStreak: newCumulativeCorrectStreak,
       unlockedBadges
     };
 
-    const newBadges = evaluateBadges(currentUserState, sprintResultData);
+    const badgeEvalRes = evaluateBadges(currentUserState, sprintResultData);
+    const newBadges = badgeEvalRes.newlyUnlocked || [];
     if (newBadges.length > 0) {
-      const updatedBadgeIds = Array.from(new Set([...unlockedBadges, ...newBadges.map((b) => b.id)]));
-      setUnlockedBadges(updatedBadgeIds);
+      setUnlockedBadges(badgeEvalRes.updatedUnlocked);
       setNewlyUnlockedBadges(newBadges);
     } else {
       setNewlyUnlockedBadges([]);
@@ -1117,18 +1175,46 @@ export default function App() {
     setEquippedItems(updatedEquipped);
 
     storageService.saveShopState(updatedEquipped, res.unlockedItems);
-    soundFx.playVictory();
 
-    // Trigger AccountLinkModal when user unlocks their first gear item to protect progress!
-    const authState = authService.getAuthState();
-    if (authState.isAnonymous) {
-      const hasPromptedGear = localStorage.getItem('kibo_prompted_link_gear');
-      if (res.unlockedItems.length >= 1 && !hasPromptedGear) {
-        localStorage.setItem('kibo_prompted_link_gear', 'true');
-        setLinkModalMilestone('First Kibo Outfit Unlocked');
-        setShowAccountLinkModal(true);
-      }
+    const activeData = storageService.getUserData();
+    const newPurchasesCount = (activeData.shopPurchasesCount || 0) + 1;
+    const currentRarities = Array.isArray(activeData.purchasedRarities) ? activeData.purchasedRarities : [];
+    const itemRarity = item.rarity || 'common';
+    const newRarities = Array.from(new Set([...currentRarities, itemRarity]));
+
+    storageService.saveUserData({
+      sparks: res.newSparks,
+      shopPurchasesCount: newPurchasesCount,
+      purchasedRarities: newRarities
+    });
+
+    // Per-profile check for Save Progress Across All Devices modal (2 items purchased)
+    const refreshedUserData = storageService.getUserData();
+    if (!refreshedUserData.hasPromptedSaveProgress && newPurchasesCount >= 2) {
+      storageService.saveUserData({ hasPromptedSaveProgress: true });
+      setLinkModalMilestone('2 Shop Items Purchased');
+      setShowAccountLinkModal(true);
     }
+
+    // Evaluate shop badges
+    const userStateForBadges = {
+      streak,
+      sparks: res.newSparks,
+      purchasedItemsCount: newPurchasesCount,
+      purchasedRarities: newRarities,
+      hasBoughtGemsWithRealMoney: refreshedUserData.hasBoughtGemsWithRealMoney || false,
+      perfectClimbsCount: refreshedUserData.perfectClimbsCount || 0,
+      consecutivePerfectClimbsCount: refreshedUserData.consecutivePerfectClimbsCount || 0,
+      cumulativeCorrectStreak: refreshedUserData.cumulativeCorrectStreak || 0,
+      unlockedBadges
+    };
+    const badgeEvalRes = evaluateBadges(userStateForBadges);
+    if ((badgeEvalRes.newlyUnlocked || []).length > 0) {
+      setUnlockedBadges(badgeEvalRes.updatedUnlocked);
+      setNewlyUnlockedBadges(badgeEvalRes.newlyUnlocked);
+    }
+
+    soundFx.playVictory();
   };
 
   const handleToggleEquip = (itemId) => {

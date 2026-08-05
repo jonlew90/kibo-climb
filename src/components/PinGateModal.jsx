@@ -95,7 +95,7 @@ export default function PinGateModal({
   return (
     <div
       onClick={handleCloseModal}
-      className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-purple-50 via-slate-50 to-indigo-50 text-slate-800 flex flex-col justify-center items-center p-4 sm:p-6 overflow-y-auto overflow-x-hidden select-none animate-pop cursor-pointer"
+      className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-purple-50 via-slate-50 to-indigo-50 text-slate-800 flex flex-col justify-center items-center p-4 sm:p-6 overflow-hidden select-none animate-pop cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}
