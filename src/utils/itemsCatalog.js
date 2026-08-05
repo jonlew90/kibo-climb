@@ -8,7 +8,8 @@ export const ITEM_CATEGORIES = [
   { id: 'pets', label: 'Pets' },
   { id: 'fx', label: 'Visual FX' },
   { id: 'skins', label: 'Kibo Skins' },
-  { id: 'background', label: 'Backgrounds' }
+  { id: 'background', label: 'Backgrounds' },
+  { id: 'get_sparks', label: 'Get Sparks' }
 ];
 
 export const RARITY_TIERS = {

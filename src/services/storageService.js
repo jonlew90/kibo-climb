@@ -65,7 +65,8 @@ const DEFAULT_NOTIF_SETTINGS = {
   dailyReminderEnabled: true,
   reminderTime: '17:00',
   weeklyDigestEnabled: true,
-  struggleAlertsEnabled: true
+  struggleAlertsEnabled: true,
+  allowRealMoneyPurchases: false
 };
 
 const DEFAULT_PARENT_SETTINGS = {
