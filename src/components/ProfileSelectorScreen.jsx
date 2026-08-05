@@ -114,14 +114,14 @@ export default function ProfileSelectorScreen({ onSelectProfile, onAddProfile })
             🏔️ Kibo Climb
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Who's climbing today?
+            {profiles.length === 1 ? `Ready to climb, ${profiles[0].username || profiles[0].name}?` : "Who's climbing today?"}
           </h1>
           <p className="text-sm text-slate-400 font-medium">
-            Pick your profile to continue your ascent
+            {profiles.length === 1 ? 'Tap your card to start' : 'Pick your profile to continue your ascent'}
           </p>
         </div>
 
-        {/* Profile grid — 1 col on mobile, 2 on sm, 3 on md+ */}
+        {/* Profile grid — centred single card or multi-column grid */}
         <div className={`w-full grid gap-3 ${
           profiles.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' :
           profiles.length === 2 ? 'grid-cols-2' :

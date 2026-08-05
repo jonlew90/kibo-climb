@@ -98,11 +98,12 @@ export default function App() {
     return !localStorage.getItem('kibo_math_has_onboarded') && !localStorage.getItem('kibo_math_tier');
   });
 
-  // Profile Selector — shown on every load when 2+ profiles exist (and onboarding is done)
+  // Profile Selector — shown on every launch so players can pick who's climbing
+  // and parents always have a discoverable path to add a new profile.
   const [showProfileSelector, setShowProfileSelector] = useState(() => {
+    // Skip only during the very first-ever launch (onboarding takes precedence)
     const hasOnboarded = !!localStorage.getItem('kibo_math_has_onboarded') || !!localStorage.getItem('kibo_math_tier');
-    const profiles = storageService.getAllProfiles();
-    return hasOnboarded && profiles.length >= 2;
+    return hasOnboarded;
   });
 
   // Consecutive problem miss tracking for Micro-Hints
