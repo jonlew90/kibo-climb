@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft, User } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
 import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, getItemsByCategory, getItemById } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
+import { storageService } from '../services/storageService';
 
 export function sortShopItems(items, userSparks, unlockedItems = [], equippedItems = []) {
   return [...items].sort((a, b) => {
@@ -213,9 +214,19 @@ export default function WorkshopModal({
           <h2 className="text-base sm:text-lg font-black tracking-tight">Kibo's Corner 🐾</h2>
         </div>
 
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 border-2 border-amber-300 rounded-full text-amber-900 font-black text-xs shadow-xs">
-          <Zap className="w-4 h-4 text-amber-500 fill-amber-400 stroke-[2.5]" />
-          <span>{sparks}</span>
+        <div className="flex items-center gap-2">
+          {(() => {
+            const username = storageService.getUsername() || storageService.getActiveProfile()?.name || '';
+            return username ? (
+              <span className="hidden sm:flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                <User className="w-3 h-3" />{username}
+              </span>
+            ) : null;
+          })()}
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 border-2 border-amber-300 rounded-full text-amber-900 font-black text-xs shadow-xs">
+            <Zap className="w-4 h-4 text-amber-500 fill-amber-400 stroke-[2.5]" />
+            <span>{sparks}</span>
+          </div>
         </div>
       </header>
 

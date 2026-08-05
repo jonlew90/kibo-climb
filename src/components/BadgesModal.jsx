@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Lock, Sparkles, ArrowLeft, CheckCircle2, Trophy, Flame, Zap, Target } from 'lucide-react';
+import { Award, Lock, Sparkles, ArrowLeft, CheckCircle2, Trophy, Flame, Zap, Target, User } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { soundFx } from '../utils/audio';
+import { storageService } from '../services/storageService';
 
 export default function BadgesModal({
   isOpen,
@@ -44,6 +45,7 @@ export default function BadgesModal({
   const perfectRuns = personalRecords?.mostPerfectSessions || 0;
 
   const recentUnlockedBadges = BADGES_CATALOG.filter((b) => unlockedSet.has(b.id)).slice(-3).reverse();
+  const username = storageService.getUsername() || storageService.getActiveProfile()?.name || '';
 
   const filteredBadges = activeCategory === 'all'
     ? BADGES_CATALOG
@@ -69,9 +71,16 @@ export default function BadgesModal({
           <h2 className="text-base sm:text-lg font-black tracking-tight">My Trophies & Records</h2>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1 rounded-full text-xs font-black shadow-xs">
-          <Award className="w-4 h-4 text-amber-700 stroke-[2.5]" />
-          <span>{unlockedCount}/{totalBadges}</span>
+        <div className="flex items-center gap-2">
+          {username && (
+            <span className="hidden sm:flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+              <User className="w-3 h-3" />{username}
+            </span>
+          )}
+          <div className="flex items-center gap-1.5 bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1 rounded-full text-xs font-black shadow-xs">
+            <Award className="w-4 h-4 text-amber-700 stroke-[2.5]" />
+            <span>{unlockedCount}/{totalBadges}</span>
+          </div>
         </div>
       </header>
 

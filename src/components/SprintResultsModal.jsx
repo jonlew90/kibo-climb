@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Flame, Zap, Compass, ShoppingBag, CheckCircle2, Clock, ArrowRight } from 'lucide-react';
+import { Trophy, Flame, Zap, Compass, ShoppingBag, CheckCircle2, Clock, ArrowRight, User } from 'lucide-react';
 import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
 import { CURRICULUM_TIERS, calculateStars } from '../utils/curriculum';
+import { storageService } from '../services/storageService';
 
 export default function SprintResultsModal({
   isOpen,
@@ -21,6 +22,7 @@ export default function SprintResultsModal({
   onVisitWorkshop
 }) {
   const [summaryStep, setSummaryStep] = useState(1);
+  const username = storageService.getUsername() || storageService.getActiveProfile()?.name || '';
 
   // Reset to Step 1 upon modal open and add Escape key listener
   useEffect(() => {
@@ -93,6 +95,11 @@ export default function SprintResultsModal({
         </div>
 
         <div className="flex items-center gap-3 text-xs font-black">
+          {username && (
+            <span className="flex items-center gap-1 text-slate-400 font-bold">
+              <User className="w-3 h-3" />{username}
+            </span>
+          )}
           <span className={summaryStep === 1 ? 'text-amber-400 font-extrabold bg-amber-950/80 px-2.5 py-0.5 rounded-full border border-amber-500/40' : 'text-slate-500'}>
             Step 1: Stats
           </span>
@@ -123,7 +130,7 @@ export default function SprintResultsModal({
                 {isBossMode ? '⚡ Boss Challenge Complete!' : isNewSpeedRecord ? '⚡ New Speed Record!' : 'Sprint Complete! 🎉'}
               </span>
               <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                Great Job Ascending! 🏔️
+                {username ? `Great job, ${username}! 🏔️` : 'Great Job Ascending! 🏔️'}
               </h2>
             </div>
 
