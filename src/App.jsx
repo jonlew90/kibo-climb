@@ -1382,7 +1382,6 @@ export default function App() {
       {showProfileSelector && (
         <ProfileSelectorScreen
           onSelectProfile={(profile) => {
-            // Load state from the newly selected profile
             const ud = storageService.getUserData();
             setStreak(ud.streak ?? 1);
             setSparks(ud.sparks ?? 0);
@@ -1393,11 +1392,6 @@ export default function App() {
             setEquippedItems(sd.equippedItems ?? []);
             setUnlockedItems(sd.unlockedItems ?? ['cap']);
             setShowProfileSelector(false);
-          }}
-          onAddProfile={() => {
-            // Open parent dashboard — parent can create a profile there
-            setShowProfileSelector(false);
-            setShowPinGateModal(true);
           }}
         />
       )}
