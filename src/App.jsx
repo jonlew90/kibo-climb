@@ -12,6 +12,7 @@ import StreakSavedModal from './components/StreakSavedModal';
 import WorldMap from './components/WorldMap';
 import MicroHintCard from './components/MicroHintCard';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
+import ProfileSelectorScreen from './components/ProfileSelectorScreen';
 import SprintResultsModal from './components/SprintResultsModal';
 import BadgesModal from './components/BadgesModal';
 import AdaptiveSessionView from './components/AdaptiveSessionView';
@@ -95,6 +96,13 @@ export default function App() {
   // First-Time User Onboarding Modal State
   const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
     return !localStorage.getItem('kibo_math_has_onboarded') && !localStorage.getItem('kibo_math_tier');
+  });
+
+  // Profile Selector — shown on every load when 2+ profiles exist (and onboarding is done)
+  const [showProfileSelector, setShowProfileSelector] = useState(() => {
+    const hasOnboarded = !!localStorage.getItem('kibo_math_has_onboarded') || !!localStorage.getItem('kibo_math_tier');
+    const profiles = storageService.getAllProfiles();
+    return hasOnboarded && profiles.length >= 2;
   });
 
   // Consecutive problem miss tracking for Micro-Hints
@@ -1366,6 +1374,30 @@ export default function App() {
             localStorage.setItem('kibo_math_sparks', updated.toString());
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
+        />
+      )}
+
+      {/* PROFILE SELECTOR — shown on every load when 2+ profiles exist */}
+      {showProfileSelector && (
+        <ProfileSelectorScreen
+          onSelectProfile={(profile) => {
+            // Load state from the newly selected profile
+            const ud = storageService.getUserData();
+            setStreak(ud.streak ?? 1);
+            setSparks(ud.sparks ?? 0);
+            setTotalProblemsSolved(ud.totalProblemsSolved ?? 0);
+            setUnlockedBadges(ud.unlockedBadges ?? []);
+            setPracticeDays(storageService.getProfilePracticeDays());
+            const sd = storageService.getShopState();
+            setEquippedItems(sd.equippedItems ?? []);
+            setUnlockedItems(sd.unlockedItems ?? ['cap']);
+            setShowProfileSelector(false);
+          }}
+          onAddProfile={() => {
+            // Open parent dashboard — parent can create a profile there
+            setShowProfileSelector(false);
+            setShowPinGateModal(true);
+          }}
         />
       )}
 
