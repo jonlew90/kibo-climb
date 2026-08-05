@@ -1,5 +1,6 @@
 // Unified Storage Service Adapter for Kibo Math
 // Multi-Profile Storage Engine (profiles[activeProfileId])
+import { getStartingRatingForGrade } from '../utils/curriculum';
 
 const KEYS = {
   PROFILES: 'kibo_profiles_data',
@@ -118,11 +119,17 @@ export const storageService = {
   createProfile(name = 'New Climber', gradeLevel = 'Grade 1–2') {
     const state = safeGetProfilesState();
     const id = `profile_${Date.now()}`;
+    const startingRating = getStartingRatingForGrade(gradeLevel);
     const newProfile = {
       ...DEFAULT_PROFILE,
       id,
       name,
-      gradeLevel
+      gradeLevel,
+      userData: {
+        ...DEFAULT_PROFILE.userData,
+        adaptiveCompetenceRating: startingRating,
+        competenceRank: startingRating,
+      }
     };
     state.profiles[id] = newProfile;
     state.activeProfileId = id;
@@ -158,7 +165,7 @@ export const storageService = {
   getUsername() {
     return this.getActiveProfile().username || '';
   },
-  saveUsername(username) {
+  saveUsername(username, gradeLevel = null) {
     const state = safeGetProfilesState();
     const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
     if (!state.profiles[activeId]) {
@@ -166,6 +173,15 @@ export const storageService = {
     }
     state.profiles[activeId].username = username;
     state.profiles[activeId].name = username; // keep display name in sync
+    if (gradeLevel) {
+      state.profiles[activeId].gradeLevel = gradeLevel;
+      const startingRating = getStartingRatingForGrade(gradeLevel);
+      state.profiles[activeId].userData = {
+        ...(state.profiles[activeId].userData || DEFAULT_PROFILE.userData),
+        adaptiveCompetenceRating: startingRating,
+        competenceRank: startingRating,
+      };
+    }
     safeSaveProfilesState(state);
   },
 

@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Zap, Flame, ShoppingBag, ArrowRight, User, CheckCircle2 } from 'lucide-react';
+import { Play, Zap, Flame, ShoppingBag, ArrowRight, User, CheckCircle2, GraduationCap } from 'lucide-react';
 import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
+import { GRADE_STARTING_RATINGS } from '../utils/curriculum';
+
+const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 
@@ -15,6 +18,16 @@ function validateUsername(val) {
   return null;
 }
 
+const GRADE_DESCRIPTIONS = {
+  'Kindergarten':                 'Counting, number sense, very simple addition',
+  'Grade 1–2':                    'Addition & subtraction fluency up to 20',
+  'Grade 3–4':                    'Multiplication tables & early division',
+  'Grade 5–6':                    'Fractions, decimals & multi-step problems',
+  'Grade 7–8':                    'Ratios, percentages & pre-algebra concepts',
+  'Pre-Algebra / Middle School':  'Equations, expressions & order of operations',
+  'Algebra & Beyond':             'Algebra, exponents, square roots & PEMDAS',
+};
+
 export default function FirstLaunchOnboardingModal({
   isOpen,
   equippedItems = [],
@@ -24,10 +37,12 @@ export default function FirstLaunchOnboardingModal({
   onStartAtTier1,
   onUsernameSet,
 }) {
-  const [step, setStep] = useState(1); // 1 = username, 2 = welcome splash
+  // step: 1 = username, 2 = grade selection, 3 = welcome splash
+  const [step, setStep] = useState(1);
   const [usernameInput, setUsernameInput] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [usernameConfirmed, setUsernameConfirmed] = useState(false);
+  const [selectedGrade, setSelectedGrade] = useState('');
   const inputRef = useRef(null);
 
   // Pre-fill if username already set (e.g. returning to this screen)
@@ -35,7 +50,13 @@ export default function FirstLaunchOnboardingModal({
     const existing = storageService.getUsername();
     if (existing) {
       setUsernameInput(existing);
-      setStep(2);
+      const existingGrade = storageService.getActiveProfile()?.gradeLevel;
+      if (existingGrade) {
+        setSelectedGrade(existingGrade);
+        setStep(3);
+      } else {
+        setStep(2);
+      }
     }
   }, [isOpen]);
 
@@ -48,7 +69,7 @@ export default function FirstLaunchOnboardingModal({
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isOpen) return;
-      if (e.key === 'Escape' && step === 2 && onStartAdaptiveClimb) {
+      if (e.key === 'Escape' && step === 3 && onStartAdaptiveClimb) {
         onStartAdaptiveClimb();
       }
     };
@@ -67,19 +88,30 @@ export default function FirstLaunchOnboardingModal({
   const handleUsernameSubmit = (e) => {
     e.preventDefault();
     const error = validateUsername(usernameInput);
-    if (error) {
-      setUsernameError(error);
-      return;
-    }
+    if (error) { setUsernameError(error); return; }
     const cleaned = usernameInput.trim();
-    storageService.saveUsername(cleaned);
-    if (onUsernameSet) onUsernameSet(cleaned);
+    // Don't save yet — wait until grade is also chosen
     soundFx.playVictory();
     setUsernameConfirmed(true);
     setTimeout(() => {
       setUsernameConfirmed(false);
       setStep(2);
-    }, 700);
+    }, 600);
+  };
+
+  const handleGradeSelect = (grade) => {
+    soundFx.playKeyTap();
+    setSelectedGrade(grade);
+  };
+
+  const handleGradeConfirm = () => {
+    if (!selectedGrade) return;
+    const cleaned = usernameInput.trim();
+    // Save username + grade + starting rating together
+    storageService.saveUsername(cleaned, selectedGrade);
+    if (onUsernameSet) onUsernameSet(cleaned);
+    soundFx.playVictory();
+    setStep(3);
   };
 
   const handleStart = () => {
@@ -89,27 +121,26 @@ export default function FirstLaunchOnboardingModal({
     else if (typeof onStartPlacementTest === 'function') onStartPlacementTest();
   };
 
-  // ─── STEP 1: Username ────────────────────────────────────────────────────
+  // ─── STEP 1: Username ─────────────────────────────────────────────────────
   if (step === 1) {
     return (
       <div className="fixed inset-0 z-[1000] h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-6 select-none animate-pop overflow-hidden">
-        {/* Soft glow bg */}
         <div className="absolute w-96 h-96 rounded-full bg-purple-600/20 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
 
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6 text-center">
-
-          {/* Mascot */}
-          <div className="relative flex justify-center">
-            <div className="absolute w-32 h-32 rounded-full bg-amber-400/20 blur-2xl animate-pulse pointer-events-none" />
-            <Mascot
-              mood="happy"
-              state="idle"
-              equipped={equippedItems}
-              className="h-28 w-auto filter drop-shadow-xl animate-bounce object-contain relative z-10"
-            />
+          {/* Step indicator */}
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+            <span className="text-amber-400">Step 1</span>
+            <span>/</span>
+            <span>2</span>
           </div>
 
-          {/* Heading */}
+          <div className="relative flex justify-center">
+            <div className="absolute w-32 h-32 rounded-full bg-amber-400/20 blur-2xl animate-pulse pointer-events-none" />
+            <Mascot mood="happy" state="idle" equipped={equippedItems}
+              className="h-28 w-auto filter drop-shadow-xl animate-bounce object-contain relative z-10" />
+          </div>
+
           <div className="space-y-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full inline-block">
               🏔️ Kibo Climb
@@ -122,7 +153,6 @@ export default function FirstLaunchOnboardingModal({
             </p>
           </div>
 
-          {/* Input Form */}
           <form onSubmit={handleUsernameSubmit} className="w-full space-y-3">
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 stroke-[2.5]" />
@@ -130,61 +160,39 @@ export default function FirstLaunchOnboardingModal({
                 ref={inputRef}
                 type="text"
                 value={usernameInput}
-                onChange={(e) => {
-                  setUsernameInput(e.target.value);
-                  setUsernameError('');
-                }}
+                onChange={(e) => { setUsernameInput(e.target.value); setUsernameError(''); }}
                 placeholder="e.g. MathKing42"
                 maxLength={20}
                 autoComplete="off"
                 autoCapitalize="none"
                 spellCheck={false}
                 className={`w-full pl-10 pr-4 py-3.5 bg-white/10 border-2 rounded-2xl text-white font-extrabold text-base placeholder:text-slate-500 focus:outline-none transition-all ${
-                  usernameError
-                    ? 'border-rose-500 bg-rose-500/10'
-                    : usernameConfirmed
-                    ? 'border-emerald-400 bg-emerald-500/10'
-                    : 'border-white/20 focus:border-purple-400 focus:bg-white/15'
+                  usernameError ? 'border-rose-500 bg-rose-500/10'
+                  : usernameConfirmed ? 'border-emerald-400 bg-emerald-500/10'
+                  : 'border-white/20 focus:border-purple-400 focus:bg-white/15'
                 }`}
               />
               {usernameConfirmed && (
                 <CheckCircle2 className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400 stroke-[2.5]" />
               )}
             </div>
-
-            {usernameError && (
-              <p className="text-xs font-bold text-rose-400 text-left px-1">{usernameError}</p>
-            )}
-
+            {usernameError && <p className="text-xs font-bold text-rose-400 text-left px-1">{usernameError}</p>}
             <p className="text-[10px] text-slate-500 font-medium text-left px-1">
               3–20 characters · Letters, numbers, and underscores only · Your leaderboard name
             </p>
-
-            <button
-              type="submit"
-              className="w-full h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2"
-            >
+            <button type="submit"
+              className="w-full h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2">
               {usernameConfirmed ? (
-                <>
-                  <CheckCircle2 className="w-5 h-5 stroke-[2.5]" /> Confirmed!
-                </>
+                <><CheckCircle2 className="w-5 h-5 stroke-[2.5]" /> Confirmed!</>
               ) : (
-                <>
-                  Claim Username <ArrowRight className="w-5 h-5 stroke-[2.5]" />
-                </>
+                <>Next <ArrowRight className="w-5 h-5 stroke-[2.5]" /></>
               )}
             </button>
           </form>
 
           {onOpenParentZone && (
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                onOpenParentZone();
-              }}
-              className="text-xs font-bold text-purple-300 hover:text-white transition-colors"
-            >
+            <button type="button" onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
+              className="text-xs font-bold text-purple-300 hover:text-white transition-colors">
               🔒 Parent Zone Setup
             </button>
           )}
@@ -193,14 +201,87 @@ export default function FirstLaunchOnboardingModal({
     );
   }
 
-  // ─── STEP 2: Welcome Splash ───────────────────────────────────────────────
+  // ─── STEP 2: Grade Selection ──────────────────────────────────────────────
+  if (step === 2) {
+    return (
+      <div className="fixed inset-0 z-[1000] h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-6 select-none animate-pop overflow-y-auto">
+        <div className="absolute w-96 h-96 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
+
+        <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-5 text-center py-6">
+          {/* Step indicator */}
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+            <span className="text-slate-600">Step 1</span>
+            <span>/</span>
+            <span className="text-amber-400">Step 2</span>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-center gap-2 text-amber-400">
+              <GraduationCap className="w-5 h-5 stroke-[2]" />
+              <span className="text-[10px] font-black uppercase tracking-widest bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full">
+                Grade Level
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+              What grade is<br />{usernameInput || 'the climber'} in?
+            </h1>
+            <p className="text-sm text-slate-300 font-medium">
+              Sets the starting difficulty so the first problems feel just right.
+            </p>
+          </div>
+
+          {/* Grade option tiles */}
+          <div className="w-full space-y-2">
+            {GRADE_OPTIONS.map((grade) => (
+              <button
+                key={grade}
+                type="button"
+                onClick={() => handleGradeSelect(grade)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
+                  selectedGrade === grade
+                    ? 'border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-500/10'
+                    : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/8'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
+                  selectedGrade === grade ? 'border-amber-400 bg-amber-400' : 'border-slate-600'
+                }`}>
+                  {selectedGrade === grade && <div className="w-1.5 h-1.5 rounded-full bg-slate-900" />}
+                </div>
+                <div className="min-w-0">
+                  <span className="block text-sm font-black text-white">{grade}</span>
+                  <span className="block text-[11px] text-slate-400 font-medium leading-snug">
+                    {GRADE_DESCRIPTIONS[grade]}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGradeConfirm}
+            disabled={!selectedGrade}
+            className={`w-full h-14 font-black text-base rounded-2xl border-b-4 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 ${
+              selectedGrade
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/30 border-orange-700 cursor-pointer'
+                : 'bg-slate-800 text-slate-600 border-slate-900 cursor-not-allowed'
+            }`}
+          >
+            Let's Climb! 🚀
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── STEP 3: Welcome Splash ───────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-y-auto overflow-x-hidden select-none animate-pop border-none">
       <ConfettiCanvas />
 
       <div className="w-full max-w-2xl mx-auto min-h-full flex flex-col justify-between p-4 sm:p-6 md:p-8 box-border relative z-10 text-center gap-4">
 
-        {/* HEADER */}
         <div className="shrink-0 flex flex-col items-center text-center space-y-2 pt-2">
           <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 px-4 py-1 rounded-full border border-amber-500 shadow-sm inline-block tracking-wider animate-pulse">
             🏔️ Welcome to Kibo Climb
@@ -213,16 +294,11 @@ export default function FirstLaunchOnboardingModal({
           </p>
         </div>
 
-        {/* HERO + FEATURES */}
         <div className="flex-1 min-h-0 flex flex-col justify-center gap-4 py-2 my-auto">
           <div className="relative py-2 flex justify-center items-center shrink-0">
             <div className="absolute w-36 sm:w-48 h-36 sm:h-48 rounded-full bg-amber-400/30 blur-2xl animate-pulse pointer-events-none" />
-            <Mascot
-              mood="happy"
-              state="idle"
-              equipped={equippedItems}
-              className="w-auto max-h-[26vh] h-28 sm:h-36 md:h-44 filter drop-shadow-xl animate-bounce object-contain"
-            />
+            <Mascot mood="happy" state="idle" equipped={equippedItems}
+              className="w-auto max-h-[26vh] h-28 sm:h-36 md:h-44 filter drop-shadow-xl animate-bounce object-contain" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white/95 border-2 border-amber-200/90 rounded-3xl p-3.5 sm:p-5 shadow-xl shrink-0 text-left">
@@ -235,7 +311,6 @@ export default function FirstLaunchOnboardingModal({
                 </p>
               </div>
             </div>
-
             <div className="flex sm:flex-col items-start gap-3 bg-orange-50/90 border border-orange-200 rounded-2xl p-3 sm:p-3.5 transition-transform hover:scale-[1.02]">
               <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 fill-orange-400 shrink-0 mt-0.5 sm:mt-0" />
               <div>
@@ -245,7 +320,6 @@ export default function FirstLaunchOnboardingModal({
                 </p>
               </div>
             </div>
-
             <div className="flex sm:flex-col items-start gap-3 bg-purple-50/90 border border-purple-200 rounded-2xl p-3 sm:p-3.5 transition-transform hover:scale-[1.02]">
               <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 shrink-0 mt-0.5 sm:mt-0" />
               <div>
@@ -258,26 +332,17 @@ export default function FirstLaunchOnboardingModal({
           </div>
         </div>
 
-        {/* CTA */}
         <div className="shrink-0 space-y-2 pt-2 pb-2 w-full">
-          <button
-            type="button"
-            onClick={handleStart}
-            className="btn-3d-orange w-full h-16 min-h-[64px] py-4 text-lg sm:text-xl font-extrabold rounded-2xl flex items-center justify-center gap-3 shadow-bouncy-orange active:scale-95 transition-all tracking-wide cursor-pointer"
-          >
+          <button type="button" onClick={handleStart}
+            className="btn-3d-orange w-full h-16 min-h-[64px] py-4 text-lg sm:text-xl font-extrabold rounded-2xl flex items-center justify-center gap-3 shadow-bouncy-orange active:scale-95 transition-all tracking-wide cursor-pointer">
             <Play className="w-6 h-6 fill-white stroke-[2.5]" />
             Start Kibo Climb! 🚀
           </button>
 
           {onOpenParentZone && (
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                onOpenParentZone();
-              }}
-              className="text-xs font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 rounded-xl transition-colors inline-flex items-center gap-1 cursor-pointer"
-            >
+            <button type="button"
+              onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
+              className="text-xs font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 rounded-xl transition-colors inline-flex items-center gap-1 cursor-pointer">
               🔒 Parent Zone (Optional Setup)
             </button>
           )}

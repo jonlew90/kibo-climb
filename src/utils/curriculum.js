@@ -10,6 +10,22 @@ export function getTierFromRating(rating = 1000) {
   return 8;                       // Tier 8: Exponents, Square Roots & Peak Algebra
 }
 
+// Grade-level starting ratings — used to initialise a new profile so the
+// adaptive engine begins at the right difficulty rather than always at 1000.
+export const GRADE_STARTING_RATINGS = {
+  'Kindergarten':                   900,   // Tier 1 — entry level
+  'Grade 1–2':                      1000,  // Tier 1 — standard start
+  'Grade 3–4':                      1200,  // Tier 2 — multiplication begins
+  'Grade 5–6':                      1600,  // Tier 4 — division & fractions
+  'Grade 7–8':                      1800,  // Tier 5 — decimals & money
+  'Pre-Algebra / Middle School':    2000,  // Tier 6 — multi-digit & long division
+  'Algebra & Beyond':               2200,  // Tier 7 — pre-algebra & PEMDAS
+};
+
+export function getStartingRatingForGrade(gradeLevel) {
+  return GRADE_STARTING_RATINGS[gradeLevel] ?? 1000;
+}
+
 export function getGradeLevelFromRating(rating = 1000) {
   const numRating = Number(rating) || 1000;
   if (numRating < 1200) return 'Grade 1–2';
