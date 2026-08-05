@@ -231,10 +231,9 @@ export default function ProfileSelectorScreen({ onSelectProfile }) {
   };
 
   const handleProfileCreated = (newProfile) => {
-    // Refresh list and auto-select the new profile
-    setProfiles(storageService.getAllProfiles());
-    setShowAddPanel(false);
-    handleSelect(newProfile);
+    // Go directly to the game — no need to flash the updated grid
+    storageService.setActiveProfileId(newProfile.id);
+    onSelectProfile(newProfile);
   };
 
   return (
