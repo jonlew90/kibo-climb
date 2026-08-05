@@ -34,6 +34,8 @@ import { authService } from './services/authService';
 import { syncService } from './services/syncService';
 import { shopLedgerService } from './services/shopLedgerService';
 import AccountLinkModal from './components/AccountLinkModal';
+import { getNotificationPrefs } from './utils/notifications';
+import MockCheckoutModal from './components/MockCheckoutModal';
 
 export default function App() {
   // App State: 'adaptive_session' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
@@ -67,6 +69,8 @@ export default function App() {
   const [showPinGateModal, setShowPinGateModal] = useState(false);
   const [showParentDashboard, setShowParentDashboard] = useState(false);
   const [showQuitModal, setShowQuitModal] = useState(false);
+  const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
+  const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
   const [showSprintResultsModal, setShowSprintResultsModal] = useState(false);
@@ -275,6 +279,12 @@ export default function App() {
     setPreferences(newPrefs);
     storageService.saveUserData({ preferences: newPrefs });
   };
+
+  const [notifPrefs, setNotifPrefs] = useState(() => getNotificationPrefs());
+
+  useEffect(() => {
+    setNotifPrefs(getNotificationPrefs());
+  }, [showParentDashboard]);
 
   // Main Sprint Live Elapsed Timer Loop
   useEffect(() => {
@@ -1938,11 +1948,18 @@ export default function App() {
       {/* PARENT PIN GATE MODAL */}
       <PinGateModal
         isOpen={showPinGateModal}
-        onClose={() => setShowPinGateModal(false)}
+        onClose={() => {
+          setShowPinGateModal(false);
+          setPendingSparksPurchase(null);
+        }}
         currentPin={parentPin}
         onUnlockSuccess={() => {
           setShowPinGateModal(false);
-          setShowParentDashboard(true);
+          if (pendingSparksPurchase) {
+            setShowMockCheckoutModal(true);
+          } else {
+            setShowParentDashboard(true);
+          }
         }}
       />
 
@@ -2113,6 +2130,29 @@ export default function App() {
         onBuyItem={handleBuyItem}
         onBuyConsumable={handleBuyConsumable}
         onToggleEquip={handleToggleEquip}
+        allowRealMoneyPurchases={notifPrefs.allowRealMoneyPurchases}
+        onBuySparksPackage={(pack) => {
+          setPendingSparksPurchase(pack);
+          setShowPinGateModal(true);
+        }}
+      />
+
+      <MockCheckoutModal
+        isOpen={showMockCheckoutModal}
+        onClose={() => {
+          setShowMockCheckoutModal(false);
+          setPendingSparksPurchase(null);
+        }}
+        packageInfo={pendingSparksPurchase}
+        onConfirm={(pack) => {
+          const newSparks = sparks + pack.sparks;
+          setSparks(newSparks);
+          storageService.saveUserData({ sparks: newSparks });
+          localStorage.setItem('kibo_math_sparks', newSparks.toString());
+          soundFx.playSparkCollect();
+          setShowMockCheckoutModal(false);
+          setPendingSparksPurchase(null);
+        }}
       />
 
       {/* Account Link Modal */}

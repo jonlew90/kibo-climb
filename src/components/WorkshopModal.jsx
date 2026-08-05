@@ -34,7 +34,9 @@ export default function WorkshopModal({
   equippedItems = [],
   onBuyItem,
   onBuyConsumable,
-  onToggleEquip
+  onToggleEquip,
+  allowRealMoneyPurchases,
+  onBuySparksPackage
 }) {
   const INITIAL_PREVIEW_SLOTS = {
     headwear: null,
@@ -326,7 +328,51 @@ export default function WorkshopModal({
       {/* DEDICATED INDEPENDENT ITEM GRID SCROLL CONTAINER */}
       <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6">
         <div className="space-y-3 pb-6">
-          {currentCategoryItems.length === 0 ? (
+          {activeCategory === 'get_sparks' ? (
+            allowRealMoneyPurchases ? (
+              <div className="space-y-3">
+                {[
+                  { id: 'sparks_pack_1', name: 'Handful of Sparks', sparks: 500, price: '$1.99', description: 'A nice little boost to get you that special item!' },
+                  { id: 'sparks_pack_2', name: 'Pouch of Sparks', sparks: 1200, price: '$3.99', description: 'More than double the sparks for your adventures!' },
+                  { id: 'sparks_pack_3', name: 'Chest of Sparks', sparks: 3000, price: '$7.99', description: 'A hefty sum for the serious workshop collector.' },
+                  { id: 'sparks_pack_4', name: 'Mountain of Sparks', sparks: 10000, price: '$19.99', description: 'Enough sparks to buy almost anything Kibo has to offer!' },
+                ].map((pack) => (
+                  <div
+                    key={pack.id}
+                    className="bg-white p-3.5 rounded-2xl border-2 border-amber-200 shadow-sm transition-all flex items-center justify-between gap-3"
+                  >
+                    <div className="w-12 h-12 shrink-0 bg-amber-100 rounded-xl flex items-center justify-center border-2 border-amber-300">
+                      <Zap className="w-6 h-6 fill-amber-500 text-amber-600" />
+                    </div>
+                    <div className="space-y-1 text-left flex-1 min-w-0">
+                      <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{pack.name}</h4>
+                      <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block">
+                        ⚡ {pack.sparks} Sparks
+                      </span>
+                      <p className="text-xs text-slate-500 font-medium leading-tight">{pack.description}</p>
+                    </div>
+                    <div className="shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => onBuySparksPackage(pack)}
+                        className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                      >
+                        Buy for {pack.price}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center text-slate-500 font-bold space-y-3 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-6">
+                <Lock className="w-10 h-10 mx-auto text-slate-400 stroke-[1.5]" />
+                <p className="text-sm font-black text-slate-700">Real-Money Purchases Disabled</p>
+                <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                  Ask your parent to enable this feature in the <strong>Parent Zone</strong> dashboard.
+                </p>
+              </div>
+            )
+          ) : currentCategoryItems.length === 0 ? (
             <div className="py-12 text-center text-slate-500 font-bold space-y-2 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-6">
               <ShoppingBag className="w-10 h-10 mx-auto text-slate-400 stroke-[1.5]" />
               <p className="text-sm font-black text-slate-700">No items available in this category yet!</p>

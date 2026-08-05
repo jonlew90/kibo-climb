@@ -654,6 +654,32 @@ export default function ParentDashboardModal({
                   </p>
                 )}
               </div>
+
+              {/* Allow Real-Money Purchases */}
+              <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-extrabold text-xs text-slate-800 block">Allow Real-Money Purchases</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Allow kids to buy Sparks with real money</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleNotifPref('allowRealMoneyPurchases')}
+                    className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                      notifPrefs.allowRealMoneyPurchases ? 'bg-purple-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                      notifPrefs.allowRealMoneyPurchases ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+                {notifPrefs.allowRealMoneyPurchases && (
+                  <p className="text-[10px] text-amber-900 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200 mt-1 leading-snug">
+                    ⚠️ <strong>Note:</strong> A 4-digit Parent PIN will still be required before any actual payment can be made.
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Change 4-Digit PIN */}
