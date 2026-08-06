@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail } from 'lucide-react';
 import { storageService } from '../services/storageService';
+import { communicationsService } from '../services/communicationsService';
 
 export default function DevControlPanel({
   isOpen,
@@ -13,6 +14,8 @@ export default function DevControlPanel({
 }) {
   const [ratingInput, setRatingInput] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [testEmail, setTestEmail] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const currentData = storageService.getUserData();
   const currentRating = currentData.adaptiveCompetenceRating || currentData.competenceRank || 1000;
@@ -187,7 +190,51 @@ export default function DevControlPanel({
             </button>
           </div>
 
-          {/* SECTION 4: FULL DATA RESET */}
+          {/* SECTION 4: COMMUNICATIONS / NOTIFICATIONS */}
+          <div className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-4 space-y-3">
+            <span className="text-xs font-extrabold text-blue-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Mail className="w-4 h-4 text-blue-400" />
+              Test Communications
+            </span>
+
+            <p className="text-[10px] text-slate-400 leading-snug">
+              Send a test notification to verify the communications pipeline.
+            </p>
+
+            <div className="flex flex-col gap-2">
+              <input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="parent@example.com"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+              />
+              <button
+                disabled={isSendingEmail || !testEmail.includes('@')}
+                onClick={async () => {
+                  setIsSendingEmail(true);
+                  const result = await communicationsService.sendParentNotification({
+                    email: testEmail,
+                    subject: 'Test Notification from Developer Panel',
+                    message: 'This is a test notification generated from the kibodev Developer Control Panel to verify the communications pipeline is working correctly.',
+                    type: 'email'
+                  });
+                  setIsSendingEmail(false);
+
+                  if (result.success) {
+                    showToast('Test notification sent successfully!');
+                  } else {
+                    alert('Failed to send notification: ' + result.error);
+                  }
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 px-4 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-2"
+              >
+                {isSendingEmail ? 'Sending...' : 'Send Test Notification'}
+              </button>
+            </div>
+          </div>
+
+          {/* SECTION 5: FULL DATA RESET */}
           <div className="bg-rose-950/40 border border-rose-900/60 rounded-2xl p-4 space-y-3">
             <span className="text-xs font-extrabold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4 text-rose-500" />
