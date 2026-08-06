@@ -2083,7 +2083,7 @@ export default function App() {
         sprintHistory={sprintHistory}
         practiceDays={practiceDays}
         onUpdatePracticeDays={handleUpdatePracticeDays}
-        onProfileSwitch={() => setPracticeDays(storageService.getProfilePracticeDays())}
+        onProfileSwitch={() => syncAppStateWithStorage()}
         preferences={preferences}
         onUpdatePreferences={handleUpdatePreferences}
         unlockedBadges={unlockedBadges}
