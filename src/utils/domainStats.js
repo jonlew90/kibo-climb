@@ -114,9 +114,12 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
       speed = Number((matchedDuration / matchedTotal).toFixed(1));
       status = accuracy >= 80 ? 'Mastered' : accuracy >= 60 ? 'Practicing' : 'Challenged';
     } else {
-      if (activeRating >= def.minUnlockRating) {
-        status = activeRating > def.minUnlockRating ? 'Mastered' : 'Practicing';
-        accuracy = activeRating > def.minUnlockRating ? 90 : 75;
+      if (activeRating > def.minUnlockRating) {
+        status = 'Skipped';
+        accuracy = 0;
+      } else if (activeRating === def.minUnlockRating) {
+        status = 'Practicing';
+        accuracy = 75;
       } else {
         status = 'Locked';
         accuracy = 0;
@@ -127,6 +130,8 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
     let recommendation = '';
     if (status === 'Locked') {
       recommendation = `Upcoming topic! Unlocks at Competence Rating ${def.minUnlockRating}+.`;
+    } else if (status === 'Skipped') {
+      recommendation = `Skipped due to initial placement. Will revisit if review is needed.`;
     } else if (status === 'Mastered') {
       recommendation = `Great mastery! Strong recall across ${def.name.toLowerCase()}.`;
     } else if (status === 'Practicing') {
@@ -158,6 +163,7 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
   let masteredCount = 0;
   let practicingCount = 0;
   let lockedCount = 0;
+  let skippedCount = 0;
 
   const strandBreakdown = {};
 
@@ -173,6 +179,8 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
   domains.forEach((d) => {
     if (d.status === 'Mastered') {
       masteredCount++;
+    } else if (d.status === 'Skipped') {
+      skippedCount++;
     } else if (d.status === 'Practicing' || d.status === 'Challenged') {
       practicingCount++;
     } else {
@@ -201,7 +209,8 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
   const total = domains.length || 1;
   const masteredPct = Math.round((masteredCount / total) * 100);
   const practicingPct = Math.round((practicingCount / total) * 100);
-  const lockedPct = Math.max(0, 100 - masteredPct - practicingPct);
+  const skippedPct = Math.round((skippedCount / total) * 100);
+  const lockedPct = Math.max(0, 100 - masteredPct - practicingPct - skippedPct);
 
   // Use actual active rating
   const adaptiveCompetenceRating = activeRating;
@@ -221,6 +230,7 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
     masteryDistribution: {
       mastered: masteredPct,
       practicing: practicingPct,
+      skipped: skippedPct,
       challenged: lockedPct
     },
     skillStrandBreakdown: strandBreakdown

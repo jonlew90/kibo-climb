@@ -470,6 +470,7 @@ export default function ParentDashboardModal({
 
               const statusColor = (status) => {
                 if (status === 'Mastered') return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                if (status === 'Skipped') return 'bg-sky-100 text-sky-800 border-sky-300';
                 if (status === 'Practicing') return 'bg-amber-100 text-amber-900 border-amber-300';
                 if (status === 'Locked') return 'bg-slate-100 text-slate-500 border-slate-300';
                 return 'bg-indigo-100 text-indigo-800 border-indigo-300';
@@ -485,13 +486,13 @@ export default function ParentDashboardModal({
                           <span className="text-lg shrink-0">{data.icon}</span>
                           <div className="min-w-0">
                             <span className="text-xs font-extrabold text-slate-800 block truncate">{strandName}</span>
-                            {data.accuracy > 0 && (
+                            {data.accuracy > 0 && data.status !== 'Skipped' && (
                               <span className="text-[10px] text-slate-500 font-medium">{data.accuracy}% accuracy</span>
                             )}
                           </div>
                         </div>
                         <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0 ml-2 ${statusColor(data.status)}`}>
-                          {data.status === 'Locked' ? '🔒 Locked' : data.status}
+                          {data.status === 'Locked' ? '🔒 Locked' : data.status === 'Skipped' ? '⏭️ Skipped' : data.status}
                         </span>
                       </div>
                     ))}
