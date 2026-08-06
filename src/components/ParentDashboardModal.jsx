@@ -9,6 +9,7 @@ import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../u
 import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
+import { communicationsService } from '../services/communicationsService';
 import AccountLinkModal from './AccountLinkModal';
 
 const DAYS_OF_WEEK = [
