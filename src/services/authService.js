@@ -99,5 +99,82 @@ export const authService = {
       displayName: data.displayName || 'Kibo Climber',
       email: data.email || null
     };
+  },
+
+  /**
+   * Unlinks an account from a cloud provider. Reverts to local guest.
+   */
+  async unlinkAccount() {
+    const currentData = storageService.getUserData();
+
+    // Create new guest ID
+    const newGuestId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    localStorage.setItem(GUEST_ID_KEY, newGuestId);
+
+    const mergedUserData = {
+      ...currentData,
+      cloudUid: newGuestId,
+      isAnonymous: true,
+      authProvider: 'anonymous',
+      email: null,
+      accountLinkedAt: null
+    };
+
+    storageService.saveUserData(mergedUserData);
+
+    return { success: true };
+  },
+
+  /**
+   * Exports user data in JSON format for CCPA / GDPR-K compliance.
+   */
+  exportUserData() {
+    const exportData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('kibo_')) {
+        try {
+          exportData[key] = JSON.parse(localStorage.getItem(key));
+        } catch (e) {
+          exportData[key] = localStorage.getItem(key);
+        }
+      }
+    }
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kibo_climb_data_export_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    return { success: true };
+  },
+
+  /**
+   * Deletes all local and cloud data, simulating a complete purge.
+   */
+  async deleteAccount() {
+    // Clear all Kibo local storage keys
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('kibo_')) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+    // Clear session storage as well
+    sessionStorage.removeItem('kibo_parent_gate_session');
+
+    // Return success to allow caller to reload or reset app
+    return { success: true };
   }
 };
