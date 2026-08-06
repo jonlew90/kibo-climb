@@ -18,6 +18,7 @@ import BadgesModal from './components/BadgesModal';
 import AdaptiveSessionView from './components/AdaptiveSessionView';
 import DevControlPanel from './components/DevControlPanel';
 import RollingNumberTicker from './components/RollingNumberTicker';
+import { checkAndPromptLinkAccount } from './utils/linkPromptLogic';
 import { useDevState } from './hooks/useDevState';
 import { evaluateBadges } from './utils/badgeManager';
 import { BADGES_CATALOG } from './data/badges';
@@ -368,12 +369,11 @@ export default function App() {
     });
 
     const refreshedUserData = storageService.getUserData();
-    const isAnon = authService.getAuthState().isAnonymous;
-    if (isAnon && !refreshedUserData.hasPromptedLink_2Purchases && newPurchasesCount >= 2) {
-      storageService.saveUserData({ hasPromptedLink_2Purchases: true });
-      setLinkModalMilestone('2 Shop Items Purchased');
-      setShowAccountLinkModal(true);
-    }
+    checkAndPromptLinkAccount(
+      { purchasesCount: newPurchasesCount },
+      setLinkModalMilestone,
+      setShowAccountLinkModal
+    );
 
     const userStateForBadges = {
       streak,
@@ -1074,19 +1074,14 @@ export default function App() {
       consecutivePerfectClimbsCount: newConsecutivePerfect
     });
 
-    // Per-profile check for Save Progress Across All Devices modal (2 climbs completed)
+    // Per-profile check for Save Progress Across All Devices modal
     const refreshedUserData = storageService.getUserData();
-    const isAnon = authService.getAuthState().isAnonymous;
 
-    if (isAnon && !refreshedUserData.hasPromptedLink_2Climbs && newCompletedClimbs >= 2) {
-      storageService.saveUserData({ hasPromptedLink_2Climbs: true });
-      setLinkModalMilestone('2 Climbs Completed');
-      setShowAccountLinkModal(true);
-    } else if (isAnon && !refreshedUserData.hasPromptedLink_3DayStreak && newStreak >= 3) {
-      storageService.saveUserData({ hasPromptedLink_3DayStreak: true });
-      setLinkModalMilestone('3 Day Habit Formed');
-      setShowAccountLinkModal(true);
-    }
+    checkAndPromptLinkAccount(
+      { completedClimbs: newCompletedClimbs, streak: newStreak },
+      setLinkModalMilestone,
+      setShowAccountLinkModal
+    );
 
     // Badge Evaluation & Unlock Persistence
     const activeTierConfig = CURRICULUM_TIERS.find((t) => t.tier === activeTier) || CURRICULUM_TIERS[0];
@@ -1217,12 +1212,12 @@ export default function App() {
 
     // Per-profile check for Save Progress Across All Devices modal (2 items purchased)
     const refreshedUserData = storageService.getUserData();
-    const isAnon = authService.getAuthState().isAnonymous;
-    if (isAnon && !refreshedUserData.hasPromptedLink_2Purchases && newPurchasesCount >= 2) {
-      storageService.saveUserData({ hasPromptedLink_2Purchases: true });
-      setLinkModalMilestone('2 Shop Items Purchased');
-      setShowAccountLinkModal(true);
-    }
+
+    checkAndPromptLinkAccount(
+      { purchasesCount: newPurchasesCount },
+      setLinkModalMilestone,
+      setShowAccountLinkModal
+    );
 
     // Evaluate shop badges
     const userStateForBadges = {
@@ -1483,15 +1478,11 @@ export default function App() {
           onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
           onUpdateCompetenceRating={(newRating) => {
             setLiveCompetenceRating(newRating);
-            const authState = authService.getAuthState();
-            if (authState.isAnonymous) {
-              const hasPrompted1200 = localStorage.getItem('kibo_prompted_link_1200');
-              if (newRating >= 1200 && !hasPrompted1200) {
-                localStorage.setItem('kibo_prompted_link_1200', 'true');
-                setLinkModalMilestone('Tier 2 Milestone (Rating 1200+)');
-                setShowAccountLinkModal(true);
-              }
-            }
+            checkAndPromptLinkAccount(
+              { rating: newRating },
+              setLinkModalMilestone,
+              setShowAccountLinkModal
+            );
           }}
           onAwardSparks={(earned) => {
             const updated = sparks + earned;
