@@ -774,16 +774,18 @@ export default function ParentDashboardModal({
                     </span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      setShowAccountLinkModal(true);
-                    }}
-                    className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-extrabold shrink-0"
-                  >
-                    {authService.getAuthState().isAnonymous ? '🔗 Link Account' : '⚙️ Manage Account'}
-                  </button>
+                  {authService.getAuthState().isAnonymous && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setShowAccountLinkModal(true);
+                      }}
+                      className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-extrabold shrink-0"
+                    >
+                      🔗 Link Account
+                    </button>
+                  )}
                 </div>
 
                 <div className="pt-3 mt-2 border-t border-slate-100 flex flex-col gap-2">
