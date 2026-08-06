@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail } from 'lucide-react';
 import { storageService } from '../services/storageService';
 import { communicationsService } from '../services/communicationsService';
+import { calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
+import { getTierFromRating } from '../utils/curriculum';
+import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 
 export default function DevControlPanel({
   isOpen,
@@ -20,6 +23,8 @@ export default function DevControlPanel({
   const currentData = storageService.getUserData();
   const currentRating = currentData.adaptiveCompetenceRating || currentData.competenceRank || 1000;
   const currentSparks = currentData.sparks || 0;
+  const activeProfile = storageService.getActiveProfile() || {};
+  const childName = activeProfile.name || 'Your Child';
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -213,16 +218,72 @@ export default function DevControlPanel({
                 disabled={isSendingEmail || !testEmail.includes('@')}
                 onClick={async () => {
                   setIsSendingEmail(true);
+
+                  // Gather user metrics for email
+                  const sprintHistory = currentData.sprintHistory || [];
+                  const unlockedBadges = currentData.unlockedBadges || [];
+                  const totalProblemsSolved = currentData.totalProblemsSolved || 0;
+                  const currentMathTier = getTierFromRating(currentRating);
+                  const rankTitle = getCompetenceRankTier(currentRating);
+
+                  // Use recent sprint history to estimate "weekly" stats
+                  // In a real app we'd filter by date, but since mock data might not have dates, we'll just use the last few sprints.
+                  const recentSprints = sprintHistory.slice(-10);
+                  const recentProblemsSolved = recentSprints.reduce((acc, sprint) => acc + (sprint.totalQuestions || 12), 0);
+
+                  // Calculate recall latency
+                  let avgLatency = 0;
+                  let totalQuestions = 0;
+                  recentSprints.forEach(sprint => {
+                    const duration = Number(sprint.durationInSeconds || 0);
+                    const qCount = Number(sprint.totalQuestions || (sprint.answers ? sprint.answers.length : 12));
+                    if (qCount > 0) {
+                      avgLatency += duration;
+                      totalQuestions += qCount;
+                    }
+                  });
+                  const latencySec = totalQuestions > 0 ? (avgLatency / totalQuestions).toFixed(1) : 'N/A';
+
+                  // Adaptive competence profile
+                  const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, currentRating, currentData.ratingHistory || []);
+
+                  const masteredTopics = Object.values(adaptiveProfile.skillStrandBreakdown)
+                    .filter(strand => strand.status === 'Mastered')
+                    .map(strand => strand.strandName);
+
+                  const masteredTopicsText = masteredTopics.length > 0 ? masteredTopics.join(', ') : 'None yet, keep practicing!';
+                  const badgesText = unlockedBadges.length > 0 ? `${unlockedBadges.length} unlocked` : 'None yet';
+
+                  // Format the email message
+                  const emailSubject = `Weekly Progress Summary for ${childName}`;
+                  const emailMessage = `
+Hi there!
+
+Here is the Weekly Progress Summary for ${childName}:
+
+📊 PERFORMANCE METRICS
+• Competence Rating: ${currentRating} (${rankTitle})
+• Math Tier: Tier ${currentMathTier}
+• Problems Solved: ${recentProblemsSolved} this week (${totalProblemsSolved} total)
+• Avg Recall Latency: ${latencySec}s per question
+
+🏆 ACHIEVEMENTS
+• Mastered Topics: ${masteredTopicsText}
+• Unlocked Badges: ${badgesText}
+
+Keep up the great work!
+                  `.trim();
+
                   const result = await communicationsService.sendParentNotification({
                     email: testEmail,
-                    subject: 'Test Notification from Developer Panel',
-                    message: 'This is a test notification generated from the kibodev Developer Control Panel to verify the communications pipeline is working correctly.',
+                    subject: emailSubject,
+                    message: emailMessage,
                     type: 'email'
                   });
                   setIsSendingEmail(false);
 
                   if (result.success) {
-                    showToast('Test notification sent successfully!');
+                    showToast('Weekly Progress Summary sent successfully!');
                   } else {
                     alert('Failed to send notification: ' + result.error);
                   }
