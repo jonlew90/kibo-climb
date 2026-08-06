@@ -769,11 +769,11 @@ export default function ParentDashboardModal({
                     <span className="text-xs font-black text-slate-800 block">
                       {authService.getAuthState().isAnonymous ? '☁️ Anonymous Guest Account' : `✅ Account Linked (${authService.getAuthState().provider || 'Email'})`}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-medium block">
-                      {authService.getAuthState().isAnonymous
-                        ? 'Link with Google, Apple, or Email to back up progress across devices'
-                        : `User ID: ${authService.getAuthState().uid}`}
-                    </span>
+                    {authService.getAuthState().isAnonymous && (
+                      <span className="text-[10px] text-slate-500 font-medium block">
+                        Link with Google, Apple, or Email to back up progress across devices
+                      </span>
+                    )}
                   </div>
 
                   {authService.getAuthState().isAnonymous && (
