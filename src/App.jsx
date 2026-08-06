@@ -95,6 +95,7 @@ export default function App() {
     setPracticeDays(storageService.getProfilePracticeDays());
     setEquippedItems(sData.equippedItems ?? []);
     setUnlockedItems(sData.unlockedItems ?? ['cap']);
+    setHasVisitedParentZone(uData.hasVisitedParentZone || false);
   };
 
   // Initialize Silent Anonymous Guest Auth & Offline Background Sync Queue on Launch
@@ -135,6 +136,9 @@ export default function App() {
   // Test-Out State
   const [isTestOut, setIsTestOut] = useState(false);
   const [testOutTargetTier, setTestOutTargetTier] = useState(null);
+  const [hasVisitedParentZone, setHasVisitedParentZone] = useState(() => {
+    return storageService.getUserData().hasVisitedParentZone || false;
+  });
   const [showTestOutPassModal, setShowTestOutPassModal] = useState(false);
   const [showTestOutFailModal, setShowTestOutFailModal] = useState(false);
 
@@ -1507,6 +1511,7 @@ export default function App() {
       <FirstLaunchOnboardingModal
         isOpen={showFirstLaunchOnboardingModal}
         equippedItems={equippedItems}
+        hasVisitedParentZone={hasVisitedParentZone}
         onUsernameSet={(username) => {
           // Username is already persisted by the modal via storageService.saveUsername().
           // Sync the active profile's display name in the parent dashboard list as well.
@@ -2064,6 +2069,10 @@ export default function App() {
             }
           } else {
             setShowParentDashboard(true);
+            if (!hasVisitedParentZone) {
+              setHasVisitedParentZone(true);
+              storageService.saveUserData({ hasVisitedParentZone: true });
+            }
           }
         }}
       />

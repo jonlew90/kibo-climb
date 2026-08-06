@@ -36,6 +36,7 @@ export default function FirstLaunchOnboardingModal({
   onStartPlacementTest,
   onStartAtTier1,
   onUsernameSet,
+  hasVisitedParentZone = false,
 }) {
   // step: 1 = username, 2 = grade selection, 3 = welcome splash
   const [step, setStep] = useState(1);
@@ -193,7 +194,7 @@ export default function FirstLaunchOnboardingModal({
           {onOpenParentZone && (
             <button type="button" onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
               className="text-xs font-bold text-purple-300 hover:text-white transition-colors">
-              🔒 Parent Zone Setup
+              {hasVisitedParentZone ? '🔒 Parent Zone' : '🔒 Parent Zone Setup'}
             </button>
           )}
         </div>
@@ -343,7 +344,7 @@ export default function FirstLaunchOnboardingModal({
             <button type="button"
               onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
               className="text-xs font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 rounded-xl transition-colors inline-flex items-center gap-1 cursor-pointer">
-              🔒 Parent Zone (Optional Setup)
+              {hasVisitedParentZone ? '🔒 Parent Zone' : '🔒 Parent Zone (Optional Setup)'}
             </button>
           )}
 
