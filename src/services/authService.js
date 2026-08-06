@@ -117,7 +117,9 @@ export const authService = {
       isAnonymous: true,
       authProvider: 'anonymous',
       email: null,
-      accountLinkedAt: null
+      accountLinkedAt: null,
+      promptedLinkMilestones: [],
+      lastPromptedLinkAt: null
     };
 
     storageService.saveUserData(mergedUserData);
