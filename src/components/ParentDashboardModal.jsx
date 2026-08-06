@@ -87,6 +87,7 @@ export default function ParentDashboardModal({
     setLiveUserData(storageService.getUserData());
     setNewChildName('');
     setShowNewChildInput(false);
+    if (onProfileSwitch) onProfileSwitch();
   };
 
   const handleOpenEditProfile = () => {
@@ -120,6 +121,7 @@ export default function ParentDashboardModal({
       setActiveProfileId(newActive);
       setLiveUserData(storageService.getUserData());
       setShowEditProfile(false);
+      if (onProfileSwitch) onProfileSwitch();
     }
   };
 
