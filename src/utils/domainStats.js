@@ -114,12 +114,16 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
       speed = Number((matchedDuration / matchedTotal).toFixed(1));
       status = accuracy >= 80 ? 'Mastered' : accuracy >= 60 ? 'Practicing' : 'Challenged';
     } else {
-      if (activeRating > def.minUnlockRating) {
+      const currentIndex = DOMAIN_DEFINITIONS.findIndex(d => d.id === def.id);
+      const nextDef = DOMAIN_DEFINITIONS[currentIndex + 1];
+      const isHighestUnlocked = activeRating >= def.minUnlockRating && (!nextDef || activeRating < nextDef.minUnlockRating);
+
+      if (isHighestUnlocked) {
+        status = 'Practicing';
+        accuracy = 75; // Default for practicing without history
+      } else if (activeRating >= def.minUnlockRating) {
         status = 'Skipped';
         accuracy = 0;
-      } else if (activeRating === def.minUnlockRating) {
-        status = 'Practicing';
-        accuracy = 75;
       } else {
         status = 'Locked';
         accuracy = 0;
