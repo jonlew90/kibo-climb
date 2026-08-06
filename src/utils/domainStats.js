@@ -93,6 +93,7 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
     let matchedCorrect = 0;
     let matchedTotal = 0;
     let matchedDuration = 0;
+    let lastPracticeDate = null;
 
     recentSprints.forEach((sprint) => {
       if (sprint.tier && def.tiers.includes(sprint.tier)) {
@@ -101,6 +102,12 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
         matchedCorrect += correct;
         matchedTotal += total;
         matchedDuration += Number(sprint.durationInSeconds || 0);
+        if (sprint.date) {
+            const sprintDate = new Date(sprint.date);
+            if (!lastPracticeDate || sprintDate > lastPracticeDate) {
+                lastPracticeDate = sprintDate;
+            }
+        }
       }
     });
 
@@ -113,6 +120,13 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
       accuracy = Math.round((matchedCorrect / matchedTotal) * 100);
       speed = Number((matchedDuration / matchedTotal).toFixed(1));
       status = accuracy >= 80 ? 'Mastered' : accuracy >= 60 ? 'Practicing' : 'Challenged';
+
+      if (status === 'Mastered' && lastPracticeDate) {
+          const daysSincePractice = (new Date() - lastPracticeDate) / (1000 * 60 * 60 * 24);
+          if (daysSincePractice >= 30) {
+              status = 'Needs Review';
+          }
+      }
     } else {
       const currentIndex = DOMAIN_DEFINITIONS.findIndex(d => d.id === def.id);
       const nextDef = DOMAIN_DEFINITIONS[currentIndex + 1];
@@ -138,6 +152,8 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
       recommendation = `Skipped due to initial placement. Will revisit if review is needed.`;
     } else if (status === 'Mastered') {
       recommendation = `Great mastery! Strong recall across ${def.name.toLowerCase()}.`;
+    } else if (status === 'Needs Review') {
+      recommendation = `It's been a while since practicing this topic. Recommended for review.`;
     } else if (status === 'Practicing') {
       recommendation = `Active practice strand. Building recall speed toward target speed.`;
     } else if (status === 'Ready for Placement') {
@@ -195,6 +211,11 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
       ? d.minUnlockRating
       : Math.max(d.minUnlockRating, activeRating);
 
+    let challengedFacts = [];
+    if (d.status === 'Practicing' || d.status === 'Challenged' || d.status === 'Needs Review') {
+        challengedFacts = defaultFactsMap[d.id] || ['Review facts'];
+    }
+
     strandBreakdown[d.name] = {
       id: d.id,
       strandName: d.name,
@@ -205,8 +226,8 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
       icon: d.icon,
       subtitle: d.subtitle,
       minUnlockRating: d.minUnlockRating,
-      challengedFacts: d.status === 'Practicing' ? (defaultFactsMap[d.id] || ['Review facts']) : [],
-      needsAttention: d.status === 'Challenged' ? [`Regrouping in ${d.subtitle}`] : []
+      challengedFacts: challengedFacts,
+      needsAttention: d.status === 'Challenged' || d.status === 'Needs Review' ? [`Focus needed on ${d.subtitle}`] : []
     };
   });
 
