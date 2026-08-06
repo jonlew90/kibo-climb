@@ -396,8 +396,24 @@ export default function ParentDashboardModal({
                 return mins > 0 ? `${mins}m` : `${sec}s`;
               };
 
+              const now = new Date();
+              const recentSprints = historyList.filter(s => {
+                  if (!s.date) return false;
+                  return (now - new Date(s.date)) / (1000 * 60 * 60 * 24) <= 14;
+              });
+              let recentAccuracy = 'N/A';
+              if (recentSprints.length > 0) {
+                  let totalCorrect = 0;
+                  let totalQs = 0;
+                  recentSprints.forEach(s => {
+                      totalCorrect += Number(s.correctCount || s.score || 0);
+                      totalQs += Number(s.totalQuestions || (s.answers ? s.answers.length : 12));
+                  });
+                  recentAccuracy = totalQs > 0 ? `${Math.round((totalCorrect / totalQs) * 100)}%` : 'N/A';
+              }
+
               return (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
                   <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3">
                     <Flame className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
                     <span className="text-[9px] uppercase font-black text-amber-900 block">Streak</span>
@@ -418,7 +434,64 @@ export default function ParentDashboardModal({
                     <span className="text-[9px] uppercase font-black text-indigo-900 block">Skill Rating</span>
                     <span className="text-lg font-black text-indigo-900">{childRating}</span>
                   </div>
+                  <div className="bg-fuchsia-50 border border-fuchsia-200 rounded-2xl p-3">
+                    <CheckCircle2 className="w-5 h-5 text-fuchsia-600 mx-auto mb-1 stroke-[2.5]" />
+                    <span className="text-[9px] uppercase font-black text-fuchsia-900 block">Recent Acc.</span>
+                    <span className="text-lg font-black text-fuchsia-900">{recentAccuracy}</span>
+                  </div>
                 </div>
+              );
+            })()}
+
+            {/* RECENT ACTIVITY LOG */}
+            {(() => {
+              const activeUserData = liveUserData || storageService.getUserData();
+              const historyList = activeUserData.sprintHistory || [];
+              const recentList = historyList.slice(0, 3);
+
+              const formatShortDate = (dateString) => {
+                  if (!dateString) return 'Unknown Date';
+                  const d = new Date(dateString);
+                  const today = new Date();
+                  const diffDays = Math.floor((today - d) / (1000 * 60 * 60 * 24));
+                  if (diffDays === 0) return 'Today';
+                  if (diffDays === 1) return 'Yesterday';
+                  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              };
+
+              const takingBreak = recentList.length > 0 && recentList[0].date && ((new Date() - new Date(recentList[0].date)) / (1000 * 60 * 60 * 24) > 7);
+
+              return (
+                <section className="bg-white rounded-2xl p-4 border-2 border-slate-200 text-left space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-black text-slate-800">Recent Activity</h2>
+                    {takingBreak && (
+                        <span className="text-[10px] font-black text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full border border-rose-300">
+                          Taking a Break
+                        </span>
+                    )}
+                  </div>
+                  {recentList.length === 0 ? (
+                      <p className="text-xs font-semibold text-slate-500 italic">No recent climbs yet.</p>
+                  ) : (
+                      <div className="space-y-2">
+                          {recentList.map((sprint, i) => (
+                              <div key={i} className="flex justify-between items-center bg-slate-50 border border-slate-100 p-2 rounded-xl">
+                                  <div className="flex flex-col">
+                                      <span className="text-xs font-extrabold text-slate-700">{formatShortDate(sprint.date)}</span>
+                                      <span className="text-[10px] text-slate-500">{sprint.totalTimeSec ? `${Math.round(sprint.totalTimeSec)}s` : (sprint.durationInSeconds ? `${Math.round(sprint.durationInSeconds)}s` : '—')}</span>
+                                  </div>
+                                  <div className="text-right flex flex-col items-end">
+                                      <span className={`text-xs font-black ${sprint.accuracyPct >= 80 ? 'text-emerald-600' : (sprint.accuracyPct >= 60 ? 'text-amber-600' : 'text-rose-600')}`}>
+                                          {sprint.accuracyPct ?? Math.round((Number(sprint.correctCount||sprint.score||0)/Number(sprint.totalQuestions||(sprint.answers?sprint.answers.length:12)))*100)}% Acc
+                                      </span>
+                                      <span className="text-[10px] text-slate-500 font-bold">{sprint.ratingGain > 0 ? `+${sprint.ratingGain} rating` : (sprint.ratingGain < 0 ? `${sprint.ratingGain} rating` : '=')}</span>
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
+                  )}
+                </section>
               );
             })()}
 
@@ -464,7 +537,8 @@ export default function ParentDashboardModal({
 
               const statusColor = (status) => {
                 if (status === 'Mastered') return 'bg-emerald-100 text-emerald-800 border-emerald-300';
-                if (status === 'Practicing') return 'bg-amber-100 text-amber-900 border-amber-300';
+                if (status === 'Needs Review') return 'bg-amber-100 text-amber-900 border-amber-400';
+                if (status === 'Practicing') return 'bg-blue-100 text-blue-900 border-blue-300';
                 if (status === 'Locked') return 'bg-slate-100 text-slate-500 border-slate-300';
                 return 'bg-indigo-100 text-indigo-800 border-indigo-300';
               };
@@ -472,21 +546,36 @@ export default function ParentDashboardModal({
               return (
                 <section className="text-left space-y-2">
                   <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Math Topics</h3>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {Object.entries(skillStrandBreakdown).map(([strandName, data]) => (
-                      <div key={strandName} className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-3 py-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-lg shrink-0">{data.icon}</span>
-                          <div className="min-w-0">
-                            <span className="text-xs font-extrabold text-slate-800 block truncate">{strandName}</span>
-                            {data.accuracy > 0 && (
-                              <span className="text-[10px] text-slate-500 font-medium">{data.accuracy}% accuracy</span>
-                            )}
+                      <div key={strandName} className="bg-white rounded-xl border border-slate-200 px-3 py-2 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-lg shrink-0">{data.icon}</span>
+                            <div className="min-w-0">
+                              <span className="text-xs font-extrabold text-slate-800 block truncate">{strandName}</span>
+                              {data.accuracy > 0 && (
+                                <span className="text-[10px] text-slate-500 font-medium">{data.accuracy}% accuracy</span>
+                              )}
+                            </div>
                           </div>
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0 ml-2 ${statusColor(data.status)}`}>
+                            {data.status === 'Locked' ? '🔒 Locked' : data.status}
+                          </span>
                         </div>
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0 ml-2 ${statusColor(data.status)}`}>
-                          {data.status === 'Locked' ? '🔒 Locked' : data.status}
-                        </span>
+
+                        {(data.status === 'Practicing' || data.status === 'Challenged' || data.status === 'Needs Review') && data.challengedFacts?.length > 0 && (
+                           <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
+                             <span className="text-[10px] font-bold text-amber-900 block mb-1">Needs Attention:</span>
+                             <div className="flex gap-1.5 flex-wrap">
+                               {data.challengedFacts.map((fact, idx) => (
+                                 <span key={idx} className="bg-white px-2 py-0.5 rounded-md text-[10px] font-mono text-slate-700 border border-slate-200">
+                                   {fact}
+                                 </span>
+                               ))}
+                             </div>
+                           </div>
+                        )}
                       </div>
                     ))}
                   </div>

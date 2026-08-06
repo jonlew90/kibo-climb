@@ -33,6 +33,38 @@ export const BADGES_CATALOG = [
     icon: '🏔️',
     reqText: 'Reach a 30-Day Daily Streak'
   },
+  {
+    id: 'comeback_kid',
+    title: 'Comeback Kid',
+    description: 'Returned to the mountain after a break and crushed a climb!',
+    category: 'consistency',
+    icon: '🔄',
+    reqText: 'Play after a 5+ day break'
+  },
+  {
+    id: 'early_bird',
+    title: 'Early Bird',
+    description: 'The early bird gets the sparks! Completed a climb before 8 AM.',
+    category: 'consistency',
+    icon: '🌅',
+    reqText: 'Play before 8 AM'
+  },
+  {
+    id: 'night_owl',
+    title: 'Night Owl',
+    description: 'Late night problem solving! Completed a climb after 6 PM.',
+    category: 'consistency',
+    icon: '🦉',
+    reqText: 'Play after 6 PM'
+  },
+  {
+    id: 'grit',
+    title: 'Grit & Grace',
+    description: 'Bounced back strong! Improved accuracy significantly after a tough session.',
+    category: 'consistency',
+    icon: '💪',
+    reqText: 'Improve accuracy after a tough session'
+  },
 
   // PERSONAL RECORDS BADGE
   {
