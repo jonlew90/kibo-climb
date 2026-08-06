@@ -78,6 +78,24 @@ export default function App() {
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
   const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
 
+
+  const syncAppStateWithStorage = () => {
+    const uData = storageService.getUserData();
+    const sData = storageService.getShopState();
+    const cRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
+
+    setLiveCompetenceRating(cRating);
+    setTier(uData.tier || 1);
+    setUnlockedTiers(uData.unlockedTiers || [1]);
+    setStreak(uData.streak ?? 1);
+    setSparks(uData.sparks ?? 0);
+    setTotalProblemsSolved(uData.totalProblemsSolved ?? 0);
+    setUnlockedBadges(uData.unlockedBadges ?? []);
+    setPracticeDays(storageService.getProfilePracticeDays());
+    setEquippedItems(sData.equippedItems ?? []);
+    setUnlockedItems(sData.unlockedItems ?? ['cap']);
+  };
+
   // Initialize Silent Anonymous Guest Auth & Offline Background Sync Queue on Launch
   useEffect(() => {
     authService.initAnonymousGuest();
@@ -475,11 +493,13 @@ export default function App() {
     localStorage.setItem('kibo_math_has_onboarded', 'true');
     localStorage.setItem('kibo_math_tier', '1');
     localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify([1]));
+    syncAppStateWithStorage();
     setShowFirstLaunchOnboardingModal(false);
   };
 
   const handleStartPlacementFromOnboarding = () => {
     localStorage.setItem('kibo_math_has_onboarded', 'true');
+    syncAppStateWithStorage();
     setShowFirstLaunchOnboardingModal(false);
     startPlacementDiagnostic();
   };
@@ -1478,15 +1498,7 @@ export default function App() {
       {showProfileSelector && (
         <ProfileSelectorScreen
           onSelectProfile={(profile) => {
-            const ud = storageService.getUserData();
-            setStreak(ud.streak ?? 1);
-            setSparks(ud.sparks ?? 0);
-            setTotalProblemsSolved(ud.totalProblemsSolved ?? 0);
-            setUnlockedBadges(ud.unlockedBadges ?? []);
-            setPracticeDays(storageService.getProfilePracticeDays());
-            const sd = storageService.getShopState();
-            setEquippedItems(sd.equippedItems ?? []);
-            setUnlockedItems(sd.unlockedItems ?? ['cap']);
+            syncAppStateWithStorage();
             setShowProfileSelector(false);
           }}
         />
@@ -1500,13 +1512,16 @@ export default function App() {
           // Username is already persisted by the modal via storageService.saveUsername().
           // Sync the active profile's display name in the parent dashboard list as well.
           storageService.updateProfile(storageService.getActiveProfileId(), { name: username });
+          syncAppStateWithStorage();
         }}
         onOpenParentZone={() => {
+          syncAppStateWithStorage();
           setShowFirstLaunchOnboardingModal(false);
           localStorage.setItem('kibo_math_has_onboarded', 'true');
           setShowPinGateModal(true);
         }}
         onStartAdaptiveClimb={() => {
+          syncAppStateWithStorage();
           setShowFirstLaunchOnboardingModal(false);
           setAppState('adaptive_session');
         }}
