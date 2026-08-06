@@ -26,14 +26,14 @@ export function shouldTriggerProbeQuestion({ totalProblemsSolved = 0, inSessionS
  */
 export function getTierTargetRating(tier = 1) {
   const targets = {
-    1: 300,   // Tier 1 (100–499)
-    2: 625,   // Tier 2 (500–749)
-    3: 875,   // Tier 3 (750–999)
-    4: 1125,  // Tier 4 (1000–1249)
-    5: 1375,  // Tier 5 (1250–1499)
-    6: 1625,  // Tier 6 (1500–1749)
-    7: 1875,  // Tier 7 (1750–1999)
-    8: 2200   // Tier 8 (2000+)
+    1: 600,   // Tier 1 (0–1199 midpoint)
+    2: 1300,  // Tier 2 (1200–1399 midpoint)
+    3: 1500,  // Tier 3 (1400–1599 midpoint)
+    4: 1700,  // Tier 4 (1600–1799 midpoint)
+    5: 1900,  // Tier 5 (1800–1999 midpoint)
+    6: 2100,  // Tier 6 (2000–2199 midpoint)
+    7: 2300,  // Tier 7 (2200–2399 midpoint)
+    8: 2600   // Tier 8 (2400+ pseudo-midpoint)
   };
   return targets[tier] || 1000;
 }
@@ -92,47 +92,37 @@ export function evaluateAdaptiveAttempt({
 
   const totalSparksEarned = Math.round(baseSparks * multiplier) + bonusSparks;
 
-  // 6. Universal Difficulty Scaling: prevent climbing ranks by grinding math below current tier level
-  const problemTierTarget = getTierTargetRating(problemTier || 1);
-  const ratingDeltaTier = currentCompetenceRank - problemTierTarget;
+  // 6. Adaptive ELO-style Skill Rating System
+  const problemTarget = getTierTargetRating(problemTier || 1);
 
-  let difficultyGainFactor = 1.0;
-  if (ratingDeltaTier > 100) {
-    difficultyGainFactor = Math.max(0.01, 1 / (1 + Math.pow(10, (ratingDeltaTier - 100) / 300)));
+  // Calculate Expected Score based on difference in rating (400 points = 10x difference in odds)
+  const expectedScore = 1 / (1 + Math.pow(10, (problemTarget - currentCompetenceRank) / 400));
+
+  // Determine actual performance score
+  let actualScore = isCorrect ? 1.0 : 0.0;
+
+  // Bonus for high fluency, penalize for outlier mashing
+  if (isFluent) {
+    actualScore = 1.25; // Exceeded expectations
+  } else if (isOutlierGuess && !isCorrect) {
+    actualScore = expectedScore; // Ignore rapid accidental mash (no penalty)
   }
 
-  // 7. Competence Rank delta
-  let rankDelta = 0;
+  let rawDelta = kFactor * (actualScore - expectedScore);
 
-  if (isOutlierGuess && !isCorrect) {
-    // Ignore rapid accidental button mash from regression
-    rankDelta = 0;
-  } else if (isProbeQuestion) {
+  // Probe Question Modifier: Fast-track jumps for correct probe answers
+  if (isProbeQuestion) {
     if (isCorrect) {
-      // Immediate rating teleport (+120 points) into higher skill strand
-      rankDelta = 120;
+      rawDelta *= 2.0; // Boost rating gain proportional to difficulty difference
     } else {
-      // Minimal rating penalty for probe challenge miss
-      rankDelta = -10;
+      rawDelta *= 0.2; // Severely reduce penalty for missing a probe (since it was expected to be hard)
     }
-  } else if (isCorrect) {
-    const rawGain = Math.round(kFactor * 0.5);
-    // Dynamic Streak & Fluency Acceleration: 100% accuracy streaks boost rating velocity
-    let streakMultiplier = 1.0;
-    if (nextInSessionStreak >= 5) {
-      streakMultiplier = 2.0;
-    } else if (nextInSessionStreak >= 3) {
-      streakMultiplier = 1.5;
-    }
-    if (isFluent) {
-      streakMultiplier *= 1.25;
-    }
-
-    rankDelta = Math.max(1, Math.round(rawGain * difficultyGainFactor * streakMultiplier));
-  } else {
-    rankDelta = Math.round(-kFactor * 0.35);
   }
 
+  // Round delta and apply floor bounds
+  let rankDelta = Math.round(rawDelta);
+
+  // Ensure we don't drop below 50 absolute rating
   const nextCompetenceRank = Math.max(50, currentCompetenceRank + rankDelta);
 
   return {
