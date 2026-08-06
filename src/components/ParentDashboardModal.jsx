@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, UserPlus } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, UserPlus, Download, Trash2, Unplug } from 'lucide-react';
 import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/curriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
@@ -9,6 +9,7 @@ import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../u
 import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
+import { communicationsService } from '../services/communicationsService';
 import AccountLinkModal from './AccountLinkModal';
 
 const DAYS_OF_WEEK = [
@@ -61,6 +62,11 @@ export default function ParentDashboardModal({
   const [newChildGrade, setNewChildGrade] = useState('Grade 1–2');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editChildName, setEditChildName] = useState('');
+
+  // Data Privacy Confirmation States
+  const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteInput, setDeleteInput] = useState('');
 
   const handleSwitchProfile = (pId) => {
     soundFx.playKeyTap();
@@ -537,8 +543,8 @@ export default function ParentDashboardModal({
 
               const statusColor = (status) => {
                 if (status === 'Mastered') return 'bg-emerald-100 text-emerald-800 border-emerald-300';
-                if (status === 'Needs Review') return 'bg-amber-100 text-amber-900 border-amber-400';
-                if (status === 'Practicing') return 'bg-blue-100 text-blue-900 border-blue-300';
+                if (status === 'Skipped') return 'bg-sky-100 text-sky-800 border-sky-300';
+                if (status === 'Practicing') return 'bg-amber-100 text-amber-900 border-amber-300';
                 if (status === 'Locked') return 'bg-slate-100 text-slate-500 border-slate-300';
                 return 'bg-indigo-100 text-indigo-800 border-indigo-300';
               };
@@ -548,34 +554,22 @@ export default function ParentDashboardModal({
                   <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Math Topics</h3>
                   <div className="space-y-2">
                     {Object.entries(skillStrandBreakdown).map(([strandName, data]) => (
-                      <div key={strandName} className="bg-white rounded-xl border border-slate-200 px-3 py-2 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-lg shrink-0">{data.icon}</span>
-                            <div className="min-w-0">
-                              <span className="text-xs font-extrabold text-slate-800 block truncate">{strandName}</span>
-                              {data.accuracy > 0 && (
-                                <span className="text-[10px] text-slate-500 font-medium">{data.accuracy}% accuracy</span>
-                              )}
-                            </div>
+                      <div key={strandName} className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-3 py-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-lg shrink-0">{data.icon}</span>
+                          <div className="min-w-0">
+                            <span className="text-xs font-extrabold text-slate-800 block truncate">{strandName}</span>
+                            {data.accuracy > 0 && data.status !== 'Skipped' && (
+                              <span className="text-[10px] text-slate-500 font-medium">{data.accuracy}% accuracy</span>
+                            )}
                           </div>
                           <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0 ml-2 ${statusColor(data.status)}`}>
                             {data.status === 'Locked' ? '🔒 Locked' : data.status}
                           </span>
                         </div>
-
-                        {(data.status === 'Practicing' || data.status === 'Challenged' || data.status === 'Needs Review') && data.challengedFacts?.length > 0 && (
-                           <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
-                             <span className="text-[10px] font-bold text-amber-900 block mb-1">Needs Attention:</span>
-                             <div className="flex gap-1.5 flex-wrap">
-                               {data.challengedFacts.map((fact, idx) => (
-                                 <span key={idx} className="bg-white px-2 py-0.5 rounded-md text-[10px] font-mono text-slate-700 border border-slate-200">
-                                   {fact}
-                                 </span>
-                               ))}
-                             </div>
-                           </div>
-                        )}
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0 ml-2 ${statusColor(data.status)}`}>
+                          {data.status === 'Locked' ? '🔒 Locked' : data.status === 'Skipped' ? '⏭️ Skipped' : data.status}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -838,11 +832,11 @@ export default function ParentDashboardModal({
               </button>
             </form>
 
-            {/* Cloud Sync & Account Linking Card */}
+            {/* Account & Data Privacy Card */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
               <div className="flex items-center gap-2 text-purple-700">
                 <Cloud className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Cloud Backup & Account Sync</h4>
+                <h4 className="font-extrabold text-sm text-slate-800">Account & Data Privacy</h4>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
@@ -851,23 +845,130 @@ export default function ParentDashboardModal({
                     <span className="text-xs font-black text-slate-800 block">
                       {authService.getAuthState().isAnonymous ? '☁️ Anonymous Guest Account' : `✅ Account Linked (${authService.getAuthState().provider || 'Email'})`}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-medium block">
-                      {authService.getAuthState().isAnonymous
-                        ? 'Link with Google, Apple, or Email to back up progress across devices'
-                        : `User ID: ${authService.getAuthState().uid}`}
-                    </span>
+                    {authService.getAuthState().isAnonymous && (
+                      <span className="text-[10px] text-slate-500 font-medium block">
+                        Link with Google, Apple, or Email to back up progress across devices
+                      </span>
+                    )}
                   </div>
 
+                  {authService.getAuthState().isAnonymous && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setShowAccountLinkModal(true);
+                      }}
+                      className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-extrabold shrink-0"
+                    >
+                      🔗 Link Account
+                    </button>
+                  )}
+                </div>
+
+                <div className="pt-3 mt-2 border-t border-slate-100 flex flex-col gap-2">
                   <button
-                    type="button"
                     onClick={() => {
                       soundFx.playKeyTap();
-                      setShowAccountLinkModal(true);
+                      authService.exportUserData();
                     }}
-                    className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-extrabold shrink-0"
+                    className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors text-left"
                   >
-                    {authService.getAuthState().isAnonymous ? '🔗 Link Account' : '⚙️ Manage Account'}
+                    <Download className="w-4 h-4" />
+                    <span>Export Data (JSON)</span>
                   </button>
+
+                  {!authService.getAuthState().isAnonymous && (
+                    <>
+                      {!showUnlinkConfirm ? (
+                        <button
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            setShowUnlinkConfirm(true);
+                          }}
+                          className="flex items-center gap-2 px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-bold text-xs transition-colors text-left"
+                        >
+                          <Unplug className="w-4 h-4" />
+                          <span>Unlink Account</span>
+                        </button>
+                      ) : (
+                        <div className="bg-amber-100 p-3 rounded-xl border border-amber-300 space-y-2">
+                          <p className="text-xs font-bold text-amber-900">Are you sure you want to unlink your account? Your local progress will remain on this device, but it will no longer sync to the cloud.</p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={async () => {
+                                soundFx.playKeyTap();
+                                await authService.unlinkAccount();
+                                setLiveUserData(storageService.getUserData());
+                                setShowUnlinkConfirm(false);
+                              }}
+                              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs"
+                            >
+                              Yes, Unlink
+                            </button>
+                            <button
+                              onClick={() => {
+                                soundFx.playKeyTap();
+                                setShowUnlinkConfirm(false);
+                              }}
+                              className="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded-lg font-bold text-xs"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {!showDeleteConfirm ? (
+                    <button
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setShowDeleteConfirm(true);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-xs transition-colors text-left"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span>Delete Account & Data</span>
+                    </button>
+                  ) : (
+                    <div className="bg-rose-100 p-3 rounded-xl border border-rose-300 space-y-2">
+                      <p className="text-xs font-bold text-rose-900">WARNING: This will permanently delete all local and cloud data, resetting the app entirely. Type <strong>DELETE</strong> below to confirm.</p>
+                      <input
+                        type="text"
+                        value={deleteInput}
+                        onChange={(e) => setDeleteInput(e.target.value)}
+                        placeholder="Type DELETE"
+                        className="w-full px-3 py-1.5 bg-white border border-rose-300 rounded-lg text-sm font-bold text-rose-900 focus:outline-none focus:border-rose-500"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={async () => {
+                            if (deleteInput === 'DELETE') {
+                              soundFx.playKeyTap();
+                              await authService.deleteAccount();
+                              window.location.reload();
+                            }
+                          }}
+                          disabled={deleteInput !== 'DELETE'}
+                          className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs disabled:opacity-50"
+                        >
+                          Confirm Delete
+                        </button>
+                        <button
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            setShowDeleteConfirm(false);
+                            setDeleteInput('');
+                          }}
+                          className="px-3 py-1.5 bg-rose-200 hover:bg-rose-300 text-rose-900 rounded-lg font-bold text-xs"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

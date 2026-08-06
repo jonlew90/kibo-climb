@@ -33,15 +33,38 @@ export default function AccountLinkModal({
       }
 
       if (res.success) {
-        // Add +200 Sparks Reward on successful link
-        const currentData = storageService.getUserData();
-        const newSparks = (currentData.sparks || 0) + 200;
-        storageService.saveUserData({ sparks: newSparks });
+        let earnedSparks = 0;
+        const rewardGranted = localStorage.getItem('kibo_has_received_link_reward');
+
+        if (!rewardGranted) {
+          earnedSparks = 200;
+          // Grant 200 sparks to ALL profiles
+          const allProfiles = storageService.getAllProfiles();
+          allProfiles.forEach(prof => {
+            const currentSparks = prof.userData?.sparks || 0;
+            storageService.updateProfile(prof.id, {
+              userData: {
+                ...prof.userData,
+                sparks: currentSparks + 200
+              }
+            });
+          });
+
+          localStorage.setItem('kibo_has_received_link_reward', 'true');
+        }
 
         const label = provider === 'google' ? 'Google 1-Tap' : provider === 'apple' ? 'Sign in with Apple' : 'Passwordless Magic Link';
-        setSuccessMessage(`Account linked successfully with ${label}! Your progress is now permanently synced. +200 ⚡ Earned!`);
+
+        if (earnedSparks > 0) {
+          setSuccessMessage(`Account linked successfully with ${label}! Your progress is now permanently synced. +200 ⚡ Earned!`);
+        } else {
+          setSuccessMessage(`Account linked successfully with ${label}! Your progress is now permanently synced.`);
+        }
+
         setTimeout(() => {
-          if (onAccountLinked) onAccountLinked(res.user, newSparks);
+          // Send the total sparks of the *current* active profile back via callback if needed
+          const currentData = storageService.getUserData();
+          if (onAccountLinked) onAccountLinked(res.user, currentData.sparks || 0);
           onClose();
         }, 1800);
       }

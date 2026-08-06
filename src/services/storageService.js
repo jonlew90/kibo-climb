@@ -34,6 +34,8 @@ const DEFAULT_PROFILE = {
     hasPromptedLink_2Purchases: false,
     hasPromptedLink_2Climbs: false,
     hasPromptedLink_3DayStreak: false,
+    promptedLinkMilestones: [],
+    lastPromptedLinkAt: null,
     totalProblemsSolved: 0,
     cumulativeCorrectStreak: 0,
     personalRecords: {

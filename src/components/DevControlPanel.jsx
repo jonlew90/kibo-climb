@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail } from 'lucide-react';
 import { storageService } from '../services/storageService';
+import { communicationsService } from '../services/communicationsService';
+import { calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
+import { getTierFromRating } from '../utils/curriculum';
+import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 
 export default function DevControlPanel({
   isOpen,
@@ -13,10 +17,14 @@ export default function DevControlPanel({
 }) {
   const [ratingInput, setRatingInput] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [testEmail, setTestEmail] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const currentData = storageService.getUserData();
   const currentRating = currentData.adaptiveCompetenceRating || currentData.competenceRank || 1000;
   const currentSparks = currentData.sparks || 0;
+  const activeProfile = storageService.getActiveProfile() || {};
+  const childName = activeProfile.name || 'Your Child';
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -187,7 +195,107 @@ export default function DevControlPanel({
             </button>
           </div>
 
-          {/* SECTION 4: FULL DATA RESET */}
+          {/* SECTION 4: COMMUNICATIONS / NOTIFICATIONS */}
+          <div className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-4 space-y-3">
+            <span className="text-xs font-extrabold text-blue-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Mail className="w-4 h-4 text-blue-400" />
+              Test Communications
+            </span>
+
+            <p className="text-[10px] text-slate-400 leading-snug">
+              Send a test notification to verify the communications pipeline.
+            </p>
+
+            <div className="flex flex-col gap-2">
+              <input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="parent@example.com"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+              />
+              <button
+                disabled={isSendingEmail || !testEmail.includes('@')}
+                onClick={async () => {
+                  setIsSendingEmail(true);
+
+                  // Gather user metrics for email
+                  const sprintHistory = currentData.sprintHistory || [];
+                  const unlockedBadges = currentData.unlockedBadges || [];
+                  const totalProblemsSolved = currentData.totalProblemsSolved || 0;
+                  const currentMathTier = getTierFromRating(currentRating);
+                  const rankTitle = getCompetenceRankTier(currentRating);
+
+                  // Use recent sprint history to estimate "weekly" stats
+                  // In a real app we'd filter by date, but since mock data might not have dates, we'll just use the last few sprints.
+                  const recentSprints = sprintHistory.slice(-10);
+                  const recentProblemsSolved = recentSprints.reduce((acc, sprint) => acc + (sprint.totalQuestions || 12), 0);
+
+                  // Calculate recall latency
+                  let avgLatency = 0;
+                  let totalQuestions = 0;
+                  recentSprints.forEach(sprint => {
+                    const duration = Number(sprint.durationInSeconds || 0);
+                    const qCount = Number(sprint.totalQuestions || (sprint.answers ? sprint.answers.length : 12));
+                    if (qCount > 0) {
+                      avgLatency += duration;
+                      totalQuestions += qCount;
+                    }
+                  });
+                  const latencySec = totalQuestions > 0 ? (avgLatency / totalQuestions).toFixed(1) : 'N/A';
+
+                  // Adaptive competence profile
+                  const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, currentRating, currentData.ratingHistory || []);
+
+                  const masteredTopics = Object.values(adaptiveProfile.skillStrandBreakdown)
+                    .filter(strand => strand.status === 'Mastered')
+                    .map(strand => strand.strandName);
+
+                  const masteredTopicsText = masteredTopics.length > 0 ? masteredTopics.join(', ') : 'None yet, keep practicing!';
+                  const badgesText = unlockedBadges.length > 0 ? `${unlockedBadges.length} unlocked` : 'None yet';
+
+                  // Format the email message
+                  const emailSubject = `Weekly Progress Summary for ${childName}`;
+                  const emailMessage = `
+Hi there!
+
+Here is the Weekly Progress Summary for ${childName}:
+
+📊 PERFORMANCE METRICS
+• Competence Rating: ${currentRating} (${rankTitle})
+• Math Tier: Tier ${currentMathTier}
+• Problems Solved: ${recentProblemsSolved} this week (${totalProblemsSolved} total)
+• Avg Recall Latency: ${latencySec}s per question
+
+🏆 ACHIEVEMENTS
+• Mastered Topics: ${masteredTopicsText}
+• Unlocked Badges: ${badgesText}
+
+Keep up the great work!
+                  `.trim();
+
+                  const result = await communicationsService.sendParentNotification({
+                    email: testEmail,
+                    subject: emailSubject,
+                    message: emailMessage,
+                    type: 'email'
+                  });
+                  setIsSendingEmail(false);
+
+                  if (result.success) {
+                    showToast('Weekly Progress Summary sent successfully!');
+                  } else {
+                    alert('Failed to send notification: ' + result.error);
+                  }
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 px-4 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-2"
+              >
+                {isSendingEmail ? 'Sending...' : 'Send Test Notification'}
+              </button>
+            </div>
+          </div>
+
+          {/* SECTION 5: FULL DATA RESET */}
           <div className="bg-rose-950/40 border border-rose-900/60 rounded-2xl p-4 space-y-3">
             <span className="text-xs font-extrabold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4 text-rose-500" />
