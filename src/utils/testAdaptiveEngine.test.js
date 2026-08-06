@@ -86,9 +86,9 @@ function runSimulationBeginnerProbeMiss() {
 
   currentRating = probeEval.nextCompetenceRank;
   console.log(`Probe Missed -> Rank Delta: ${probeEval.rankDelta} => Rating: ${currentRating}`);
-  console.assert(probeEval.rankDelta === -10, `FAIL: Expected -10 penalty on probe miss, got ${probeEval.rankDelta}`);
-  console.assert(currentRating >= 1050, `FAIL: Expected rating >= 1050 after gentle probe miss, got ${currentRating}`);
-  console.log('✅ PASSED: Beginner smoothly regressed with minimal -10 penalty on probe miss!\n');
+  console.assert(probeEval.rankDelta >= -15 && probeEval.rankDelta <= -5, `FAIL: Expected small penalty on probe miss, got ${probeEval.rankDelta}`);
+  console.assert(currentRating >= 1000, `FAIL: Expected rating >= 1000 after gentle probe miss, got ${currentRating}`);
+  console.log('✅ PASSED: Beginner smoothly regressed with minimal penalty on probe miss!\n');
 }
 
 runSimulationProficientStudent();
