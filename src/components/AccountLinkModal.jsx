@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Sparkles, CheckCircle2, Lock, X, ArrowRight, Mail } from 'lucide-react';
+import { ShieldCheck, Sparkles, CheckCircle2, Lock, X, ArrowRight, Mail, Zap } from 'lucide-react';
 import { authService } from '../services/authService';
+import { storageService } from '../services/storageService';
 
 export default function AccountLinkModal({
   isOpen,
@@ -32,10 +33,15 @@ export default function AccountLinkModal({
       }
 
       if (res.success) {
+        // Add +200 Sparks Reward on successful link
+        const currentData = storageService.getUserData();
+        const newSparks = (currentData.sparks || 0) + 200;
+        storageService.saveUserData({ sparks: newSparks });
+
         const label = provider === 'google' ? 'Google 1-Tap' : provider === 'apple' ? 'Sign in with Apple' : 'Passwordless Magic Link';
-        setSuccessMessage(`Account linked successfully with ${label}! Your progress is now permanently synced.`);
+        setSuccessMessage(`Account linked successfully with ${label}! Your progress is now permanently synced. +200 ⚡ Earned!`);
         setTimeout(() => {
-          if (onAccountLinked) onAccountLinked(res.user);
+          if (onAccountLinked) onAccountLinked(res.user, newSparks);
           onClose();
         }, 1800);
       }
@@ -73,6 +79,14 @@ export default function AccountLinkModal({
             Link your anonymous guest account to ensure your Kibo outfits, math streaks, and achievements are never lost.
           </p>
         </div>
+
+        {/* Incentive Badge */}
+        {!successMessage && (
+          <div className="bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-300 rounded-2xl p-2.5 flex items-center justify-center gap-2 text-amber-950 shadow-sm animate-pulse">
+            <Zap className="w-5 h-5 text-amber-600 fill-amber-400 stroke-[2.5]" />
+            <span className="font-black text-sm">Link now for a +200 ⚡ Bonus!</span>
+          </div>
+        )}
 
         {/* Success Alert */}
         {successMessage ? (

@@ -31,7 +31,9 @@ const DEFAULT_PROFILE = {
     completedClimbsCount: 0,
     shopPurchasesCount: 0,
     purchasedRarities: [],
-    hasPromptedSaveProgress: false,
+    hasPromptedLink_2Purchases: false,
+    hasPromptedLink_2Climbs: false,
+    hasPromptedLink_3DayStreak: false,
     totalProblemsSolved: 0,
     cumulativeCorrectStreak: 0,
     personalRecords: {

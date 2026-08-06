@@ -40,7 +40,8 @@ export default function ParentDashboardModal({
   onUpdatePreferences,
   unlockedBadges = [],
   totalProblemsSolved = 0,
-  personalRecords = {}
+  personalRecords = {},
+  onAccountLinked
 }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'settings'
 
@@ -791,9 +792,10 @@ export default function ParentDashboardModal({
         isOpen={showAccountLinkModal}
         onClose={() => setShowAccountLinkModal(false)}
         milestoneName="Parent Zone Request"
-        onLinkedSuccess={() => {
+        onAccountLinked={(user, newSparks) => {
           setShowAccountLinkModal(false);
           setLiveUserData(storageService.getUserData());
+          if (onAccountLinked) onAccountLinked(user, newSparks);
         }}
       />
 

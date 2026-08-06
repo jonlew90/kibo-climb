@@ -368,8 +368,9 @@ export default function App() {
     });
 
     const refreshedUserData = storageService.getUserData();
-    if (!refreshedUserData.hasPromptedSaveProgress && newPurchasesCount >= 2) {
-      storageService.saveUserData({ hasPromptedSaveProgress: true });
+    const isAnon = authService.getAuthState().isAnonymous;
+    if (isAnon && !refreshedUserData.hasPromptedLink_2Purchases && newPurchasesCount >= 2) {
+      storageService.saveUserData({ hasPromptedLink_2Purchases: true });
       setLinkModalMilestone('2 Shop Items Purchased');
       setShowAccountLinkModal(true);
     }
@@ -1075,9 +1076,15 @@ export default function App() {
 
     // Per-profile check for Save Progress Across All Devices modal (2 climbs completed)
     const refreshedUserData = storageService.getUserData();
-    if (!refreshedUserData.hasPromptedSaveProgress && newCompletedClimbs >= 2) {
-      storageService.saveUserData({ hasPromptedSaveProgress: true });
+    const isAnon = authService.getAuthState().isAnonymous;
+
+    if (isAnon && !refreshedUserData.hasPromptedLink_2Climbs && newCompletedClimbs >= 2) {
+      storageService.saveUserData({ hasPromptedLink_2Climbs: true });
       setLinkModalMilestone('2 Climbs Completed');
+      setShowAccountLinkModal(true);
+    } else if (isAnon && !refreshedUserData.hasPromptedLink_3DayStreak && newStreak >= 3) {
+      storageService.saveUserData({ hasPromptedLink_3DayStreak: true });
+      setLinkModalMilestone('3 Day Habit Formed');
       setShowAccountLinkModal(true);
     }
 
@@ -1210,8 +1217,9 @@ export default function App() {
 
     // Per-profile check for Save Progress Across All Devices modal (2 items purchased)
     const refreshedUserData = storageService.getUserData();
-    if (!refreshedUserData.hasPromptedSaveProgress && newPurchasesCount >= 2) {
-      storageService.saveUserData({ hasPromptedSaveProgress: true });
+    const isAnon = authService.getAuthState().isAnonymous;
+    if (isAnon && !refreshedUserData.hasPromptedLink_2Purchases && newPurchasesCount >= 2) {
+      storageService.saveUserData({ hasPromptedLink_2Purchases: true });
       setLinkModalMilestone('2 Shop Items Purchased');
       setShowAccountLinkModal(true);
     }
@@ -2057,7 +2065,12 @@ export default function App() {
         onUnlockSuccess={() => {
           setShowPinGateModal(false);
           if (pendingSparksPurchase) {
-            setShowMockCheckoutModal(true);
+            if (authService.getAuthState().isAnonymous) {
+              setLinkModalMilestone('Real-Money Purchase Backup');
+              setShowAccountLinkModal(true);
+            } else {
+              setShowMockCheckoutModal(true);
+            }
           } else {
             setShowParentDashboard(true);
           }
@@ -2085,6 +2098,11 @@ export default function App() {
         unlockedBadges={unlockedBadges}
         totalProblemsSolved={totalProblemsSolved}
         personalRecords={personalRecords}
+        onAccountLinked={(user, newSparks) => {
+          if (newSparks !== undefined) {
+            setSparks(newSparks);
+          }
+        }}
       />
 
       {/* TRAIL BADGES SHOWCASE MODAL */}
@@ -2236,6 +2254,10 @@ export default function App() {
           setPendingSparksPurchase(pack);
           setShowPinGateModal(true);
         }}
+        onRequestAccountLink={() => {
+          setLinkModalMilestone('Shop Rewards');
+          setShowAccountLinkModal(true);
+        }}
       />
 
       <MockCheckoutModal
@@ -2259,9 +2281,23 @@ export default function App() {
       {/* Account Link Modal */}
       <AccountLinkModal
         isOpen={showAccountLinkModal}
-        onClose={() => setShowAccountLinkModal(false)}
+        onClose={() => {
+          setShowAccountLinkModal(false);
+          if (pendingSparksPurchase) {
+            // Require linking for real-money purchases. If they close the modal, cancel the purchase.
+            setPendingSparksPurchase(null);
+          }
+        }}
         triggerMilestone={linkModalMilestone}
-        onAccountLinked={() => setShowAccountLinkModal(false)}
+        onAccountLinked={(user, newSparks) => {
+          if (newSparks !== undefined) {
+            setSparks(newSparks);
+          }
+          setShowAccountLinkModal(false);
+          if (pendingSparksPurchase) {
+            setShowMockCheckoutModal(true);
+          }
+        }}
       />
 
       {/* DEV CONTROL PANEL (TRIGGERED BY SECRET KEYSTROKE CODE 'kibodev') */}

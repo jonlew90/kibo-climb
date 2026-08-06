@@ -5,6 +5,7 @@ import ItemThumbnail from './ItemThumbnail';
 import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, getItemsByCategory, getItemById } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
+import { authService } from '../services/authService';
 
 export function sortShopItems(items, userSparks, unlockedItems = [], equippedItems = []) {
   return [...items].sort((a, b) => {
@@ -36,7 +37,8 @@ export default function WorkshopModal({
   onBuyConsumable,
   onToggleEquip,
   allowRealMoneyPurchases,
-  onBuySparksPackage
+  onBuySparksPackage,
+  onRequestAccountLink
 }) {
   const INITIAL_PREVIEW_SLOTS = {
     headwear: null,
@@ -328,6 +330,29 @@ export default function WorkshopModal({
       {/* DEDICATED INDEPENDENT ITEM GRID SCROLL CONTAINER */}
       <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6">
         <div className="space-y-3 pb-6">
+          {/* Promotional Account Link Banner in Shop */}
+          {authService.getAuthState().isAnonymous && onRequestAccountLink && (
+            <div
+              onClick={onRequestAccountLink}
+              className="mb-3 w-full bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-300 rounded-2xl p-3 flex flex-row items-center justify-between shadow-sm cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center border-2 border-amber-400 shrink-0 shadow-inner">
+                  <Zap className="w-6 h-6 text-amber-500 fill-amber-400 animate-pulse" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-sm font-black text-amber-950 leading-tight">Link Account for +200 ⚡</h3>
+                  <p className="text-[10px] font-bold text-amber-800 leading-snug">
+                    Save your progress and get free Sparks instantly!
+                  </p>
+                </div>
+              </div>
+              <button className="bg-amber-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md border-b-2 border-amber-700 whitespace-nowrap shrink-0 ml-2">
+                Link Now
+              </button>
+            </div>
+          )}
+
           {activeCategory === 'get_sparks' ? (
             allowRealMoneyPurchases ? (
               <div className="space-y-3">
