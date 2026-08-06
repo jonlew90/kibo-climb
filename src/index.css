@@ -288,14 +288,9 @@ html, body, #root {
   overflow: hidden;
   margin: 0;
   padding: 0;
-  touch-action: manipulation;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-}
-
-button, input, select, textarea {
-  touch-action: manipulation;
 }
 
 /* Custom sleek scrollbar for internal scrollable elements */
