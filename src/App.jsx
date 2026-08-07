@@ -1361,12 +1361,12 @@ export default function App() {
   });
 
   return (
-    <div className="app-viewport-root p-2 sm:p-4 safe-pt safe-pb max-w-lg mx-auto relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
+    <div className="app-viewport-root p-2 sm:p-4 safe-pt max-w-lg mx-auto relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
       {/* Sticky Top HUD Header Bar */}
       {appState !== 'sprint' && (
         <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1.5 overflow-x-auto hide-scrollbar">
           {/* Brand Logo & Stats */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0 w-full justify-between">
             <button
               onClick={() => {
                 soundFx.playKeyTap();
@@ -1380,7 +1380,7 @@ export default function App() {
                 alt="Kibo Mascot"
                 className="w-5 h-5 sm:w-6 sm:h-6 object-contain filter drop-shadow-2xs"
               />
-              <span className="tracking-tight font-black hidden xs:inline">Kibo</span>
+              <span className="tracking-tight font-black">Kibo Climb</span>
             </button>
 
             {/* Streak Badge */}
@@ -1408,80 +1408,28 @@ export default function App() {
               />
             </div>
 
-            {/* Always-Visible Competence Rank Badge */}
-            {(() => {
-              const rankTitle = getCompetenceRankTier(liveCompetenceRating);
-              return (
-                <button
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    setShowBadgesModal(true);
-                  }}
-                  className="flex items-center gap-1 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 px-2 py-0.5 rounded-full text-[11px] font-black shadow-2xs transition-all active:scale-95 shrink-0 relative overflow-visible"
-                  title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
-                >
-                  <RollingNumberTicker
-                    value={liveCompetenceRating}
-                    showDeltaBadge={true}
-                    icon={<Trophy className="w-3 h-3 text-purple-600 stroke-[2.5]" />}
-                    profileId={activeProfileId}
-                  />
-                </button>
-              );
-            })()}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={() => handleOpenWorkshop()}
-              className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-kibo-orange hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs px-2.5 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 shrink-0"
-              aria-label="Open Kibo's Corner"
-              title="Open Kibo's Corner 🐾"
-            >
-              <ShoppingBag className="w-3.5 h-3.5 text-white stroke-[2.5]" />
-              <span className="hidden sm:inline">Kibo's Corner</span>
-            </button>
-
-            <button
-              onClick={() => {
-                soundFx.playKeyTap();
-                setShowBadgesModal(true);
-              }}
-              className="px-2 py-1.5 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl text-amber-900 font-extrabold text-xs active:scale-95 transition-all shadow-2xs flex items-center gap-1 shrink-0"
-              title="View Trophies & Records"
-            >
-              <Award className="w-3.5 h-3.5 text-amber-700 stroke-[2.5]" />
-              <span className="text-[10px]">{unlockedBadges.length}</span>
-            </button>
-
-            {storageService.getAllProfiles().length > 1 && (
-              <button
-                onClick={() => {
-                  soundFx.playKeyTap();
-                  setShowManualProfileSwitcher(true);
-                }}
-                className="p-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-black shadow-xs transition-all active:scale-95 shrink-0"
-                title="Switch Profile"
-              >
-                <Users className="w-3.5 h-3.5 stroke-[2.5]" />
-              </button>
-            )}
-            <button
-              onClick={() => setShowPinGateModal(true)}
-              className="p-1.5 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl text-purple-700 active:scale-95 transition-all shadow-2xs shrink-0"
-              title="Parent Zone (PIN Protected)"
-            >
-              <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
-            </button>
-
-            <button
-              onClick={toggleAudio}
-              className="p-1.5 bg-white rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 active:scale-95 transition-all shadow-2xs shrink-0"
-              aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
-            >
-              {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-500" /> : <Volume2 className="w-3.5 h-3.5 text-kibo-teal" />}
-            </button>
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Always-Visible Competence Rank Badge */}
+              {(() => {
+                const rankTitle = getCompetenceRankTier(liveCompetenceRating);
+                return (
+                  <button
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowBadgesModal(true);
+                    }}
+                    className="flex items-center gap-1 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 px-2 py-0.5 rounded-full text-[11px] font-black shadow-2xs transition-all active:scale-95 shrink-0 relative overflow-visible"
+                    title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
+                  >
+                    <RollingNumberTicker
+                      value={liveCompetenceRating}
+                      showDeltaBadge={true}
+                      icon={<Trophy className="w-3 h-3 text-purple-600 stroke-[2.5]" />}
+                    />
+                  </button>
+                );
+              })()}
+            </div>
           </div>
         </header>
       )}
@@ -2353,16 +2301,63 @@ export default function App() {
         }}
       />
 
-      {/* Footer with Parent Zone Link */}
-      <footer className="w-full text-center text-xs font-bold text-slate-700 py-2.5 px-4 border-t border-slate-200/80 mt-auto flex items-center justify-between">
-        <span>{BRAND_CONFIG.appName} by {BRAND_CONFIG.rootBrand} • {BRAND_CONFIG.tagline}</span>
-        <button
-          onClick={() => setShowPinGateModal(true)}
-          className="text-purple-600 hover:text-purple-800 flex items-center gap-1 font-extrabold"
-        >
-          <Lock className="w-3.5 h-3.5" /> Parent Zone
-        </button>
-      </footer>
+      {/* Bottom Navigation Bar */}
+      {appState !== 'sprint' && (
+        <footer className="fixed bottom-0 left-0 right-0 z-40 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200/80 px-2 pt-2 flex items-center justify-around shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe-nav">
+          <button
+            onClick={() => handleOpenWorkshop()}
+            className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-amber-600 transition-colors active:scale-95"
+            aria-label="Open Kibo's Corner"
+          >
+            <ShoppingBag className="w-6 h-6 stroke-[2]" />
+            <span className="text-[10px] font-black tracking-wide">Shop</span>
+          </button>
+
+          <button
+            onClick={() => {
+              soundFx.playKeyTap();
+              setShowBadgesModal(true);
+            }}
+            className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-amber-500 transition-colors active:scale-95"
+          >
+            <Award className="w-6 h-6 stroke-[2]" />
+            <span className="text-[10px] font-black tracking-wide">Trophies</span>
+          </button>
+
+          {storageService.getAllProfiles().length > 1 && (
+            <button
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowManualProfileSwitcher(true);
+              }}
+              className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-slate-800 transition-colors active:scale-95"
+            >
+              <Users className="w-6 h-6 stroke-[2]" />
+              <span className="text-[10px] font-black tracking-wide">Switch</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => setShowPinGateModal(true)}
+            className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-purple-600 transition-colors active:scale-95"
+          >
+            <Lock className="w-6 h-6 stroke-[2]" />
+            <span className="text-[10px] font-black tracking-wide">Parents</span>
+          </button>
+
+          <button
+            onClick={toggleAudio}
+            className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-slate-800 transition-colors active:scale-95"
+            aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
+          >
+            {isMuted ? <VolumeX className="w-6 h-6 text-rose-500 stroke-[2]" /> : <Volume2 className="w-6 h-6 stroke-[2]" />}
+            <span className="text-[10px] font-black tracking-wide">Mute</span>
+          </button>
+        </footer>
+      )}
+
+      {/* Spacing element to prevent bottom nav from covering content */}
+      {appState !== 'sprint' && <div className="h-20 shrink-0 w-full"></div>}
     </div>
   );
 }
