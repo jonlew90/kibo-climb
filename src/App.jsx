@@ -1357,9 +1357,9 @@ export default function App() {
     <div className="app-viewport-root p-2 sm:p-4 safe-pt safe-pb max-w-lg mx-auto relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
       {/* Sticky Top HUD Header Bar */}
       {appState !== 'sprint' && (
-        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1 overflow-visible">
+        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1 overflow-x-auto hide-scrollbar">
           {/* Brand Logo & Stats */}
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 overflow-visible">
+          <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
             <button
               onClick={() => {
                 soundFx.playKeyTap();
@@ -1423,7 +1423,7 @@ export default function App() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-0.5 shrink-0">
             <button
               onClick={() => handleOpenWorkshop()}
               className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-kibo-orange hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs px-2.5 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 shrink-0"
