@@ -86,8 +86,8 @@ export const DOMAIN_DEFINITIONS = [
   }
 ];
 
-export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = []) => {
-  const recentSprints = (sprintHistory || []).slice(-20);
+export const calculateDomainMastery = (sessionHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = []) => {
+  const recentSessions = (sessionHistory || []).slice(-20);
 
   // Extract the initial placement rating from the user's recorded history.
   // If no history exists, fallback to activeRating (meaning they just started).
@@ -101,17 +101,17 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
     let matchedDuration = 0;
     let lastPracticeDate = null;
 
-    recentSprints.forEach((sprint) => {
-      if (sprint.tier && def.tiers.includes(sprint.tier)) {
-        const correct = Number(sprint.correctCount || sprint.score || 0);
-        const total = Number(sprint.totalQuestions || (sprint.answers ? sprint.answers.length : 12));
+    recentSessions.forEach((sessionData) => {
+      if (sessionData.tier && def.tiers.includes(sessionData.tier)) {
+        const correct = Number(sessionData.correctCount || sessionData.score || 0);
+        const total = Number(sessionData.totalQuestions || (sessionData.answers ? sessionData.answers.length : 12));
         matchedCorrect += correct;
         matchedTotal += total;
-        matchedDuration += Number(sprint.durationInSeconds || 0);
-        if (sprint.date) {
-            const sprintDate = new Date(sprint.date);
-            if (!lastPracticeDate || sprintDate > lastPracticeDate) {
-                lastPracticeDate = sprintDate;
+        matchedDuration += Number(sessionData.durationInSeconds || 0);
+        if (sessionData.date) {
+            const sessionDate = new Date(sessionData.date);
+            if (!lastPracticeDate || sessionDate > lastPracticeDate) {
+                lastPracticeDate = sessionDate;
             }
         }
       }
@@ -190,8 +190,8 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
   });
 };
 
-export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = []) => {
-  const domains = calculateDomainMastery(sprintHistory, currentTier, activeRating, rawRatingHistory);
+export const calculateAdaptiveCompetenceProfile = (sessionHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = []) => {
+  const domains = calculateDomainMastery(sessionHistory, currentTier, activeRating, rawRatingHistory);
 
   let masteredCount = 0;
   let practicingCount = 0;

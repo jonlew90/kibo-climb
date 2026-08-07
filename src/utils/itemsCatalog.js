@@ -369,7 +369,7 @@ export const WORKSHOP_ITEMS = [
     description: 'Shimmering solid 24k gold metallic Kibo skin! Requires Competence Rank 1700.'
   },
 
-  // SPRINT BACKGROUNDS (Slot: background)
+  // SESSION BACKGROUNDS (Slot: background)
   {
     id: 'bg_alpine',
     name: 'Alpine Meadow',

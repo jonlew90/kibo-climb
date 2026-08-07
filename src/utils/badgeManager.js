@@ -2,7 +2,7 @@
 import { BADGES_CATALOG } from '../data/badges';
 import { storageService } from '../services/storageService';
 
-export function evaluateBadges(userState, lastSprintResult = null) {
+export function evaluateBadges(userState, lastSessionResult = null) {
   const currentUnlocked = new Set(userState.unlockedBadges || []);
   const newlyUnlocked = [];
 
@@ -16,7 +16,7 @@ export function evaluateBadges(userState, lastSprintResult = null) {
     perfectClimbsCount = 0,
     consecutivePerfectClimbsCount = 0,
     cumulativeCorrectStreak = 0,
-    sprintHistory = []
+    sessionHistory = []
   } = userState;
 
   BADGES_CATALOG.forEach((badge) => {
@@ -36,40 +36,40 @@ export function evaluateBadges(userState, lastSprintResult = null) {
         unlocked = streak >= 30;
         break;
       case 'comeback_kid':
-        if (sprintHistory && sprintHistory.length >= 2) {
-          const latestSprint = sprintHistory[0];
-          const previousSprint = sprintHistory[1];
-          if (latestSprint.date && previousSprint.date) {
-            const latestDate = new Date(latestSprint.date);
-            const prevDate = new Date(previousSprint.date);
+        if (sessionHistory && sessionHistory.length >= 2) {
+          const latestSession = sessionHistory[0];
+          const previousSession = sessionHistory[1];
+          if (latestSession.date && previousSession.date) {
+            const latestDate = new Date(latestSession.date);
+            const prevDate = new Date(previousSession.date);
             const diffDays = (latestDate - prevDate) / (1000 * 60 * 60 * 24);
             unlocked = diffDays >= 5;
           }
         }
         break;
       case 'early_bird':
-        if (lastSprintResult && lastSprintResult.date) {
-          const sprintTime = new Date(lastSprintResult.date);
-          unlocked = sprintTime.getHours() < 8;
-        } else if (sprintHistory && sprintHistory.length > 0) {
-           const sprintTime = new Date(sprintHistory[0].date);
-           unlocked = sprintTime.getHours() < 8;
+        if (lastSessionResult && lastSessionResult.date) {
+          const sessionTime = new Date(lastSessionResult.date);
+          unlocked = sessionTime.getHours() < 8;
+        } else if (sessionHistory && sessionHistory.length > 0) {
+           const sessionTime = new Date(sessionHistory[0].date);
+           unlocked = sessionTime.getHours() < 8;
         }
         break;
       case 'night_owl':
-        if (lastSprintResult && lastSprintResult.date) {
-          const sprintTime = new Date(lastSprintResult.date);
-          unlocked = sprintTime.getHours() >= 18;
-        } else if (sprintHistory && sprintHistory.length > 0) {
-           const sprintTime = new Date(sprintHistory[0].date);
-           unlocked = sprintTime.getHours() >= 18;
+        if (lastSessionResult && lastSessionResult.date) {
+          const sessionTime = new Date(lastSessionResult.date);
+          unlocked = sessionTime.getHours() >= 18;
+        } else if (sessionHistory && sessionHistory.length > 0) {
+           const sessionTime = new Date(sessionHistory[0].date);
+           unlocked = sessionTime.getHours() >= 18;
         }
         break;
       case 'grit':
-        if (sprintHistory && sprintHistory.length >= 2) {
-           const latestSprint = sprintHistory[0];
-           const previousSprint = sprintHistory[1];
-           if (previousSprint.accuracyPct < 70 && latestSprint.accuracyPct >= 85) {
+        if (sessionHistory && sessionHistory.length >= 2) {
+           const latestSession = sessionHistory[0];
+           const previousSession = sessionHistory[1];
+           if (previousSession.accuracyPct < 70 && latestSession.accuracyPct >= 85) {
                unlocked = true;
            }
         }
@@ -113,7 +113,7 @@ export function evaluateBadges(userState, lastSprintResult = null) {
 
       // 5. Perfect Climbs & Consecutives
       case 'perfect_climb_single':
-        unlocked = perfectClimbsCount >= 1 || (lastSprintResult && lastSprintResult.accuracyPct === 100);
+        unlocked = perfectClimbsCount >= 1 || (lastSessionResult && lastSessionResult.accuracyPct === 100);
         break;
       case 'perfect_climb_3':
         unlocked = perfectClimbsCount >= 3;

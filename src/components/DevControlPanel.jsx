@@ -220,23 +220,23 @@ export default function DevControlPanel({
                   setIsSendingEmail(true);
 
                   // Gather user metrics for email
-                  const sprintHistory = currentData.sprintHistory || [];
+                  const sessionHistory = currentData.sessionHistory || [];
                   const unlockedBadges = currentData.unlockedBadges || [];
                   const totalProblemsSolved = currentData.totalProblemsSolved || 0;
                   const currentMathTier = getTierFromRating(currentRating);
                   const rankTitle = getCompetenceRankTier(currentRating);
 
-                  // Use recent sprint history to estimate "weekly" stats
+                  // Use recent session history to estimate "weekly" stats
                   // In a real app we'd filter by date, but since mock data might not have dates, we'll just use the last few sprints.
-                  const recentSprints = sprintHistory.slice(-10);
-                  const recentProblemsSolved = recentSprints.reduce((acc, sprint) => acc + (sprint.totalQuestions || 12), 0);
+                  const recentSessions = sessionHistory.slice(-10);
+                  const recentProblemsSolved = recentSessions.reduce((acc, sessionData) => acc + (sessionData.totalQuestions || 12), 0);
 
                   // Calculate recall latency
                   let avgLatency = 0;
                   let totalQuestions = 0;
-                  recentSprints.forEach(sprint => {
-                    const duration = Number(sprint.durationInSeconds || 0);
-                    const qCount = Number(sprint.totalQuestions || (sprint.answers ? sprint.answers.length : 12));
+                  recentSessions.forEach(sessionData => {
+                    const duration = Number(sessionData.durationInSeconds || 0);
+                    const qCount = Number(sessionData.totalQuestions || (sessionData.answers ? sessionData.answers.length : 12));
                     if (qCount > 0) {
                       avgLatency += duration;
                       totalQuestions += qCount;
@@ -245,7 +245,7 @@ export default function DevControlPanel({
                   const latencySec = totalQuestions > 0 ? (avgLatency / totalQuestions).toFixed(1) : 'N/A';
 
                   // Adaptive competence profile
-                  const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, currentRating, currentData.ratingHistory || []);
+                  const adaptiveProfile = calculateAdaptiveCompetenceProfile(sessionHistory, currentMathTier, currentRating, currentData.ratingHistory || []);
 
                   const masteredTopics = Object.values(adaptiveProfile.skillStrandBreakdown)
                     .filter(strand => strand.status === 'Mastered')

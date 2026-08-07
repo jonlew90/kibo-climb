@@ -453,7 +453,7 @@ export default function AdaptiveSessionView({
       const finalBlockSparks = blockSparksEarned + blockEarned;
       const isPerfectBlock = finalBlockCorrect === 12;
 
-      // RECORD COMPLETED CLIMB BLOCK INTO SPRINT HISTORY FOR ACCURATE PRACTICE TIME TRACKING
+      // RECORD COMPLETED CLIMB BLOCK INTO SESSION HISTORY FOR ACCURATE PRACTICE TIME TRACKING
       const newSessionRecord = {
         id: `session-${Date.now()}`,
         timestamp: new Date().toISOString(),
@@ -467,7 +467,7 @@ export default function AdaptiveSessionView({
         ratingGain: nextBlockRatingGain
       };
 
-      const existingHistory = activeUserData.sprintHistory || [];
+      const existingHistory = activeUserData.sessionHistory || [];
       const updatedHistory = [newSessionRecord, ...existingHistory];
 
       setCompletedBlockStats({
@@ -494,7 +494,7 @@ export default function AdaptiveSessionView({
       };
 
       storageService.saveUserData({
-        sprintHistory: updatedHistory,
+        sessionHistory: updatedHistory,
         personalRecords: updatedRecords
       });
       if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);

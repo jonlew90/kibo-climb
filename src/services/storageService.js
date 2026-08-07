@@ -46,7 +46,7 @@ const DEFAULT_PROFILE = {
     lastSprintDate: null,
     hasVisitedParentZone: false,
     practiceQueue: [],
-    sprintHistory: [],
+    sessionHistory: [],
     unlockedBadges: [],
     consumables: {
       shieldCount: 1,
@@ -54,7 +54,7 @@ const DEFAULT_PROFILE = {
       doubleCoinPotionCount: 0
     },
     preferences: {
-      hideSprintTimer: false
+      hideSessionTimer: false
     }
   },
   shopState: {

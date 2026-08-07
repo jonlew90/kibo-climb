@@ -72,8 +72,8 @@ export const syncService = {
         if (check.valid) {
           // Replicate payload into local master profile
           const userData = storageService.getUserData();
-          const updatedHistory = [item.payload, ...(userData.sprintHistory || [])];
-          storageService.saveUserData({ sprintHistory: updatedHistory });
+          const updatedHistory = [item.payload, ...(userData.sessionHistory || [])];
+          storageService.saveUserData({ sessionHistory: updatedHistory });
           flushedCount++;
         } else {
           console.warn('syncService: Rejected payload during queue flush', check.reason);

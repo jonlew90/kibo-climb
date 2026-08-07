@@ -33,11 +33,11 @@ export default function ParentDashboardModal({
   sparks,
   practiceQueueCount,
   practiceQueue = [],
-  sprintHistory,
+  sessionHistory,
   practiceDays = [1, 2, 3, 4, 5],
   onUpdatePracticeDays,
   onProfileSwitch,
-  preferences = { hideSprintTimer: false },
+  preferences = { hideSessionTimer: false },
   onUpdatePreferences,
   unlockedBadges = [],
   totalProblemsSolved = 0,
@@ -388,7 +388,7 @@ export default function ParentDashboardModal({
             {/* STAT SUMMARY ROW */}
             {(() => {
               const activeUserData = liveUserData || storageService.getUserData();
-              const historyList = activeUserData.sprintHistory || [];
+              const historyList = activeUserData.sessionHistory || [];
               const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec) || 0), 0);
               const childStreak = activeUserData.streak ?? 1;
               const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
@@ -404,15 +404,15 @@ export default function ParentDashboardModal({
               };
 
               const now = new Date();
-              const recentSprints = historyList.filter(s => {
+              const recentSessions = historyList.filter(s => {
                   if (!s.date) return false;
                   return (now - new Date(s.date)) / (1000 * 60 * 60 * 24) <= 14;
               });
               let recentAccuracy = 'N/A';
-              if (recentSprints.length > 0) {
+              if (recentSessions.length > 0) {
                   let totalCorrect = 0;
                   let totalQs = 0;
-                  recentSprints.forEach(s => {
+                  recentSessions.forEach(s => {
                       totalCorrect += Number(s.correctCount || s.score || 0);
                       totalQs += Number(s.totalQuestions || (s.answers ? s.answers.length : 12));
                   });
@@ -453,7 +453,7 @@ export default function ParentDashboardModal({
             {/* RECENT ACTIVITY LOG */}
             {(() => {
               const activeUserData = liveUserData || storageService.getUserData();
-              const historyList = activeUserData.sprintHistory || [];
+              const historyList = activeUserData.sessionHistory || [];
               const recentList = historyList.slice(0, 3);
 
               const formatShortDate = (dateString) => {
@@ -482,13 +482,13 @@ export default function ParentDashboardModal({
                       <p className="text-xs font-semibold text-slate-500 italic">No recent climbs yet.</p>
                   ) : (
                       <div className="space-y-2">
-                          {recentList.map((sprint, i) => (
+                          {recentList.map((sessionData, i) => (
                               <div key={i} className="flex justify-between items-center bg-slate-50 border border-slate-100 p-2 rounded-xl">
                                   <div className="flex flex-col">
-                                      <span className="text-xs font-extrabold text-slate-700">{formatShortDate(sprint.date)}</span>
+                                      <span className="text-xs font-extrabold text-slate-700">{formatShortDate(sessionData.date)}</span>
                                       <span className="text-[10px] text-slate-500">
                                           {(() => {
-                                              const totalSeconds = sprint.totalTimeSec ? Math.round(sprint.totalTimeSec) : (sprint.durationInSeconds ? Math.round(sprint.durationInSeconds) : null);
+                                              const totalSeconds = sessionData.totalTimeSec ? Math.round(sessionData.totalTimeSec) : (sessionData.durationInSeconds ? Math.round(sessionData.durationInSeconds) : null);
                                               if (totalSeconds === null) return '—';
                                               const m = Math.floor(totalSeconds / 60);
                                               const s = totalSeconds % 60;
@@ -497,10 +497,10 @@ export default function ParentDashboardModal({
                                       </span>
                                   </div>
                                   <div className="text-right flex flex-col items-end">
-                                      <span className={`text-xs font-black ${sprint.accuracyPct >= 80 ? 'text-emerald-600' : (sprint.accuracyPct >= 60 ? 'text-amber-600' : 'text-rose-600')}`}>
-                                          {sprint.accuracyPct ?? Math.round((Number(sprint.correctCount||sprint.score||0)/Number(sprint.totalQuestions||(sprint.answers?sprint.answers.length:12)))*100)}% Accuracy
+                                      <span className={`text-xs font-black ${sessionData.accuracyPct >= 80 ? 'text-emerald-600' : (sessionData.accuracyPct >= 60 ? 'text-amber-600' : 'text-rose-600')}`}>
+                                          {sessionData.accuracyPct ?? Math.round((Number(sessionData.correctCount||sessionData.score||0)/Number(sessionData.totalQuestions||(sessionData.answers?sessionData.answers.length:12)))*100)}% Accuracy
                                       </span>
-                                      <span className="text-[10px] text-slate-500 font-bold">{sprint.ratingGain > 0 ? `+${sprint.ratingGain} rating` : (sprint.ratingGain < 0 ? `${sprint.ratingGain} rating` : '=')}</span>
+                                      <span className="text-[10px] text-slate-500 font-bold">{sessionData.ratingGain > 0 ? `+${sessionData.ratingGain} rating` : (sessionData.ratingGain < 0 ? `${sessionData.ratingGain} rating` : '=')}</span>
                                   </div>
                               </div>
                           ))}
@@ -547,7 +547,7 @@ export default function ParentDashboardModal({
               const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = getTierFromRating(actualRating);
-              const adaptiveProfile = calculateAdaptiveCompetenceProfile(activeUserData.sprintHistory || [], currentMathTier, actualRating, activeUserData.ratingHistory || []);
+              const adaptiveProfile = calculateAdaptiveCompetenceProfile(activeUserData.sessionHistory || [], currentMathTier, actualRating, activeUserData.ratingHistory || []);
               const { skillStrandBreakdown } = adaptiveProfile;
 
               const statusColor = (status) => {
