@@ -483,10 +483,10 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
         {hasSpinDance && (
           <g className="animate-spin" style={{ animationDuration: '6s' }}>
-            <ellipse cx="100" cy="165" rx="68" ry="18" fill="none" stroke="#F59E0B" strokeWidth="4" strokeDasharray="16 10" />
-            <ellipse cx="100" cy="165" rx="60" ry="15" fill="none" stroke="#FCD34D" strokeWidth="2" strokeDasharray="8 6" />
-            <polygon points="32,165 42,158 42,172" fill="#F59E0B" />
-            <polygon points="168,165 158,158 158,172" fill="#F59E0B" />
+            <ellipse cx="100" cy="165" rx="58" ry="15" fill="none" stroke="#F59E0B" strokeWidth="4" strokeDasharray="16 10" />
+            <ellipse cx="100" cy="165" rx="52" ry="12" fill="none" stroke="#FCD34D" strokeWidth="2" strokeDasharray="8 6" />
+            <polygon points="42,165 52,158 52,172" fill="#F59E0B" />
+            <polygon points="158,165 148,158 148,172" fill="#F59E0B" />
           </g>
         )}
 
@@ -511,24 +511,24 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
         {hasRainbowNebula && (
           <g className="animate-spin" style={{ animationDuration: '10s' }}>
-            <ellipse cx="100" cy="115" rx="72" ry="24" fill="none" stroke="url(#thumbLavaGrad)" strokeWidth="3" strokeDasharray="12 8" opacity="0.8" />
-            <ellipse cx="100" cy="115" rx="64" ry="20" fill="none" stroke="url(#thumbAuroraGrad)" strokeWidth="2" strokeDasharray="8 6" opacity="0.8" />
+            <ellipse cx="100" cy="115" rx="64" ry="20" fill="none" stroke="url(#svgLavaGrad)" strokeWidth="3" strokeDasharray="12 8" opacity="0.8" />
+            <ellipse cx="100" cy="115" rx="58" ry="16" fill="none" stroke="url(#svgAuroraGrad)" strokeWidth="2" strokeDasharray="8 6" opacity="0.8" />
           </g>
         )}
 
         {hasOrbitMoons && (
           <g className="animate-spin" style={{ animationDuration: '7s' }}>
             {/* 3D Angled Orbital Track */}
-            <ellipse cx="100" cy="115" rx="82" ry="32" fill="none" stroke="#60A5FA" strokeWidth="3" strokeDasharray="12 8" opacity="0.75" />
+            <ellipse cx="100" cy="115" rx="68" ry="24" fill="none" stroke="#60A5FA" strokeWidth="3" strokeDasharray="12 8" opacity="0.75" />
             {/* Moon 1: Golden Sun Moon */}
-            <circle cx="20" cy="115" r="10" fill="#FDE047" stroke="#CA8A04" strokeWidth="2" filter="url(#clayShadow)" />
-            <circle cx="17" cy="112" r="3" fill="#FFFFFF" />
+            <circle cx="32" cy="115" r="10" fill="#FDE047" stroke="#CA8A04" strokeWidth="2" filter="url(#clayShadow)" />
+            <circle cx="29" cy="112" r="3" fill="#FFFFFF" />
             {/* Moon 2: Cyan Crystal Moon */}
-            <circle cx="180" cy="115" r="12" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" filter="url(#clayShadow)" />
-            <circle cx="176" cy="111" r="3.5" fill="#FFFFFF" />
+            <circle cx="168" cy="115" r="12" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" filter="url(#clayShadow)" />
+            <circle cx="164" cy="111" r="3.5" fill="#FFFFFF" />
             {/* Moon 3: Plasma Pink Moon */}
-            <circle cx="100" cy="147" r="9" fill="#F472B6" stroke="#DB2777" strokeWidth="2" filter="url(#clayShadow)" />
-            <circle cx="97" cy="144" r="2.5" fill="#FFFFFF" />
+            <circle cx="100" cy="139" r="9" fill="#F472B6" stroke="#DB2777" strokeWidth="2" filter="url(#clayShadow)" />
+            <circle cx="97" cy="136" r="2.5" fill="#FFFFFF" />
           </g>
         )}
 
