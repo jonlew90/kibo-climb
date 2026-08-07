@@ -85,6 +85,7 @@ export default function App() {
     const sData = storageService.getShopState();
     const cRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
 
+    setActiveProfileId(storageService.getActiveProfileId());
     setLiveCompetenceRating(cRating);
     setTier(uData.tier || 1);
     setUnlockedTiers(uData.unlockedTiers || [1]);
@@ -197,6 +198,10 @@ export default function App() {
   // Persistent Tier Mastery Percent (0, 25, 50, 75, 100)
   const [tierMasteryPercent, setTierMasteryPercent] = useState(() => {
     return storageService.getUserData().tierMasteryPercent || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
+  });
+
+  const [activeProfileId, setActiveProfileId] = useState(() => {
+    return storageService.getActiveProfileId();
   });
 
   // Persistent Tier Best Completion Times in Seconds
@@ -1348,6 +1353,8 @@ export default function App() {
 
   const currentTierMeta = getTierMeta(tier);
 
+  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showQuitModal || showMockCheckoutModal || showStreakSavedModal || showPlacementRevealModal || showSprintResultsModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showTestOutPassModal || showTestOutFailModal;
+
   const [liveCompetenceRating, setLiveCompetenceRating] = useState(() => {
     const uData = storageService.getUserData();
     return uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
@@ -1357,7 +1364,7 @@ export default function App() {
     <div className="app-viewport-root p-2 sm:p-4 safe-pt max-w-lg mx-auto relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
       {/* Sticky Top HUD Header Bar */}
       {appState !== 'sprint' && (
-        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1 overflow-x-auto hide-scrollbar">
+        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1.5 overflow-x-auto hide-scrollbar">
           {/* Brand Logo & Stats */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0 w-full justify-between">
             <button
@@ -1397,6 +1404,7 @@ export default function App() {
               <RollingNumberTicker
                 value={sparks}
                 icon={<Zap className="w-3 h-3 text-amber-500 fill-amber-400 stroke-[2.5]" />}
+                profileId={activeProfileId}
               />
             </div>
 
@@ -1429,6 +1437,7 @@ export default function App() {
       {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
       {(appState === 'adaptive_session' || appState === 'world_map' || appState === 'launch' || !['sprint', 'victory', 'skill_map', 'placement_test'].includes(appState)) && (
         <AdaptiveSessionView
+          isPaused={isAppPaused}
           equippedItems={equippedItems}
           sparks={sparks}
           streak={streak}
