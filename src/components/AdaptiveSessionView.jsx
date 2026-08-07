@@ -46,6 +46,7 @@ function getStreakTierConfig(streak) {
 }
 
 export default function AdaptiveSessionView({
+  isPaused = false,
   equippedItems = [],
   sparks = 0,
   streak = 0,
@@ -126,9 +127,49 @@ export default function AdaptiveSessionView({
   const isTimeQuestion = currentProblem.type === 'time' || currentProblem.requiresColon || targetStr.includes(':') || currentProblem.operatorSymbol === '⏰' || (currentProblem.displayString && (currentProblem.displayString.includes('time') || currentProblem.displayString.includes('Hike started')));
 
   const [shouldPulseHint, setShouldPulseHint] = useState(false);
+  const pauseStartRef = useRef(null);
+
+  // Handle modal pausing logic
+  useEffect(() => {
+    if (isPaused) {
+      if (!pauseStartRef.current) {
+        pauseStartRef.current = performance.now();
+      }
+    } else if (pauseStartRef.current) {
+      const pauseDuration = performance.now() - pauseStartRef.current;
+      if (problemStartTimeRef.current !== null && problemStartTimeRef.current !== 0) {
+        problemStartTimeRef.current += pauseDuration;
+      }
+      blockStartTimeRef.current += pauseDuration;
+      pauseStartRef.current = null;
+    }
+  }, [isPaused]);
+
+  // Handle Tab Visibility pausing logic
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (!pauseStartRef.current) {
+          pauseStartRef.current = performance.now();
+        }
+      } else {
+        if (pauseStartRef.current && !isPaused) {
+          const pauseDuration = performance.now() - pauseStartRef.current;
+          if (problemStartTimeRef.current !== null && problemStartTimeRef.current !== 0) {
+            problemStartTimeRef.current += pauseDuration;
+          }
+          blockStartTimeRef.current += pauseDuration;
+          pauseStartRef.current = null;
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isPaused]);
 
   useEffect(() => {
-    problemStartTimeRef.current = performance.now();
+    problemStartTimeRef.current = 0; // Initialize to 0, start on first keystroke
     setShouldPulseHint(false);
 
     const hintTimer = setTimeout(() => {
@@ -176,6 +217,10 @@ export default function AdaptiveSessionView({
 
   const processAnswerEvaluation = (userAnsString) => {
     if (!userAnsString || !userAnsString.trim()) return;
+
+    if (problemStartTimeRef.current === 0) {
+      problemStartTimeRef.current = performance.now();
+    }
 
     const normUserAns = normalizeTimeAnswer(normalizeDecimal(userAnsString));
     const normTargetAns = normalizeTimeAnswer(normalizeDecimal(currentProblem.answerString || currentProblem.answer?.toString()));
@@ -478,6 +523,9 @@ export default function AdaptiveSessionView({
   };
 
   const handleDigitInput = (val) => {
+    if (problemStartTimeRef.current === 0) {
+      problemStartTimeRef.current = performance.now();
+    }
     soundFx.playKeyTap();
 
     let newInput = inputVal;

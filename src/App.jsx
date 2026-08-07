@@ -1348,6 +1348,8 @@ export default function App() {
 
   const currentTierMeta = getTierMeta(tier);
 
+  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showQuitModal || showMockCheckoutModal || showStreakSavedModal || showPlacementRevealModal || showSprintResultsModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showTestOutPassModal || showTestOutFailModal;
+
   const [liveCompetenceRating, setLiveCompetenceRating] = useState(() => {
     const uData = storageService.getUserData();
     return uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
@@ -1481,6 +1483,7 @@ export default function App() {
       {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
       {(appState === 'adaptive_session' || appState === 'world_map' || appState === 'launch' || !['sprint', 'victory', 'skill_map', 'placement_test'].includes(appState)) && (
         <AdaptiveSessionView
+          isPaused={isAppPaused}
           equippedItems={equippedItems}
           sparks={sparks}
           streak={streak}
