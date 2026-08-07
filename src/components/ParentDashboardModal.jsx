@@ -486,11 +486,19 @@ export default function ParentDashboardModal({
                               <div key={i} className="flex justify-between items-center bg-slate-50 border border-slate-100 p-2 rounded-xl">
                                   <div className="flex flex-col">
                                       <span className="text-xs font-extrabold text-slate-700">{formatShortDate(sprint.date)}</span>
-                                      <span className="text-[10px] text-slate-500">{sprint.totalTimeSec ? `${Math.round(sprint.totalTimeSec)}s` : (sprint.durationInSeconds ? `${Math.round(sprint.durationInSeconds)}s` : '—')}</span>
+                                      <span className="text-[10px] text-slate-500">
+                                          {(() => {
+                                              const totalSeconds = sprint.totalTimeSec ? Math.round(sprint.totalTimeSec) : (sprint.durationInSeconds ? Math.round(sprint.durationInSeconds) : null);
+                                              if (totalSeconds === null) return '—';
+                                              const m = Math.floor(totalSeconds / 60);
+                                              const s = totalSeconds % 60;
+                                              return m > 0 ? `${m}m ${s}s` : `${s}s`;
+                                          })()}
+                                      </span>
                                   </div>
                                   <div className="text-right flex flex-col items-end">
                                       <span className={`text-xs font-black ${sprint.accuracyPct >= 80 ? 'text-emerald-600' : (sprint.accuracyPct >= 60 ? 'text-amber-600' : 'text-rose-600')}`}>
-                                          {sprint.accuracyPct ?? Math.round((Number(sprint.correctCount||sprint.score||0)/Number(sprint.totalQuestions||(sprint.answers?sprint.answers.length:12)))*100)}% Acc
+                                          {sprint.accuracyPct ?? Math.round((Number(sprint.correctCount||sprint.score||0)/Number(sprint.totalQuestions||(sprint.answers?sprint.answers.length:12)))*100)}% Accuracy
                                       </span>
                                       <span className="text-[10px] text-slate-500 font-bold">{sprint.ratingGain > 0 ? `+${sprint.ratingGain} rating` : (sprint.ratingGain < 0 ? `${sprint.ratingGain} rating` : '=')}</span>
                                   </div>
