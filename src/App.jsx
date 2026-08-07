@@ -1364,7 +1364,7 @@ export default function App() {
     <div className="app-viewport-root p-2 sm:p-4 safe-pt max-w-lg mx-auto relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
       {/* Sticky Top HUD Header Bar */}
       {appState !== 'sprint' && (
-        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1.5 overflow-x-auto hide-scrollbar">
+        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1.5 overflow-x-auto hide-scrollbar">
           {/* Brand Logo & Stats */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0 w-full justify-between">
             <button
@@ -2303,7 +2303,7 @@ export default function App() {
 
       {/* Bottom Navigation Bar */}
       {appState !== 'sprint' && (
-        <footer className="fixed bottom-0 left-0 right-0 z-40 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200/80 px-2 pt-2 flex items-center justify-around shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe-nav">
+        <footer className="sticky bottom-0 z-40 w-full bg-white/95 backdrop-blur-md border-2 border-slate-200/80 px-2 pt-2 flex items-center justify-around shadow-sm rounded-2xl pb-safe-nav mt-auto shrink-0">
           <button
             onClick={() => handleOpenWorkshop()}
             className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-amber-600 transition-colors active:scale-95"
