@@ -1361,7 +1361,8 @@ export default function App() {
   });
 
   return (
-    <div className="app-viewport-root p-2 sm:p-4 safe-pt max-w-lg mx-auto relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
+    <div className="app-viewport-root w-full h-full relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
+      <div className="w-full h-full max-w-lg mx-auto flex flex-col p-2 sm:p-4 safe-pt relative">
       {/* Sticky Top HUD Header Bar */}
       {appState !== 'sprint' && (
         <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1.5 overflow-x-auto hide-scrollbar">
@@ -2301,6 +2302,7 @@ export default function App() {
         }}
       />
 
+      </div>
       {/* Bottom Navigation Bar */}
       {appState !== 'sprint' && (
         <footer className="fixed bottom-0 left-0 right-0 z-40 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200/80 px-2 pt-2 flex items-center justify-around shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe-nav">

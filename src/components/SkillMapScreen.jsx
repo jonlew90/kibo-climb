@@ -21,7 +21,8 @@ export default function SkillMapScreen({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
+    <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 w-full h-full overflow-hidden animate-fade-in text-slate-800">
+      <div className="w-full h-full max-w-lg mx-auto flex flex-col relative">
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
         <button
@@ -156,6 +157,7 @@ export default function SkillMapScreen({
           Back to Main Screen 🏔️
         </button>
       </footer>
+      </div>
     </div>
   );
 }
