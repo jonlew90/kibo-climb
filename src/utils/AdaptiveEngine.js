@@ -1,4 +1,4 @@
-import { getKFactor, getProbeTargetTier } from './SkillTreeConfig.js';
+import { getKFactor, getProbeTargetTier, getStrandForRating, SKILL_STRANDS } from './SkillTreeConfig.js';
 
 /**
  * Determines whether a probe question should be served.
@@ -71,28 +71,7 @@ export function evaluateAdaptiveAttempt({
   let multiplier = 1.0;
   let streakBannerText = null;
 
-  if (isCorrect) {
-    if (nextInSessionStreak >= 5) {
-      multiplier = 1.5;
-    }
-    if (isProbeQuestion) {
-      bonusSparks = 10;
-      streakBannerText = '🚀 Probe Mastered! Skill Jump Unlocked (+120 Competence!)';
-    } else if (nextInSessionStreak === 3) {
-      bonusSparks = 5;
-      streakBannerText = '🔥 On Fire! 3 In-a-Row (+5 Bonus Sparks!)';
-    } else if (nextInSessionStreak === 5) {
-      bonusSparks = 5;
-      streakBannerText = '⚡ 5 Streak! 1.5x Sparks Multiplier Activated!';
-    } else if (nextInSessionStreak === 10) {
-      bonusSparks = 10;
-      streakBannerText = '🏆 Precision Streak! 10 Correct in a Row!';
-    }
-  }
-
-  const totalSparksEarned = Math.round(baseSparks * multiplier) + bonusSparks;
-
-  // 6. Adaptive ELO-style Skill Rating System
+  // 5. Adaptive ELO-style Skill Rating System First (so we can use rankDelta in the banner)
   const problemTarget = getTierTargetRating(problemTier || 1);
 
   // Calculate Expected Score based on difference in rating (400 points = 10x difference in odds)
@@ -122,8 +101,47 @@ export function evaluateAdaptiveAttempt({
   // Round delta and apply floor bounds
   let rankDelta = Math.round(rawDelta);
 
+  // PREVENT VAULTING: Ensure a single rating jump doesn't vault past the NEXT tier entirely.
+  const currentStrand = getStrandForRating(currentCompetenceRank);
+  // Find the tier directly above the current tier
+  const nextStrand = SKILL_STRANDS.find(s => s.tier === currentStrand.tier + 1);
+
+  let nextCompetenceRank = currentCompetenceRank + rankDelta;
+
+  if (nextStrand && nextCompetenceRank > nextStrand.ratingBand.max) {
+    // Cap the resulting rating to the max rating of the NEXT tier.
+    // This forces the user to at least land in the next tier before climbing higher.
+    nextCompetenceRank = nextStrand.ratingBand.max;
+    rankDelta = nextCompetenceRank - currentCompetenceRank;
+  }
+
   // Ensure we don't drop below 50 absolute rating
-  const nextCompetenceRank = Math.max(50, currentCompetenceRank + rankDelta);
+  if (nextCompetenceRank < 50) {
+      nextCompetenceRank = 50;
+      rankDelta = nextCompetenceRank - currentCompetenceRank;
+  }
+
+  // 6. In-Session Bonus Multipliers & Rewards (using calculated rankDelta for Probe UX)
+  if (isCorrect) {
+    if (nextInSessionStreak >= 5) {
+      multiplier = 1.5;
+    }
+    if (isProbeQuestion) {
+      bonusSparks = 10;
+      streakBannerText = `🚀 Probe Mastered! Skill Jump Unlocked (+${rankDelta} Competence!)`;
+    } else if (nextInSessionStreak === 3) {
+      bonusSparks = 5;
+      streakBannerText = '🔥 On Fire! 3 In-a-Row (+5 Bonus Sparks!)';
+    } else if (nextInSessionStreak === 5) {
+      bonusSparks = 5;
+      streakBannerText = '⚡ 5 Streak! 1.5x Sparks Multiplier Activated!';
+    } else if (nextInSessionStreak === 10) {
+      bonusSparks = 10;
+      streakBannerText = '🏆 Precision Streak! 10 Correct in a Row!';
+    }
+  }
+
+  const totalSparksEarned = Math.round(baseSparks * multiplier) + bonusSparks;
 
   return {
     isCorrect,
