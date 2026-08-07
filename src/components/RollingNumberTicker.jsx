@@ -11,22 +11,27 @@ export default function RollingNumberTicker({
   label = '',
   className = '',
   icon = null,
-  showDeltaBadge = true
+  showDeltaBadge = true,
+  profileId = null
 }) {
   const [displayValue, setDisplayValue] = useState(value);
   const [deltaEffect, setDeltaEffect] = useState(null);
   const prevValueRef = useRef(value);
+  const prevProfileIdRef = useRef(profileId);
 
   useEffect(() => {
     const prev = prevValueRef.current;
     const diff = value - prev;
+    const isProfileChange = prevProfileIdRef.current !== profileId;
 
     if (diff !== 0) {
-      setDeltaEffect({
-        diff,
-        isPositive: diff > 0,
-        id: Date.now()
-      });
+      if (!isProfileChange) {
+        setDeltaEffect({
+          diff,
+          isPositive: diff > 0,
+          id: Date.now()
+        });
+      }
 
       // Rapid Slot Machine Rolling Effect (Steps over 500ms)
       const steps = 8;
@@ -50,6 +55,7 @@ export default function RollingNumberTicker({
       }, 1400);
 
       prevValueRef.current = value;
+      prevProfileIdRef.current = profileId;
 
       return () => {
         clearInterval(interval);
@@ -57,8 +63,9 @@ export default function RollingNumberTicker({
       };
     } else {
       setDisplayValue(value);
+      prevProfileIdRef.current = profileId;
     }
-  }, [value]);
+  }, [value, profileId]);
 
   return (
     <div className={`relative inline-flex items-center gap-1 select-none ${className}`}>

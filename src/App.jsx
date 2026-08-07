@@ -85,6 +85,7 @@ export default function App() {
     const sData = storageService.getShopState();
     const cRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
 
+    setActiveProfileId(storageService.getActiveProfileId());
     setLiveCompetenceRating(cRating);
     setTier(uData.tier || 1);
     setUnlockedTiers(uData.unlockedTiers || [1]);
@@ -197,6 +198,10 @@ export default function App() {
   // Persistent Tier Mastery Percent (0, 25, 50, 75, 100)
   const [tierMasteryPercent, setTierMasteryPercent] = useState(() => {
     return storageService.getUserData().tierMasteryPercent || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
+  });
+
+  const [activeProfileId, setActiveProfileId] = useState(() => {
+    return storageService.getActiveProfileId();
   });
 
   // Persistent Tier Best Completion Times in Seconds
@@ -1397,6 +1402,7 @@ export default function App() {
               <RollingNumberTicker
                 value={sparks}
                 icon={<Zap className="w-3 h-3 text-amber-500 fill-amber-400 stroke-[2.5]" />}
+                profileId={activeProfileId}
               />
             </div>
 
@@ -1416,6 +1422,7 @@ export default function App() {
                     value={liveCompetenceRating}
                     showDeltaBadge={true}
                     icon={<Trophy className="w-3 h-3 text-purple-600 stroke-[2.5]" />}
+                    profileId={activeProfileId}
                   />
                 </button>
               );
