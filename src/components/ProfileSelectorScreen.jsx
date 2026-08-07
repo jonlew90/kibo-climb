@@ -230,7 +230,8 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[900] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 flex flex-col items-center justify-center p-4 select-none overflow-hidden">
+    <div className="fixed inset-0 z-[900] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 select-none overflow-hidden">
+      <div className="w-full h-full max-w-lg mx-auto flex flex-col items-center justify-center p-4 relative">
 
 
       {onClose && (
@@ -304,6 +305,7 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose }) {
         <p className="text-[10px] text-slate-600 font-medium text-center mt-2">
           Manage profiles · schedule · settings in the Parent Zone
         </p>
+      </div>
       </div>
     </div>
   );

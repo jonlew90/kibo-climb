@@ -765,7 +765,8 @@ export default function AdaptiveSessionView({
   }
 
   return (
-    <div className="w-full h-full flex-1 min-h-0 flex flex-col items-center justify-between py-1 px-1 sm:px-2 max-w-lg mx-auto relative overflow-hidden animate-pop">
+    <div className="w-full h-full flex-1 min-h-0 relative overflow-hidden animate-pop">
+      <div className="w-full h-full flex flex-col items-center justify-between py-1 px-1 sm:px-2 max-w-lg mx-auto relative">
 
       {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
       {celebrationEvent && (
@@ -1018,6 +1019,7 @@ export default function AdaptiveSessionView({
           operatorSymbol={currentProblem.operatorSymbol}
           options={currentProblem.options}
         />
+      </div>
       </div>
     </div>
   );

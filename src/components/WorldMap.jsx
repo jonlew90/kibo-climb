@@ -105,7 +105,8 @@ export default function WorldMap({
   const isSelectedLocked = selectedNodeTier ? selectedNodeTier > currentTier && !unlockedTiers.includes(selectedNodeTier) : false;
 
   return (
-    <div className="w-full flex-1 flex flex-col items-center justify-between py-3 px-2 sm:px-4 max-w-lg mx-auto animate-pop relative">
+    <div className="w-full flex-1 animate-pop relative">
+      <div className="w-full h-full flex flex-col items-center justify-between py-3 px-2 sm:px-4 max-w-lg mx-auto relative">
       {/* Sticky Header with Frosted Glass & Test Out Button */}
       <header className="sticky top-0 z-50 w-full flex items-center justify-between px-3 py-2.5 bg-white/95 backdrop-blur-md border-b-2 border-slate-100/90 shadow-sm shrink-0 rounded-2xl mb-1.5 transition-all duration-300">
         <div className="flex items-center gap-2">
@@ -488,6 +489,7 @@ export default function WorldMap({
         }}
         onClose={() => setShowTierIntroModal(false)}
       />
+      </div>
     </div>
   );
 }
