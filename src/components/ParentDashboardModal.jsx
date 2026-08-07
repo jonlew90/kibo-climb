@@ -56,7 +56,7 @@ export default function ParentDashboardModal({
   const [liveUserData, setLiveUserData] = useState(() => storageService.getUserData());
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
   const [profilesList, setProfilesList] = useState(() => storageService.getAllProfiles());
-  const [activeProfileId, setActiveProfileId] = useState(() => storageService.getActiveProfileId());
+  const [viewingProfileId, setViewingProfileId] = useState(() => storageService.getActiveProfileId());
   const [showNewChildInput, setShowNewChildInput] = useState(false);
   const [newChildName, setNewChildName] = useState('');
   const [newChildGrade, setNewChildGrade] = useState('Grade 1–2');
@@ -70,11 +70,10 @@ export default function ParentDashboardModal({
 
   const handleSwitchProfile = (pId) => {
     soundFx.playKeyTap();
-    storageService.setActiveProfileId(pId);
-    setActiveProfileId(pId);
-    setLiveUserData(storageService.getUserData());
+    setViewingProfileId(pId);
+    const profile = storageService.getProfileById(pId);
+    setLiveUserData(profile ? profile.userData : storageService.getUserData());
     setShowEditProfile(false);
-    if (onProfileSwitch) onProfileSwitch();
   };
 
   const handleCreateProfile = (e) => {
@@ -83,16 +82,15 @@ export default function ParentDashboardModal({
     soundFx.playVictory();
     const newProf = storageService.createProfile(newChildName.trim(), newChildGrade);
     setProfilesList(storageService.getAllProfiles());
-    setActiveProfileId(newProf.id);
-    setLiveUserData(storageService.getUserData());
+    setViewingProfileId(newProf.id);
+    setLiveUserData(newProf.userData);
     setNewChildName('');
     setShowNewChildInput(false);
-    if (onProfileSwitch) onProfileSwitch();
   };
 
   const handleOpenEditProfile = () => {
     soundFx.playKeyTap();
-    const activeProf = profilesList.find((p) => p.id === activeProfileId) || storageService.getActiveProfile();
+    const activeProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getActiveProfile();
     setEditChildName(activeProf.name || 'Kibo Climber');
     setShowEditProfile((prev) => !prev);
   };
@@ -101,7 +99,7 @@ export default function ParentDashboardModal({
     e.preventDefault();
     if (!editChildName.trim()) return;
     soundFx.playVictory();
-    storageService.updateProfile(activeProfileId, { name: editChildName.trim() });
+    storageService.updateProfile(viewingProfileId, { name: editChildName.trim() });
     setProfilesList(storageService.getAllProfiles());
     setLiveUserData(storageService.getUserData());
     setShowEditProfile(false);
@@ -118,8 +116,9 @@ export default function ParentDashboardModal({
       const updatedList = storageService.getAllProfiles();
       setProfilesList(updatedList);
       const newActive = storageService.getActiveProfileId();
-      setActiveProfileId(newActive);
-      setLiveUserData(storageService.getUserData());
+      setViewingProfileId(newActive);
+      const profile = storageService.getProfileById(newActive);
+      setLiveUserData(profile ? profile.userData : storageService.getUserData());
       setShowEditProfile(false);
       if (onProfileSwitch) onProfileSwitch();
     }
@@ -138,14 +137,14 @@ export default function ParentDashboardModal({
 
   useEffect(() => {
     if (!isOpen) return;
-
-    setLiveUserData(storageService.getUserData());
-    const interval = setInterval(() => {
-      setLiveUserData(storageService.getUserData());
-    }, 3000);
-
+    const fetchUserData = () => {
+      const p = storageService.getProfileById(viewingProfileId);
+      setLiveUserData(p ? p.userData : storageService.getUserData());
+    };
+    fetchUserData();
+    const interval = setInterval(fetchUserData, 3000);
     return () => clearInterval(interval);
-  }, [isOpen]);
+  }, [isOpen, viewingProfileId]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -246,7 +245,7 @@ export default function ParentDashboardModal({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-purple-800">
               <Users className="w-4 h-4 stroke-[2.5]" />
-              <span className="text-xs font-black uppercase tracking-wider">Active Child Profile</span>
+              <span className="text-xs font-black uppercase tracking-wider">Viewing Child Profile</span>
             </div>
             <div className="flex items-center gap-1.5">
               <button
@@ -288,7 +287,7 @@ export default function ParentDashboardModal({
               {profilesList.length > 1 && (
                 <button
                   type="button"
-                  onClick={() => handleDeleteProfile(activeProfileId)}
+                  onClick={() => handleDeleteProfile(viewingProfileId)}
                   className="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 font-extrabold text-xs rounded-xl border border-rose-300 transition-colors shrink-0"
                   title="Delete this profile"
                 >
@@ -327,7 +326,7 @@ export default function ParentDashboardModal({
           {/* Profile Selector Pills */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             {profilesList.map((p) => {
-              const isActive = p.id === activeProfileId;
+              const isActive = p.id === viewingProfileId;
               const childRating = p.userData?.adaptiveCompetenceRating || p.userData?.competenceRank || 1000;
               const displayGrade = getGradeLevelFromRating(childRating);
               return (
@@ -391,8 +390,8 @@ export default function ParentDashboardModal({
               const activeUserData = liveUserData || storageService.getUserData();
               const historyList = activeUserData.sprintHistory || [];
               const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec) || 0), 0);
-              const childStreak = activeUserData.streak ?? streak ?? 1;
-              const childTotalSolved = activeUserData.totalProblemsSolved ?? totalProblemsSolved ?? 0;
+              const childStreak = activeUserData.streak ?? 1;
+              const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
               const childRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = getTierFromRating(childRating);
               const rankTitle = getCompetenceRankTier(childRating);
@@ -508,7 +507,7 @@ export default function ParentDashboardModal({
               const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = getTierFromRating(actualRating);
-              const childTotalSolved = activeUserData.totalProblemsSolved ?? totalProblemsSolved ?? 0;
+              const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
               const rankTitle = getCompetenceRankTier(actualRating);
               const gradeLvl = getGradeLevelFromRating(actualRating);
 
@@ -540,7 +539,7 @@ export default function ParentDashboardModal({
               const activeUserData = liveUserData || storageService.getUserData();
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = getTierFromRating(actualRating);
-              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating, activeUserData.ratingHistory || []);
+              const adaptiveProfile = calculateAdaptiveCompetenceProfile(activeUserData.sprintHistory || [], currentMathTier, actualRating, activeUserData.ratingHistory || []);
               const { skillStrandBreakdown } = adaptiveProfile;
 
               const statusColor = (status) => {
@@ -617,7 +616,8 @@ export default function ParentDashboardModal({
 
               <div className="grid grid-cols-7 gap-1">
                 {DAYS_OF_WEEK.map((d) => {
-                  const isActive = practiceDays.includes(d.idx);
+                  const profileDays = storageService.getProfileById(viewingProfileId)?.practiceDays || [1, 2, 3, 4, 5];
+                  const isActive = profileDays.includes(d.idx);
                   return (
                     <button
                       key={d.idx}
@@ -626,12 +626,12 @@ export default function ParentDashboardModal({
                         soundFx.playKeyTap();
                         let newDays;
                         if (isActive) {
-                          if (practiceDays.length === 1) return;
-                          newDays = practiceDays.filter((idx) => idx !== d.idx);
+                          if (profileDays.length === 1) return;
+                          newDays = profileDays.filter((idx) => idx !== d.idx);
                         } else {
-                          newDays = [...practiceDays, d.idx].sort();
+                          newDays = [...profileDays, d.idx].sort();
                         }
-                        onUpdatePracticeDays(newDays);
+                        storageService.saveProfilePracticeDays(viewingProfileId, newDays);
                       }}
                       className={`py-2 text-xs font-black rounded-xl border-2 transition-all ${
                         isActive
