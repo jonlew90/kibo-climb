@@ -998,19 +998,6 @@ export default function ParentDashboardModal({
           if (onAccountLinked) onAccountLinked(user, newSparks);
         }}
       />
-
-      {/* STICKY BOTTOM ACTION FOOTER */}
-      <footer className="w-full bg-white/95 border-t-2 border-purple-200 p-3 sm:p-4 backdrop-blur-md shrink-0 flex items-center justify-center z-10">
-        <button
-          onClick={() => {
-            soundFx.playKeyTap();
-            onClose();
-          }}
-          className="w-full max-w-sm bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-base py-3 px-8 rounded-2xl shadow-lg shadow-purple-500/30 border-b-4 border-purple-800 active:translate-y-0.5 active:border-b-0 transition-all text-center"
-        >
-          Exit Parent Zone 🔒
-        </button>
-      </footer>
     </div>
   );
 }
