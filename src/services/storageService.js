@@ -44,6 +44,7 @@ const DEFAULT_PROFILE = {
       mostPerfectSessions: 0
     },
     lastSprintDate: null,
+    hasVisitedParentZone: false,
     practiceQueue: [],
     sprintHistory: [],
     unlockedBadges: [],
