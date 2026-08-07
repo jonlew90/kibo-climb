@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Lock, ChevronRight, Flame, Star, Zap, ArrowLeft, CheckCircle2, User } from 'lucide-react';
+import { Plus, Lock, ChevronRight, Flame, Star, Zap, ArrowLeft, CheckCircle2, User, X } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
@@ -209,7 +209,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
 }
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
-export default function ProfileSelectorScreen({ onSelectProfile }) {
+export default function ProfileSelectorScreen({ onSelectProfile, onClose }) {
   const [profiles, setProfiles] = useState(() => storageService.getAllProfiles());
   const [selectedId, setSelectedId] = useState(null);
   const [showAddPanel, setShowAddPanel] = useState(false);
@@ -231,6 +231,19 @@ export default function ProfileSelectorScreen({ onSelectProfile }) {
 
   return (
     <div className="fixed inset-0 z-[900] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 flex flex-col items-center justify-center p-4 select-none overflow-hidden">
+
+
+      {onClose && (
+        <button
+          onClick={() => {
+            soundFx.playKeyTap();
+            onClose();
+          }}
+          className="absolute top-4 right-4 z-50 p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10"
+        >
+          <X className="w-5 h-5 stroke-[2.5]" />
+        </button>
+      )}
 
       <div className="absolute top-0 left-1/4 w-80 h-80 rounded-full bg-purple-600/10 blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-amber-500/8 blur-3xl pointer-events-none" />

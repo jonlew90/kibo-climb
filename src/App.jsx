@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck, Compass, MapPin } from 'lucide-react';
+import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck, Compass, MapPin, Users } from 'lucide-react';
 import Mascot from './components/Mascot';
 import Keypad from './components/Keypad';
 import ConfettiCanvas from './components/ConfettiCanvas';
@@ -129,6 +129,9 @@ export default function App() {
     const hasOnboarded = !!localStorage.getItem('kibo_math_has_onboarded') || !!localStorage.getItem('kibo_math_tier');
     return hasOnboarded;
   });
+
+  // Manual Profile Switcher State
+  const [showManualProfileSwitcher, setShowManualProfileSwitcher] = useState(false);
 
   // Consecutive problem miss tracking for Micro-Hints
   const [consecutiveProblemMisses, setConsecutiveProblemMisses] = useState(0);
@@ -1443,6 +1446,19 @@ export default function App() {
               <span className="text-[10px]">{unlockedBadges.length}</span>
             </button>
 
+            {storageService.getAllProfiles().length > 1 && (
+              <button
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setShowManualProfileSwitcher(true);
+                }}
+                className="flex items-center gap-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1.5 rounded-xl text-xs font-black shadow-xs transition-all active:scale-95 shrink-0"
+                title="Switch Profile"
+              >
+                <Users className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span className="hidden sm:inline">Switch</span>
+              </button>
+            )}
             <button
               onClick={() => setShowPinGateModal(true)}
               className="p-1.5 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl text-purple-700 active:scale-95 transition-all shadow-2xs shrink-0"
@@ -1504,6 +1520,18 @@ export default function App() {
             syncAppStateWithStorage();
             setShowProfileSelector(false);
           }}
+        />
+      )}
+
+
+      {/* MANUAL PROFILE SELECTOR */}
+      {showManualProfileSwitcher && (
+        <ProfileSelectorScreen
+          onSelectProfile={(profile) => {
+            syncAppStateWithStorage();
+            setShowManualProfileSwitcher(false);
+          }}
+          onClose={() => setShowManualProfileSwitcher(false)}
         />
       )}
 
