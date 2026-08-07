@@ -109,32 +109,41 @@ export default function WorldMap({
       <div className="w-full h-full flex flex-col items-center justify-between py-3 px-2 sm:px-4 max-w-lg mx-auto relative">
       {/* Sticky Header with Frosted Glass & Test Out Button */}
       <header className="sticky top-0 z-50 w-full flex items-center justify-between px-3 py-2.5 bg-white/95 backdrop-blur-md border-b-2 border-slate-100/90 shadow-sm shrink-0 rounded-2xl mb-1.5 transition-all duration-300">
-        <div className="flex items-center gap-2">
+        {/* 5. Mount Kibo Ascent Title Button: Sky Blue / Ocean Cyan */}
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playKeyTap();
+            setShowSkillTree(true);
+          }}
+          className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-sky-950 bg-gradient-to-r from-sky-100 via-blue-100 to-cyan-100 px-3 py-1 rounded-full border-2 border-sky-400 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          title="Mount Kibo Ascent Map"
+        >
           <img
             src="/logo.png"
             alt="Kibo Climb"
-            className="w-7 h-7 object-contain filter drop-shadow-xs"
+            className="w-5 h-5 object-contain filter drop-shadow-xs"
           />
-          <span className="text-xs font-black uppercase tracking-wider text-amber-950 bg-amber-100/90 px-3 py-1 rounded-full border border-amber-300 shadow-xs">
-            Mount Kibo Ascent 🏔️
-          </span>
-        </div>
+          <span>Mount Kibo Ascent 🏔️</span>
+        </button>
 
+        {/* 6. Test Out Button: Vibrant Jade / Emerald */}
         <button
+          type="button"
           onClick={() => {
             soundFx.playKeyTap();
             setShowPlacementIntroModal(true);
           }}
-          className="px-3 py-1.5 bg-gradient-to-b from-amber-200 via-yellow-300 to-amber-400 border-2 border-amber-500 rounded-2xl text-amber-950 font-black text-xs hover:from-amber-100 hover:to-amber-300 active:scale-95 transition-all shadow-md flex items-center gap-1.5"
+          className="px-3 py-1.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-emerald-950 font-black text-xs border-2 border-teal-300 rounded-2xl hover:from-emerald-300 hover:to-teal-300 hover:scale-105 active:scale-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
           title="Skip levels you've already mastered"
         >
-          <Target className="w-4 h-4 text-amber-900 fill-amber-300 stroke-[2.5]" />
+          <Target className="w-4 h-4 text-emerald-900 fill-teal-200 stroke-[2.5]" />
           <span>Test Out 🎯</span>
         </button>
       </header>
 
       {/* Winding Mount Kibo Trail Container */}
-      <div className="w-full flex-1 overflow-y-auto pr-1 my-2 py-4 relative flex flex-col items-center">
+      <div className="w-full flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain pr-1 my-2 py-4 relative flex flex-col items-center">
 
         {/* 8-Tier Path Nodes with 3D Clay Badges */}
         <div className="w-full max-w-sm space-y-7 relative px-4 z-10">
@@ -180,7 +189,7 @@ export default function WorldMap({
                         </div>
 
                         {/* Scaled-Up Kibo Character Graphic */}
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 filter drop-shadow-md">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 filter drop-shadow-md overflow-visible p-0.5">
                           <Mascot mood="happy" equipped={equippedItems} className="w-full h-full" />
                         </div>
                       </div>

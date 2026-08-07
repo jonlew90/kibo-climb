@@ -766,7 +766,7 @@ export default function AdaptiveSessionView({
 
   return (
     <div className="w-full h-full flex-1 min-h-0 relative overflow-hidden animate-pop">
-      <div className="w-full h-full flex flex-col items-center justify-between py-1 px-1 sm:px-2 max-w-lg mx-auto relative">
+      <div className="w-full h-full flex flex-col items-center justify-between py-1 px-1 sm:px-2 max-w-4xl mx-auto relative">
 
       {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
       {celebrationEvent && (
@@ -835,8 +835,8 @@ export default function AdaptiveSessionView({
           className="cursor-pointer hover:scale-105 transition-transform"
           title="Tap Kibo to open Kibo's Corner!"
         >
-          <div className="flex justify-center my-0.5 shrink-0">
-            <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-16 h-16 sm:w-24 sm:h-24 mascot-compact-auto filter drop-shadow-lg" />
+          <div className="flex justify-center my-0.5 shrink-0 overflow-visible p-1">
+            <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-24 h-24 sm:w-32 sm:h-32 mascot-compact-auto filter drop-shadow-lg" />
           </div>
         </div>
 
@@ -1007,7 +1007,7 @@ export default function AdaptiveSessionView({
       </div>
 
       {/* NUMERIC KEYPAD (AUTO-DETECTING & TYPE AWARE) */}
-      <div className="w-full max-w-sm mt-3 shrink-0">
+      <div className="w-full max-w-sm shrink-0">
         <Keypad
           onDigit={handleDigitInput}
           onDelete={handleDeleteDigit}

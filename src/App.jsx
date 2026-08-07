@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck, Compass, MapPin, Users } from 'lucide-react';
+import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck, Compass, MapPin, Users, Mountain } from 'lucide-react';
 import Mascot from './components/Mascot';
 import Keypad from './components/Keypad';
 import ConfettiCanvas from './components/ConfettiCanvas';
@@ -1360,20 +1360,114 @@ export default function App() {
     return uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
   });
 
+  const renderNavigationFooter = () => (
+    <footer className="sticky bottom-0 z-40 w-full bg-white/95 backdrop-blur-md border-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-around shadow-sm rounded-2xl mt-auto mt-2 shrink-0 gap-1 sm:gap-2">
+      {/* 0. Climb (Home) Button: Emerald Green */}
+      <button
+        type="button"
+        onClick={() => {
+          soundFx.playKeyTap();
+          if (isWorkshopOpen) setIsWorkshopOpen(false);
+          if (showBadgesModal) setShowBadgesModal(false);
+          setAppState('adaptive_session');
+        }}
+        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+          !isWorkshopOpen && !showBadgesModal && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-105 font-bold' : ''
+        }`}
+        aria-label="Return to Main Climb Session"
+        title="Main Mountain Climb"
+      >
+        <Mountain className="w-5 h-5 text-emerald-700 stroke-[2.5]" />
+        <span className="text-[10px] font-black tracking-wide">Climb</span>
+      </button>
+
+      {/* 1. Shop Button: Warm Orange / Amber */}
+      <button
+        type="button"
+        onClick={() => handleOpenWorkshop()}
+        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-amber-100 via-orange-50 to-amber-100 text-amber-950 border-2 border-amber-400 rounded-xl hover:from-amber-200 hover:to-orange-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+          isWorkshopOpen ? 'ring-2 ring-amber-500 scale-105 font-bold' : ''
+        }`}
+        aria-label="Open Kibo's Corner"
+        title="Kibo's Workshop & Shop"
+      >
+        <ShoppingBag className="w-5 h-5 text-amber-700 stroke-[2.5]" />
+        <span className="text-[10px] font-black tracking-wide">Shop</span>
+      </button>
+
+      {/* 2. Trophies Button: Golden Yellow */}
+      <button
+        type="button"
+        onClick={() => {
+          soundFx.playKeyTap();
+          setShowBadgesModal(true);
+        }}
+        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-yellow-100 via-amber-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-amber-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+          showBadgesModal ? 'ring-2 ring-yellow-500 scale-105 font-bold' : ''
+        }`}
+        title="View Trophies & Badges"
+      >
+        <Award className="w-5 h-5 text-yellow-700 stroke-[2.5]" />
+        <span className="text-[10px] font-black tracking-wide">Trophies</span>
+      </button>
+
+      {/* 3. Switch Profile Button: Ocean Cyan / Sky Blue */}
+      {storageService.getAllProfiles().length > 1 && (
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playKeyTap();
+            setShowManualProfileSwitcher(true);
+          }}
+          className="flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-sky-100 via-cyan-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-cyan-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem]"
+          title="Switch Player Profile"
+        >
+          <Users className="w-5 h-5 text-sky-700 stroke-[2.5]" />
+          <span className="text-[10px] font-black tracking-wide">Switch</span>
+        </button>
+      )}
+
+      {/* 4. Parents Button: Royal Purple */}
+      <button
+        type="button"
+        onClick={() => setShowPinGateModal(true)}
+        className="flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem]"
+        title="Parent Dashboard & Settings"
+      >
+        <Lock className="w-5 h-5 text-purple-700 stroke-[2.5]" />
+        <span className="text-[10px] font-black tracking-wide">Parents</span>
+      </button>
+
+      {/* 5. Mute Button: Rose Red / Pink */}
+      <button
+        type="button"
+        onClick={toggleAudio}
+        className="flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-rose-100 via-pink-50 to-rose-100 text-rose-950 border-2 border-rose-400 rounded-xl hover:from-rose-200 hover:to-pink-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem]"
+        aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
+        title={isMuted ? 'Unmute Sound' : 'Mute Sound'}
+      >
+        {isMuted ? <VolumeX className="w-5 h-5 text-rose-600 stroke-[2.5]" /> : <Volume2 className="w-5 h-5 text-rose-700 stroke-[2.5]" />}
+        <span className="text-[10px] font-black tracking-wide">{isMuted ? 'Unmute' : 'Mute'}</span>
+      </button>
+    </footer>
+  );
+
   return (
     <div className="app-viewport-root w-full h-full relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
-      <div className="w-full h-full max-w-lg mx-auto flex flex-col p-2 sm:p-4 safe-pt relative">
+      <div className="w-full h-full max-w-4xl mx-auto flex flex-col p-2 sm:p-4 safe-pt relative">
       {/* Sticky Top HUD Header Bar */}
       {appState !== 'sprint' && (
         <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1.5 overflow-x-auto hide-scrollbar">
           {/* Brand Logo & Stats */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0 w-full justify-between">
+            {/* 1. Brand Button: Warm Amber / Orange */}
             <button
+              type="button"
               onClick={() => {
                 soundFx.playKeyTap();
                 setAppState('adaptive_session');
               }}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 font-black text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border border-amber-300"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 font-black text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border-2 border-amber-300 hover:border-amber-400"
               title="Kibo Climb Main Session"
             >
               <img
@@ -1384,48 +1478,58 @@ export default function App() {
               <span className="tracking-tight font-black">Kibo Climb</span>
             </button>
 
-            {/* Streak Badge */}
-            <div
-              className="flex items-center gap-0.5 bg-amber-50 text-amber-900 border border-amber-200 px-1.5 py-0.5 rounded-full text-[11px] font-black shadow-2xs shrink-0 cursor-pointer"
-              title={(consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0 ? "Daily Streak & Shield Active! 🛡️" : `Daily Streak: ${streak} days`}
+            {/* 2. Streak Badge Button: Fiery Rose / Red with spelled out day/days pluralization */}
+            <button
+              type="button"
+              className="flex items-center gap-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 text-white border-2 border-rose-300 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[11px] font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
+              title={(consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0 ? "Daily Streak & Shield Active! 🛡️" : `Daily Streak: ${streak} ${streak === 1 ? 'day' : 'days'}`}
               onClick={() => {
                 soundFx.playKeyTap();
                 setShowBadgesModal(true);
               }}
             >
-              <Flame className="w-3 h-3 text-amber-500 fill-amber-400" />
-              <span>{streak}d</span>
+              <Flame className="w-3.5 h-3.5 text-amber-300 fill-amber-300 shrink-0" />
+              <span>{streak} {streak === 1 ? 'day' : 'days'}</span>
               {((consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0) && (
                 <span className="text-[10px] ml-0.5 animate-pulse" title="Kibo Shield Active">🛡️</span>
               )}
-            </div>
+            </button>
 
-            {/* Sparks Counter */}
-            <div className="flex items-center gap-0.5 bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full text-[11px] font-black shadow-2xs relative shrink-0 overflow-visible">
+            {/* 3. Sparks Counter Button: Spark Gold / Yellow */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                handleOpenWorkshop('adaptive_session');
+              }}
+              className="flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[11px] font-black shadow-xs hover:scale-105 active:scale-95 transition-all relative shrink-0 overflow-visible cursor-pointer"
+              title="Open Kibo Workshop"
+            >
               <RollingNumberTicker
                 value={sparks}
-                icon={<Zap className="w-3 h-3 text-amber-500 fill-amber-400 stroke-[2.5]" />}
+                icon={<Zap className="w-3.5 h-3.5 text-amber-800 fill-amber-500 stroke-[2.5]" />}
                 profileId={activeProfileId}
               />
-            </div>
+            </button>
 
             <div className="flex items-center gap-1 sm:gap-2">
-              {/* Always-Visible Competence Rank Badge */}
+              {/* 4. Competence Rank Button: Royal Purple / Violet */}
               {(() => {
                 const rankTitle = getCompetenceRankTier(liveCompetenceRating);
                 return (
                   <button
+                    type="button"
                     onClick={() => {
                       soundFx.playKeyTap();
                       setShowBadgesModal(true);
                     }}
-                    className="flex items-center gap-1 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 px-2 py-0.5 rounded-full text-[11px] font-black shadow-2xs transition-all active:scale-95 shrink-0 relative overflow-visible"
+                    className="flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[11px] font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
                     title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
                   >
                     <RollingNumberTicker
                       value={liveCompetenceRating}
                       showDeltaBadge={true}
-                      icon={<Trophy className="w-3 h-3 text-purple-600 stroke-[2.5]" />}
+                      icon={<Trophy className="w-3.5 h-3.5 text-purple-700 stroke-[2.5]" />}
                     />
                   </button>
                 );
@@ -1560,7 +1664,7 @@ export default function App() {
           </div>
 
           {/* Mascot Header */}
-          <div className="my-1 cursor-pointer" onClick={() => handleOpenWorkshop()} title="Click to customize Kibo!">
+          <div className="my-1 p-1 cursor-pointer overflow-visible flex justify-center" onClick={() => handleOpenWorkshop()} title="Click to customize Kibo!">
             <Mascot mood="happy" equipped={equippedItems} className="w-32 h-32 sm:w-36 sm:h-36" />
           </div>
 
@@ -1712,7 +1816,7 @@ export default function App() {
           </div>
 
           {/* Mascot & Math Display Area */}
-          <div className="w-full flex flex-col items-center my-auto">
+          <div className="w-full flex flex-col items-center my-auto overflow-visible p-1">
             <Mascot mood={mascotMood} equipped={equippedItems} className="w-20 h-20 sm:w-24 sm:h-24 mb-2" />
 
             {/* Problem Card */}
@@ -1789,7 +1893,7 @@ export default function App() {
         <main className="w-full flex-1 flex flex-col items-center justify-center gap-3 py-2 text-center animate-pop relative z-10">
           <ConfettiCanvas />
 
-          <div className="relative">
+          <div className="relative p-1 overflow-visible">
             <Mascot mood="celebrate" equipped={equippedItems} className="w-24 h-24 sm:w-28 sm:h-28" />
             <div className="absolute -bottom-1 -right-1 bg-amber-400 p-1.5 rounded-full border-2 border-white shadow-lg animate-bounce">
               <Trophy className="w-5 h-5 text-amber-900 fill-amber-300 stroke-[2.5]" />
@@ -1952,7 +2056,9 @@ export default function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
           <div className="w-full max-w-sm bg-white border-4 border-purple-400 rounded-3xl p-6 text-center shadow-2xl space-y-4">
             <ConfettiCanvas />
-            <Mascot mood="celebrate" equipped={equippedItems} className="w-28 h-28 mx-auto" />
+            <div className="p-1 overflow-visible flex justify-center">
+              <Mascot mood="celebrate" equipped={equippedItems} className="w-28 h-28 mx-auto" />
+            </div>
 
             <div className="space-y-1">
               <span className="text-xs font-black uppercase text-purple-600 tracking-wider bg-purple-50 px-3 py-1 rounded-full border border-purple-200 inline-block">
@@ -1989,7 +2095,9 @@ export default function App() {
       {showTestOutFailModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
           <div className="w-full max-w-sm bg-white border-4 border-amber-300 rounded-3xl p-6 text-center shadow-2xl space-y-4">
-            <Mascot mood="happy" equipped={equippedItems} className="w-24 h-24 mx-auto" />
+            <div className="p-1 overflow-visible flex justify-center">
+              <Mascot mood="happy" equipped={equippedItems} className="w-24 h-24 mx-auto" />
+            </div>
 
             <div className="space-y-1.5">
               <span className="text-xs font-black uppercase text-amber-700 tracking-wider bg-amber-50 px-3 py-1 rounded-full border border-amber-200 inline-block">
@@ -2109,6 +2217,7 @@ export default function App() {
             cumulativeCorrectStreak: cumulativeCorrectStreak
           };
         })()}
+        renderFooter={renderNavigationFooter}
       />
 
       {/* PARENT SPEED INFO MODAL (ℹ️) */}
@@ -2244,6 +2353,7 @@ export default function App() {
           setLinkModalMilestone('Shop Rewards');
           setShowAccountLinkModal(true);
         }}
+        renderFooter={renderNavigationFooter}
       />
 
       <MockCheckoutModal
@@ -2302,64 +2412,9 @@ export default function App() {
         }}
       />
 
-      </div>
       {/* Bottom Navigation Bar */}
-      {appState !== 'sprint' && (
-        <footer className="sticky bottom-0 z-40 w-full bg-white/95 backdrop-blur-md border-2 border-slate-200/80 px-2 pt-2 flex items-center justify-around shadow-sm rounded-2xl pb-safe-nav mt-auto shrink-0">
-          <button
-            onClick={() => handleOpenWorkshop()}
-            className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-amber-600 transition-colors active:scale-95"
-            aria-label="Open Kibo's Corner"
-          >
-            <ShoppingBag className="w-6 h-6 stroke-[2]" />
-            <span className="text-[10px] font-black tracking-wide">Shop</span>
-          </button>
-
-          <button
-            onClick={() => {
-              soundFx.playKeyTap();
-              setShowBadgesModal(true);
-            }}
-            className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-amber-500 transition-colors active:scale-95"
-          >
-            <Award className="w-6 h-6 stroke-[2]" />
-            <span className="text-[10px] font-black tracking-wide">Trophies</span>
-          </button>
-
-          {storageService.getAllProfiles().length > 1 && (
-            <button
-              onClick={() => {
-                soundFx.playKeyTap();
-                setShowManualProfileSwitcher(true);
-              }}
-              className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-slate-800 transition-colors active:scale-95"
-            >
-              <Users className="w-6 h-6 stroke-[2]" />
-              <span className="text-[10px] font-black tracking-wide">Switch</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => setShowPinGateModal(true)}
-            className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-purple-600 transition-colors active:scale-95"
-          >
-            <Lock className="w-6 h-6 stroke-[2]" />
-            <span className="text-[10px] font-black tracking-wide">Parents</span>
-          </button>
-
-          <button
-            onClick={toggleAudio}
-            className="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-slate-800 transition-colors active:scale-95"
-            aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
-          >
-            {isMuted ? <VolumeX className="w-6 h-6 text-rose-500 stroke-[2]" /> : <Volume2 className="w-6 h-6 stroke-[2]" />}
-            <span className="text-[10px] font-black tracking-wide">Mute</span>
-          </button>
-        </footer>
-      )}
-
-      {/* Spacing element to prevent bottom nav from covering content */}
-      {appState !== 'sprint' && <div className="h-20 shrink-0 w-full"></div>}
+      {appState !== 'sprint' && renderNavigationFooter()}
+      </div>
     </div>
   );
 }

@@ -239,10 +239,12 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
         {/* --- COMPANIONS & FX --- */}
         {itemId === 'sparkle_dust' && (
           <g>
-            <circle cx="35" cy="35" r="5" fill="#FBBF24" />
-            <circle cx="65" cy="30" r="7" fill="#38BDF8" />
-            <circle cx="50" cy="65" r="6" fill="#F472B6" />
-            <path d="M 30 65 L 35 60 L 40 65 L 35 70 Z" fill="#FBBF24" />
+            <ellipse cx="50" cy="25" rx="22" ry="7" fill="#CBD5E1" />
+            <path d="M 35 35 L 32 48" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" />
+            <path d="M 50 35 L 47 52" stroke="#0284C7" strokeWidth="3" strokeLinecap="round" />
+            <path d="M 65 35 L 62 46" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" />
+            <path d="M 42 55 L 39 68" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M 58 55 L 55 70" stroke="#7DD3FC" strokeWidth="2.5" strokeLinecap="round" />
           </g>
         )}
 
@@ -266,42 +268,55 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
 
         {itemId === 'fx_spin_dance' && (
           <g>
-            <circle cx="50" cy="50" r="28" fill="none" stroke="#F59E0B" strokeWidth="4" strokeDasharray="14 10" />
-            <polygon points="50,15 60,25 40,25" fill="#F59E0B" />
-            <polygon points="50,85 40,75 60,75" fill="#F59E0B" />
-            <circle cx="50" cy="50" r="8" fill="#FCD34D" />
+            <path d="M 25 50 A 25 25 0 1 1 75 50" fill="none" stroke="#F59E0B" strokeWidth="4" strokeDasharray="8 4" />
+            <polygon points="75,50 68,40 68,60" fill="#F59E0B" />
+            <circle cx="50" cy="50" r="14" fill="#FCD34D" stroke="#D97706" strokeWidth="2" />
           </g>
         )}
 
         {itemId === 'lightning_sparks' && (
           <g>
-            <ellipse cx="50" cy="50" rx="36" ry="36" fill="none" stroke="#38BDF8" strokeWidth="2" strokeDasharray="4 4" opacity="0.6" />
-            <polygon points="45,20 54,42 42,42 50,65 38,48 48,48" fill="#FACC15" stroke="#EAB308" strokeWidth="1.5" />
-            <polygon points="62,40 68,54 60,54 66,72" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
+            <circle cx="35" cy="55" r="14" fill="#FDE047" opacity="0.65" stroke="#CA8A04" strokeWidth="1.5" />
+            <circle cx="31" cy="51" r="4" fill="#FFFFFF" opacity="0.85" />
+            <circle cx="65" cy="42" r="18" fill="#38BDF8" opacity="0.65" stroke="#0284C7" strokeWidth="1.5" />
+            <circle cx="60" cy="37" r="5" fill="#FFFFFF" opacity="0.85" />
+            <circle cx="48" cy="70" r="10" fill="#F472B6" opacity="0.65" stroke="#DB2777" strokeWidth="1.5" />
+            <circle cx="45" cy="67" r="3" fill="#FFFFFF" opacity="0.85" />
           </g>
         )}
 
         {itemId === 'fx_hyper_speed' && (
           <g>
-            <path d="M 15 35 L 55 35 M 10 50 L 70 50 M 20 65 L 60 65" stroke="#06B6D4" strokeWidth="4" strokeLinecap="round" />
-            <polygon points="65,50 82,38 74,50 85,50 68,66 74,53" fill="#FACC15" />
+            <polygon points="50,25 20,85 40,85" fill="#F472B6" opacity="0.3" />
+            <polygon points="50,25 60,85 80,85" fill="#38BDF8" opacity="0.3" />
+            <line x1="50" y1="5" x2="50" y2="18" stroke="#64748B" strokeWidth="2" />
+            <circle cx="50" cy="25" r="12" fill="#E2E8F0" stroke="#475569" strokeWidth="1.5" />
+            <circle cx="46" cy="22" r="2" fill="#FFFFFF" />
+            <circle cx="54" cy="27" r="2" fill="#FFFFFF" />
           </g>
         )}
 
         {itemId === 'rainbow_nebula' && (
           <g>
-            <circle cx="50" cy="50" r="32" fill="none" stroke="url(#thumbLavaGrad)" strokeWidth="6" opacity="0.8" />
-            <circle cx="50" cy="50" r="24" fill="none" stroke="url(#thumbAuroraGrad)" strokeWidth="4" opacity="0.8" />
-            <polygon points="50,26 53,34 60,36 55,41 56,48 50,44 44,48 45,41 40,36 47,34" fill="#FEF08A" />
+            <line x1="50" y1="50" x2="20" y2="20" stroke="#EF4444" strokeWidth="3" strokeDasharray="4 3" />
+            <line x1="50" y1="50" x2="80" y2="20" stroke="#3B82F6" strokeWidth="3" strokeDasharray="4 3" />
+            <line x1="50" y1="50" x2="15" y2="70" stroke="#F59E0B" strokeWidth="3" strokeDasharray="4 3" />
+            <line x1="50" y1="50" x2="85" y2="70" stroke="#10B981" strokeWidth="3" strokeDasharray="4 3" />
+            <polygon points="50,35 53,44 62,44 55,50 58,58 50,53 42,58 45,50 38,44 47,44" fill="#FEF08A" />
+            <circle cx="20" cy="20" r="4" fill="#FCA5A5" />
+            <circle cx="80" cy="20" r="4" fill="#93C5FD" />
+            <circle cx="15" cy="70" r="4" fill="#FDE68A" />
+            <circle cx="85" cy="70" r="4" fill="#A7F3D0" />
           </g>
         )}
 
         {itemId === 'fx_orbit_moons' && (
           <g>
-            <ellipse cx="50" cy="50" rx="32" ry="16" fill="none" stroke="#60A5FA" strokeWidth="2.5" strokeDasharray="6 4" />
-            <circle cx="20" cy="45" r="5" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" />
-            <circle cx="80" cy="55" r="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="1" />
-            <circle cx="50" cy="34" r="4" fill="#F472B6" stroke="#DB2777" strokeWidth="1" />
+            <circle cx="50" cy="45" r="16" fill="#F59E0B" stroke="#B45309" strokeWidth="2.5" />
+            <circle cx="45" cy="42" r="3" fill="#FFFFFF" />
+            <path d="M 28 65 Q 38 52 50 65 Q 62 78 72 65" stroke="#EF4444" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+            <polygon points="26,62 34,58 32,68" fill="#EF4444" />
+            <polygon points="74,68 66,72 68,62" fill="#EF4444" />
           </g>
         )}
 

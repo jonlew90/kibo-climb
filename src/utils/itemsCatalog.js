@@ -265,11 +265,11 @@ export const WORKSHOP_ITEMS = [
   // VISUAL FX (Category: fx)
   {
     id: 'sparkle_dust',
-    name: 'Trail Sparkle Dust',
+    name: 'Rain Shower Drop',
     category: 'fx',
     cost: 45,
     rarity: 'common',
-    description: 'Magical sparkle dust floating around Kibo.'
+    description: 'Refreshing raindrops gently falling around Kibo.'
   },
   {
     id: 'fx_float_bounce',
@@ -294,43 +294,43 @@ export const WORKSHOP_ITEMS = [
     cost: 480,
     rarity: 'epic',
     requiredRank: 1150,
-    description: 'Kibo performs periodic victory twirls and joyful spins as you climb! Requires Rank 1150.'
+    description: 'Kibo performs joyful victory 3D twirls and spins! Requires Rank 1150.'
   },
   {
     id: 'lightning_sparks',
-    name: 'Electrified Aura',
+    name: 'Cosmic Bubble Floating',
     category: 'fx',
     cost: 550,
     rarity: 'epic',
     requiredRank: 1200,
-    description: 'High-voltage electric lightning energy crackling around Kibo! Requires Rank 1200.'
+    description: 'Iridescent glowing pastel bubbles gently floating and popping around Kibo! Requires Rank 1200.'
   },
   {
     id: 'fx_hyper_speed',
-    name: 'Sonic Speed Trail',
+    name: 'Disco Fever Spotlight',
     category: 'fx',
     cost: 750,
     rarity: 'epic',
     requiredRank: 1350,
-    description: 'Speedster motion blur energy lines pulsating behind Kibo! Requires Rank 1350.'
+    description: 'Groovy spinning disco ball illuminating Kibo with multi-color sparkling dance floor spotlights! Requires Rank 1350.'
   },
   {
     id: 'rainbow_nebula',
-    name: 'Rainbow Cosmic Nebula',
+    name: 'Rainbow Fireworks Burst',
     category: 'fx',
     cost: 1450,
     rarity: 'legendary',
     requiredRank: 1550,
-    description: 'Prismatic glowing celestial galaxy aura! Requires Competence Rank 1550.'
+    description: 'Spectacular multi-color rainbow fireworks exploding around Kibo! Requires Rank 1550.'
   },
   {
     id: 'fx_orbit_moons',
-    name: 'Orbital Moon Satellites',
+    name: 'Silly Boogie Dance Move',
     category: 'fx',
     cost: 1600,
     rarity: 'legendary',
     requiredRank: 1600,
-    description: 'Three miniature glowing moons orbit continuously around Kibo in 3D space! Requires Rank 1600.'
+    description: 'Silly boogie dance move with joyful body wiggles, side-steps, and hip bops! Requires Rank 1600.'
   },
 
   // KIBO SKINS (Category: skins)

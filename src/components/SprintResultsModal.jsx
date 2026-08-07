@@ -110,11 +110,11 @@ export default function SprintResultsModal({
       </header>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
-      <main className="flex-1 overflow-y-auto w-full max-w-xl mx-auto p-4 sm:p-6 space-y-6 flex flex-col items-center justify-center text-slate-800">
+      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-xl mx-auto p-4 sm:p-6 space-y-6 flex flex-col items-center justify-center text-slate-800">
         <div className="w-full bg-white border-4 border-amber-300 rounded-3xl p-5 sm:p-6 text-center shadow-2xl space-y-4">
 
         {/* Mascot Header */}
-        <div className="relative mx-auto w-24 h-24 sm:w-28 sm:h-28">
+        <div className="relative mx-auto w-24 h-24 sm:w-28 sm:h-28 p-1 overflow-visible">
           <Mascot mood="celebrate" equipped={equippedItems} className="w-24 h-24 sm:w-28 sm:h-28" />
           <div className="absolute -bottom-1 -right-1 bg-amber-400 p-1.5 rounded-full border-2 border-white shadow-lg animate-bounce">
             <Trophy className="w-5 h-5 text-amber-900 fill-amber-300 stroke-[2.5]" />

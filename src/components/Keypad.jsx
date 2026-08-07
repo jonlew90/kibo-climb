@@ -36,7 +36,7 @@ export default function Keypad({
 
   if (isBooleanQuestion) {
     return (
-      <div className="w-full max-w-sm mx-auto flex items-center justify-center gap-3.5 p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner">
+      <div className="w-full max-w-sm mx-auto flex items-center justify-center gap-3.5 p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner my-3 sm:my-4">
         <button
           onClick={() => {
             soundFx.playKeyTap();
@@ -82,7 +82,7 @@ export default function Keypad({
 
   if (isChoiceQuestion && choiceOptions && choiceOptions.length >= 2) {
     return (
-      <div className="w-full max-w-sm mx-auto flex items-center justify-center gap-3 p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner">
+      <div className="w-full max-w-sm mx-auto flex items-center justify-center gap-3 p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner my-3 sm:my-4">
         {choiceOptions.map((opt, idx) => (
           <button
             key={idx}
@@ -159,7 +159,7 @@ export default function Keypad({
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto grid grid-cols-3 gap-2 sm:gap-3 p-2 sm:p-3 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner">
+    <div className="w-full max-w-sm mx-auto grid grid-cols-3 gap-2 sm:gap-3 p-2 sm:p-3 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner my-3 sm:my-4">
       {keyGrid.flat().map((keyVal, idx) => {
         if (keyVal === ':') {
           return (

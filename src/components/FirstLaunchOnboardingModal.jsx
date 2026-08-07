@@ -136,10 +136,10 @@ export default function FirstLaunchOnboardingModal({
             <span>2</span>
           </div>
 
-          <div className="relative flex justify-center">
+          <div className="relative flex justify-center p-1 overflow-visible">
             <div className="absolute w-32 h-32 rounded-full bg-amber-400/20 blur-2xl animate-pulse pointer-events-none" />
             <Mascot mood="happy" state="idle" equipped={equippedItems}
-              className="h-28 w-auto filter drop-shadow-xl animate-bounce object-contain relative z-10" />
+              className="w-28 h-28 aspect-square filter drop-shadow-xl animate-bounce relative z-10" />
           </div>
 
           <div className="space-y-2">
@@ -296,10 +296,10 @@ export default function FirstLaunchOnboardingModal({
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col justify-center gap-4 py-2 my-auto">
-          <div className="relative py-2 flex justify-center items-center shrink-0">
+          <div className="relative py-2 flex justify-center items-center shrink-0 p-1 overflow-visible">
             <div className="absolute w-36 sm:w-48 h-36 sm:h-48 rounded-full bg-amber-400/30 blur-2xl animate-pulse pointer-events-none" />
             <Mascot mood="happy" state="idle" equipped={equippedItems}
-              className="w-auto max-h-[26vh] h-28 sm:h-36 md:h-44 filter drop-shadow-xl animate-bounce object-contain" />
+              className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 aspect-square filter drop-shadow-xl animate-bounce" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white/95 border-2 border-amber-200/90 rounded-3xl p-3.5 sm:p-5 shadow-xl shrink-0 text-left">

@@ -6,7 +6,7 @@ export default function MockCheckoutModal({ isOpen, onClose, packageInfo, onConf
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
-      <div className="w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-5 text-center shadow-2xl relative">
+      <div className="w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-5 text-center shadow-2xl relative max-h-[85vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"

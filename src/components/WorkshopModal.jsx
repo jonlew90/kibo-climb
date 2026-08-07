@@ -38,7 +38,8 @@ export default function WorkshopModal({
   onToggleEquip,
   allowRealMoneyPurchases,
   onBuySparksPackage,
-  onRequestAccountLink
+  onRequestAccountLink,
+  renderFooter
 }) {
   const INITIAL_PREVIEW_SLOTS = {
     headwear: null,
@@ -101,6 +102,13 @@ export default function WorkshopModal({
     }
   };
 
+  const handleCategoryWheel = (e) => {
+    if (categoryScrollRef.current && e.deltaY !== 0) {
+      categoryScrollRef.current.scrollLeft += e.deltaY;
+      checkScroll();
+    }
+  };
+
   if (!isOpen) return null;
 
   // Compute active stage items (merges saved equipped items with active preview slots)
@@ -148,42 +156,42 @@ export default function WorkshopModal({
     soundFx.playKeyTap();
     const cat = item.category;
 
-    setPreviewSlots((prev) => {
-      const currentSlotVal = prev[cat];
-
-      // Case A: Currently previewing this item -> Revert to null (default equipped)
-      if (currentSlotVal === item.id) {
-        return { ...prev, [cat]: null };
-      }
-
-      // Case B: Currently equipped in app and not modified in preview -> Toggle OFF in preview
-      const isSavedEquipped = equippedItems.includes(item.id);
-      if (isSavedEquipped && currentSlotVal === null) {
-        return { ...prev, [cat]: false };
-      }
-
-      // Case C: Preview this item (replacing any prior preview/equipped item in this category)
-      return { ...prev, [cat]: item.id };
-    });
+    if (previewSlots[cat] === item.id) {
+      setPreviewSlots((prev) => ({ ...prev, [cat]: null }));
+    } else {
+      setPreviewSlots((prev) => ({ ...prev, [cat]: item.id }));
+    }
   };
 
-  const handleBuy = (item) => {
-    if (sparks >= item.cost) {
-      soundFx.playVictory();
+  const handleBuyClick = (item) => {
+    if (item.isConsumable) {
+      soundFx.playKeyTap();
+      onBuyConsumable(item.id);
       setRecentlyPurchasedId(item.id);
-      setTimeout(() => setRecentlyPurchasedId(null), 1400);
+      setTimeout(() => setRecentlyPurchasedId(null), 1200);
+      return;
+    }
 
-      if (item.isConsumable && onBuyConsumable) {
-        onBuyConsumable(item);
-      } else {
-        onBuyItem(item);
-        if (!item.isConsumable) {
-          const cat = item.category;
-          setPreviewSlots((prev) => ({
-            ...prev,
-            [cat]: item.id
-          }));
-        }
+    const isUnlocked = unlockedItems.includes(item.id);
+    if (isUnlocked) {
+      soundFx.playKeyTap();
+      onToggleEquip(item.id);
+      return;
+    }
+
+    if (sparks >= item.cost) {
+      soundFx.playVictoryFanfare();
+      onBuyItem(item.id);
+      setRecentlyPurchasedId(item.id);
+      setTimeout(() => setRecentlyPurchasedId(null), 1200);
+
+      // Auto-equip into preview slot upon purchase
+      if (!item.isConsumable) {
+        const cat = item.category;
+        setPreviewSlots((prev) => ({
+          ...prev,
+          [cat]: item.id
+        }));
       }
     } else {
       soundFx.playIncorrect();
@@ -193,26 +201,10 @@ export default function WorkshopModal({
     }
   };
 
-  const handleEquipToggle = (item) => {
-    soundFx.playKeyTap();
-    onToggleEquip(item.id);
-  };
-
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
-        <button
-          onClick={() => {
-            soundFx.playKeyTap();
-            onClose();
-          }}
-          className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-extrabold text-sm px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all active:scale-95"
-        >
-          <ArrowLeft className="w-4 h-4 stroke-[3]" />
-          <span>Back</span>
-        </button>
-
         <div className="flex items-center gap-2 text-slate-800">
           <ShoppingBag className="w-5 h-5 text-amber-500 stroke-[2.5]" />
           <h2 className="text-base sm:text-lg font-black tracking-tight">Kibo's Corner 🐾</h2>
@@ -239,7 +231,7 @@ export default function WorkshopModal({
         {/* Live Try-On Preview Mascot Stage Header */}
         <div className="bg-white border-2 border-slate-200 rounded-2xl p-3 flex items-center justify-center gap-4 sm:gap-6 shadow-sm relative">
           {/* Locked Fixed Width Mascot Anchor Box */}
-          <div className="w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center relative">
+          <div className="w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center relative p-1 overflow-visible">
             <Mascot mood="happy" equipped={stageEquippedItems} className="w-24 h-24 sm:w-28 sm:h-28" />
           </div>
 
@@ -250,30 +242,26 @@ export default function WorkshopModal({
                   <Sparkles className="w-3 h-3 fill-amber-300 stroke-[2.5]" /> Preview Mode
                 </span>
               ) : (
-                <span className="text-[10px] font-black uppercase text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full inline-block">
-                  Live Stage
+                <span className="bg-emerald-600 text-white font-black text-[9px] uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                  <ShieldCheck className="w-3 h-3 stroke-[2.5]" /> Active Look
                 </span>
+              )}
+
+              {hasActivePreview && (
+                <button
+                  onClick={handleResetPreview}
+                  className="text-[10px] font-extrabold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition-all border border-slate-200"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" /> Reset
+                </button>
               )}
             </div>
 
-            <h4 className="font-black text-slate-800 text-sm leading-tight">
-              {hasUnownedPreview ? 'Outfit Combination' : 'Equipped Outfit'}
-            </h4>
-
-            {hasActivePreview || hasUnownedPreview ? (
-              <button
-                onClick={handleResetPreview}
-                className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 font-extrabold text-[11px] rounded-xl border border-rose-300 flex items-center gap-1.5 active:scale-95 transition-all shadow-sm"
-              >
-                <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" /> Reset to Saved Outfit
-              </button>
-            ) : (
-              <p className="text-xs text-slate-500 font-medium">
-                {equippedItems.length > 0
-                  ? `${equippedItems.length} active accessory layer${equippedItems.length > 1 ? 's' : ''}`
-                  : 'No items equipped yet'}
-              </p>
-            )}
+            <p className="text-xs font-bold text-slate-600 leading-snug">
+              {hasUnownedPreview
+                ? 'Tap any item to try it on Kibo! Buy items below to unlock.'
+                : 'Customize Kibo with outfits, gear, pets, and trail effects!'}
+            </p>
           </div>
         </div>
 
@@ -293,11 +281,12 @@ export default function WorkshopModal({
             <div
               ref={categoryScrollRef}
               onScroll={checkScroll}
+              onWheel={handleCategoryWheel}
               style={{
                 maskImage: canScrollRight ? 'linear-gradient(to right, black 82%, transparent 100%)' : 'none',
                 WebkitMaskImage: canScrollRight ? 'linear-gradient(to right, black 82%, transparent 100%)' : 'none'
               }}
-              className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl overflow-x-auto scrollbar-none w-full scroll-smooth"
+              className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl overflow-x-auto scrollbar-none w-full scroll-smooth touch-pan-x"
             >
               {ITEM_CATEGORIES.map((cat) => (
                 <button
@@ -328,7 +317,7 @@ export default function WorkshopModal({
       </div>
 
       {/* DEDICATED INDEPENDENT ITEM GRID SCROLL CONTAINER */}
-      <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6">
+      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6">
         <div className="space-y-3 pb-6">
           {/* Promotional Account Link Banner in Shop */}
           {authService.getAuthState().isAnonymous && onRequestAccountLink && (
@@ -572,18 +561,8 @@ export default function WorkshopModal({
         </div>
       </main>
 
-      {/* STICKY BOTTOM ACTION FOOTER */}
-      <footer className="w-full bg-white/95 border-t-2 border-slate-200 p-3 sm:p-4 backdrop-blur-md shrink-0 flex items-center justify-center z-10">
-        <button
-          onClick={() => {
-            soundFx.playKeyTap();
-            onClose();
-          }}
-          className="w-full max-w-sm bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-base py-3 px-8 rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-amber-700 active:translate-y-0.5 active:border-b-0 transition-all text-center"
-        >
-          Done Customizing 🚀
-        </button>
-      </footer>
+      {/* STICKY BOTTOM NAVIGATION FOOTER */}
+      {renderFooter ? renderFooter() : null}
     </div>
   );
 }

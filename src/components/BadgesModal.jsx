@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Award, Lock, Sparkles, ArrowLeft, CheckCircle2, Trophy, Flame, Zap, Target, User } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Award, Lock, Sparkles, ArrowLeft, CheckCircle2, Trophy, Flame, Zap, Target, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { soundFx } from '../utils/audio';
@@ -10,13 +10,25 @@ export default function BadgesModal({
   onClose,
   unlockedBadges = [],
   personalRecords = {},
-  userState = {}
+  userState = {},
+  renderFooter
 }) {
   const [activeCategory, setActiveCategory] = useState('all');
 
+  const categoryScrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (!categoryScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+    setCanScrollLeft(scrollLeft > 4);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen && onClose) {
+      if (e.key === 'Escape' && onClose) {
         onClose();
       }
     };
@@ -24,6 +36,7 @@ export default function BadgesModal({
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
+      setTimeout(checkScroll, 100);
     }
 
     return () => {
@@ -31,6 +44,27 @@ export default function BadgesModal({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
+
+  const handleScrollLeft = () => {
+    soundFx.playKeyTap();
+    if (categoryScrollRef.current) {
+      categoryScrollRef.current.scrollBy({ left: -120, behavior: 'smooth' });
+    }
+  };
+
+  const handleScrollRight = () => {
+    soundFx.playKeyTap();
+    if (categoryScrollRef.current) {
+      categoryScrollRef.current.scrollBy({ left: 120, behavior: 'smooth' });
+    }
+  };
+
+  const handleCategoryWheel = (e) => {
+    if (categoryScrollRef.current && e.deltaY !== 0) {
+      categoryScrollRef.current.scrollLeft += e.deltaY;
+      checkScroll();
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -55,17 +89,6 @@ export default function BadgesModal({
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
-        <button
-          onClick={() => {
-            soundFx.playKeyTap();
-            onClose();
-          }}
-          className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-extrabold text-sm px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all active:scale-95"
-        >
-          <ArrowLeft className="w-4 h-4 stroke-[3]" />
-          <span>Back</span>
-        </button>
-
         <div className="flex items-center gap-2 text-slate-800">
           <Trophy className="w-5 h-5 text-amber-500 stroke-[2.5]" />
           <h2 className="text-base sm:text-lg font-black tracking-tight">My Trophies & Records</h2>
@@ -85,7 +108,7 @@ export default function BadgesModal({
       </header>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
-      <main className="flex-1 min-h-0 overflow-y-auto w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         {/* Compact rating + progress bar */}
         <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-3xl p-4 space-y-2 shrink-0 text-left">
           <div className="flex items-center justify-between text-xs sm:text-sm font-black text-amber-950">
@@ -113,43 +136,75 @@ export default function BadgesModal({
 
 
         {/* Filter Category Bar */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 shrink-0">
-          <button
-            onClick={() => {
-              soundFx.playKeyTap();
-              setActiveCategory('all');
+        <div className="relative flex items-center shrink-0">
+          {canScrollLeft && (
+            <button
+              type="button"
+              onClick={handleScrollLeft}
+              className="absolute left-0 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white active:scale-95 transition-all"
+            >
+              <ChevronLeft className="w-4 h-4 stroke-[3]" />
+            </button>
+          )}
+
+          <div
+            ref={categoryScrollRef}
+            onScroll={checkScroll}
+            onWheel={handleCategoryWheel}
+            style={{
+              maskImage: canScrollRight ? 'linear-gradient(to right, black 85%, transparent 100%)' : 'none',
+              WebkitMaskImage: canScrollRight ? 'linear-gradient(to right, black 85%, transparent 100%)' : 'none'
             }}
-            className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-all ${
-              activeCategory === 'all'
-                ? 'bg-amber-500 text-white shadow-md scale-[1.02]'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
+            className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 shrink-0 w-full scroll-smooth touch-pan-x"
           >
-            🌟 All Badges ({unlockedCount}/{totalBadges})
-          </button>
+            <button
+              onClick={() => {
+                soundFx.playKeyTap();
+                setActiveCategory('all');
+              }}
+              className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-all ${
+                activeCategory === 'all'
+                  ? 'bg-amber-500 text-white shadow-md scale-[1.02]'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              🌟 All Badges ({unlockedCount}/{totalBadges})
+            </button>
 
-          {Object.entries(BADGE_CATEGORIES).map(([key, cat]) => {
-            const catBadges = BADGES_CATALOG.filter((b) => b.category === key);
-            const catUnlocked = catBadges.filter((b) => unlockedSet.has(b.id)).length;
+            {Object.entries(BADGE_CATEGORIES).map(([key, cat]) => {
+              const catBadges = BADGES_CATALOG.filter((b) => b.category === key);
+              const catUnlocked = catBadges.filter((b) => unlockedSet.has(b.id)).length;
 
-            return (
-              <button
-                key={key}
-                onClick={() => {
-                  soundFx.playKeyTap();
-                  setActiveCategory(key);
-                }}
-                className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-all ${
-                  activeCategory === key
-                    ? 'bg-amber-500 text-white shadow-md scale-[1.02]'
-                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                }`}
-              >
-                {cat.icon} {cat.label} ({catUnlocked}/{catBadges.length})
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={key}
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setActiveCategory(key);
+                  }}
+                  className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-all ${
+                    activeCategory === key
+                      ? 'bg-amber-500 text-white shadow-md scale-[1.02]'
+                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  {cat.icon} {cat.label} ({catUnlocked}/{catBadges.length})
+                </button>
+              );
+            })}
+          </div>
+
+          {canScrollRight && (
+            <button
+              type="button"
+              onClick={handleScrollRight}
+              className="absolute right-0 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white active:scale-95 transition-all"
+            >
+              <ChevronRight className="w-4 h-4 stroke-[3]" />
+            </button>
+          )}
         </div>
+
 
         {/* Badge Grid Catalog */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-6">
@@ -201,18 +256,8 @@ export default function BadgesModal({
         </div>
       </main>
 
-      {/* STICKY BOTTOM ACTION FOOTER */}
-      <footer className="w-full bg-white/95 border-t-2 border-slate-200 p-3 sm:p-4 backdrop-blur-md shrink-0 flex items-center justify-center z-10">
-        <button
-          onClick={() => {
-            soundFx.playKeyTap();
-            onClose();
-          }}
-          className="w-full max-w-sm bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-base py-3 px-8 rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-amber-700 active:translate-y-0.5 active:border-b-0 transition-all text-center"
-        >
-          Return to Climb
-        </button>
-      </footer>
+      {/* STICKY BOTTOM NAVIGATION FOOTER */}
+      {renderFooter ? renderFooter() : null}
     </div>
   );
 }

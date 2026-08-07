@@ -65,7 +65,9 @@ export default function TierIntroModal({
 
         {/* Mascot & Header */}
         <div className="flex items-center justify-center gap-2">
-          <Mascot mood="happy" equipped={equippedItems} className="w-16 h-16" />
+          <div className="p-0.5 shrink-0 overflow-visible flex items-center justify-center">
+            <Mascot mood="happy" equipped={equippedItems} className="w-16 h-16" />
+          </div>
           <div className="text-left space-y-0.5">
             <span className="text-[10px] font-black uppercase text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300 inline-block">
               Mental Math Trick

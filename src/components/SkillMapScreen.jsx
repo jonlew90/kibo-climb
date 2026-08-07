@@ -22,7 +22,7 @@ export default function SkillMapScreen({
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 w-full h-full overflow-hidden animate-fade-in text-slate-800">
-      <div className="w-full h-full max-w-lg mx-auto flex flex-col relative">
+      <div className="w-full h-full max-w-4xl mx-auto flex flex-col relative">
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
         <button
@@ -30,15 +30,17 @@ export default function SkillMapScreen({
             soundFx.playKeyTap();
             onBackToHome();
           }}
-          className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-extrabold text-sm px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all active:scale-95"
+          className="flex items-center gap-1.5 text-slate-700 hover:text-slate-900 font-extrabold text-sm px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all active:scale-95 border border-slate-200"
         >
           <ArrowLeft className="w-4 h-4 stroke-[3]" />
-          <span>Home</span>
+          <span>Back</span>
         </button>
 
         <div className="flex items-center gap-2 text-slate-800">
-          <Compass className="w-5 h-5 text-amber-500 stroke-[2.5]" />
-          <h2 className="text-base sm:text-lg font-black tracking-tight">Skill Map & Curriculum</h2>
+          <Map className="w-6 h-6 text-amber-500 stroke-[2.5]" />
+          <div>
+            <h2 className="text-base sm:text-lg font-black tracking-tight leading-tight">Curriculum Map</h2>
+          </div>
         </div>
 
         <button

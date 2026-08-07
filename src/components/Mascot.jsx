@@ -180,7 +180,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   return (
     <div
       onClick={handleMascotTap}
-      className={`relative select-none cursor-pointer transition-all duration-300 ${
+      className={`relative select-none cursor-pointer aspect-square shrink-0 transition-all duration-300 ${
         isTapped
           ? 'animate-mascot-squash'
           : isTwirling
@@ -217,7 +217,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
       {/* MAIN 3D MASCOT SVG WITH INTEGRATED BACKGROUND & PET LAYERS */}
       <svg
-        viewBox="0 0 200 200"
+        viewBox="-20 -20 240 240"
         className="w-full h-full relative z-10 drop-shadow-lg overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -481,54 +481,102 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           </g>
         )}
 
-        {hasSpinDance && (
-          <g className="animate-spin" style={{ animationDuration: '6s' }}>
-            <ellipse cx="100" cy="165" rx="58" ry="15" fill="none" stroke="#F59E0B" strokeWidth="4" strokeDasharray="16 10" />
-            <ellipse cx="100" cy="165" rx="52" ry="12" fill="none" stroke="#FCD34D" strokeWidth="2" strokeDasharray="8 6" />
-            <polygon points="42,165 52,158 52,172" fill="#F59E0B" />
-            <polygon points="158,165 148,158 148,172" fill="#F59E0B" />
-          </g>
-        )}
-
-        {hasSpeedTrail && (
-          <g className="animate-speed-streaks">
-            {/* Sonic Energy Afterimage Aura */}
-            <ellipse cx="100" cy="115" rx="76" ry="56" fill="none" stroke="#06B6D4" strokeWidth="5" opacity="0.4" strokeDasharray="12 8" />
-            {/* High-Speed Streaks */}
-            <path d="M 5 70 L 45 70 M 0 95 L 40 95 M 8 120 L 48 120 M 2 145 L 42 145" stroke="#38BDF8" strokeWidth="4" strokeLinecap="round" opacity="0.9" />
-            <path d="M 195 70 L 155 70 M 200 95 L 160 95 M 192 120 L 152 120 M 198 145 L 158 145" stroke="#38BDF8" strokeWidth="4" strokeLinecap="round" opacity="0.9" />
-            <polygon points="35,65 50,55 45,65 55,65" fill="#FACC15" />
+        {/* --- BACK VISUAL FX (Behind Kibo) --- */}
+        {hasSparkleDust && (
+          <g>
+            {/* Falling Raindrops (Back Layer) */}
+            <path d="M 45 40 L 41 55" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" className="animate-rain-drop-1" />
+            <path d="M 155 35 L 151 50" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" className="animate-rain-drop-2" />
+            <path d="M 75 25 L 71 40" stroke="#7DD3FC" strokeWidth="2" strokeLinecap="round" className="animate-rain-drop-3" />
+            <path d="M 125 30 L 121 45" stroke="#7DD3FC" strokeWidth="2" strokeLinecap="round" className="animate-rain-drop-4" />
           </g>
         )}
 
         {hasLightningSparks && (
-          <g className="animate-pulse">
-            <polygon points="40,30 46,45 38,45 44,60" fill="#FACC15" stroke="#EAB308" strokeWidth="1" />
-            <polygon points="160,35 165,48 158,48 164,62" fill="#38BDF8" stroke="#0284C7" strokeWidth="1" />
-            <polygon points="35,110 42,122 36,122 40,135" fill="#FACC15" stroke="#EAB308" strokeWidth="1" />
+          <g id="cosmic-bubble-floating-back">
+            {/* Iridescent Pastel Bubbles (Back Layer) */}
+            <g className="animate-bubble-float-1"><circle cx="45" cy="130" r="10" fill="#FDE047" opacity="0.6" stroke="#FACC15" strokeWidth="1.5" /><circle cx="42" cy="127" r="3" fill="#FFFFFF" opacity="0.8" /></g>
+            <g className="animate-bubble-float-2"><circle cx="155" cy="140" r="14" fill="#38BDF8" opacity="0.6" stroke="#0284C7" strokeWidth="1.5" /><circle cx="151" cy="136" r="4" fill="#FFFFFF" opacity="0.8" /></g>
+            <g className="animate-bubble-float-3"><circle cx="65" cy="155" r="8" fill="#F472B6" opacity="0.6" stroke="#DB2777" strokeWidth="1.5" /><circle cx="63" cy="153" r="2.5" fill="#FFFFFF" opacity="0.8" /></g>
+            <g className="animate-bubble-float-4"><circle cx="135" cy="150" r="11" fill="#C084FC" opacity="0.6" stroke="#7C3AED" strokeWidth="1.5" /><circle cx="132" cy="147" r="3.5" fill="#FFFFFF" opacity="0.8" /></g>
+          </g>
+        )}
+
+        {hasSpeedTrail && (
+          <g id="disco-fever-spotlight-back">
+            {/* Multi-Color Disco Dance Floor Spotlights */}
+            <g className="animate-disco-spotlight">
+              <polygon points="100,25 30,190 70,190" fill="#F472B6" opacity="0.25" />
+              <polygon points="100,25 130,190 170,190" fill="#38BDF8" opacity="0.25" />
+              <polygon points="100,25 70,190 130,190" fill="#FDE047" opacity="0.2" />
+            </g>
+
+            {/* Hanging Wire & Top Mount */}
+            <line x1="100" y1="0" x2="100" y2="15" stroke="#94A3B8" strokeWidth="2" />
+            <rect x="94" y="12" width="12" height="6" rx="2" fill="#64748B" />
+
+            {/* Revolving Mirror Disco Ball */}
+            <g className="animate-disco-ball">
+              <circle cx="100" cy="28" r="13" fill="#E2E8F0" stroke="#475569" strokeWidth="1.5" filter="url(#clayShadow)" />
+              {/* Mirror Facet Grid */}
+              <line x1="87" y1="28" x2="113" y2="28" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="89" y1="23" x2="111" y2="23" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="89" y1="33" x2="111" y2="33" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="100" y1="15" x2="100" y2="41" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="95" y1="16" x2="95" y2="40" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="105" y1="16" x2="105" y2="40" stroke="#94A3B8" strokeWidth="1" />
+              {/* Sparkling Metallic Highlights */}
+              <circle cx="96" cy="24" r="1.5" fill="#FFFFFF" />
+              <circle cx="104" cy="30" r="1.5" fill="#FFFFFF" />
+              <circle cx="102" cy="21" r="1.2" fill="#FFFFFF" />
+            </g>
           </g>
         )}
 
         {hasRainbowNebula && (
-          <g className="animate-spin" style={{ animationDuration: '10s' }}>
-            <ellipse cx="100" cy="115" rx="64" ry="20" fill="none" stroke="url(#svgLavaGrad)" strokeWidth="3" strokeDasharray="12 8" opacity="0.8" />
-            <ellipse cx="100" cy="115" rx="58" ry="16" fill="none" stroke="url(#svgAuroraGrad)" strokeWidth="2" strokeDasharray="8 6" opacity="0.8" />
-          </g>
-        )}
+          <g id="background-fireworks-show">
+            {/* Firework Burst 1: High Left Golden Sunburst */}
+            <g className="animate-fireworks-burst" style={{ animationDuration: '2.4s', transformOrigin: '40px 45px' }}>
+              <line x1="40" y1="45" x2="40" y2="20" stroke="#FBBF24" strokeWidth="2" strokeDasharray="4 3" />
+              <line x1="40" y1="45" x2="60" y2="35" stroke="#F59E0B" strokeWidth="2" strokeDasharray="4 3" />
+              <line x1="40" y1="45" x2="60" y2="55" stroke="#FBBF24" strokeWidth="2" strokeDasharray="4 3" />
+              <line x1="40" y1="45" x2="40" y2="70" stroke="#F59E0B" strokeWidth="2" strokeDasharray="4 3" />
+              <line x1="40" y1="45" x2="20" y2="55" stroke="#FBBF24" strokeWidth="2" strokeDasharray="4 3" />
+              <line x1="40" y1="45" x2="20" y2="35" stroke="#F59E0B" strokeWidth="2" strokeDasharray="4 3" />
+              <circle cx="40" cy="20" r="3" fill="#FEF08A" />
+              <circle cx="60" cy="35" r="3" fill="#FEF08A" />
+              <circle cx="60" cy="55" r="3" fill="#FEF08A" />
+              <circle cx="40" cy="70" r="3" fill="#FEF08A" />
+              <circle cx="20" cy="55" r="3" fill="#FEF08A" />
+              <circle cx="20" cy="35" r="3" fill="#FEF08A" />
+            </g>
 
-        {hasOrbitMoons && (
-          <g className="animate-spin" style={{ animationDuration: '7s' }}>
-            {/* 3D Angled Orbital Track */}
-            <ellipse cx="100" cy="115" rx="68" ry="24" fill="none" stroke="#60A5FA" strokeWidth="3" strokeDasharray="12 8" opacity="0.75" />
-            {/* Moon 1: Golden Sun Moon */}
-            <circle cx="32" cy="115" r="10" fill="#FDE047" stroke="#CA8A04" strokeWidth="2" filter="url(#clayShadow)" />
-            <circle cx="29" cy="112" r="3" fill="#FFFFFF" />
-            {/* Moon 2: Cyan Crystal Moon */}
-            <circle cx="168" cy="115" r="12" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" filter="url(#clayShadow)" />
-            <circle cx="164" cy="111" r="3.5" fill="#FFFFFF" />
-            {/* Moon 3: Plasma Pink Moon */}
-            <circle cx="100" cy="139" r="9" fill="#F472B6" stroke="#DB2777" strokeWidth="2" filter="url(#clayShadow)" />
-            <circle cx="97" cy="136" r="2.5" fill="#FFFFFF" />
+            {/* Firework Burst 2: High Right Cyan & Purple Starburst */}
+            <g className="animate-fireworks-burst" style={{ animationDuration: '2.8s', animationDelay: '0.6s', transformOrigin: '160px 40px' }}>
+              <line x1="160" y1="40" x2="160" y2="15" stroke="#38BDF8" strokeWidth="2.5" strokeDasharray="5 3" />
+              <line x1="160" y1="40" x2="182" y2="28" stroke="#C084FC" strokeWidth="2.5" strokeDasharray="5 3" />
+              <line x1="160" y1="40" x2="182" y2="52" stroke="#38BDF8" strokeWidth="2.5" strokeDasharray="5 3" />
+              <line x1="160" y1="40" x2="160" y2="65" stroke="#C084FC" strokeWidth="2.5" strokeDasharray="5 3" />
+              <line x1="160" y1="40" x2="138" y2="52" stroke="#38BDF8" strokeWidth="2.5" strokeDasharray="5 3" />
+              <line x1="160" y1="40" x2="138" y2="28" stroke="#C084FC" strokeWidth="2.5" strokeDasharray="5 3" />
+              <circle cx="160" cy="15" r="3.5" fill="#E0F2FE" />
+              <circle cx="182" cy="28" r="3.5" fill="#F3E8FF" />
+              <circle cx="182" cy="52" r="3.5" fill="#E0F2FE" />
+              <circle cx="160" cy="65" r="3.5" fill="#F3E8FF" />
+              <circle cx="138" cy="52" r="3.5" fill="#E0F2FE" />
+              <circle cx="138" cy="28" r="3.5" fill="#F3E8FF" />
+            </g>
+
+            {/* Firework Burst 3: Central High Pink & Emerald Grand Finale */}
+            <g className="animate-fireworks-burst" style={{ animationDuration: '3.2s', animationDelay: '1.2s', transformOrigin: '100px 30px' }}>
+              <line x1="100" y1="30" x2="100" y2="5" stroke="#F472B6" strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="100" y1="30" x2="125" y2="15" stroke="#34D399" strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="100" y1="30" x2="125" y2="45" stroke="#F472B6" strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="100" y1="30" x2="100" y2="55" stroke="#34D399" strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="100" y1="30" x2="75" y2="45" stroke="#F472B6" strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="100" y1="30" x2="75" y2="15" stroke="#34D399" strokeWidth="3" strokeDasharray="6 4" />
+              <polygon points="100,18 103,26 111,26 105,31 107,39 100,34 93,39 95,31 89,26 97,26" fill="#FDE047" opacity="0.9" />
+            </g>
           </g>
         )}
 
@@ -581,303 +629,340 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         </g>
 
         {/* ==================================================== */}
-        {/* LAYER 2: BASE KIBO BODY & TAIL                       */}
+        {/* KIBO CHARACTER GROUP (Body, Face, Outfits, Gear, Headwear) */}
         {/* ==================================================== */}
-        <g id="layer-body">
-          {/* Animated 3D Tail */}
-          <path
-            d="M 155 125 C 185 105, 195 145, 175 165 C 160 178, 145 155, 148 142 Z"
-            fill={hasCustomSkin ? bodyFill : 'url(#tailGrad)'}
-            stroke={hasCustomSkin ? bodyStroke : '#872200'}
-            strokeWidth="3.5"
-            filter="url(#clayShadow)"
-            className="transition-transform duration-300 origin-bottom-left"
-          />
-
-          {/* Left Foot */}
-          <ellipse
-            cx="72"
-            cy="165"
-            rx="18"
-            ry="12"
-            fill={bodyFill}
-            stroke={footStroke}
-            strokeWidth="3"
-            filter="url(#clayShadow)"
-          />
-
-          {/* Right Foot */}
-          <ellipse
-            cx="128"
-            cy="165"
-            rx="18"
-            ry="12"
-            fill={bodyFill}
-            stroke={footStroke}
-            strokeWidth="3"
-            filter="url(#clayShadow)"
-          />
-
-          {/* Main 3D Volumetric Body Sphere */}
-          <circle
-            cx="100"
-            cy="115"
-            r="54"
-            fill={bodyFill}
-            stroke={bodyStroke}
-            strokeWidth="4"
-            filter="url(#clayShadow)"
-          />
-
-          {/* Cream Tummy Patch */}
-          {!hasCustomSkin && (
-            <ellipse cx="100" cy="126" rx="34" ry="26" fill="url(#kibo3DSnoutGrad)" opacity="0.95" />
-          )}
-
-          {/* Ears with Micro Twitching */}
-          <g className={`transition-transform duration-200 ${isEarTwitching ? '-rotate-6 translate-y-0.5' : ''}`}>
-            {/* Left Ear */}
+        <g className={`${hasOrbitMoons ? 'animate-silly-boogie' : ''} ${hasSpinDance ? 'animate-victory-twirl-body' : ''}`}>
+          {/* ==================================================== */}
+          {/* LAYER 2: BASE KIBO BODY & TAIL                       */}
+          {/* ==================================================== */}
+          <g id="layer-body">
+            {/* Animated 3D Tail */}
             <path
-              d="M 58 78 C 38 42, 68 28, 76 60 Z"
-              fill={bodyFill}
-              stroke={footStroke}
+              d="M 155 125 C 185 105, 195 145, 175 165 C 160 178, 145 155, 148 142 Z"
+              fill={hasCustomSkin ? bodyFill : 'url(#tailGrad)'}
+              stroke={hasCustomSkin ? bodyStroke : '#872200'}
               strokeWidth="3.5"
               filter="url(#clayShadow)"
+              className="transition-transform duration-300 origin-bottom-left"
             />
-            <path d="M 62 72 C 48 48, 68 38, 73 62 Z" fill={earInnerFill} />
 
-            {/* Right Ear */}
-            <path
-              d="M 142 78 C 162 42, 132 28, 124 60 Z"
+            {/* Left Foot */}
+            <ellipse
+              cx="72"
+              cy="165"
+              rx="18"
+              ry="12"
               fill={bodyFill}
               stroke={footStroke}
-              strokeWidth="3.5"
+              strokeWidth="3"
               filter="url(#clayShadow)"
             />
-            <path d="M 138 72 C 152 48, 132 38, 127 62 Z" fill={earInnerFill} />
+
+            {/* Right Foot */}
+            <ellipse
+              cx="128"
+              cy="165"
+              rx="18"
+              ry="12"
+              fill={bodyFill}
+              stroke={footStroke}
+              strokeWidth="3"
+              filter="url(#clayShadow)"
+            />
+
+            {/* Main 3D Volumetric Body Sphere */}
+            <circle
+              cx="100"
+              cy="115"
+              r="54"
+              fill={bodyFill}
+              stroke={bodyStroke}
+              strokeWidth="4"
+              filter="url(#clayShadow)"
+            />
+
+            {/* Cream Tummy Patch */}
+            {!hasCustomSkin && (
+              <ellipse cx="100" cy="126" rx="34" ry="26" fill="url(#kibo3DSnoutGrad)" opacity="0.95" />
+            )}
+
+            {/* Ears with Micro Twitching */}
+            <g className={`transition-transform duration-200 ${isEarTwitching ? '-rotate-6 translate-y-0.5' : ''}`}>
+              {/* Left Ear */}
+              <path
+                d="M 58 78 C 38 42, 68 28, 76 60 Z"
+                fill={bodyFill}
+                stroke={footStroke}
+                strokeWidth="3.5"
+                filter="url(#clayShadow)"
+              />
+              <path d="M 62 72 C 48 48, 68 38, 73 62 Z" fill={earInnerFill} />
+
+              {/* Right Ear */}
+              <path
+                d="M 142 78 C 162 42, 132 28, 124 60 Z"
+                fill={bodyFill}
+                stroke={footStroke}
+                strokeWidth="3.5"
+                filter="url(#clayShadow)"
+              />
+              <path d="M 138 72 C 152 48, 132 38, 127 62 Z" fill={earInnerFill} />
+            </g>
           </g>
-        </g>
 
-        {/* ==================================================== */}
-        {/* LAYER 3: OUTFITS (Vest, Scarf, Bowtie)               */}
-        {/* ==================================================== */}
-        <g id="layer-outfits">
-          {hasVest && (
-            <g filter="url(#clayShadow)">
-              {/* Padded Climber Vest Body */}
-              <path d="M 62 106 C 62 106, 100 116, 138 106 L 138 152 C 138 152, 100 162, 62 152 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="3.5" />
-              {/* Quilted Puffer Lines */}
-              <path d="M 63 120 Q 100 130 137 120" stroke="#0284C7" strokeWidth="3.5" fill="none" />
-              <path d="M 62 136 Q 100 146 138 136" stroke="#0284C7" strokeWidth="3.5" fill="none" />
-              {/* Zipper & Collar */}
-              <line x1="100" y1="110" x2="100" y2="157" stroke="#38BDF8" strokeWidth="3" />
-              <circle cx="100" cy="116" r="3" fill="#FFFFFF" />
-              {/* Climber Crest Badge */}
-              <circle cx="80" cy="126" r="5" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
-            </g>
-          )}
+          {/* ==================================================== */}
+          {/* LAYER 3: OUTFITS (Vest, Scarf, Bowtie)               */}
+          {/* ==================================================== */}
+          <g id="layer-outfits">
+            {hasVest && (
+              <g filter="url(#clayShadow)">
+                {/* Padded Climber Vest Body */}
+                <path d="M 62 106 C 62 106, 100 116, 138 106 L 138 152 C 138 152, 100 162, 62 152 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="3.5" />
+                {/* Quilted Puffer Lines */}
+                <path d="M 63 120 Q 100 130 137 120" stroke="#0284C7" strokeWidth="3.5" fill="none" />
+                <path d="M 62 136 Q 100 146 138 136" stroke="#0284C7" strokeWidth="3.5" fill="none" />
+                {/* Zipper & Collar */}
+                <line x1="100" y1="110" x2="100" y2="157" stroke="#38BDF8" strokeWidth="3" />
+                <circle cx="100" cy="116" r="3" fill="#FFFFFF" />
+                {/* Climber Crest Badge */}
+                <circle cx="80" cy="126" r="5" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+              </g>
+            )}
 
-          {hasSummitScarf && (
-            <g filter="url(#clayShadow)">
-              {/* Wrapped Neck Scarf */}
-              <path d="M 62 110 Q 100 128 138 110 L 136 122 Q 100 140 64 122 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="3" />
-              <path d="M 64 108 Q 100 124 136 108 Q 100 118 64 108 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="2.5" />
-              <path d="M 80 114 L 84 124 M 116 114 L 120 124" stroke="#FBBF24" strokeWidth="3" />
-              {/* Dangling Scarf Tail */}
-              <path d="M 114 122 L 130 162 L 110 162 L 102 124 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="3" />
-              <rect x="108" y="150" width="22" height="5" fill="#FBBF24" />
-              <line x1="112" y1="162" x2="112" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
-              <line x1="118" y1="162" x2="118" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
-              <line x1="124" y1="162" x2="124" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
-            </g>
-          )}
+            {hasSummitScarf && (
+              <g filter="url(#clayShadow)">
+                {/* Wrapped Neck Scarf */}
+                <path d="M 62 110 Q 100 128 138 110 L 136 122 Q 100 140 64 122 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="3" />
+                <path d="M 64 108 Q 100 124 136 108 Q 100 118 64 108 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="2.5" />
+                <path d="M 80 114 L 84 124 M 116 114 L 120 124" stroke="#FBBF24" strokeWidth="3" />
+                {/* Dangling Scarf Tail */}
+                <path d="M 114 122 L 130 162 L 110 162 L 102 124 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="3" />
+                <rect x="108" y="150" width="22" height="5" fill="#FBBF24" />
+                <line x1="112" y1="162" x2="112" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
+                <line x1="118" y1="162" x2="118" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
+                <line x1="124" y1="162" x2="124" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
+              </g>
+            )}
 
-          {hasBowtie && (
-            <g filter="url(#clayShadow)">
-              {/* 3D Red Bowtie on Collar */}
-              <polygon points="100,122 74,110 72,134" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
-              <polygon points="100,122 126,110 128,134" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
-              <polygon points="100,122 80,114 78,130" fill="#F87171" />
-              <polygon points="100,122 120,114 122,130" fill="#F87171" />
-              <rect x="94" y="116" width="12" height="12" rx="4" fill="#DC2626" stroke="#7F1D1D" strokeWidth="2.5" />
-            </g>
-          )}
-        </g>
-
-        {/* ==================================================== */}
-        {/* LAYER 4: FACE (Eyes, Nose, Expressive Expressions)   */}
-        {/* ==================================================== */}
-        <g id="layer-face">
-          {/* Snout Area */}
-          <ellipse cx="100" cy="108" rx="22" ry="16" fill="url(#kibo3DSnoutGrad)" />
-
-          {/* Nose */}
-          <ellipse cx="100" cy="99" rx="7" ry="5" fill="#4A1500" />
-          <ellipse cx="98" cy="97" rx="2.5" ry="1.5" fill="#FFFFFF" opacity="0.8" />
-
-          {/* Expressive Mouth */}
-          {mood === 'sad' ? (
-            <path d="M 92 114 Q 100 108 108 114" stroke="#4A1500" strokeWidth="3" strokeLinecap="round" fill="none" />
-          ) : (
-            <path d="M 90 108 Q 100 122 110 108" stroke="#4A1500" strokeWidth="3" strokeLinecap="round" fill="none" />
-          )}
-
-          {/* Eyes with Blinking State */}
-          <g className={`transition-transform duration-150 ${getMoodEyeTransform()}`}>
-            {isBlinking ? (
-              <>
-                <path d="M 76 96 Q 84 96 92 96" stroke="#4A1500" strokeWidth="3.5" strokeLinecap="round" />
-                <path d="M 108 96 Q 116 96 124 96" stroke="#4A1500" strokeWidth="3.5" strokeLinecap="round" />
-              </>
-            ) : (
-              <>
-                {/* Left Eye */}
-                <ellipse cx="84" cy="94" rx="7" ry="9" fill="#290B00" />
-                <circle cx="82" cy="91" r="3" fill="#FFFFFF" />
-
-                {/* Right Eye */}
-                <ellipse cx="116" cy="94" rx="7" ry="9" fill="#290B00" />
-                <circle cx="114" cy="91" r="3" fill="#FFFFFF" />
-              </>
+            {hasBowtie && (
+              <g filter="url(#clayShadow)">
+                {/* 3D Red Bowtie on Collar */}
+                <polygon points="100,122 74,110 72,134" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+                <polygon points="100,122 126,110 128,134" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+                <polygon points="100,122 80,114 78,130" fill="#F87171" />
+                <polygon points="100,122 120,114 122,130" fill="#F87171" />
+                <rect x="94" y="116" width="12" height="12" rx="4" fill="#DC2626" stroke="#7F1D1D" strokeWidth="2.5" />
+              </g>
             )}
           </g>
 
-          {/* Cheeks */}
-          <circle cx="72" cy="104" r="7" fill="#FF8080" opacity="0.4" />
-          <circle cx="128" cy="104" r="7" fill="#FF8080" opacity="0.4" />
+          {/* ==================================================== */}
+          {/* LAYER 4: FACE (Eyes, Nose, Expressive Expressions)   */}
+          {/* ==================================================== */}
+          <g id="layer-face">
+            {/* Snout Area */}
+            <ellipse cx="100" cy="108" rx="22" ry="16" fill="url(#kibo3DSnoutGrad)" />
+
+            {/* Nose */}
+            <ellipse cx="100" cy="99" rx="7" ry="5" fill="#4A1500" />
+            <ellipse cx="98" cy="97" rx="2.5" ry="1.5" fill="#FFFFFF" opacity="0.8" />
+
+            {/* Expressive Mouth */}
+            {mood === 'sad' ? (
+              <path d="M 92 114 Q 100 108 108 114" stroke="#4A1500" strokeWidth="3" strokeLinecap="round" fill="none" />
+            ) : (
+              <path d="M 90 108 Q 100 122 110 108" stroke="#4A1500" strokeWidth="3" strokeLinecap="round" fill="none" />
+            )}
+
+            {/* Eyes with Blinking State */}
+            <g className={`transition-transform duration-150 ${getMoodEyeTransform()}`}>
+              {isBlinking ? (
+                <>
+                  <path d="M 76 96 Q 84 96 92 96" stroke="#4A1500" strokeWidth="3.5" strokeLinecap="round" />
+                  <path d="M 108 96 Q 116 96 124 96" stroke="#4A1500" strokeWidth="3.5" strokeLinecap="round" />
+                </>
+              ) : (
+                <>
+                  {/* Left Eye */}
+                  <ellipse cx="84" cy="94" rx="7" ry="9" fill="#290B00" />
+                  <circle cx="82" cy="91" r="3" fill="#FFFFFF" />
+
+                  {/* Right Eye */}
+                  <ellipse cx="116" cy="94" rx="7" ry="9" fill="#290B00" />
+                  <circle cx="114" cy="91" r="3" fill="#FFFFFF" />
+                </>
+              )}
+            </g>
+
+            {/* Cheeks */}
+            <circle cx="72" cy="104" r="7" fill="#FF8080" opacity="0.4" />
+            <circle cx="128" cy="104" r="7" fill="#FF8080" opacity="0.4" />
+          </g>
+
+          {/* ==================================================== */}
+          {/* LAYER 5: HAND-HELD GEAR & CANTEEN / LANTERN          */}
+          {/* ==================================================== */}
+          <g id="layer-gear">
+            {hasGoldenCompass && (
+              <g filter="url(#clayShadow)">
+                <circle cx="60" cy="140" r="12" fill="url(#goldBodyGrad)" stroke="#B45309" strokeWidth="2.5" />
+                <polygon points="60,132 63,140 60,148 57,140" fill="#EF4444" />
+              </g>
+            )}
+
+            {hasCanteen && (
+              <g filter="url(#clayShadow)">
+                <ellipse cx="138" cy="145" rx="10" ry="14" fill="#0284C7" stroke="#075985" strokeWidth="2.5" />
+                <rect x="135" y="128" width="6" height="5" fill="#CBD5E1" />
+              </g>
+            )}
+
+            {hasLantern && (
+              <g filter="url(#clayShadow)">
+                {/* Glowing Ambient Aura */}
+                <circle cx="48" cy="138" r="26" fill="#FDE047" opacity="0.35" className="animate-pulse" />
+                
+                {/* Brass Handle Loop */}
+                <path d="M 38 120 C 38 106 58 106 58 120" stroke="#78350F" strokeWidth="3.5" fill="none" />
+                
+                {/* Main Golden Lantern Housing */}
+                <rect x="34" y="120" width="28" height="36" rx="8" fill="#D97706" stroke="#78350F" strokeWidth="3" />
+                
+                {/* Glass Chamber & Radiant Flame */}
+                <rect x="39" y="126" width="18" height="24" rx="4" fill="#FEF08A" stroke="#B45309" strokeWidth="2" />
+                <path d="M 48 144 Q 53 136 48 130 Q 43 136 48 144 Z" fill="#EF4444" className="animate-pulse" />
+                <path d="M 48 142 Q 51 137 48 133 Q 45 137 48 142 Z" fill="#FBBF24" className="animate-pulse" />
+              </g>
+            )}
+
+            {hasKiboShield && (
+              <g filter="url(#clayShadow)">
+                <path d="M 160 115 C 172 115, 178 122, 178 135 C 178 152, 160 165, 160 165 C 160 165, 142 152, 142 135 C 142 122, 148 115, 160 115 Z" fill="#0EA5E9" stroke="#0284C7" strokeWidth="2.5" />
+                <path d="M 160 120 C 169 120, 174 125, 174 135 C 174 148, 160 158, 160 158 C 160 158, 146 148, 146 135 C 146 125, 151 120, 160 120 Z" fill="#38BDF8" />
+                <path d="M 155 137 L 159 141 L 167 131" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              </g>
+            )}
+
+            {hasDoubleSparksPotion && (
+              <g filter="url(#clayShadow)">
+                <rect x="156" y="125" width="8" height="6" rx="1.5" fill="#D97706" stroke="#B45309" strokeWidth="1.5" />
+                <path d="M 154 131 L 166 131 L 173 152 A 5 5 0 0 1 168 158 L 152 158 A 5 5 0 0 1 147 152 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="2" />
+                <text x="160" y="153" textAnchor="middle" fontSize="9" fontWeight="900" fill="#B45309">2x</text>
+              </g>
+            )}
+
+            {hasHintScroll && (
+              <g filter="url(#clayShadow)">
+                <rect x="145" y="130" width="28" height="28" rx="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="2" />
+                <path d="M 149 138 L 169 138 M 149 144 L 169 144 M 149 150 L 161 150" stroke="#B45309" strokeWidth="2" strokeLinecap="round" />
+                <text x="166" y="153" textAnchor="middle" fontSize="7" fontWeight="900">💡</text>
+              </g>
+            )}
+          </g>
+
+          {/* ==================================================== */}
+          {/* LAYER 6: HEADWEAR (Hats, Bandanas, Headphones)       */}
+          {/* ==================================================== */}
+          <g id="layer-head">
+            {hasCap && (
+              <g filter="url(#clayShadow)">
+                <path d="M 52 70 Q 100 48 148 70 Z" fill="#2563EB" stroke="#1D4ED8" strokeWidth="3" />
+                <path d="M 100 70 Q 148 64 165 72" stroke="#1D4ED8" strokeWidth="5" strokeLinecap="round" fill="none" />
+              </g>
+            )}
+
+            {hasBandana && (
+              <g filter="url(#clayShadow)">
+                <path d="M 50 68 Q 100 46 150 68 L 146 78 Q 100 58 54 78 Z" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+                <polygon points="144,72 165,82 152,90" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+              </g>
+            )}
+
+            {hasPartyHat && (
+              <g filter="url(#clayShadow)">
+                <polygon points="100,20 70,70 130,70" fill="#F59E0B" stroke="#D97706" strokeWidth="3" />
+                <circle cx="100" cy="18" r="8" fill="#EF4444" />
+              </g>
+            )}
+
+            {hasGoggles && (
+              <g filter="url(#claySpecular)">
+                <rect x="65" y="86" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
+                <rect x="105" y="86" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
+                <line x1="95" y1="96" x2="105" y2="96" stroke="#0284C7" strokeWidth="4" />
+              </g>
+            )}
+
+            {hasExplorerHat && (
+              <g filter="url(#clayShadow)">
+                <path d="M 70 65 Q 100 32 130 65 Z" fill="#92400E" stroke="#451A03" strokeWidth="3" />
+                <path d="M 68 62 Q 100 55 132 62" stroke="#F59E0B" strokeWidth="5" fill="none" />
+                <ellipse cx="100" cy="66" rx="54" ry="10" fill="#78350F" stroke="#451A03" strokeWidth="3" />
+              </g>
+            )}
+
+            {hasWizardHat && (
+              <g filter="url(#clayShadow)">
+                <path d="M 100 10 L 60 72 L 140 72 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3" />
+                <ellipse cx="100" cy="72" rx="48" ry="10" fill="#6D28D9" stroke="#5B21B6" strokeWidth="3" />
+                <polygon points="100,25 103,32 110,34 105,39 106,46 100,42 94,46 95,39 90,34 97,32" fill="#FBBF24" />
+              </g>
+            )}
+
+            {hasCrown && (
+              <g filter="url(#clayShadow)">
+                <path d="M 65 68 L 72 38 L 86 52 L 100 30 L 114 52 L 128 38 L 135 68 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="3" />
+                <circle cx="72" cy="36" r="4" fill="#EF4444" />
+                <circle cx="100" cy="28" r="5" fill="#3B82F6" />
+                <circle cx="128" cy="36" r="4" fill="#10B981" />
+              </g>
+            )}
+
+            {hasNeonHeadphones && (
+              <g filter="url(#clayShadow)">
+                <path d="M 52 95 A 50 50 0 0 1 148 95" stroke="url(#neonHeadphoneGrad)" strokeWidth="8" fill="none" strokeLinecap="round" />
+                <path d="M 54 94 A 48 48 0 0 1 146 94" stroke="#67E8F9" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.8" />
+                
+                <rect x="42" y="82" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
+                <rect x="46" y="86" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
+                <circle cx="51" cy="99" r="3" fill="#A5F3FC" className="animate-pulse" />
+
+                <rect x="140" y="82" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
+                <rect x="144" y="86" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
+                <circle cx="149" cy="99" r="3" fill="#A5F3FC" className="animate-pulse" />
+              </g>
+            )}
+          </g>
         </g>
 
         {/* ==================================================== */}
-        {/* LAYER 5: HAND-HELD GEAR & CANTEEN / LANTERN          */}
+        {/* LAYER 7: FRONT VISUAL FX (In Front of Kibo)          */}
         {/* ==================================================== */}
-        <g id="layer-gear">
-          {hasGoldenCompass && (
-            <g filter="url(#clayShadow)">
-              <circle cx="60" cy="140" r="12" fill="url(#goldBodyGrad)" stroke="#B45309" strokeWidth="2.5" />
-              <polygon points="60,132 63,140 60,148 57,140" fill="#EF4444" />
+        <g id="layer-front-fx">
+          {hasSparkleDust && (
+            <g>
+              {/* Falling Raindrops (Front Layer) */}
+              <path d="M 60 20 L 56 38" stroke="#0284C7" strokeWidth="3" strokeLinecap="round" className="animate-rain-drop-1" />
+              <path d="M 140 25 L 136 43" stroke="#0284C7" strokeWidth="3" strokeLinecap="round" className="animate-rain-drop-2" />
+              <path d="M 90 15 L 86 33" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" className="animate-rain-drop-5" />
+              <path d="M 110 35 L 106 53" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" className="animate-rain-drop-4" />
             </g>
           )}
 
-          {hasCanteen && (
-            <g filter="url(#clayShadow)">
-              <ellipse cx="138" cy="145" rx="10" ry="14" fill="#0284C7" stroke="#075985" strokeWidth="2.5" />
-              <rect x="135" y="128" width="6" height="5" fill="#CBD5E1" />
+          {hasLightningSparks && (
+            <g id="cosmic-bubble-floating-front">
+              {/* Iridescent Pastel Bubbles (Front Layer) */}
+              <g className="animate-bubble-float-2"><circle cx="85" cy="145" r="16" fill="#A5F3FC" opacity="0.6" stroke="#0284C7" strokeWidth="1.5" /><circle cx="80" cy="140" r="4.5" fill="#FFFFFF" opacity="0.85" /></g>
+              <g className="animate-bubble-float-4"><circle cx="115" cy="155" r="12" fill="#FBCFE8" opacity="0.6" stroke="#DB2777" strokeWidth="1.5" /><circle cx="112" cy="152" r="3.5" fill="#FFFFFF" opacity="0.85" /></g>
             </g>
           )}
 
-          {hasLantern && (
-            <g filter="url(#clayShadow)">
-              {/* Glowing Ambient Aura */}
-              <circle cx="48" cy="138" r="26" fill="#FDE047" opacity="0.35" className="animate-pulse" />
-              
-              {/* Brass Handle Loop */}
-              <path d="M 38 120 C 38 106 58 106 58 120" stroke="#78350F" strokeWidth="3.5" fill="none" />
-              
-              {/* Main Golden Lantern Housing */}
-              <rect x="34" y="120" width="28" height="36" rx="8" fill="#D97706" stroke="#78350F" strokeWidth="3" />
-              
-              {/* Glass Chamber & Radiant Flame */}
-              <rect x="39" y="126" width="18" height="24" rx="4" fill="#FEF08A" stroke="#B45309" strokeWidth="2" />
-              <path d="M 48 144 Q 53 136 48 130 Q 43 136 48 144 Z" fill="#EF4444" className="animate-pulse" />
-              <path d="M 48 142 Q 51 137 48 133 Q 45 137 48 142 Z" fill="#FBBF24" className="animate-pulse" />
-            </g>
-          )}
-
-          {hasKiboShield && (
-            <g filter="url(#clayShadow)">
-              <path d="M 160 115 C 172 115, 178 122, 178 135 C 178 152, 160 165, 160 165 C 160 165, 142 152, 142 135 C 142 122, 148 115, 160 115 Z" fill="#0EA5E9" stroke="#0284C7" strokeWidth="2.5" />
-              <path d="M 160 120 C 169 120, 174 125, 174 135 C 174 148, 160 158, 160 158 C 160 158, 146 148, 146 135 C 146 125, 151 120, 160 120 Z" fill="#38BDF8" />
-              <path d="M 155 137 L 159 141 L 167 131" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            </g>
-          )}
-
-          {hasDoubleSparksPotion && (
-            <g filter="url(#clayShadow)">
-              <rect x="156" y="125" width="8" height="6" rx="1.5" fill="#D97706" stroke="#B45309" strokeWidth="1.5" />
-              <path d="M 154 131 L 166 131 L 173 152 A 5 5 0 0 1 168 158 L 152 158 A 5 5 0 0 1 147 152 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="2" />
-              <text x="160" y="153" textAnchor="middle" fontSize="9" fontWeight="900" fill="#B45309">2x</text>
-            </g>
-          )}
-
-          {hasHintScroll && (
-            <g filter="url(#clayShadow)">
-              <rect x="145" y="130" width="28" height="28" rx="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="2" />
-              <path d="M 149 138 L 169 138 M 149 144 L 169 144 M 149 150 L 161 150" stroke="#B45309" strokeWidth="2" strokeLinecap="round" />
-              <text x="166" y="153" textAnchor="middle" fontSize="7" fontWeight="900">💡</text>
-            </g>
-          )}
-        </g>
-
-        {/* ==================================================== */}
-        {/* LAYER 6: HEADWEAR (Hats, Bandanas, Headphones)       */}
-        {/* ==================================================== */}
-        <g id="layer-head">
-          {hasCap && (
-            <g filter="url(#clayShadow)">
-              <path d="M 52 70 Q 100 48 148 70 Z" fill="#2563EB" stroke="#1D4ED8" strokeWidth="3" />
-              <path d="M 100 70 Q 148 64 165 72" stroke="#1D4ED8" strokeWidth="5" strokeLinecap="round" fill="none" />
-            </g>
-          )}
-
-          {hasBandana && (
-            <g filter="url(#clayShadow)">
-              <path d="M 50 68 Q 100 46 150 68 L 146 78 Q 100 58 54 78 Z" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
-              <polygon points="144,72 165,82 152,90" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
-            </g>
-          )}
-
-          {hasPartyHat && (
-            <g filter="url(#clayShadow)">
-              <polygon points="100,20 70,70 130,70" fill="#F59E0B" stroke="#D97706" strokeWidth="3" />
-              <circle cx="100" cy="18" r="8" fill="#EF4444" />
-            </g>
-          )}
-
-          {hasGoggles && (
-            <g filter="url(#claySpecular)">
-              <rect x="65" y="86" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
-              <rect x="105" y="86" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
-              <line x1="95" y1="96" x2="105" y2="96" stroke="#0284C7" strokeWidth="4" />
-            </g>
-          )}
-
-          {hasExplorerHat && (
-            <g filter="url(#clayShadow)">
-              <path d="M 70 65 Q 100 32 130 65 Z" fill="#92400E" stroke="#451A03" strokeWidth="3" />
-              <path d="M 68 62 Q 100 55 132 62" stroke="#F59E0B" strokeWidth="5" fill="none" />
-              <ellipse cx="100" cy="66" rx="54" ry="10" fill="#78350F" stroke="#451A03" strokeWidth="3" />
-            </g>
-          )}
-
-          {hasWizardHat && (
-            <g filter="url(#clayShadow)">
-              <path d="M 100 10 L 60 72 L 140 72 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3" />
-              <ellipse cx="100" cy="72" rx="48" ry="10" fill="#6D28D9" stroke="#5B21B6" strokeWidth="3" />
-              <polygon points="100,25 103,32 110,34 105,39 106,46 100,42 94,46 95,39 90,34 97,32" fill="#FBBF24" />
-            </g>
-          )}
-
-          {hasCrown && (
-            <g filter="url(#clayShadow)">
-              <path d="M 65 68 L 72 38 L 86 52 L 100 30 L 114 52 L 128 38 L 135 68 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="3" />
-              <circle cx="72" cy="36" r="4" fill="#EF4444" />
-              <circle cx="100" cy="28" r="5" fill="#3B82F6" />
-              <circle cx="128" cy="36" r="4" fill="#10B981" />
-            </g>
-          )}
-
-          {hasNeonHeadphones && (
-            <g filter="url(#clayShadow)">
-              <path d="M 52 95 A 50 50 0 0 1 148 95" stroke="url(#neonHeadphoneGrad)" strokeWidth="8" fill="none" strokeLinecap="round" />
-              <path d="M 54 94 A 48 48 0 0 1 146 94" stroke="#67E8F9" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.8" />
-              
-              <rect x="42" y="82" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
-              <rect x="46" y="86" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
-              <circle cx="51" cy="99" r="3" fill="#A5F3FC" className="animate-pulse" />
-
-              <rect x="140" y="82" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
-              <rect x="144" y="86" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
-              <circle cx="149" cy="99" r="3" fill="#A5F3FC" className="animate-pulse" />
+          {hasSpeedTrail && (
+            <g id="disco-fever-spotlight-front" className="animate-disco-spotlight">
+              {/* Dance Floor Glittering Sparkles */}
+              <circle cx="50" cy="175" r="3" fill="#FDE047" className="animate-ping" />
+              <circle cx="150" cy="175" r="3" fill="#38BDF8" className="animate-ping" />
+              <polygon points="100,165 103,172 110,172 104,176 106,183 100,178 94,183 96,176 90,172 97,172" fill="#F472B6" opacity="0.8" />
             </g>
           )}
         </g>

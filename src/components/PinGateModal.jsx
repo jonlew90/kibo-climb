@@ -147,7 +147,7 @@ export default function PinGateModal({
           )}
 
           {/* Touch Keypad (1-9, 0, ⌫) */}
-          <div className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto">
+          <div className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto my-3 sm:my-4">
             {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
               <button
                 key={num}

@@ -36,14 +36,14 @@ export default function KiboBreakOverlay({
             You completed 12 adaptive problems on Mount Kibo!
           </p>
 
-          {/* Kibo Mascot Image (max-h-[16vh] w-auto mx-auto object-contain) */}
-          <div className="relative py-1 flex items-center justify-center">
+          {/* Kibo Mascot Image */}
+          <div className="relative py-1 flex items-center justify-center p-1 overflow-visible">
             <div className="absolute w-28 h-28 rounded-full bg-amber-400/30 blur-xl animate-pulse pointer-events-none" />
             <Mascot
               mood="happy"
               state="break"
               equipped={equippedItems}
-              className="w-auto max-h-[16vh] h-24 sm:h-32 filter drop-shadow-md animate-bounce object-contain"
+              className="w-24 h-24 sm:w-32 sm:h-32 aspect-square filter drop-shadow-md animate-bounce"
             />
           </div>
         </div>

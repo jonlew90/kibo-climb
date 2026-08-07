@@ -29,13 +29,13 @@ function ProfileCard({ profile, onSelect, isSelected }) {
         <div className="absolute inset-0 rounded-3xl ring-2 ring-amber-400/40 ring-offset-2 ring-offset-transparent pointer-events-none" />
       )}
 
-      <div className="relative">
+      <div className="relative p-1 overflow-visible">
         <div className={`absolute inset-0 rounded-full blur-xl transition-all duration-300 ${isSelected ? 'bg-amber-400/30' : 'bg-purple-500/10 group-hover:bg-purple-500/20'}`} />
         <Mascot
           mood="happy"
           state="idle"
           equipped={equipped}
-          className="h-20 w-auto object-contain relative z-10 drop-shadow-lg"
+          className="w-20 h-20 aspect-square relative z-10 drop-shadow-lg"
         />
       </div>
 
