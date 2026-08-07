@@ -86,8 +86,14 @@ export const DOMAIN_DEFINITIONS = [
   }
 ];
 
-export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, activeRating = 1000) => {
+export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = []) => {
   const recentSprints = (sprintHistory || []).slice(-20);
+
+  // Extract the initial placement rating from the user's recorded history.
+  // If no history exists, fallback to activeRating (meaning they just started).
+  const initialRating = (Array.isArray(rawRatingHistory) && rawRatingHistory.length > 0)
+    ? (rawRatingHistory[0]?.rating ?? activeRating)
+    : activeRating;
 
   return DOMAIN_DEFINITIONS.map((def) => {
     let matchedCorrect = 0;
@@ -136,8 +142,15 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
         status = 'Practicing';
         accuracy = 75; // Default for practicing without history
       } else if (activeRating >= def.minUnlockRating) {
-        status = 'Skipped';
-        accuracy = 0;
+        // If the initial rating was already high enough to surpass this topic, it was genuinely skipped.
+        // Otherwise, the student climbed past it naturally, so they have mastered it.
+        if (initialRating > def.minUnlockRating) {
+          status = 'Skipped';
+          accuracy = 0;
+        } else {
+          status = 'Mastered';
+          accuracy = 90; // Default high accuracy for topics climbed past without recent history
+        }
       } else {
         status = 'Locked';
         accuracy = 0;
@@ -178,7 +191,7 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
 };
 
 export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = []) => {
-  const domains = calculateDomainMastery(sprintHistory, currentTier, activeRating);
+  const domains = calculateDomainMastery(sprintHistory, currentTier, activeRating, rawRatingHistory);
 
   let masteredCount = 0;
   let practicingCount = 0;
