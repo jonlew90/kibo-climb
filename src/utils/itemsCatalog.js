@@ -125,8 +125,8 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 550,
     rarity: 'epic',
-    requiredRank: 1200,
-    description: 'Classic leather safari explorer hat for peak summits. Requires Competence Rank 1200.'
+
+    description: 'Classic leather safari explorer hat for peak summits.'
   },
   {
     id: 'crown',
@@ -134,8 +134,8 @@ export const WORKSHOP_ITEMS = [
     category: 'headwear',
     cost: 1500,
     rarity: 'legendary',
-    requiredRank: 1600,
-    description: 'Royal jeweled golden crown for math royalty! Requires Competence Rank 1600.'
+
+    description: 'Royal jeweled golden crown for math royalty!'
   },
 
   // GEAR (Slot: gear)
@@ -169,8 +169,8 @@ export const WORKSHOP_ITEMS = [
     category: 'gear',
     cost: 750,
     rarity: 'epic',
-    requiredRank: 1350,
-    description: 'Futuristic twin rocket thruster jetpack! Requires Competence Rank 1350.'
+
+    description: 'Futuristic twin rocket thruster jetpack!'
   },
   {
     id: 'golden_compass',
@@ -178,8 +178,8 @@ export const WORKSHOP_ITEMS = [
     category: 'gear',
     cost: 1600,
     rarity: 'legendary',
-    requiredRank: 1550,
-    description: 'Enchanted solid 24k gold navigational compass. Requires Competence Rank 1550.'
+
+    description: 'Enchanted solid 24k gold navigational compass.'
   },
 
   // OUTFITS (Slot: outfits)
@@ -205,8 +205,8 @@ export const WORKSHOP_ITEMS = [
     category: 'outfits',
     cost: 350,
     rarity: 'epic',
-    requiredRank: 1100,
-    description: 'Cozy knitted winter scarf with gold stripes. Requires Competence Rank 1100.'
+
+    description: 'Cozy knitted winter scarf with gold stripes.'
   },
   {
     id: 'royal_cape',
@@ -214,8 +214,8 @@ export const WORKSHOP_ITEMS = [
     category: 'outfits',
     cost: 1400,
     rarity: 'legendary',
-    requiredRank: 1500,
-    description: 'Majestic purple velvet cape with golden trim. Requires Competence Rank 1500.'
+
+    description: 'Majestic purple velvet cape with golden trim.'
   },
 
   // PETS (Category: pets)
@@ -249,8 +249,8 @@ export const WORKSHOP_ITEMS = [
     category: 'pets',
     cost: 900,
     rarity: 'epic',
-    requiredRank: 1300,
-    description: 'Mystic ice dragon companion floating with frost sparkles! Requires Competence Rank 1300.'
+
+    description: 'Mystic ice dragon companion floating with frost sparkles!'
   },
   {
     id: 'cosmic_griffin',
@@ -258,8 +258,8 @@ export const WORKSHOP_ITEMS = [
     category: 'pets',
     cost: 1800,
     rarity: 'legendary',
-    requiredRank: 1500,
-    description: 'Royal golden celestial griffin companion! Requires Competence Rank 1500.'
+
+    description: 'Royal golden celestial griffin companion!'
   },
 
   // VISUAL FX (Category: fx)
@@ -293,8 +293,8 @@ export const WORKSHOP_ITEMS = [
     category: 'fx',
     cost: 480,
     rarity: 'epic',
-    requiredRank: 1150,
-    description: 'Kibo performs periodic victory twirls and joyful spins as you climb! Requires Rank 1150.'
+
+    description: 'Kibo performs periodic victory twirls and joyful spins as you climb!'
   },
   {
     id: 'lightning_sparks',
@@ -302,8 +302,8 @@ export const WORKSHOP_ITEMS = [
     category: 'fx',
     cost: 550,
     rarity: 'epic',
-    requiredRank: 1200,
-    description: 'High-voltage electric lightning energy crackling around Kibo! Requires Rank 1200.'
+
+    description: 'High-voltage electric lightning energy crackling around Kibo!'
   },
   {
     id: 'fx_hyper_speed',
@@ -311,8 +311,8 @@ export const WORKSHOP_ITEMS = [
     category: 'fx',
     cost: 750,
     rarity: 'epic',
-    requiredRank: 1350,
-    description: 'Speedster motion blur energy lines pulsating behind Kibo! Requires Rank 1350.'
+
+    description: 'Speedster motion blur energy lines pulsating behind Kibo!'
   },
   {
     id: 'rainbow_nebula',
@@ -320,8 +320,8 @@ export const WORKSHOP_ITEMS = [
     category: 'fx',
     cost: 1450,
     rarity: 'legendary',
-    requiredRank: 1550,
-    description: 'Prismatic glowing celestial galaxy aura! Requires Competence Rank 1550.'
+
+    description: 'Prismatic glowing celestial galaxy aura!'
   },
   {
     id: 'fx_orbit_moons',
@@ -329,8 +329,8 @@ export const WORKSHOP_ITEMS = [
     category: 'fx',
     cost: 1600,
     rarity: 'legendary',
-    requiredRank: 1600,
-    description: 'Three miniature glowing moons orbit continuously around Kibo in 3D space! Requires Rank 1600.'
+
+    description: 'Three miniature glowing moons orbit continuously around Kibo in 3D space!'
   },
 
   // KIBO SKINS (Category: skins)
@@ -356,8 +356,8 @@ export const WORKSHOP_ITEMS = [
     category: 'skins',
     cost: 700,
     rarity: 'epic',
-    requiredRank: 1250,
-    description: 'Enchanted shimmering emerald jade fur skin! Requires Competence Rank 1250.'
+
+    description: 'Enchanted shimmering emerald jade fur skin!'
   },
   {
     id: 'golden_skin',
@@ -365,8 +365,8 @@ export const WORKSHOP_ITEMS = [
     category: 'skins',
     cost: 2500,
     rarity: 'legendary',
-    requiredRank: 1700,
-    description: 'Shimmering solid 24k gold metallic Kibo skin! Requires Competence Rank 1700.'
+
+    description: 'Shimmering solid 24k gold metallic Kibo skin!'
   },
 
   // SPRINT BACKGROUNDS (Slot: background)
@@ -424,8 +424,8 @@ export const WORKSHOP_ITEMS = [
     category: 'background',
     cost: 1800,
     rarity: 'legendary',
-    requiredRank: 1650,
-    description: 'Royal golden palace floating in the clouds! Requires Competence Rank 1650.'
+
+    description: 'Royal golden palace floating in the clouds!'
   }
 ];
 
