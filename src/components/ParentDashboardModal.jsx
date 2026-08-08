@@ -136,6 +136,12 @@ export default function ParentDashboardModal({
   };
 
   useEffect(() => {
+    if (isOpen) {
+      setViewingProfileId(storageService.getActiveProfileId());
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!isOpen) return;
     const fetchUserData = () => {
       const p = storageService.getProfileById(viewingProfileId);
