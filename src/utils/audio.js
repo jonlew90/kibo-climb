@@ -1,7 +1,14 @@
 // Web Audio API Synthesizer & Web Haptics Engine for Kibo Math
 
+let _hapticsEnabled = true;
+
+export function setHapticsEnabled(enabled) {
+  _hapticsEnabled = enabled;
+}
+
 // Web Haptics Helper (navigator.vibrate fallback)
 export function triggerHaptic(pattern = 15) {
+  if (!_hapticsEnabled) return;
   if (typeof window !== 'undefined' && 'navigator' in window && 'vibrate' in navigator) {
     try {
       navigator.vibrate(pattern);
@@ -32,6 +39,10 @@ class SoundSystem {
   toggleMute() {
     this.isMuted = !this.isMuted;
     return this.isMuted;
+  }
+
+  setMuted(muted) {
+    this.isMuted = muted;
   }
 
   // Play crisp pop for correct answers + haptic pulse
