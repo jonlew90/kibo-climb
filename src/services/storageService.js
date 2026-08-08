@@ -54,7 +54,9 @@ const DEFAULT_PROFILE = {
       doubleCoinPotionCount: 0
     },
     preferences: {
-      hideSprintTimer: false
+      hideSprintTimer: false,
+      isMuted: false,
+      isHapticsEnabled: true
     }
   },
   shopState: {

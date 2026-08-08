@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Play, Volume2, VolumeX, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck, Compass, MapPin, Users, Mountain } from 'lucide-react';
+import { Flame, Play, Settings, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck, Compass, MapPin, Users, Mountain } from 'lucide-react';
 import Mascot from './components/Mascot';
 import Keypad from './components/Keypad';
 import ConfettiCanvas from './components/ConfettiCanvas';
@@ -37,11 +37,12 @@ import { shopLedgerService } from './services/shopLedgerService';
 import AccountLinkModal from './components/AccountLinkModal';
 import { getNotificationPrefs } from './utils/notifications';
 import MockCheckoutModal from './components/MockCheckoutModal';
+import SettingsScreen from './components/SettingsScreen';
+import { setHapticsEnabled } from './utils/audio';
 
 export default function App() {
-  // App State: 'adaptive_session' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test'
+  // App State: 'adaptive_session' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test' | 'settings'
   const [appState, setAppState] = useState('adaptive_session');
-  const [isMuted, setIsMuted] = useState(false);
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
   const [workshopOriginState, setWorkshopOriginState] = useState('adaptive_session');
 
@@ -97,6 +98,17 @@ export default function App() {
     setEquippedItems(sData.equippedItems ?? []);
     setUnlockedItems(sData.unlockedItems ?? ['cap']);
     setHasVisitedParentZone(uData.hasVisitedParentZone || false);
+
+    // Sync Audio & Haptics preferences
+    const prefs = {
+      hideSprintTimer: false,
+      isMuted: false,
+      isHapticsEnabled: true,
+      ...(uData.preferences || {})
+    };
+    soundFx.setMuted(prefs.isMuted);
+    setHapticsEnabled(prefs.isHapticsEnabled);
+    setPreferences(prefs);
   };
 
   // Initialize Silent Anonymous Guest Auth & Offline Background Sync Queue on Launch
@@ -303,12 +315,26 @@ export default function App() {
   const [durationInSeconds, setDurationInSeconds] = useState(0);
 
   const [preferences, setPreferences] = useState(() => {
-    return storageService.getUserData().preferences || { hideSprintTimer: false };
+    const defaultPrefs = { hideSprintTimer: false, isMuted: false, isHapticsEnabled: true };
+    return { ...defaultPrefs, ...(storageService.getUserData().preferences || {}) };
   });
+
+  // Apply preferences to audio engine on initial load
+  useEffect(() => {
+    soundFx.setMuted(preferences.isMuted);
+    setHapticsEnabled(preferences.isHapticsEnabled);
+  }, []);
 
   const handleUpdatePreferences = (newPrefs) => {
     setPreferences(newPrefs);
     storageService.saveUserData({ preferences: newPrefs });
+
+    if (newPrefs.isMuted !== undefined) {
+      soundFx.setMuted(newPrefs.isMuted);
+    }
+    if (newPrefs.isHapticsEnabled !== undefined) {
+      setHapticsEnabled(newPrefs.isHapticsEnabled);
+    }
   };
 
   const [notifPrefs, setNotifPrefs] = useState(() => getNotificationPrefs());
@@ -1184,10 +1210,6 @@ export default function App() {
     startNewSprint(false, selectedTier);
   };
 
-  const toggleAudio = () => {
-    const muted = soundFx.toggleMute();
-    setIsMuted(muted);
-  };
 
   const handleBuyItem = (item) => {
     const res = shopLedgerService.purchaseItem(item.id, item.cost);
@@ -1438,16 +1460,21 @@ export default function App() {
         <span className="text-[10px] font-black tracking-wide">Parents</span>
       </button>
 
-      {/* 5. Mute Button: Rose Red / Pink */}
+      {/* 5. Settings Button: Slate Gray */}
       <button
         type="button"
-        onClick={toggleAudio}
-        className="flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-rose-100 via-pink-50 to-rose-100 text-rose-950 border-2 border-rose-400 rounded-xl hover:from-rose-200 hover:to-pink-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem]"
-        aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
-        title={isMuted ? 'Unmute Sound' : 'Mute Sound'}
+        onClick={() => {
+          soundFx.playKeyTap();
+          setAppState('settings');
+        }}
+        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+          appState === 'settings' ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
+        }`}
+        aria-label="Settings"
+        title="Settings"
       >
-        {isMuted ? <VolumeX className="w-5 h-5 text-rose-600 stroke-[2.5]" /> : <Volume2 className="w-5 h-5 text-rose-700 stroke-[2.5]" />}
-        <span className="text-[10px] font-black tracking-wide">{isMuted ? 'Unmute' : 'Mute'}</span>
+        <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+        <span className="text-[10px] font-black tracking-wide">Settings</span>
       </button>
     </footer>
   );
@@ -1539,8 +1566,20 @@ export default function App() {
         </header>
       )}
 
+      {/* SETTINGS SCREEN */}
+      {appState === 'settings' && (
+        <SettingsScreen
+          preferences={preferences}
+          onUpdatePreferences={handleUpdatePreferences}
+          onClose={() => {
+            soundFx.playKeyTap();
+            setAppState('adaptive_session');
+          }}
+        />
+      )}
+
       {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
-      {(appState === 'adaptive_session' || appState === 'world_map' || appState === 'launch' || !['sprint', 'victory', 'skill_map', 'placement_test'].includes(appState)) && (
+      {(appState === 'adaptive_session' || appState === 'world_map' || appState === 'launch' || !['sprint', 'victory', 'skill_map', 'placement_test', 'settings'].includes(appState)) && (
         <AdaptiveSessionView
           isPaused={isAppPaused}
           equippedItems={equippedItems}
@@ -2413,7 +2452,7 @@ export default function App() {
       />
 
       {/* Bottom Navigation Bar */}
-      {appState !== 'sprint' && renderNavigationFooter()}
+      {appState !== 'sprint' && appState !== 'settings' && renderNavigationFooter()}
       </div>
     </div>
   );
