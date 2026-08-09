@@ -54,17 +54,18 @@ async def main():
 
         # Wait for something indicative of the main view
         try:
-            await page.wait_for_selector('button:has-text("1")', timeout=10000)
-            print("Adaptive Session view detected (found digit 1).")
+            await page.wait_for_selector('button:has-text("START CLIMB")', timeout=10000)
+            print("Adaptive Session view detected (found START CLIMB button).")
         except Exception as e:
             print(f"Error waiting for AdaptiveSessionView: {e}")
             await page.screenshot(path="/home/jules/verification/screenshots/verification_after_click.png")
 
-        print("Triggering timer start by typing a digit...")
-        # Click a digit to trigger first keystroke
+        print("Triggering timer start by clicking START CLIMB button...")
         try:
-            await page.get_by_text("1", exact=True).first.click(timeout=5000)
-        except Exception:
+            await page.get_by_text("START CLIMB", exact=False).first.click(timeout=5000)
+            print("Clicked START CLIMB button!")
+        except Exception as e:
+            print("Error clicking START CLIMB:", e)
             await page.screenshot(path="/home/jules/verification/screenshots/verification_after_click.png")
 
         print("Waiting 2 seconds to let the timer run...")

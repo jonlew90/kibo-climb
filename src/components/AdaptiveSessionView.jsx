@@ -98,8 +98,9 @@ export default function AdaptiveSessionView({
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
   const [celebrationEvent, setCelebrationEvent] = useState(null);
 
+  const [hasStartedClimb, setHasStartedClimb] = useState(false);
   const blockSeenKeysRef = useRef(new Set());
-  const blockStartTimeRef = useRef(performance.now());
+  const blockStartTimeRef = useRef(0);
 
   // Generate adaptive problem queue for active tier based on competence rating
   const [problemQueue, setProblemQueue] = useState(() => {
@@ -112,7 +113,14 @@ export default function AdaptiveSessionView({
   });
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const problemStartTimeRef = useRef(performance.now());
+  const problemStartTimeRef = useRef(0);
+
+  const handleStartClimb = () => {
+    soundFx.playKeyTap();
+    blockStartTimeRef.current = performance.now();
+    problemStartTimeRef.current = performance.now();
+    setHasStartedClimb(true);
+  };
 
   const currentProblem = problemQueue[currentIndex] || {
     num1: 12,
@@ -140,7 +148,9 @@ export default function AdaptiveSessionView({
       if (problemStartTimeRef.current !== null && problemStartTimeRef.current !== 0) {
         problemStartTimeRef.current += pauseDuration;
       }
-      blockStartTimeRef.current += pauseDuration;
+      if (blockStartTimeRef.current !== null && blockStartTimeRef.current !== 0) {
+        blockStartTimeRef.current += pauseDuration;
+      }
       pauseStartRef.current = null;
     }
   }, [isPaused]);
@@ -158,7 +168,9 @@ export default function AdaptiveSessionView({
           if (problemStartTimeRef.current !== null && problemStartTimeRef.current !== 0) {
             problemStartTimeRef.current += pauseDuration;
           }
-          blockStartTimeRef.current += pauseDuration;
+          if (blockStartTimeRef.current !== null && blockStartTimeRef.current !== 0) {
+            blockStartTimeRef.current += pauseDuration;
+          }
           pauseStartRef.current = null;
         }
       }
@@ -169,7 +181,11 @@ export default function AdaptiveSessionView({
   }, [isPaused]);
 
   useEffect(() => {
-    problemStartTimeRef.current = 0; // Initialize to 0, start on first keystroke
+    if (hasStartedClimb) {
+      problemStartTimeRef.current = performance.now();
+    } else {
+      problemStartTimeRef.current = 0;
+    }
     setShouldPulseHint(false);
 
     const hintTimer = setTimeout(() => {
@@ -183,7 +199,7 @@ export default function AdaptiveSessionView({
     }
 
     return () => clearTimeout(hintTimer);
-  }, [currentIndex, currentProblem, isMoneyQuestion, targetStr]);
+  }, [currentIndex, currentProblem, isMoneyQuestion, targetStr, hasStartedClimb]);
 
   const bannerTimerRef = useRef(null);
 
@@ -701,6 +717,14 @@ export default function AdaptiveSessionView({
         return;
       }
 
+      if (!hasStartedClimb) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleStartClimb();
+        }
+        return;
+      }
+
       if (e.key === 'Backspace' || e.key === 'Delete') {
         e.preventDefault();
         handleDeleteDigit();
@@ -723,7 +747,7 @@ export default function AdaptiveSessionView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [inputVal, currentProblem, competenceRank]);
+  }, [inputVal, currentProblem, competenceRank, hasStartedClimb]);
 
   const lastBannerTypeRef = useRef('success');
   const lastBannerTextRef = useRef('');
@@ -754,7 +778,9 @@ export default function AdaptiveSessionView({
           if (onResetDoubleSparks) onResetDoubleSparks();
           setSessionQuestionIndex(1);
           blockSeenKeysRef.current.clear();
-          blockStartTimeRef.current = performance.now();
+          setHasStartedClimb(false);
+          blockStartTimeRef.current = 0;
+          problemStartTimeRef.current = 0;
           const nextTier = getTierFromRating(competenceRank);
           const freshBatch = generateProblems(15, nextTier, [], blockSeenKeysRef.current);
           setProblemQueue(freshBatch);
@@ -842,184 +868,218 @@ export default function AdaptiveSessionView({
 
 
 
-        {/* ACTIVE ADAPTIVE MATH QUESTION CARD */}
-        {(() => {
-          const streakCfg = getStreakTierConfig(inSessionStreak);
+        {!hasStartedClimb ? (
+          /* PRE-CLIMB START SCREEN HERO CARD */
+          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-5 text-center shadow-xl space-y-4 relative overflow-hidden animate-pop">
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
+                🏔️ Mountain Climb • 12 Problems
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
+                Ready for the Climb?
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed">
+                Click <span className="text-emerald-600 font-extrabold">Start Climb</span> when you are ready! Your timer will begin as soon as you start.
+              </p>
+            </div>
 
-          return (
-            <div
-              className={`w-full bg-white border-4 rounded-3xl p-3 sm:p-4 text-center transition-all duration-500 space-y-2 relative ${
-                streakCfg.cardGlow
-              } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''}`}
-            >
-              {/* Floating Ambient Sparkles for High Streaks */}
-              {inSessionStreak >= 5 && (
-                <div className="absolute -top-3 left-4 right-4 flex justify-between pointer-events-none z-10">
-                  <span className="text-sm animate-bounce text-amber-400 filter drop-shadow-xs">✨</span>
-                  <span className="text-sm animate-pulse text-orange-500 filter drop-shadow-xs">🔥</span>
-                  <span className="text-sm animate-bounce text-yellow-400 filter drop-shadow-xs">⚡</span>
-                </div>
-              )}
-
-              <div className="w-full flex flex-wrap items-center justify-center gap-1.5 py-0.5">
-                <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0 shadow-2xs">
-                  🎯 Q #{currentQuestionNum}/12
-                </span>
-                {isNearTierThreshold(competenceRank) && !currentProblem.isProbe && (
-                  <span className="text-[10px] font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-0.5 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
-                    ⚡ TIER GATEKEEPER
-                  </span>
-                )}
-                {currentProblem.isProbe && (
-                  <span className="text-[10px] font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-0.5 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
-                    🚀 SKILL PROBE (+120)
-                  </span>
-                )}
-                <span
-                  className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
-                >
-                  {streakCfg.label}
-                </span>
-
-                {/* MANUAL WISDOM HINT BUTTON */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShouldPulseHint(false);
-                    if (showFrustrationCard) return;
-                    const owned = consumables?.hintScrollCount ?? 0;
-                    if (owned > 0 && onConsumeHintScroll) {
-                      onConsumeHintScroll();
-                      setShowFrustrationCard(true);
-                      triggerToastBanner({
-                        type: 'success',
-                        text: 'Kibo Wisdom Hint Unlocked! 💡'
-                      }, 1200);
-                    } else if (onOpenWorkshop) {
-                      onOpenWorkshop();
-                    }
-                  }}
-                  className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
-                    showFrustrationCard
-                      ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
-                      : shouldPulseHint
-                      ? 'bg-amber-300 text-amber-950 border-amber-500 animate-pulse ring-4 ring-amber-400/80 shadow-md scale-105'
-                      : (consumables?.hintScrollCount ?? 0) > 0
-                      ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
-                      : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
-                  }`}
-                  title={
-                    (consumables?.hintScrollCount ?? 0) > 0
-                      ? 'Use Wisdom Scroll to reveal a hint!'
-                      : 'Get Hint Scrolls in Kibo\'s Corner'
-                  }
-                >
-                  💡 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
-                </button>
-
-                {(() => {
-                  const owned = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
-                  if (isDoubleSparksActive) {
-                    return (
-                      <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
-                        ⚡ 2x Active!
-                      </span>
-                    );
-                  }
-                  if (owned > 0) {
-                    return (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (onToggleDoubleSparksPotion) {
-                            onToggleDoubleSparksPotion();
-                            triggerToastBanner({
-                              type: 'success',
-                              text: 'Double Sparks Potion Activated for this climb! ⚡'
-                            }, 1400);
-                          }
-                        }}
-                        className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
-                        title="Tap to activate Double Sparks for this climb!"
-                      >
-                        ⚡ Use 2x ({owned})
-                      </button>
-                    );
-                  }
+            {/* PRE-CLIMB POWERUPS & CONSUMABLES SELECTOR */}
+            <div className="flex flex-wrap items-center justify-center gap-2 py-1">
+              {(() => {
+                const owned = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
+                if (isDoubleSparksActive) {
+                  return (
+                    <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 animate-pulse shadow-xs flex items-center gap-1">
+                      ⚡ 2x Sparks Active!
+                    </span>
+                  );
+                }
+                if (owned > 0) {
                   return (
                     <button
                       type="button"
                       onClick={() => {
-                        if (onOpenWorkshop) onOpenWorkshop();
+                        if (onToggleDoubleSparksPotion) {
+                          onToggleDoubleSparksPotion();
+                          triggerToastBanner({
+                            type: 'success',
+                            text: 'Double Sparks Potion Activated for this climb! ⚡'
+                          }, 1400);
+                        }
                       }}
-                      className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full border border-slate-300 bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
-                      title="Get 2x Sparks Potions in Kibo's Corner"
+                      className="text-xs font-black uppercase px-3 py-1 rounded-full border transition-all active:scale-95 flex items-center gap-1 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
                     >
-                      ⚡ Get 2x
+                      ⚡ Activate 2x Potion ({owned})
                     </button>
                   );
-                })()}
+                }
+                return null;
+              })()}
 
-                {/* KIBO SHIELD ACTIVE PILL */}
-                {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
-                  <span
-                    className="text-[10px] font-black uppercase text-sky-950 bg-sky-100 px-2.5 py-0.5 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
-                    title="Kibo Shield Active: Your climb & streak are protected!"
-                  >
-                    🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
-                  </span>
-                )}
-              </div>
 
-          {(() => {
-            const rawDisplay = currentProblem.displayString || `${currentProblem.num1} ${currentProblem.operatorSymbol} ${currentProblem.num2}`;
-            const cleanDisplay = rawDisplay.replace(/\s*=\s*\?\s*¢?/gi, '').replace(/\s*=\s*\?\s*cents?/gi, '').trim();
-            const hasQuestionSuffix = cleanDisplay.endsWith('?') || cleanDisplay.includes('Change?') || cleanDisplay.includes('Leftover?') || cleanDisplay.includes('End time?');
-            const isLongText = cleanDisplay.length > 22;
+
+              {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
+                <span className="text-xs font-black uppercase text-sky-950 bg-sky-100 px-3 py-1 rounded-full border border-sky-300 shadow-2xs flex items-center gap-1">
+                  🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
+                </span>
+              )}
+            </div>
+
+            {/* START CLIMB MAIN CTA BUTTON */}
+            <button
+              type="button"
+              onClick={handleStartClimb}
+              className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-xl sm:text-2xl py-4 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer"
+            >
+              <Play className="w-7 h-7 fill-current" />
+              <span>START CLIMB 🏔️</span>
+            </button>
+          </div>
+        ) : (
+          /* ACTIVE ADAPTIVE MATH QUESTION CARD */
+          (() => {
+            const streakCfg = getStreakTierConfig(inSessionStreak);
 
             return (
-              <div className="space-y-1.5 w-full">
-                <div className={`w-full flex items-center justify-center gap-2 sm:gap-3 flex-wrap my-1 ${
-                  isLongText ? 'text-sm sm:text-base leading-tight font-bold' : 'text-2xl sm:text-3xl font-extrabold'
-                } text-slate-800`}>
-                  <span className="max-w-full text-center leading-tight">{cleanDisplay}</span>
-                  {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
-
-                  {/* Answer Display */}
-                  <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-2xl sm:text-3xl shadow-inner shrink-0">
-                    {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
-                  </span>
-                </div>
-
-                {/* INTEGRATED KIBO HINT */}
-                {showFrustrationCard && (
-                  <div className="w-full pt-1.5 border-t border-indigo-100 text-[11px] font-bold text-indigo-900 bg-indigo-50/90 p-2 rounded-2xl animate-pop text-center space-y-0.5 mt-1">
-                    <span className="block font-black text-indigo-950">💪 Kibo Wisdom Hint:</span>
-                    <span className="italic block text-indigo-800">{currentProblem.hint || "Take your time! Break the problem into simple steps."}</span>
+              <div
+                className={`w-full bg-white border-4 rounded-3xl p-3 sm:p-4 text-center transition-all duration-500 space-y-2 relative ${
+                  streakCfg.cardGlow
+                } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''}`}
+              >
+                {/* Floating Ambient Sparkles for High Streaks */}
+                {inSessionStreak >= 5 && (
+                  <div className="absolute -top-3 left-4 right-4 flex justify-between pointer-events-none z-10">
+                    <span className="text-sm animate-bounce text-amber-400 filter drop-shadow-xs">✨</span>
+                    <span className="text-sm animate-pulse text-orange-500 filter drop-shadow-xs">🔥</span>
+                    <span className="text-sm animate-bounce text-yellow-400 filter drop-shadow-xs">⚡</span>
                   </div>
                 )}
-              </div>
-            );
-          })()}
-          </div>
-        );
-      })()}
+
+                <div className="w-full flex flex-wrap items-center justify-center gap-1.5 py-0.5">
+                  <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0 shadow-2xs">
+                    🎯 Q #{currentQuestionNum}/12
+                  </span>
+                  {isNearTierThreshold(competenceRank) && !currentProblem.isProbe && (
+                    <span className="text-[10px] font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-0.5 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
+                      ⚡ TIER GATEKEEPER
+                    </span>
+                  )}
+                  {currentProblem.isProbe && (
+                    <span className="text-[10px] font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-0.5 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
+                      🚀 SKILL PROBE (+120)
+                    </span>
+                  )}
+                  <span
+                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
+                  >
+                    {streakCfg.label}
+                  </span>
+
+                  {/* MANUAL WISDOM HINT BUTTON */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShouldPulseHint(false);
+                      if (showFrustrationCard) return;
+                      const owned = consumables?.hintScrollCount ?? 0;
+                      if (owned > 0 && onConsumeHintScroll) {
+                        onConsumeHintScroll();
+                        setShowFrustrationCard(true);
+                        triggerToastBanner({
+                          type: 'success',
+                          text: 'Kibo Wisdom Hint Unlocked! 💡'
+                        }, 1200);
+                      } else if (onOpenWorkshop) {
+                        onOpenWorkshop();
+                      }
+                    }}
+                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                      showFrustrationCard
+                        ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
+                        : shouldPulseHint
+                        ? 'bg-amber-300 text-amber-950 border-amber-500 animate-pulse ring-4 ring-amber-400/80 shadow-md scale-105'
+                        : (consumables?.hintScrollCount ?? 0) > 0
+                        ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                    }`}
+                    title={
+                      (consumables?.hintScrollCount ?? 0) > 0
+                        ? 'Use Wisdom Scroll to reveal a hint!'
+                        : 'Get Hint Scrolls in Kibo\'s Corner'
+                    }
+                  >
+                    💡 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
+                  </button>
+
+                  {isDoubleSparksActive && (
+                    <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
+                      ⚡ 2x Active!
+                    </span>
+                  )}
+
+                  {/* KIBO SHIELD ACTIVE PILL */}
+                  {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
+                    <span
+                      className="text-[10px] font-black uppercase text-sky-950 bg-sky-100 px-2.5 py-0.5 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
+                      title="Kibo Shield Active: Your climb & streak are protected!"
+                    >
+                      🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
+                    </span>
+                  )}
+                </div>
+
+            {(() => {
+              const rawDisplay = currentProblem.displayString || `${currentProblem.num1} ${currentProblem.operatorSymbol} ${currentProblem.num2}`;
+              const cleanDisplay = rawDisplay.replace(/\s*=\s*\?\s*¢?/gi, '').replace(/\s*=\s*\?\s*cents?/gi, '').trim();
+              const hasQuestionSuffix = cleanDisplay.endsWith('?') || cleanDisplay.includes('Change?') || cleanDisplay.includes('Leftover?') || cleanDisplay.includes('End time?');
+              const isLongText = cleanDisplay.length > 22;
+
+              return (
+                <div className="space-y-1.5 w-full">
+                  <div className={`w-full flex items-center justify-center gap-2 sm:gap-3 flex-wrap my-1 ${
+                    isLongText ? 'text-sm sm:text-base leading-tight font-bold' : 'text-2xl sm:text-3xl font-extrabold'
+                  } text-slate-800`}>
+                    <span className="max-w-full text-center leading-tight">{cleanDisplay}</span>
+                    {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
+
+                    {/* Answer Display */}
+                    <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-2xl sm:text-3xl shadow-inner shrink-0">
+                      {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
+                    </span>
+                  </div>
+
+                  {/* INTEGRATED KIBO HINT */}
+                  {showFrustrationCard && (
+                    <div className="w-full pt-1.5 border-t border-indigo-100 text-[11px] font-bold text-indigo-900 bg-indigo-50/90 p-2 rounded-2xl animate-pop text-center space-y-0.5 mt-1">
+                      <span className="block font-black text-indigo-950">💪 Kibo Wisdom Hint:</span>
+                      <span className="italic block text-indigo-800">{currentProblem.hint || "Take your time! Break the problem into simple steps."}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+            </div>
+          );
+        })()
+        )}
       </div>
 
       {/* NUMERIC KEYPAD (AUTO-DETECTING & TYPE AWARE) */}
-      <div className="w-full max-w-sm shrink-0">
-        <Keypad
-          onDigit={handleDigitInput}
-          onDelete={handleDeleteDigit}
-          onClear={handleClearInput}
-          onSubmit={() => processAnswerEvaluation(inputVal)}
-          problemType={currentProblem.type || (isMoneyQuestion ? 'money' : isTimeQuestion ? 'time' : '')}
-          answerString={currentProblem.answerString || currentProblem.answer?.toString()}
-          displayString={currentProblem.displayString}
-          operatorSymbol={currentProblem.operatorSymbol}
-          options={currentProblem.options}
-        />
-      </div>
+      {hasStartedClimb && (
+        <div className="w-full max-w-sm shrink-0 animate-pop">
+          <Keypad
+            onDigit={handleDigitInput}
+            onDelete={handleDeleteDigit}
+            onClear={handleClearInput}
+            onSubmit={() => processAnswerEvaluation(inputVal)}
+            problemType={currentProblem.type || (isMoneyQuestion ? 'money' : isTimeQuestion ? 'time' : '')}
+            answerString={currentProblem.answerString || currentProblem.answer?.toString()}
+            displayString={currentProblem.displayString}
+            operatorSymbol={currentProblem.operatorSymbol}
+            options={currentProblem.options}
+          />
+        </div>
+      )}
       </div>
     </div>
   );
