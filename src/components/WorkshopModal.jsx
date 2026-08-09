@@ -166,7 +166,7 @@ export default function WorkshopModal({
   const handleBuyClick = (item) => {
     if (item.isConsumable) {
       soundFx.playKeyTap();
-      onBuyConsumable(item.id);
+      onBuyConsumable(item);
       setRecentlyPurchasedId(item.id);
       setTimeout(() => setRecentlyPurchasedId(null), 1200);
       return;
@@ -180,8 +180,8 @@ export default function WorkshopModal({
     }
 
     if (sparks >= item.cost) {
-      soundFx.playVictoryFanfare();
-      onBuyItem(item.id);
+      soundFx.playVictory();
+      onBuyItem(item);
       setRecentlyPurchasedId(item.id);
       setTimeout(() => setRecentlyPurchasedId(null), 1200);
 
@@ -502,7 +502,7 @@ export default function WorkshopModal({
                       ) : canAfford ? (
                         <button
                           type="button"
-                          onClick={() => handleBuy(item)}
+                          onClick={() => handleBuyClick(item)}
                           className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5"
                         >
                           <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
@@ -520,7 +520,7 @@ export default function WorkshopModal({
                     ) : isUnlocked ? (
                       <button
                         type="button"
-                        onClick={() => handleEquipToggle(item)}
+                        onClick={() => handleBuyClick(item)}
                         className={`px-3.5 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 ${
                           isEquippedInApp
                             ? 'btn-3d-orange'
@@ -538,7 +538,7 @@ export default function WorkshopModal({
                     ) : canAfford ? (
                       <button
                         type="button"
-                        onClick={() => handleBuy(item)}
+                        onClick={() => handleBuyClick(item)}
                         className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                       >
                         <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />

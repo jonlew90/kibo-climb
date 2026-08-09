@@ -152,6 +152,10 @@ class SoundSystem {
     });
   }
 
+  playVictoryFanfare() {
+    this.playVictory();
+  }
+
   // Play energetic spark collection chime
   playSparkCollect() {
     triggerHaptic([20, 20]);

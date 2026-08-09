@@ -197,12 +197,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
       {hasStarlightAura && !hasGoldenSkin && (
         <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 opacity-70 blur-lg animate-pulse pointer-events-none scale-110" />
       )}
-      {hasSparkleDust && !hasGoldenSkin && (
-        <div className="absolute inset-0 pointer-events-none z-20 flex justify-between animate-bounce">
-          <span className="text-xs text-yellow-300">✨</span>
-          <span className="text-xs text-sky-300">✨</span>
-        </div>
-      )}
+
 
       {/* REACTIVE FLOATING SPARK ⚡ PARTICLES */}
       {sparkParticles.map((spark) => (
@@ -404,13 +399,13 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         {/* ==================================================== */}
         {hasSnowyOwl && (
           <g className="animate-bounce" style={{ animationDuration: '3s' }} filter="url(#clayShadow)">
-            <ellipse cx="165" cy="130" rx="11" ry="14" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="2" />
-            <circle cx="165" cy="116" r="9" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="2" />
-            <polygon points="165,116 169,120 161,120" fill="#F59E0B" />
-            <circle cx="161" cy="114" r="2.5" fill="#FBBF24" />
-            <circle cx="169" cy="114" r="2.5" fill="#FBBF24" />
-            <circle cx="161" cy="114" r="1" fill="#000000" />
-            <circle cx="169" cy="114" r="1" fill="#000000" />
+            <ellipse cx="165" cy="58" rx="11" ry="14" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="2" />
+            <circle cx="165" cy="44" r="9" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="2" />
+            <polygon points="165,44 169,48 161,48" fill="#F59E0B" />
+            <circle cx="161" cy="42" r="2.5" fill="#FBBF24" />
+            <circle cx="169" cy="42" r="2.5" fill="#FBBF24" />
+            <circle cx="161" cy="42" r="1" fill="#000000" />
+            <circle cx="169" cy="42" r="1" fill="#000000" />
           </g>
         )}
 
@@ -427,29 +422,29 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
         {hasPhoenixPet && (
           <g className="animate-bounce" style={{ animationDuration: '2.2s' }} filter="url(#clayShadow)">
-            <path d="M 158 75 Q 142 92 148 108 Q 160 96 162 80 Z" fill="#EF4444" />
-            <path d="M 160 78 Q 148 94 154 105" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round" />
-            <ellipse cx="165" cy="62" rx="14" ry="18" fill="url(#thumbLavaGrad)" stroke="#9A3412" strokeWidth="2.5" />
-            <circle cx="165" cy="46" r="11" fill="#EA580C" stroke="#9A3412" strokeWidth="2" />
-            <polygon points="165,35 169,22 163,31 158,24" fill="#FBBF24" stroke="#D97706" strokeWidth="1.5" />
-            <path d="M 165 56 Q 192 46 186 74 Q 168 74 165 63 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
-            <polygon points="172,46 184,50 172,53" fill="#FBBF24" stroke="#D97706" strokeWidth="1.5" />
-            <circle cx="162" cy="44" r="3" fill="#FFFFFF" />
-            <circle cx="162" cy="44" r="1.5" fill="#451A03" />
+            <path d="M 158 65 Q 142 82 148 95 Q 160 86 162 70 Z" fill="#EF4444" />
+            <path d="M 160 68 Q 148 84 154 95" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <ellipse cx="165" cy="58" rx="14" ry="18" fill="url(#thumbLavaGrad)" stroke="#9A3412" strokeWidth="2.5" />
+            <circle cx="165" cy="44" r="11" fill="#EA580C" stroke="#9A3412" strokeWidth="2" />
+            <polygon points="165,33 169,20 163,29 158,22" fill="#FBBF24" stroke="#D97706" strokeWidth="1.5" />
+            <path d="M 165 52 Q 192 42 186 70 Q 168 70 165 59 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
+            <polygon points="172,44 184,48 172,51" fill="#FBBF24" stroke="#D97706" strokeWidth="1.5" />
+            <circle cx="162" cy="42" r="3" fill="#FFFFFF" />
+            <circle cx="162" cy="42" r="1.5" fill="#451A03" />
           </g>
         )}
 
         {hasFrostDragon && (
           <g className="animate-pulse" style={{ animationDuration: '2.5s' }} filter="url(#clayShadow)">
-            <path d="M 42 75 Q 58 92 50 108 Q 40 96 38 80 Z" fill="#0EA5E9" />
-            <ellipse cx="35" cy="62" rx="14" ry="18" fill="url(#thumbAuroraGrad)" stroke="#065F46" strokeWidth="2.5" />
-            <circle cx="35" cy="46" r="11" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" />
-            <polygon points="30,38 24,24 34,34" fill="#A5F3FC" stroke="#0891B2" strokeWidth="1.5" />
-            <polygon points="38,38 44,24 39,34" fill="#A5F3FC" stroke="#0891B2" strokeWidth="1.5" />
-            <path d="M 35 56 Q 8 46 14 74 Q 32 74 35 63 Z" fill="#7DD3FC" stroke="#0284C7" strokeWidth="2" />
-            <ellipse cx="27" cy="49" rx="5" ry="3.5" fill="#E0F2FE" />
-            <circle cx="37" cy="44" r="3" fill="#FFFFFF" />
-            <circle cx="37" cy="44" r="1.5" fill="#0C4A6E" />
+            <path d="M 172 21 Q 188 34 180 46 Q 170 38 168 26 Z" fill="#0EA5E9" />
+            <ellipse cx="165" cy="14" rx="14" ry="18" fill="url(#thumbAuroraGrad)" stroke="#065F46" strokeWidth="2.5" />
+            <circle cx="165" cy="0" r="11" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" />
+            <polygon points="160,-8 154,-22 164,-12" fill="#A5F3FC" stroke="#0891B2" strokeWidth="1.5" />
+            <polygon points="168,-8 174,-22 169,-12" fill="#A5F3FC" stroke="#0891B2" strokeWidth="1.5" />
+            <path d="M 165 8 Q 138 -2 144 26 Q 162 26 165 15 Z" fill="#7DD3FC" stroke="#0284C7" strokeWidth="2" />
+            <ellipse cx="157" cy="3" rx="5" ry="3.5" fill="#E0F2FE" />
+            <circle cx="167" cy="-2" r="3" fill="#FFFFFF" />
+            <circle cx="167" cy="-2" r="1.5" fill="#0C4A6E" />
           </g>
         )}
 
@@ -581,57 +576,57 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         )}
 
         {/* ==================================================== */}
-        {/* LAYER 1: BACKPACK & JETPACK                          */}
-        {/* ==================================================== */}
-        <g id="layer-back">
-          {hasJetpack && (
-            <g filter="url(#clayShadow)">
-              {/* Left Rocket Thruster */}
-              <rect x="26" y="62" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
-              <rect x="32" y="72" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
-              <circle cx="41" cy="97" r="6" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
-              
-              {/* Right Rocket Thruster */}
-              <rect x="144" y="62" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
-              <rect x="150" y="72" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
-              <circle cx="159" cy="97" r="6" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
-
-              {/* Fiery Exhaust Flames */}
-              <path d="M 31 132 Q 41 175 51 132 Z" fill="#FF4500" className="animate-pulse" />
-              <path d="M 35 132 Q 41 160 47 132 Z" fill="#FBBF24" className="animate-pulse" />
-              <path d="M 149 132 Q 159 175 169 132 Z" fill="#FF4500" className="animate-pulse" />
-              <path d="M 153 132 Q 159 160 165 132 Z" fill="#FBBF24" className="animate-pulse" />
-            </g>
-          )}
-
-          {hasBackpack && (
-            <g filter="url(#clayShadow)">
-              {/* Top Sleeping Mat Roll */}
-              <rect x="50" y="55" width="100" height="24" rx="10" fill="#15803D" stroke="#166534" strokeWidth="3" />
-              <rect x="72" y="53" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
-              <rect x="121" y="53" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
-
-              {/* Main Heavy Duty Expedition Backpack Body */}
-              <rect x="34" y="74" width="132" height="82" rx="24" fill="#B45309" stroke="#78350F" strokeWidth="4" />
-              
-              {/* Side Water Bottle Pockets */}
-              <rect x="25" y="98" width="16" height="44" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
-              <rect x="159" y="98" width="16" height="44" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
-            </g>
-          )}
-
-          {hasRoyalCape && (
-            <g filter="url(#clayShadow)">
-              <path d="M 64 96 L 44 165 Q 100 180 156 165 L 136 96 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3.5" />
-              <path d="M 64 96 Q 100 90 136 96" stroke="#F59E0B" strokeWidth="6" strokeLinecap="round" />
-            </g>
-          )}
-        </g>
-
-        {/* ==================================================== */}
         {/* KIBO CHARACTER GROUP (Body, Face, Outfits, Gear, Headwear) */}
         {/* ==================================================== */}
         <g className={`${hasOrbitMoons ? 'animate-silly-boogie' : ''} ${hasSpinDance ? 'animate-victory-twirl-body' : ''}`}>
+          {/* ==================================================== */}
+          {/* LAYER 1: BACKPACK & JETPACK                          */}
+          {/* ==================================================== */}
+          <g id="layer-back">
+            {hasJetpack && (
+              <g filter="url(#clayShadow)">
+                {/* Left Rocket Thruster */}
+                <rect x="26" y="62" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
+                <rect x="32" y="72" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
+                <circle cx="41" cy="97" r="6" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+                
+                {/* Right Rocket Thruster */}
+                <rect x="144" y="62" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
+                <rect x="150" y="72" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
+                <circle cx="159" cy="97" r="6" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+
+                {/* Fiery Exhaust Flames */}
+                <path d="M 31 132 Q 41 175 51 132 Z" fill="#FF4500" className="animate-pulse" />
+                <path d="M 35 132 Q 41 160 47 132 Z" fill="#FBBF24" className="animate-pulse" />
+                <path d="M 149 132 Q 159 175 169 132 Z" fill="#FF4500" className="animate-pulse" />
+                <path d="M 153 132 Q 159 160 165 132 Z" fill="#FBBF24" className="animate-pulse" />
+              </g>
+            )}
+
+            {hasBackpack && (
+              <g filter="url(#clayShadow)">
+                {/* Top Sleeping Mat Roll */}
+                <rect x="50" y="55" width="100" height="24" rx="10" fill="#15803D" stroke="#166534" strokeWidth="3" />
+                <rect x="72" y="53" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+                <rect x="121" y="53" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+
+                {/* Main Heavy Duty Expedition Backpack Body */}
+                <rect x="34" y="74" width="132" height="82" rx="24" fill="#B45309" stroke="#78350F" strokeWidth="4" />
+                
+                {/* Side Water Bottle Pockets */}
+                <rect x="25" y="98" width="16" height="44" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
+                <rect x="159" y="98" width="16" height="44" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
+              </g>
+            )}
+
+            {hasRoyalCape && (
+              <g filter="url(#clayShadow)" className="animate-cape-sway">
+                <path d="M 64 96 L 44 165 Q 100 180 156 165 L 136 96 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3.5" />
+                <path d="M 64 96 Q 100 90 136 96" stroke="#F59E0B" strokeWidth="6" strokeLinecap="round" />
+              </g>
+            )}
+          </g>
+
           {/* ==================================================== */}
           {/* LAYER 2: BASE KIBO BODY & TAIL                       */}
           {/* ==================================================== */}

@@ -342,8 +342,9 @@ export default function App() {
   const [isShieldProtected, setIsShieldProtected] = useState(false);
   const [isDoubleSparksActive, setIsDoubleSparksActive] = useState(false);
 
-  const handleBuyConsumable = (item) => {
-    if (sparks < item.cost) return;
+  const handleBuyConsumable = (itemInput) => {
+    const item = typeof itemInput === 'string' ? getItemById(itemInput) : itemInput;
+    if (!item || sparks < item.cost) return;
 
     const newSparks = sparks - item.cost;
     let nextShieldCount = consumables.shieldCount || 0;
@@ -602,7 +603,12 @@ export default function App() {
   };
 
 
-  const handleBuyItem = (item) => {
+  const handleBuyItem = (itemInput) => {
+    const item = typeof itemInput === 'string' ? getItemById(itemInput) : itemInput;
+    if (!item) {
+      console.warn('Purchase rejected: Invalid item passed', itemInput);
+      return;
+    }
     const res = shopLedgerService.purchaseItem(item.id, item.cost);
     if (!res.success) {
       console.warn('Purchase rejected by authoritative ledger:', res.reason);

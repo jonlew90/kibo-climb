@@ -126,6 +126,27 @@
   transform-origin: 160px 140px;
 }
 
+/* Regal Royal Velvet Cape Swaying Animation (3.2s smooth loop matched to mascot breathing) */
+@keyframes capeSway {
+  0%, 100% {
+    transform: rotate(0deg) skewX(0deg) scaleX(1);
+  }
+  25% {
+    transform: rotate(3deg) skewX(2deg) scaleX(1.02);
+  }
+  50% {
+    transform: rotate(-1deg) skewX(-1deg) scaleX(0.99);
+  }
+  75% {
+    transform: rotate(-3.5deg) skewX(-2.5deg) scaleX(1.03);
+  }
+}
+
+.animate-cape-sway {
+  animation: capeSway 3.2s ease-in-out infinite;
+  transform-origin: 100px 96px;
+}
+
 /* 3. Interactive Squash and Stretch Spring Animation */
 @keyframes mascotSquash {
   0% {
