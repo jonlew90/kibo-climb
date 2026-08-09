@@ -562,6 +562,11 @@ export default function ParentDashboardModal({
               const skipLogs = activeUserData.skipLogs || [];
               const sprintHistory = activeUserData.sprintHistory || [];
 
+              const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
+              const currentMathTier = getTierFromRating(actualRating);
+              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating, activeUserData.ratingHistory || []);
+              const { skillStrandBreakdown } = adaptiveProfile;
+
               const insightCards = generateParentInsightCards(skipLogs, sprintHistory, profileName);
               const conceptBreakdown = calculateConceptBreakdown(sprintHistory, skipLogs);
 
@@ -603,93 +608,74 @@ export default function ParentDashboardModal({
                       Concept Breakdown (Correct vs. Incorrect vs. Skipped)
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {Object.values(conceptBreakdown).map((concept) => (
-                        <div key={concept.id || concept.name} className="bg-slate-50 rounded-xl border border-slate-200 p-2.5 space-y-1.5">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
-                              <span>{concept.icon}</span>
-                              <span>{concept.name}</span>
-                            </span>
-                            <span className="text-[10px] font-bold text-slate-500">
-                              {concept.total > 0 ? `${concept.total} Total` : 'No data'}
-                            </span>
-                          </div>
+                      {Object.values(conceptBreakdown).map((concept) => {
+                        const strand = Object.values(skillStrandBreakdown).find(s => s.id === concept.id) || skillStrandBreakdown[concept.name];
+                        const isSkipped = strand?.status === 'Skipped' || (concept.total === 0 && strand?.status === 'Skipped');
+                        const calculatedAcc = concept.total > 0 ? Math.round((concept.correct / concept.total) * 100) : (strand?.accuracy || 0);
+                        const showAccuracy = strand?.status !== 'Skipped' && (concept.total > 0 || (strand?.accuracy && strand.accuracy > 0));
 
-                          {/* STACKED PROGRESS BAR */}
-                          <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden flex">
-                            {concept.total > 0 ? (
-                              <>
-                                <div
-                                  style={{ width: `${concept.correctPct}%` }}
-                                  className="bg-emerald-500 h-full transition-all"
-                                  title={`Correct: ${concept.correct} (${concept.correctPct}%)`}
-                                />
-                                <div
-                                  style={{ width: `${concept.incorrectPct}%` }}
-                                  className="bg-rose-500 h-full transition-all"
-                                  title={`Incorrect: ${concept.incorrect} (${concept.incorrectPct}%)`}
-                                />
-                                <div
-                                  style={{ width: `${concept.skippedPct}%` }}
-                                  className="bg-sky-400 h-full transition-all"
-                                  title={`Skipped: ${concept.skipped} (${concept.skippedPct}%)`}
-                                />
-                              </>
-                            ) : (
-                              <div className="w-full h-full bg-slate-200" />
-                            )}
-                          </div>
+                        return (
+                          <div key={concept.id || concept.name} className="bg-slate-50 rounded-xl border border-slate-200 p-2.5 space-y-1.5">
+                            <div className="flex items-center justify-between text-xs gap-2">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="text-base shrink-0">{concept.icon}</span>
+                                <div className="min-w-0">
+                                  <span className="font-extrabold text-slate-800 block truncate">{concept.name}</span>
+                                  {showAccuracy && (
+                                    <span className="text-[10px] text-purple-700 font-bold block">{calculatedAcc}% accuracy</span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="shrink-0 text-right">
+                                {isSkipped ? (
+                                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full border bg-sky-100 text-sky-800 border-sky-300">
+                                    Skipped
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-bold text-slate-500">
+                                    {concept.total > 0 ? `${concept.total} Total` : 'No data'}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
 
-                          {/* COUNTS LEGEND */}
-                          <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 pt-0.5">
-                            <span className="text-emerald-700">✓ {concept.correct} Correct</span>
-                            <span className="text-rose-700">✕ {concept.incorrect} Incorrect</span>
-                            <span className="text-sky-700">🔄 {concept.skipped} Skipped</span>
+                            {/* STACKED PROGRESS BAR */}
+                            <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden flex">
+                              {concept.total > 0 ? (
+                                <>
+                                  <div
+                                    style={{ width: `${concept.correctPct}%` }}
+                                    className="bg-emerald-500 h-full transition-all"
+                                    title={`Correct: ${concept.correct} (${concept.correctPct}%)`}
+                                  />
+                                  <div
+                                    style={{ width: `${concept.incorrectPct}%` }}
+                                    className="bg-rose-500 h-full transition-all"
+                                    title={`Incorrect: ${concept.incorrect} (${concept.incorrectPct}%)`}
+                                  />
+                                  <div
+                                    style={{ width: `${concept.skippedPct}%` }}
+                                    className="bg-sky-400 h-full transition-all"
+                                    title={`Skipped: ${concept.skipped} (${concept.skippedPct}%)`}
+                                  />
+                                </>
+                              ) : isSkipped ? (
+                                <div className="w-full h-full bg-sky-200/60" title="Skipped topic" />
+                              ) : (
+                                <div className="w-full h-full bg-slate-200" />
+                              )}
+                            </div>
+
+                            {/* COUNTS LEGEND */}
+                            <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 pt-0.5">
+                              <span className="text-emerald-700">✓ {concept.correct} Correct</span>
+                              <span className="text-rose-700">✕ {concept.incorrect} Incorrect</span>
+                              <span className="text-sky-700">🔄 {concept.skipped} Skipped</span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
-                  </div>
-                </section>
-              );
-            })()}
-
-            {/* MATH TOPICS — compact strand list */}
-            {(() => {
-              const activeUserData = liveUserData || storageService.getUserData();
-              const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
-              const currentMathTier = getTierFromRating(actualRating);
-              const adaptiveProfile = calculateAdaptiveCompetenceProfile(activeUserData.sprintHistory || [], currentMathTier, actualRating, activeUserData.ratingHistory || []);
-              const { skillStrandBreakdown } = adaptiveProfile;
-
-              const statusColor = (status) => {
-                if (status === 'Mastered') return 'bg-emerald-100 text-emerald-800 border-emerald-300';
-                if (status === 'Skipped') return 'bg-sky-100 text-sky-800 border-sky-300';
-                if (status === 'Practicing') return 'bg-amber-100 text-amber-900 border-amber-300';
-                if (status === 'Locked') return 'bg-slate-100 text-slate-500 border-slate-300';
-                return 'bg-indigo-100 text-indigo-800 border-indigo-300';
-              };
-
-              return (
-                <section className="text-left space-y-2">
-                  <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Math Topics</h3>
-                  <div className="space-y-2">
-                    {Object.entries(skillStrandBreakdown).map(([strandName, data]) => (
-                      <div key={strandName} className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-3 py-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-lg shrink-0">{data.icon}</span>
-                          <div className="min-w-0">
-                            <span className="text-xs font-extrabold text-slate-800 block truncate">{strandName}</span>
-                            {data.accuracy > 0 && data.status !== 'Skipped' && (
-                              <span className="text-[10px] text-slate-500 font-medium">{data.accuracy}% accuracy</span>
-                            )}
-                          </div>
-                        </div>
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0 ml-2 ${statusColor(data.status)}`}>
-                          {data.status === 'Locked' ? '🔒 Locked' : data.status === 'Skipped' ? '⏭️ Skipped' : data.status}
-                        </span>
-                      </div>
-                    ))}
                   </div>
                 </section>
               );
