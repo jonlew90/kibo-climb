@@ -1382,6 +1382,16 @@ export default function App() {
     return uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
   });
 
+  const closeAllNavModals = (except = null) => {
+    if (except !== 'workshop') setIsWorkshopOpen(false);
+    if (except !== 'badges') setShowBadgesModal(false);
+    if (except !== 'profile') setShowManualProfileSwitcher(false);
+    if (except !== 'parents') {
+      setShowPinGateModal(false);
+      setShowParentDashboard(false);
+    }
+  };
+
   const renderNavigationFooter = () => (
     <footer className="sticky bottom-0 z-40 w-full bg-white/95 backdrop-blur-md border-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-around shadow-sm rounded-2xl mt-auto mt-2 shrink-0 gap-1 sm:gap-2">
       {/* 0. Climb (Home) Button: Emerald Green */}
@@ -1389,12 +1399,11 @@ export default function App() {
         type="button"
         onClick={() => {
           soundFx.playKeyTap();
-          if (isWorkshopOpen) setIsWorkshopOpen(false);
-          if (showBadgesModal) setShowBadgesModal(false);
+          closeAllNavModals();
           setAppState('adaptive_session');
         }}
         className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-          !isWorkshopOpen && !showBadgesModal && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-105 font-bold' : ''
+          !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-105 font-bold' : ''
         }`}
         aria-label="Return to Main Climb Session"
         title="Main Mountain Climb"
@@ -1406,7 +1415,10 @@ export default function App() {
       {/* 1. Shop Button: Warm Orange / Amber */}
       <button
         type="button"
-        onClick={() => handleOpenWorkshop()}
+        onClick={() => {
+          closeAllNavModals('workshop');
+          handleOpenWorkshop();
+        }}
         className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-amber-100 via-orange-50 to-amber-100 text-amber-950 border-2 border-amber-400 rounded-xl hover:from-amber-200 hover:to-orange-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
           isWorkshopOpen ? 'ring-2 ring-amber-500 scale-105 font-bold' : ''
         }`}
@@ -1422,6 +1434,7 @@ export default function App() {
         type="button"
         onClick={() => {
           soundFx.playKeyTap();
+          closeAllNavModals('badges');
           setShowBadgesModal(true);
         }}
         className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-yellow-100 via-amber-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-amber-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
@@ -1439,9 +1452,12 @@ export default function App() {
           type="button"
           onClick={() => {
             soundFx.playKeyTap();
+            closeAllNavModals('profile');
             setShowManualProfileSwitcher(true);
           }}
-          className="flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-sky-100 via-cyan-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-cyan-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem]"
+          className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-sky-100 via-cyan-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-cyan-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+            showManualProfileSwitcher ? 'ring-2 ring-sky-500 scale-105 font-bold' : ''
+          }`}
           title="Switch Player Profile"
         >
           <Users className="w-5 h-5 text-sky-700 stroke-[2.5]" />
@@ -1452,8 +1468,14 @@ export default function App() {
       {/* 4. Parents Button: Royal Purple */}
       <button
         type="button"
-        onClick={() => setShowPinGateModal(true)}
-        className="flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem]"
+        onClick={() => {
+          soundFx.playKeyTap();
+          closeAllNavModals('parents');
+          setShowPinGateModal(true);
+        }}
+        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+          showPinGateModal || showParentDashboard ? 'ring-2 ring-purple-500 scale-105 font-bold' : ''
+        }`}
         title="Parent Dashboard & Settings"
       >
         <Lock className="w-5 h-5 text-purple-700 stroke-[2.5]" />
@@ -1465,10 +1487,11 @@ export default function App() {
         type="button"
         onClick={() => {
           soundFx.playKeyTap();
+          closeAllNavModals();
           setAppState('settings');
         }}
         className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-          appState === 'settings' ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
+          !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'settings' ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
         }`}
         aria-label="Settings"
         title="Settings"
