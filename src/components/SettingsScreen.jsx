@@ -17,25 +17,20 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
   };
 
   return (
-    <div className="w-full flex-1 flex flex-col min-h-0 justify-between">
-      <main className="w-full flex-1 flex flex-col items-center py-4 px-2 sm:px-4 animate-pop relative z-10 max-w-lg mx-auto overflow-y-auto">
-      <div className="w-full bg-white rounded-3xl p-5 shadow-sm border-2 border-slate-200">
-
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-slate-100 p-2.5 rounded-xl text-slate-600 border-2 border-slate-200">
-              <Settings className="w-6 h-6 stroke-[2.5]" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800">Settings</h2>
-              <p className="text-xs text-slate-500 font-medium">Profile Preferences & Links</p>
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
+      {/* STICKY TOP HEADER BAR */}
+      <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
+        <div className="flex items-center gap-2 text-slate-800">
+          <Settings className="w-5 h-5 text-slate-600 stroke-[2.5]" />
+          <h2 className="text-base sm:text-lg font-black tracking-tight">Settings</h2>
         </div>
+      </header>
 
-        {/* Toggles */}
-        <div className="space-y-3 mb-8">
+      {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
+      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+        <div className="w-full bg-white rounded-3xl p-5 shadow-sm border-2 border-slate-200 max-w-lg mx-auto">
+          {/* Toggles */}
+          <div className="space-y-3 mb-8">
           <div className="flex items-center justify-between p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-xl border-2 ${!isMuted ? 'bg-rose-100 border-rose-300 text-rose-600' : 'bg-slate-200 border-slate-300 text-slate-500'}`}>
@@ -119,9 +114,11 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
               <span className="font-extrabold text-slate-700 text-sm">Send Feedback</span>
             </div>
           </a>
+          </div>
         </div>
-      </div>
       </main>
+
+      {/* STICKY BOTTOM NAVIGATION FOOTER */}
       {renderFooter ? renderFooter() : null}
     </div>
   );
