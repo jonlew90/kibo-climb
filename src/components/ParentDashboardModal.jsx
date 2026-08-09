@@ -57,7 +57,19 @@ export default function ParentDashboardModal({
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
   const [profilesList, setProfilesList] = useState(() => storageService.getAllProfiles());
   const [viewingProfileId, setViewingProfileId] = useState(() => storageService.getActiveProfileId());
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   const [showNewChildInput, setShowNewChildInput] = useState(false);
+
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      const activeId = storageService.getActiveProfileId();
+      setViewingProfileId(activeId);
+      const profile = storageService.getProfileById(activeId);
+      setLiveUserData(profile ? profile.userData : storageService.getUserData());
+      setProfilesList(storageService.getAllProfiles());
+    }
+  }
   const [newChildName, setNewChildName] = useState('');
   const [newChildGrade, setNewChildGrade] = useState('Grade 1–2');
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -134,12 +146,6 @@ export default function ParentDashboardModal({
     setDismissedAlerts(updated);
     storageService.saveUserData({ dismissedAlerts: updated });
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      setViewingProfileId(storageService.getActiveProfileId());
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
