@@ -15,6 +15,7 @@ import KiboBreakOverlay from './KiboBreakOverlay';
 import { KiboAudioManager } from '../utils/KiboAudioManager';
 import { evaluateBadges } from '../utils/badgeManager';
 import { storageService } from '../services/storageService';
+import { getConceptForProblem } from '../utils/skipDiagnosticEngine';
 
 function getStreakTierConfig(streak) {
   if (streak >= 15) {
@@ -94,6 +95,7 @@ export default function AdaptiveSessionView({
   // In-session Streaks & Overlays
   const [inSessionStreak, setInSessionStreak] = useState(0);
   const [inSessionIncorrectStreak, setInSessionIncorrectStreak] = useState(0);
+  const [consecutiveSkips, setConsecutiveSkips] = useState(0);
   const [showBreakOverlay, setShowBreakOverlay] = useState(false);
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
   const [celebrationEvent, setCelebrationEvent] = useState(null);
@@ -231,8 +233,69 @@ export default function AdaptiveSessionView({
     }
   };
 
+  const handlePassQuestion = () => {
+    if (consecutiveSkips >= 2) return;
+    soundFx.playKeyTap();
+
+    const timeElapsedSec = problemStartTimeRef.current > 0
+      ? (performance.now() - problemStartTimeRef.current) / 1000
+      : 1.0;
+
+    const nextConsecutiveSkips = consecutiveSkips + 1;
+    setConsecutiveSkips(nextConsecutiveSkips);
+
+    const concept = getConceptForProblem(currentProblem);
+
+    storageService.logSkipEvent({
+      problemId: currentProblem.id || `prob_${currentIndex}`,
+      concept: concept,
+      timeElapsedSec: Number(timeElapsedSec.toFixed(1)),
+      consecutiveSkipCount: nextConsecutiveSkips
+    });
+
+    const evalResult = evaluateAdaptiveAttempt({
+      isCorrect: false,
+      isSkip: true,
+      latencyMs: timeElapsedSec * 1000,
+      currentCompetenceRank: competenceRank,
+      inSessionStreak,
+      inSessionIncorrectStreak,
+      totalProblemsSolved,
+      isProbeQuestion: !!currentProblem.isProbe,
+      problemTier: currentProblem.tier || getTierFromRating(competenceRank)
+    });
+
+    setInSessionStreak(0);
+    setCompetenceRank(evalResult.nextCompetenceRank);
+    if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
+
+    const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
+    setBlockRatingGain(nextBlockRatingGain);
+
+    storageService.saveUserData({
+      adaptiveCompetenceRating: evalResult.nextCompetenceRank,
+      competenceRank: evalResult.nextCompetenceRank
+    });
+
+    triggerToastBanner({
+      type: 'success',
+      text: 'Trying another problem 🔄'
+    }, 1100);
+
+    const nextQuestionsAnswered = questionsAnswered + 1;
+    setQuestionsAnswered(nextQuestionsAnswered);
+    setSessionQuestionIndex((prev) => prev + 1);
+    setInputVal('');
+
+    const nextIdx = currentIndex + 1;
+    replenishQueueIfNeeded(nextIdx);
+    setCurrentIndex(nextIdx);
+  };
+
   const processAnswerEvaluation = (userAnsString) => {
     if (!userAnsString || !userAnsString.trim()) return;
+
+    setConsecutiveSkips(0);
 
     if (problemStartTimeRef.current === 0) {
       problemStartTimeRef.current = performance.now();
@@ -974,6 +1037,25 @@ export default function AdaptiveSessionView({
                   >
                     {streakCfg.label}
                   </span>
+
+                  {/* NON-PUNITIVE PASS / TRY ANOTHER BUTTON */}
+                  <button
+                    type="button"
+                    onClick={handlePassQuestion}
+                    disabled={consecutiveSkips >= 2}
+                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                      consecutiveSkips >= 2
+                        ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
+                        : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
+                    }`}
+                    title={
+                      consecutiveSkips >= 2
+                        ? 'Cap of 2 consecutive skips reached. Give this question a try!'
+                        : 'Try another problem'
+                    }
+                  >
+                    {consecutiveSkips >= 2 ? '🔒 Attempt Required' : '🔄 Pass'}
+                  </button>
 
                   {/* MANUAL WISDOM HINT BUTTON */}
                   <button

@@ -6,6 +6,7 @@ import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
 import { getNotificationPrefs, saveNotificationPrefs, requestNotificationPermission } from '../utils/notifications';
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
+import { calculateConceptBreakdown, generateParentInsightCards } from '../utils/skipDiagnosticEngine';
 import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
@@ -550,6 +551,105 @@ export default function ParentDashboardModal({
                   <p className="text-xs font-semibold text-slate-700 bg-indigo-50/60 p-2.5 rounded-xl border border-indigo-100 leading-relaxed">
                     {getCompetenceDescription(actualRating, childTotalSolved)}
                   </p>
+                </section>
+              );
+            })()}
+
+            {/* PARENT DIAGNOSTIC INSIGHTS & BOTTLENECK CARDS */}
+            {(() => {
+              const activeUserData = liveUserData || storageService.getUserData();
+              const profileName = activeUserData.name || 'Child';
+              const skipLogs = activeUserData.skipLogs || [];
+              const sprintHistory = activeUserData.sprintHistory || [];
+
+              const insightCards = generateParentInsightCards(skipLogs, sprintHistory, profileName);
+              const conceptBreakdown = calculateConceptBreakdown(sprintHistory, skipLogs);
+
+              return (
+                <section className="bg-white rounded-2xl p-4 border-2 border-purple-200 text-left space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-purple-600 stroke-[2.5]" />
+                      <h2 className="text-sm font-black text-slate-800">Parent Diagnostic Insights</h2>
+                    </div>
+                    <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+                      Adaptive Tracking
+                    </span>
+                  </div>
+
+                  {/* ACTIONABLE INSIGHT CARDS */}
+                  <div className="space-y-2">
+                    {insightCards.map((card) => (
+                      <div key={card.id} className="bg-gradient-to-r from-slate-50 to-purple-50/40 rounded-xl p-3 border border-purple-100 flex items-start gap-3 shadow-2xs">
+                        <span className="text-2xl shrink-0 mt-0.5">{card.icon}</span>
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <h3 className="text-xs font-black text-slate-900">{card.title}</h3>
+                            <span className={`text-[9px] font-black uppercase px-2 py-0.2 rounded-full border ${card.badgeClass}`}>
+                              {card.badge}
+                            </span>
+                          </div>
+                          <p className="text-xs font-medium text-slate-700 leading-relaxed">
+                            {card.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* VISUAL BREAKDOWN: CORRECT VS INCORRECT VS SKIPPED PER CONCEPT */}
+                  <div className="pt-2 border-t border-purple-100 space-y-3">
+                    <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                      Concept Breakdown (Correct vs. Incorrect vs. Skipped)
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {Object.values(conceptBreakdown).map((concept) => (
+                        <div key={concept.id || concept.name} className="bg-slate-50 rounded-xl border border-slate-200 p-2.5 space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
+                              <span>{concept.icon}</span>
+                              <span>{concept.name}</span>
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-500">
+                              {concept.total > 0 ? `${concept.total} Total` : 'No data'}
+                            </span>
+                          </div>
+
+                          {/* STACKED PROGRESS BAR */}
+                          <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden flex">
+                            {concept.total > 0 ? (
+                              <>
+                                <div
+                                  style={{ width: `${concept.correctPct}%` }}
+                                  className="bg-emerald-500 h-full transition-all"
+                                  title={`Correct: ${concept.correct} (${concept.correctPct}%)`}
+                                />
+                                <div
+                                  style={{ width: `${concept.incorrectPct}%` }}
+                                  className="bg-rose-500 h-full transition-all"
+                                  title={`Incorrect: ${concept.incorrect} (${concept.incorrectPct}%)`}
+                                />
+                                <div
+                                  style={{ width: `${concept.skippedPct}%` }}
+                                  className="bg-sky-400 h-full transition-all"
+                                  title={`Skipped: ${concept.skipped} (${concept.skippedPct}%)`}
+                                />
+                              </>
+                            ) : (
+                              <div className="w-full h-full bg-slate-200" />
+                            )}
+                          </div>
+
+                          {/* COUNTS LEGEND */}
+                          <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 pt-0.5">
+                            <span className="text-emerald-700">✓ {concept.correct} Correct</span>
+                            <span className="text-rose-700">✕ {concept.incorrect} Incorrect</span>
+                            <span className="text-sky-700">🔄 {concept.skipped} Skipped</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </section>
               );
             })()}

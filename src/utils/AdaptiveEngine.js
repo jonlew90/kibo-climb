@@ -46,9 +46,11 @@ export function evaluateAdaptiveAttempt({
   inSessionIncorrectStreak = 0,
   totalProblemsSolved = 0,
   isProbeQuestion = false,
-  problemTier = 1
+  problemTier = 1,
+  isSkip = false
 }) {
   const responseTimeSec = latencyMs / 1000;
+  const effectiveCorrect = isSkip ? false : isCorrect;
 
   // 1. Dynamic K-Factor & Phase Determination
   const kFactor = getKFactor(totalProblemsSolved);
@@ -144,7 +146,8 @@ export function evaluateAdaptiveAttempt({
   const totalSparksEarned = Math.round(baseSparks * multiplier) + bonusSparks;
 
   return {
-    isCorrect,
+    isCorrect: effectiveCorrect,
+    isSkip: !!isSkip,
     isFluent,
     isOutlierGuess,
     isProbeQuestion,

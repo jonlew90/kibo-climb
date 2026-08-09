@@ -47,6 +47,7 @@ const DEFAULT_PROFILE = {
     hasVisitedParentZone: false,
     practiceQueue: [],
     sprintHistory: [],
+    skipLogs: [],
     unlockedBadges: [],
     consumables: {
       shieldCount: 1,
@@ -260,6 +261,38 @@ export const storageService = {
       ratingHistory: history
     };
     safeSaveProfilesState(state);
+  },
+
+  // Skip Event Diagnostics Logging
+  getSkipLogs() {
+    const userData = this.getUserData();
+    return userData.skipLogs || [];
+  },
+  logSkipEvent(skipEventData = {}) {
+    const state = safeGetProfilesState();
+    const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[activeId]) {
+      state.profiles[activeId] = { ...DEFAULT_PROFILE, id: activeId };
+    }
+    const currentUserData = state.profiles[activeId].userData || {};
+    const existingLogs = currentUserData.skipLogs || [];
+    const newLog = {
+      id: `skip_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      timestamp: new Date().toISOString(),
+      problemId: skipEventData.problemId || 'unknown',
+      concept: skipEventData.concept || 'Addition & Subtraction',
+      timeElapsedSec: Number(skipEventData.timeElapsedSec) || 0,
+      consecutiveSkipCount: Number(skipEventData.consecutiveSkipCount) || 1
+    };
+    // Keep up to 100 recent skip logs
+    const updatedLogs = [newLog, ...existingLogs].slice(0, 100);
+
+    state.profiles[activeId].userData = {
+      ...currentUserData,
+      skipLogs: updatedLogs
+    };
+    safeSaveProfilesState(state);
+    return newLog;
   },
 
   // Shop State (scoped to activeProfileId)
