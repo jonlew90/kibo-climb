@@ -9,7 +9,6 @@ import ParentDashboardModal from './components/ParentDashboardModal';
 import SkillMapScreen from './components/SkillMapScreen';
 import QuitSprintModal from './components/QuitSprintModal';
 import StreakSavedModal from './components/StreakSavedModal';
-import WorldMap from './components/WorldMap';
 import MicroHintCard from './components/MicroHintCard';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import ProfileSelectorScreen from './components/ProfileSelectorScreen';
@@ -23,7 +22,7 @@ import { useDevState } from './hooks/useDevState';
 import { evaluateBadges } from './utils/badgeManager';
 import { BADGES_CATALOG } from './data/badges';
 import { generateProblems } from './utils/mathGenerator';
-import { generatePlacementDiagnosticSet, evaluatePlacementTier, CURRICULUM_TIERS, calculateStars } from './utils/curriculum';
+import { CURRICULUM_TIERS, calculateStars } from './utils/curriculum';
 import { getItemById } from './utils/itemsCatalog';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
@@ -41,7 +40,7 @@ import SettingsScreen from './components/SettingsScreen';
 import { setHapticsEnabled } from './utils/audio';
 
 export default function App() {
-  // App State: 'adaptive_session' | 'sprint' | 'victory' | 'skill_map' | 'world_map' | 'placement_test' | 'settings'
+  // App State: 'adaptive_session' | 'sprint' | 'victory' | 'skill_map' | 'settings'
   const [appState, setAppState] = useState('adaptive_session');
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
   const [workshopOriginState, setWorkshopOriginState] = useState('adaptive_session');
@@ -74,7 +73,6 @@ export default function App() {
   const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
-  const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
   const [showSprintResultsModal, setShowSprintResultsModal] = useState(false);
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
@@ -164,6 +162,7 @@ export default function App() {
   const [isBossMode, setIsBossMode] = useState(false);
   const [isPlacementTest, setIsPlacementTest] = useState(false);
   const [placementResultInfo, setPlacementResultInfo] = useState(null);
+  const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
 
   // Date helpers for calendar day streak tracking
   const getTodayStr = () => {
@@ -889,10 +888,7 @@ export default function App() {
     problemStartTimeRef.current = performance.now();
   };
 
-  const startPlacementDiagnostic = () => {
-    soundFx.init();
-    setAppState('placement_test');
-  };
+
 
   const handleCompletePlacementTest = (placedTier) => {
     const newUnlocked = [];
@@ -933,7 +929,7 @@ export default function App() {
     setIsPlacementTest(false);
     setIsTestOut(false);
     setConsecutiveProblemMisses(0);
-    setAppState('world_map');
+    setAppState('adaptive_session');
   };
 
   const handleQuitToMap = () => {
@@ -946,7 +942,7 @@ export default function App() {
     setIsPlacementTest(false);
     setIsTestOut(false);
     setConsecutiveProblemMisses(0);
-    setAppState('world_map');
+    setAppState('adaptive_session');
   };
 
   const finishSprint = (finalResults) => {
@@ -1602,7 +1598,7 @@ export default function App() {
       )}
 
       {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
-      {(appState === 'adaptive_session' || appState === 'world_map' || appState === 'launch' || !['sprint', 'victory', 'skill_map', 'placement_test', 'settings'].includes(appState)) && (
+      {(appState === 'adaptive_session' || !['sprint', 'victory', 'skill_map', 'settings'].includes(appState)) && (
         <AdaptiveSessionView
           isPaused={isAppPaused}
           equippedItems={equippedItems}
@@ -1691,8 +1687,7 @@ export default function App() {
           currentTier={tier}
           unlockedTiers={unlockedTiers}
           onSelectTier={(t) => handleSelectTierFromMap(t)}
-          onStartPlacementTest={startPlacementDiagnostic}
-          onBackToHome={() => setAppState('world_map')}
+          onBackToHome={() => setAppState('adaptive_session')}
         />
       )}
 
@@ -1715,7 +1710,7 @@ export default function App() {
 
             {/* Current Tier Badge */}
             <button
-              onClick={() => setAppState('world_map')}
+              onClick={() => setAppState('adaptive_session')}
               className="flex items-center gap-1.5 px-4 py-1.5 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-full shadow-sm active:scale-95 transition-all"
             >
               <Layers className="w-5 h-5 text-purple-600 stroke-[2.5]" />
@@ -1776,14 +1771,6 @@ export default function App() {
             >
               <Play className="w-6 h-6 fill-white stroke-[2.5] group-hover:scale-110 transition-transform" />
               Start Kibo Climb
-            </button>
-
-            <button
-              onClick={() => setAppState('world_map')}
-              className="btn-3d-purple w-full py-3 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
-            >
-              <Compass className="w-5 h-5 stroke-[2.5]" />
-              World Map Trail 🗺️
             </button>
 
             {tier < 8 && (
@@ -2102,16 +2089,56 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setAppState('world_map')}
+              onClick={() => setAppState('adaptive_session')}
               className="btn-3d-purple w-full py-2.5 text-sm rounded-2xl flex items-center justify-center gap-2"
             >
-              <Compass className="w-4 h-4 stroke-[2.5]" /> Return to World Map 🗺️
+              <Compass className="w-4 h-4 stroke-[2.5]" /> Return to Main Climb ⛰️
             </button>
           </div>
         </main>
       )}
 
 
+
+      {/* PLACEMENT TEST REVEAL CELEBRATION MODAL */}
+      {showPlacementRevealModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop">
+          <div className="w-full max-w-sm bg-white border-4 border-teal-400 rounded-3xl p-6 text-center shadow-2xl space-y-4">
+            <ConfettiCanvas />
+            <div className="p-1 overflow-visible flex justify-center">
+              <Mascot mood="celebrate" equipped={equippedItems} className="w-28 h-28 mx-auto" />
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-xs font-black uppercase text-teal-600 tracking-wider bg-teal-50 px-3 py-1 rounded-full border border-teal-200 inline-block">
+                🎯 Placement Diagnostic Complete!
+              </span>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                Placed in Tier {tier}! 🎉
+              </h3>
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                {getTierMeta(tier).title} - {getTierMeta(tier).subtitle || 'Great placement!'}
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-300 rounded-2xl p-3 flex items-center justify-center gap-2 text-amber-950 shadow-sm">
+              <Zap className="w-6 h-6 text-amber-600 fill-amber-400 stroke-[2.5] animate-pulse" />
+              <span className="font-black text-base">+50 Placement Bonus Sparks! ⚡</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowPlacementRevealModal(false);
+                setAppState('adaptive_session');
+              }}
+              className="btn-3d-teal w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-teal"
+            >
+              <Compass className="w-5 h-5 stroke-[2.5]" />
+              Start Climbing ⛰️
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* TEST-OUT PASS CELEBRATION MODAL */}
       {showTestOutPassModal && (
@@ -2142,12 +2169,12 @@ export default function App() {
             <button
               onClick={() => {
                 setShowTestOutPassModal(false);
-                setAppState('world_map');
+                setAppState('adaptive_session');
               }}
               className="btn-3d-purple w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
             >
               <Compass className="w-5 h-5 stroke-[2.5]" />
-              Continue to World Map 🗺️
+              Return to Climb ⛰️
             </button>
           </div>
         </div>
@@ -2176,12 +2203,12 @@ export default function App() {
             <button
               onClick={() => {
                 setShowTestOutFailModal(false);
-                setAppState('world_map');
+                setAppState('adaptive_session');
               }}
               className="btn-3d-orange w-full py-3.5 text-base rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-orange"
             >
               <Compass className="w-5 h-5 stroke-[2.5]" />
-              Back to World Map 🗺️
+              Back to Climb ⛰️
             </button>
           </div>
         </div>
@@ -2386,11 +2413,11 @@ export default function App() {
         }}
         onContinueClimbing={() => {
           setShowSprintResultsModal(false);
-          setAppState('world_map');
+          setAppState('adaptive_session');
         }}
         onVisitWorkshop={() => {
           setShowSprintResultsModal(false);
-          handleOpenWorkshop('world_map');
+          handleOpenWorkshop('adaptive_session');
         }}
       />
 
