@@ -784,7 +784,7 @@ export default function App() {
   };
 
   const renderNavigationFooter = () => (
-    <footer className="sticky bottom-0 z-40 w-full bg-white/95 backdrop-blur-md border-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-around shadow-sm rounded-2xl mt-auto mt-2 shrink-0 gap-1 sm:gap-2">
+    <footer className="sticky bottom-0 z-40 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 px-2 py-2 sm:py-3 flex items-center justify-around shadow-xs shrink-0 gap-1 sm:gap-2">
       {/* 0. Climb (Home) Button: Emerald Green */}
       <button
         type="button"
@@ -894,10 +894,9 @@ export default function App() {
   );
 
   return (
-    <div className="app-viewport-root w-full h-full relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50">
-      <div className="w-full h-full max-w-4xl mx-auto flex flex-col p-2 sm:p-4 safe-pt relative">
+    <div className="app-viewport-root w-full h-full relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col">
       {/* Sticky Top HUD Header Bar */}
-      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-2 border-slate-200/80 px-2 py-1.5 flex items-center justify-between shadow-sm rounded-2xl mb-2 shrink-0 gap-1.5 overflow-x-auto hide-scrollbar">
+      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-4 py-2 sm:py-3 flex items-center justify-between shadow-xs shrink-0 gap-1.5 overflow-x-auto hide-scrollbar">
         {/* Brand Logo & Stats */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 w-full justify-between">
           {/* 1. Brand Button: Warm Amber / Orange */}
@@ -977,6 +976,9 @@ export default function App() {
           </div>
         </div>
       </header>
+      <main className="w-full max-w-4xl mx-auto flex-1 flex flex-col p-2 sm:p-4 safe-pt relative min-h-0">
+
+
 
       {/* SETTINGS SCREEN */}
       {appState === 'settings' && (
@@ -1318,9 +1320,10 @@ export default function App() {
         }}
       />
 
+      </main>
+
       {/* Bottom Navigation Bar */}
       {appState !== 'settings' && renderNavigationFooter()}
-      </div>
     </div>
   );
 }
