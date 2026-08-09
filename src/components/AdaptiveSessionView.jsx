@@ -929,8 +929,6 @@ export default function AdaptiveSessionView({
           </div>
         </div>
 
-
-
         {!hasStartedClimb ? (
           /* PRE-CLIMB START SCREEN HERO CARD */
           <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-5 text-center shadow-xl space-y-4 relative overflow-hidden animate-pop">
@@ -978,8 +976,6 @@ export default function AdaptiveSessionView({
                 }
                 return null;
               })()}
-
-
 
               {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
                 <span className="text-xs font-black uppercase text-sky-950 bg-sky-100 px-3 py-1 rounded-full border border-sky-300 shadow-2xs flex items-center gap-1">
