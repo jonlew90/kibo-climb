@@ -1,8 +1,8 @@
 import React from 'react';
-import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, Mail, ArrowLeft } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, Mail } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
-export default function SettingsScreen({ preferences, onUpdatePreferences, onClose }) {
+export default function SettingsScreen({ preferences, onUpdatePreferences }) {
   const isMuted = preferences?.isMuted ?? false;
   const isHapticsEnabled = preferences?.isHapticsEnabled ?? true;
 
@@ -31,13 +31,6 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, onClo
               <p className="text-xs text-slate-500 font-medium">Profile Preferences & Links</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full text-sm font-bold transition-all active:scale-95 border-2 border-slate-200"
-          >
-            <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
-            Back
-          </button>
         </div>
 
         {/* Toggles */}

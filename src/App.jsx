@@ -1590,10 +1590,6 @@ export default function App() {
         <SettingsScreen
           preferences={preferences}
           onUpdatePreferences={handleUpdatePreferences}
-          onClose={() => {
-            soundFx.playKeyTap();
-            setAppState('adaptive_session');
-          }}
         />
       )}
 
@@ -2502,7 +2498,7 @@ export default function App() {
       />
 
       {/* Bottom Navigation Bar */}
-      {appState !== 'sprint' && appState !== 'settings' && renderNavigationFooter()}
+      {appState !== 'sprint' && renderNavigationFooter()}
       </div>
     </div>
   );
