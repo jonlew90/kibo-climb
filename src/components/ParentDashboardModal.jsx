@@ -456,7 +456,7 @@ export default function ParentDashboardModal({
                   </div>
                   <div className="bg-fuchsia-50 border border-fuchsia-200 rounded-2xl p-3">
                     <CheckCircle2 className="w-5 h-5 text-fuchsia-600 mx-auto mb-1 stroke-[2.5]" />
-                    <span className="text-[9px] uppercase font-black text-fuchsia-900 block">Recent Acc.</span>
+                    <span className="text-[9px] uppercase font-black text-fuchsia-900 block">Recent Accuracy</span>
                     <span className="text-lg font-black text-fuchsia-900">{recentAccuracy}</span>
                   </div>
                 </div>
@@ -667,11 +667,13 @@ export default function ParentDashboardModal({
                             </div>
 
                             {/* COUNTS LEGEND */}
-                            <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 pt-0.5">
-                              <span className="text-emerald-700">✓ {concept.correct} Correct</span>
-                              <span className="text-rose-700">✕ {concept.incorrect} Incorrect</span>
-                              <span className="text-sky-700">🔄 {concept.skipped} Skipped</span>
-                            </div>
+                            {!isSkipped && (
+                              <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 pt-0.5">
+                                <span className="text-emerald-700">✓ {concept.correct} Correct</span>
+                                <span className="text-rose-700">✕ {concept.incorrect} Incorrect</span>
+                                <span className="text-sky-700">🔄 {concept.skipped} Skipped</span>
+                              </div>
+                            )}
                           </div>
                         );
                       })}

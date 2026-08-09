@@ -62,9 +62,12 @@ export default function WorkshopModal({
 
   const checkScroll = () => {
     if (!categoryScrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
-    setCanScrollLeft(scrollLeft > 4);
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+    requestAnimationFrame(() => {
+      if (!categoryScrollRef.current) return;
+      const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+      setCanScrollLeft(scrollLeft > 4);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+    });
   };
 
   // Reset preview slots when modal opens and add Escape key listener
@@ -103,8 +106,9 @@ export default function WorkshopModal({
   };
 
   const handleCategoryWheel = (e) => {
-    if (categoryScrollRef.current && e.deltaY !== 0) {
-      categoryScrollRef.current.scrollLeft += e.deltaY;
+    if (categoryScrollRef.current && (e.deltaY !== 0 || e.deltaX !== 0)) {
+      const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+      categoryScrollRef.current.scrollLeft += delta;
       checkScroll();
     }
   };
@@ -282,11 +286,7 @@ export default function WorkshopModal({
               ref={categoryScrollRef}
               onScroll={checkScroll}
               onWheel={handleCategoryWheel}
-              style={{
-                maskImage: canScrollRight ? 'linear-gradient(to right, black 82%, transparent 100%)' : 'none',
-                WebkitMaskImage: canScrollRight ? 'linear-gradient(to right, black 82%, transparent 100%)' : 'none'
-              }}
-              className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl overflow-x-auto scrollbar-none w-full scroll-smooth touch-pan-x"
+              className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl overflow-x-auto scrollbar-none w-full touch-pan-x"
             >
               {ITEM_CATEGORIES.map((cat) => (
                 <button
