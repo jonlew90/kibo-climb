@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Play, Settings, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck, Compass, MapPin, Users, Mountain } from 'lucide-react';
+import { Flame, Play, Settings, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck, Compass, MapPin, Users, Mountain, ChevronDown } from 'lucide-react';
 import Mascot from './components/Mascot';
 import Keypad from './components/Keypad';
 import ConfettiCanvas from './components/ConfettiCanvas';
@@ -66,6 +66,21 @@ export default function App() {
   const [showSpeedInfoModal, setShowSpeedInfoModal] = useState(false);
   const [showPinGateModal, setShowPinGateModal] = useState(false);
   const [showParentDashboard, setShowParentDashboard] = useState(false);
+  const [showSubjectSelector, setShowSubjectSelector] = useState(false);
+  const subjectSelectorRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (subjectSelectorRef.current && !subjectSelectorRef.current.contains(event.target)) {
+        setShowSubjectSelector(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
@@ -896,26 +911,62 @@ export default function App() {
   return (
     <div className="app-viewport-root w-full h-full relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col">
       {/* Sticky Top HUD Header Bar */}
-      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-4 py-2 sm:py-3 flex items-center justify-between shadow-xs shrink-0 gap-1.5 overflow-x-auto hide-scrollbar">
+      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-4 py-2 sm:py-3 flex items-center justify-between shadow-xs shrink-0 gap-1.5">
         {/* Brand Logo & Stats */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 w-full justify-between">
-          {/* 1. Brand Button: Warm Amber / Orange */}
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setAppState('adaptive_session');
-            }}
-            className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 font-black text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border-2 border-amber-300 hover:border-amber-400"
-            title="Kibo Climb Main Session"
-          >
-            <img
-              src="/kibo_mascot.svg"
-              alt="Kibo Mascot"
-              className="w-5 h-5 sm:w-6 sm:h-6 object-contain filter drop-shadow-2xs"
-            />
-            <span className="tracking-tight font-black">Kibo Climb</span>
-          </button>
+          {/* 1. Brand Button: Warm Amber / Orange & Subject Selector */}
+          <div className="relative" ref={subjectSelectorRef}>
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowSubjectSelector(!showSubjectSelector);
+              }}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 font-black text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border-2 border-amber-300 hover:border-amber-400"
+              title="Subject Selector"
+            >
+              <img
+                src="/kibo_mascot.svg"
+                alt="Kibo Mascot"
+                className="w-5 h-5 sm:w-6 sm:h-6 object-contain filter drop-shadow-2xs"
+              />
+              <span className="tracking-tight font-black">Kibo Math</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSubjectSelector ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showSubjectSelector && (
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white border-2 border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden flex flex-col">
+                <button
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setAppState('adaptive_session');
+                    setShowSubjectSelector(false);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 border border-amber-300 flex items-center justify-center shrink-0">
+                    <span className="text-lg">🏔️</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-slate-800 leading-tight">Kibo Math</span>
+                    <span className="text-[10px] font-bold text-emerald-600">Active</span>
+                  </div>
+                </button>
+
+                <div className="h-px bg-slate-100 w-full" />
+
+                <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 opacity-75 cursor-not-allowed">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-200 border border-indigo-300 flex items-center justify-center shrink-0 opacity-50 grayscale">
+                    <span className="text-lg">📚</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-slate-400 leading-tight">Wordcraft</span>
+                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Coming Soon</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* 2. Streak Badge Button: Fiery Rose / Red with spelled out day/days pluralization */}
           <button
