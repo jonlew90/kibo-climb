@@ -855,7 +855,7 @@ export default function AdaptiveSessionView({
 
   return (
     <div className="w-full h-full flex-1 min-h-0 relative overflow-hidden animate-pop">
-      <div className="w-full h-full flex flex-col items-center justify-between py-1 px-1 sm:px-2 max-w-4xl mx-auto relative">
+      <div className="w-full h-full flex flex-col items-center justify-between py-0.5 sm:py-1 px-1 sm:px-2 max-w-4xl mx-auto relative">
 
       {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
       {celebrationEvent && (
@@ -917,15 +917,15 @@ export default function AdaptiveSessionView({
       </div>
 
       {/* MASCOT & PROBLEM CARD CONTAINER */}
-      <div className="w-full flex-1 flex flex-col items-center justify-center space-y-4 my-auto">
+      <div className="w-full flex-1 flex flex-col items-center justify-center space-y-2 sm:space-y-4 my-1 sm:my-auto">
         {/* Animated Kibo Avatar */}
         <div
           onClick={onOpenWorkshop}
           className="cursor-pointer hover:scale-105 transition-transform"
           title="Tap Kibo to open Kibo's Corner!"
         >
-          <div className="flex justify-center my-0.5 shrink-0 overflow-visible p-1">
-            <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-24 h-24 sm:w-32 sm:h-32 mascot-compact-auto filter drop-shadow-lg" />
+          <div className="flex justify-center my-0 sm:my-0.5 shrink-0 overflow-visible p-0.5 sm:p-1">
+            <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-20 h-20 sm:w-32 sm:h-32 mascot-compact-auto filter drop-shadow-lg" />
           </div>
         </div>
 
@@ -1005,7 +1005,7 @@ export default function AdaptiveSessionView({
 
             return (
               <div
-                className={`w-full bg-white border-4 rounded-3xl p-3 sm:p-4 text-center transition-all duration-500 space-y-2 relative ${
+                className={`w-full bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 text-center transition-all duration-500 space-y-1.5 sm:space-y-2 relative ${
                   streakCfg.cardGlow
                 } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''}`}
               >
@@ -1148,7 +1148,7 @@ export default function AdaptiveSessionView({
 
       {/* NUMERIC KEYPAD (AUTO-DETECTING & TYPE AWARE) */}
       {hasStartedClimb && (
-        <div className="w-full max-w-sm shrink-0 animate-pop">
+        <div className="w-full max-w-sm shrink-0 animate-pop mt-0.5 sm:mt-2">
           <Keypad
             onDigit={handleDigitInput}
             onDelete={handleDeleteDigit}

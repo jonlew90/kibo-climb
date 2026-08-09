@@ -1033,7 +1033,7 @@ export default function App() {
           </div>
         </div>
       </header>
-      <main className="w-full max-w-4xl mx-auto flex-1 flex flex-col p-2 sm:p-4 safe-pt relative min-h-0">
+      <main className="w-full max-w-4xl mx-auto flex-1 flex flex-col p-1.5 sm:p-4 relative min-h-0">
 
 
 
