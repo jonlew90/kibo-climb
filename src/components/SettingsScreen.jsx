@@ -2,7 +2,7 @@ import React from 'react';
 import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, Mail } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
-export default function SettingsScreen({ preferences, onUpdatePreferences }) {
+export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter }) {
   const isMuted = preferences?.isMuted ?? false;
   const isHapticsEnabled = preferences?.isHapticsEnabled ?? true;
 
@@ -17,7 +17,8 @@ export default function SettingsScreen({ preferences, onUpdatePreferences }) {
   };
 
   return (
-    <main className="w-full flex-1 flex flex-col items-center py-4 px-2 sm:px-4 animate-pop relative z-10 max-w-lg mx-auto">
+    <div className="w-full flex-1 flex flex-col min-h-0 justify-between">
+      <main className="w-full flex-1 flex flex-col items-center py-4 px-2 sm:px-4 animate-pop relative z-10 max-w-lg mx-auto overflow-y-auto">
       <div className="w-full bg-white rounded-3xl p-5 shadow-sm border-2 border-slate-200">
 
         {/* Header */}
@@ -120,6 +121,8 @@ export default function SettingsScreen({ preferences, onUpdatePreferences }) {
           </a>
         </div>
       </div>
-    </main>
+      </main>
+      {renderFooter ? renderFooter() : null}
+    </div>
   );
 }

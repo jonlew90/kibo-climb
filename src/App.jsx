@@ -983,6 +983,7 @@ export default function App() {
         <SettingsScreen
           preferences={preferences}
           onUpdatePreferences={handleUpdatePreferences}
+          renderFooter={renderNavigationFooter}
         />
       )}
 
