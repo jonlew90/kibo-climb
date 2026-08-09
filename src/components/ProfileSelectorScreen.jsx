@@ -21,8 +21,8 @@ function ProfileCard({ profile, onSelect, isSelected }) {
       onClick={() => onSelect(profile)}
       className={`group relative flex flex-col items-center gap-3 p-5 rounded-3xl border-2 transition-all duration-200 cursor-pointer text-center w-full
         ${isSelected
-          ? 'border-amber-400 bg-amber-400/10 scale-[1.03] shadow-xl shadow-amber-500/20'
-          : 'border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10 hover:scale-[1.02]'
+          ? 'border-amber-400 bg-amber-50 scale-[1.03] shadow-lg shadow-amber-500/20'
+          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 hover:scale-[1.02] shadow-sm'
         }`}
     >
       {isSelected && (
@@ -40,27 +40,27 @@ function ProfileCard({ profile, onSelect, isSelected }) {
       </div>
 
       <div className="space-y-0.5">
-        <h3 className="text-sm sm:text-base font-black text-white tracking-tight leading-tight truncate max-w-[140px]">
+        <h3 className="text-sm sm:text-base font-black text-slate-800 tracking-tight leading-tight truncate max-w-[140px]">
           {displayName}
         </h3>
         {profile.gradeLevel && (
-          <span className="text-[10px] font-bold text-slate-400 block">{profile.gradeLevel}</span>
+          <span className="text-[10px] font-bold text-slate-500 block">{profile.gradeLevel}</span>
         )}
       </div>
 
       <div className="flex items-center gap-3 text-[10px] font-black">
-        <span className="flex items-center gap-0.5 text-amber-400">
-          <Flame className="w-3 h-3 fill-amber-400" />{streak}d
+        <span className="flex items-center gap-0.5 text-amber-500">
+          <Flame className="w-3 h-3 fill-amber-500" />{streak}d
         </span>
-        <span className="flex items-center gap-0.5 text-purple-300">
-          <Star className="w-3 h-3 fill-purple-300" />{rating}
+        <span className="flex items-center gap-0.5 text-purple-500">
+          <Star className="w-3 h-3 fill-purple-500" />{rating}
         </span>
-        <span className="flex items-center gap-0.5 text-emerald-400">
-          <Zap className="w-3 h-3 fill-emerald-400" />{solved}
+        <span className="flex items-center gap-0.5 text-emerald-500">
+          <Zap className="w-3 h-3 fill-emerald-500" />{solved}
         </span>
       </div>
 
-      <ChevronRight className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-all duration-200 ${isSelected ? 'text-amber-400 opacity-100' : 'text-slate-600 opacity-0 group-hover:opacity-100 group-hover:text-slate-300'}`} />
+      <ChevronRight className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-all duration-200 ${isSelected ? 'text-amber-500 opacity-100' : 'text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-slate-600'}`} />
     </button>
   );
 }
@@ -111,11 +111,11 @@ function AddProfilePanel({ onCancel, onCreated }) {
   };
 
   return (
-    <div className="w-full max-w-xs bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4 text-center">
+    <div className="w-full max-w-xs bg-white border border-slate-200 shadow-sm rounded-2xl p-5 space-y-4 text-center">
       {step === 'pin' ? (
         <>
           <div className="space-y-1">
-            <div className="flex items-center justify-center gap-1.5 text-purple-300">
+            <div className="flex items-center justify-center gap-1.5 text-purple-600">
               <Lock className="w-3.5 h-3.5" />
               <span className="text-xs font-black uppercase tracking-wide">Parent PIN</span>
             </div>
@@ -131,12 +131,12 @@ function AddProfilePanel({ onCancel, onCreated }) {
               value={pinInput}
               onChange={(e) => { setPinInput(e.target.value); setPinError(''); }}
               placeholder="• • • •"
-              className="w-full text-center tracking-[0.5em] text-white font-black text-xl bg-white/10 border border-white/20 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-400 placeholder:tracking-normal placeholder:text-slate-600 placeholder:text-sm"
+              className="w-full text-center tracking-[0.5em] text-slate-800 font-black text-xl bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-400 placeholder:tracking-normal placeholder:text-slate-400 placeholder:text-sm"
             />
-            {pinError && <p className="text-xs text-rose-400 font-bold">{pinError}</p>}
+            {pinError && <p className="text-xs text-rose-500 font-bold">{pinError}</p>}
             <div className="flex gap-2">
               <button type="button" onClick={reset}
-                className="flex-1 py-2.5 text-xs font-bold text-slate-400 hover:text-white bg-white/5 rounded-xl transition-colors">
+                className="flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
                 Cancel
               </button>
               <button type="submit"
@@ -149,7 +149,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
       ) : (
         <>
           <div className="space-y-1">
-            <div className="flex items-center justify-center gap-1.5 text-emerald-400">
+            <div className="flex items-center justify-center gap-1.5 text-emerald-500">
               <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
               <span className="text-xs font-black uppercase tracking-wide">New Climber</span>
             </div>
@@ -159,9 +159,9 @@ function AddProfilePanel({ onCancel, onCreated }) {
           <form onSubmit={handleCreateSubmit} className="space-y-3 text-left">
             {/* Name */}
             <div>
-              <label className="text-[10px] font-black uppercase tracking-wide text-slate-400 block mb-1">Name</label>
+              <label className="text-[10px] font-black uppercase tracking-wide text-slate-500 block mb-1">Name</label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 stroke-[2.5]" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 stroke-[2.5]" />
                 <input
                   ref={nameRef}
                   type="text"
@@ -169,21 +169,21 @@ function AddProfilePanel({ onCancel, onCreated }) {
                   onChange={(e) => { setChildName(e.target.value); setNameError(''); }}
                   placeholder="e.g. Alex"
                   maxLength={24}
-                  className={`w-full pl-9 pr-3 py-2.5 text-sm font-bold text-white bg-white/10 border rounded-xl focus:outline-none transition-colors placeholder:text-slate-600 ${
-                    nameError ? 'border-rose-500' : 'border-white/20 focus:border-purple-400'
+                  className={`w-full pl-9 pr-3 py-2.5 text-sm font-bold text-slate-800 bg-white border rounded-xl focus:outline-none transition-colors placeholder:text-slate-400 ${
+                    nameError ? 'border-rose-500' : 'border-slate-300 focus:border-purple-400'
                   }`}
                 />
               </div>
-              {nameError && <p className="text-[11px] text-rose-400 font-bold mt-1">{nameError}</p>}
+              {nameError && <p className="text-[11px] text-rose-500 font-bold mt-1">{nameError}</p>}
             </div>
 
             {/* Grade */}
             <div>
-              <label className="text-[10px] font-black uppercase tracking-wide text-slate-400 block mb-1">Grade Level</label>
+              <label className="text-[10px] font-black uppercase tracking-wide text-slate-500 block mb-1">Grade Level</label>
               <select
                 value={childGrade}
                 onChange={(e) => setChildGrade(e.target.value)}
-                className="w-full px-3 py-2.5 text-sm font-bold text-white bg-slate-800 border border-white/20 rounded-xl focus:outline-none focus:border-purple-400 cursor-pointer"
+                className="w-full px-3 py-2.5 text-sm font-bold text-slate-800 bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-purple-400 cursor-pointer"
               >
                 {GRADE_OPTIONS.map((g) => (
                   <option key={g} value={g}>{g}</option>
@@ -193,7 +193,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
 
             <div className="flex gap-2 pt-1">
               <button type="button" onClick={() => setStep('pin')}
-                className="flex items-center gap-1 px-3 py-2.5 text-xs font-bold text-slate-400 hover:text-white bg-white/5 rounded-xl transition-colors">
+                className="flex items-center gap-1 px-3 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
                 <ArrowLeft className="w-3 h-3" /> Back
               </button>
               <button type="submit"
@@ -230,7 +230,7 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[900] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 select-none overflow-hidden">
+    <div className="fixed inset-0 z-[900] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 select-none overflow-hidden">
       <div className="w-full h-full max-w-lg mx-auto flex flex-col items-center justify-center p-4 relative">
 
 
@@ -240,28 +240,25 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose }) {
             soundFx.playKeyTap();
             onClose();
           }}
-          className="absolute top-4 right-4 z-50 p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10"
+          className="absolute top-4 right-4 z-50 p-2 text-slate-500 hover:text-slate-800 bg-white/50 hover:bg-white/80 rounded-full transition-all border border-slate-200"
         >
           <X className="w-5 h-5 stroke-[2.5]" />
         </button>
       )}
 
-      <div className="absolute top-0 left-1/4 w-80 h-80 rounded-full bg-purple-600/10 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-amber-500/8 blur-3xl pointer-events-none" />
-
       <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center justify-center gap-4 sm:gap-5 p-4 py-6 max-h-[98dvh] overflow-hidden">
 
         {/* Header */}
         <div className="text-center space-y-1 shrink-0">
-          <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/80">
+          <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">
             🏔️ Kibo Climb
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
             {profiles.length === 1
               ? `Ready to climb, ${profiles[0].username || profiles[0].name}?`
               : "Who's climbing today?"}
           </h1>
-          <p className="text-sm text-slate-400 font-medium">
+          <p className="text-sm text-slate-500 font-medium">
             {profiles.length === 1 ? 'Tap your card to start' : 'Pick your profile to continue your ascent'}
           </p>
         </div>
@@ -287,13 +284,13 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose }) {
           <button
             type="button"
             onClick={() => { soundFx.playKeyTap(); setShowAddPanel(true); }}
-            className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors mt-2 group"
+            className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors mt-2 group"
           >
-            <div className="w-7 h-7 rounded-full border border-slate-600 group-hover:border-slate-400 flex items-center justify-center transition-colors">
+            <div className="w-7 h-7 rounded-full border border-slate-400 group-hover:border-slate-600 flex items-center justify-center transition-colors">
               <Plus className="w-3.5 h-3.5" />
             </div>
             Add a profile
-            <Lock className="w-3 h-3 text-slate-600 group-hover:text-slate-400 transition-colors" />
+            <Lock className="w-3 h-3 text-slate-400 group-hover:text-slate-600 transition-colors" />
           </button>
         ) : (
           <AddProfilePanel
@@ -302,7 +299,7 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose }) {
           />
         )}
 
-        <p className="text-[10px] text-slate-600 font-medium text-center mt-2">
+        <p className="text-[10px] text-slate-500 font-medium text-center mt-2">
           Manage profiles · schedule · settings in the Parent Zone
         </p>
       </div>
