@@ -102,11 +102,25 @@ export default function AdaptiveSessionView({
   const [celebrationEvent, setCelebrationEvent] = useState(null);
 
   const [hasStartedClimb, setHasStartedClimb] = useState(false);
+  const [savedClimbState, setSavedClimbState] = useState(() => {
+    return storageService.getActiveClimbState(profileId);
+  });
+
   const blockSeenKeysRef = useRef(new Set());
   const blockStartTimeRef = useRef(0);
 
+  // Sync saved climb state when active profile changes
+  useEffect(() => {
+    const saved = storageService.getActiveClimbState(profileId);
+    setSavedClimbState(saved);
+  }, [profileId]);
+
   // Generate adaptive problem queue for active tier based on competence rating
   const [problemQueue, setProblemQueue] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId);
+    if (saved && saved.problemQueue && saved.problemQueue.length > 0) {
+      return saved.problemQueue;
+    }
     const seen = new Set();
     const currentRating = storageService.getUserData().adaptiveCompetenceRating || storageService.getUserData().competenceRank || 1000;
     const activeTier = isFTUX ? 1 : getTierFromRating(currentRating);
@@ -115,30 +129,161 @@ export default function AdaptiveSessionView({
     return batch;
   });
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [shouldPulseHint, setShouldPulseHint] = useState(false);
+
+  const currentProblem = problemQueue[currentIndex] || {};
+  const isMoneyQuestion = currentProblem.type === 'money';
+  const isTimeQuestion = currentProblem.type === 'time';
+  const targetStr = String(currentProblem.answerString || currentProblem.answer || '');
 
   const problemStartTimeRef = useRef(0);
+  const pauseStartRef = useRef(null);
+
+  const saveCurrentClimbProgress = () => {
+    if (!hasStartedClimb) return;
+
+    const now = performance.now();
+    const currentPause = pauseStartRef.current ? (now - pauseStartRef.current) : 0;
+
+    let accumulatedBlockTime = 0;
+    let accumulatedProblemTime = 0;
+
+    if (blockStartTimeRef.current > 0) {
+      accumulatedBlockTime = Math.max(0, now - blockStartTimeRef.current - currentPause);
+    }
+    if (problemStartTimeRef.current > 0) {
+      accumulatedProblemTime = Math.max(0, now - problemStartTimeRef.current - currentPause);
+    }
+
+    const climbState = {
+      version: 1,
+      savedAt: Date.now(),
+      problemQueue,
+      currentIndex,
+      sessionQuestionIndex,
+      questionsAnswered,
+      correctCount,
+      blockCorrectCount,
+      blockSparksEarned,
+      sessionSparksEarned,
+      blockRatingGain,
+      mistakeCount,
+      inSessionStreak,
+      inSessionIncorrectStreak,
+      consecutiveSkips,
+      competenceRank,
+      accumulatedBlockTime,
+      accumulatedProblemTime,
+      isDoubleSparksActive
+    };
+
+    storageService.saveActiveClimbState(climbState, profileId);
+    setSavedClimbState(climbState);
+  };
 
   const handleStartClimb = () => {
     soundFx.playKeyTap();
     blockStartTimeRef.current = performance.now();
     problemStartTimeRef.current = performance.now();
+    storageService.clearActiveClimbState(profileId);
+    setSavedClimbState(null);
     setHasStartedClimb(true);
   };
 
-  const currentProblem = problemQueue[currentIndex] || {
-    num1: 12,
-    num2: 8,
-    operatorSymbol: '+',
-    answer: 20,
-    answerString: '20'
+  const handleResumeClimb = () => {
+    soundFx.playKeyTap();
+    const saved = storageService.getActiveClimbState(profileId);
+    if (saved) {
+      if (saved.problemQueue && saved.problemQueue.length > 0) {
+        setProblemQueue(saved.problemQueue);
+      }
+      setCurrentIndex(saved.currentIndex || 0);
+      setSessionQuestionIndex(saved.sessionQuestionIndex || 1);
+      setQuestionsAnswered(saved.questionsAnswered || 0);
+      setCorrectCount(saved.correctCount || 0);
+      setBlockCorrectCount(saved.blockCorrectCount || 0);
+      setBlockSparksEarned(saved.blockSparksEarned || 0);
+      setSessionSparksEarned(saved.sessionSparksEarned || 0);
+      setBlockRatingGain(saved.blockRatingGain || 0);
+      setMistakeCount(saved.mistakeCount || 0);
+      setInSessionStreak(saved.inSessionStreak || 0);
+      setInSessionIncorrectStreak(saved.inSessionIncorrectStreak || 0);
+      setConsecutiveSkips(saved.consecutiveSkips || 0);
+      if (saved.competenceRank) setCompetenceRank(saved.competenceRank);
+
+      const now = performance.now();
+      const blockTime = saved.accumulatedBlockTime || 0;
+      const probTime = saved.accumulatedProblemTime || 0;
+
+      blockStartTimeRef.current = now - blockTime;
+      problemStartTimeRef.current = now - probTime;
+      pauseStartRef.current = null;
+    } else {
+      blockStartTimeRef.current = performance.now();
+      problemStartTimeRef.current = performance.now();
+    }
+    setHasStartedClimb(true);
   };
 
-  const targetStr = (currentProblem.answerString || currentProblem.answer?.toString() || '');
-  const isMoneyQuestion = currentProblem.type === 'money' || currentProblem.operatorSymbol === '🪙' || (currentProblem.displayString && (currentProblem.displayString.includes('$') || currentProblem.displayString.includes('¢') || currentProblem.displayString.includes('Change')));
-  const isTimeQuestion = currentProblem.type === 'time' || currentProblem.requiresColon || targetStr.includes(':') || currentProblem.operatorSymbol === '⏰' || (currentProblem.displayString && (currentProblem.displayString.includes('time') || currentProblem.displayString.includes('Hike started')));
 
-  const [shouldPulseHint, setShouldPulseHint] = useState(false);
-  const pauseStartRef = useRef(null);
+  // Continuous background saving while climbing
+  useEffect(() => {
+    if (hasStartedClimb) {
+      saveCurrentClimbProgress();
+    }
+  }, [
+    hasStartedClimb,
+    currentIndex,
+    sessionQuestionIndex,
+    questionsAnswered,
+    correctCount,
+    blockCorrectCount,
+    blockSparksEarned,
+    sessionSparksEarned,
+    blockRatingGain,
+    mistakeCount,
+    inSessionStreak,
+    inSessionIncorrectStreak,
+    consecutiveSkips,
+    competenceRank,
+    isDoubleSparksActive
+  ]);
+
+  // Window unload / unmount saving
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (hasStartedClimb) {
+        saveCurrentClimbProgress();
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+      if (hasStartedClimb) {
+        saveCurrentClimbProgress();
+      }
+    };
+  }, [
+    hasStartedClimb,
+    profileId,
+    problemQueue,
+    currentIndex,
+    sessionQuestionIndex,
+    questionsAnswered,
+    correctCount,
+    blockCorrectCount,
+    blockSparksEarned,
+    sessionSparksEarned,
+    blockRatingGain,
+    mistakeCount,
+    inSessionStreak,
+    inSessionIncorrectStreak,
+    consecutiveSkips,
+    competenceRank,
+    isDoubleSparksActive
+  ]);
 
   // Handle modal pausing logic
   useEffect(() => {
@@ -158,14 +303,20 @@ export default function AdaptiveSessionView({
     }
   }, [isPaused]);
 
-  // Handle Tab Visibility pausing logic
+  // Handle Tab Visibility & Navigating Away pausing/resume logic
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         if (!pauseStartRef.current) {
           pauseStartRef.current = performance.now();
         }
+        if (hasStartedClimb) {
+          saveCurrentClimbProgress();
+          setHasStartedClimb(false);
+        }
       } else {
+        const saved = storageService.getActiveClimbState(profileId);
+        setSavedClimbState(saved);
         if (pauseStartRef.current && !isPaused) {
           const pauseDuration = performance.now() - pauseStartRef.current;
           if (problemStartTimeRef.current !== null && problemStartTimeRef.current !== 0) {
@@ -181,7 +332,26 @@ export default function AdaptiveSessionView({
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [isPaused]);
+  }, [
+    isPaused,
+    hasStartedClimb,
+    profileId,
+    problemQueue,
+    currentIndex,
+    sessionQuestionIndex,
+    questionsAnswered,
+    correctCount,
+    blockCorrectCount,
+    blockSparksEarned,
+    sessionSparksEarned,
+    blockRatingGain,
+    mistakeCount,
+    inSessionStreak,
+    inSessionIncorrectStreak,
+    consecutiveSkips,
+    competenceRank,
+    isDoubleSparksActive
+  ]);
 
   useEffect(() => {
     if (hasStartedClimb) {
@@ -936,16 +1106,20 @@ export default function AdaptiveSessionView({
       <div className="w-full shrink-0 flex flex-col items-center justify-center my-1 space-y-2">
         {!hasStartedClimb ? (
           /* PRE-CLIMB START SCREEN HERO CARD */
-          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[38vh]">
+          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[42vh]">
             <div className="space-y-1.5">
               <span className="text-[11px] font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
-                🏔️ Mountain Climb • 12 Problems
+                {savedClimbState
+                  ? `🏔️ Mountain Climb • Question ${savedClimbState.sessionQuestionIndex || 1} of 12`
+                  : '🏔️ Mountain Climb • 12 Problems'}
               </span>
               <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                Ready for the Climb?
+                {savedClimbState ? 'Climb in Progress!' : 'Ready for the Climb?'}
               </h2>
               <p className="text-xs text-slate-600 font-semibold leading-relaxed">
-                Click <span className="text-emerald-600 font-extrabold">Start Climb</span> when you are ready! Your timer will begin as soon as you start.
+                {savedClimbState
+                  ? 'You have a climb in progress! Click Resume Climb to continue where you left off.'
+                  : 'Click Start Climb when you are ready! Your timer will begin as soon as you start.'}
               </p>
             </div>
 
@@ -989,15 +1163,18 @@ export default function AdaptiveSessionView({
               )}
             </div>
 
-            {/* START CLIMB MAIN CTA BUTTON */}
-            <button
-              type="button"
-              onClick={handleStartClimb}
-              className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer"
-            >
-              <Play className="w-7 h-7 fill-current" />
-              <span>START CLIMB 🏔️</span>
-            </button>
+            {/* START / RESUME CLIMB MAIN CTA BUTTON */}
+            <div className="w-full space-y-1.5">
+              <button
+                type="button"
+                onClick={savedClimbState ? handleResumeClimb : handleStartClimb}
+                className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer"
+              >
+                <Play className="w-7 h-7 fill-current" />
+                <span>{savedClimbState ? 'RESUME CLIMB 🏔️' : 'START CLIMB 🏔️'}</span>
+              </button>
+
+            </div>
           </div>
         ) : (
           /* ACTIVE ADAPTIVE MATH QUESTION CARD */

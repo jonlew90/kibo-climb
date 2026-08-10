@@ -470,5 +470,36 @@ export const storageService = {
     } catch (e) {
       console.error('StorageService: error resetting failed attempts', e);
     }
+  },
+
+  // Active Climb Session Persistence (per-profile mid-climb progress)
+  getActiveClimbState(profileId = null) {
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    const profile = state.profiles[pid];
+    if (!profile || !profile.userData || !profile.userData.activeClimb) return null;
+    return profile.userData.activeClimb;
+  },
+
+  saveActiveClimbState(climbState, profileId = null) {
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[pid]) return;
+    const currentUserData = state.profiles[pid].userData || {};
+    state.profiles[pid].userData = {
+      ...currentUserData,
+      activeClimb: climbState
+    };
+    safeSaveProfilesState(state);
+  },
+
+  clearActiveClimbState(profileId = null) {
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[pid] || !state.profiles[pid].userData) return;
+    const currentUserData = { ...state.profiles[pid].userData };
+    delete currentUserData.activeClimb;
+    state.profiles[pid].userData = currentUserData;
+    safeSaveProfilesState(state);
   }
 };
