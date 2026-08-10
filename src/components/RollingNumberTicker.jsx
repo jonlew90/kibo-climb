@@ -73,7 +73,7 @@ export default function RollingNumberTicker({
       {showDeltaBadge && deltaEffect && (
         <span
           key={deltaEffect.id}
-          className={`absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-black px-2 py-0.5 rounded-full border shadow-md animate-slot-pop z-50 pointer-events-none whitespace-nowrap ${
+          className={`absolute -top-5 left-1/2 -translate-x-1/2 text-[11px] font-black px-2 py-0.5 rounded-full border shadow-md animate-slot-pop z-50 pointer-events-none whitespace-nowrap ${
             deltaEffect.isPositive
               ? 'bg-emerald-500 text-white border-emerald-300 shadow-emerald-900/30'
               : 'bg-rose-600 text-white border-rose-400 shadow-rose-900/30'

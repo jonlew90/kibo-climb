@@ -47,6 +47,7 @@ function getStreakTierConfig(streak) {
 }
 
 export default function AdaptiveSessionView({
+  profileId,
   isPaused = false,
   equippedItems = [],
   sparks = 0,
@@ -918,9 +919,8 @@ export default function AdaptiveSessionView({
 
       {/* MASCOT CONTAINER - Centered between sticky header and question card */}
       <div
-        onClick={onOpenWorkshop}
-        className="flex-1 flex flex-col items-center justify-center w-full min-h-0 my-auto py-1 sm:py-2 cursor-pointer hover:scale-[1.03] transition-transform z-10 overflow-visible"
-        title="Tap Kibo to open Kibo's Corner!"
+        className="flex-1 flex flex-col items-center justify-center w-full min-h-0 my-auto py-1 sm:py-2 z-10 overflow-visible"
+        title="Tap Kibo!"
       >
         <div className="relative flex items-center justify-center overflow-visible p-1.5 sm:p-3 w-full h-full max-h-[35vh] sm:max-h-[46vh] md:max-h-[50vh]">
           <Mascot

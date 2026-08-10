@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { soundFx } from '../utils/audio';
 
-export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], className = "w-36 h-36" }) {
+export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], equippedItems, className = "w-36 h-36", size, overrideColor }) {
+  const activeEquipped = equippedItems || equipped || [];
   // Equipped item checks
-  const isEquipped = (itemId) => equipped.includes(itemId);
+  const isEquipped = (itemId) => activeEquipped.includes(itemId);
 
   // Background Themes
   const hasAlpineBg = isEquipped('bg_alpine');
@@ -108,6 +109,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const [isTwirling, setIsTwirling] = useState(false);
   const [isTapped, setIsTapped] = useState(false);
   const [sparkParticles, setSparkParticles] = useState([]);
+  const isReactingRef = useRef(false);
 
   // Advanced Movement Visual FX items
   const hasCloudFloat = isEquipped('fx_float_bounce');
@@ -154,10 +156,16 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   }, []);
 
   // Handle Interactive Mascot Tap Reaction
-  const handleMascotTap = () => {
+  const handleMascotTap = (e) => {
+    if (e && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
+    // Prevent triggering another visual reaction until the previous one completes
+    if (isReactingRef.current || isTapped) return;
+
+    isReactingRef.current = true;
     soundFx.playKeyTap();
     setIsTapped(true);
-    setTimeout(() => setIsTapped(false), 450);
 
     const newSparks = Array.from({ length: 4 }).map((_, idx) => ({
       id: Date.now() + idx,
@@ -166,6 +174,13 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     }));
 
     setSparkParticles((prev) => [...prev, ...newSparks]);
+
+    // Visual reaction duration: 600ms (matches CSS mascotSquash 0.55s animation plus buffer)
+    setTimeout(() => {
+      setIsTapped(false);
+      isReactingRef.current = false;
+    }, 600);
+
     setTimeout(() => {
       setSparkParticles((prev) => prev.filter((p) => !newSparks.includes(p)));
     }, 900);

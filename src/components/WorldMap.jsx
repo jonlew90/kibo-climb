@@ -177,10 +177,9 @@ export default function WorldMap({
                       <div
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (onOpenWorkshop) onOpenWorkshop();
                         }}
                         className={`absolute ${mascotSideClass} -top-2 z-30 kibo-active-sprite pointer-events-auto flex flex-col items-center select-none cursor-pointer hover:scale-110 active:scale-95 transition-transform`}
-                        title="Tap Kibo to open Workshop!"
+                        title="Tap Kibo!"
                       >
                         {/* Animated Speech Bubble */}
                         <div className="bg-white border-2 border-purple-500 text-purple-900 font-extrabold text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-2xl shadow-md whitespace-nowrap animate-bounce mb-1">

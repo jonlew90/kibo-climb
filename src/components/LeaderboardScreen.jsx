@@ -13,16 +13,16 @@ const MOCK_SUBJECTS = [
 ];
 
 const MOCK_LEADERBOARD_DATA = [
-  { rank: 1, name: "Alex P.", score: 1450, subjectsMastered: 8 },
-  { rank: 2, name: "Jordan M.", score: 1380, subjectsMastered: 7 },
-  { rank: 3, name: "Sam K.", score: 1320, subjectsMastered: 7 },
-  { rank: 4, name: "Taylor R.", score: 1250, subjectsMastered: 6 },
-  { rank: 5, name: "Casey B.", score: 1210, subjectsMastered: 6 },
-  { rank: 6, name: "Riley D.", score: 1180, subjectsMastered: 5 },
-  { rank: 7, name: "Jamie L.", score: 1150, subjectsMastered: 5 },
-  { rank: 8, name: "Morgan W.", score: 1120, subjectsMastered: 4 },
-  { rank: 9, name: "Quinn C.", score: 1090, subjectsMastered: 4 },
-  { rank: 10, name: "Avery H.", score: 1060, subjectsMastered: 3 }
+  { rank: 1, name: "Alex P.", score: 1450, subjectsMastered: 8, equipped: ['golden_skin', 'crown', 'royal_cape'] },
+  { rank: 2, name: "Jordan M.", score: 1380, subjectsMastered: 7, equipped: ['emerald_jade_skin', 'goggles', 'vest'] },
+  { rank: 3, name: "Sam K.", score: 1320, subjectsMastered: 7, equipped: ['snow_white_skin', 'wizard_hat', 'summit_scarf'] },
+  { rank: 4, name: "Taylor R.", score: 1250, subjectsMastered: 6, equipped: ['midnight_shadow_skin', 'explorer_hat', 'backpack'] },
+  { rank: 5, name: "Casey B.", score: 1210, subjectsMastered: 6, equipped: ['headphones_neon', 'vest'] },
+  { rank: 6, name: "Riley D.", score: 1180, subjectsMastered: 5, equipped: ['cap', 'canteen', 'bowtie'] },
+  { rank: 7, name: "Jamie L.", score: 1150, subjectsMastered: 5, equipped: ['bandana', 'summit_scarf'] },
+  { rank: 8, name: "Morgan W.", score: 1120, subjectsMastered: 4, equipped: ['goggles', 'canteen'] },
+  { rank: 9, name: "Quinn C.", score: 1090, subjectsMastered: 4, equipped: ['cap', 'bowtie'] },
+  { rank: 10, name: "Avery H.", score: 1060, subjectsMastered: 3, equipped: ['bandana'] }
 ];
 
 export default function LeaderboardScreen({ userState, renderFooter, equippedItems = [] }) {
@@ -33,12 +33,24 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const username = storageService.getUsername() || storageService.getActiveProfile()?.name || 'You';
-  const userScore = userState?.competenceRank || 1000;
+  const activeProfile = storageService.getActiveProfile();
+  const username = storageService.getUsername() || activeProfile?.username || activeProfile?.name || 'You';
+  const userScore = userState?.competenceRank || activeProfile?.userData?.adaptiveCompetenceRating || activeProfile?.userData?.competenceRank || 1000;
+  const userEquippedItems = (equippedItems && equippedItems.length > 0)
+    ? equippedItems
+    : (activeProfile?.shopState?.equippedItems || []);
 
-  // Calculate mock current user rank based on score relative to mock data
+  // Calculate current user rank based on score relative to standings data
   let currentUserRank = MOCK_LEADERBOARD_DATA.findIndex(p => p.score < userScore) + 1;
-  if (currentUserRank === 0) currentUserRank = MOCK_LEADERBOARD_DATA.length + 1; // if score is lower than all
+  if (currentUserRank === 0) currentUserRank = MOCK_LEADERBOARD_DATA.length + 1;
+
+  let pointsNeeded = 0;
+  if (currentUserRank > 1) {
+    const playerAboveScore = MOCK_LEADERBOARD_DATA[currentUserRank - 2]
+      ? MOCK_LEADERBOARD_DATA[currentUserRank - 2].score
+      : MOCK_LEADERBOARD_DATA[MOCK_LEADERBOARD_DATA.length - 1].score;
+    pointsNeeded = Math.max(1, playerAboveScore - userScore + 1);
+  }
 
   const checkScroll = () => {
     if (!subjectScrollRef.current) return;
@@ -76,7 +88,7 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
   };
 
   return (
-    <div className="flex-1 w-full flex flex-col bg-gradient-to-b from-slate-50 via-stone-50 to-slate-100 overflow-hidden relative text-slate-800">
+    <div className="fixed inset-0 z-50 bg-gradient-to-b from-slate-50 via-stone-50 to-slate-100 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
 
       {/* HEADER & CONTROLS */}
       <div className="bg-white border-b-2 border-slate-200 z-10 shrink-0 shadow-sm relative pb-2">
@@ -152,7 +164,7 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar relative pb-28">
+      <div className="flex-1 overflow-y-auto custom-scrollbar relative pb-6">
 
         {/* HERO PODIUM (Top 3) */}
         <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
@@ -160,8 +172,8 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
           {/* 2nd Place */}
           <div className="flex flex-col items-center flex-1 max-w-[100px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-slate-200 rounded-full border-2 border-slate-300 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative">
-              <div className="absolute inset-0 scale-[0.6] translate-y-[20%]">
-                 <Mascot size={48} mood="happy" overrideColor="slate" />
+              <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
+                 <Mascot size={48} mood="happy" overrideColor="slate" equipped={top3[1].equipped} />
               </div>
             </div>
             <span className="font-bold text-xs truncate w-full text-center">{top3[1].name}</span>
@@ -177,8 +189,8 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
               <Crown className="w-6 h-6 fill-amber-400" />
             </div>
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-100 rounded-full border-4 border-amber-400 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative">
-               <div className="absolute inset-0 scale-[0.6] translate-y-[20%]">
-                 <Mascot size={64} mood="excited" overrideColor="amber" />
+               <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
+                 <Mascot size={64} mood="excited" overrideColor="amber" equipped={top3[0].equipped} />
               </div>
             </div>
             <span className="font-black text-sm text-amber-900 truncate w-full text-center">{top3[0].name}</span>
@@ -193,8 +205,8 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
           {/* 3rd Place */}
           <div className="flex flex-col items-center flex-1 max-w-[100px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-orange-100 rounded-full border-2 border-orange-300 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative">
-               <div className="absolute inset-0 scale-[0.6] translate-y-[20%]">
-                 <Mascot size={48} mood="happy" overrideColor="orange" />
+               <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
+                 <Mascot size={48} mood="happy" overrideColor="orange" equipped={top3[2].equipped} />
               </div>
             </div>
             <span className="font-bold text-xs truncate w-full text-center">{top3[2].name}</span>
@@ -217,8 +229,8 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
 
               {/* Avatar Placeholder */}
               <div className="w-10 h-10 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden relative">
-                 <div className="absolute inset-0 scale-[0.7] translate-y-[15%]">
-                     <Mascot size={32} mood="neutral" overrideColor="slate" />
+                 <div className="absolute inset-0 flex items-center justify-center scale-[0.7]">
+                     <Mascot size={32} mood="neutral" overrideColor="slate" equipped={player.equipped} />
                   </div>
               </div>
 
@@ -244,45 +256,50 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
       </div>
 
       {/* PINNED CURRENT USER CARD */}
-      <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-white via-white to-transparent pt-8 pointer-events-none z-30">
-        <div className="bg-indigo-900 border-2 border-indigo-500 rounded-2xl p-3 flex items-center gap-3 shadow-[0_10px_25px_rgba(67,56,202,0.3)] pointer-events-auto relative overflow-hidden">
-          {/* Subtle glow effect inside */}
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20" />
+      <div className="shrink-0 px-3 py-2 bg-gradient-to-t from-slate-100 via-slate-100/90 to-transparent pt-3 z-30 border-t border-slate-200/60">
+        <div className="max-w-4xl mx-auto w-full">
+          <div className="bg-indigo-900 border-2 border-indigo-500 rounded-2xl p-3 flex items-center gap-3 shadow-[0_10px_25px_rgba(67,56,202,0.3)] relative overflow-hidden">
+            {/* Subtle glow effect inside */}
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20" />
 
-          {/* User Rank */}
-          <div className="w-8 h-8 rounded-full bg-indigo-800/80 border border-indigo-400 flex items-center justify-center font-black text-white shrink-0 shadow-inner z-10">
-            {currentUserRank > MOCK_LEADERBOARD_DATA.length ? '-' : currentUserRank}
-          </div>
-
-          {/* User Avatar (Actual Mascot + Items) */}
-          <div className="w-12 h-12 bg-white rounded-full border-2 border-indigo-300 flex items-center justify-center shrink-0 overflow-hidden z-10 relative">
-             <div className="absolute inset-0 scale-[0.7] translate-y-[10%]">
-               <Mascot size={40} mood="happy" equippedItems={equippedItems} />
-             </div>
-          </div>
-
-          {/* User Info & Progress */}
-          <div className="flex-1 min-w-0 flex flex-col z-10">
-            <div className="flex items-center gap-1.5">
-              <span className="font-black text-white text-sm truncate">You ({username})</span>
-              <span className="bg-indigo-500 text-indigo-50 text-[9px] uppercase px-1.5 py-0.5 rounded font-bold tracking-wider">
-                {getRankTitle(userScore)}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 mt-0.5">
-              <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
-              <span className="text-indigo-200 font-bold text-xs">{userScore} pts</span>
+            {/* User Rank */}
+            <div className="w-8 h-8 rounded-full bg-indigo-800/80 border border-indigo-400 flex items-center justify-center font-black text-white shrink-0 shadow-inner z-10">
+              {currentUserRank > MOCK_LEADERBOARD_DATA.length ? '-' : currentUserRank}
             </div>
 
-            {/* Contextual progress message */}
-            <p className="text-[10px] text-indigo-300 mt-1 leading-tight font-medium">
-              {currentUserRank > 1
-                ? `+${Math.max(10, Math.floor(Math.random() * 50))} pts needed to rank up`
-                : "You are currently holding 1st place! Keep it up!"}
-            </p>
+            {/* User Avatar (Actual Mascot + Items) */}
+            <div className="w-12 h-12 bg-white rounded-full border-2 border-indigo-300 flex items-center justify-center shrink-0 overflow-hidden z-10 relative">
+               <div className="absolute inset-0 flex items-center justify-center scale-[0.7]">
+                 <Mascot size={40} mood="happy" equipped={equippedItems} />
+               </div>
+            </div>
+
+            {/* User Info & Progress */}
+            <div className="flex-1 min-w-0 flex flex-col z-10">
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-white text-sm truncate">You ({username})</span>
+                <span className="bg-indigo-500 text-indigo-50 text-[9px] uppercase px-1.5 py-0.5 rounded font-bold tracking-wider">
+                  {getRankTitle(userScore)}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+                <span className="text-indigo-200 font-bold text-xs">{userScore} pts</span>
+              </div>
+
+              {/* Contextual progress message */}
+              <p className="text-[10px] text-indigo-300 mt-1 leading-tight font-medium">
+                {currentUserRank > 1
+                  ? `+${pointsNeeded} pts needed to rank up`
+                  : "You are currently holding 1st place! Keep it up!"}
+              </p>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* STICKY BOTTOM NAVIGATION FOOTER */}
+      {renderFooter ? renderFooter() : null}
 
     </div>
   );

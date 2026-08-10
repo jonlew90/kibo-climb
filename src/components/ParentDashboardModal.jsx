@@ -81,9 +81,11 @@ export default function ParentDashboardModal({
   const handleSwitchProfile = (pId) => {
     soundFx.playKeyTap();
     setViewingProfileId(pId);
+    storageService.setActiveProfileId(pId);
     const profile = storageService.getProfileById(pId);
     setLiveUserData(profile ? profile.userData : storageService.getUserData());
     setShowEditProfile(false);
+    if (onProfileSwitch) onProfileSwitch();
   };
 
   const handleOpenEditProfile = () => {
@@ -678,7 +680,8 @@ export default function ParentDashboardModal({
 
               <div className="grid grid-cols-7 gap-1">
                 {DAYS_OF_WEEK.map((d) => {
-                  const profileDays = storageService.getProfileById(viewingProfileId)?.practiceDays || [1, 2, 3, 4, 5];
+                  const viewingProfile = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId);
+                  const profileDays = viewingProfile?.practiceDays || [1, 2, 3, 4, 5];
                   const isActive = profileDays.includes(d.idx);
                   return (
                     <button
@@ -691,9 +694,13 @@ export default function ParentDashboardModal({
                           if (profileDays.length === 1) return;
                           newDays = profileDays.filter((idx) => idx !== d.idx);
                         } else {
-                          newDays = [...profileDays, d.idx].sort();
+                          newDays = [...profileDays, d.idx].sort((a, b) => a - b);
                         }
                         storageService.saveProfilePracticeDays(viewingProfileId, newDays);
+                        setProfilesList(storageService.getAllProfiles());
+                        if (viewingProfileId === storageService.getActiveProfileId() && onUpdatePracticeDays) {
+                          onUpdatePracticeDays(newDays);
+                        }
                       }}
                       className={`py-2 text-xs font-black rounded-xl border-2 transition-all ${
                         isActive

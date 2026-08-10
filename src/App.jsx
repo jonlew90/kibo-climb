@@ -155,6 +155,7 @@ export default function App() {
     soundFx.setMuted(prefs.isMuted);
     setHapticsEnabled(prefs.isHapticsEnabled);
     setPreferences(prefs);
+    setIsDoubleSparksActive(false);
   };
 
   // Initialize Silent Anonymous Guest Auth & Offline Background Sync Queue on Launch
@@ -1164,6 +1165,8 @@ export default function App() {
       {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
       {appState === 'adaptive_session' && (
         <AdaptiveSessionView
+          key={activeProfileId}
+          profileId={activeProfileId}
           isPaused={isAppPaused}
           equippedItems={equippedItems}
           sparks={sparks}
