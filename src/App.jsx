@@ -34,11 +34,43 @@ import AccountLinkModal from './components/AccountLinkModal';
 import { getNotificationPrefs } from './utils/notifications';
 import MockCheckoutModal from './components/MockCheckoutModal';
 import SettingsScreen from './components/SettingsScreen';
+import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
+import TermsOfServiceScreen from './components/TermsOfServiceScreen';
 import { setHapticsEnabled } from './utils/audio';
 
 export default function App() {
-  // App State: 'adaptive_session' | 'settings'
-  const [appState, setAppState] = useState('adaptive_session');
+  // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms'
+  const [appState, setAppState] = useState(() => {
+    const path = window.location.pathname;
+    if (path === '/privacy' || path === '/privacy/') return 'privacy';
+    if (path === '/terms' || path === '/terms/') return 'terms';
+    if (path === '/settings' || path === '/settings/') return 'settings';
+    return 'adaptive_session';
+  });
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === '/privacy' || path === '/privacy/') {
+        setAppState('privacy');
+      } else if (path === '/terms' || path === '/terms/') {
+        setAppState('terms');
+      } else if (path === '/settings' || path === '/settings/') {
+        setAppState('settings');
+      } else {
+        setAppState('adaptive_session');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleNavigateTo = (path, stateName) => {
+    window.history.pushState({}, '', path);
+    setAppState(stateName);
+    window.scrollTo(0, 0);
+  };
+
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
   const [workshopOriginState, setWorkshopOriginState] = useState('adaptive_session');
 
@@ -1067,6 +1099,23 @@ export default function App() {
           preferences={preferences}
           onUpdatePreferences={handleUpdatePreferences}
           renderFooter={renderNavigationFooter}
+          onNavigate={handleNavigateTo}
+        />
+      )}
+
+      {/* PRIVACY POLICY SCREEN */}
+      {appState === 'privacy' && (
+        <PrivacyPolicyScreen
+          onBack={() => handleNavigateTo('/settings', 'settings')}
+          renderFooter={renderNavigationFooter}
+        />
+      )}
+
+      {/* TERMS OF SERVICE SCREEN */}
+      {appState === 'terms' && (
+        <TermsOfServiceScreen
+          onBack={() => handleNavigateTo('/settings', 'settings')}
+          renderFooter={renderNavigationFooter}
         />
       )}
 
@@ -1401,7 +1450,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {appState !== 'settings' && renderNavigationFooter()}
+      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && renderNavigationFooter()}
     </div>
   );
 }

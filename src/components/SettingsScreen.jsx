@@ -2,7 +2,7 @@ import React from 'react';
 import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, Mail } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
-export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter }) {
+export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter, onNavigate }) {
   const isMuted = preferences?.isMuted ?? false;
   const isHapticsEnabled = preferences?.isHapticsEnabled ?? true;
 
@@ -73,11 +73,18 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
           <h3 className="text-sm font-extrabold text-slate-500 uppercase tracking-wider mb-2 px-1">About & Legal</h3>
 
           <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl transition-colors active:scale-95"
-            onClick={(e) => { soundFx.playKeyTap(); }}
+            href="/terms"
+            className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl transition-colors active:scale-95 cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              soundFx.playKeyTap();
+              if (onNavigate) {
+                onNavigate('/terms', 'terms');
+              } else {
+                window.history.pushState({}, '', '/terms');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }
+            }}
           >
             <div className="flex items-center gap-3">
               <div className="p-1.5 bg-amber-100 text-amber-700 rounded-lg border border-amber-200">
@@ -88,11 +95,18 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
           </a>
 
           <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl transition-colors active:scale-95"
-            onClick={(e) => { soundFx.playKeyTap(); }}
+            href="/privacy"
+            className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl transition-colors active:scale-95 cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              soundFx.playKeyTap();
+              if (onNavigate) {
+                onNavigate('/privacy', 'privacy');
+              } else {
+                window.history.pushState({}, '', '/privacy');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }
+            }}
           >
             <div className="flex items-center gap-3">
               <div className="p-1.5 bg-blue-100 text-blue-700 rounded-lg border border-blue-200">
