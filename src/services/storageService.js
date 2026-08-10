@@ -135,6 +135,10 @@ export const storageService = {
   },
   createProfile(name = 'New Climber', gradeLevel = 'Grade 1–2') {
     const state = safeGetProfilesState();
+    if (Object.keys(state.profiles).length >= 6) {
+      console.warn('Maximum profile limit of 6 reached.');
+      return null;
+    }
     const id = `profile_${Date.now()}`;
     const startingRating = getStartingRatingForGrade(gradeLevel);
     const newProfile = {

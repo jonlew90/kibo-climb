@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, UserPlus, Download, Trash2, Unplug } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug } from 'lucide-react';
 import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/curriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
@@ -59,7 +59,6 @@ export default function ParentDashboardModal({
   const [profilesList, setProfilesList] = useState(() => storageService.getAllProfiles());
   const [viewingProfileId, setViewingProfileId] = useState(() => storageService.getActiveProfileId());
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
-  const [showNewChildInput, setShowNewChildInput] = useState(false);
 
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
@@ -71,8 +70,6 @@ export default function ParentDashboardModal({
       setProfilesList(storageService.getAllProfiles());
     }
   }
-  const [newChildName, setNewChildName] = useState('');
-  const [newChildGrade, setNewChildGrade] = useState('Grade 1–2');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editChildName, setEditChildName] = useState('');
 
@@ -87,18 +84,6 @@ export default function ParentDashboardModal({
     const profile = storageService.getProfileById(pId);
     setLiveUserData(profile ? profile.userData : storageService.getUserData());
     setShowEditProfile(false);
-  };
-
-  const handleCreateProfile = (e) => {
-    e.preventDefault();
-    if (!newChildName.trim()) return;
-    soundFx.playVictory();
-    const newProf = storageService.createProfile(newChildName.trim(), newChildGrade);
-    setProfilesList(storageService.getAllProfiles());
-    setViewingProfileId(newProf.id);
-    setLiveUserData(newProf.userData);
-    setNewChildName('');
-    setShowNewChildInput(false);
   };
 
   const handleOpenEditProfile = () => {
@@ -268,17 +253,6 @@ export default function ParentDashboardModal({
               >
                 ✏️ {showEditProfile ? 'Cancel Edit' : 'Rename / Edit'}
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowEditProfile(false);
-                  setShowNewChildInput((prev) => !prev);
-                }}
-                className="text-[11px] font-extrabold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-200 flex items-center gap-1 transition-all"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                {showNewChildInput ? 'Cancel' : '+ Add Profile'}
-              </button>
             </div>
           </div>
 
@@ -307,32 +281,6 @@ export default function ParentDashboardModal({
                   🗑️ Delete
                 </button>
               )}
-            </form>
-          )}
-
-          {/* New Profile Input Form */}
-          {showNewChildInput && (
-            <form onSubmit={handleCreateProfile} className="flex items-center gap-2 pt-1 border-t border-slate-100">
-              <input
-                type="text"
-                value={newChildName}
-                onChange={(e) => setNewChildName(e.target.value)}
-                placeholder="Child's Name (e.g. Leo)"
-                required
-                className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:border-purple-500"
-              />
-              <select
-                value={newChildGrade}
-                onChange={(e) => setNewChildGrade(e.target.value)}
-                className="px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-extrabold focus:outline-none"
-              >
-                {Object.keys(GRADE_STARTING_RATINGS).map((g) => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
-              </select>
-              <button type="submit" className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-black">
-                Save
-              </button>
             </form>
           )}
 

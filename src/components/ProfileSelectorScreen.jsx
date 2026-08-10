@@ -98,8 +98,12 @@ function AddProfilePanel({ onCancel, onCreated }) {
     e.preventDefault();
     if (!childName.trim()) { setNameError('Please enter a name.'); return; }
     if (childName.trim().length < 2) { setNameError('Must be at least 2 characters.'); return; }
-    soundFx.playVictory();
     const newProfile = storageService.createProfile(childName.trim(), childGrade);
+    if (!newProfile) {
+      setNameError('Maximum profile limit of 6 reached.');
+      return;
+    }
+    soundFx.playVictory();
     onCreated(newProfile);
   };
 
@@ -280,23 +284,25 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose }) {
         </div>
 
         {/* Add Profile — toggle inline panel */}
-        {!showAddPanel ? (
-          <button
-            type="button"
-            onClick={() => { soundFx.playKeyTap(); setShowAddPanel(true); }}
-            className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors mt-2 group"
-          >
-            <div className="w-7 h-7 rounded-full border border-slate-400 group-hover:border-slate-600 flex items-center justify-center transition-colors">
-              <Plus className="w-3.5 h-3.5" />
-            </div>
-            Add a profile
-            <Lock className="w-3 h-3 text-slate-400 group-hover:text-slate-600 transition-colors" />
-          </button>
-        ) : (
-          <AddProfilePanel
-            onCancel={() => setShowAddPanel(false)}
-            onCreated={handleProfileCreated}
-          />
+        {profiles.length < 6 && (
+          !showAddPanel ? (
+            <button
+              type="button"
+              onClick={() => { soundFx.playKeyTap(); setShowAddPanel(true); }}
+              className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors mt-2 group"
+            >
+              <div className="w-7 h-7 rounded-full border border-slate-400 group-hover:border-slate-600 flex items-center justify-center transition-colors">
+                <Plus className="w-3.5 h-3.5" />
+              </div>
+              Add a profile
+              <Lock className="w-3 h-3 text-slate-400 group-hover:text-slate-600 transition-colors" />
+            </button>
+          ) : (
+            <AddProfilePanel
+              onCancel={() => setShowAddPanel(false)}
+              onCreated={handleProfileCreated}
+            />
+          )
         )}
 
         <p className="text-[10px] text-slate-500 font-medium text-center mt-2">
