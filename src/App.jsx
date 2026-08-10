@@ -97,6 +97,7 @@ export default function App() {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [showSpeedInfoModal, setShowSpeedInfoModal] = useState(false);
   const [showPinGateModal, setShowPinGateModal] = useState(false);
+  const [pinGateSource, setPinGateSource] = useState(null);
   const [showParentDashboard, setShowParentDashboard] = useState(false);
   const [showSubjectSelector, setShowSubjectSelector] = useState(false);
   const subjectSelectorRef = useRef(null);
@@ -915,6 +916,7 @@ export default function App() {
         onClick={() => {
           soundFx.playKeyTap();
           closeAllNavModals('parents');
+          setPinGateSource(null);
           setShowPinGateModal(true);
         }}
         className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
@@ -1081,6 +1083,7 @@ export default function App() {
                   <RollingNumberTicker
                     value={liveCompetenceRating}
                     showDeltaBadge={true}
+                    profileId={activeProfileId}
                     icon={<Trophy className="w-3.5 h-3.5 text-purple-700 stroke-[2.5]" />}
                   />
                 </button>
@@ -1162,6 +1165,11 @@ export default function App() {
             syncAppStateWithStorage();
             setShowProfileSelector(false);
           }}
+          onOpenParentZone={() => {
+            setShowProfileSelector(false);
+            setPinGateSource('profile_selector');
+            setShowPinGateModal(true);
+          }}
         />
       )}
 
@@ -1173,6 +1181,10 @@ export default function App() {
             setShowManualProfileSwitcher(false);
           }}
           onClose={() => setShowManualProfileSwitcher(false)}
+          onOpenParentZone={() => {
+            setPinGateSource('manual_profile_switcher');
+            setShowPinGateModal(true);
+          }}
         />
       )}
 
@@ -1189,6 +1201,7 @@ export default function App() {
           syncAppStateWithStorage();
           setShowFirstLaunchOnboardingModal(false);
           localStorage.setItem('kibo_math_has_onboarded', 'true');
+          setPinGateSource('onboarding');
           setShowPinGateModal(true);
         }}
         onStartAdaptiveClimb={() => {
@@ -1212,10 +1225,24 @@ export default function App() {
         onClose={() => {
           setShowPinGateModal(false);
           setPendingSparksPurchase(null);
+          if (pinGateSource === 'profile_selector') {
+            setShowProfileSelector(true);
+          } else if (pinGateSource === 'manual_profile_switcher') {
+            setShowManualProfileSwitcher(true);
+          } else if (pinGateSource === 'onboarding') {
+            setShowFirstLaunchOnboardingModal(true);
+          }
+          setPinGateSource(null);
         }}
         currentPin={parentPin}
         onUnlockSuccess={() => {
           setShowPinGateModal(false);
+          if (pinGateSource === 'manual_profile_switcher') {
+            setShowManualProfileSwitcher(false);
+          } else if (pinGateSource === 'profile_selector') {
+            setShowProfileSelector(false);
+          }
+          setPinGateSource(null);
           if (pendingSparksPurchase) {
             if (authService.getAuthState().isAnonymous) {
               setLinkModalMilestone('Real-Money Purchase Backup');
