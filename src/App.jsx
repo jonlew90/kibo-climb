@@ -36,15 +36,18 @@ import MockCheckoutModal from './components/MockCheckoutModal';
 import SettingsScreen from './components/SettingsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import TermsOfServiceScreen from './components/TermsOfServiceScreen';
+import LeaderboardIcon from './components/LeaderboardIcon';
+import LeaderboardScreen from './components/LeaderboardScreen';
 import { setHapticsEnabled } from './utils/audio';
 
 export default function App() {
-  // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms'
+  // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms' | 'leaderboard'
   const [appState, setAppState] = useState(() => {
     const path = window.location.pathname;
     if (path === '/privacy' || path === '/privacy/') return 'privacy';
     if (path === '/terms' || path === '/terms/') return 'terms';
     if (path === '/settings' || path === '/settings/') return 'settings';
+    if (path === '/leaderboard' || path === '/leaderboard/') return 'leaderboard';
     return 'adaptive_session';
   });
 
@@ -57,6 +60,8 @@ export default function App() {
         setAppState('terms');
       } else if (path === '/settings' || path === '/settings/') {
         setAppState('settings');
+      } else if (path === '/leaderboard' || path === '/leaderboard/') {
+        setAppState('leaderboard');
       } else {
         setAppState('adaptive_session');
       }
@@ -928,7 +933,25 @@ export default function App() {
         <span className="text-[10px] font-black tracking-wide">Parents</span>
       </button>
 
-      {/* 5. Settings Button: Slate Gray */}
+      {/* 5. Leaderboard Button: Sapphire Blue */}
+      <button
+        type="button"
+        onClick={() => {
+          soundFx.playKeyTap();
+          closeAllNavModals();
+          setAppState('leaderboard');
+        }}
+        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+          !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'ring-2 ring-indigo-500 scale-105 font-bold' : ''
+        }`}
+        aria-label="Leaderboard"
+        title="Leaderboard"
+      >
+        <LeaderboardIcon className="w-5 h-5 text-indigo-700" isActive={!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard'} />
+        <span className="text-[10px] font-black tracking-wide">Rank</span>
+      </button>
+
+      {/* 6. Settings Button: Slate Gray */}
       <button
         type="button"
         onClick={() => {
@@ -1119,6 +1142,22 @@ export default function App() {
         <TermsOfServiceScreen
           onBack={() => handleNavigateTo('/settings', 'settings')}
           renderFooter={renderNavigationFooter}
+        />
+      )}
+
+      {/* LEADERBOARD SCREEN */}
+      {appState === 'leaderboard' && (
+        <LeaderboardScreen
+          userState={{
+            competenceRank: liveCompetenceRating,
+            adaptiveCompetenceRating: liveCompetenceRating,
+            tier: tier,
+            totalProblemsSolved: totalProblemsSolved,
+            streak: streak,
+            cumulativeCorrectStreak: cumulativeCorrectStreak
+          }}
+          renderFooter={renderNavigationFooter}
+          equippedItems={equippedItems}
         />
       )}
 
@@ -1477,7 +1516,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && renderNavigationFooter()}
+      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && renderNavigationFooter()}
     </div>
   );
 }
