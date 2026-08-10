@@ -302,23 +302,8 @@ export default function PinGateModal({
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Dynamic Task</span>
+                <span>Dynamic Challenge</span>
               </button>
-
-              {hasCustomPin && (
-                <button
-                  type="button"
-                  onClick={() => { soundFx.playKeyTap(); setActiveTab('pin'); setErrorMsg(''); }}
-                  className={`flex-1 py-2 px-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                    activeTab === 'pin'
-                      ? 'bg-white text-purple-700 shadow-sm font-extrabold'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <KeyRound className="w-3.5 h-3.5" />
-                  <span>Custom PIN</span>
-                </button>
-              )}
             </div>
 
             {errorMsg && (
@@ -391,61 +376,6 @@ export default function PinGateModal({
                       {option}
                     </button>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* TAB 3: CUSTOM PIN FALLBACK (If custom non-1234 PIN set) */}
-            {activeTab === 'pin' && hasCustomPin && (
-              <div className="space-y-3 py-1 animate-fade-in">
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-left text-amber-800 text-[11px] font-semibold flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
-                  <span>
-                    <strong>Legacy PIN Notice:</strong> Default 1234 PIN is deprecated. Use device biometrics or dynamic tasks for primary protection.
-                  </span>
-                </div>
-
-                {/* 4 PIN Dots */}
-                <div className="flex justify-center gap-3 my-2">
-                  {[0, 1, 2, 3].map((idx) => (
-                    <div
-                      key={idx}
-                      className={`w-5 h-5 rounded-full border-2 transition-all ${
-                        idx < pinInput.length
-                          ? 'bg-purple-600 border-purple-700 scale-110 shadow-sm'
-                          : 'bg-slate-100 border-slate-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                {/* Keypad */}
-                <div className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto my-2">
-                  {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => handlePinDigitTap(num)}
-                      className="h-11 bg-slate-50 hover:bg-purple-50 text-slate-800 font-extrabold text-xl rounded-xl border-b-3 border-slate-200 active:border-b-0 active:translate-y-0.5 transition-all flex items-center justify-center"
-                    >
-                      {num}
-                    </button>
-                  ))}
-                  <div />
-                  <button
-                    type="button"
-                    onClick={() => handlePinDigitTap('0')}
-                    className="h-11 bg-slate-50 hover:bg-purple-50 text-slate-800 font-extrabold text-xl rounded-xl border-b-3 border-slate-200 active:border-b-0 active:translate-y-0.5 transition-all flex items-center justify-center"
-                  >
-                    0
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handlePinDelete}
-                    className="h-11 bg-amber-50 text-amber-700 font-extrabold text-sm rounded-xl border-b-3 border-amber-200 active:border-b-0 active:translate-y-0.5 transition-all flex items-center justify-center"
-                  >
-                    ⌫
-                  </button>
                 </div>
               </div>
             )}

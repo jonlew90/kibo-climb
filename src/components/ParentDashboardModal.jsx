@@ -45,7 +45,7 @@ export default function ParentDashboardModal({
   personalRecords = {},
   onAccountLinked
 }) {
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'settings'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'schedule' | 'verification'
 
   // PIN Change State
   const [oldPinInput, setOldPinInput] = useState('');
@@ -320,27 +320,41 @@ export default function ParentDashboardModal({
 
       {/* TAB SELECTOR HEADER */}
       <div className="w-full max-w-4xl mx-auto px-4 pt-3 shrink-0">
-        <div className="flex bg-slate-200/80 p-1 rounded-2xl font-extrabold text-xs sm:text-sm shadow-inner">
+        <div className="flex bg-slate-200/80 p-1 rounded-2xl font-extrabold text-xs sm:text-sm shadow-inner gap-1">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
               activeTab === 'overview'
                 ? 'bg-white text-purple-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Layers className="w-4 h-4 stroke-[2.5]" /> Child Overview
+            <Layers className="w-4 h-4 stroke-[2.5]" />
+            <span className="truncate">Child Overview</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('settings')}
-            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 ${
-              activeTab === 'settings'
+            onClick={() => setActiveTab('schedule')}
+            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
+              activeTab === 'schedule'
                 ? 'bg-white text-purple-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Settings className="w-4 h-4 stroke-[2.5]" /> PIN & Schedule Settings
+            <Calendar className="w-4 h-4 stroke-[2.5]" />
+            <span className="truncate">Schedule & Notifications</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('verification')}
+            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
+              activeTab === 'verification'
+                ? 'bg-white text-purple-700 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
+            <span className="truncate">Verification & Controls</span>
           </button>
         </div>
       </div>
@@ -640,29 +654,18 @@ export default function ParentDashboardModal({
           </div>
         )}
 
-        {/* TAB 2: PIN & SCHEDULE SETTINGS */}
-        {activeTab === 'settings' && (
+        {/* TAB 2: SCHEDULE & NOTIFICATIONS */}
+        {activeTab === 'schedule' && (
           <div className="flex-1 space-y-4 my-1">
 
             {/* Scope Banner */}
-            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3 flex flex-col sm:flex-row gap-2 text-left">
-              <div className="flex items-start gap-2 flex-1">
-                <span className="text-base shrink-0">👤</span>
-                <div>
-                  <span className="text-xs font-black text-purple-900 block">Practice Schedule & Notifications</span>
-                  <span className="text-[10px] font-medium text-purple-700 leading-snug">
-                    Applies to the <strong>currently selected child profile</strong> — switching profiles above will apply these settings to a different child.
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 flex-1 sm:border-l sm:border-purple-200 sm:pl-3">
-                <span className="text-base shrink-0">🔒</span>
-                <div>
-                  <span className="text-xs font-black text-purple-900 block">Parent PIN</span>
-                  <span className="text-[10px] font-medium text-purple-700 leading-snug">
-                    Shared across <strong>all child profiles</strong> on this device — one PIN protects the entire Parent Zone.
-                  </span>
-                </div>
+            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3 flex items-start gap-2 text-left">
+              <span className="text-base shrink-0">👤</span>
+              <div>
+                <span className="text-xs font-black text-purple-900 block">Practice Schedule & Notifications</span>
+                <span className="text-[10px] font-medium text-purple-700 leading-snug">
+                  Applies to the <strong>currently selected child profile</strong> — switching profiles above will apply these settings to a different child.
+                </span>
               </div>
             </div>
 
@@ -797,9 +800,35 @@ export default function ParentDashboardModal({
                   </p>
                 )}
               </div>
+            </div>
 
-              {/* Allow Real-Money Purchases */}
-              <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
+            {/* Account & Data Privacy Card moved to Verification & Controls */}
+          </div>
+        )}
+
+        {/* TAB 3: VERIFICATION & CONTROLS */}
+        {activeTab === 'verification' && (
+          <div className="flex-1 space-y-4 my-1">
+
+            {/* Verification Scope Banner */}
+            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3.5 text-left space-y-1">
+              <div className="flex items-center gap-2 text-purple-900">
+                <ShieldCheck className="w-5 h-5 text-purple-600 stroke-[2.5]" />
+                <h4 className="font-extrabold text-sm text-purple-950">Verification & Controls</h4>
+              </div>
+              <p className="text-xs text-purple-800 leading-snug">
+                Manage how parent verification is enforced across the app, including biometric authentication, dynamic challenges, and real-money purchase permissions.
+              </p>
+            </div>
+
+            {/* In-App Purchases & Real-Money Security */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
+              <div className="flex items-center gap-2 text-purple-700">
+                <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
+                <h4 className="font-extrabold text-sm text-slate-800">In-App Purchase Verification</h4>
+              </div>
+
+              <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-xl gap-1">
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-xs text-slate-800 block">Allow Real-Money Purchases</span>
@@ -819,85 +848,23 @@ export default function ParentDashboardModal({
                 </div>
                 {notifPrefs.allowRealMoneyPurchases && (
                   <p className="text-[10px] text-amber-900 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200 mt-1 leading-snug">
-                    ⚠️ <strong>Note:</strong> A 4-digit Parent PIN will still be required before any actual payment can be made.
+                    ⚠️ <strong>Note:</strong> Biometric verification or dynamic challenges will be required before any actual payment can be processed.
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Change 4-Digit PIN */}
-            <form onSubmit={handleChangePin} className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
+            {/* Biometrics & Dynamic Gate Security Info */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
               <div className="flex items-center gap-2 text-purple-700">
-                <Key className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Optional Secondary Custom PIN</h4>
+                <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
+                <h4 className="font-extrabold text-sm text-slate-800">Biometric & Challenge Security</h4>
               </div>
 
               <div className="bg-purple-50/70 border border-purple-200 rounded-xl p-2.5 text-xs font-semibold text-purple-900 leading-snug">
-                🛡️ <strong>Security Upgraded:</strong> Device Biometrics (Face ID/Passcode) and Dynamic Tasks are enabled as your primary Parental Gate. Setting a custom PIN is optional as a secondary fallback. The static default "1234" has been deprecated.
+                🛡️ <strong>Device Biometrics</strong> (Face ID/Passcode) are enabled as your primary Parental Gate. <strong>Dynamic Challenges</strong> serve as your secondary fallback gate.
               </div>
-
-              {pinErrorMsg && (
-                <div className="flex items-center gap-1.5 text-xs font-bold text-rose-600 bg-rose-50 p-2 rounded-xl border border-rose-200">
-                  <AlertCircle className="w-4 h-4 shrink-0" /> {pinErrorMsg}
-                </div>
-              )}
-
-              {pinSuccessMsg && (
-                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 p-2 rounded-xl border border-emerald-200">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" /> {pinSuccessMsg}
-                </div>
-              )}
-
-              <div className="grid grid-cols-3 gap-2">
-                {currentPin && (
-                  <div>
-                    <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Current PIN</label>
-                    <input
-                      type="password"
-                      maxLength={4}
-                      value={oldPinInput}
-                      onChange={(e) => setOldPinInput(e.target.value)}
-                      placeholder="••••"
-                      required
-                      className="w-full text-center py-2 bg-white border border-slate-300 rounded-xl text-sm font-extrabold focus:border-purple-500 focus:outline-none"
-                    />
-                  </div>
-                )}
-
-                <div className={!currentPin ? 'col-span-1 sm:col-span-1' : ''}>
-                  <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">New 4-Digit PIN</label>
-                  <input
-                    type="password"
-                    maxLength={4}
-                    value={newPinInput}
-                    onChange={(e) => setNewPinInput(e.target.value)}
-                    placeholder="••••"
-                    required
-                    className="w-full text-center py-2 bg-white border border-slate-300 rounded-xl text-sm font-extrabold focus:border-purple-500 focus:outline-none"
-                  />
-                </div>
-
-                <div className={!currentPin ? 'col-span-2 sm:col-span-2' : ''}>
-                  <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Confirm PIN</label>
-                  <input
-                    type="password"
-                    maxLength={4}
-                    value={confirmPinInput}
-                    onChange={(e) => setConfirmPinInput(e.target.value)}
-                    placeholder="••••"
-                    required
-                    className="w-full text-center py-2 bg-white border border-slate-300 rounded-xl text-sm font-extrabold focus:border-purple-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="btn-3d-purple w-full py-2.5 text-xs rounded-xl"
-              >
-                {currentPin ? 'Update Secondary PIN' : 'Set Secondary Custom PIN'}
-              </button>
-            </form>
+            </div>
 
             {/* Account & Data Privacy Card */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
