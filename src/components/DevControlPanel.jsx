@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail } from 'lucide-react';
+import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail, Fingerprint, Lock, ShieldAlert } from 'lucide-react';
 import { storageService } from '../services/storageService';
 import { communicationsService } from '../services/communicationsService';
+import { nativeAuthService } from '../services/nativeAuthService';
 import { calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { getTierFromRating } from '../utils/curriculum';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
@@ -295,7 +296,77 @@ Keep up the great work!
             </div>
           </div>
 
-          {/* SECTION 5: FULL DATA RESET */}
+          {/* SECTION 5: PARENTAL GATE & BIOMETRICS DEBUGGER */}
+          <div className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-4 space-y-3">
+            <span className="text-xs font-extrabold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Fingerprint className="w-4 h-4 text-purple-400" />
+              Parental Gate & Biometrics Debugger
+            </span>
+
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  const cfg = nativeAuthService.getMockConfig();
+                  nativeAuthService.setMockConfig({ available: !cfg.available });
+                  showToast(`Mock Biometrics Available: ${!cfg.available}`);
+                  if (onStateRefresh) onStateRefresh();
+                }}
+                className={`py-2 px-3 rounded-xl border text-left font-bold transition-all ${
+                  nativeAuthService.getMockConfig().available
+                    ? 'bg-purple-950/80 border-purple-600 text-purple-200'
+                    : 'bg-slate-900 border-slate-700 text-slate-400'
+                }`}
+              >
+                Mock Bio: {nativeAuthService.getMockConfig().available ? 'Available ✅' : 'Unavailable ❌'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const cfg = nativeAuthService.getMockConfig();
+                  nativeAuthService.setMockConfig({ success: !cfg.success });
+                  showToast(`Mock Bio Auth Result: ${!cfg.success ? 'FORCE PASS' : 'FORCE FAIL'}`);
+                  if (onStateRefresh) onStateRefresh();
+                }}
+                className={`py-2 px-3 rounded-xl border text-left font-bold transition-all ${
+                  nativeAuthService.getMockConfig().success
+                    ? 'bg-emerald-950/80 border-emerald-600 text-emerald-200'
+                    : 'bg-rose-950/80 border-rose-600 text-rose-200'
+                }`}
+              >
+                Bio Result: {nativeAuthService.getMockConfig().success ? 'Pass ✅' : 'Fail ❌'}
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  storageService.resetFailedAttempts();
+                  showToast('Parental Gate lockout timer & failed count reset!');
+                  if (onStateRefresh) onStateRefresh();
+                }}
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-indigo-300 border border-indigo-700/60 font-bold text-xs py-2 px-3 rounded-xl transition-all"
+              >
+                Reset Lockout & Attempts
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  storageService.saveParentSettings(null);
+                  showToast('Custom PIN cleared (Default 1234 deprecated)');
+                  if (onStateRefresh) onStateRefresh();
+                }}
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-700/60 font-bold text-xs py-2 px-3 rounded-xl transition-all"
+              >
+                Clear Custom PIN
+              </button>
+            </div>
+          </div>
+
+          {/* SECTION 6: FULL DATA RESET */}
           <div className="bg-rose-950/40 border border-rose-900/60 rounded-2xl p-4 space-y-3">
             <span className="text-xs font-extrabold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4 text-rose-500" />

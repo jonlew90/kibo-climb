@@ -6,7 +6,9 @@ const KEYS = {
   PROFILES: 'kibo_profiles_data',
   NOTIF_SETTINGS: 'kibo_parent_notif_prefs',
   PARENT_PIN: 'kibo_parent_pin',
-  PRACTICE_DAYS: 'kibo_practice_days'
+  PRACTICE_DAYS: 'kibo_practice_days',
+  GATE_FAILED_ATTEMPTS: 'kibo_parent_gate_failed_attempts',
+  GATE_LOCKOUT_UNTIL: 'kibo_parent_gate_lockout_until'
 };
 
 const DEFAULT_PROFILE_ID = 'default_child';
@@ -82,7 +84,7 @@ const DEFAULT_NOTIF_SETTINGS = {
 };
 
 const DEFAULT_PARENT_SETTINGS = {
-  pin: '1234',
+  pin: null, // Deprecated static '1234' pin fallback
   practiceDays: [1, 2, 3, 4, 5]
 };
 
@@ -364,25 +366,109 @@ export const storageService = {
     safeSaveProfilesState(state);
   },
 
-  // Parent Settings (PIN only — schedule is now per-profile)
+  // Parent Settings & Security Gate Storage
   getParentSettings() {
     try {
-      const pin = localStorage.getItem(KEYS.PARENT_PIN) || DEFAULT_PARENT_SETTINGS.pin;
-      // Legacy: read practiceDays for callers that still use this signature
+      let pin = localStorage.getItem(KEYS.PARENT_PIN);
+      // Deprecate static 1234 PIN: If stored pin is '1234', remove it
+      if (pin === '1234') {
+        localStorage.removeItem(KEYS.PARENT_PIN);
+        pin = null;
+      }
       const daysRaw = localStorage.getItem(KEYS.PRACTICE_DAYS);
       const practiceDays = daysRaw ? JSON.parse(daysRaw) : DEFAULT_PARENT_SETTINGS.practiceDays;
-      return { pin, practiceDays };
+      return { pin: pin || null, practiceDays };
     } catch (e) {
       return DEFAULT_PARENT_SETTINGS;
     }
   },
   saveParentSettings(pin) {
     try {
-      if (pin) localStorage.setItem(KEYS.PARENT_PIN, pin);
+      if (pin && pin !== '1234') {
+        localStorage.setItem(KEYS.PARENT_PIN, pin);
+      } else {
+        localStorage.removeItem(KEYS.PARENT_PIN);
+      }
       return true;
     } catch (e) {
       console.error('StorageService: error writing parent settings', e);
       return false;
+    }
+  },
+  hasCustomPin() {
+    const { pin } = this.getParentSettings();
+    return !!(pin && pin !== '1234');
+  },
+
+  // Parental Gate Lockout Rate Limiter Storage Helpers
+  getLockoutStatus() {
+    try {
+      const lockoutUntilStr = localStorage.getItem(KEYS.GATE_LOCKOUT_UNTIL);
+      const failedCountStr = localStorage.getItem(KEYS.GATE_FAILED_ATTEMPTS);
+      const failedCount = failedCountStr ? parseInt(failedCountStr, 10) : 0;
+      const lockoutUntil = lockoutUntilStr ? parseInt(lockoutUntilStr, 10) : 0;
+      const now = Date.now();
+
+      if (lockoutUntil && now < lockoutUntil) {
+        return {
+          isLocked: true,
+          remainingMs: lockoutUntil - now,
+          remainingSeconds: Math.ceil((lockoutUntil - now) / 1000),
+          failedCount
+        };
+      }
+
+      if (lockoutUntil && now >= lockoutUntil) {
+        localStorage.removeItem(KEYS.GATE_LOCKOUT_UNTIL);
+        localStorage.setItem(KEYS.GATE_FAILED_ATTEMPTS, '0');
+      }
+
+      return {
+        isLocked: false,
+        remainingMs: 0,
+        remainingSeconds: 0,
+        failedCount: now >= lockoutUntil && lockoutUntil ? 0 : failedCount
+      };
+    } catch (e) {
+      return { isLocked: false, remainingMs: 0, remainingSeconds: 0, failedCount: 0 };
+    }
+  },
+  recordFailedAttempt() {
+    try {
+      const currentStatus = this.getLockoutStatus();
+      if (currentStatus.isLocked) return currentStatus;
+
+      const nextCount = currentStatus.failedCount + 1;
+      localStorage.setItem(KEYS.GATE_FAILED_ATTEMPTS, String(nextCount));
+
+      if (nextCount >= 3) {
+        const lockoutUntil = Date.now() + 120000; // 2 minutes (120 seconds) lockout
+        localStorage.setItem(KEYS.GATE_LOCKOUT_UNTIL, String(lockoutUntil));
+        return {
+          isLocked: true,
+          remainingMs: 120000,
+          remainingSeconds: 120,
+          failedCount: nextCount
+        };
+      }
+
+      return {
+        isLocked: false,
+        remainingMs: 0,
+        remainingSeconds: 0,
+        failedCount: nextCount
+      };
+    } catch (e) {
+      console.error('StorageService: error recording failed attempt', e);
+      return { isLocked: false, remainingMs: 0, remainingSeconds: 0, failedCount: 0 };
+    }
+  },
+  resetFailedAttempts() {
+    try {
+      localStorage.removeItem(KEYS.GATE_FAILED_ATTEMPTS);
+      localStorage.removeItem(KEYS.GATE_LOCKOUT_UNTIL);
+    } catch (e) {
+      console.error('StorageService: error resetting failed attempts', e);
     }
   }
 };

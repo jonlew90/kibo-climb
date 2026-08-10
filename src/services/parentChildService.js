@@ -33,7 +33,7 @@ export function initParentChildSchema() {
       stripe_customer_id: 'cus_demo_kibo_climb',
       is_coppa_verified: true,
       createdAt: new Date().toISOString(),
-      pin: storageService.getParentSettings().pin || '1234',
+      pin: storageService.getParentSettings().pin || null,
       child_ids: [defaultChildId]
     };
 
@@ -147,29 +147,79 @@ export const parentChildService = {
   },
 
   /**
-   * Parent Gate Challenge Verification: Protects payment routes, settings, and dashboards.
-   * @param {string} enteredPin - The 4-digit PIN entered by the parent.
-   * @returns {Object} { granted: boolean, timestamp: string, sessionToken?: string, reason?: string }
+   * Directly grants Parent Gate verification session (e.g. after successful native biometrics check).
    */
-  verifyParentGateChallenge(enteredPin) {
-    const parentAccount = this.getParentAccount();
-    const targetPin = parentAccount.pin || storageService.getParentSettings().pin || '1234';
+  grantParentGateAccess() {
+    storageService.resetFailedAttempts();
+    const sessionToken = `parent_gate_grant_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    sessionStorage.setItem('kibo_parent_gate_session', sessionToken);
+    return {
+      granted: true,
+      timestamp: new Date().toISOString(),
+      sessionToken
+    };
+  },
 
-    if (String(enteredPin).trim() === String(targetPin).trim()) {
-      const sessionToken = `parent_gate_grant_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-      sessionStorage.setItem('kibo_parent_gate_session', sessionToken);
-
+  /**
+   * Parent Gate Verification: Protects payment routes, settings, and dashboards.
+   * Supports Custom PIN (non-1234) and Dynamic Challenge validation with rate limiting backoff.
+   * @param {string} enteredValue - The PIN or challenge answer entered by the parent.
+   * @param {string|null} expectedAnswer - Optional expected answer for dynamic challenge.
+   * @returns {Object} { granted: boolean, isLocked?: boolean, remainingSeconds?: number, timestamp: string, sessionToken?: string, reason?: string }
+   */
+  verifyParentGateChallenge(enteredValue, expectedAnswer = null) {
+    // 1. Check rate limit lockout status
+    const lockout = storageService.getLockoutStatus();
+    if (lockout.isLocked) {
       return {
-        granted: true,
+        granted: false,
+        isLocked: true,
+        remainingSeconds: lockout.remainingSeconds,
         timestamp: new Date().toISOString(),
-        sessionToken
+        reason: `Gate locked. Try again in ${lockout.remainingSeconds} seconds.`
       };
     }
 
+    // 2. Reject legacy 1234 static PIN explicitly
+    if (String(enteredValue).trim() === '1234') {
+      const lockRes = storageService.recordFailedAttempt();
+      return {
+        granted: false,
+        isLocked: lockRes.isLocked,
+        remainingSeconds: lockRes.remainingSeconds,
+        timestamp: new Date().toISOString(),
+        reason: 'Default 1234 PIN is deprecated. Please use Face ID/Passcode or Dynamic Challenge.'
+      };
+    }
+
+    let isSuccess = false;
+
+    // 3. Verify Dynamic Challenge or Custom PIN
+    if (expectedAnswer !== null) {
+      isSuccess = String(enteredValue).trim() === String(expectedAnswer).trim();
+    } else {
+      const parentAccount = this.getParentAccount();
+      const targetPin = parentAccount.pin || storageService.getParentSettings().pin;
+      if (targetPin && targetPin !== '1234') {
+        isSuccess = String(enteredValue).trim() === String(targetPin).trim();
+      }
+    }
+
+    if (isSuccess) {
+      return this.grantParentGateAccess();
+    }
+
+    // Record failure & return updated status
+    const lockRes = storageService.recordFailedAttempt();
     return {
       granted: false,
+      isLocked: lockRes.isLocked,
+      remainingSeconds: lockRes.remainingSeconds,
+      failedCount: lockRes.failedCount,
       timestamp: new Date().toISOString(),
-      reason: 'Incorrect Parent Gate PIN'
+      reason: lockRes.isLocked
+        ? '3 failed attempts. Gate locked for 2 minutes.'
+        : `Incorrect answer. (${3 - lockRes.failedCount} attempt(s) remaining)`
     };
   },
 

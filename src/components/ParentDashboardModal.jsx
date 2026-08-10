@@ -186,7 +186,7 @@ export default function ParentDashboardModal({
     setPinErrorMsg('');
     setPinSuccessMsg('');
 
-    if (oldPinInput !== currentPin) {
+    if (currentPin && oldPinInput !== currentPin) {
       setPinErrorMsg('Current PIN is incorrect.');
       soundFx.playIncorrect();
       return;
@@ -194,6 +194,12 @@ export default function ParentDashboardModal({
 
     if (!/^\d{4}$/.test(newPinInput)) {
       setPinErrorMsg('New PIN must be exactly 4 digits.');
+      soundFx.playIncorrect();
+      return;
+    }
+
+    if (newPinInput === '1234') {
+      setPinErrorMsg('Default 1234 PIN is deprecated. Please choose a unique custom 4-digit PIN.');
       soundFx.playIncorrect();
       return;
     }
@@ -206,7 +212,7 @@ export default function ParentDashboardModal({
 
     soundFx.playVictory();
     onUpdatePin(newPinInput);
-    setPinSuccessMsg('PIN updated successfully!');
+    setPinSuccessMsg('Custom fallback PIN updated successfully!');
     setOldPinInput('');
     setNewPinInput('');
     setConfirmPinInput('');
@@ -823,7 +829,11 @@ export default function ParentDashboardModal({
             <form onSubmit={handleChangePin} className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
               <div className="flex items-center gap-2 text-purple-700">
                 <Key className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Change 4-Digit Parent PIN</h4>
+                <h4 className="font-extrabold text-sm text-slate-800">Optional Secondary Custom PIN</h4>
+              </div>
+
+              <div className="bg-purple-50/70 border border-purple-200 rounded-xl p-2.5 text-xs font-semibold text-purple-900 leading-snug">
+                🛡️ <strong>Security Upgraded:</strong> Device Biometrics (Face ID/Passcode) and Dynamic Tasks are enabled as your primary Parental Gate. Setting a custom PIN is optional as a secondary fallback. The static default "1234" has been deprecated.
               </div>
 
               {pinErrorMsg && (
@@ -839,40 +849,42 @@ export default function ParentDashboardModal({
               )}
 
               <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Current PIN</label>
-                  <input
-                    type="password"
-                    maxLength={4}
-                    value={oldPinInput}
-                    onChange={(e) => setOldPinInput(e.target.value)}
-                    placeholder="1234"
-                    required
-                    className="w-full text-center py-2 bg-white border border-slate-300 rounded-xl text-sm font-extrabold focus:border-purple-500 focus:outline-none"
-                  />
-                </div>
+                {currentPin && (
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Current PIN</label>
+                    <input
+                      type="password"
+                      maxLength={4}
+                      value={oldPinInput}
+                      onChange={(e) => setOldPinInput(e.target.value)}
+                      placeholder="••••"
+                      required
+                      className="w-full text-center py-2 bg-white border border-slate-300 rounded-xl text-sm font-extrabold focus:border-purple-500 focus:outline-none"
+                    />
+                  </div>
+                )}
 
-                <div>
+                <div className={!currentPin ? 'col-span-1 sm:col-span-1' : ''}>
                   <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">New 4-Digit PIN</label>
                   <input
                     type="password"
                     maxLength={4}
                     value={newPinInput}
                     onChange={(e) => setNewPinInput(e.target.value)}
-                    placeholder="5678"
+                    placeholder="••••"
                     required
                     className="w-full text-center py-2 bg-white border border-slate-300 rounded-xl text-sm font-extrabold focus:border-purple-500 focus:outline-none"
                   />
                 </div>
 
-                <div>
+                <div className={!currentPin ? 'col-span-2 sm:col-span-2' : ''}>
                   <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Confirm PIN</label>
                   <input
                     type="password"
                     maxLength={4}
                     value={confirmPinInput}
                     onChange={(e) => setConfirmPinInput(e.target.value)}
-                    placeholder="5678"
+                    placeholder="••••"
                     required
                     className="w-full text-center py-2 bg-white border border-slate-300 rounded-xl text-sm font-extrabold focus:border-purple-500 focus:outline-none"
                   />
@@ -883,7 +895,7 @@ export default function ParentDashboardModal({
                 type="submit"
                 className="btn-3d-purple w-full py-2.5 text-xs rounded-xl"
               >
-                Update PIN
+                {currentPin ? 'Update Secondary PIN' : 'Set Secondary Custom PIN'}
               </button>
             </form>
 

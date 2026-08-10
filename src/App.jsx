@@ -270,7 +270,7 @@ export default function App() {
 
   const [isNewSpeedRecord, setIsNewSpeedRecord] = useState(false);
 
-  // Persistent Parent PIN (Default 1234)
+  // Persistent Parent PIN (Optional secondary fallback; default 1234 deprecated)
   const [parentPin, setParentPin] = useState(() => {
     return storageService.getParentSettings().pin;
   });
