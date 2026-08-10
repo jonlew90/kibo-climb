@@ -916,22 +916,22 @@ export default function AdaptiveSessionView({
         </div>
       </div>
 
-      {/* MASCOT & PROBLEM CARD CONTAINER */}
-      <div className="w-full flex-1 flex flex-col items-center justify-center space-y-2 sm:space-y-4 my-1 sm:my-auto">
-        {/* Animated Kibo Avatar */}
-        <div
-          onClick={onOpenWorkshop}
-          className="cursor-pointer hover:scale-105 transition-transform"
-          title="Tap Kibo to open Kibo's Corner!"
-        >
-          <div className="flex justify-center my-0 sm:my-0.5 shrink-0 overflow-visible p-0.5 sm:p-1">
-            <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-20 h-20 sm:w-32 sm:h-32 mascot-compact-auto filter drop-shadow-lg" />
-          </div>
+      {/* MASCOT CONTAINER */}
+      <div
+        onClick={onOpenWorkshop}
+        className="cursor-pointer hover:scale-105 transition-transform z-10"
+        title="Tap Kibo to open Kibo's Corner!"
+      >
+        <div className="flex justify-center my-0 sm:my-0.5 shrink-0 overflow-visible p-0.5 sm:p-1">
+          <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-32 h-32 mascot-compact-auto filter drop-shadow-lg" />
         </div>
+      </div>
 
+      {/* PROBLEM CARD CONTAINER */}
+      <div className="w-full flex-1 sm:flex-none flex flex-col items-center sm:justify-center my-1 sm:my-auto space-y-2 sm:space-y-4">
         {!hasStartedClimb ? (
           /* PRE-CLIMB START SCREEN HERO CARD */
-          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-5 text-center shadow-xl space-y-4 relative overflow-hidden animate-pop">
+          <div className="w-full flex-1 sm:flex-none max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-5 text-center shadow-xl space-y-4 relative overflow-hidden animate-pop flex flex-col justify-center">
             <div className="space-y-1.5">
               <span className="text-[11px] font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
                 🏔️ Mountain Climb • 12 Problems
@@ -1001,7 +1001,7 @@ export default function AdaptiveSessionView({
 
             return (
               <div
-                className={`w-full bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 text-center transition-all duration-500 space-y-1.5 sm:space-y-2 relative ${
+                className={`w-full max-w-sm flex-1 sm:flex-none flex flex-col justify-center bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 text-center transition-all duration-500 space-y-1.5 sm:space-y-2 relative ${
                   streakCfg.cardGlow
                 } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''}`}
               >
