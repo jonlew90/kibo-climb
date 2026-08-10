@@ -915,25 +915,7 @@ export default function App() {
         </button>
       )}
 
-      {/* 4. Parents Button: Royal Purple */}
-      <button
-        type="button"
-        onClick={() => {
-          soundFx.playKeyTap();
-          closeAllNavModals('parents');
-          setPinGateSource(null);
-          setShowPinGateModal(true);
-        }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-          showPinGateModal || showParentDashboard ? 'ring-2 ring-purple-500 scale-105 font-bold' : ''
-        }`}
-        title="Parent Dashboard & Settings"
-      >
-        <Lock className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-        <span className="text-[10px] font-black tracking-wide">Parents</span>
-      </button>
-
-      {/* 5. Leaderboard Button: Sapphire Blue */}
+      {/* 4. Leaderboard Button: Sapphire Blue */}
       <button
         type="button"
         onClick={() => {
@@ -949,6 +931,24 @@ export default function App() {
       >
         <LeaderboardIcon className="w-5 h-5 text-indigo-700" isActive={!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard'} />
         <span className="text-[10px] font-black tracking-wide">Rank</span>
+      </button>
+
+      {/* 5. Parents Button: Royal Purple */}
+      <button
+        type="button"
+        onClick={() => {
+          soundFx.playKeyTap();
+          closeAllNavModals('parents');
+          setPinGateSource(null);
+          setShowPinGateModal(true);
+        }}
+        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+          showPinGateModal || showParentDashboard ? 'ring-2 ring-purple-500 scale-105 font-bold' : ''
+        }`}
+        title="Parent Dashboard & Settings"
+      >
+        <Lock className="w-5 h-5 text-purple-700 stroke-[2.5]" />
+        <span className="text-[10px] font-black tracking-wide">Parents</span>
       </button>
 
       {/* 6. Settings Button: Slate Gray */}
@@ -1203,6 +1203,7 @@ export default function App() {
           onSelectProfile={(profile) => {
             syncAppStateWithStorage();
             setShowProfileSelector(false);
+            setAppState('adaptive_session');
           }}
           onOpenParentZone={() => {
             setShowProfileSelector(false);
@@ -1218,6 +1219,7 @@ export default function App() {
           onSelectProfile={(profile) => {
             syncAppStateWithStorage();
             setShowManualProfileSwitcher(false);
+            setAppState('adaptive_session');
           }}
           onClose={() => setShowManualProfileSwitcher(false)}
           onOpenParentZone={() => {
