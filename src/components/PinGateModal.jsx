@@ -316,27 +316,55 @@ export default function PinGateModal({
             {/* TAB 1: PRIMARY GATE - NATIVE DEVICE AUTH */}
             {activeTab === 'native' && (
               <div className="space-y-4 py-2 animate-fade-in">
-                <div className="bg-purple-50/70 border-2 border-purple-100 rounded-2xl p-5 space-y-3">
-                  <div className="w-12 h-12 bg-white text-purple-600 rounded-xl flex items-center justify-center mx-auto shadow-sm border border-purple-200">
-                    <Fingerprint className="w-6 h-6 stroke-[2.2]" />
+                <div className={`border-2 rounded-2xl p-5 space-y-3 transition-all ${
+                  isAuthenticating ? 'bg-purple-100/80 border-purple-400 scale-[1.02]' : 'bg-purple-50/70 border-purple-100'
+                }`}>
+                  <div className="relative w-16 h-16 mx-auto">
+                    {isAuthenticating && (
+                      <div className="absolute -inset-2 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
+                    )}
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-sm border transition-all ${
+                      isAuthenticating ? 'bg-purple-600 text-white border-purple-700 animate-pulse' : 'bg-white text-purple-600 border-purple-200'
+                    }`}>
+                      <Fingerprint className={`w-8 h-8 ${isAuthenticating ? 'animate-bounce' : 'stroke-[2.2]'}`} />
+                    </div>
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm text-slate-800">Native Device Authentication</h4>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">
-                      Use Face ID, Touch ID, or your phone's lock passcode.
+                    <h4 className="font-extrabold text-sm text-slate-800">
+                      {isAuthenticating ? 'Verifying Device Biometrics...' : 'Native Device Authentication'}
+                    </h4>
+                    <p className="text-xs text-slate-500 font-medium mt-1">
+                      {isAuthenticating
+                        ? 'Follow your device prompt (Face ID, Touch ID, or Passcode)...'
+                        : 'Use Face ID, Touch ID, or your phone\'s screen passcode.'}
                     </p>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  disabled={isAuthenticating}
-                  onClick={triggerNativeAuth}
-                  className="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-black text-sm rounded-xl border-b-4 border-purple-800 active:border-b-0 active:translate-y-1 shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  <Fingerprint className="w-5 h-5" />
-                  <span>{isAuthenticating ? 'Authenticating...' : 'Authenticate with Device'}</span>
-                </button>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    disabled={isAuthenticating}
+                    onClick={triggerNativeAuth}
+                    className="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-black text-sm rounded-xl border-b-4 border-purple-800 active:border-b-0 active:translate-y-1 shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <Fingerprint className="w-5 h-5" />
+                    <span>{isAuthenticating ? 'Scanning Biometrics...' : 'Authenticate with Device'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setActiveTab('challenge');
+                      setErrorMsg('');
+                      refreshChallenge();
+                    }}
+                    className="text-xs font-bold text-slate-500 hover:text-purple-600 py-1 transition-colors block mx-auto"
+                  >
+                    Use Math Challenge instead →
+                  </button>
+                </div>
               </div>
             )}
 
