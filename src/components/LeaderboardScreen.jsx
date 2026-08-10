@@ -1,0 +1,289 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Trophy, ArrowLeft, Crown, Medal, User, Info, ChevronLeft, ChevronRight, Activity, Zap } from 'lucide-react';
+import Mascot from './Mascot';
+import { soundFx } from '../utils/audio';
+import { getCompetenceRankTier } from '../utils/GameEconomyModel';
+import { storageService } from '../services/storageService';
+
+const MOCK_SUBJECTS = [
+  { id: 'overall', label: 'Overall Competence' },
+  { id: 'add_sub', label: 'Addition & Subtraction' },
+  { id: 'mult_div', label: 'Multiplication & Division' },
+  { id: 'fractions', label: 'Fractions' }
+];
+
+const MOCK_LEADERBOARD_DATA = [
+  { rank: 1, name: "Alex P.", score: 1450, subjectsMastered: 8 },
+  { rank: 2, name: "Jordan M.", score: 1380, subjectsMastered: 7 },
+  { rank: 3, name: "Sam K.", score: 1320, subjectsMastered: 7 },
+  { rank: 4, name: "Taylor R.", score: 1250, subjectsMastered: 6 },
+  { rank: 5, name: "Casey B.", score: 1210, subjectsMastered: 6 },
+  { rank: 6, name: "Riley D.", score: 1180, subjectsMastered: 5 },
+  { rank: 7, name: "Jamie L.", score: 1150, subjectsMastered: 5 },
+  { rank: 8, name: "Morgan W.", score: 1120, subjectsMastered: 4 },
+  { rank: 9, name: "Quinn C.", score: 1090, subjectsMastered: 4 },
+  { rank: 10, name: "Avery H.", score: 1060, subjectsMastered: 3 }
+];
+
+export default function LeaderboardScreen({ userState, renderFooter, equippedItems = [] }) {
+  const [activeSubject, setActiveSubject] = useState('overall');
+  const [sortByCompetence, setSortByCompetence] = useState(true);
+
+  const subjectScrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const username = storageService.getUsername() || storageService.getActiveProfile()?.name || 'You';
+  const userScore = userState?.competenceRank || 1000;
+
+  // Calculate mock current user rank based on score relative to mock data
+  let currentUserRank = MOCK_LEADERBOARD_DATA.findIndex(p => p.score < userScore) + 1;
+  if (currentUserRank === 0) currentUserRank = MOCK_LEADERBOARD_DATA.length + 1; // if score is lower than all
+
+  const checkScroll = () => {
+    if (!subjectScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = subjectScrollRef.current;
+    setCanScrollLeft(scrollLeft > 4);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+  };
+
+  useEffect(() => {
+    setTimeout(checkScroll, 100);
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, []);
+
+  const handleScrollLeft = () => {
+    soundFx.playKeyTap();
+    if (subjectScrollRef.current) {
+      subjectScrollRef.current.scrollBy({ left: -150, behavior: 'smooth' });
+    }
+  };
+
+  const handleScrollRight = () => {
+    soundFx.playKeyTap();
+    if (subjectScrollRef.current) {
+      subjectScrollRef.current.scrollBy({ left: 150, behavior: 'smooth' });
+    }
+  };
+
+  const top3 = MOCK_LEADERBOARD_DATA.slice(0, 3);
+  const others = MOCK_LEADERBOARD_DATA.slice(3);
+
+  // Helper to get title based on score
+  const getRankTitle = (score) => {
+    return getCompetenceRankTier(score);
+  };
+
+  return (
+    <div className="flex-1 w-full flex flex-col bg-gradient-to-b from-slate-50 via-stone-50 to-slate-100 overflow-hidden relative text-slate-800">
+
+      {/* HEADER & CONTROLS */}
+      <div className="bg-white border-b-2 border-slate-200 z-10 shrink-0 shadow-sm relative pb-2">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-slate-800">
+            <Trophy className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
+            <h2 className="text-lg font-black tracking-tight">Global Standings</h2>
+          </div>
+
+          <button
+            onClick={() => {
+              soundFx.playKeyTap();
+              setSortByCompetence(!sortByCompetence);
+            }}
+            className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200 transition-colors"
+          >
+            <Activity className="w-3.5 h-3.5" />
+            {sortByCompetence ? 'Competence Score' : 'Mastery Level'}
+          </button>
+        </div>
+
+        {/* Horizontal Scrollable Subject Pills */}
+        <div className="relative px-2">
+          {canScrollLeft && (
+            <button
+              onClick={handleScrollLeft}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white"
+            >
+              <ChevronLeft className="w-4 h-4 stroke-[3]" />
+            </button>
+          )}
+
+          <div
+            ref={subjectScrollRef}
+            onScroll={checkScroll}
+            className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 px-2 scroll-smooth touch-pan-x"
+          >
+            {MOCK_SUBJECTS.map((subject) => (
+              <button
+                key={subject.id}
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setActiveSubject(subject.id);
+                }}
+                className={`py-1.5 px-4 text-xs font-extrabold rounded-full shrink-0 transition-all ${
+                  activeSubject === subject.id
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                {subject.label}
+              </button>
+            ))}
+          </div>
+
+          {canScrollRight && (
+            <button
+              onClick={handleScrollRight}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white"
+            >
+              <ChevronRight className="w-4 h-4 stroke-[3]" />
+            </button>
+          )}
+        </div>
+
+        {/* Fairness Banner */}
+        <div className="mx-4 mt-2 bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-xl px-3 py-2 text-[10px] font-semibold flex items-start gap-2 shadow-inner">
+          <Info className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+          <p className="leading-tight">
+            Competence is dynamically measured based on mastery accuracy and speed across active subjects. Standings update daily.
+          </p>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT AREA */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar relative pb-28">
+
+        {/* HERO PODIUM (Top 3) */}
+        <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
+
+          {/* 2nd Place */}
+          <div className="flex flex-col items-center flex-1 max-w-[100px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-slate-200 rounded-full border-2 border-slate-300 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative">
+              <div className="absolute inset-0 scale-[0.6] translate-y-[20%]">
+                 <Mascot size={48} mood="happy" overrideColor="slate" />
+              </div>
+            </div>
+            <span className="font-bold text-xs truncate w-full text-center">{top3[1].name}</span>
+            <span className="text-[10px] text-slate-500 font-semibold mb-2">{top3[1].score} pts</span>
+            <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+              <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
+            </div>
+          </div>
+
+          {/* 1st Place */}
+          <div className="flex flex-col items-center flex-1 max-w-[120px] relative z-20 animate-fade-in-up">
+            <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
+              <Crown className="w-6 h-6 fill-amber-400" />
+            </div>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-100 rounded-full border-4 border-amber-400 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative">
+               <div className="absolute inset-0 scale-[0.6] translate-y-[20%]">
+                 <Mascot size={64} mood="excited" overrideColor="amber" />
+              </div>
+            </div>
+            <span className="font-black text-sm text-amber-900 truncate w-full text-center">{top3[0].name}</span>
+            <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{top3[0].score} pts</span>
+            <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
+               {/* Shine effect */}
+               <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+              <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
+            </div>
+          </div>
+
+          {/* 3rd Place */}
+          <div className="flex flex-col items-center flex-1 max-w-[100px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-orange-100 rounded-full border-2 border-orange-300 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative">
+               <div className="absolute inset-0 scale-[0.6] translate-y-[20%]">
+                 <Mascot size={48} mood="happy" overrideColor="orange" />
+              </div>
+            </div>
+            <span className="font-bold text-xs truncate w-full text-center">{top3[2].name}</span>
+            <span className="text-[10px] text-slate-500 font-semibold mb-2">{top3[2].score} pts</span>
+            <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+              <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SCROLLABLE LIST (Ranks 4+) */}
+        <div className="px-4 space-y-2 pb-6">
+          {others.map((player, index) => (
+            <div key={player.rank} className="bg-white border border-slate-200 rounded-2xl p-3 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
+
+              {/* Rank Number */}
+              <div className="w-6 text-center font-black text-slate-400 shrink-0">
+                {player.rank}
+              </div>
+
+              {/* Avatar Placeholder */}
+              <div className="w-10 h-10 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden relative">
+                 <div className="absolute inset-0 scale-[0.7] translate-y-[15%]">
+                     <Mascot size={32} mood="neutral" overrideColor="slate" />
+                  </div>
+              </div>
+
+              {/* Player Info */}
+              <div className="flex-1 min-w-0 flex flex-col">
+                <span className="font-bold text-sm text-slate-800 truncate">{player.name}</span>
+                <span className="text-[10px] text-slate-500 font-medium truncate flex items-center gap-1">
+                  <Activity className="w-3 h-3 text-slate-400" />
+                  {player.subjectsMastered} Subjects Qualified
+                </span>
+              </div>
+
+              {/* Score / Rank Badge */}
+              <div className="flex flex-col items-end shrink-0">
+                <span className="font-black text-indigo-700 text-sm">{player.score}</span>
+                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">
+                  {getRankTitle(player.score)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* PINNED CURRENT USER CARD */}
+      <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-white via-white to-transparent pt-8 pointer-events-none z-30">
+        <div className="bg-indigo-900 border-2 border-indigo-500 rounded-2xl p-3 flex items-center gap-3 shadow-[0_10px_25px_rgba(67,56,202,0.3)] pointer-events-auto relative overflow-hidden">
+          {/* Subtle glow effect inside */}
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20" />
+
+          {/* User Rank */}
+          <div className="w-8 h-8 rounded-full bg-indigo-800/80 border border-indigo-400 flex items-center justify-center font-black text-white shrink-0 shadow-inner z-10">
+            {currentUserRank > MOCK_LEADERBOARD_DATA.length ? '-' : currentUserRank}
+          </div>
+
+          {/* User Avatar (Actual Mascot + Items) */}
+          <div className="w-12 h-12 bg-white rounded-full border-2 border-indigo-300 flex items-center justify-center shrink-0 overflow-hidden z-10 relative">
+             <div className="absolute inset-0 scale-[0.7] translate-y-[10%]">
+               <Mascot size={40} mood="happy" equippedItems={equippedItems} />
+             </div>
+          </div>
+
+          {/* User Info & Progress */}
+          <div className="flex-1 min-w-0 flex flex-col z-10">
+            <div className="flex items-center gap-1.5">
+              <span className="font-black text-white text-sm truncate">You ({username})</span>
+              <span className="bg-indigo-500 text-indigo-50 text-[9px] uppercase px-1.5 py-0.5 rounded font-bold tracking-wider">
+                {getRankTitle(userScore)}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 mt-0.5">
+              <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+              <span className="text-indigo-200 font-bold text-xs">{userScore} pts</span>
+            </div>
+
+            {/* Contextual progress message */}
+            <p className="text-[10px] text-indigo-300 mt-1 leading-tight font-medium">
+              {currentUserRank > 1
+                ? `+${Math.max(10, Math.floor(Math.random() * 50))} pts needed to rank up`
+                : "You are currently holding 1st place! Keep it up!"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}
