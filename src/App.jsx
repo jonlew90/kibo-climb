@@ -97,9 +97,19 @@ export default function App() {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [showSpeedInfoModal, setShowSpeedInfoModal] = useState(false);
   const [showPinGateModal, setShowPinGateModal] = useState(false);
+  const [pinGateSuccessCallback, setPinGateSuccessCallback] = useState(null);
   const [showParentDashboard, setShowParentDashboard] = useState(false);
   const [showSubjectSelector, setShowSubjectSelector] = useState(false);
   const subjectSelectorRef = useRef(null);
+
+  useEffect(() => {
+    const handleOpenPinGate = (e) => {
+      setPinGateSuccessCallback(() => e.detail.onSuccess);
+      setShowPinGateModal(true);
+    };
+    window.addEventListener('open-pin-gate', handleOpenPinGate);
+    return () => window.removeEventListener('open-pin-gate', handleOpenPinGate);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -1212,11 +1222,15 @@ export default function App() {
         onClose={() => {
           setShowPinGateModal(false);
           setPendingSparksPurchase(null);
+          setPinGateSuccessCallback(null);
         }}
         currentPin={parentPin}
         onUnlockSuccess={() => {
           setShowPinGateModal(false);
-          if (pendingSparksPurchase) {
+          if (pinGateSuccessCallback) {
+            pinGateSuccessCallback();
+            setPinGateSuccessCallback(null);
+          } else if (pendingSparksPurchase) {
             if (authService.getAuthState().isAnonymous) {
               setLinkModalMilestone('Real-Money Purchase Backup');
               setShowAccountLinkModal(true);

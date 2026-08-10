@@ -846,7 +846,7 @@ export default function ParentDashboardModal({
                     maxLength={4}
                     value={oldPinInput}
                     onChange={(e) => setOldPinInput(e.target.value)}
-                    placeholder="1234"
+                    placeholder="PIN"
                     required
                     className="w-full text-center py-2 bg-white border border-slate-300 rounded-xl text-sm font-extrabold focus:border-purple-500 focus:outline-none"
                   />

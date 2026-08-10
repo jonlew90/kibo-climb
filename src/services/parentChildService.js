@@ -33,7 +33,7 @@ export function initParentChildSchema() {
       stripe_customer_id: 'cus_demo_kibo_climb',
       is_coppa_verified: true,
       createdAt: new Date().toISOString(),
-      pin: storageService.getParentSettings().pin || '1234',
+      pin: storageService.getParentSettings().pin || null,
       child_ids: [defaultChildId]
     };
 
@@ -153,9 +153,9 @@ export const parentChildService = {
    */
   verifyParentGateChallenge(enteredPin) {
     const parentAccount = this.getParentAccount();
-    const targetPin = parentAccount.pin || storageService.getParentSettings().pin || '1234';
+    const targetPin = parentAccount.pin || storageService.getParentSettings().pin;
 
-    if (String(enteredPin).trim() === String(targetPin).trim()) {
+    if (targetPin && String(enteredPin).trim() === String(targetPin).trim()) {
       const sessionToken = `parent_gate_grant_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       sessionStorage.setItem('kibo_parent_gate_session', sessionToken);
 

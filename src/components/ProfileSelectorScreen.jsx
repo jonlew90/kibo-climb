@@ -82,17 +82,6 @@ function AddProfilePanel({ onCancel, onCreated }) {
     if (step === 'create') nameRef.current?.focus();
   }, [step]);
 
-  const handlePinSubmit = (e) => {
-    e.preventDefault();
-    const { pin } = storageService.getParentSettings();
-    if (pinInput === pin) {
-      soundFx.playKeyTap();
-      setStep('create');
-    } else {
-      soundFx.playError?.();
-      setPinError('Incorrect PIN.');
-    }
-  };
 
   const handleCreateSubmit = (e) => {
     e.preventDefault();
@@ -110,47 +99,17 @@ function AddProfilePanel({ onCancel, onCreated }) {
   const reset = () => {
     setPinInput(''); setPinError('');
     setChildName(''); setNameError('');
-    setStep('pin');
+    setStep('create'); // we skip pin step now, parent gate was already passed
     onCancel();
   };
 
+  useEffect(() => {
+    // Just force create step because parent gate is already handled globally
+    setStep('create');
+  }, []);
+
   return (
     <div className="w-full max-w-xs bg-white border border-slate-200 shadow-sm rounded-2xl p-5 space-y-4 text-center">
-      {step === 'pin' ? (
-        <>
-          <div className="space-y-1">
-            <div className="flex items-center justify-center gap-1.5 text-purple-600">
-              <Lock className="w-3.5 h-3.5" />
-              <span className="text-xs font-black uppercase tracking-wide">Parent PIN</span>
-            </div>
-            <p className="text-[11px] text-slate-500 font-medium">Verify to add a new climber profile</p>
-          </div>
-
-          <form onSubmit={handlePinSubmit} className="space-y-3">
-            <input
-              ref={pinRef}
-              type="password"
-              inputMode="numeric"
-              maxLength={6}
-              value={pinInput}
-              onChange={(e) => { setPinInput(e.target.value); setPinError(''); }}
-              placeholder="• • • •"
-              className="w-full text-center tracking-[0.5em] text-slate-800 font-black text-xl bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-400 placeholder:tracking-normal placeholder:text-slate-400 placeholder:text-sm"
-            />
-            {pinError && <p className="text-xs text-rose-500 font-bold">{pinError}</p>}
-            <div className="flex gap-2">
-              <button type="button" onClick={reset}
-                className="flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
-                Cancel
-              </button>
-              <button type="submit"
-                className="flex-1 py-2.5 text-xs font-black text-white bg-purple-600 hover:bg-purple-500 rounded-xl transition-colors">
-                Confirm
-              </button>
-            </div>
-          </form>
-        </>
-      ) : (
         <>
           <div className="space-y-1">
             <div className="flex items-center justify-center gap-1.5 text-emerald-500">
@@ -196,18 +155,17 @@ function AddProfilePanel({ onCancel, onCreated }) {
             </div>
 
             <div className="flex gap-2 pt-1">
-              <button type="button" onClick={() => setStep('pin')}
-                className="flex items-center gap-1 px-3 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
-                <ArrowLeft className="w-3 h-3" /> Back
+              <button type="button" onClick={onCancel}
+                className="flex items-center justify-center gap-1 px-3 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors flex-1">
+                Cancel
               </button>
               <button type="submit"
                 className="flex-1 py-2.5 text-xs font-black text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-xl transition-all shadow-lg shadow-amber-500/20">
-                Create Profile 🚀
+                Create 🚀
               </button>
             </div>
           </form>
         </>
-      )}
     </div>
   );
 }
@@ -288,7 +246,15 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose }) {
           !showAddPanel ? (
             <button
               type="button"
-              onClick={() => { soundFx.playKeyTap(); setShowAddPanel(true); }}
+              onClick={() => {
+                soundFx.playKeyTap();
+                const event = new CustomEvent('open-pin-gate', {
+                  detail: {
+                    onSuccess: () => setShowAddPanel(true)
+                  }
+                });
+                window.dispatchEvent(event);
+              }}
               className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors mt-2 group"
             >
               <div className="w-7 h-7 rounded-full border border-slate-400 group-hover:border-slate-600 flex items-center justify-center transition-colors">

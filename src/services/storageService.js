@@ -82,7 +82,7 @@ const DEFAULT_NOTIF_SETTINGS = {
 };
 
 const DEFAULT_PARENT_SETTINGS = {
-  pin: '1234',
+  pin: null,
   practiceDays: [1, 2, 3, 4, 5]
 };
 
