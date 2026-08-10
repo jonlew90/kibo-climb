@@ -159,7 +159,7 @@ export default function Keypad({
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto grid grid-cols-3 gap-1.5 sm:gap-3 p-1.5 sm:p-3 bg-slate-100/90 rounded-2xl sm:rounded-3xl border-2 border-slate-200 shadow-inner my-1 sm:my-4">
+    <div className="w-full max-w-sm mx-auto grid grid-cols-3 gap-2 p-2.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner my-2">
       {keyGrid.flat().map((keyVal, idx) => {
         if (keyVal === ':') {
           return (

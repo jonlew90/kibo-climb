@@ -854,8 +854,8 @@ export default function AdaptiveSessionView({
   }
 
   return (
-    <div className="w-full h-full flex-1 min-h-0 relative overflow-hidden animate-pop">
-      <div className="w-full h-full flex flex-col items-center justify-between py-0.5 sm:py-1 px-1 sm:px-2 max-w-4xl mx-auto relative">
+    <div className="w-full h-full flex-1 min-h-0 relative overflow-visible animate-pop flex flex-col">
+      <div className="w-full h-full flex flex-col items-center justify-between sm:justify-end pb-1 sm:pb-2 pt-1 px-1.5 sm:px-3 max-w-4xl mx-auto relative overflow-visible flex-1 min-h-0">
 
       {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
       {celebrationEvent && (
@@ -916,30 +916,35 @@ export default function AdaptiveSessionView({
         </div>
       </div>
 
-      {/* MASCOT CONTAINER */}
+      {/* MASCOT CONTAINER - Centered between sticky header and question card */}
       <div
         onClick={onOpenWorkshop}
-        className="cursor-pointer hover:scale-105 transition-transform z-10"
+        className="flex-1 flex flex-col items-center justify-center w-full min-h-0 my-auto py-1 sm:py-2 cursor-pointer hover:scale-[1.03] transition-transform z-10 overflow-visible"
         title="Tap Kibo to open Kibo's Corner!"
       >
-        <div className="flex justify-center my-0 sm:my-0.5 shrink-0 overflow-visible p-0.5 sm:p-1">
-          <Mascot mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'} state={mascotState} equipped={equippedItems} className="w-32 h-32 mascot-compact-auto filter drop-shadow-lg" />
+        <div className="relative flex items-center justify-center overflow-visible p-1.5 sm:p-3 w-full h-full max-h-[35vh] sm:max-h-[46vh] md:max-h-[50vh]">
+          <Mascot
+            mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'}
+            state={mascotState}
+            equipped={equippedItems}
+            className="h-full w-auto max-h-[35vh] max-w-[35vh] sm:max-h-[46vh] sm:max-w-[46vh] md:max-h-[50vh] md:max-w-[50vh] aspect-square filter drop-shadow-xl object-contain shrink-0"
+          />
         </div>
       </div>
 
       {/* PROBLEM CARD CONTAINER */}
-      <div className="w-full flex-1 sm:flex-none flex flex-col items-center sm:justify-center my-1 sm:my-auto space-y-2 sm:space-y-4">
+      <div className="w-full shrink-0 flex flex-col items-center justify-center my-1 space-y-2">
         {!hasStartedClimb ? (
           /* PRE-CLIMB START SCREEN HERO CARD */
-          <div className="w-full flex-1 sm:flex-none max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-5 text-center shadow-xl space-y-4 relative overflow-hidden animate-pop flex flex-col justify-center">
+          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[38vh]">
             <div className="space-y-1.5">
               <span className="text-[11px] font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
                 🏔️ Mountain Climb • 12 Problems
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight">
                 Ready for the Climb?
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed">
+              <p className="text-xs text-slate-600 font-semibold leading-relaxed">
                 Click <span className="text-emerald-600 font-extrabold">Start Climb</span> when you are ready! Your timer will begin as soon as you start.
               </p>
             </div>
@@ -988,7 +993,7 @@ export default function AdaptiveSessionView({
             <button
               type="button"
               onClick={handleStartClimb}
-              className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-xl sm:text-2xl py-4 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer"
+              className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer"
             >
               <Play className="w-7 h-7 fill-current" />
               <span>START CLIMB 🏔️</span>
@@ -1001,7 +1006,7 @@ export default function AdaptiveSessionView({
 
             return (
               <div
-                className={`w-full max-w-sm flex-1 sm:flex-none flex flex-col justify-center bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 text-center transition-all duration-500 space-y-1.5 sm:space-y-2 relative ${
+                className={`w-full max-w-sm shrink-0 flex flex-col justify-center bg-white border-4 rounded-3xl p-3 text-center transition-all duration-500 space-y-2 relative max-h-[32vh] ${
                   streakCfg.cardGlow
                 } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''}`}
               >
@@ -1144,7 +1149,7 @@ export default function AdaptiveSessionView({
 
       {/* NUMERIC KEYPAD (AUTO-DETECTING & TYPE AWARE) */}
       {hasStartedClimb && (
-        <div className="w-full max-w-sm shrink-0 animate-pop mt-0.5 sm:mt-2">
+        <div className="w-full max-w-sm shrink-0 animate-pop mt-0.5 sm:mt-2 max-h-[35vh]">
           <Keypad
             onDigit={handleDigitInput}
             onDelete={handleDeleteDigit}

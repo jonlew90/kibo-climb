@@ -29,7 +29,7 @@
     @apply bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 text-amber-950 font-extrabold border-amber-700 active:translate-y-1.5 active:border-b-0 transition-all duration-75 shadow-clay-amber;
   }
   .btn-3d-key {
-    @apply bg-gradient-to-b from-white to-slate-100 text-slate-800 font-black border-b-4 border-slate-300 hover:border-slate-400 hover:from-white hover:to-slate-50 active:translate-y-1 active:scale-95 active:border-b-0 transition-all duration-75 shadow-md text-xl sm:text-2xl rounded-2xl flex items-center justify-center select-none active:bg-amber-100 min-h-[48px] sm:min-h-[58px] py-2;
+    @apply bg-gradient-to-b from-white to-slate-100 text-slate-800 font-black border-b-4 border-slate-300 hover:border-slate-400 hover:from-white hover:to-slate-50 active:translate-y-1 active:scale-95 active:border-b-0 transition-all duration-75 shadow-md text-2xl rounded-2xl flex items-center justify-center select-none active:bg-amber-100 min-h-[50px] py-2.5;
   }
 
   /* 3D Clay Card Container Utility */
@@ -83,11 +83,11 @@
   }
 }
 
-/* Compact Viewport Scaling (Height <= 600px) */
-@media (max-height: 600px) {
+/* Compact Viewport Scaling (Height <= 550px) */
+@media (max-height: 550px) {
   .mascot-compact-auto {
-    height: 3rem !important;
-    width: 3rem !important;
+    height: 3.5rem !important;
+    width: 3.5rem !important;
   }
 }
 

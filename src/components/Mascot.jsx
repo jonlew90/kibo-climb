@@ -212,7 +212,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
       {/* MAIN 3D MASCOT SVG WITH INTEGRATED BACKGROUND & PET LAYERS */}
       <svg
-        viewBox="-20 -20 240 240"
+        viewBox="-35 -35 270 270"
         className="w-full h-full relative z-10 drop-shadow-lg overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
