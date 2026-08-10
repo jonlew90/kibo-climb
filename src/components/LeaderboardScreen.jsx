@@ -39,17 +39,37 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
   const userEquippedItems = (equippedItems && equippedItems.length > 0)
     ? equippedItems
     : (activeProfile?.shopState?.equippedItems || []);
+  const userSubjectsMastered = (
+    activeProfile?.userData?.subjectsMastered
+    ?? Object.keys(activeProfile?.userData?.masteredTricks || {}).length
+    ?? Math.min(10, Math.max(1, Math.floor((userState?.totalProblemsSolved || 0) / 10)))
+  ) || 5;
 
-  // Calculate current user rank based on score relative to standings data
-  let currentUserRank = MOCK_LEADERBOARD_DATA.findIndex(p => p.score < userScore) + 1;
-  if (currentUserRank === 0) currentUserRank = MOCK_LEADERBOARD_DATA.length + 1;
+  const currentUserPlayer = {
+    isCurrentUser: true,
+    name: username,
+    score: userScore,
+    subjectsMastered: userSubjectsMastered,
+    equipped: userEquippedItems
+  };
+
+  // Combine mock data with current user and sort descending by score
+  const combinedStandings = [...MOCK_LEADERBOARD_DATA, currentUserPlayer]
+    .sort((a, b) => b.score - a.score);
+
+  // Assign ranks
+  const rankedStandings = combinedStandings.map((player, index) => ({
+    ...player,
+    rank: index + 1
+  }));
+
+  const userRankObj = rankedStandings.find(p => p.isCurrentUser);
+  const currentUserRank = userRankObj ? userRankObj.rank : rankedStandings.length;
 
   let pointsNeeded = 0;
   if (currentUserRank > 1) {
-    const playerAboveScore = MOCK_LEADERBOARD_DATA[currentUserRank - 2]
-      ? MOCK_LEADERBOARD_DATA[currentUserRank - 2].score
-      : MOCK_LEADERBOARD_DATA[MOCK_LEADERBOARD_DATA.length - 1].score;
-    pointsNeeded = Math.max(1, playerAboveScore - userScore + 1);
+    const playerAbove = rankedStandings[currentUserRank - 2];
+    pointsNeeded = playerAbove ? Math.max(1, playerAbove.score - userScore + 1) : 1;
   }
 
   const checkScroll = () => {
@@ -79,8 +99,10 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
     }
   };
 
-  const top3 = MOCK_LEADERBOARD_DATA.slice(0, 3);
-  const others = MOCK_LEADERBOARD_DATA.slice(3);
+  // Top 10 users for main standings display
+  const top10 = rankedStandings.slice(0, 10);
+  const top3 = top10.slice(0, 3);
+  const others = top10.slice(3);
 
   // Helper to get title based on score
   const getRankTitle = (score) => {
@@ -167,76 +189,113 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
       <div className="flex-1 overflow-y-auto custom-scrollbar relative pb-6">
 
         {/* HERO PODIUM (Top 3) */}
-        <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
+        {top3.length >= 3 && (
+          <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
 
-          {/* 2nd Place */}
-          <div className="flex flex-col items-center flex-1 max-w-[100px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-slate-200 rounded-full border-2 border-slate-300 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative">
-              <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
-                 <Mascot size={48} mood="happy" overrideColor="slate" equipped={top3[1].equipped} />
+            {/* 2nd Place */}
+            <div className="flex flex-col items-center flex-1 max-w-[100px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative ${
+                top3[1].isCurrentUser ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40' : 'bg-slate-200 border-slate-300'
+              }`}>
+                <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
+                  <Mascot size={48} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} />
+                </div>
+              </div>
+              <span className="font-bold text-xs truncate w-full text-center flex items-center justify-center gap-1">
+                {top3[1].name}
+                {top3[1].isCurrentUser && (
+                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black">YOU</span>
+                )}
+              </span>
+              <span className="text-[10px] text-slate-500 font-semibold mb-2">{top3[1].score} pts</span>
+              <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+                <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
               </div>
             </div>
-            <span className="font-bold text-xs truncate w-full text-center">{top3[1].name}</span>
-            <span className="text-[10px] text-slate-500 font-semibold mb-2">{top3[1].score} pts</span>
-            <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-              <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
-            </div>
-          </div>
 
-          {/* 1st Place */}
-          <div className="flex flex-col items-center flex-1 max-w-[120px] relative z-20 animate-fade-in-up">
-            <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
-              <Crown className="w-6 h-6 fill-amber-400" />
-            </div>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-100 rounded-full border-4 border-amber-400 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative">
-               <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
-                 <Mascot size={64} mood="excited" overrideColor="amber" equipped={top3[0].equipped} />
+            {/* 1st Place */}
+            <div className="flex flex-col items-center flex-1 max-w-[120px] relative z-20 animate-fade-in-up">
+              <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
+                <Crown className="w-6 h-6 fill-amber-400" />
+              </div>
+              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative ${
+                top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
+              }`}>
+                <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
+                  <Mascot size={64} mood="excited" equipped={top3[0].equipped} />
+                </div>
+              </div>
+              <span className="font-black text-sm text-amber-900 truncate w-full text-center flex items-center justify-center gap-1">
+                {top3[0].name}
+                {top3[0].isCurrentUser && (
+                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black">YOU</span>
+                )}
+              </span>
+              <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{top3[0].score} pts</span>
+              <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+                <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
               </div>
             </div>
-            <span className="font-black text-sm text-amber-900 truncate w-full text-center">{top3[0].name}</span>
-            <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{top3[0].score} pts</span>
-            <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
-               {/* Shine effect */}
-               <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
-              <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
-            </div>
-          </div>
 
-          {/* 3rd Place */}
-          <div className="flex flex-col items-center flex-1 max-w-[100px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-orange-100 rounded-full border-2 border-orange-300 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative">
-               <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
-                 <Mascot size={48} mood="happy" overrideColor="orange" equipped={top3[2].equipped} />
+            {/* 3rd Place */}
+            <div className="flex flex-col items-center flex-1 max-w-[100px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative ${
+                top3[2].isCurrentUser ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40' : 'bg-orange-100 border-orange-300'
+              }`}>
+                <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
+                  <Mascot size={48} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} />
+                </div>
+              </div>
+              <span className="font-bold text-xs truncate w-full text-center flex items-center justify-center gap-1">
+                {top3[2].name}
+                {top3[2].isCurrentUser && (
+                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black">YOU</span>
+                )}
+              </span>
+              <span className="text-[10px] text-slate-500 font-semibold mb-2">{top3[2].score} pts</span>
+              <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+                <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
               </div>
             </div>
-            <span className="font-bold text-xs truncate w-full text-center">{top3[2].name}</span>
-            <span className="text-[10px] text-slate-500 font-semibold mb-2">{top3[2].score} pts</span>
-            <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-              <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
-            </div>
           </div>
-        </div>
+        )}
 
         {/* SCROLLABLE LIST (Ranks 4+) */}
         <div className="px-4 space-y-2 pb-6">
-          {others.map((player, index) => (
-            <div key={player.rank} className="bg-white border border-slate-200 rounded-2xl p-3 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
-
+          {others.map((player) => (
+            <div
+              key={player.isCurrentUser ? 'current-user-row' : player.name}
+              className={`rounded-2xl p-3 flex items-center gap-3 transition-all ${
+                player.isCurrentUser
+                  ? 'bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border-2 border-indigo-500 shadow-md ring-2 ring-indigo-400/30'
+                  : 'bg-white border border-slate-200 shadow-sm hover:shadow-md'
+              }`}
+            >
               {/* Rank Number */}
-              <div className="w-6 text-center font-black text-slate-400 shrink-0">
+              <div className={`w-6 text-center font-black shrink-0 ${player.isCurrentUser ? 'text-indigo-700' : 'text-slate-400'}`}>
                 {player.rank}
               </div>
 
               {/* Avatar Placeholder */}
-              <div className="w-10 h-10 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden relative">
-                 <div className="absolute inset-0 flex items-center justify-center scale-[0.7]">
-                     <Mascot size={32} mood="neutral" overrideColor="slate" equipped={player.equipped} />
-                  </div>
+              <div className={`w-10 h-10 rounded-full border flex items-center justify-center shrink-0 overflow-hidden relative ${
+                player.isCurrentUser ? 'bg-indigo-100 border-indigo-300' : 'bg-slate-100 border-slate-200'
+              }`}>
+                <div className="absolute inset-0 flex items-center justify-center scale-[0.7]">
+                  <Mascot size={32} mood={player.isCurrentUser ? "happy" : "neutral"} equipped={player.equipped} />
+                </div>
               </div>
 
               {/* Player Info */}
               <div className="flex-1 min-w-0 flex flex-col">
-                <span className="font-bold text-sm text-slate-800 truncate">{player.name}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-sm text-slate-800 truncate">{player.name}</span>
+                  {player.isCurrentUser && (
+                    <span className="bg-indigo-600 text-white text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">
+                      YOU
+                    </span>
+                  )}
+                </div>
                 <span className="text-[10px] text-slate-500 font-medium truncate flex items-center gap-1">
                   <Activity className="w-3 h-3 text-slate-400" />
                   {player.subjectsMastered} Subjects Qualified

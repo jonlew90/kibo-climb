@@ -169,10 +169,8 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose, onOpen
   const handleSelect = (profile) => {
     soundFx.playKeyTap();
     setSelectedId(profile.id);
-    setTimeout(() => {
-      storageService.setActiveProfileId(profile.id);
-      onSelectProfile(profile);
-    }, 220);
+    storageService.setActiveProfileId(profile.id);
+    onSelectProfile(profile);
   };
 
   const handleProfileCreated = (newProfile) => {
