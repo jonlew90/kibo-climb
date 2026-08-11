@@ -155,16 +155,16 @@ export default function BadgesModal({
               maskImage: canScrollRight ? 'linear-gradient(to right, black 85%, transparent 100%)' : 'none',
               WebkitMaskImage: canScrollRight ? 'linear-gradient(to right, black 85%, transparent 100%)' : 'none'
             }}
-            className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 shrink-0 w-full scroll-smooth touch-pan-x"
+            className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 shrink-0 w-full touch-pan-x"
           >
             <button
               onClick={() => {
                 soundFx.playKeyTap();
                 setActiveCategory('all');
               }}
-              className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-all ${
+              className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-colors ${
                 activeCategory === 'all'
-                  ? 'bg-amber-500 text-white shadow-md scale-[1.02]'
+                  ? 'bg-amber-500 text-white shadow-md'
                   : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
               }`}
             >
@@ -182,9 +182,9 @@ export default function BadgesModal({
                     soundFx.playKeyTap();
                     setActiveCategory(key);
                   }}
-                  className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-all ${
+                  className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-colors ${
                     activeCategory === key
-                      ? 'bg-amber-500 text-white shadow-md scale-[1.02]'
+                      ? 'bg-amber-500 text-white shadow-md'
                       : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                   }`}
                 >
