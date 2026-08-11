@@ -4,6 +4,7 @@ import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
+import { leaderboardService } from '../services/leaderboardService';
 
 const MOCK_SUBJECTS = [
   { id: 'overall', label: 'Overall Competence' },
@@ -28,6 +29,7 @@ const MOCK_LEADERBOARD_DATA = [
 export default function LeaderboardScreen({ userState, renderFooter, equippedItems = [] }) {
   const [activeSubject, setActiveSubject] = useState('overall');
   const [sortByCompetence, setSortByCompetence] = useState(true);
+  const [liveStandings, setLiveStandings] = useState([]);
 
   const subjectScrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -53,8 +55,33 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
     equipped: userEquippedItems
   };
 
-  // Combine mock data with current user and sort descending by score
-  const combinedStandings = [...MOCK_LEADERBOARD_DATA, currentUserPlayer]
+  // Subscribe to Firestore real-time updates
+  useEffect(() => {
+    // Initial sync for current user
+    leaderboardService.syncUserScore({
+      profileId: activeProfile?.id || 'default_child',
+      name: username,
+      score: userScore,
+      subjectsMastered: userSubjectsMastered,
+      equipped: userEquippedItems
+    });
+
+    const unsubscribe = leaderboardService.subscribeToLeaderboard(20, (remoteData) => {
+      if (remoteData && remoteData.length > 0) {
+        setLiveStandings(remoteData);
+      }
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
+  }, [userScore, username]);
+
+  // Combine live/mock data with current user and sort descending by score
+  const baseStandings = liveStandings.length > 0 ? liveStandings : MOCK_LEADERBOARD_DATA;
+  const filteredRemote = baseStandings.filter(p => p.name !== username);
+
+  const combinedStandings = [...filteredRemote, currentUserPlayer]
     .sort((a, b) => b.score - a.score);
 
   // Assign ranks

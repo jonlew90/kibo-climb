@@ -1,6 +1,7 @@
 // Unified Storage Service Adapter for Kibo Math
 // Multi-Profile Storage Engine (profiles[activeProfileId])
 import { getStartingRatingForGrade } from '../utils/curriculum';
+import { leaderboardService } from './leaderboardService';
 
 const KEYS = {
   PROFILES: 'kibo_profiles_data',
@@ -267,6 +268,20 @@ export const storageService = {
       ratingHistory: history
     };
     safeSaveProfilesState(state);
+
+    // Sync rating & avatar gear to cloud leaderboard
+    try {
+      const activeProf = state.profiles[activeId];
+      leaderboardService.syncUserScore({
+        profileId: activeId,
+        name: activeProf?.username || activeProf?.name || 'Kibo Climber',
+        score: activeRating,
+        subjectsMastered: Object.keys(updatedData.masteredTricks || {}).length || 5,
+        equipped: activeProf?.shopState?.equippedItems || []
+      });
+    } catch (e) {
+      console.warn('StorageService: Leaderboard sync skipped', e);
+    }
   },
 
   // Skip Event Diagnostics Logging
