@@ -41,6 +41,7 @@ function ProfileCard({ profile, onSelect, isSelected }) {
           mood="happy"
           state="idle"
           equipped={equipped}
+          disableInteractive={true}
           className="w-12 h-12 sm:w-14 sm:h-14 aspect-square relative z-10 drop-shadow-md"
         />
       </div>

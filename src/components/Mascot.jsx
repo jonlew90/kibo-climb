@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { soundFx } from '../utils/audio';
 
-export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], equippedItems, className = "w-36 h-36", size, overrideColor }) {
+export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], equippedItems, className = "w-36 h-36", size, overrideColor, onClick, disableInteractive = false }) {
   const activeEquipped = equippedItems || equipped || [];
   // Equipped item checks
   const isEquipped = (itemId) => activeEquipped.includes(itemId);
@@ -157,7 +157,11 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
   // Handle Interactive Mascot Tap Reaction
   const handleMascotTap = (e) => {
-    if (e && typeof e.stopPropagation === 'function') {
+    if (onClick) {
+      onClick(e);
+    }
+    if (disableInteractive) return;
+    if (!onClick && e && typeof e.stopPropagation === 'function') {
       e.stopPropagation();
     }
     // Prevent triggering another visual reaction until the previous one completes
