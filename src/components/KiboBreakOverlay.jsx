@@ -51,44 +51,44 @@ export default function KiboBreakOverlay({
         {/* MIDDLE CONTAINER (flex: 1, display: flex, flex-direction: column, justify-content: center) */}
         <div className="flex-1 min-h-0 flex flex-col justify-center gap-3 py-2">
           {/* 4-Tile Detailed Climb Stats Matrix (2x2 Grid) */}
-          <div className="grid grid-cols-2 gap-2.5 bg-white border-2 border-amber-200/90 rounded-2xl p-3 sm:p-4 shadow-md text-left flex-1 min-h-0 flex flex-col justify-center">
+          <div className="grid grid-cols-2 gap-2.5 bg-white border-2 border-amber-200/90 rounded-2xl p-3 sm:p-4 shadow-md text-center flex-1 min-h-0 flex flex-col justify-center">
             {/* Accuracy Tile */}
-            <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col justify-center space-y-0.5">
-              <span className="text-[10px] font-black uppercase text-emerald-800 flex items-center gap-1">
+            <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center">
+              <span className="text-[10px] font-black uppercase text-emerald-800 flex items-center justify-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Accuracy
               </span>
-              <div className="flex items-baseline justify-between">
+              <div className="flex items-baseline justify-center gap-1.5 w-full">
                 <span className="text-2xl sm:text-3xl font-black text-emerald-700">{displayCorrect} / {totalCount}</span>
-                <span className="text-xs sm:text-sm font-extrabold text-emerald-600">{accuracyPct}%</span>
+                <span className="text-xs sm:text-sm font-extrabold text-emerald-600">({accuracyPct}%)</span>
               </div>
             </div>
 
             {/* Sparks Earned Tile */}
-            <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col justify-center space-y-0.5">
-              <span className="text-[10px] font-black uppercase text-amber-800 flex items-center gap-1">
+            <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center">
+              <span className="text-[10px] font-black uppercase text-amber-800 flex items-center justify-center gap-1">
                 <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400" /> Sparks Earned
               </span>
-              <div className="text-2xl sm:text-3xl font-black text-amber-700 flex items-center gap-1">
+              <div className="text-2xl sm:text-3xl font-black text-amber-700 flex items-center justify-center gap-1">
                 +{sparksEarned} ⚡
               </div>
             </div>
 
             {/* Streak Boost Tile */}
-            <div className="bg-orange-50/80 border border-orange-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col justify-center space-y-0.5">
-              <span className="text-[10px] font-black uppercase text-orange-800 flex items-center gap-1">
+            <div className="bg-orange-50/80 border border-orange-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center">
+              <span className="text-[10px] font-black uppercase text-orange-800 flex items-center justify-center gap-1">
                 <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" /> Answer Streak
               </span>
-              <div className="text-2xl sm:text-3xl font-black text-orange-700">
+              <div className="text-2xl sm:text-3xl font-black text-orange-700 flex items-center justify-center">
                 🔥 {streak} Qs
               </div>
             </div>
 
             {/* Competence Rank Delta Tile */}
-            <div className="bg-cyan-50/80 border border-cyan-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col justify-center space-y-0.5">
-              <span className="text-[10px] font-black uppercase text-cyan-800 flex items-center gap-1">
+            <div className="bg-cyan-50/80 border border-cyan-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center">
+              <span className="text-[10px] font-black uppercase text-cyan-800 flex items-center justify-center gap-1">
                 <TrendingUp className="w-3.5 h-3.5 text-cyan-600" /> Rank Delta
               </span>
-              <div className="text-2xl sm:text-3xl font-black text-cyan-700">
+              <div className="text-2xl sm:text-3xl font-black text-cyan-700 flex items-center justify-center">
                 {blockRatingGain >= 0 ? `+${blockRatingGain}` : `${blockRatingGain}`} ⭐
               </div>
             </div>
