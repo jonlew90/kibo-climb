@@ -232,9 +232,13 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
       {/* MAIN 3D MASCOT SVG WITH INTEGRATED BACKGROUND & PET LAYERS */}
       <svg
         viewBox="-35 -35 270 270"
-        className="w-full h-full relative z-10 drop-shadow-lg overflow-visible"
+        className="w-full h-full relative z-10 drop-shadow-lg overflow-visible mascot-container"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        shapeRendering="geometricPrecision"
+        textRendering="geometricPrecision"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
         <defs>
           {/* Volumetric 3D Clay Body Gradients */}
@@ -338,15 +342,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <stop offset="100%" stopColor="#0369A1" />
           </linearGradient>
 
-          {/* 3D Clay Soft Drop Shadows */}
-          <filter id="clayShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="6" stdDeviation="4" floodColor="#3E1500" floodOpacity="0.35" />
-          </filter>
 
-          <filter id="claySpecular" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="3" stdDeviation="2" floodColor="#FFFFFF" floodOpacity="0.6" />
-            <feDropShadow dx="0" dy="5" stdDeviation="3" floodColor="#000000" floodOpacity="0.25" />
-          </filter>
         </defs>
 
         {/* ==================================================== */}
@@ -417,7 +413,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         {/* COMPANION PETS (Owl, Fox, Phoenix, Dragon, Griffin)  */}
         {/* ==================================================== */}
         {hasSnowyOwl && (
-          <g className="animate-bounce" style={{ animationDuration: '3s' }} filter="url(#clayShadow)">
+          <g className="animate-bounce" style={{ animationDuration: '3s' }} >
             <ellipse cx="165" cy="58" rx="11" ry="14" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="2" />
             <circle cx="165" cy="44" r="9" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="2" />
             <polygon points="165,44 169,48 161,48" fill="#F59E0B" />
@@ -429,7 +425,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         )}
 
         {hasAlpineFox && (
-          <g className="animate-pulse" style={{ animationDuration: '2.8s' }} filter="url(#clayShadow)">
+          <g className="animate-pulse" style={{ animationDuration: '2.8s' }} >
             <ellipse cx="36" cy="148" rx="14" ry="10" fill="#F97316" stroke="#C2410C" strokeWidth="2" />
             <circle cx="26" cy="142" r="8" fill="#F97316" stroke="#C2410C" strokeWidth="2" />
             <polygon points="22,136 20,126 27,133" fill="#F97316" stroke="#C2410C" strokeWidth="1.5" />
@@ -440,7 +436,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         )}
 
         {hasPhoenixPet && (
-          <g className="animate-bounce" style={{ animationDuration: '2.2s' }} filter="url(#clayShadow)">
+          <g className="animate-bounce" style={{ animationDuration: '2.2s' }} >
             <path d="M 158 65 Q 142 82 148 95 Q 160 86 162 70 Z" fill="#EF4444" />
             <path d="M 160 68 Q 148 84 154 95" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round" />
             <ellipse cx="165" cy="58" rx="14" ry="18" fill="url(#thumbLavaGrad)" stroke="#9A3412" strokeWidth="2.5" />
@@ -454,7 +450,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         )}
 
         {hasFrostDragon && (
-          <g className="animate-pulse" style={{ animationDuration: '2.5s' }} filter="url(#clayShadow)">
+          <g className="animate-pulse" style={{ animationDuration: '2.5s' }} >
             <path d="M 172 21 Q 188 34 180 46 Q 170 38 168 26 Z" fill="#0EA5E9" />
             <ellipse cx="165" cy="14" rx="14" ry="18" fill="url(#thumbAuroraGrad)" stroke="#065F46" strokeWidth="2.5" />
             <circle cx="165" cy="0" r="11" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" />
@@ -468,7 +464,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         )}
 
         {hasCosmicGriffin && (
-          <g className="animate-bounce" style={{ animationDuration: '2.6s' }} filter="url(#clayShadow)">
+          <g className="animate-bounce" style={{ animationDuration: '2.6s' }} >
             <path d="M 162 65 Q 185 45 178 85 Q 165 82 162 70 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
             <ellipse cx="165" cy="58" rx="13" ry="16" fill="url(#goldBodyGrad)" stroke="#B45309" strokeWidth="2.5" />
             <circle cx="165" cy="44" r="10" fill="#FEF08A" stroke="#B45309" strokeWidth="2" />
@@ -480,7 +476,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
         {/* VISUAL FX (Cloud Levitator, Victory Spin, Speed Trail, Nebula, Orbit Moons) */}
         {hasCloudFloat && (
-          <g filter="url(#clayShadow)">
+          <g >
             {/* Fluffy Volumetric 3D Levitating Cloud Platform */}
             <ellipse cx="100" cy="182" rx="64" ry="18" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="3" />
             <circle cx="50" cy="176" r="22" fill="#F8FAFC" />
@@ -531,7 +527,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
             {/* Revolving Mirror Disco Ball */}
             <g className="animate-disco-ball">
-              <circle cx="100" cy="28" r="13" fill="#E2E8F0" stroke="#475569" strokeWidth="1.5" filter="url(#clayShadow)" />
+              <circle cx="100" cy="28" r="13" fill="#E2E8F0" stroke="#475569" strokeWidth="1.5"  />
               {/* Mirror Facet Grid */}
               <line x1="87" y1="28" x2="113" y2="28" stroke="#94A3B8" strokeWidth="1" />
               <line x1="89" y1="23" x2="111" y2="23" stroke="#94A3B8" strokeWidth="1" />
@@ -603,7 +599,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           {/* ==================================================== */}
           <g id="layer-back">
             {hasJetpack && (
-              <g filter="url(#clayShadow)">
+              <g >
                 {/* Left Rocket Thruster */}
                 <rect x="26" y="62" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
                 <rect x="32" y="72" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
@@ -623,7 +619,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasBackpack && (
-              <g filter="url(#clayShadow)">
+              <g >
                 {/* Top Sleeping Mat Roll */}
                 <rect x="50" y="55" width="100" height="24" rx="10" fill="#15803D" stroke="#166534" strokeWidth="3" />
                 <rect x="72" y="53" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
@@ -639,7 +635,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasRoyalCape && (
-              <g filter="url(#clayShadow)" className="animate-cape-sway">
+              <g  className="animate-cape-sway">
                 <path d="M 64 96 L 44 165 Q 100 180 156 165 L 136 96 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3.5" />
                 <path d="M 64 96 Q 100 90 136 96" stroke="#F59E0B" strokeWidth="6" strokeLinecap="round" />
               </g>
@@ -656,7 +652,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
               fill={hasCustomSkin ? bodyFill : 'url(#tailGrad)'}
               stroke={hasCustomSkin ? bodyStroke : '#872200'}
               strokeWidth="3.5"
-              filter="url(#clayShadow)"
+              
               className="transition-transform duration-300 origin-bottom-left"
             />
 
@@ -669,7 +665,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
               fill={bodyFill}
               stroke={footStroke}
               strokeWidth="3"
-              filter="url(#clayShadow)"
+              
             />
 
             {/* Right Foot */}
@@ -681,7 +677,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
               fill={bodyFill}
               stroke={footStroke}
               strokeWidth="3"
-              filter="url(#clayShadow)"
+              
             />
 
             {/* Main 3D Volumetric Body Sphere */}
@@ -692,7 +688,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
               fill={bodyFill}
               stroke={bodyStroke}
               strokeWidth="4"
-              filter="url(#clayShadow)"
+              
             />
 
             {/* Cream Tummy Patch */}
@@ -708,7 +704,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
                 fill={bodyFill}
                 stroke={footStroke}
                 strokeWidth="3.5"
-                filter="url(#clayShadow)"
+                
               />
               <path d="M 62 72 C 48 48, 68 38, 73 62 Z" fill={earInnerFill} />
 
@@ -718,7 +714,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
                 fill={bodyFill}
                 stroke={footStroke}
                 strokeWidth="3.5"
-                filter="url(#clayShadow)"
+                
               />
               <path d="M 138 72 C 152 48, 132 38, 127 62 Z" fill={earInnerFill} />
             </g>
@@ -729,7 +725,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           {/* ==================================================== */}
           <g id="layer-outfits">
             {hasVest && (
-              <g filter="url(#clayShadow)">
+              <g >
                 {/* Padded Climber Vest Body */}
                 <path d="M 62 106 C 62 106, 100 116, 138 106 L 138 152 C 138 152, 100 162, 62 152 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="3.5" />
                 {/* Quilted Puffer Lines */}
@@ -744,7 +740,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasSummitScarf && (
-              <g filter="url(#clayShadow)">
+              <g >
                 {/* Wrapped Neck Scarf */}
                 <path d="M 62 110 Q 100 128 138 110 L 136 122 Q 100 140 64 122 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="3" />
                 <path d="M 64 108 Q 100 124 136 108 Q 100 118 64 108 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="2.5" />
@@ -759,7 +755,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasBowtie && (
-              <g filter="url(#clayShadow)">
+              <g >
                 {/* 3D Red Bowtie on Collar */}
                 <polygon points="100,122 74,110 72,134" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
                 <polygon points="100,122 126,110 128,134" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
@@ -818,21 +814,21 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           {/* ==================================================== */}
           <g id="layer-gear">
             {hasGoldenCompass && (
-              <g filter="url(#clayShadow)">
+              <g >
                 <circle cx="60" cy="140" r="12" fill="url(#goldBodyGrad)" stroke="#B45309" strokeWidth="2.5" />
                 <polygon points="60,132 63,140 60,148 57,140" fill="#EF4444" />
               </g>
             )}
 
             {hasCanteen && (
-              <g filter="url(#clayShadow)">
+              <g >
                 <ellipse cx="138" cy="145" rx="10" ry="14" fill="#0284C7" stroke="#075985" strokeWidth="2.5" />
                 <rect x="135" y="128" width="6" height="5" fill="#CBD5E1" />
               </g>
             )}
 
             {hasLantern && (
-              <g filter="url(#clayShadow)">
+              <g >
                 {/* Glowing Ambient Aura */}
                 <circle cx="48" cy="138" r="26" fill="#FDE047" opacity="0.35" className="animate-pulse" />
                 
@@ -850,7 +846,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasKiboShield && (
-              <g filter="url(#clayShadow)">
+              <g >
                 <path d="M 160 115 C 172 115, 178 122, 178 135 C 178 152, 160 165, 160 165 C 160 165, 142 152, 142 135 C 142 122, 148 115, 160 115 Z" fill="#0EA5E9" stroke="#0284C7" strokeWidth="2.5" />
                 <path d="M 160 120 C 169 120, 174 125, 174 135 C 174 148, 160 158, 160 158 C 160 158, 146 148, 146 135 C 146 125, 151 120, 160 120 Z" fill="#38BDF8" />
                 <path d="M 155 137 L 159 141 L 167 131" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
@@ -858,7 +854,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasDoubleSparksPotion && (
-              <g filter="url(#clayShadow)">
+              <g >
                 <rect x="156" y="125" width="8" height="6" rx="1.5" fill="#D97706" stroke="#B45309" strokeWidth="1.5" />
                 <path d="M 154 131 L 166 131 L 173 152 A 5 5 0 0 1 168 158 L 152 158 A 5 5 0 0 1 147 152 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="2" />
                 <text x="160" y="153" textAnchor="middle" fontSize="9" fontWeight="900" fill="#B45309">2x</text>
@@ -866,7 +862,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasHintScroll && (
-              <g filter="url(#clayShadow)">
+              <g >
                 <rect x="145" y="130" width="28" height="28" rx="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="2" />
                 <path d="M 149 138 L 169 138 M 149 144 L 169 144 M 149 150 L 161 150" stroke="#B45309" strokeWidth="2" strokeLinecap="round" />
                 <text x="166" y="153" textAnchor="middle" fontSize="7" fontWeight="900">💡</text>
@@ -879,28 +875,28 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           {/* ==================================================== */}
           <g id="layer-head">
             {hasCap && (
-              <g filter="url(#clayShadow)">
+              <g >
                 <path d="M 52 70 Q 100 48 148 70 Z" fill="#2563EB" stroke="#1D4ED8" strokeWidth="3" />
                 <path d="M 100 70 Q 148 64 165 72" stroke="#1D4ED8" strokeWidth="5" strokeLinecap="round" fill="none" />
               </g>
             )}
 
             {hasBandana && (
-              <g filter="url(#clayShadow)">
+              <g >
                 <path d="M 50 68 Q 100 46 150 68 L 146 78 Q 100 58 54 78 Z" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
                 <polygon points="144,72 165,82 152,90" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
               </g>
             )}
 
             {hasPartyHat && (
-              <g filter="url(#clayShadow)">
-                <polygon points="100,20 70,70 130,70" fill="#F59E0B" stroke="#D97706" strokeWidth="3" />
+              <g >
+                <path d="M 70 70 Q 100 16 130 70 C 115 74, 85 74, 70 70 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="100" cy="18" r="8" fill="#EF4444" />
               </g>
             )}
 
             {hasGoggles && (
-              <g filter="url(#claySpecular)">
+              <g >
                 <rect x="65" y="86" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
                 <rect x="105" y="86" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
                 <line x1="95" y1="96" x2="105" y2="96" stroke="#0284C7" strokeWidth="4" />
@@ -908,7 +904,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasExplorerHat && (
-              <g filter="url(#clayShadow)">
+              <g >
                 <path d="M 70 65 Q 100 32 130 65 Z" fill="#92400E" stroke="#451A03" strokeWidth="3" />
                 <path d="M 68 62 Q 100 55 132 62" stroke="#F59E0B" strokeWidth="5" fill="none" />
                 <ellipse cx="100" cy="66" rx="54" ry="10" fill="#78350F" stroke="#451A03" strokeWidth="3" />
@@ -916,16 +912,16 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasWizardHat && (
-              <g filter="url(#clayShadow)">
-                <path d="M 100 10 L 60 72 L 140 72 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3" />
+              <g >
+                <path d="M 60 72 Q 100 8 140 72 C 120 76, 80 76, 60 72 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 <ellipse cx="100" cy="72" rx="48" ry="10" fill="#6D28D9" stroke="#5B21B6" strokeWidth="3" />
                 <polygon points="100,25 103,32 110,34 105,39 106,46 100,42 94,46 95,39 90,34 97,32" fill="#FBBF24" />
               </g>
             )}
 
             {hasCrown && (
-              <g filter="url(#clayShadow)">
-                <path d="M 65 68 L 72 38 L 86 52 L 100 30 L 114 52 L 128 38 L 135 68 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="3" />
+              <g >
+                <path d="M 65 68 Q 68 45 72 38 Q 79 48 86 52 Q 93 35 100 30 Q 107 35 114 52 Q 121 48 128 38 Q 132 45 135 68 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="72" cy="36" r="4" fill="#EF4444" />
                 <circle cx="100" cy="28" r="5" fill="#3B82F6" />
                 <circle cx="128" cy="36" r="4" fill="#10B981" />
@@ -933,7 +929,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasNeonHeadphones && (
-              <g filter="url(#clayShadow)">
+              <g >
                 <path d="M 52 95 A 50 50 0 0 1 148 95" stroke="url(#neonHeadphoneGrad)" strokeWidth="8" fill="none" strokeLinecap="round" />
                 <path d="M 54 94 A 48 48 0 0 1 146 94" stroke="#67E8F9" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.8" />
                 

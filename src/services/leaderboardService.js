@@ -44,11 +44,20 @@ class LeaderboardService {
   // Sync user score and equipped gear to Firestore
   async syncUserScore({ profileId, name, score, subjectsMastered = 5, equipped = [] }) {
     try {
-      // Wait for auth if signing in
+      // Ensure user is authenticated before attempting sync
       if (!this.currentUser && auth.currentUser) {
         this.currentUser = auth.currentUser;
       }
+      if (!this.currentUser) {
+        try {
+          const userCred = await signInAnonymously(auth);
+          this.currentUser = userCred.user;
+        } catch (authErr) {
+          console.warn('LeaderboardService: Anonymous sign-in failed during sync', authErr);
+        }
+      }
 
+      // Fall back to profileId or local_user only if auth fails, but warn if missing auth context
       const uid = this.currentUser ? this.currentUser.uid : (profileId || 'local_user');
       const userRef = doc(db, LEADERBOARD_COLLECTION, uid);
 

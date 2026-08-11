@@ -267,7 +267,17 @@ export const storageService = {
       ...updatedData,
       ratingHistory: history
     };
+    state.profiles[activeId].updatedAtMillis = Date.now();
     safeSaveProfilesState(state);
+
+    // Sync profile to user's Cloud Firestore document for multi-device sync
+    try {
+      import('./userSyncService').then(({ userSyncService }) => {
+        userSyncService.syncProfileToCloud(activeId);
+      });
+    } catch (e) {
+      console.warn('StorageService: userSyncService trigger failed', e);
+    }
 
     // Sync rating & avatar gear to cloud leaderboard
     try {

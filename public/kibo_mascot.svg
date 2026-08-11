@@ -1,4 +1,4 @@
-<svg viewBox="0 0 200 200" width="400" height="400" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 200 200" width="400" height="400" fill="none" xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
   <defs>
     <!-- Volumetric 3D Clay Body Gradients -->
     <radialGradient id="kibo3DBodyGrad" cx="35%" cy="30%" r="70%">
@@ -26,15 +26,6 @@
       <stop offset="50%" stop-color="#E04D00" />
       <stop offset="100%" stop-color="#872200" />
     </linearGradient>
-
-    <!-- Tactile 3D Soft Clay Shadows -->
-    <filter id="clayShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#3F1400" flood-opacity="0.35" />
-    </filter>
-
-    <filter id="claySpecular" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.25" />
-    </filter>
   </defs>
 
   <!-- KIBO BASE MASCOT CONTAINER -->
@@ -46,7 +37,8 @@
         fill="url(#tailGrad)"
         stroke="#6E1B00"
         stroke-width="3.5"
-        filter="url(#clayShadow)"
+        stroke-linecap="round"
+        stroke-linejoin="round"
       />
       <path d="M 165 75 Q 175 88 158 98" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.8" />
       <path d="M 158 105 Q 172 115 150 124" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.8" />
@@ -55,7 +47,7 @@
     <!-- 2. BODY & HEAD -->
     <g id="layer-body">
       <!-- Left Ear -->
-      <g filter="url(#clayShadow)">
+      <g>
         <path
           d="M 60 65 Q 25 35 48 20 Q 75 35 68 62"
           fill="url(#kibo3DBodyGrad)"
@@ -69,7 +61,7 @@
       </g>
 
       <!-- Right Ear -->
-      <g filter="url(#clayShadow)">
+      <g>
         <path
           d="M 140 65 Q 175 35 152 20 Q 125 35 132 62"
           fill="url(#kibo3DBodyGrad)"
@@ -83,7 +75,7 @@
       </g>
 
       <!-- Main Volumetric Body/Head Sphere -->
-      <g filter="url(#clayShadow)">
+      <g>
         <ellipse
           cx="100"
           cy="110"
@@ -97,7 +89,7 @@
       </g>
 
       <!-- Tactile 3D Muzzle -->
-      <g filter="url(#claySpecular)">
+      <g>
         <ellipse
           cx="100"
           cy="124"

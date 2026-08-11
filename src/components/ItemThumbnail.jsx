@@ -17,6 +17,10 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
         className="w-full h-full drop-shadow-xs overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        shapeRendering="geometricPrecision"
+        textRendering="geometricPrecision"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
         <defs>
           <linearGradient id="thumbNeonGrad" x1="0" y1="0" x2="1" y2="1">
@@ -122,7 +126,7 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
 
         {itemId === 'wizard_hat' && (
           <g>
-            <path d="M 50 12 L 20 70 L 80 70 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="4" />
+            <path d="M 20 70 Q 50 10 80 70 C 65 73, 35 73, 20 70 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
             <ellipse cx="50" cy="70" rx="40" ry="10" fill="#6D28D9" stroke="#5B21B6" strokeWidth="3" />
             <polygon points="50,28 53,35 60,37 55,42 56,49 50,45 44,49 45,42 40,37 47,35" fill="#FBBF24" />
           </g>
@@ -138,7 +142,7 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
 
         {itemId === 'crown' && (
           <g>
-            <path d="M 20 68 L 26 35 L 42 50 L 50 25 L 58 50 L 74 35 L 80 68 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="4" />
+            <path d="M 20 68 Q 23 42 26 35 Q 34 44 42 50 Q 46 32 50 25 Q 54 32 58 50 Q 66 44 74 35 Q 77 42 80 68 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
             <circle cx="26" cy="33" r="4" fill="#EF4444" />
             <circle cx="50" cy="23" r="5" fill="#3B82F6" />
             <circle cx="74" cy="33" r="4" fill="#10B981" />

@@ -91,6 +91,21 @@
   }
 }
 
+/* --- ULTRA-SMOOTH HIGH-DPI SVG & MASCOT RENDERING OPTIMIZATIONS --- */
+svg {
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+  image-rendering: auto;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mascot-container, .animate-mascot-breathe {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
 /* --- LIVING MASCOT ANIMATIONS (GPU-ACCELERATED) --- */
 
 /* 1. Gentle Idle Breathing (3s smooth loop) */
