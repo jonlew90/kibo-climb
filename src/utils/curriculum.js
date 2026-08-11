@@ -472,24 +472,36 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
       break;
     }
     case 3: {
-      const type = Math.random();
-      if (type < 0.25) {
+      const subType = Math.random();
+      if (subType < 0.25) {
         const q = Math.floor(Math.random() * 3) + 1;
         const d = Math.floor(Math.random() * 3) + 1;
         answer = q * 25 + d * 10;
-        num1 = q;
-        num2 = d;
-        operatorSymbol = '🪙';
-        displayString = `${q} Quarter${q > 1 ? 's' : ''} + ${d} Dime${d > 1 ? 's' : ''}`;
-        hint = 'Hint: Quarters are 25¢, Dimes are 10¢!';
-      } else if (type < 0.45) {
+        return {
+          tier: effectiveTier,
+          num1: q,
+          num2: d,
+          operatorSymbol: '🪙',
+          answer: answer.toString(),
+          answerString: answer.toString(),
+          displayString: `${q} Quarter${q > 1 ? 's' : ''} + ${d} Dime${d > 1 ? 's' : ''}`,
+          type: 'money',
+          hint: 'Hint: Quarters are 25¢, Dimes are 10¢!'
+        };
+      } else if (subType < 0.45) {
         const cost = (Math.floor(Math.random() * 15) + 5) * 5;
         answer = 100 - cost;
-        num1 = 100;
-        num2 = cost;
-        operatorSymbol = '🪙';
-        displayString = `Pay $1.00 for an item costing ${cost}¢. Change?`;
-        hint = 'Hint: Subtract the cost from 100¢!';
+        return {
+          tier: effectiveTier,
+          num1: 100,
+          num2: cost,
+          operatorSymbol: '🪙',
+          answer: answer.toString(),
+          answerString: answer.toString(),
+          displayString: `Pay $1.00 for an item costing ${cost}¢. Change?`,
+          type: 'money',
+          hint: 'Hint: Subtract the cost from 100¢!'
+        };
       } else {
         const tables = [2, 5, 10];
         num1 = tables[Math.floor(Math.random() * tables.length)];

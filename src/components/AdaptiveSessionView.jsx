@@ -132,7 +132,10 @@ export default function AdaptiveSessionView({
   const [shouldPulseHint, setShouldPulseHint] = useState(false);
 
   const currentProblem = problemQueue[currentIndex] || {};
-  const isMoneyQuestion = currentProblem.type === 'money';
+  const isMoneyQuestion =
+    currentProblem.type === 'money' ||
+    currentProblem.operatorSymbol === '🪙' ||
+    /quarter|dime|nickel|penny|\$|¢|change|costing/i.test(currentProblem.displayString || '');
   const isTimeQuestion = currentProblem.type === 'time';
   const targetStr = String(currentProblem.answerString || currentProblem.answer || '');
 
@@ -140,7 +143,8 @@ export default function AdaptiveSessionView({
   const pauseStartRef = useRef(null);
 
   const saveCurrentClimbProgress = () => {
-    if (!hasStartedClimb) return;
+    if (!hasStartedClimb || showBreakOverlay) return;
+    if (sessionQuestionIndex > 12 || (questionsAnswered > 0 && questionsAnswered % 12 === 0)) return;
 
     const now = performance.now();
     const currentPause = pauseStartRef.current ? (now - pauseStartRef.current) : 0;
@@ -493,10 +497,11 @@ export default function AdaptiveSessionView({
     const isReductionQuestion = currentProblem.displayString?.toLowerCase().includes('reduce') || currentProblem.operatorSymbol === '⚡';
 
     const isFractionMatch =
-      userFracVal !== null &&
-      targetFracVal !== null &&
-      Math.abs(userFracVal - targetFracVal) < 0.0001 &&
+      ((userFracVal !== null && targetFracVal !== null && Math.abs(userFracVal - targetFracVal) < 0.0001) ||
+       (userFracVal !== null && !isNaN(targetNum) && Math.abs(userFracVal - targetNum) < 0.0001) ||
+       (targetFracVal !== null && !isNaN(userNum) && Math.abs(userNum - targetFracVal) < 0.0001)) &&
       (!isReductionQuestion || normUserAns === normTargetAns);
+
 
     // Decimal implicit match (e.g. user typed "62" for "6.2" or "35" for "0.35")
     let isDecimalImplicitMatch = false;
@@ -698,6 +703,9 @@ export default function AdaptiveSessionView({
       setMascotState('break');
       setShowBreakOverlay(true);
 
+      storageService.clearActiveClimbState(profileId);
+      setSavedClimbState(null);
+
       const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
       const finalBlockCorrect = Math.min(12, isCorrect ? blockCorrectCount + 1 : blockCorrectCount);
       const finalBlockSparks = blockSparksEarned + blockEarned;
@@ -852,9 +860,9 @@ export default function AdaptiveSessionView({
     const isReductionQuestion = currentProblem.displayString?.toLowerCase().includes('reduce') || currentProblem.operatorSymbol === '⚡';
 
     const isFractionMatch =
-      userFracVal !== null &&
-      targetFracVal !== null &&
-      Math.abs(userFracVal - targetFracVal) < 0.0001 &&
+      ((userFracVal !== null && targetFracVal !== null && Math.abs(userFracVal - targetFracVal) < 0.0001) ||
+       (userFracVal !== null && !isNaN(targetNum) && Math.abs(userFracVal - targetNum) < 0.0001) ||
+       (targetFracVal !== null && !isNaN(userNum) && Math.abs(userNum - targetFracVal) < 0.0001)) &&
       (!isReductionQuestion || normUserAns === normTargetAns);
 
     // Decimal implicit match (e.g. user typed "62" for "6.2" or "35" for "0.35")
@@ -878,49 +886,32 @@ export default function AdaptiveSessionView({
       return;
     }
 
-    // Auto-detect max length mismatch for fractions, numbers, and decimals
-    if (targetStr.includes('/')) {
-      const [targetNumPart, targetDenomPart] = targetStr.split('/');
-      if (newInput.includes('/')) {
-        const [userNumPart, userDenomPart] = newInput.split('/');
-        if (
-          userNumPart && targetNumPart &&
-          userDenomPart && targetDenomPart &&
-          userNumPart.length >= targetNumPart.length &&
-          userDenomPart.length >= targetDenomPart.length
-        ) {
+    // Auto-detect max length mismatch for standard non-fraction / non-ratio numbers and decimals
+    const hasFractionOrRatioSeparator = newInput.includes('/') || newInput.includes(':') || targetStr.includes('/') || targetStr.includes(':');
+
+    if (!hasFractionOrRatioSeparator) {
+      if (!targetStr.includes('.') || newInput.includes('.')) {
+        const extractDigits = (str) => {
+          let s = String(str || '').replace('$', '').replace('¢', '').trim();
+          if (s.startsWith('0.')) s = s.slice(2);
+          else if (s.startsWith('.')) s = s.slice(1);
+          else s = s.replace('.', '');
+          return s.replace(/\D/g, '');
+        };
+
+        const userDigits = extractDigits(newInput);
+        const targetDigits = extractDigits(targetStr);
+
+        if (userDigits.length > 0 && targetDigits.length > 0 && userDigits.length >= targetDigits.length) {
           processAnswerEvaluation(newInput);
           return;
         }
-      } else {
-        // Player is typing digits without a slash for a fraction question!
-        const totalTargetDigits = (targetNumPart ? targetNumPart.length : 1) + (targetDenomPart ? targetDenomPart.length : 1);
-        const userDigits = newInput.replace(/\D/g, '');
-        if (userDigits.length >= totalTargetDigits + 1) {
-          processAnswerEvaluation(newInput);
-          return;
-        }
-      }
-    } else if (!targetStr.includes('.') || newInput.includes('.')) {
-      const extractDigits = (str) => {
-        let s = String(str || '').replace('$', '').replace('¢', '').trim();
-        if (s.startsWith('0.')) s = s.slice(2);
-        else if (s.startsWith('.')) s = s.slice(1);
-        else s = s.replace('.', '');
-        return s.replace(/\D/g, '');
-      };
-
-      const userDigits = extractDigits(newInput);
-      const targetDigits = extractDigits(targetStr);
-
-      if (userDigits.length > 0 && targetDigits.length > 0 && userDigits.length >= targetDigits.length) {
-        processAnswerEvaluation(newInput);
-        return;
       }
     }
 
     setInputVal(newInput);
   };
+
 
   const handleDeleteDigit = () => {
     soundFx.playKeyTap();
@@ -1005,12 +996,46 @@ export default function AdaptiveSessionView({
         equippedItems={equippedItems}
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
+          if (onResetDoubleSparks) onResetDoubleSparks();
+          storageService.clearActiveClimbState(profileId);
+          setSavedClimbState(null);
+          setQuestionsAnswered(0);
+          setSessionQuestionIndex(1);
+          setCorrectCount(0);
+          setBlockCorrectCount(0);
+          setBlockSparksEarned(0);
+          setSessionSparksEarned(0);
+          setBlockRatingGain(0);
+          setMistakeCount(0);
+          setInSessionStreak(0);
+          setInSessionIncorrectStreak(0);
+          setConsecutiveSkips(0);
+          blockSeenKeysRef.current.clear();
+          setHasStartedClimb(false);
+          blockStartTimeRef.current = 0;
+          problemStartTimeRef.current = 0;
+          const nextTier = getTierFromRating(competenceRank);
+          const freshBatch = generateProblems(15, nextTier, [], blockSeenKeysRef.current);
+          setProblemQueue(freshBatch);
+          setCurrentIndex(0);
           if (onOpenWorkshop) onOpenWorkshop();
         }}
         onResumeClimb={() => {
           setShowBreakOverlay(false);
           if (onResetDoubleSparks) onResetDoubleSparks();
+          storageService.clearActiveClimbState(profileId);
+          setSavedClimbState(null);
+          setQuestionsAnswered(0);
           setSessionQuestionIndex(1);
+          setCorrectCount(0);
+          setBlockCorrectCount(0);
+          setBlockSparksEarned(0);
+          setSessionSparksEarned(0);
+          setBlockRatingGain(0);
+          setMistakeCount(0);
+          setInSessionStreak(0);
+          setInSessionIncorrectStreak(0);
+          setConsecutiveSkips(0);
           blockSeenKeysRef.current.clear();
           setHasStartedClimb(false);
           blockStartTimeRef.current = 0;
@@ -1109,15 +1134,15 @@ export default function AdaptiveSessionView({
           <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[42vh]">
             <div className="space-y-1.5">
               <span className="text-[11px] font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
-                {savedClimbState
+                {savedClimbState && savedClimbState.sessionQuestionIndex <= 12
                   ? `🏔️ Mountain Climb • Question ${savedClimbState.sessionQuestionIndex || 1} of 12`
                   : '🏔️ Mountain Climb • 12 Problems'}
               </span>
               <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                {savedClimbState ? 'Climb in Progress!' : 'Ready for the Climb?'}
+                {savedClimbState && savedClimbState.sessionQuestionIndex <= 12 ? 'Climb in Progress!' : 'Ready for the Climb?'}
               </h2>
               <p className="text-xs text-slate-600 font-semibold leading-relaxed">
-                {savedClimbState
+                {savedClimbState && savedClimbState.sessionQuestionIndex <= 12
                   ? 'You have a climb in progress! Click Resume Climb to continue where you left off.'
                   : 'Click Start Climb when you are ready! Your timer will begin as soon as you start.'}
               </p>
@@ -1167,11 +1192,11 @@ export default function AdaptiveSessionView({
             <div className="w-full space-y-1.5">
               <button
                 type="button"
-                onClick={savedClimbState ? handleResumeClimb : handleStartClimb}
+                onClick={savedClimbState && savedClimbState.sessionQuestionIndex <= 12 ? handleResumeClimb : handleStartClimb}
                 className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer"
               >
                 <Play className="w-7 h-7 fill-current" />
-                <span>{savedClimbState ? 'RESUME CLIMB 🏔️' : 'START CLIMB 🏔️'}</span>
+                <span>{savedClimbState && savedClimbState.sessionQuestionIndex <= 12 ? 'RESUME CLIMB 🏔️' : 'START CLIMB 🏔️'}</span>
               </button>
 
             </div>

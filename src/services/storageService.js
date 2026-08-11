@@ -478,7 +478,12 @@ export const storageService = {
     const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
     const profile = state.profiles[pid];
     if (!profile || !profile.userData || !profile.userData.activeClimb) return null;
-    return profile.userData.activeClimb;
+    const climb = profile.userData.activeClimb;
+    if (climb.sessionQuestionIndex > 12 || (climb.questionsAnswered && climb.questionsAnswered % 12 === 0 && climb.questionsAnswered > 0)) {
+      this.clearActiveClimbState(pid);
+      return null;
+    }
+    return climb;
   },
 
   saveActiveClimbState(climbState, profileId = null) {

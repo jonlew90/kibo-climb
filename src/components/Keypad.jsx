@@ -115,10 +115,11 @@ export default function Keypad({
   );
 
   const isFractionQuestion = Boolean(
-    (problemType && (problemType.includes('fraction') || problemType.includes('rational'))) ||
-    (answerString && answerString.includes('/')) ||
-    (displayString && displayString.includes('/'))
+    (problemType && (problemType.includes('fraction') || problemType.includes('rational') || problemType.includes('ratio') || problemType.includes('applied'))) ||
+    (answerString && (answerString.includes('/') || answerString.includes(':'))) ||
+    (displayString && (displayString.includes('/') || displayString.includes(':') || displayString.toLowerCase().includes('ratio') || displayString.toLowerCase().includes('probability')))
   );
+
 
   const isMoneyOrDecimal = Boolean(
     allowDecimal ||

@@ -49,11 +49,14 @@ export function normalizeDecimal(val) {
 }
 
 /**
- * Evaluates a fraction string like "4/16" or "1/4" or "3/5" to its numeric float value.
+ * Evaluates a fraction or ratio string like "4/16", "1/4", "3/5", or "6:10" to its numeric float value.
  */
 export function parseFractionValue(str) {
-  if (!str || typeof str !== 'string' || !str.includes('/')) return null;
-  const parts = str.trim().split('/');
+  if (!str || typeof str !== 'string') return null;
+  const cleanStr = str.trim();
+  const separator = cleanStr.includes('/') ? '/' : cleanStr.includes(':') ? ':' : null;
+  if (!separator) return null;
+  const parts = cleanStr.split(separator);
   if (parts.length === 2) {
     const n = parseFloat(parts[0]);
     const d = parseFloat(parts[1]);
@@ -63,3 +66,4 @@ export function parseFractionValue(str) {
   }
   return null;
 }
+
