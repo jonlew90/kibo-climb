@@ -1,50 +1,53 @@
+import { describe, it, expect } from 'vitest';
 import {
   getConceptForProblem,
   categorizeSkip,
   detectDiagnosticTriggers,
-  calculateConceptBreakdown,
   generateParentInsightCards
 } from './skipDiagnosticEngine.js';
 
-function runTests() {
-  console.log('--- Running Skip Diagnostic Engine Tests ---');
+describe('Skip Diagnostic Engine', () => {
+  it('getConceptForProblem correctly categorizes problems', () => {
+    const prob1 = { displayString: '3/4 + 1/2', tier: 7 };
+    expect(getConceptForProblem(prob1)).toBe('Fractions & GCF/LCM');
 
-  // Test 1: getConceptForProblem
-  const prob1 = { displayString: '3/4 + 1/2', tier: 7 };
-  console.assert(getConceptForProblem(prob1) === 'Fractions & GCF/LCM', 'Test 1 Failed');
+    const prob2 = { displayString: '$1.00 - $0.35', tier: 5 };
+    expect(getConceptForProblem(prob2)).toBe('Money & Decimals');
+  });
 
-  const prob2 = { displayString: '$1.00 - $0.35', tier: 5 };
-  console.assert(getConceptForProblem(prob2) === 'Money & Decimals', 'Test 2 Failed');
+  it('categorizeSkip classifies latencies correctly', () => {
+    const catImm = categorizeSkip(1.5);
+    expect(catImm.type).toBe('immediate');
 
-  // Test 2: categorizeSkip
-  const catImm = categorizeSkip(1.5);
-  console.assert(catImm.type === 'immediate', 'Test Immediate Skip Failed');
+    const catDel = categorizeSkip(35.0);
+    expect(catDel.type).toBe('deliberate');
 
-  const catDel = categorizeSkip(35.0);
-  console.assert(catDel.type === 'deliberate', 'Test Deliberate Skip Failed');
+    const catMod = categorizeSkip(12.0);
+    expect(catMod.type).toBe('moderate');
+  });
 
-  const catMod = categorizeSkip(12.0);
-  console.assert(catMod.type === 'moderate', 'Test Moderate Skip Failed');
+  it('detectDiagnosticTriggers detects Topic Bottlenecks and Session Fatigue', () => {
+    const logs = [
+      { timestamp: '2026-08-09T14:00:00Z', concept: 'Fractions & GCF/LCM', timeElapsedSec: 35 },
+      { timestamp: '2026-08-09T14:00:20Z', concept: 'Fractions & GCF/LCM', timeElapsedSec: 32 },
+      { timestamp: '2026-08-09T14:00:40Z', concept: 'Fractions & GCF/LCM', timeElapsedSec: 31 }
+    ];
+    const triggers = detectDiagnosticTriggers(logs);
 
-  // Test 3: detectDiagnosticTriggers - Topic Bottleneck (3+ skips on same concept)
-  const logs = [
-    { timestamp: '2026-08-09T14:00:00Z', concept: 'Fractions & GCF/LCM', timeElapsedSec: 35 },
-    { timestamp: '2026-08-09T14:00:20Z', concept: 'Fractions & GCF/LCM', timeElapsedSec: 32 },
-    { timestamp: '2026-08-09T14:00:40Z', concept: 'Fractions & GCF/LCM', timeElapsedSec: 31 }
-  ];
-  const triggers = detectDiagnosticTriggers(logs);
-  console.assert(triggers.topicBottlenecks.length === 1, 'Test Topic Bottleneck Count Failed');
-  console.assert(triggers.topicBottlenecks[0].concept === 'Fractions & GCF/LCM', 'Test Topic Name Failed');
+    expect(triggers.topicBottlenecks.length).toBe(1);
+    expect(triggers.topicBottlenecks[0].concept).toBe('Fractions & GCF/LCM');
+    expect(triggers.sessionFatigue).not.toBeNull();
+  });
 
-  // Test 4: detectDiagnosticTriggers - Session Fatigue (3 skips in <60s)
-  console.assert(triggers.sessionFatigue !== null, 'Test Session Fatigue Failed');
+  it('generateParentInsightCards generates actionable insights', () => {
+    const logs = [
+      { timestamp: '2026-08-09T14:00:00Z', concept: 'Fractions & GCF/LCM', timeElapsedSec: 35 },
+      { timestamp: '2026-08-09T14:00:20Z', concept: 'Fractions & GCF/LCM', timeElapsedSec: 32 },
+      { timestamp: '2026-08-09T14:00:40Z', concept: 'Fractions & GCF/LCM', timeElapsedSec: 31 }
+    ];
+    const cards = generateParentInsightCards(logs, [], 'Leo');
 
-  // Test 5: generateParentInsightCards
-  const cards = generateParentInsightCards(logs, [], 'Leo');
-  console.assert(cards.length >= 1, 'Test Card Generation Failed');
-  console.assert(cards[0].description.includes('Leo skipped 3 fractions & gcf/lcm problems today'), 'Test Card Content Failed');
-
-  console.log('✅ ALL TESTS PASSED SUCCESSFULLY!');
-}
-
-runTests();
+    expect(cards.length).toBeGreaterThanOrEqual(1);
+    expect(cards[0].description).toContain('Leo skipped 3 fractions & gcf/lcm problems today');
+  });
+});

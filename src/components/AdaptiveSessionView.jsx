@@ -313,6 +313,7 @@ export default function AdaptiveSessionView({
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        // Pausing latency timers when backgrounded
         if (!pauseStartRef.current) {
           pauseStartRef.current = performance.now();
         }
@@ -321,6 +322,7 @@ export default function AdaptiveSessionView({
           setHasStartedClimb(false);
         }
       } else {
+        // Resuming latency timers smoothly
         const saved = storageService.getActiveClimbState(profileId);
         setSavedClimbState(saved);
         if (pauseStartRef.current && !isPaused) {
