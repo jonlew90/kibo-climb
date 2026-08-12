@@ -57,12 +57,15 @@ class LeaderboardService {
         }
       }
 
-      // Fall back to profileId or local_user only if auth fails, but warn if missing auth context
-      const uid = this.currentUser ? this.currentUser.uid : (profileId || 'local_user');
-      const userRef = doc(db, LEADERBOARD_COLLECTION, uid);
+      // Ensure unique document ID per profile (auth UID + profile ID)
+      const baseUid = this.currentUser ? this.currentUser.uid : this._getFallbackDeviceId();
+      const safeProfileId = profileId || 'default_child';
+      const documentId = `${baseUid}_${safeProfileId}`;
+      const userRef = doc(db, LEADERBOARD_COLLECTION, documentId);
 
       const payload = {
-        uid,
+        uid: baseUid,
+        profileId: safeProfileId,
         name: name || 'Kibo Climber',
         score: Number(score) || 1000,
         subjectsMastered: Number(subjectsMastered) || 0,
@@ -73,6 +76,20 @@ class LeaderboardService {
       await setDoc(userRef, payload, { merge: true });
     } catch (error) {
       console.warn('LeaderboardService: Failed to sync score to Firestore (check security rules / network)', error);
+    }
+  }
+
+  // Generates or retrieves a fallback device ID for anonymous users who fail to sign in to Firebase
+  _getFallbackDeviceId() {
+    try {
+      let deviceId = localStorage.getItem('kibo_fallback_device_id');
+      if (!deviceId) {
+        deviceId = 'local_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('kibo_fallback_device_id', deviceId);
+      }
+      return deviceId;
+    } catch (e) {
+      return 'local_user_' + Date.now();
     }
   }
 

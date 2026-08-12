@@ -1,17 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Trophy, ArrowLeft, Crown, Medal, User, Info, ChevronLeft, ChevronRight, Activity, Zap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
-
-const MOCK_SUBJECTS = [
-  { id: 'overall', label: 'Overall Competence' },
-  { id: 'add_sub', label: 'Addition & Subtraction' },
-  { id: 'mult_div', label: 'Multiplication & Division' },
-  { id: 'fractions', label: 'Fractions' }
-];
 
 const MOCK_LEADERBOARD_DATA = [
   { rank: 1, name: "Alex P.", score: 1450, subjectsMastered: 8, equipped: ['golden_skin', 'crown', 'royal_cape'] },
@@ -27,13 +20,7 @@ const MOCK_LEADERBOARD_DATA = [
 ];
 
 export default function LeaderboardScreen({ userState, renderFooter, equippedItems = [] }) {
-  const [activeSubject, setActiveSubject] = useState('overall');
-  const [sortByCompetence, setSortByCompetence] = useState(true);
   const [liveStandings, setLiveStandings] = useState([]);
-
-  const subjectScrollRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
 
   const activeProfile = storageService.getActiveProfile();
   const username = storageService.getUsername() || activeProfile?.username || activeProfile?.name || 'You';
@@ -99,33 +86,6 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
     pointsNeeded = playerAbove ? Math.max(1, playerAbove.score - userScore + 1) : 1;
   }
 
-  const checkScroll = () => {
-    if (!subjectScrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = subjectScrollRef.current;
-    setCanScrollLeft(scrollLeft > 4);
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
-  };
-
-  useEffect(() => {
-    setTimeout(checkScroll, 100);
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, []);
-
-  const handleScrollLeft = () => {
-    soundFx.playKeyTap();
-    if (subjectScrollRef.current) {
-      subjectScrollRef.current.scrollBy({ left: -150, behavior: 'smooth' });
-    }
-  };
-
-  const handleScrollRight = () => {
-    soundFx.playKeyTap();
-    if (subjectScrollRef.current) {
-      subjectScrollRef.current.scrollBy({ left: 150, behavior: 'smooth' });
-    }
-  };
-
   // Top 10 users for main standings display
   const top10 = rankedStandings.slice(0, 10);
   const top3 = top10.slice(0, 3);
@@ -147,60 +107,10 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
             <h2 className="text-lg font-black tracking-tight">Global Standings</h2>
           </div>
 
-          <button
-            onClick={() => {
-              soundFx.playKeyTap();
-              setSortByCompetence(!sortByCompetence);
-            }}
-            className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200 transition-colors"
-          >
+          <div className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">
             <Activity className="w-3.5 h-3.5" />
-            {sortByCompetence ? 'Competence Score' : 'Mastery Level'}
-          </button>
-        </div>
-
-        {/* Horizontal Scrollable Subject Pills */}
-        <div className="relative px-2">
-          {canScrollLeft && (
-            <button
-              onClick={handleScrollLeft}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white"
-            >
-              <ChevronLeft className="w-4 h-4 stroke-[3]" />
-            </button>
-          )}
-
-          <div
-            ref={subjectScrollRef}
-            onScroll={checkScroll}
-            className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 px-2 scroll-smooth touch-pan-x"
-          >
-            {MOCK_SUBJECTS.map((subject) => (
-              <button
-                key={subject.id}
-                onClick={() => {
-                  soundFx.playKeyTap();
-                  setActiveSubject(subject.id);
-                }}
-                className={`py-1.5 px-4 text-xs font-extrabold rounded-full shrink-0 transition-all ${
-                  activeSubject === subject.id
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                }`}
-              >
-                {subject.label}
-              </button>
-            ))}
+            Competence Score
           </div>
-
-          {canScrollRight && (
-            <button
-              onClick={handleScrollRight}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white"
-            >
-              <ChevronRight className="w-4 h-4 stroke-[3]" />
-            </button>
-          )}
         </div>
 
         {/* Fairness Banner */}
