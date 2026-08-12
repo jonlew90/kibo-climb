@@ -185,6 +185,28 @@ export const storageService = {
     safeSaveProfilesState(state);
     return true;
   },
+
+  grantAccountLinkSparksReward() {
+    const rewardGranted = localStorage.getItem('kibo_has_received_link_reward');
+    if (!rewardGranted) {
+      const state = safeGetProfilesState();
+      Object.keys(state.profiles).forEach(id => {
+        const prof = state.profiles[id];
+        const currentSparks = prof.userData?.sparks || 0;
+        state.profiles[id] = {
+          ...prof,
+          userData: {
+            ...prof.userData,
+            sparks: currentSparks + 200
+          }
+        };
+      });
+      safeSaveProfilesState(state);
+      localStorage.setItem('kibo_has_received_link_reward', 'true');
+      return 200;
+    }
+    return 0;
+  },
   // Username (leaderboard handle, scoped to active profile)
   getUsername() {
     return this.getActiveProfile().username || '';

@@ -50,25 +50,7 @@ export default function AccountLinkModal({
       }
 
       if (res.success) {
-        let earnedSparks = 0;
-        const rewardGranted = localStorage.getItem('kibo_has_received_link_reward');
-
-        if (!rewardGranted) {
-          earnedSparks = 200;
-          // Grant 200 sparks to ALL profiles
-          const allProfiles = storageService.getAllProfiles();
-          allProfiles.forEach(prof => {
-            const currentSparks = prof.userData?.sparks || 0;
-            storageService.updateProfile(prof.id, {
-              userData: {
-                ...prof.userData,
-                sparks: currentSparks + 200
-              }
-            });
-          });
-
-          localStorage.setItem('kibo_has_received_link_reward', 'true');
-        }
+        const earnedSparks = res.earnedSparks ?? storageService.grantAccountLinkSparksReward();
 
         const label = provider === 'google' ? 'Google 1-Tap' : provider === 'apple' ? 'Sign in with Apple' : 'Passwordless Magic Link';
 

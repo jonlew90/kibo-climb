@@ -7,6 +7,7 @@ import {
   signInWithRedirect,
   linkWithRedirect,
   getRedirectResult,
+  signInWithCredential,
   unlink, 
   signOut,
   onAuthStateChanged,
@@ -34,10 +35,23 @@ export function getOrCreateGuestId() {
 
 export const authService = {
   /**
-   * Initializes real Firebase anonymous user on application launch.
+   * Initializes real Firebase anonymous user or handles returning OAuth redirect on application launch.
    */
   async initAnonymousGuest() {
     try {
+      // 1. Process any pending OAuth redirect result FIRST before modifying auth state
+      const redirectRes = await this.handleRedirectResult();
+      if (redirectRes && redirectRes.success) {
+        const activeProfile = storageService.getActiveProfile();
+        return {
+          ...activeProfile,
+          cloudUid: redirectRes.user.cloudUid,
+          isAnonymous: false,
+          authProvider: redirectRes.user.authProvider
+        };
+      }
+
+      // 2. Check if already linked according to stored user data
       const userData = storageService.getUserData();
       if (userData && userData.isAnonymous === false) {
         const activeProfile = storageService.getActiveProfile();
@@ -47,6 +61,11 @@ export const authService = {
           isAnonymous: false,
           authProvider: userData.authProvider || 'google.com'
         };
+      }
+
+      // 3. Wait for Firebase auth state to settle before creating a brand new guest user
+      if (auth.authStateReady) {
+        await auth.authStateReady();
       }
 
       let currentUser = auth.currentUser;
@@ -202,10 +221,12 @@ export const authService = {
       };
 
       storageService.saveUserData(mergedUserData);
+      const earnedSparks = storageService.grantAccountLinkSparksReward();
 
       return {
         success: true,
-        user: mergedUserData
+        user: storageService.getUserData(),
+        earnedSparks
       };
     } catch (error) {
       if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
@@ -241,22 +262,50 @@ export const authService = {
       const res = await getRedirectResult(auth);
       if (res && res.user) {
         const currentData = storageService.getUserData();
+        const providerId = res.user.providerData[0]?.providerId || 'google.com';
         const mergedUserData = {
           ...currentData,
           cloudUid: res.user.uid,
-          isAnonymous: res.user.isAnonymous,
-          authProvider: res.user.providerData[0]?.providerId || 'google.com',
+          isAnonymous: false,
+          authProvider: providerId,
           email: res.user.email || currentData.email || 'user@kiboclimb.com',
           displayName: res.user.displayName || currentData.displayName || 'Kibo Master',
           accountLinkedAt: new Date().toISOString()
         };
         storageService.saveUserData(mergedUserData);
-        return { success: true, user: mergedUserData };
+        const earnedSparks = storageService.grantAccountLinkSparksReward();
+        return { success: true, user: storageService.getUserData(), earnedSparks };
       }
       return { success: false, reason: 'No redirect result found' };
     } catch (e) {
       console.error('Error handling auth redirect result:', e);
-      return { success: false, reason: e.message };
+      if (e.code === 'auth/credential-already-in-use' || e.code === 'auth/email-already-in-use') {
+        try {
+          const credential = GoogleAuthProvider.credentialFromError(e) || OAuthProvider.credentialFromError(e);
+          if (credential) {
+            const userCred = await signInWithCredential(auth, credential);
+            if (userCred && userCred.user) {
+              const currentData = storageService.getUserData();
+              const providerId = userCred.user.providerData[0]?.providerId || 'google.com';
+              const mergedUserData = {
+                ...currentData,
+                cloudUid: userCred.user.uid,
+                isAnonymous: false,
+                authProvider: providerId,
+                email: userCred.user.email || currentData.email || 'user@kiboclimb.com',
+                displayName: userCred.user.displayName || currentData.displayName || 'Kibo Master',
+                accountLinkedAt: new Date().toISOString()
+              };
+              storageService.saveUserData(mergedUserData);
+              const earnedSparks = storageService.grantAccountLinkSparksReward();
+              return { success: true, user: storageService.getUserData(), earnedSparks };
+            }
+          }
+        } catch (signInErr) {
+          console.error('Failed fallback sign in with credential during redirect:', signInErr);
+        }
+      }
+      return { success: false, reason: e.message, code: e.code };
     }
   },
 

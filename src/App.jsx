@@ -127,15 +127,6 @@ export default function App() {
   const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
 
 
-  useEffect(() => {
-    // Process returning from Google/Apple OAuth redirect if applicable
-    authService.handleRedirectResult().then(res => {
-      if (res.success) {
-        syncAppStateWithStorage();
-      }
-    });
-  }, []);
-
   const syncAppStateWithStorage = () => {
     const uData = storageService.getUserData();
     const sData = storageService.getShopState();
@@ -167,10 +158,14 @@ export default function App() {
     setIsDoubleSparksActive(false);
   };
 
-  // Initialize Silent Anonymous Guest Auth & Offline Background Sync Queue on Launch
+  // Initialize Auth (including OAuth redirect resolution) & Offline Background Sync Queue on Launch
   useEffect(() => {
-    authService.initAnonymousGuest();
-    syncService.initBackgroundSync();
+    const initAppAuth = async () => {
+      await authService.initAnonymousGuest();
+      syncAppStateWithStorage();
+      syncService.initBackgroundSync();
+    };
+    initAppAuth();
   }, []);
 
   const [unlockedBadges, setUnlockedBadges] = useState(() => {
