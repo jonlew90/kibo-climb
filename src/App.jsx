@@ -353,7 +353,7 @@ export default function App() {
   const recordDailyPractice = () => {
     const todayStr = getTodayStr();
     const uData = storageService.getUserData();
-    const lastDateStr = uData.lastSprintDate || localStorage.getItem('kibo_math_last_date');
+    const lastDateStr = uData.lastSprintDate;
     let currentStreak = uData.streak ?? streak ?? 0;
 
     const historyStreak = calculateStreakFromHistory(uData.sprintHistory || [], storageService.getProfilePracticeDays());
@@ -402,8 +402,6 @@ export default function App() {
     }
 
     setStreak(nextStreak);
-    localStorage.setItem('kibo_math_last_date', todayStr);
-    localStorage.setItem('kibo_math_streak', nextStreak.toString());
     storageService.saveUserData({
       streak: nextStreak,
       lastSprintDate: todayStr
@@ -615,17 +613,16 @@ export default function App() {
   // Schedule-Aware Streak Validation on App Startup
   useEffect(() => {
     const uData = storageService.getUserData();
-    const lastDateStr = uData.lastSprintDate || localStorage.getItem('kibo_math_last_date');
-    const savedDays = storageService.getProfilePracticeDays() || JSON.parse(localStorage.getItem('kibo_math_practice_days') || '[1,2,3,4,5]');
+    const lastDateStr = uData.lastSprintDate;
+    const savedDays = storageService.getProfilePracticeDays() || [1, 2, 3, 4, 5];
     const historyStreak = calculateStreakFromHistory(uData.sprintHistory || [], savedDays);
-    const storedStreak = uData.streak ?? parseInt(localStorage.getItem('kibo_math_streak') || '0', 10);
+    const storedStreak = uData.streak ?? 0;
     const savedStreak = Math.max(storedStreak, historyStreak);
-    const savedShields = uData.streakShields ?? parseInt(localStorage.getItem('kibo_math_shields') || '1', 10);
+    const savedShields = uData.streakShields ?? 1;
 
     if (savedStreak > storedStreak) {
       setStreak(savedStreak);
       storageService.saveUserData({ streak: savedStreak });
-      localStorage.setItem('kibo_math_streak', savedStreak.toString());
     }
 
     if (!lastDateStr || savedStreak === 0) return;

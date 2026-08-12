@@ -77,12 +77,14 @@ export default function AdaptiveSessionView({
   const [blockCorrectCount, setBlockCorrectCount] = useState(0);
   const [blockSparksEarned, setBlockSparksEarned] = useState(0);
   const [blockRatingGain, setBlockRatingGain] = useState(0);
+  const [blockShieldsUsed, setBlockShieldsUsed] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
 
   const [completedBlockStats, setCompletedBlockStats] = useState({
     correctCount: 12,
     sparksEarned: 0,
-    blockRatingGain: 0
+    blockRatingGain: 0,
+    shieldsUsed: 0
   });
 
   const [inputVal, setInputVal] = useState('');
@@ -593,6 +595,7 @@ export default function AdaptiveSessionView({
       }
 
       if (isShieldAbsorbed) {
+        setBlockShieldsUsed(prev => prev + 1);
         KiboAudioManager.playStreakSFX();
         setMascotState('streak');
         setTimeout(() => setMascotState('idle'), 700);
@@ -731,13 +734,15 @@ export default function AdaptiveSessionView({
       setCompletedBlockStats({
         correctCount: finalBlockCorrect,
         sparksEarned: finalBlockSparks,
-        blockRatingGain: nextBlockRatingGain
+        blockRatingGain: nextBlockRatingGain,
+        shieldsUsed: blockShieldsUsed
       });
 
       // Immediately reset block counters to 0 for the next 12-question block
       setBlockCorrectCount(0);
       setBlockSparksEarned(0);
       setBlockRatingGain(0);
+      setBlockShieldsUsed(0);
 
       const currentRecords = activeUserData.personalRecords || {};
 
@@ -992,6 +997,7 @@ export default function AdaptiveSessionView({
         streak={inSessionStreak}
         sparksEarned={completedBlockStats.sparksEarned}
         blockRatingGain={completedBlockStats.blockRatingGain}
+        shieldsUsed={completedBlockStats.shieldsUsed}
         competenceRating={competenceRank}
         equippedItems={equippedItems}
         onOpenWorkshop={() => {

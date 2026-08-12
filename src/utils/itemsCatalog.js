@@ -65,7 +65,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'epic',
     isConsumable: true,
     icon: '🛡️',
-    description: 'Costs 50 Sparks. Absorbs 1 incorrect answer per climb streak without breaking accuracy.'
+    description: 'Costs 50 Sparks. Absorbs 1 incorrect answer to protect your in-session answer streak and multipliers (does not alter accuracy %).'
   },
   {
     id: 'streak_saver',
