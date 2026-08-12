@@ -292,7 +292,7 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
         <div className="px-4 space-y-2 pb-6">
           {others.map((player) => (
             <div
-              key={player.isCurrentUser ? 'current-user-row' : player.name}
+              key={player.isCurrentUser ? 'current-user-row' : `${player.id || player.name}-${player.rank}`}
               className={`rounded-2xl p-3 flex items-center gap-3 transition-all ${
                 player.isCurrentUser
                   ? 'bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border-2 border-indigo-500 shadow-md ring-2 ring-indigo-400/30'

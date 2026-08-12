@@ -225,6 +225,44 @@ export default function App() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
 
+  const calculateStreakFromHistory = (sprintHistory = [], practiceDays = [1, 2, 3, 4, 5]) => {
+    if (!sprintHistory || sprintHistory.length === 0) return 0;
+    const playedDates = new Set(
+      sprintHistory
+        .map((item) => item.date || item.timestamp?.split('T')[0])
+        .filter(Boolean)
+    );
+    if (playedDates.size === 0) return 0;
+
+    let checkDate = new Date();
+    let dateStr = getTodayStr();
+
+    if (!playedDates.has(dateStr)) {
+      checkDate.setDate(checkDate.getDate() - 1);
+      dateStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+      if (!playedDates.has(dateStr)) {
+        return 0;
+      }
+    }
+
+    let streakCount = 0;
+    while (true) {
+      const currentStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+      if (playedDates.has(currentStr)) {
+        streakCount++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        const dayIdx = checkDate.getDay();
+        if (practiceDays.includes(dayIdx)) {
+          break;
+        } else {
+          checkDate.setDate(checkDate.getDate() - 1);
+        }
+      }
+    }
+    return streakCount;
+  };
+
   // Persistent Kibo Shields (Streak Freezes: max capacity 2, default 1)
   const [streakShields, setStreakShields] = useState(() => {
     return storageService.getUserData().streakShields ?? 1;
@@ -312,7 +350,69 @@ export default function App() {
     };
   });
 
+  const recordDailyPractice = () => {
+    const todayStr = getTodayStr();
+    const uData = storageService.getUserData();
+    const lastDateStr = uData.lastSprintDate || localStorage.getItem('kibo_math_last_date');
+    let currentStreak = uData.streak ?? streak ?? 0;
+
+    const historyStreak = calculateStreakFromHistory(uData.sprintHistory || [], storageService.getProfilePracticeDays());
+    if (historyStreak > currentStreak) {
+      currentStreak = historyStreak;
+    }
+
+    if (lastDateStr === todayStr) {
+      if (currentStreak !== streak) {
+        setStreak(currentStreak);
+        storageService.saveUserData({ streak: currentStreak, lastSprintDate: todayStr });
+      }
+      return;
+    }
+
+    let nextStreak = currentStreak;
+    const yesterdayStr = getYesterdayStr();
+
+    if (!lastDateStr) {
+      nextStreak = Math.max(1, historyStreak);
+    } else if (lastDateStr === yesterdayStr) {
+      nextStreak = currentStreak + 1;
+    } else {
+      const savedDays = storageService.getProfilePracticeDays() || [1, 2, 3, 4, 5];
+      const [y, m, d] = lastDateStr.split('-').map(Number);
+      const curr = new Date(y, m - 1, d);
+      curr.setDate(curr.getDate() + 1);
+
+      let missedActiveDays = 0;
+      while (true) {
+        const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
+        if (dateStr >= todayStr) break;
+
+        const dayIdx = curr.getDay();
+        if (savedDays.includes(dayIdx)) {
+          missedActiveDays++;
+        }
+        curr.setDate(curr.getDate() + 1);
+      }
+
+      if (missedActiveDays === 0) {
+        nextStreak = currentStreak + 1;
+      } else {
+        nextStreak = 1;
+      }
+    }
+
+    setStreak(nextStreak);
+    localStorage.setItem('kibo_math_last_date', todayStr);
+    localStorage.setItem('kibo_math_streak', nextStreak.toString());
+    storageService.saveUserData({
+      streak: nextStreak,
+      lastSprintDate: todayStr
+    });
+  };
+
   const handleIncrementLifetimeProblems = (isCorrect = true) => {
+    recordDailyPractice();
+
     const nextTotal = (totalProblemsSolved || 0) + 1;
     setTotalProblemsSolved(nextTotal);
 
@@ -514,10 +614,19 @@ export default function App() {
 
   // Schedule-Aware Streak Validation on App Startup
   useEffect(() => {
-    const lastDateStr = localStorage.getItem('kibo_math_last_date');
-    const savedStreak = parseInt(localStorage.getItem('kibo_math_streak') || '0', 10);
-    const savedShields = parseInt(localStorage.getItem('kibo_math_shields') || '1', 10);
-    const savedDays = JSON.parse(localStorage.getItem('kibo_math_practice_days') || '[1,2,3,4,5]');
+    const uData = storageService.getUserData();
+    const lastDateStr = uData.lastSprintDate || localStorage.getItem('kibo_math_last_date');
+    const savedDays = storageService.getProfilePracticeDays() || JSON.parse(localStorage.getItem('kibo_math_practice_days') || '[1,2,3,4,5]');
+    const historyStreak = calculateStreakFromHistory(uData.sprintHistory || [], savedDays);
+    const storedStreak = uData.streak ?? parseInt(localStorage.getItem('kibo_math_streak') || '0', 10);
+    const savedStreak = Math.max(storedStreak, historyStreak);
+    const savedShields = uData.streakShields ?? parseInt(localStorage.getItem('kibo_math_shields') || '1', 10);
+
+    if (savedStreak > storedStreak) {
+      setStreak(savedStreak);
+      storageService.saveUserData({ streak: savedStreak });
+      localStorage.setItem('kibo_math_streak', savedStreak.toString());
+    }
 
     if (!lastDateStr || savedStreak === 0) return;
 
@@ -549,12 +658,14 @@ export default function App() {
         } else {
           const newShields = Math.max(0, savedShields - 1);
           setStreakShields(newShields);
+          storageService.saveUserData({ streakShields: newShields });
           localStorage.setItem('kibo_math_shields', newShields.toString());
         }
         setShowStreakSavedModal(true);
       } else {
         setStreak(0);
         localStorage.setItem('kibo_math_streak', '0');
+        storageService.saveUserData({ streak: 0 });
       }
     }
   }, []);
