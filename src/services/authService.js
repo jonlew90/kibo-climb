@@ -1,12 +1,27 @@
-// Modern Authentication & Profile Management Service for Kibo Climb
-// Handles Anonymous Guest Onboarding, Local Caching, Google/Apple 1-Tap & Passwordless Magic Links
-
+import { 
+  signInAnonymously, 
+  GoogleAuthProvider, 
+  OAuthProvider, 
+  signInWithPopup, 
+  linkWithPopup, 
+  signInWithRedirect,
+  linkWithRedirect,
+  getRedirectResult,
+  unlink, 
+  signOut,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  linkWithCredential,
+  EmailAuthProvider
+} from 'firebase/auth';
+import { auth } from '../config/firebase';
 import { storageService } from './storageService';
 
 const GUEST_ID_KEY = 'kibo_anonymous_guest_id';
 
 /**
- * Generates or retrieves a unique persistent Guest ID for silent onboarding.
+ * Generates or retrieves a unique persistent Guest ID for fallback.
  */
 export function getOrCreateGuestId() {
   let guestId = localStorage.getItem(GUEST_ID_KEY);
@@ -19,112 +34,329 @@ export function getOrCreateGuestId() {
 
 export const authService = {
   /**
-   * Initializes anonymous guest auth silently on application launch.
+   * Initializes real Firebase anonymous user on application launch.
    */
   async initAnonymousGuest() {
-    const guestId = getOrCreateGuestId();
-    const activeProfile = storageService.getActiveProfile();
+    try {
+      const userData = storageService.getUserData();
+      if (userData && userData.isAnonymous === false) {
+        const activeProfile = storageService.getActiveProfile();
+        return {
+          ...activeProfile,
+          cloudUid: userData.cloudUid || activeProfile.cloudUid,
+          isAnonymous: false,
+          authProvider: userData.authProvider || 'google.com'
+        };
+      }
 
-    if (!activeProfile.cloudUid) {
+      let currentUser = auth.currentUser;
+      if (!currentUser) {
+        const userCred = await signInAnonymously(auth);
+        currentUser = userCred.user;
+      }
+
+      const activeProfile = storageService.getActiveProfile();
       const updatedProfile = {
         ...activeProfile,
-        cloudUid: guestId,
-        isAnonymous: true,
-        authProvider: 'anonymous',
+        cloudUid: currentUser.uid,
+        isAnonymous: currentUser.isAnonymous,
+        authProvider: currentUser.isAnonymous ? 'anonymous' : (currentUser.providerData[0]?.providerId || 'firebase'),
         createdAt: activeProfile.createdAt || new Date().toISOString()
       };
+
       storageService.saveUserData({
-        cloudUid: guestId,
-        isAnonymous: true,
-        authProvider: 'anonymous'
+        cloudUid: currentUser.uid,
+        isAnonymous: currentUser.isAnonymous,
+        authProvider: updatedProfile.authProvider
       });
+
       return updatedProfile;
+    } catch (e) {
+      console.warn('Firebase Anonymous Auth failed, using local fallback guest ID:', e);
+      const guestId = getOrCreateGuestId();
+      const activeProfile = storageService.getActiveProfile();
+      const userData = storageService.getUserData();
+      const isAlreadyLinked = userData && userData.isAnonymous === false;
+      return {
+        ...activeProfile,
+        cloudUid: activeProfile.cloudUid || guestId,
+        isAnonymous: !isAlreadyLinked,
+        authProvider: isAlreadyLinked ? (userData.authProvider || 'google.com') : 'anonymous'
+      };
     }
-
-    return activeProfile;
   },
 
   /**
-   * Links an anonymous guest profile to a permanent account (Google 1-Tap, Apple 1-Tap, or Passwordless Magic Link).
-   * Merges all local progress into the authenticated cloud record seamlessly.
+   * Links current Firebase user (or signs in) using real identity providers (Google, Apple, Email).
+   * Supports both popup mode and redirect mode (useRedirect = true prevents COOP popup logs).
    */
-  async linkAccount({ provider = 'google', email = null, name = null }) {
-    const currentData = storageService.getUserData();
-    const guestId = currentData.cloudUid || getOrCreateGuestId();
+  async linkAccount({ provider = 'google', email = null, password = null, useRedirect = false }) {
+    try {
+      const currentFirebaseUser = auth.currentUser;
+      let linkedUser = null;
+      let authProviderName = provider;
 
-    const permanentUid = `${provider}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      if (provider === 'google') {
+        const googleProvider = new GoogleAuthProvider();
+        if (useRedirect) {
+          if (currentFirebaseUser && currentFirebaseUser.isAnonymous) {
+            await linkWithRedirect(currentFirebaseUser, googleProvider);
+          } else {
+            await signInWithRedirect(auth, googleProvider);
+          }
+          return { success: true, redirecting: true };
+        }
 
-    const mergedUserData = {
-      ...currentData,
-      cloudUid: permanentUid,
-      linkedFromGuestId: guestId,
-      isAnonymous: false,
-      authProvider: provider,
-      email: email || (provider === 'apple' ? 'user@privaterelay.appleid.com' : `${provider}_user@kiboclimb.com`),
-      displayName: name || currentData.name || 'Kibo Master',
-      accountLinkedAt: new Date().toISOString()
-    };
+        if (currentFirebaseUser && currentFirebaseUser.isAnonymous) {
+          try {
+            const res = await linkWithPopup(currentFirebaseUser, googleProvider);
+            linkedUser = res.user;
+          } catch (linkError) {
+            if (linkError.code === 'auth/credential-already-in-use') {
+              const res = await signInWithPopup(auth, googleProvider);
+              linkedUser = res.user;
+            } else {
+              throw linkError;
+            }
+          }
+        } else {
+          const res = await signInWithPopup(auth, googleProvider);
+          linkedUser = res.user;
+        }
+        authProviderName = 'google.com';
+      } else if (provider === 'apple') {
+        const appleProvider = new OAuthProvider('apple.com');
+        if (useRedirect) {
+          if (currentFirebaseUser && currentFirebaseUser.isAnonymous) {
+            await linkWithRedirect(currentFirebaseUser, appleProvider);
+          } else {
+            await signInWithRedirect(auth, appleProvider);
+          }
+          return { success: true, redirecting: true };
+        }
 
-    storageService.saveUserData(mergedUserData);
+        if (currentFirebaseUser && currentFirebaseUser.isAnonymous) {
+          try {
+            const res = await linkWithPopup(currentFirebaseUser, appleProvider);
+            linkedUser = res.user;
+          } catch (linkError) {
+            if (linkError.code === 'auth/credential-already-in-use') {
+              const res = await signInWithPopup(auth, appleProvider);
+              linkedUser = res.user;
+            } else {
+              throw linkError;
+            }
+          }
+        } else {
+          const res = await signInWithPopup(auth, appleProvider);
+          linkedUser = res.user;
+        }
+        authProviderName = 'apple.com';
+      } else if (provider === 'magic_link' || provider === 'email') {
+        if (!email || !email.includes('@')) {
+          return { success: false, reason: 'Please enter a valid email address' };
+        }
+        const defaultPassword = password || `KiboPass_${email.split('@')[0]}!99`;
+        const credential = EmailAuthProvider.credential(email, defaultPassword);
 
-    return {
-      success: true,
-      user: mergedUserData
-    };
-  },
+        if (currentFirebaseUser && currentFirebaseUser.isAnonymous) {
+          try {
+            const res = await linkWithCredential(currentFirebaseUser, credential);
+            linkedUser = res.user;
+          } catch (linkErr) {
+            if (linkErr.code === 'auth/credential-already-in-use' || linkErr.code === 'auth/email-already-in-use') {
+              const res = await signInWithEmailAndPassword(auth, email, defaultPassword);
+              linkedUser = res.user;
+            } else if (linkErr.code === 'auth/user-not-found') {
+              const res = await createUserWithEmailAndPassword(auth, email, defaultPassword);
+              linkedUser = res.user;
+            } else {
+              throw linkErr;
+            }
+          }
+        } else {
+          try {
+            const res = await signInWithEmailAndPassword(auth, email, defaultPassword);
+            linkedUser = res.user;
+          } catch (signInErr) {
+            const res = await createUserWithEmailAndPassword(auth, email, defaultPassword);
+            linkedUser = res.user;
+          }
+        }
+        authProviderName = 'password';
+      }
 
-  /**
-   * Sends a passwordless Magic Link email token and connects profile.
-   */
-  async sendMagicLink(email) {
-    if (!email || !email.includes('@')) {
-      return { success: false, reason: 'Please enter a valid email address' };
+      if (!linkedUser) {
+        linkedUser = auth.currentUser;
+      }
+
+      const currentData = storageService.getUserData();
+      const mergedUserData = {
+        ...currentData,
+        cloudUid: linkedUser ? linkedUser.uid : `uid_${Date.now()}`,
+        isAnonymous: linkedUser ? linkedUser.isAnonymous : false,
+        authProvider: authProviderName,
+        email: (linkedUser && linkedUser.email) || email || `${provider}_user@kiboclimb.com`,
+        displayName: (linkedUser && linkedUser.displayName) || currentData.name || 'Kibo Master',
+        accountLinkedAt: new Date().toISOString()
+      };
+
+      storageService.saveUserData(mergedUserData);
+
+      return {
+        success: true,
+        user: mergedUserData
+      };
+    } catch (error) {
+      if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
+        return {
+          success: false,
+          cancelled: true,
+          reason: 'Sign-in popup was closed before completing.',
+          code: error.code
+        };
+      }
+
+      console.error(`Firebase Auth link failure (${provider}):`, error);
+      let friendlyMessage = error.message || 'Failed to link account with provider.';
+      if (error.code === 'auth/popup-blocked') {
+        friendlyMessage = 'Pop-up blocked by browser. Please allow popups for sign-in.';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        friendlyMessage = 'Domain not authorized in Firebase Auth configuration.';
+      }
+
+      return {
+        success: false,
+        reason: friendlyMessage,
+        code: error.code
+      };
     }
-
-    const token = `magic_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    localStorage.setItem('kibo_magic_link_pending', JSON.stringify({ email, token, createdAt: new Date().toISOString() }));
-
-    return this.linkAccount({ provider: 'magic_link', email, name: email.split('@')[0] });
   },
 
   /**
-   * Returns current auth state and user claims.
+   * Processes authentication result after returning from an OAuth redirect flow.
+   */
+  async handleRedirectResult() {
+    try {
+      const res = await getRedirectResult(auth);
+      if (res && res.user) {
+        const currentData = storageService.getUserData();
+        const mergedUserData = {
+          ...currentData,
+          cloudUid: res.user.uid,
+          isAnonymous: res.user.isAnonymous,
+          authProvider: res.user.providerData[0]?.providerId || 'google.com',
+          email: res.user.email || currentData.email || 'user@kiboclimb.com',
+          displayName: res.user.displayName || currentData.displayName || 'Kibo Master',
+          accountLinkedAt: new Date().toISOString()
+        };
+        storageService.saveUserData(mergedUserData);
+        return { success: true, user: mergedUserData };
+      }
+      return { success: false, reason: 'No redirect result found' };
+    } catch (e) {
+      console.error('Error handling auth redirect result:', e);
+      return { success: false, reason: e.message };
+    }
+  },
+
+  /**
+   * Sends email auth link / token or connects profile via Email Auth.
+   */
+  async sendMagicLink(email, password = null) {
+    return this.linkAccount({ provider: 'magic_link', email, password });
+  },
+
+  /**
+   * Returns current auth state and user claims from Firebase Auth & local storage.
    */
   getAuthState() {
+    const firebaseUser = auth.currentUser;
     const data = storageService.getUserData();
+
+    // Account is linked if saved in localStorage as non-anonymous OR if firebaseUser is non-anonymous
+    const isAnonymous = (data && data.isAnonymous === false) 
+      ? false 
+      : (firebaseUser ? firebaseUser.isAnonymous : true);
+
+    const provider = (firebaseUser && firebaseUser.providerData && firebaseUser.providerData[0]?.providerId) 
+      || (data && data.authProvider) 
+      || 'anonymous';
+
     return {
-      uid: data.cloudUid || getOrCreateGuestId(),
-      isAnonymous: data.isAnonymous !== false,
-      authProvider: data.authProvider || 'anonymous',
-      displayName: data.displayName || 'Kibo Climber',
-      email: data.email || null
+      uid: (firebaseUser && firebaseUser.uid) || (data && data.cloudUid) || getOrCreateGuestId(),
+      isAnonymous,
+      authProvider: provider,
+      provider: provider, // Provide alias for code referencing .provider
+      displayName: (firebaseUser && firebaseUser.displayName) || (data && data.displayName) || 'Kibo Climber',
+      email: (firebaseUser && firebaseUser.email) || (data && data.email) || null
     };
   },
 
   /**
-   * Unlinks an account from a cloud provider. Reverts to local guest.
+   * Unlinks account from provider or signs out from Firebase, reverting to anonymous guest.
    */
   async unlinkAccount() {
-    const currentData = storageService.getUserData();
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser && !currentUser.isAnonymous) {
+        // Attempt to unlink provider if available, or sign out and create new anonymous account
+        if (currentUser.providerData && currentUser.providerData.length > 0) {
+          const providerId = currentUser.providerData[0].providerId;
+          try {
+            await unlink(currentUser, providerId);
+          } catch (e) {
+            console.warn('Unlink provider failed, signing out:', e);
+            await signOut(auth);
+            await signInAnonymously(auth);
+          }
+        } else {
+          await signOut(auth);
+          await signInAnonymously(auth);
+        }
+      }
 
-    // Create new guest ID
-    const newGuestId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    localStorage.setItem(GUEST_ID_KEY, newGuestId);
+      const newFirebaseUser = auth.currentUser;
+      const currentData = storageService.getUserData();
 
-    const mergedUserData = {
-      ...currentData,
-      cloudUid: newGuestId,
-      isAnonymous: true,
-      authProvider: 'anonymous',
-      email: null,
-      accountLinkedAt: null,
-      promptedLinkMilestones: [],
-      lastPromptedLinkAt: null
-    };
+      const mergedUserData = {
+        ...currentData,
+        cloudUid: newFirebaseUser ? newFirebaseUser.uid : `guest_${Date.now()}`,
+        isAnonymous: true,
+        authProvider: 'anonymous',
+        email: null,
+        accountLinkedAt: null,
+        promptedLinkMilestones: [],
+        lastPromptedLinkAt: null
+      };
 
-    storageService.saveUserData(mergedUserData);
+      storageService.saveUserData(mergedUserData);
+      return { success: true };
+    } catch (e) {
+      console.error('Error unlinking account:', e);
+      return { success: false, reason: e.message };
+    }
+  },
 
-    return { success: true };
+  /**
+   * Subscribes to real Firebase Auth state changes to keep local storage in sync.
+   */
+  subscribeAuthState(callback) {
+    return onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const currentData = storageService.getUserData();
+        const isAnon = user.isAnonymous && currentData.isAnonymous !== false;
+        const updated = {
+          ...currentData,
+          cloudUid: user.uid,
+          isAnonymous: isAnon,
+          email: user.email || currentData.email,
+          displayName: user.displayName || currentData.displayName
+        };
+        storageService.saveUserData(updated);
+        if (callback) callback(user);
+      }
+    });
   },
 
   /**
@@ -159,24 +391,36 @@ export const authService = {
   },
 
   /**
-   * Deletes all local and cloud data, simulating a complete purge.
+   * Deletes all local and cloud data, signing out of Firebase Auth completely.
    */
   async deleteAccount() {
-    // Clear all Kibo local storage keys
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('kibo_')) {
-        keysToRemove.push(key);
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          await currentUser.delete();
+        } catch (e) {
+          console.warn('Could not delete Firebase Auth user (may require fresh auth):', e);
+          await signOut(auth);
+        }
       }
+
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('kibo_')) {
+          keysToRemove.push(key);
+        }
+      }
+
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      sessionStorage.removeItem('kibo_parent_gate_session');
+
+      return { success: true };
+    } catch (e) {
+      console.error('Delete account error:', e);
+      return { success: false, reason: e.message };
     }
-
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-
-    // Clear session storage as well
-    sessionStorage.removeItem('kibo_parent_gate_session');
-
-    // Return success to allow caller to reload or reset app
-    return { success: true };
   }
 };
+

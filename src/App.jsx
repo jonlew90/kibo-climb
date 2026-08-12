@@ -127,6 +127,15 @@ export default function App() {
   const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
 
 
+  useEffect(() => {
+    // Process returning from Google/Apple OAuth redirect if applicable
+    authService.handleRedirectResult().then(res => {
+      if (res.success) {
+        syncAppStateWithStorage();
+      }
+    });
+  }, []);
+
   const syncAppStateWithStorage = () => {
     const uData = storageService.getUserData();
     const sData = storageService.getShopState();

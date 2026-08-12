@@ -14,6 +14,17 @@ export default function AccountLinkModal({
   const [emailInput, setEmailInput] = useState('');
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setLoadingProvider(null);
+      setEmailInput('');
+      setShowEmailInput(false);
+      setSuccessMessage('');
+      setErrorMessage('');
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -22,14 +33,20 @@ export default function AccountLinkModal({
     ? (milestone.toLowerCase().includes('unlocked') ? milestone : `${milestone} Unlocked!`)
     : milestone;
 
-  const handleLinkProvider = async (provider) => {
+  const handleLinkProvider = async (provider, useRedirect = false) => {
     setLoadingProvider(provider);
+    setSuccessMessage('');
+    setErrorMessage('');
     try {
       let res;
       if (provider === 'magic_link') {
         res = await authService.sendMagicLink(emailInput);
       } else {
-        res = await authService.linkAccount({ provider });
+        res = await authService.linkAccount({ provider, useRedirect });
+      }
+
+      if (res.redirecting) {
+        return; // Page will redirect to Google/Apple without COOP popups
       }
 
       if (res.success) {
@@ -67,9 +84,12 @@ export default function AccountLinkModal({
           if (onAccountLinked) onAccountLinked(res.user, currentData.sparks || 0);
           onClose();
         }, 1800);
+      } else if (!res.cancelled) {
+        setErrorMessage(res.reason || 'Failed to link account. Please try again.');
       }
     } catch (e) {
       console.error('Failed to link account', e);
+      setErrorMessage(e.message || 'An unexpected authentication error occurred.');
     } finally {
       setLoadingProvider(null);
     }
@@ -111,6 +131,13 @@ export default function AccountLinkModal({
           </div>
         )}
 
+        {/* Error Alert */}
+        {errorMessage && (
+          <div className="p-3 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900 font-bold text-xs flex items-center justify-center gap-2 animate-pop">
+            <span>⚠️ {errorMessage}</span>
+          </div>
+        )}
+
         {/* Success Alert */}
         {successMessage ? (
           <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-900 font-bold text-xs flex items-center justify-center gap-2 animate-pop">
@@ -120,9 +147,9 @@ export default function AccountLinkModal({
         ) : (
           /* Link Options */
           <div className="space-y-3 pt-2">
-            {/* Google 1-Tap Link */}
+            {/* Google 1-Tap Popup Link */}
             <button
-              onClick={() => handleLinkProvider('google')}
+              onClick={() => handleLinkProvider('google', false)}
               disabled={!!loadingProvider}
               className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50"
             >
@@ -132,7 +159,17 @@ export default function AccountLinkModal({
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
               </svg>
-              <span>{loadingProvider === 'google' ? 'Linking Google Account...' : 'Continue with Google 1-Tap'}</span>
+              <span>{loadingProvider === 'google' ? 'Linking Google Account...' : 'Continue with Google (Popup)'}</span>
+            </button>
+
+            {/* Google Full Redirect Option (No COOP warning) */}
+            <button
+              onClick={() => handleLinkProvider('google', true)}
+              disabled={!!loadingProvider}
+              className="w-full py-2.5 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 rounded-2xl font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <Zap className="w-4 h-4 text-indigo-600" />
+              <span>Full Page Redirect (No Popups)</span>
             </button>
 
             {/* Apple 1-Tap Link */}

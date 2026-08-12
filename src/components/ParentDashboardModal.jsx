@@ -884,7 +884,14 @@ export default function ParentDashboardModal({
                 <div className="flex items-center justify-between gap-3">
                   <div className="space-y-0.5">
                     <span className="text-xs font-black text-slate-800 block">
-                      {authService.getAuthState().isAnonymous ? '☁️ Anonymous Guest Account' : `✅ Account Linked (${authService.getAuthState().provider || 'Email'})`}
+                      {authService.getAuthState().isAnonymous 
+                        ? '☁️ Anonymous Guest Account' 
+                        : `✅ Account Linked (${(() => {
+                            const p = authService.getAuthState().provider || authService.getAuthState().authProvider || '';
+                            if (p.includes('google')) return 'Google';
+                            if (p.includes('apple')) return 'Apple';
+                            return 'Email';
+                          })()})`}
                     </span>
                     {authService.getAuthState().isAnonymous && (
                       <span className="text-[10px] text-slate-500 font-medium block">
