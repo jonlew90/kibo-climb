@@ -34,23 +34,42 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
     ?? Math.min(10, Math.max(1, Math.floor((userState?.totalProblemsSolved || 0) / 10)))
   ) || 5;
 
-  const currentUserPlayer = {
-    isCurrentUser: true,
-    name: username,
-    score: userScore,
-    subjectsMastered: userSubjectsMastered,
-    equipped: userEquippedItems
-  };
+  const allAccountProfiles = storageService.getAllProfiles();
+  const accountPlayers = allAccountProfiles.map(p => {
+    const isCurrent = p.id === activeProfile?.id;
+    const pName = isCurrent ? username : (p.username || p.name || 'Climber');
+    const pScore = isCurrent 
+      ? userScore 
+      : (p.userData?.adaptiveCompetenceRating || p.userData?.competenceRank || 1000);
+    const pEquipped = isCurrent 
+      ? userEquippedItems 
+      : (p.shopState?.equippedItems || []);
+    const pSubjects = isCurrent
+      ? (userSubjectsMastered || 5)
+      : (p.userData?.subjectsMastered ?? Object.keys(p.userData?.masteredTricks || {}).length ?? 5);
 
-  // Subscribe to Firestore real-time updates
+    return {
+      id: p.id,
+      profileId: p.id,
+      isCurrentUser: isCurrent,
+      isAccountProfile: true,
+      name: pName,
+      score: pScore,
+      subjectsMastered: pSubjects,
+      equipped: pEquipped
+    };
+  });
+
+  // Subscribe to Firestore real-time updates and sync all account profiles
   useEffect(() => {
-    // Initial sync for current user
-    leaderboardService.syncUserScore({
-      profileId: activeProfile?.id || 'default_child',
-      name: username,
-      score: userScore,
-      subjectsMastered: userSubjectsMastered,
-      equipped: userEquippedItems
+    accountPlayers.forEach(p => {
+      leaderboardService.syncUserScore({
+        profileId: p.id,
+        name: p.name,
+        score: p.score,
+        subjectsMastered: p.subjectsMastered,
+        equipped: p.equipped
+      });
     });
 
     const unsubscribe = leaderboardService.subscribeToLeaderboard(20, (remoteData) => {
@@ -62,13 +81,20 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
     };
-  }, [userScore, username]);
+  }, [userScore, username, activeProfile?.id]);
 
-  // Combine live/mock data with current user and sort descending by score
+  const accountNames = new Set(accountPlayers.map(p => p.name));
+  const accountIds = new Set(accountPlayers.map(p => p.id));
+
+  // Combine live/mock data with all account profiles and sort descending by score
   const baseStandings = liveStandings.length > 0 ? liveStandings : MOCK_LEADERBOARD_DATA;
-  const filteredRemote = baseStandings.filter(p => p.name !== username);
+  const filteredRemote = baseStandings.filter(p => 
+    !accountNames.has(p.name) && 
+    !accountIds.has(p.profileId) && 
+    !accountIds.has(p.id)
+  );
 
-  const combinedStandings = [...filteredRemote, currentUserPlayer]
+  const combinedStandings = [...filteredRemote, ...accountPlayers]
     .sort((a, b) => b.score - a.score);
 
   // Assign ranks
@@ -86,10 +112,9 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
     pointsNeeded = playerAbove ? Math.max(1, playerAbove.score - userScore + 1) : 1;
   }
 
-  // Top 10 users for main standings display
-  const top10 = rankedStandings.slice(0, 10);
-  const top3 = top10.slice(0, 3);
-  const others = top10.slice(3);
+  // Top standings display
+  const top3 = rankedStandings.slice(0, 3);
+  const others = rankedStandings.slice(3, 20);
 
   // Helper to get title based on score
   const getRankTitle = (score) => {

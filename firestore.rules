@@ -6,8 +6,8 @@ service cloud.firestore {
       // Allow anyone to read leaderboard entries
       allow read: if true;
 
-      // Allow authenticated users (including anonymous auth) to create or update their own score document
-      allow create, update: if request.auth != null && request.auth.uid == userId;
+      // Allow authenticated users (including anonymous auth) to create or update their own score document or profile sub-document
+      allow create, update: if request.auth != null && (request.auth.uid == userId || request.resource.data.uid == request.auth.uid);
 
       // Restrict deletion
       allow delete: if false;

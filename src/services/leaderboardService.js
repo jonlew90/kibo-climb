@@ -65,8 +65,8 @@ class LeaderboardService {
       }
       
       const safeProfileId = profileId || 'default_child';
-      // Use auth UID as document ID (or baseUid) so security rules (request.auth.uid == userId) succeed
-      const documentId = baseUid;
+      // Use composite document ID per profile so all profiles under an account have distinct leaderboard entries
+      const documentId = `${baseUid}_${safeProfileId}`;
       const userRef = doc(db, LEADERBOARD_COLLECTION, documentId);
 
       const payload = {
