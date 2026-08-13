@@ -161,9 +161,21 @@ export default function App() {
   // Initialize Auth (including OAuth redirect resolution) & Offline Background Sync Queue on Launch
   useEffect(() => {
     const initAppAuth = async () => {
-      await authService.initAnonymousGuest();
+      const authRes = await authService.initAnonymousGuest();
       syncAppStateWithStorage();
       syncService.initBackgroundSync();
+
+      // If returning from OAuth redirect flow, preserve and restore original route
+      if (authRes && authRes.returnUrl && authRes.returnUrl !== window.location.pathname) {
+        let targetState = 'adaptive_session';
+        if (authRes.returnUrl.includes('/settings')) targetState = 'settings';
+        else if (authRes.returnUrl.includes('/privacy')) targetState = 'privacy';
+        else if (authRes.returnUrl.includes('/terms')) targetState = 'terms';
+        else if (authRes.returnUrl.includes('/leaderboard')) targetState = 'leaderboard';
+
+        window.history.replaceState({}, '', authRes.returnUrl);
+        setAppState(targetState);
+      }
     };
     initAppAuth();
   }, []);
@@ -1447,6 +1459,7 @@ export default function App() {
           if (newSparks !== undefined) {
             setSparks(newSparks);
           }
+          syncAppStateWithStorage();
         }}
       />
 
@@ -1613,6 +1626,7 @@ export default function App() {
           if (newSparks !== undefined) {
             setSparks(newSparks);
           }
+          syncAppStateWithStorage();
           setShowAccountLinkModal(false);
           if (pendingSparksPurchase) {
             setShowMockCheckoutModal(true);

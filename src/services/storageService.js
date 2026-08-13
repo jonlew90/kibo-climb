@@ -132,6 +132,31 @@ export const storageService = {
     const state = safeGetProfilesState();
     return state.profiles[state.activeProfileId] || DEFAULT_PROFILE;
   },
+  isAccountGloballyLinked() {
+    const state = safeGetProfilesState();
+    return Object.values(state.profiles).some(p => p.userData && p.userData.isAnonymous === false);
+  },
+
+  setGlobalAccountLinkedState(accountInfo = {}) {
+    const state = safeGetProfilesState();
+    Object.keys(state.profiles).forEach(id => {
+      const prof = state.profiles[id];
+      state.profiles[id] = {
+        ...prof,
+        userData: {
+          ...prof.userData,
+          cloudUid: accountInfo.cloudUid !== undefined ? accountInfo.cloudUid : prof.userData?.cloudUid,
+          isAnonymous: accountInfo.isAnonymous !== undefined ? accountInfo.isAnonymous : prof.userData?.isAnonymous,
+          authProvider: accountInfo.authProvider !== undefined ? accountInfo.authProvider : prof.userData?.authProvider,
+          email: accountInfo.email !== undefined ? accountInfo.email : prof.userData?.email,
+          displayName: accountInfo.displayName !== undefined ? accountInfo.displayName : prof.userData?.displayName,
+          accountLinkedAt: accountInfo.accountLinkedAt !== undefined ? accountInfo.accountLinkedAt : prof.userData?.accountLinkedAt
+        }
+      };
+    });
+    safeSaveProfilesState(state);
+  },
+
   getAllProfiles() {
     const state = safeGetProfilesState();
     return Object.values(state.profiles);
@@ -144,6 +169,8 @@ export const storageService = {
     }
     const id = `profile_${Date.now()}`;
     const startingRating = getStartingRatingForGrade(gradeLevel);
+    const isLinked = this.isAccountGloballyLinked();
+    const activeProf = this.getActiveProfile();
     const newProfile = {
       ...DEFAULT_PROFILE,
       id,
@@ -153,6 +180,11 @@ export const storageService = {
         ...DEFAULT_PROFILE.userData,
         adaptiveCompetenceRating: startingRating,
         competenceRank: startingRating,
+        isAnonymous: isLinked ? false : true,
+        cloudUid: isLinked ? activeProf.userData?.cloudUid : undefined,
+        authProvider: isLinked ? activeProf.userData?.authProvider : undefined,
+        email: isLinked ? activeProf.userData?.email : undefined,
+        accountLinkedAt: isLinked ? activeProf.userData?.accountLinkedAt : undefined
       }
     };
     state.profiles[id] = newProfile;

@@ -39,6 +39,10 @@ export const authService = {
    */
   async initAnonymousGuest() {
     try {
+      if (auth.authStateReady) {
+        await auth.authStateReady();
+      }
+
       // 1. Process any pending OAuth redirect result FIRST before modifying auth state
       const redirectRes = await this.handleRedirectResult();
       if (redirectRes && redirectRes.success) {
@@ -53,7 +57,7 @@ export const authService = {
 
       // 2. Check if already linked according to stored user data
       const userData = storageService.getUserData();
-      if (userData && userData.isAnonymous === false) {
+      if (storageService.isAccountGloballyLinked() || (userData && userData.isAnonymous === false)) {
         const activeProfile = storageService.getActiveProfile();
         return {
           ...activeProfile,
@@ -61,11 +65,6 @@ export const authService = {
           isAnonymous: false,
           authProvider: userData.authProvider || 'google.com'
         };
-      }
-
-      // 3. Wait for Firebase auth state to settle before creating a brand new guest user
-      if (auth.authStateReady) {
-        await auth.authStateReady();
       }
 
       let currentUser = auth.currentUser;
@@ -83,11 +82,19 @@ export const authService = {
         createdAt: activeProfile.createdAt || new Date().toISOString()
       };
 
-      storageService.saveUserData({
-        cloudUid: currentUser.uid,
-        isAnonymous: currentUser.isAnonymous,
-        authProvider: updatedProfile.authProvider
-      });
+      if (!currentUser.isAnonymous) {
+        storageService.setGlobalAccountLinkedState({
+          cloudUid: currentUser.uid,
+          isAnonymous: false,
+          authProvider: updatedProfile.authProvider
+        });
+      } else {
+        storageService.saveUserData({
+          cloudUid: currentUser.uid,
+          isAnonymous: currentUser.isAnonymous,
+          authProvider: updatedProfile.authProvider
+        });
+      }
 
       return updatedProfile;
     } catch (e) {
@@ -95,7 +102,7 @@ export const authService = {
       const guestId = getOrCreateGuestId();
       const activeProfile = storageService.getActiveProfile();
       const userData = storageService.getUserData();
-      const isAlreadyLinked = userData && userData.isAnonymous === false;
+      const isAlreadyLinked = storageService.isAccountGloballyLinked() || (userData && userData.isAnonymous === false);
       return {
         ...activeProfile,
         cloudUid: activeProfile.cloudUid || guestId,
@@ -118,6 +125,7 @@ export const authService = {
       if (provider === 'google') {
         const googleProvider = new GoogleAuthProvider();
         if (useRedirect) {
+          sessionStorage.setItem('kibo_account_link_return_url', window.location.pathname);
           if (currentFirebaseUser && currentFirebaseUser.isAnonymous) {
             await linkWithRedirect(currentFirebaseUser, googleProvider);
           } else {
@@ -146,6 +154,7 @@ export const authService = {
       } else if (provider === 'apple') {
         const appleProvider = new OAuthProvider('apple.com');
         if (useRedirect) {
+          sessionStorage.setItem('kibo_account_link_return_url', window.location.pathname);
           if (currentFirebaseUser && currentFirebaseUser.isAnonymous) {
             await linkWithRedirect(currentFirebaseUser, appleProvider);
           } else {
@@ -220,7 +229,11 @@ export const authService = {
         accountLinkedAt: new Date().toISOString()
       };
 
-      storageService.saveUserData(mergedUserData);
+      if (mergedUserData.isAnonymous === false) {
+        storageService.setGlobalAccountLinkedState(mergedUserData);
+      } else {
+        storageService.saveUserData(mergedUserData);
+      }
       const earnedSparks = storageService.grantAccountLinkSparksReward();
 
       return {
@@ -259,26 +272,40 @@ export const authService = {
    */
   async handleRedirectResult() {
     try {
+      if (auth.authStateReady) {
+        await auth.authStateReady();
+      }
       const res = await getRedirectResult(auth);
-      if (res && res.user) {
+      const returnUrl = sessionStorage.getItem('kibo_account_link_return_url');
+      sessionStorage.removeItem('kibo_account_link_return_url');
+
+      let targetUser = res?.user;
+      if (!targetUser && auth.currentUser && !auth.currentUser.isAnonymous) {
+        targetUser = auth.currentUser;
+      }
+
+      if (targetUser) {
         const currentData = storageService.getUserData();
-        const providerId = res.user.providerData[0]?.providerId || 'google.com';
+        const providerId = targetUser.providerData[0]?.providerId || 'google.com';
         const mergedUserData = {
           ...currentData,
-          cloudUid: res.user.uid,
+          cloudUid: targetUser.uid,
           isAnonymous: false,
           authProvider: providerId,
-          email: res.user.email || currentData.email || 'user@kiboclimb.com',
-          displayName: res.user.displayName || currentData.displayName || 'Kibo Master',
+          email: targetUser.email || currentData.email || 'user@kiboclimb.com',
+          displayName: targetUser.displayName || currentData.displayName || 'Kibo Master',
           accountLinkedAt: new Date().toISOString()
         };
-        storageService.saveUserData(mergedUserData);
+        storageService.setGlobalAccountLinkedState(mergedUserData);
         const earnedSparks = storageService.grantAccountLinkSparksReward();
-        return { success: true, user: storageService.getUserData(), earnedSparks };
+        return { success: true, user: storageService.getUserData(), earnedSparks, returnUrl };
       }
       return { success: false, reason: 'No redirect result found' };
     } catch (e) {
       console.error('Error handling auth redirect result:', e);
+      const returnUrl = sessionStorage.getItem('kibo_account_link_return_url');
+      sessionStorage.removeItem('kibo_account_link_return_url');
+
       if (e.code === 'auth/credential-already-in-use' || e.code === 'auth/email-already-in-use') {
         try {
           const credential = GoogleAuthProvider.credentialFromError(e) || OAuthProvider.credentialFromError(e);
@@ -296,9 +323,9 @@ export const authService = {
                 displayName: userCred.user.displayName || currentData.displayName || 'Kibo Master',
                 accountLinkedAt: new Date().toISOString()
               };
-              storageService.saveUserData(mergedUserData);
+              storageService.setGlobalAccountLinkedState(mergedUserData);
               const earnedSparks = storageService.grantAccountLinkSparksReward();
-              return { success: true, user: storageService.getUserData(), earnedSparks };
+              return { success: true, user: storageService.getUserData(), earnedSparks, returnUrl };
             }
           }
         } catch (signInErr) {
@@ -322,9 +349,10 @@ export const authService = {
   getAuthState() {
     const firebaseUser = auth.currentUser;
     const data = storageService.getUserData();
+    const isGlobalLinked = storageService.isAccountGloballyLinked();
 
     // Account is linked if saved in localStorage as non-anonymous OR if firebaseUser is non-anonymous
-    const isAnonymous = (data && data.isAnonymous === false) 
+    const isAnonymous = (isGlobalLinked || (data && data.isAnonymous === false)) 
       ? false 
       : (firebaseUser ? firebaseUser.isAnonymous : true);
 
@@ -366,10 +394,8 @@ export const authService = {
       }
 
       const newFirebaseUser = auth.currentUser;
-      const currentData = storageService.getUserData();
 
-      const mergedUserData = {
-        ...currentData,
+      const accountData = {
         cloudUid: newFirebaseUser ? newFirebaseUser.uid : `guest_${Date.now()}`,
         isAnonymous: true,
         authProvider: 'anonymous',
@@ -379,7 +405,7 @@ export const authService = {
         lastPromptedLinkAt: null
       };
 
-      storageService.saveUserData(mergedUserData);
+      storageService.setGlobalAccountLinkedState(accountData);
       return { success: true };
     } catch (e) {
       console.error('Error unlinking account:', e);
@@ -393,8 +419,9 @@ export const authService = {
   subscribeAuthState(callback) {
     return onAuthStateChanged(auth, (user) => {
       if (user) {
+        const isGlobalLinked = storageService.isAccountGloballyLinked();
+        const isAnon = user.isAnonymous && !isGlobalLinked;
         const currentData = storageService.getUserData();
-        const isAnon = user.isAnonymous && currentData.isAnonymous !== false;
         const updated = {
           ...currentData,
           cloudUid: user.uid,
@@ -402,7 +429,11 @@ export const authService = {
           email: user.email || currentData.email,
           displayName: user.displayName || currentData.displayName
         };
-        storageService.saveUserData(updated);
+        if (!isAnon) {
+          storageService.setGlobalAccountLinkedState(updated);
+        } else {
+          storageService.saveUserData(updated);
+        }
         if (callback) callback(user);
       }
     });
