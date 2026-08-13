@@ -57,7 +57,6 @@ class LeaderboardService {
         }
       }
 
-      // Ensure unique document ID per profile
       const baseUid = this.currentUser ? this.currentUser.uid : null;
       if (!baseUid) {
         console.warn('LeaderboardService: Skipping cloud sync because user is unauthenticated.');
@@ -65,7 +64,7 @@ class LeaderboardService {
       }
       
       const safeProfileId = profileId || 'default_child';
-      // Use composite document ID per profile so all profiles under an account have distinct leaderboard entries
+      // Use composite document ID per profile (${baseUid}_${safeProfileId})
       const documentId = `${baseUid}_${safeProfileId}`;
       const userRef = doc(db, LEADERBOARD_COLLECTION, documentId);
 
