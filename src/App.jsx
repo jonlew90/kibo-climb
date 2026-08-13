@@ -425,8 +425,6 @@ export default function App() {
   };
 
   const handleIncrementLifetimeProblems = (isCorrect = true) => {
-    recordDailyPractice();
-
     const nextTotal = (totalProblemsSolved || 0) + 1;
     setTotalProblemsSolved(nextTotal);
 
@@ -1311,6 +1309,7 @@ export default function App() {
           onConsumeShield={handleConsumeShield}
           onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
+          onRecordDailyPractice={recordDailyPractice}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
           onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
           onUpdateCompetenceRating={(newRating) => {

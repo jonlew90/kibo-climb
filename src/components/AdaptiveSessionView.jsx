@@ -55,6 +55,7 @@ export default function AdaptiveSessionView({
   onOpenWorkshop,
   onAwardSparks,
   onIncrementLifetimeProblems,
+  onRecordDailyPractice,
   onUpdatePersonalRecords,
   onUnlockedBadgesChange,
   onUpdateCompetenceRating,
@@ -761,6 +762,7 @@ export default function AdaptiveSessionView({
         personalRecords: updatedRecords
       });
       if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
+      if (onRecordDailyPractice) onRecordDailyPractice();
 
       // Immediately evaluate and claim any newly met badges at block completion (e.g. 3rd Perfect Run)
       const postBlockUserData = storageService.getUserData();
