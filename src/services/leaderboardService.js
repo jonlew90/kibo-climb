@@ -45,26 +45,25 @@ class LeaderboardService {
   async syncUserScore({ profileId, name, score, subjectsMastered = 5, equipped = [] }) {
     try {
       // Ensure user is authenticated before attempting sync
-      if (!this.currentUser && auth.currentUser) {
-        this.currentUser = auth.currentUser;
-      }
-      if (!this.currentUser) {
+      let user = this.currentUser || auth.currentUser;
+
+      if (!user) {
         try {
           const userCred = await signInAnonymously(auth);
-          this.currentUser = userCred.user;
+          user = userCred.user;
+          this.currentUser = user;
         } catch (authErr) {
-          console.warn('LeaderboardService: Anonymous sign-in failed during sync', authErr);
+          // If offline / unauthenticated, gracefully skip remote sync without console warning
+          return;
         }
       }
 
-      const baseUid = this.currentUser ? this.currentUser.uid : null;
-      if (!baseUid) {
-        console.warn('LeaderboardService: Skipping cloud sync because user is unauthenticated.');
+      if (!user || !user.uid) {
         return;
       }
-      
+
+      const baseUid = user.uid;
       const safeProfileId = profileId || 'default_child';
-      // Use composite document ID per profile (${baseUid}_${safeProfileId})
       const documentId = `${baseUid}_${safeProfileId}`;
       const userRef = doc(db, LEADERBOARD_COLLECTION, documentId);
 
@@ -80,7 +79,11 @@ class LeaderboardService {
 
       await setDoc(userRef, payload, { merge: true });
     } catch (error) {
-      console.warn('LeaderboardService: Failed to sync score to Firestore (check security rules / network)', error);
+      if (error?.code === 'permission-denied') {
+        console.warn('LeaderboardService: Sync permission denied. Ensure backend Firestore security rules are deployed to Firebase.', error);
+      } else {
+        console.warn('LeaderboardService: Failed to sync score to Firestore', error);
+      }
     }
   }
 
