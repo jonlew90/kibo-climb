@@ -6,18 +6,6 @@ import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
 
-const MOCK_LEADERBOARD_DATA = [
-  { rank: 1, name: "Alex P.", score: 1450, subjectsMastered: 8, equipped: ['golden_skin', 'crown', 'royal_cape'] },
-  { rank: 2, name: "Jordan M.", score: 1380, subjectsMastered: 7, equipped: ['emerald_jade_skin', 'goggles', 'vest'] },
-  { rank: 3, name: "Sam K.", score: 1320, subjectsMastered: 7, equipped: ['snow_white_skin', 'wizard_hat', 'summit_scarf'] },
-  { rank: 4, name: "Taylor R.", score: 1250, subjectsMastered: 6, equipped: ['midnight_shadow_skin', 'explorer_hat', 'backpack'] },
-  { rank: 5, name: "Casey B.", score: 1210, subjectsMastered: 6, equipped: ['headphones_neon', 'vest'] },
-  { rank: 6, name: "Riley D.", score: 1180, subjectsMastered: 5, equipped: ['cap', 'canteen', 'bowtie'] },
-  { rank: 7, name: "Jamie L.", score: 1150, subjectsMastered: 5, equipped: ['bandana', 'summit_scarf'] },
-  { rank: 8, name: "Morgan W.", score: 1120, subjectsMastered: 4, equipped: ['goggles', 'canteen'] },
-  { rank: 9, name: "Quinn C.", score: 1090, subjectsMastered: 4, equipped: ['cap', 'bowtie'] },
-  { rank: 10, name: "Avery H.", score: 1060, subjectsMastered: 3, equipped: ['bandana'] }
-];
 
 export default function LeaderboardScreen({ userState, renderFooter, equippedItems = [] }) {
   const [liveStandings, setLiveStandings] = useState([]);
@@ -87,7 +75,7 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
   const accountIds = new Set(accountPlayers.map(p => p.id));
 
   // Combine live/mock data with all account profiles and sort descending by score
-  const baseStandings = liveStandings.length > 0 ? liveStandings : MOCK_LEADERBOARD_DATA;
+  const baseStandings = liveStandings;
   const filteredRemote = baseStandings.filter(p => 
     !accountNames.has(p.name) && 
     !accountIds.has(p.profileId) && 
@@ -151,6 +139,13 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
       <div className="flex-1 overflow-y-auto custom-scrollbar relative pb-6">
 
         {/* HERO PODIUM (Top 3) */}
+        {top3.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+            <Trophy className="w-16 h-16 text-slate-300 mb-4" />
+            <h3 className="text-xl font-bold text-slate-700 mb-2">No Standings Yet</h3>
+            <p className="text-sm text-slate-500">Check back later once players have started earning points!</p>
+          </div>
+        )}
         {top3.length >= 3 && (
           <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
 
@@ -291,7 +286,7 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
 
             {/* User Rank */}
             <div className="w-8 h-8 rounded-full bg-indigo-800/80 border border-indigo-400 flex items-center justify-center font-black text-white shrink-0 shadow-inner z-10">
-              {currentUserRank > MOCK_LEADERBOARD_DATA.length ? '-' : currentUserRank}
+              {currentUserRank}
             </div>
 
             {/* User Avatar (Actual Mascot + Items) */}

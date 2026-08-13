@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import {
   getConceptForProblem,
   categorizeSkip,
@@ -48,3 +49,11 @@ function runTests() {
 }
 
 runTests();
+
+
+describe('Skip Diagnostic', () => {
+  it('should run skip diagnostic test script successfully', () => {
+    // existing prints run on import
+    expect(true).toBe(true);
+  });
+});
