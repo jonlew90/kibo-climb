@@ -130,20 +130,22 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
           <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
 
             {/* 2nd Place */}
-            <div className="flex flex-col items-center flex-1 max-w-[100px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative ${
+            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[120px] sm:max-w-[150px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
                 top3[1].isCurrentUser ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40' : 'bg-slate-200 border-slate-300'
               }`}>
                 <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
                   <Mascot size={48} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} />
                 </div>
               </div>
-              <span className="font-bold text-xs truncate w-full text-center flex items-center justify-center gap-1">
-                {top3[1].name}
+              <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[1].name}>
+                <span className="font-bold text-xs truncate min-w-0 text-center">
+                  {top3[1].name}
+                </span>
                 {top3[1].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black">YOU</span>
+                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black shrink-0">YOU</span>
                 )}
-              </span>
+              </div>
               <span className="text-[10px] text-slate-500 font-semibold mb-2">{top3[1].score} pts</span>
               <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                 <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
@@ -151,23 +153,25 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
             </div>
 
             {/* 1st Place */}
-            <div className="flex flex-col items-center flex-1 max-w-[120px] relative z-20 animate-fade-in-up">
+            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[140px] sm:max-w-[170px] relative z-20 animate-fade-in-up">
               <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
                 <Crown className="w-6 h-6 fill-amber-400" />
               </div>
-              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative ${
+              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
                 top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
               }`}>
                 <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
                   <Mascot size={64} mood="excited" equipped={top3[0].equipped} />
                 </div>
               </div>
-              <span className="font-black text-sm text-amber-900 truncate w-full text-center flex items-center justify-center gap-1">
-                {top3[0].name}
+              <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[0].name}>
+                <span className="font-black text-sm text-amber-900 truncate min-w-0 text-center">
+                  {top3[0].name}
+                </span>
                 {top3[0].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black">YOU</span>
+                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black shrink-0">YOU</span>
                 )}
-              </span>
+              </div>
               <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{top3[0].score} pts</span>
               <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
@@ -176,20 +180,22 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
             </div>
 
             {/* 3rd Place */}
-            <div className="flex flex-col items-center flex-1 max-w-[100px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative ${
+            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[120px] sm:max-w-[150px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
                 top3[2].isCurrentUser ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40' : 'bg-orange-100 border-orange-300'
               }`}>
                 <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
                   <Mascot size={48} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} />
                 </div>
               </div>
-              <span className="font-bold text-xs truncate w-full text-center flex items-center justify-center gap-1">
-                {top3[2].name}
+              <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[2].name}>
+                <span className="font-bold text-xs truncate min-w-0 text-center">
+                  {top3[2].name}
+                </span>
                 {top3[2].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black">YOU</span>
+                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black shrink-0">YOU</span>
                 )}
-              </span>
+              </div>
               <span className="text-[10px] text-slate-500 font-semibold mb-2">{top3[2].score} pts</span>
               <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                 <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>

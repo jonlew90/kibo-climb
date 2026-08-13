@@ -87,6 +87,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
     e.preventDefault();
     if (!childName.trim()) { setNameError('Please enter a name.'); return; }
     if (childName.trim().length < 2) { setNameError('Must be at least 2 characters.'); return; }
+    if (childName.trim().length > 20) { setNameError('Must be 20 characters or fewer.'); return; }
     const newProfile = storageService.createProfile(childName.trim(), childGrade);
     if (!newProfile) {
       setNameError('Maximum profile limit of 6 reached.');
@@ -123,7 +124,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
               value={childName}
               onChange={(e) => { setChildName(e.target.value); setNameError(''); }}
               placeholder="e.g. Alex"
-              maxLength={24}
+              maxLength={20}
               className={`w-full pl-9 pr-3 py-2 text-xs font-bold text-slate-800 bg-white border rounded-xl focus:outline-none transition-colors placeholder:text-slate-400 ${
                 nameError ? 'border-rose-500' : 'border-slate-300 focus:border-purple-400'
               }`}

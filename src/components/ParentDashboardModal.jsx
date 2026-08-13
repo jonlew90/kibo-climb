@@ -273,6 +273,7 @@ export default function ParentDashboardModal({
                 value={editChildName}
                 onChange={(e) => setEditChildName(e.target.value)}
                 placeholder="Enter Child's Name (e.g. Leo)"
+                maxLength={20}
                 required
                 className="flex-1 px-3 py-1.5 bg-white border border-purple-300 rounded-xl text-xs font-bold focus:outline-none focus:border-purple-600"
               />

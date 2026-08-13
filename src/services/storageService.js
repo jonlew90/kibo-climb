@@ -167,6 +167,7 @@ export const storageService = {
       console.warn('Maximum profile limit of 6 reached.');
       return null;
     }
+    const safeName = (name || 'New Climber').trim().slice(0, 20);
     const id = `profile_${Date.now()}`;
     const startingRating = getStartingRatingForGrade(gradeLevel);
     const isLinked = this.isAccountGloballyLinked();
@@ -174,7 +175,8 @@ export const storageService = {
     const newProfile = {
       ...DEFAULT_PROFILE,
       id,
-      name,
+      name: safeName,
+      username: safeName,
       gradeLevel,
       userData: {
         ...DEFAULT_PROFILE.userData,
@@ -196,9 +198,16 @@ export const storageService = {
   updateProfile(profileId, updates = {}) {
     const state = safeGetProfilesState();
     if (state.profiles[profileId]) {
+      const sanitizedUpdates = { ...updates };
+      if (typeof sanitizedUpdates.name === 'string') {
+        sanitizedUpdates.name = sanitizedUpdates.name.trim().slice(0, 20);
+      }
+      if (typeof sanitizedUpdates.username === 'string') {
+        sanitizedUpdates.username = sanitizedUpdates.username.trim().slice(0, 20);
+      }
       state.profiles[profileId] = {
         ...state.profiles[profileId],
-        ...updates
+        ...sanitizedUpdates
       };
       safeSaveProfilesState(state);
     }
@@ -249,8 +258,9 @@ export const storageService = {
     if (!state.profiles[activeId]) {
       state.profiles[activeId] = { ...DEFAULT_PROFILE, id: activeId };
     }
-    state.profiles[activeId].username = username;
-    state.profiles[activeId].name = username; // keep display name in sync
+    const cleanUsername = (username || '').trim().slice(0, 20);
+    state.profiles[activeId].username = cleanUsername;
+    state.profiles[activeId].name = cleanUsername; // keep display name in sync
     if (gradeLevel) {
       state.profiles[activeId].gradeLevel = gradeLevel;
       const startingRating = getStartingRatingForGrade(gradeLevel);
