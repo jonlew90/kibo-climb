@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 // Verification & Simulation Test for AdaptiveEngine.js & SkillTreeConfig.js
 import { evaluateAdaptiveAttempt, shouldTriggerProbeQuestion } from './AdaptiveEngine.js';
 import { getKFactor, getStrandForRating, getProbeTargetTier } from './SkillTreeConfig.js';
@@ -93,3 +94,13 @@ function runSimulationBeginnerProbeMiss() {
 
 runSimulationProficientStudent();
 runSimulationBeginnerProbeMiss();
+
+
+describe('Adaptive Engine', () => {
+  it('should run simulation proficient student', () => {
+    runSimulationProficientStudent();
+  });
+  it('should run simulation beginner probe miss', () => {
+    runSimulationBeginnerProbeMiss();
+  });
+});
