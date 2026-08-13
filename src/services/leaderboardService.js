@@ -57,10 +57,16 @@ class LeaderboardService {
         }
       }
 
-      // Ensure unique document ID per profile (auth UID + profile ID)
-      const baseUid = this.currentUser ? this.currentUser.uid : this._getFallbackDeviceId();
+      // Ensure unique document ID per profile
+      const baseUid = this.currentUser ? this.currentUser.uid : null;
+      if (!baseUid) {
+        console.warn('LeaderboardService: Skipping cloud sync because user is unauthenticated.');
+        return;
+      }
+      
       const safeProfileId = profileId || 'default_child';
-      const documentId = `${baseUid}_${safeProfileId}`;
+      // Use auth UID as document ID (or baseUid) so security rules (request.auth.uid == userId) succeed
+      const documentId = baseUid;
       const userRef = doc(db, LEADERBOARD_COLLECTION, documentId);
 
       const payload = {
