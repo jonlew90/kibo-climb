@@ -9,6 +9,8 @@ export const ITEM_CATEGORIES = [
   { id: 'fx', label: 'Visual FX' },
   { id: 'skins', label: 'Kibo Skins' },
   { id: 'background', label: 'Backgrounds' },
+  { id: 'seasonal', label: 'Seasonal' },
+  { id: 'promo', label: 'Promo Exclusives' },
   { id: 'get_sparks', label: 'Get Sparks' }
 ];
 
@@ -112,6 +114,14 @@ export const WORKSHOP_ITEMS = [
     description: 'Keep the math beats going while climbing Mount Kibo!'
   },
   {
+    id: 'ninja_headband',
+    name: 'Ninja Headband',
+    category: 'headwear',
+    cost: 250,
+    rarity: 'rare',
+    description: 'A sleek black shinobi headband for stealthy climbs.'
+  },
+  {
     id: 'wizard_hat',
     name: 'Wizard Hat',
     category: 'headwear',
@@ -154,6 +164,14 @@ export const WORKSHOP_ITEMS = [
     cost: 160,
     rarity: 'rare',
     description: 'Heavy duty expedition climbing backpack.'
+  },
+  {
+    id: 'grappling_hook',
+    name: 'Grappling Hook',
+    category: 'gear',
+    cost: 250,
+    rarity: 'rare',
+    description: 'Essential climbing gear for reaching those high peaks faster.'
   },
   {
     id: 'lantern',
@@ -209,6 +227,15 @@ export const WORKSHOP_ITEMS = [
     description: 'Cozy knitted winter scarf with gold stripes.'
   },
   {
+    id: 'astronaut_suit',
+    name: 'Astronaut Suit',
+    category: 'outfits',
+    cost: 800,
+    rarity: 'epic',
+    requiredRank: 1250,
+    description: 'A stellar spacesuit for climbing beyond the atmosphere!'
+  },
+  {
     id: 'royal_cape',
     name: 'Royal Velvet Cape',
     category: 'outfits',
@@ -234,6 +261,14 @@ export const WORKSHOP_ITEMS = [
     cost: 180,
     rarity: 'rare',
     description: 'Playful arctic mountain fox cub companion.'
+  },
+  {
+    id: 'mini_robot',
+    name: 'Mini Robot Companion',
+    category: 'pets',
+    cost: 350,
+    rarity: 'rare',
+    description: 'A friendly floating robot companion to beep and boop by your side.'
   },
   {
     id: 'phoenix_pet',
@@ -426,6 +461,26 @@ export const WORKSHOP_ITEMS = [
     rarity: 'legendary',
     requiredRank: 1650,
     description: 'Royal golden palace floating in the clouds!'
+  },
+
+  // SEASONAL (Category: seasonal)
+  {
+    id: 'pumpkin_hat',
+    name: 'Jack-o\'-Lantern Head',
+    category: 'seasonal',
+    cost: 150,
+    rarity: 'rare',
+    description: 'Spooky scary pumpkin hat for autumn climbing!'
+  },
+
+  // PROMO EXCLUSIVES (Category: promo)
+  {
+    id: 'golden_ticket',
+    name: 'Golden Ticket',
+    category: 'promo',
+    cost: 0,
+    rarity: 'legendary',
+    description: 'A very special ticket unlocked via an exclusive promo code!'
   }
 ];
 
