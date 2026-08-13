@@ -139,9 +139,20 @@ export const authService = {
             const res = await linkWithPopup(currentFirebaseUser, googleProvider);
             linkedUser = res.user;
           } catch (linkError) {
-            if (linkError.code === 'auth/credential-already-in-use') {
-              const res = await signInWithPopup(auth, googleProvider);
-              linkedUser = res.user;
+            if (linkError.code === 'auth/credential-already-in-use' || linkError.code === 'auth/email-already-in-use') {
+              const credential = GoogleAuthProvider.credentialFromError(linkError);
+              if (credential) {
+                try {
+                  const res = await signInWithCredential(auth, credential);
+                  linkedUser = res.user;
+                } catch (credErr) {
+                  const res = await signInWithPopup(auth, googleProvider);
+                  linkedUser = res.user;
+                }
+              } else {
+                const res = await signInWithPopup(auth, googleProvider);
+                linkedUser = res.user;
+              }
             } else {
               throw linkError;
             }
@@ -168,9 +179,20 @@ export const authService = {
             const res = await linkWithPopup(currentFirebaseUser, appleProvider);
             linkedUser = res.user;
           } catch (linkError) {
-            if (linkError.code === 'auth/credential-already-in-use') {
-              const res = await signInWithPopup(auth, appleProvider);
-              linkedUser = res.user;
+            if (linkError.code === 'auth/credential-already-in-use' || linkError.code === 'auth/email-already-in-use') {
+              const credential = OAuthProvider.credentialFromError(linkError);
+              if (credential) {
+                try {
+                  const res = await signInWithCredential(auth, credential);
+                  linkedUser = res.user;
+                } catch (credErr) {
+                  const res = await signInWithPopup(auth, appleProvider);
+                  linkedUser = res.user;
+                }
+              } else {
+                const res = await signInWithPopup(auth, appleProvider);
+                linkedUser = res.user;
+              }
             } else {
               throw linkError;
             }
