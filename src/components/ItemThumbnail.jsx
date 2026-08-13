@@ -162,8 +162,8 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
             <rect x="25" y="16" width="50" height="16" rx="6" fill="#15803D" stroke="#166534" strokeWidth="3" />
             <rect x="36" y="14" width="5" height="20" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
             <rect x="59" y="14" width="5" height="20" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
-            <rect x="18" y="28" width="64" height="58" rx="16" fill="#B45309" stroke="#78350F" strokeWidth="4" />
-            <rect x="28" y="52" width="44" height="26" rx="8" fill="#D97706" stroke="#78350F" strokeWidth="3" />
+            <rect x="18" y="28" width="64" height="58" rx="16" fill="#0284C7" stroke="#0C4A6E" strokeWidth="4" />
+            <rect x="28" y="52" width="44" height="26" rx="8" fill="#38BDF8" stroke="#0C4A6E" strokeWidth="3" />
           </g>
         )}
 
@@ -191,11 +191,30 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'golden_compass' && (
+        {(itemId === 'climbing_poles' || itemId === 'golden_compass') && (
           <g>
-            <circle cx="50" cy="50" r="30" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="4" />
-            <polygon points="50,26 56,50 50,74 44,50" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
-            <polygon points="50,50 74,50 50,56 26,50" fill="#0EA5E9" />
+            {/* Left Pole */}
+            <g transform="rotate(-18 38 50)">
+              <line x1="38" y1="15" x2="38" y2="85" stroke="#CBD5E1" strokeWidth="4" strokeLinecap="round" />
+              <line x1="38" y1="45" x2="38" y2="85" stroke="#0284C7" strokeWidth="3" strokeLinecap="round" />
+              <rect x="35" y="42" width="6" height="5" rx="1.5" fill="#0F172A" />
+              <rect x="35" y="66" width="6" height="5" rx="1.5" fill="#0F172A" />
+              <rect x="34" y="15" width="8" height="24" rx="3.5" fill="#D97706" stroke="#78350F" strokeWidth="1.5" />
+              <path d="M 34 22 Q 22 28 28 36 Q 35 38 35 28" stroke="#F97316" strokeWidth="2.5" fill="none" />
+              <ellipse cx="38" cy="78" rx="9" ry="3.5" fill="#334155" />
+              <line x1="38" y1="82" x2="38" y2="88" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
+            </g>
+            {/* Right Pole */}
+            <g transform="rotate(18 62 50)">
+              <line x1="62" y1="15" x2="62" y2="85" stroke="#CBD5E1" strokeWidth="4" strokeLinecap="round" />
+              <line x1="62" y1="45" x2="62" y2="85" stroke="#0284C7" strokeWidth="3" strokeLinecap="round" />
+              <rect x="59" y="42" width="6" height="5" rx="1.5" fill="#0F172A" />
+              <rect x="59" y="66" width="6" height="5" rx="1.5" fill="#0F172A" />
+              <rect x="58" y="15" width="8" height="24" rx="3.5" fill="#D97706" stroke="#78350F" strokeWidth="1.5" />
+              <path d="M 66 22 Q 78 28 72 36 Q 65 38 65 28" stroke="#F97316" strokeWidth="2.5" fill="none" />
+              <ellipse cx="62" cy="78" rx="9" ry="3.5" fill="#334155" />
+              <line x1="62" y1="82" x2="62" y2="88" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
+            </g>
           </g>
         )}
 

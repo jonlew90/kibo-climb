@@ -233,20 +233,20 @@ export default function WorkshopModal({
       {/* PINNED TOP STAGE & CATEGORY FILTERS */}
       <div className="w-full max-w-4xl mx-auto p-4 sm:px-6 sm:pt-4 sm:pb-3 shrink-0 space-y-3 bg-slate-50 border-b border-slate-200 shadow-xs z-10">
         {/* Live Try-On Preview Mascot Stage Header */}
-        <div className="bg-white border-2 border-slate-200 rounded-2xl p-3 flex items-center justify-center gap-4 sm:gap-6 shadow-sm relative">
+        <div className="bg-white border-2 border-slate-200 rounded-2xl p-4 sm:p-5 flex items-center justify-center gap-5 sm:gap-8 shadow-sm relative">
           {/* Locked Fixed Width Mascot Anchor Box */}
-          <div className="w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center relative p-1 overflow-visible">
-            <Mascot mood="happy" equipped={stageEquippedItems} className="w-24 h-24 sm:w-28 sm:h-28" />
+          <div className="w-36 h-36 sm:w-48 sm:h-48 shrink-0 flex items-center justify-center relative p-1 overflow-visible">
+            <Mascot mood="happy" equipped={stageEquippedItems} className="w-32 h-32 sm:w-44 sm:h-44" />
           </div>
 
-          <div className="text-left space-y-1.5 flex-1 max-w-[210px] shrink-0">
+          <div className="text-left space-y-2 flex-1 max-w-[240px] shrink-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               {hasUnownedPreview ? (
-                <span className="bg-purple-600 text-white font-black text-[9px] uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-sm">
+                <span className="bg-purple-600 text-white font-black text-[9px] sm:text-xs uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-sm">
                   <Sparkles className="w-3 h-3 fill-amber-300 stroke-[2.5]" /> Preview Mode
                 </span>
               ) : (
-                <span className="bg-emerald-600 text-white font-black text-[9px] uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                <span className="bg-emerald-600 text-white font-black text-[9px] sm:text-xs uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
                   <ShieldCheck className="w-3 h-3 stroke-[2.5]" /> Active Look
                 </span>
               )}
@@ -254,14 +254,14 @@ export default function WorkshopModal({
               {hasActivePreview && (
                 <button
                   onClick={handleResetPreview}
-                  className="text-[10px] font-extrabold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition-all border border-slate-200"
+                  className="text-[10px] sm:text-xs font-extrabold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition-all border border-slate-200"
                 >
                   <RotateCcw className="w-2.5 h-2.5" /> Reset
                 </button>
               )}
             </div>
 
-            <p className="text-xs font-bold text-slate-600 leading-snug">
+            <p className="text-xs sm:text-sm font-bold text-slate-600 leading-snug">
               {hasUnownedPreview
                 ? 'Tap any item to try it on Kibo! Buy items below to unlock.'
                 : 'Customize Kibo with outfits, gear, pets, and trail effects!'}
@@ -317,17 +317,17 @@ export default function WorkshopModal({
       </div>
 
       {/* DEDICATED INDEPENDENT ITEM GRID SCROLL CONTAINER */}
-      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6">
-        <div className="space-y-3 pb-6">
+      <main className="flex-1 min-h-0 max-h-[48vh] sm:max-h-[52vh] overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-3 sm:p-5">
+        <div className="space-y-2.5 pb-6">
           {/* Promotional Account Link Banner in Shop */}
           {authService.getAuthState().isAnonymous && onRequestAccountLink && (
             <div
               onClick={onRequestAccountLink}
-              className="mb-3 w-full bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-300 rounded-2xl p-3 flex flex-row items-center justify-between shadow-sm cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
+              className="mb-2.5 w-full bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-300 rounded-2xl p-2.5 flex flex-row items-center justify-between shadow-sm cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center border-2 border-amber-400 shrink-0 shadow-inner">
-                  <Zap className="w-6 h-6 text-amber-500 fill-amber-400 animate-pulse" />
+                <div className="w-9 h-9 bg-amber-50 rounded-full flex items-center justify-center border-2 border-amber-400 shrink-0 shadow-inner">
+                  <Zap className="w-5 h-5 text-amber-500 fill-amber-400 animate-pulse" />
                 </div>
                 <div className="text-left">
                   <h3 className="text-sm font-black text-amber-950 leading-tight">Link Account for +200 ⚡</h3>
@@ -344,7 +344,7 @@ export default function WorkshopModal({
 
           {activeCategory === 'get_sparks' ? (
             allowRealMoneyPurchases ? (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {[
                   { id: 'sparks_pack_1', name: 'Handful of Sparks', sparks: 500, price: '$1.99', description: 'A nice little boost to get you that special item!' },
                   { id: 'sparks_pack_2', name: 'Pouch of Sparks', sparks: 1200, price: '$3.99', description: 'More than double the sparks for your adventures!' },
@@ -353,10 +353,10 @@ export default function WorkshopModal({
                 ].map((pack) => (
                   <div
                     key={pack.id}
-                    className="bg-white p-3.5 rounded-2xl border-2 border-amber-200 shadow-sm transition-all flex items-center justify-between gap-3"
+                    className="bg-white p-2.5 sm:p-3 rounded-2xl border-2 border-amber-200 shadow-sm transition-all flex items-center justify-between gap-3"
                   >
-                    <div className="w-12 h-12 shrink-0 bg-amber-100 rounded-xl flex items-center justify-center border-2 border-amber-300">
-                      <Zap className="w-6 h-6 fill-amber-500 text-amber-600" />
+                    <div className="w-10 h-10 shrink-0 bg-amber-100 rounded-xl flex items-center justify-center border-2 border-amber-300">
+                      <Zap className="w-5 h-5 fill-amber-500 text-amber-600" />
                     </div>
                     <div className="space-y-1 text-left flex-1 min-w-0">
                       <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{pack.name}</h4>
@@ -369,7 +369,7 @@ export default function WorkshopModal({
                       <button
                         type="button"
                         onClick={() => onBuySparksPackage(pack)}
-                        className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                        className="btn-3d-orange px-3 py-1.5 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                       >
                         Buy for {pack.price}
                       </button>
@@ -378,8 +378,8 @@ export default function WorkshopModal({
                 ))}
               </div>
             ) : (
-              <div className="py-12 text-center text-slate-500 font-bold space-y-3 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-6">
-                <Lock className="w-10 h-10 mx-auto text-slate-400 stroke-[1.5]" />
+              <div className="py-8 text-center text-slate-500 font-bold space-y-3 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-4">
+                <Lock className="w-8 h-8 mx-auto text-slate-400 stroke-[1.5]" />
                 <p className="text-sm font-black text-slate-700">Real-Money Purchases Disabled</p>
                 <p className="text-xs text-slate-500 max-w-xs mx-auto">
                   Ask your parent to enable this feature in the <strong>Parent Zone</strong> dashboard.
@@ -387,8 +387,8 @@ export default function WorkshopModal({
               </div>
             )
           ) : currentCategoryItems.length === 0 ? (
-            <div className="py-12 text-center text-slate-500 font-bold space-y-2 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-6">
-              <ShoppingBag className="w-10 h-10 mx-auto text-slate-400 stroke-[1.5]" />
+            <div className="py-8 text-center text-slate-500 font-bold space-y-2 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-4">
+              <ShoppingBag className="w-8 h-8 mx-auto text-slate-400 stroke-[1.5]" />
               <p className="text-sm font-black text-slate-700">No items available in this category yet!</p>
               <p className="text-xs text-slate-500">Check back soon for new gear and power-ups.</p>
             </div>
@@ -410,7 +410,7 @@ export default function WorkshopModal({
                 <div
                   key={item.id}
                   onClick={() => handlePreviewToggle(item)}
-                  className={`p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 cursor-pointer relative ${
+                  className={`p-2.5 sm:p-3 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 cursor-pointer relative ${
                     isJustPurchased
                       ? 'ring-4 ring-emerald-400 border-emerald-500 bg-emerald-50/90 shadow-xl scale-[1.01]'
                       : isPreviewedOnStage

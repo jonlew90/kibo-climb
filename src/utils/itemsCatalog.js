@@ -173,13 +173,13 @@ export const WORKSHOP_ITEMS = [
     description: 'Futuristic twin rocket thruster jetpack!'
   },
   {
-    id: 'golden_compass',
-    name: '24K Golden Compass',
+    id: 'climbing_poles',
+    name: 'Climbing Poles',
     category: 'gear',
     cost: 1600,
     rarity: 'legendary',
     requiredRank: 1550,
-    description: 'Enchanted solid 24k gold navigational compass.'
+    description: 'Pro-tier telescopic carbon fiber climbing & trekking poles.'
   },
 
   // OUTFITS (Slot: outfits)

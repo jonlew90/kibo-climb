@@ -33,6 +33,26 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? 'url(#jadeBodyGrad)'
     : 'url(#kibo3DBodyGrad)';
 
+  const secondaryFill = hasGoldenSkin
+    ? 'url(#goldDarkGrad)'
+    : hasSnowWhiteSkin
+    ? 'url(#snowWhiteDarkGrad)'
+    : hasMidnightSkin
+    ? 'url(#midnightDarkGrad)'
+    : hasJadeSkin
+    ? 'url(#jadeDarkGrad)'
+    : 'url(#kibo3DDarkGrad)';
+
+  const tailFill = hasGoldenSkin
+    ? 'url(#goldBodyGrad)'
+    : hasSnowWhiteSkin
+    ? 'url(#snowWhiteBodyGrad)'
+    : hasMidnightSkin
+    ? 'url(#midnightBodyGrad)'
+    : hasJadeSkin
+    ? 'url(#jadeBodyGrad)'
+    : 'url(#tailGrad)';
+
   const bodyStroke = hasGoldenSkin
     ? '#B45309'
     : hasSnowWhiteSkin
@@ -43,25 +63,89 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? '#047857'
     : '#8A2500';
 
-  const footStroke = hasGoldenSkin
-    ? '#B45309'
+  const secondaryStroke = hasGoldenSkin
+    ? '#78350F'
+    : hasSnowWhiteSkin
+    ? '#0369A1'
+    : hasMidnightSkin
+    ? '#020617'
+    : hasJadeSkin
+    ? '#064E3B'
+    : '#5c3021';
+
+  const earInnerFill = hasGoldenSkin
+    ? 'url(#goldEarInnerGrad)'
+    : hasSnowWhiteSkin
+    ? 'url(#snowWhiteEarInnerGrad)'
+    : hasMidnightSkin
+    ? 'url(#midnightEarInnerGrad)'
+    : hasJadeSkin
+    ? 'url(#jadeEarInnerGrad)'
+    : 'url(#kibo3DEarInner)';
+
+  const facePatchFill = hasGoldenSkin
+    ? 'url(#goldFaceGrad)'
+    : hasSnowWhiteSkin
+    ? 'url(#snowWhiteFaceGrad)'
+    : hasMidnightSkin
+    ? 'url(#midnightFaceGrad)'
+    : hasJadeSkin
+    ? 'url(#jadeFaceGrad)'
+    : 'url(#kibo3DWhiteGrad)';
+
+  const pawPadFill = hasGoldenSkin
+    ? '#FEF08A'
+    : hasSnowWhiteSkin
+    ? '#7DD3FC'
+    : hasMidnightSkin
+    ? '#38BDF8'
+    : hasJadeSkin
+    ? '#A7F3D0'
+    : '#fca4a9';
+
+  const eyebrowFill = hasGoldenSkin
+    ? '#FEF08A'
+    : hasSnowWhiteSkin
+    ? '#E0F2FE'
+    : hasMidnightSkin
+    ? '#94A3B8'
+    : hasJadeSkin
+    ? '#A7F3D0'
+    : '#ffffff';
+
+  const whiskerStroke = hasGoldenSkin
+    ? '#78350F'
     : hasSnowWhiteSkin
     ? '#0284C7'
     : hasMidnightSkin
-    ? '#0F172A'
+    ? '#475569'
     : hasJadeSkin
     ? '#047857'
-    : '#9E2A00';
+    : '#5c3021';
 
-  const earInnerFill = hasGoldenSkin
-    ? '#FDE047'
+  const eyeFill = hasGoldenSkin
+    ? '#78350F'
     : hasSnowWhiteSkin
-    ? '#BAE6FD'
+    ? '#0C4A6E'
     : hasMidnightSkin
-    ? '#334155'
+    ? '#020617'
     : hasJadeSkin
-    ? '#6EE7B7'
-    : 'url(#kibo3DEarInner)';
+    ? '#064E3B'
+    : '#4a271d';
+
+  const eyeLineStroke = eyeFill;
+  const noseFill = eyeFill;
+  const mouthStroke = eyeFill;
+
+  const blushFill = hasGoldenSkin
+    ? '#FCD34D'
+    : hasSnowWhiteSkin
+    ? '#F472B6'
+    : hasMidnightSkin
+    ? '#38BDF8'
+    : hasJadeSkin
+    ? '#F472B6'
+    : '#ff99a1';
 
   // Pets
   const hasSnowyOwl = isEquipped('snowy_owl');
@@ -92,7 +176,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasBackpack = isEquipped('backpack');
   const hasCanteen = isEquipped('canteen');
   const hasLantern = isEquipped('lantern');
-  const hasGoldenCompass = isEquipped('golden_compass');
+  const hasClimbingPoles = isEquipped('climbing_poles') || isEquipped('golden_compass');
   const hasVest = isEquipped('vest');
   const hasSummitScarf = isEquipped('summit_scarf');
   const hasRoyalCape = isEquipped('royal_cape');
@@ -213,7 +297,16 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
       {hasGoldenSkin && (
         <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 opacity-90 blur-xl animate-pulse pointer-events-none scale-125" />
       )}
-      {hasStarlightAura && !hasGoldenSkin && (
+      {hasSnowWhiteSkin && (
+        <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-cyan-200 via-sky-300 to-blue-400 opacity-80 blur-xl animate-pulse pointer-events-none scale-125" />
+      )}
+      {hasMidnightSkin && (
+        <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-600 to-slate-900 opacity-85 blur-xl animate-pulse pointer-events-none scale-125" />
+      )}
+      {hasJadeSkin && (
+        <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-emerald-300 via-teal-400 to-emerald-600 opacity-85 blur-xl animate-pulse pointer-events-none scale-125" />
+      )}
+      {hasStarlightAura && !hasCustomSkin && (
         <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 opacity-70 blur-lg animate-pulse pointer-events-none scale-110" />
       )}
 
@@ -322,6 +415,19 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <stop offset="80%" stopColor="#B45309" />
             <stop offset="100%" stopColor="#78350F" />
           </linearGradient>
+          <linearGradient id="goldDarkGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FBBF24" />
+            <stop offset="50%" stopColor="#D97706" />
+            <stop offset="100%" stopColor="#78350F" />
+          </linearGradient>
+          <linearGradient id="goldEarInnerGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FFFBEB" />
+            <stop offset="100%" stopColor="#FDE047" />
+          </linearGradient>
+          <radialGradient id="goldFaceGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#FFFBEB" />
+            <stop offset="100%" stopColor="#FEF08A" />
+          </radialGradient>
 
           {/* WINTER FROST WHITE FUR GRADIENT */}
           <linearGradient id="snowWhiteBodyGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
@@ -329,6 +435,19 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <stop offset="60%" stopColor="#F0F9FF" />
             <stop offset="100%" stopColor="#BAE6FD" />
           </linearGradient>
+          <linearGradient id="snowWhiteDarkGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#E0F2FE" />
+            <stop offset="50%" stopColor="#BAE6FD" />
+            <stop offset="100%" stopColor="#0284C7" />
+          </linearGradient>
+          <linearGradient id="snowWhiteEarInnerGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="100%" stopColor="#E0F2FE" />
+          </linearGradient>
+          <radialGradient id="snowWhiteFaceGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="100%" stopColor="#F0F9FF" />
+          </radialGradient>
 
           {/* MIDNIGHT OBSIDIAN FUR GRADIENT */}
           <linearGradient id="midnightBodyGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
@@ -336,6 +455,19 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <stop offset="55%" stopColor="#1E293B" />
             <stop offset="100%" stopColor="#0F172A" />
           </linearGradient>
+          <linearGradient id="midnightDarkGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#334155" />
+            <stop offset="50%" stopColor="#1E293B" />
+            <stop offset="100%" stopColor="#020617" />
+          </linearGradient>
+          <linearGradient id="midnightEarInnerGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#475569" />
+            <stop offset="100%" stopColor="#1E293B" />
+          </linearGradient>
+          <radialGradient id="midnightFaceGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#64748B" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#334155" stopOpacity="0.8" />
+          </radialGradient>
 
           {/* MYSTIC JADE EMERALD FUR GRADIENT */}
           <linearGradient id="jadeBodyGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
@@ -343,6 +475,19 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <stop offset="55%" stopColor="#10B981" />
             <stop offset="100%" stopColor="#047857" />
           </linearGradient>
+          <linearGradient id="jadeDarkGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#34D399" />
+            <stop offset="50%" stopColor="#059669" />
+            <stop offset="100%" stopColor="#064E3B" />
+          </linearGradient>
+          <linearGradient id="jadeEarInnerGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#ECFDF5" />
+            <stop offset="100%" stopColor="#A7F3D0" />
+          </linearGradient>
+          <radialGradient id="jadeFaceGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ECFDF5" />
+            <stop offset="100%" stopColor="#A7F3D0" />
+          </radialGradient>
 
           {/* Neon Headphones Gradient */}
           <linearGradient id="neonHeadphoneGrad" x1="0" y1="0" x2="1" y2="1">
@@ -525,29 +670,29 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           <g id="disco-fever-spotlight-back">
             {/* Multi-Color Disco Dance Floor Spotlights */}
             <g className="animate-disco-spotlight">
-              <polygon points="100,25 30,190 70,190" fill="#F472B6" opacity="0.25" />
-              <polygon points="100,25 130,190 170,190" fill="#38BDF8" opacity="0.25" />
-              <polygon points="100,25 70,190 130,190" fill="#FDE047" opacity="0.2" />
+              <polygon points="100,-13 30,190 70,190" fill="#F472B6" opacity="0.25" />
+              <polygon points="100,-13 130,190 170,190" fill="#38BDF8" opacity="0.25" />
+              <polygon points="100,-13 70,190 130,190" fill="#FDE047" opacity="0.2" />
             </g>
 
             {/* Hanging Wire & Top Mount */}
-            <line x1="100" y1="0" x2="100" y2="15" stroke="#94A3B8" strokeWidth="2" />
-            <rect x="94" y="12" width="12" height="6" rx="2" fill="#64748B" />
+            <line x1="100" y1="-35" x2="100" y2="-23" stroke="#94A3B8" strokeWidth="2" />
+            <rect x="94" y="-25" width="12" height="6" rx="2" fill="#64748B" />
 
             {/* Revolving Mirror Disco Ball */}
             <g className="animate-disco-ball">
-              <circle cx="100" cy="28" r="13" fill="#E2E8F0" stroke="#475569" strokeWidth="1.5"  />
+              <circle cx="100" cy="-10" r="13" fill="#E2E8F0" stroke="#475569" strokeWidth="1.5"  />
               {/* Mirror Facet Grid */}
-              <line x1="87" y1="28" x2="113" y2="28" stroke="#94A3B8" strokeWidth="1" />
-              <line x1="89" y1="23" x2="111" y2="23" stroke="#94A3B8" strokeWidth="1" />
-              <line x1="89" y1="33" x2="111" y2="33" stroke="#94A3B8" strokeWidth="1" />
-              <line x1="100" y1="15" x2="100" y2="41" stroke="#94A3B8" strokeWidth="1" />
-              <line x1="95" y1="16" x2="95" y2="40" stroke="#94A3B8" strokeWidth="1" />
-              <line x1="105" y1="16" x2="105" y2="40" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="87" y1="-10" x2="113" y2="-10" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="89" y1="-15" x2="111" y2="-15" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="89" y1="-5" x2="111" y2="-5" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="100" y1="-23" x2="100" y2="3" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="95" y1="-22" x2="95" y2="2" stroke="#94A3B8" strokeWidth="1" />
+              <line x1="105" y1="-22" x2="105" y2="2" stroke="#94A3B8" strokeWidth="1" />
               {/* Sparkling Metallic Highlights */}
-              <circle cx="96" cy="24" r="1.5" fill="#FFFFFF" />
-              <circle cx="104" cy="30" r="1.5" fill="#FFFFFF" />
-              <circle cx="102" cy="21" r="1.2" fill="#FFFFFF" />
+              <circle cx="96" cy="-14" r="1.5" fill="#FFFFFF" />
+              <circle cx="104" cy="-8" r="1.5" fill="#FFFFFF" />
+              <circle cx="102" cy="-17" r="1.2" fill="#FFFFFF" />
             </g>
           </g>
         )}
@@ -635,11 +780,11 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
                 <rect x="121" y="73" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
 
                 {/* Main Heavy Duty Expedition Backpack Body */}
-                <rect x="34" y="94" width="132" height="82" rx="24" fill="#B45309" stroke="#78350F" strokeWidth="4" />
+                <rect x="34" y="94" width="132" height="82" rx="24" fill="#0284C7" stroke="#0C4A6E" strokeWidth="4" />
                 
                 {/* Side Water Bottle Pockets */}
-                <rect x="25" y="98" width="16" height="44" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
-                <rect x="159" y="98" width="16" height="44" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
+                <rect x="25" y="98" width="16" height="44" rx="6" fill="#38BDF8" stroke="#0C4A6E" strokeWidth="2.5" />
+                <rect x="159" y="98" width="16" height="44" rx="6" fill="#38BDF8" stroke="#0C4A6E" strokeWidth="2.5" />
               </g>
             )}
 
@@ -658,8 +803,8 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             {/* Animated 3D Tail */}
             <path
               d="M 60 140 C 20 160, -20 130, -5 90 C 10 50, 40 100, 60 110 Z"
-              fill={hasCustomSkin ? bodyFill : 'url(#tailGrad)'}
-              stroke={hasCustomSkin ? bodyStroke : '#5c3021'}
+              fill={tailFill}
+              stroke={hasCustomSkin ? secondaryStroke : '#5c3021'}
               strokeWidth="2.5"
               className="transition-transform duration-300 origin-bottom"
             />
@@ -675,35 +820,35 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
               strokeWidth="2.5"
             />
 
-            {/* Dark Belly */}
+            {/* Dark/Secondary Belly */}
             <path
               d="M 65 140 C 65 110, 135 110, 135 140 C 135 175, 65 175, 65 140 Z"
-              fill="url(#kibo3DDarkGrad)"
-              stroke={hasCustomSkin ? bodyStroke : '#5c3021'}
+              fill={secondaryFill}
+              stroke={hasCustomSkin ? secondaryStroke : '#5c3021'}
               strokeWidth="2"
             />
 
             {/* Left Foot */}
             <g>
-              <ellipse cx="75" cy="170" rx="14" ry="16" fill="url(#kibo3DDarkGrad)" stroke={hasCustomSkin ? bodyStroke : '#5c3021'} strokeWidth="2.5" />
-              <circle cx="75" cy="174" r="5" fill="#fca4a9" />
-              <circle cx="67" cy="164" r="2.5" fill="#fca4a9" />
-              <circle cx="75" cy="161" r="2.5" fill="#fca4a9" />
-              <circle cx="83" cy="164" r="2.5" fill="#fca4a9" />
+              <ellipse cx="75" cy="170" rx="14" ry="16" fill={secondaryFill} stroke={hasCustomSkin ? secondaryStroke : '#5c3021'} strokeWidth="2.5" />
+              <circle cx="75" cy="174" r="5" fill={pawPadFill} />
+              <circle cx="67" cy="164" r="2.5" fill={pawPadFill} />
+              <circle cx="75" cy="161" r="2.5" fill={pawPadFill} />
+              <circle cx="83" cy="164" r="2.5" fill={pawPadFill} />
             </g>
 
             {/* Right Foot */}
             <g>
-              <ellipse cx="125" cy="170" rx="14" ry="16" fill="url(#kibo3DDarkGrad)" stroke={hasCustomSkin ? bodyStroke : '#5c3021'} strokeWidth="2.5" />
-              <circle cx="125" cy="174" r="5" fill="#fca4a9" />
-              <circle cx="117" cy="164" r="2.5" fill="#fca4a9" />
-              <circle cx="125" cy="161" r="2.5" fill="#fca4a9" />
-              <circle cx="133" cy="164" r="2.5" fill="#fca4a9" />
+              <ellipse cx="125" cy="170" rx="14" ry="16" fill={secondaryFill} stroke={hasCustomSkin ? secondaryStroke : '#5c3021'} strokeWidth="2.5" />
+              <circle cx="125" cy="174" r="5" fill={pawPadFill} />
+              <circle cx="117" cy="164" r="2.5" fill={pawPadFill} />
+              <circle cx="125" cy="161" r="2.5" fill={pawPadFill} />
+              <circle cx="133" cy="164" r="2.5" fill={pawPadFill} />
             </g>
 
             {/* Arms */}
-            <path d="M 60 120 C 60 160, 85 160, 95 155 C 90 145, 80 130, 75 110 Z" fill="url(#kibo3DDarkGrad)" stroke={hasCustomSkin ? bodyStroke : '#5c3021'} strokeWidth="2" />
-            <path d="M 140 120 C 140 160, 115 160, 105 155 C 110 145, 120 130, 125 110 Z" fill="url(#kibo3DDarkGrad)" stroke={hasCustomSkin ? bodyStroke : '#5c3021'} strokeWidth="2" />
+            <path d="M 60 120 C 60 160, 85 160, 95 155 C 90 145, 80 130, 75 110 Z" fill={secondaryFill} stroke={hasCustomSkin ? secondaryStroke : '#5c3021'} strokeWidth="2" />
+            <path d="M 140 120 C 140 160, 115 160, 105 155 C 110 145, 120 130, 125 110 Z" fill={secondaryFill} stroke={hasCustomSkin ? secondaryStroke : '#5c3021'} strokeWidth="2" />
 
             {/* Ears with Micro Twitching */}
             <g className={`transition-transform duration-200 ${isEarTwitching ? '-rotate-6 translate-y-0.5' : ''}`}>
@@ -784,44 +929,42 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           {/* LAYER 4: FACE (Eyes, Nose, Expressive Expressions)   */}
           {/* ==================================================== */}
           <g id="layer-face">
-            {/* White Face Patches */}
-            {!hasCustomSkin && (
-              <>
-                <ellipse cx="75" cy="85" rx="20" ry="25" fill="url(#kibo3DWhiteGrad)" />
-                <ellipse cx="125" cy="85" rx="20" ry="25" fill="url(#kibo3DWhiteGrad)" />
-                <ellipse cx="100" cy="100" rx="22" ry="18" fill="url(#kibo3DWhiteGrad)" />
-              </>
-            )}
+            {/* Face Patches */}
+            <g>
+              <ellipse cx="75" cy="85" rx="20" ry="25" fill={facePatchFill} />
+              <ellipse cx="125" cy="85" rx="20" ry="25" fill={facePatchFill} />
+              <ellipse cx="100" cy="100" rx="22" ry="18" fill={facePatchFill} />
+            </g>
 
             {/* Blush */}
-            <ellipse cx="70" cy="98" rx="8" ry="4" fill="#ff99a1" opacity="0.6" />
-            <ellipse cx="130" cy="98" rx="8" ry="4" fill="#ff99a1" opacity="0.6" />
+            <ellipse cx="70" cy="98" rx="8" ry="4" fill={blushFill} opacity="0.6" />
+            <ellipse cx="130" cy="98" rx="8" ry="4" fill={blushFill} opacity="0.6" />
 
             {/* Whiskers */}
-            <path d="M 35 95 L 15 90 M 35 100 L 10 100 M 38 105 L 15 110" stroke="#5c3021" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M 165 95 L 185 90 M 165 100 L 190 100 M 162 105 L 185 110" stroke="#5c3021" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M 35 95 L 15 90 M 35 100 L 10 100 M 38 105 L 15 110" stroke={whiskerStroke} strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M 165 95 L 185 90 M 165 100 L 190 100 M 162 105 L 185 110" stroke={whiskerStroke} strokeWidth="1.5" strokeLinecap="round" />
 
             {/* Eyebrows */}
-            <ellipse cx="70" cy="62" rx="6" ry="4" fill="#ffffff" transform="rotate(-15 70 62)" />
-            <ellipse cx="130" cy="62" rx="6" ry="4" fill="#ffffff" transform="rotate(15 130 62)" />
+            <ellipse cx="70" cy="62" rx="6" ry="4" fill={eyebrowFill} transform="rotate(-15 70 62)" />
+            <ellipse cx="130" cy="62" rx="6" ry="4" fill={eyebrowFill} transform="rotate(15 130 62)" />
 
             {/* Eyes with Blinking State */}
             <g className={`transition-transform duration-150 ${getMoodEyeTransform()}`}>
               {isBlinking ? (
                 <>
-                  <path d="M 68 83 Q 78 83 88 83" stroke="#4a271d" strokeWidth="3.5" strokeLinecap="round" />
-                  <path d="M 112 83 Q 122 83 132 83" stroke="#4a271d" strokeWidth="3.5" strokeLinecap="round" />
+                  <path d="M 68 83 Q 78 83 88 83" stroke={eyeLineStroke} strokeWidth="3.5" strokeLinecap="round" />
+                  <path d="M 112 83 Q 122 83 132 83" stroke={eyeLineStroke} strokeWidth="3.5" strokeLinecap="round" />
                 </>
               ) : (
                 <>
                   {/* Left Eye */}
-                  <ellipse cx="78" cy="83" rx="11" ry="14" fill="#4a271d" />
+                  <ellipse cx="78" cy="83" rx="11" ry="14" fill={eyeFill} />
                   <circle cx="75" cy="77" r="4" fill="#ffffff" />
                   <path d="M 83 78 Q 83 81 86 81 Q 83 81 83 84 Q 83 81 80 81 Q 83 81 83 78 Z" fill="#ffffff" />
                   <circle cx="79" cy="89" r="1.5" fill="#ffffff" />
 
                   {/* Right Eye */}
-                  <ellipse cx="122" cy="83" rx="11" ry="14" fill="#4a271d" />
+                  <ellipse cx="122" cy="83" rx="11" ry="14" fill={eyeFill} />
                   <circle cx="119" cy="77" r="4" fill="#ffffff" />
                   <path d="M 127 78 Q 127 81 130 81 Q 127 81 127 84 Q 127 81 124 81 Q 127 81 127 78 Z" fill="#ffffff" />
                   <circle cx="123" cy="89" r="1.5" fill="#ffffff" />
@@ -830,13 +973,13 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             </g>
 
             {/* Nose */}
-            <ellipse cx="100" cy="94" rx="5" ry="3.5" fill="#4a271d" />
+            <ellipse cx="100" cy="94" rx="5" ry="3.5" fill={noseFill} />
 
             {/* Expressive Mouth */}
             {mood === 'sad' ? (
-              <path d="M 94 105 Q 97 100 100 105 Q 103 100 106 105" stroke="#4a271d" strokeWidth="2" strokeLinecap="round" fill="none" />
+              <path d="M 94 105 Q 97 100 100 105 Q 103 100 106 105" stroke={mouthStroke} strokeWidth="2" strokeLinecap="round" fill="none" />
             ) : (
-              <path d="M 94 100 Q 97 105 100 100 Q 103 105 106 100" stroke="#4a271d" strokeWidth="2" strokeLinecap="round" fill="none" />
+              <path d="M 94 100 Q 97 105 100 100 Q 103 105 106 100" stroke={mouthStroke} strokeWidth="2" strokeLinecap="round" fill="none" />
             )}
           </g>
 
@@ -844,10 +987,33 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           {/* LAYER 5: HAND-HELD GEAR & CANTEEN / LANTERN          */}
           {/* ==================================================== */}
           <g id="layer-gear">
-            {hasGoldenCompass && (
-              <g >
-                <circle cx="68" cy="148" r="12" fill="url(#goldBodyGrad)" stroke="#B45309" strokeWidth="2.5" />
-                <polygon points="68,140 71,148 68,156 65,148" fill="#EF4444" />
+            {hasClimbingPoles && (
+              <g id="gear-climbing-poles">
+                {/* Left Pole */}
+                <g transform="rotate(-12 55 145)">
+                  <line x1="55" y1="105" x2="55" y2="175" stroke="#94A3B8" strokeWidth="3" strokeLinecap="round" />
+                  <line x1="55" y1="130" x2="55" y2="175" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
+                  <rect x="53" y="128" width="4" height="4" rx="1" fill="#0F172A" />
+                  <rect x="53" y="150" width="4" height="4" rx="1" fill="#0F172A" />
+                  <rect x="52" y="105" width="6" height="18" rx="2.5" fill="#D97706" stroke="#92400E" strokeWidth="1" />
+                  <ellipse cx="55" cy="105" rx="4" ry="2.5" fill="#78350F" />
+                  <path d="M 52 110 Q 44 116 48 122 Q 53 124 53 115" stroke="#EA580C" strokeWidth="2" fill="none" strokeLinecap="round" />
+                  <ellipse cx="55" cy="168" rx="7" ry="2.5" fill="#1E293B" stroke="#0F172A" strokeWidth="1" />
+                  <line x1="55" y1="172" x2="55" y2="177" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+                </g>
+
+                {/* Right Pole */}
+                <g transform="rotate(12 145 145)">
+                  <line x1="145" y1="105" x2="145" y2="175" stroke="#94A3B8" strokeWidth="3" strokeLinecap="round" />
+                  <line x1="145" y1="130" x2="145" y2="175" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
+                  <rect x="143" y="128" width="4" height="4" rx="1" fill="#0F172A" />
+                  <rect x="143" y="150" width="4" height="4" rx="1" fill="#0F172A" />
+                  <rect x="142" y="105" width="6" height="18" rx="2.5" fill="#D97706" stroke="#92400E" strokeWidth="1" />
+                  <ellipse cx="145" cy="105" rx="4" ry="2.5" fill="#78350F" />
+                  <path d="M 148 110 Q 156 116 152 122 Q 147 124 147 115" stroke="#EA580C" strokeWidth="2" fill="none" strokeLinecap="round" />
+                  <ellipse cx="145" cy="168" rx="7" ry="2.5" fill="#1E293B" stroke="#0F172A" strokeWidth="1" />
+                  <line x1="145" y1="172" x2="145" y2="177" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+                </g>
               </g>
             )}
 

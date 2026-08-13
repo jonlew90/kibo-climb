@@ -428,12 +428,12 @@ svg {
 
 .animate-disco-ball {
   animation: discoBallSpin 4s linear infinite;
-  transform-origin: 100px 25px;
+  transform-origin: 100px -10px;
 }
 
 .animate-disco-spotlight {
   animation: discoSpotlightPulse 2s ease-in-out infinite;
-  transform-origin: 100px 25px;
+  transform-origin: 100px -10px;
 }
 
 /* --- RAINBOW FIREWORKS BURST ANIMATION --- */
