@@ -40,7 +40,11 @@ export default function Keypad({
         <button
           onClick={() => {
             soundFx.playKeyTap();
-            handleInputDigit('Yes');
+            if (onSubmit) {
+              onSubmit('Yes');
+            } else {
+              handleInputDigit('Yes');
+            }
           }}
           className="btn-3d-emerald flex-1 py-4 text-xl sm:text-2xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
           aria-label="Select Yes"
@@ -51,7 +55,11 @@ export default function Keypad({
         <button
           onClick={() => {
             soundFx.playKeyTap();
-            handleInputDigit('No');
+            if (onSubmit) {
+              onSubmit('No');
+            } else {
+              handleInputDigit('No');
+            }
           }}
           className="btn-3d-rose flex-1 py-4 text-xl sm:text-2xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
           aria-label="Select No"
@@ -89,9 +97,10 @@ export default function Keypad({
             type="button"
             onClick={() => {
               soundFx.playKeyTap();
-              handleInputDigit(opt);
               if (onSubmit) {
-                setTimeout(() => onSubmit(), 50);
+                onSubmit(opt);
+              } else {
+                handleInputDigit(opt);
               }
             }}
             className={`flex-1 py-4 text-xl sm:text-2xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all cursor-pointer ${

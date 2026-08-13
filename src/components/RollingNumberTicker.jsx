@@ -11,28 +11,18 @@ export default function RollingNumberTicker({
   label = '',
   className = '',
   icon = null,
-  showDeltaBadge = true,
+  showDeltaBadge = false,
   profileId = null
 }) {
   const [displayValue, setDisplayValue] = useState(value);
-  const [deltaEffect, setDeltaEffect] = useState(null);
   const prevValueRef = useRef(value);
   const prevProfileIdRef = useRef(profileId);
 
   useEffect(() => {
     const prev = prevValueRef.current;
     const diff = value - prev;
-    const isProfileChange = prevProfileIdRef.current !== profileId;
 
     if (diff !== 0) {
-      if (!isProfileChange) {
-        setDeltaEffect({
-          diff,
-          isPositive: diff > 0,
-          id: Date.now()
-        });
-      }
-
       // Rapid Slot Machine Rolling Effect (Steps over 500ms)
       const steps = 8;
       const stepDuration = 500 / steps;
@@ -50,16 +40,11 @@ export default function RollingNumberTicker({
         }
       }, stepDuration);
 
-      const timer = setTimeout(() => {
-        setDeltaEffect(null);
-      }, 1400);
-
       prevValueRef.current = value;
       prevProfileIdRef.current = profileId;
 
       return () => {
         clearInterval(interval);
-        clearTimeout(timer);
       };
     } else {
       setDisplayValue(value);
@@ -69,20 +54,6 @@ export default function RollingNumberTicker({
 
   return (
     <div className={`relative inline-flex items-center gap-1 select-none ${className}`}>
-      {/* Floating Slot Machine Delta Badge (+12 / -8) */}
-      {showDeltaBadge && deltaEffect && (
-        <span
-          key={deltaEffect.id}
-          className={`absolute -top-5 left-1/2 -translate-x-1/2 text-[11px] font-black px-2 py-0.5 rounded-full border shadow-md animate-slot-pop z-50 pointer-events-none whitespace-nowrap ${
-            deltaEffect.isPositive
-              ? 'bg-emerald-500 text-white border-emerald-300 shadow-emerald-900/30'
-              : 'bg-rose-600 text-white border-rose-400 shadow-rose-900/30'
-          }`}
-        >
-          {deltaEffect.isPositive ? `+${deltaEffect.diff}` : `${deltaEffect.diff}`}
-        </span>
-      )}
-
       {icon}
       {prefix && <span>{prefix}</span>}
 

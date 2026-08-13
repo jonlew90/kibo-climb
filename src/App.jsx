@@ -1234,7 +1234,6 @@ export default function App() {
                 >
                   <RollingNumberTicker
                     value={liveCompetenceRating}
-                    showDeltaBadge={true}
                     profileId={activeProfileId}
                     icon={<Trophy className="w-3.5 h-3.5 text-purple-700 stroke-[2.5]" />}
                   />

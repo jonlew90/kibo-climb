@@ -473,6 +473,7 @@ export default function AdaptiveSessionView({
   const processAnswerEvaluation = (userAnsString) => {
     if (!userAnsString || !userAnsString.trim()) return;
 
+    setInputVal(userAnsString);
     setConsecutiveSkips(0);
 
     if (problemStartTimeRef.current === 0) {
@@ -970,10 +971,10 @@ export default function AdaptiveSessionView({
         }
       } else if (e.key.toLowerCase() === 'y') {
         e.preventDefault();
-        handleDigitInput('Yes');
+        processAnswerEvaluation('Yes');
       } else if (e.key.toLowerCase() === 'n') {
         e.preventDefault();
-        handleDigitInput('No');
+        processAnswerEvaluation('No');
       }
     };
 
@@ -1364,7 +1365,10 @@ export default function AdaptiveSessionView({
             onDigit={handleDigitInput}
             onDelete={handleDeleteDigit}
             onClear={handleClearInput}
-            onSubmit={() => processAnswerEvaluation(inputVal)}
+            onSubmit={(val) => {
+              const answerToSubmit = typeof val === 'string' && val.trim() ? val : inputVal;
+              processAnswerEvaluation(answerToSubmit);
+            }}
             problemType={currentProblem.type || (isMoneyQuestion ? 'money' : isTimeQuestion ? 'time' : '')}
             answerString={currentProblem.answerString || currentProblem.answer?.toString()}
             displayString={currentProblem.displayString}
