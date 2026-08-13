@@ -243,22 +243,31 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
         <defs>
           {/* Volumetric 3D Clay Body Gradients */}
           <radialGradient id="kibo3DBodyGrad" cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#FFAA68" />
-            <stop offset="45%" stopColor="#FF7026" />
-            <stop offset="85%" stopColor="#D94100" />
-            <stop offset="100%" stopColor="#9E2A00" />
+            <stop offset="0%" stopColor="#ffb997" />
+            <stop offset="60%" stopColor="#f58c63" />
+            <stop offset="100%" stopColor="#d96236" />
           </radialGradient>
 
           <radialGradient id="kibo3DSnoutGrad" cx="40%" cy="30%" r="65%">
             <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="60%" stopColor="#FFF3EA" />
-            <stop offset="100%" stopColor="#F5D0B6" />
+            <stop offset="100%" stopColor="#f2e8e3" />
+          </radialGradient>
+
+          {/* White Face Patches */}
+          <radialGradient id="kibo3DWhiteGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor="#f2e8e3" />
+          </radialGradient>
+
+          {/* Dark Brown/Mauve Belly & Paws */}
+          <radialGradient id="kibo3DDarkGrad" cx="50%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#ad7562" />
+            <stop offset="100%" stopColor="#824c3a" />
           </radialGradient>
 
           <radialGradient id="kibo3DEarInner" cx="35%" cy="35%" r="65%">
-            <stop offset="0%" stopColor="#FFD3BD" />
-            <stop offset="70%" stopColor="#FF9B6C" />
-            <stop offset="100%" stopColor="#D65B27" />
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor="#f7f2f0" />
           </radialGradient>
 
           {/* Background Theme Gradients */}
@@ -300,9 +309,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
           {/* Striped 3D Tail Gradient */}
           <linearGradient id="tailGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#FF8A48" />
-            <stop offset="50%" stopColor="#E04D00" />
-            <stop offset="100%" stopColor="#872200" />
+            <stop offset="0%" stopColor="#f58c63" />
+            <stop offset="50%" stopColor="#d96236" />
+            <stop offset="100%" stopColor="#824c3a" />
           </linearGradient>
 
           {/* LEGENDARY 24K GOLD METALLIC GRADIENT */}
@@ -601,32 +610,32 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             {hasJetpack && (
               <g >
                 {/* Left Rocket Thruster */}
-                <rect x="26" y="62" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
-                <rect x="32" y="72" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
-                <circle cx="41" cy="97" r="6" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+                <rect x="20" y="80" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
+                <rect x="26" y="90" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
+                <circle cx="35" cy="115" r="6" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
                 
                 {/* Right Rocket Thruster */}
-                <rect x="144" y="62" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
-                <rect x="150" y="72" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
-                <circle cx="159" cy="97" r="6" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+                <rect x="150" y="80" width="30" height="70" rx="12" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="3.5" />
+                <rect x="156" y="90" width="18" height="50" rx="6" fill="#E2E8F0" opacity="0.4" />
+                <circle cx="165" cy="115" r="6" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
 
                 {/* Fiery Exhaust Flames */}
-                <path d="M 31 132 Q 41 175 51 132 Z" fill="#FF4500" className="animate-pulse" />
-                <path d="M 35 132 Q 41 160 47 132 Z" fill="#FBBF24" className="animate-pulse" />
-                <path d="M 149 132 Q 159 175 169 132 Z" fill="#FF4500" className="animate-pulse" />
-                <path d="M 153 132 Q 159 160 165 132 Z" fill="#FBBF24" className="animate-pulse" />
+                <path d="M 25 150 Q 35 193 45 150 Z" fill="#FF4500" className="animate-pulse" />
+                <path d="M 29 150 Q 35 178 41 150 Z" fill="#FBBF24" className="animate-pulse" />
+                <path d="M 155 150 Q 165 193 175 150 Z" fill="#FF4500" className="animate-pulse" />
+                <path d="M 159 150 Q 165 178 171 150 Z" fill="#FBBF24" className="animate-pulse" />
               </g>
             )}
 
             {hasBackpack && (
               <g >
                 {/* Top Sleeping Mat Roll */}
-                <rect x="50" y="55" width="100" height="24" rx="10" fill="#15803D" stroke="#166534" strokeWidth="3" />
-                <rect x="72" y="53" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
-                <rect x="121" y="53" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+                <rect x="50" y="75" width="100" height="24" rx="10" fill="#15803D" stroke="#166534" strokeWidth="3" />
+                <rect x="72" y="73" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+                <rect x="121" y="73" width="7" height="28" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
 
                 {/* Main Heavy Duty Expedition Backpack Body */}
-                <rect x="34" y="74" width="132" height="82" rx="24" fill="#B45309" stroke="#78350F" strokeWidth="4" />
+                <rect x="34" y="94" width="132" height="82" rx="24" fill="#B45309" stroke="#78350F" strokeWidth="4" />
                 
                 {/* Side Water Bottle Pockets */}
                 <rect x="25" y="98" width="16" height="44" rx="6" fill="#D97706" stroke="#78350F" strokeWidth="2.5" />
@@ -648,76 +657,81 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           <g id="layer-body">
             {/* Animated 3D Tail */}
             <path
-              d="M 155 125 C 185 105, 195 145, 175 165 C 160 178, 145 155, 148 142 Z"
+              d="M 60 140 C 20 160, -20 130, -5 90 C 10 50, 40 100, 60 110 Z"
               fill={hasCustomSkin ? bodyFill : 'url(#tailGrad)'}
-              stroke={hasCustomSkin ? bodyStroke : '#872200'}
-              strokeWidth="3.5"
-              
-              className="transition-transform duration-300 origin-bottom-left"
-            />
-
-            {/* Left Foot */}
-            <ellipse
-              cx="72"
-              cy="165"
-              rx="18"
-              ry="12"
-              fill={bodyFill}
-              stroke={footStroke}
-              strokeWidth="3"
-              
-            />
-
-            {/* Right Foot */}
-            <ellipse
-              cx="128"
-              cy="165"
-              rx="18"
-              ry="12"
-              fill={bodyFill}
-              stroke={footStroke}
-              strokeWidth="3"
-              
+              stroke={hasCustomSkin ? bodyStroke : '#5c3021'}
+              strokeWidth="2.5"
+              className="transition-transform duration-300 origin-bottom"
             />
 
             {/* Main 3D Volumetric Body Sphere */}
-            <circle
+            <ellipse
               cx="100"
-              cy="115"
-              r="54"
+              cy="140"
+              rx="45"
+              ry="40"
               fill={bodyFill}
               stroke={bodyStroke}
-              strokeWidth="4"
-              
+              strokeWidth="2.5"
             />
 
-            {/* Cream Tummy Patch */}
-            {!hasCustomSkin && (
-              <ellipse cx="100" cy="126" rx="34" ry="26" fill="url(#kibo3DSnoutGrad)" opacity="0.95" />
-            )}
+            {/* Dark Belly */}
+            <path
+              d="M 65 140 C 65 110, 135 110, 135 140 C 135 175, 65 175, 65 140 Z"
+              fill="url(#kibo3DDarkGrad)"
+              stroke={hasCustomSkin ? bodyStroke : '#5c3021'}
+              strokeWidth="2"
+            />
+
+            {/* Left Foot */}
+            <g>
+              <ellipse cx="75" cy="170" rx="14" ry="16" fill="url(#kibo3DDarkGrad)" stroke={hasCustomSkin ? bodyStroke : '#5c3021'} strokeWidth="2.5" />
+              <circle cx="75" cy="174" r="5" fill="#fca4a9" />
+              <circle cx="67" cy="164" r="2.5" fill="#fca4a9" />
+              <circle cx="75" cy="161" r="2.5" fill="#fca4a9" />
+              <circle cx="83" cy="164" r="2.5" fill="#fca4a9" />
+            </g>
+
+            {/* Right Foot */}
+            <g>
+              <ellipse cx="125" cy="170" rx="14" ry="16" fill="url(#kibo3DDarkGrad)" stroke={hasCustomSkin ? bodyStroke : '#5c3021'} strokeWidth="2.5" />
+              <circle cx="125" cy="174" r="5" fill="#fca4a9" />
+              <circle cx="117" cy="164" r="2.5" fill="#fca4a9" />
+              <circle cx="125" cy="161" r="2.5" fill="#fca4a9" />
+              <circle cx="133" cy="164" r="2.5" fill="#fca4a9" />
+            </g>
+
+            {/* Arms */}
+            <path d="M 60 120 C 60 160, 85 160, 95 155 C 90 145, 80 130, 75 110 Z" fill="url(#kibo3DDarkGrad)" stroke={hasCustomSkin ? bodyStroke : '#5c3021'} strokeWidth="2" />
+            <path d="M 140 120 C 140 160, 115 160, 105 155 C 110 145, 120 130, 125 110 Z" fill="url(#kibo3DDarkGrad)" stroke={hasCustomSkin ? bodyStroke : '#5c3021'} strokeWidth="2" />
 
             {/* Ears with Micro Twitching */}
             <g className={`transition-transform duration-200 ${isEarTwitching ? '-rotate-6 translate-y-0.5' : ''}`}>
               {/* Left Ear */}
               <path
-                d="M 58 78 C 38 42, 68 28, 76 60 Z"
+                d="M 65 60 C 50 30, 40 15, 60 15 C 80 15, 85 30, 90 45 Z"
                 fill={bodyFill}
-                stroke={footStroke}
-                strokeWidth="3.5"
-                
+                stroke={bodyStroke}
+                strokeWidth="2.5"
               />
-              <path d="M 62 72 C 48 48, 68 38, 73 62 Z" fill={earInnerFill} />
+              <path d="M 65 55 C 55 35, 50 25, 62 25 C 75 25, 80 35, 85 45 Z" fill={earInnerFill} />
 
               {/* Right Ear */}
               <path
-                d="M 142 78 C 162 42, 132 28, 124 60 Z"
+                d="M 135 60 C 150 30, 160 15, 140 15 C 120 15, 115 30, 110 45 Z"
                 fill={bodyFill}
-                stroke={footStroke}
-                strokeWidth="3.5"
-                
+                stroke={bodyStroke}
+                strokeWidth="2.5"
               />
-              <path d="M 138 72 C 152 48, 132 38, 127 62 Z" fill={earInnerFill} />
+              <path d="M 135 55 C 145 35, 150 25, 138 25 C 125 25, 120 35, 115 45 Z" fill={earInnerFill} />
             </g>
+
+            {/* Head Base */}
+            <ellipse cx="100" cy="80" rx="65" ry="45" fill={bodyFill} stroke={bodyStroke} strokeWidth="2.5" />
+
+            {/* Cheeks Fluff */}
+            <path d="M 36 80 L 25 85 L 35 90 L 20 100 L 42 105 Z" fill={bodyFill} stroke={bodyStroke} strokeWidth="2.5" strokeLinejoin="round" />
+            <path d="M 164 80 L 175 85 L 165 90 L 180 100 L 158 105 Z" fill={bodyFill} stroke={bodyStroke} strokeWidth="2.5" strokeLinejoin="round" />
           </g>
 
           {/* ==================================================== */}
@@ -727,41 +741,41 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             {hasVest && (
               <g >
                 {/* Padded Climber Vest Body */}
-                <path d="M 62 106 C 62 106, 100 116, 138 106 L 138 152 C 138 152, 100 162, 62 152 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="3.5" />
+                <path d="M 62 115 C 62 115, 100 125, 138 115 L 138 155 C 138 155, 100 170, 62 155 Z" fill="#0EA5E9" stroke="#0369A1" strokeWidth="3.5" />
                 {/* Quilted Puffer Lines */}
-                <path d="M 63 120 Q 100 130 137 120" stroke="#0284C7" strokeWidth="3.5" fill="none" />
-                <path d="M 62 136 Q 100 146 138 136" stroke="#0284C7" strokeWidth="3.5" fill="none" />
+                <path d="M 63 128 Q 100 138 137 128" stroke="#0284C7" strokeWidth="3.5" fill="none" />
+                <path d="M 62 142 Q 100 152 138 142" stroke="#0284C7" strokeWidth="3.5" fill="none" />
                 {/* Zipper & Collar */}
-                <line x1="100" y1="110" x2="100" y2="157" stroke="#38BDF8" strokeWidth="3" />
-                <circle cx="100" cy="116" r="3" fill="#FFFFFF" />
+                <line x1="100" y1="115" x2="100" y2="162" stroke="#38BDF8" strokeWidth="3" />
+                <circle cx="100" cy="122" r="3" fill="#FFFFFF" />
                 {/* Climber Crest Badge */}
-                <circle cx="80" cy="126" r="5" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+                <circle cx="80" cy="134" r="5" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
               </g>
             )}
 
             {hasSummitScarf && (
               <g >
                 {/* Wrapped Neck Scarf */}
-                <path d="M 62 110 Q 100 128 138 110 L 136 122 Q 100 140 64 122 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="3" />
-                <path d="M 64 108 Q 100 124 136 108 Q 100 118 64 108 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="2.5" />
-                <path d="M 80 114 L 84 124 M 116 114 L 120 124" stroke="#FBBF24" strokeWidth="3" />
+                <path d="M 62 118 Q 100 136 138 118 L 136 130 Q 100 148 64 130 Z" fill="#BE123C" stroke="#9F1239" strokeWidth="3" />
+                <path d="M 64 116 Q 100 132 136 116 Q 100 126 64 116 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="2.5" />
+                <path d="M 80 122 L 84 132 M 116 122 L 120 132" stroke="#FBBF24" strokeWidth="3" />
                 {/* Dangling Scarf Tail */}
-                <path d="M 114 122 L 130 162 L 110 162 L 102 124 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="3" />
-                <rect x="108" y="150" width="22" height="5" fill="#FBBF24" />
-                <line x1="112" y1="162" x2="112" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
-                <line x1="118" y1="162" x2="118" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
-                <line x1="124" y1="162" x2="124" y2="168" stroke="#F59E0B" strokeWidth="2.5" />
+                <path d="M 114 130 L 130 170 L 110 170 L 102 132 Z" fill="#E11D48" stroke="#9F1239" strokeWidth="3" />
+                <rect x="108" y="158" width="22" height="5" fill="#FBBF24" />
+                <line x1="112" y1="170" x2="112" y2="176" stroke="#F59E0B" strokeWidth="2.5" />
+                <line x1="118" y1="170" x2="118" y2="176" stroke="#F59E0B" strokeWidth="2.5" />
+                <line x1="124" y1="170" x2="124" y2="176" stroke="#F59E0B" strokeWidth="2.5" />
               </g>
             )}
 
             {hasBowtie && (
               <g >
                 {/* 3D Red Bowtie on Collar */}
-                <polygon points="100,122 74,110 72,134" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
-                <polygon points="100,122 126,110 128,134" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
-                <polygon points="100,122 80,114 78,130" fill="#F87171" />
-                <polygon points="100,122 120,114 122,130" fill="#F87171" />
-                <rect x="94" y="116" width="12" height="12" rx="4" fill="#DC2626" stroke="#7F1D1D" strokeWidth="2.5" />
+                <polygon points="100,130 74,118 72,142" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+                <polygon points="100,130 126,118 128,142" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+                <polygon points="100,130 80,122 78,138" fill="#F87171" />
+                <polygon points="100,130 120,122 122,138" fill="#F87171" />
+                <rect x="94" y="124" width="12" height="12" rx="4" fill="#DC2626" stroke="#7F1D1D" strokeWidth="2.5" />
               </g>
             )}
           </g>
@@ -770,43 +784,60 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           {/* LAYER 4: FACE (Eyes, Nose, Expressive Expressions)   */}
           {/* ==================================================== */}
           <g id="layer-face">
-            {/* Snout Area */}
-            <ellipse cx="100" cy="108" rx="22" ry="16" fill="url(#kibo3DSnoutGrad)" />
-
-            {/* Nose */}
-            <ellipse cx="100" cy="99" rx="7" ry="5" fill="#4A1500" />
-            <ellipse cx="98" cy="97" rx="2.5" ry="1.5" fill="#FFFFFF" opacity="0.8" />
-
-            {/* Expressive Mouth */}
-            {mood === 'sad' ? (
-              <path d="M 92 114 Q 100 108 108 114" stroke="#4A1500" strokeWidth="3" strokeLinecap="round" fill="none" />
-            ) : (
-              <path d="M 90 108 Q 100 122 110 108" stroke="#4A1500" strokeWidth="3" strokeLinecap="round" fill="none" />
+            {/* White Face Patches */}
+            {!hasCustomSkin && (
+              <>
+                <ellipse cx="75" cy="85" rx="20" ry="25" fill="url(#kibo3DWhiteGrad)" />
+                <ellipse cx="125" cy="85" rx="20" ry="25" fill="url(#kibo3DWhiteGrad)" />
+                <ellipse cx="100" cy="100" rx="22" ry="18" fill="url(#kibo3DWhiteGrad)" />
+              </>
             )}
+
+            {/* Blush */}
+            <ellipse cx="70" cy="98" rx="8" ry="4" fill="#ff99a1" opacity="0.6" />
+            <ellipse cx="130" cy="98" rx="8" ry="4" fill="#ff99a1" opacity="0.6" />
+
+            {/* Whiskers */}
+            <path d="M 35 95 L 15 90 M 35 100 L 10 100 M 38 105 L 15 110" stroke="#5c3021" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M 165 95 L 185 90 M 165 100 L 190 100 M 162 105 L 185 110" stroke="#5c3021" strokeWidth="1.5" strokeLinecap="round" />
+
+            {/* Eyebrows */}
+            <ellipse cx="70" cy="62" rx="6" ry="4" fill="#ffffff" transform="rotate(-15 70 62)" />
+            <ellipse cx="130" cy="62" rx="6" ry="4" fill="#ffffff" transform="rotate(15 130 62)" />
 
             {/* Eyes with Blinking State */}
             <g className={`transition-transform duration-150 ${getMoodEyeTransform()}`}>
               {isBlinking ? (
                 <>
-                  <path d="M 76 96 Q 84 96 92 96" stroke="#4A1500" strokeWidth="3.5" strokeLinecap="round" />
-                  <path d="M 108 96 Q 116 96 124 96" stroke="#4A1500" strokeWidth="3.5" strokeLinecap="round" />
+                  <path d="M 68 83 Q 78 83 88 83" stroke="#4a271d" strokeWidth="3.5" strokeLinecap="round" />
+                  <path d="M 112 83 Q 122 83 132 83" stroke="#4a271d" strokeWidth="3.5" strokeLinecap="round" />
                 </>
               ) : (
                 <>
                   {/* Left Eye */}
-                  <ellipse cx="84" cy="94" rx="7" ry="9" fill="#290B00" />
-                  <circle cx="82" cy="91" r="3" fill="#FFFFFF" />
+                  <ellipse cx="78" cy="83" rx="11" ry="14" fill="#4a271d" />
+                  <circle cx="75" cy="77" r="4" fill="#ffffff" />
+                  <path d="M 83 78 Q 83 81 86 81 Q 83 81 83 84 Q 83 81 80 81 Q 83 81 83 78 Z" fill="#ffffff" />
+                  <circle cx="79" cy="89" r="1.5" fill="#ffffff" />
 
                   {/* Right Eye */}
-                  <ellipse cx="116" cy="94" rx="7" ry="9" fill="#290B00" />
-                  <circle cx="114" cy="91" r="3" fill="#FFFFFF" />
+                  <ellipse cx="122" cy="83" rx="11" ry="14" fill="#4a271d" />
+                  <circle cx="119" cy="77" r="4" fill="#ffffff" />
+                  <path d="M 127 78 Q 127 81 130 81 Q 127 81 127 84 Q 127 81 124 81 Q 127 81 127 78 Z" fill="#ffffff" />
+                  <circle cx="123" cy="89" r="1.5" fill="#ffffff" />
                 </>
               )}
             </g>
 
-            {/* Cheeks */}
-            <circle cx="72" cy="104" r="7" fill="#FF8080" opacity="0.4" />
-            <circle cx="128" cy="104" r="7" fill="#FF8080" opacity="0.4" />
+            {/* Nose */}
+            <ellipse cx="100" cy="94" rx="5" ry="3.5" fill="#4a271d" />
+
+            {/* Expressive Mouth */}
+            {mood === 'sad' ? (
+              <path d="M 94 105 Q 97 100 100 105 Q 103 100 106 105" stroke="#4a271d" strokeWidth="2" strokeLinecap="round" fill="none" />
+            ) : (
+              <path d="M 94 100 Q 97 105 100 100 Q 103 105 106 100" stroke="#4a271d" strokeWidth="2" strokeLinecap="round" fill="none" />
+            )}
           </g>
 
           {/* ==================================================== */}
@@ -815,33 +846,33 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           <g id="layer-gear">
             {hasGoldenCompass && (
               <g >
-                <circle cx="60" cy="140" r="12" fill="url(#goldBodyGrad)" stroke="#B45309" strokeWidth="2.5" />
-                <polygon points="60,132 63,140 60,148 57,140" fill="#EF4444" />
+                <circle cx="68" cy="148" r="12" fill="url(#goldBodyGrad)" stroke="#B45309" strokeWidth="2.5" />
+                <polygon points="68,140 71,148 68,156 65,148" fill="#EF4444" />
               </g>
             )}
 
             {hasCanteen && (
               <g >
-                <ellipse cx="138" cy="145" rx="10" ry="14" fill="#0284C7" stroke="#075985" strokeWidth="2.5" />
-                <rect x="135" y="128" width="6" height="5" fill="#CBD5E1" />
+                <ellipse cx="130" cy="148" rx="10" ry="14" fill="#0284C7" stroke="#075985" strokeWidth="2.5" />
+                <rect x="127" y="131" width="6" height="5" fill="#CBD5E1" />
               </g>
             )}
 
             {hasLantern && (
               <g >
                 {/* Glowing Ambient Aura */}
-                <circle cx="48" cy="138" r="26" fill="#FDE047" opacity="0.35" className="animate-pulse" />
+                <circle cx="56" cy="148" r="26" fill="#FDE047" opacity="0.35" className="animate-pulse" />
                 
                 {/* Brass Handle Loop */}
-                <path d="M 38 120 C 38 106 58 106 58 120" stroke="#78350F" strokeWidth="3.5" fill="none" />
+                <path d="M 46 130 C 46 116 66 116 66 130" stroke="#78350F" strokeWidth="3.5" fill="none" />
                 
                 {/* Main Golden Lantern Housing */}
-                <rect x="34" y="120" width="28" height="36" rx="8" fill="#D97706" stroke="#78350F" strokeWidth="3" />
+                <rect x="42" y="130" width="28" height="36" rx="8" fill="#D97706" stroke="#78350F" strokeWidth="3" />
                 
                 {/* Glass Chamber & Radiant Flame */}
-                <rect x="39" y="126" width="18" height="24" rx="4" fill="#FEF08A" stroke="#B45309" strokeWidth="2" />
-                <path d="M 48 144 Q 53 136 48 130 Q 43 136 48 144 Z" fill="#EF4444" className="animate-pulse" />
-                <path d="M 48 142 Q 51 137 48 133 Q 45 137 48 142 Z" fill="#FBBF24" className="animate-pulse" />
+                <rect x="47" y="136" width="18" height="24" rx="4" fill="#FEF08A" stroke="#B45309" strokeWidth="2" />
+                <path d="M 56 154 Q 61 146 56 140 Q 51 146 56 154 Z" fill="#EF4444" className="animate-pulse" />
+                <path d="M 56 152 Q 59 147 56 143 Q 53 147 56 152 Z" fill="#FBBF24" className="animate-pulse" />
               </g>
             )}
 
@@ -876,70 +907,70 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           <g id="layer-head">
             {hasCap && (
               <g >
-                <path d="M 52 70 Q 100 48 148 70 Z" fill="#2563EB" stroke="#1D4ED8" strokeWidth="3" />
-                <path d="M 100 70 Q 148 64 165 72" stroke="#1D4ED8" strokeWidth="5" strokeLinecap="round" fill="none" />
+                <path d="M 52 50 Q 100 28 148 50 Z" fill="#2563EB" stroke="#1D4ED8" strokeWidth="3" />
+                <path d="M 100 50 Q 148 44 165 52" stroke="#1D4ED8" strokeWidth="5" strokeLinecap="round" fill="none" />
               </g>
             )}
 
             {hasBandana && (
               <g >
-                <path d="M 50 68 Q 100 46 150 68 L 146 78 Q 100 58 54 78 Z" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
-                <polygon points="144,72 165,82 152,90" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+                <path d="M 50 48 Q 100 26 150 48 L 146 58 Q 100 38 54 58 Z" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+                <polygon points="144,52 165,62 152,70" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
               </g>
             )}
 
             {hasPartyHat && (
               <g >
-                <path d="M 70 70 Q 100 16 130 70 C 115 74, 85 74, 70 70 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="100" cy="18" r="8" fill="#EF4444" />
+                <path d="M 70 50 Q 100 -4 130 50 C 115 54, 85 54, 70 50 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="100" cy="-2" r="8" fill="#EF4444" />
               </g>
             )}
 
             {hasGoggles && (
               <g >
-                <rect x="65" y="86" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
-                <rect x="105" y="86" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
-                <line x1="95" y1="96" x2="105" y2="96" stroke="#0284C7" strokeWidth="4" />
+                <rect x="65" y="78" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
+                <rect x="105" y="78" width="30" height="20" rx="6" fill="#38BDF8" stroke="#0284C7" strokeWidth="3" opacity="0.9" />
+                <line x1="95" y1="88" x2="105" y2="88" stroke="#0284C7" strokeWidth="4" />
               </g>
             )}
 
             {hasExplorerHat && (
               <g >
-                <path d="M 70 65 Q 100 32 130 65 Z" fill="#92400E" stroke="#451A03" strokeWidth="3" />
-                <path d="M 68 62 Q 100 55 132 62" stroke="#F59E0B" strokeWidth="5" fill="none" />
-                <ellipse cx="100" cy="66" rx="54" ry="10" fill="#78350F" stroke="#451A03" strokeWidth="3" />
+                <path d="M 70 45 Q 100 12 130 45 Z" fill="#92400E" stroke="#451A03" strokeWidth="3" />
+                <path d="M 68 42 Q 100 35 132 42" stroke="#F59E0B" strokeWidth="5" fill="none" />
+                <ellipse cx="100" cy="46" rx="54" ry="10" fill="#78350F" stroke="#451A03" strokeWidth="3" />
               </g>
             )}
 
             {hasWizardHat && (
               <g >
-                <path d="M 60 72 Q 100 8 140 72 C 120 76, 80 76, 60 72 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                <ellipse cx="100" cy="72" rx="48" ry="10" fill="#6D28D9" stroke="#5B21B6" strokeWidth="3" />
-                <polygon points="100,25 103,32 110,34 105,39 106,46 100,42 94,46 95,39 90,34 97,32" fill="#FBBF24" />
+                <path d="M 60 52 Q 100 -12 140 52 C 120 56, 80 56, 60 52 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                <ellipse cx="100" cy="52" rx="48" ry="10" fill="#6D28D9" stroke="#5B21B6" strokeWidth="3" />
+                <polygon points="100,5 103,12 110,14 105,19 106,26 100,22 94,26 95,19 90,14 97,12" fill="#FBBF24" />
               </g>
             )}
 
             {hasCrown && (
               <g >
-                <path d="M 65 68 Q 68 45 72 38 Q 79 48 86 52 Q 93 35 100 30 Q 107 35 114 52 Q 121 48 128 38 Q 132 45 135 68 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="72" cy="36" r="4" fill="#EF4444" />
-                <circle cx="100" cy="28" r="5" fill="#3B82F6" />
-                <circle cx="128" cy="36" r="4" fill="#10B981" />
+                <path d="M 65 48 Q 68 25 72 18 Q 79 28 86 32 Q 93 15 100 10 Q 107 15 114 32 Q 121 28 128 18 Q 132 25 135 48 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="72" cy="16" r="4" fill="#EF4444" />
+                <circle cx="100" cy="8" r="5" fill="#3B82F6" />
+                <circle cx="128" cy="16" r="4" fill="#10B981" />
               </g>
             )}
 
             {hasNeonHeadphones && (
               <g >
-                <path d="M 52 95 A 50 50 0 0 1 148 95" stroke="url(#neonHeadphoneGrad)" strokeWidth="8" fill="none" strokeLinecap="round" />
-                <path d="M 54 94 A 48 48 0 0 1 146 94" stroke="#67E8F9" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.8" />
+                <path d="M 47 75 A 55 55 0 0 1 153 75" stroke="url(#neonHeadphoneGrad)" strokeWidth="8" fill="none" strokeLinecap="round" />
+                <path d="M 49 74 A 53 53 0 0 1 151 74" stroke="#67E8F9" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.8" />
                 
-                <rect x="42" y="82" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
-                <rect x="46" y="86" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
-                <circle cx="51" cy="99" r="3" fill="#A5F3FC" className="animate-pulse" />
+                <rect x="37" y="62" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
+                <rect x="41" y="66" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
+                <circle cx="46" cy="79" r="3" fill="#A5F3FC" className="animate-pulse" />
 
-                <rect x="140" y="82" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
-                <rect x="144" y="86" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
-                <circle cx="149" cy="99" r="3" fill="#A5F3FC" className="animate-pulse" />
+                <rect x="145" y="62" width="18" height="34" rx="9" fill="url(#neonHeadphoneGrad)" stroke="#0369A1" strokeWidth="3" />
+                <rect x="149" y="66" width="10" height="26" rx="5" fill="#38BDF8" opacity="0.9" />
+                <circle cx="154" cy="79" r="3" fill="#A5F3FC" className="animate-pulse" />
               </g>
             )}
           </g>
