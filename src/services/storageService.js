@@ -22,6 +22,7 @@ const DEFAULT_PROFILE = {
   practiceDays: [1, 2, 3, 4, 5],
   userData: {
     adaptiveCompetenceRating: 1000,
+    subjectRatings: { math: 1000 },
     competenceRank: 1000,
     tier: 1,
     unlockedTiers: [1],
@@ -181,6 +182,7 @@ export const storageService = {
       userData: {
         ...DEFAULT_PROFILE.userData,
         adaptiveCompetenceRating: startingRating,
+        subjectRatings: { math: startingRating },
         competenceRank: startingRating,
         isAnonymous: isLinked ? false : true,
         cloudUid: isLinked ? activeProf.userData?.cloudUid : undefined,
@@ -267,6 +269,7 @@ export const storageService = {
       state.profiles[activeId].userData = {
         ...(state.profiles[activeId].userData || DEFAULT_PROFILE.userData),
         adaptiveCompetenceRating: startingRating,
+        subjectRatings: { math: startingRating },
         competenceRank: startingRating,
       };
     }
@@ -302,7 +305,7 @@ export const storageService = {
 
     return data;
   },
-  saveUserData(userData) {
+  saveUserData(userData, subjectId = 'math') {
     const state = safeGetProfilesState();
     const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
     if (!state.profiles[activeId]) {
@@ -310,7 +313,15 @@ export const storageService = {
     }
 
     const currentProfileData = state.profiles[activeId].userData || {};
-    const updatedData = { ...currentProfileData, ...userData };
+    let updatedData = { ...currentProfileData, ...userData };
+
+    // Keep subjectRatings in sync
+    if (!updatedData.subjectRatings) {
+      updatedData.subjectRatings = { math: updatedData.adaptiveCompetenceRating || 1000 };
+    }
+    if (userData.adaptiveCompetenceRating !== undefined) {
+      updatedData.subjectRatings[subjectId] = userData.adaptiveCompetenceRating;
+    }
 
     const activeRating = updatedData.adaptiveCompetenceRating || updatedData.competenceRank || 1000;
     const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -595,5 +606,19 @@ export const storageService = {
     delete currentUserData.activeClimb;
     state.profiles[pid].userData = currentUserData;
     safeSaveProfilesState(state);
+  },
+
+  getSubjectRating(profileId, subjectId = 'math') {
+    const profile = this.getProfileById(profileId);
+    return profile?.userData?.subjectRatings?.[subjectId] || profile?.userData?.adaptiveCompetenceRating || 1000;
+  },
+
+  getAggregateRating(profileId) {
+    const profile = this.getProfileById(profileId);
+    const ratings = profile?.userData?.subjectRatings || { math: profile?.userData?.adaptiveCompetenceRating || 1000 };
+    const values = Object.values(ratings);
+    if (values.length === 0) return 1000;
+    const sum = values.reduce((a, b) => a + b, 0);
+    return Math.round(sum / values.length);
   }
 };

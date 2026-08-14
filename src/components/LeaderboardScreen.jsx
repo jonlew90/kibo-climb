@@ -12,7 +12,7 @@ export default function LeaderboardScreen({ userState, renderFooter, equippedIte
 
   const activeProfile = storageService.getActiveProfile();
   const username = storageService.getUsername() || activeProfile?.username || activeProfile?.name || 'You';
-  const userScore = userState?.competenceRank || activeProfile?.userData?.adaptiveCompetenceRating || activeProfile?.userData?.competenceRank || 1000;
+  const userScore = storageService.getAggregateRating(activeProfile?.id) || userState?.competenceRank || activeProfile?.userData?.adaptiveCompetenceRating || 1000;
   const userEquippedItems = (equippedItems && equippedItems.length > 0)
     ? equippedItems
     : (activeProfile?.shopState?.equippedItems || []);
