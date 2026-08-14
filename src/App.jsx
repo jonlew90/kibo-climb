@@ -1174,6 +1174,18 @@ export default function App() {
                     <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Coming Soon</span>
                   </div>
                 </div>
+
+                <div className="h-px bg-slate-100 w-full" />
+
+                <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 opacity-75 cursor-not-allowed">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-100 to-rose-200 border border-pink-300 flex items-center justify-center shrink-0 opacity-50 grayscale">
+                    <span className="text-lg">🎵</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-slate-400 leading-tight">Kibo Music</span>
+                    <span className="text-[10px] font-bold text-pink-500 uppercase tracking-wider">Coming Soon</span>
+                  </div>
+                </div>
               </div>
             )}
           </div>
