@@ -7,7 +7,8 @@ import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
 
 
-export default function LeaderboardScreen({ userState, renderFooter, equippedItems = [] }) {
+export default function LeaderboardScreen({
+  activeSubject = 'math', userState, renderFooter, equippedItems = [] }) {
   const [liveStandings, setLiveStandings] = useState([]);
 
   const activeProfile = storageService.getActiveProfile();

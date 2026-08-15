@@ -12,6 +12,7 @@ import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal'
 import ProfileSelectorScreen from './components/ProfileSelectorScreen';
 import BadgesModal from './components/BadgesModal';
 import AdaptiveSessionView from './components/AdaptiveSessionView';
+import WordsSessionView from './components/WordsSessionView';
 import DevControlPanel from './components/DevControlPanel';
 import RollingNumberTicker from './components/RollingNumberTicker';
 import { checkAndPromptLinkAccount } from './utils/linkPromptLogic';
@@ -19,7 +20,7 @@ import { useDevState } from './hooks/useDevState';
 import { evaluateBadges } from './utils/badgeManager';
 import { BADGES_CATALOG } from './data/badges';
 import { generateProblems } from './utils/mathGenerator';
-import { CURRICULUM_TIERS, calculateStars } from './utils/curriculum';
+import { CURRICULUM_TIERS, calculateStars } from './utils/mathCurriculum';
 import { getItemById } from './utils/itemsCatalog';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
@@ -42,6 +43,8 @@ import { setHapticsEnabled } from './utils/audio';
 
 export default function App() {
   // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms' | 'leaderboard'
+  const [activeSubject, setActiveSubject] = useState('math');
+
   const [appState, setAppState] = useState(() => {
     const path = window.location.pathname;
     if (path === '/privacy' || path === '/privacy/') return 'privacy';
@@ -80,7 +83,7 @@ export default function App() {
   const [workshopOriginState, setWorkshopOriginState] = useState('adaptive_session');
 
   const devState = useDevState(() => {
-    const uData = storageService.getUserData();
+    const uData = storageService.getUserData(activeSubject);
     const sData = storageService.getShopState();
     setSparks(uData.sparks || 0);
     setUnlockedItems(sData.unlockedItems || ['cap']);
@@ -128,7 +131,7 @@ export default function App() {
 
 
   const syncAppStateWithStorage = () => {
-    const uData = storageService.getUserData();
+    const uData = storageService.getUserData(activeSubject);
     const sData = storageService.getShopState();
     const cRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
 
@@ -181,12 +184,12 @@ export default function App() {
   }, []);
 
   const [unlockedBadges, setUnlockedBadges] = useState(() => {
-    return storageService.getUserData().unlockedBadges || [];
+    return storageService.getUserData(activeSubject).unlockedBadges || [];
   });
   const [newlyUnlockedBadges, setNewlyUnlockedBadges] = useState([]);
 
   useEffect(() => {
-    const activeUserData = storageService.getUserData();
+    const activeUserData = storageService.getUserData(activeSubject);
     const evalRes = evaluateBadges(activeUserData);
     if (evalRes?.updatedUnlocked) {
       setUnlockedBadges(evalRes.updatedUnlocked);
@@ -216,7 +219,7 @@ export default function App() {
   const [isTestOut, setIsTestOut] = useState(false);
   const [testOutTargetTier, setTestOutTargetTier] = useState(null);
   const [hasVisitedParentZone, setHasVisitedParentZone] = useState(() => {
-    return storageService.getUserData().hasVisitedParentZone || false;
+    return storageService.getUserData(activeSubject).hasVisitedParentZone || false;
   });
   const [showTestOutPassModal, setShowTestOutPassModal] = useState(false);
   const [showTestOutFailModal, setShowTestOutFailModal] = useState(false);
@@ -281,7 +284,7 @@ export default function App() {
 
   // Persistent Kibo Shields (Streak Freezes: max capacity 2, default 1)
   const [streakShields, setStreakShields] = useState(() => {
-    return storageService.getUserData().streakShields ?? 1;
+    return storageService.getUserData(activeSubject).streakShields ?? 1;
   });
 
   // Persistent Custom 7-Day Practice Schedule (per child profile)
@@ -291,27 +294,27 @@ export default function App() {
 
   // Persistent Daily Streak
   const [streak, setStreak] = useState(() => {
-    return storageService.getUserData().streak;
+    return storageService.getUserData(activeSubject).streak;
   });
 
   // Persistent Sparks Currency (⚡)
   const [sparks, setSparks] = useState(() => {
-    return storageService.getUserData().sparks;
+    return storageService.getUserData(activeSubject).sparks;
   });
 
   // Persistent Active Skill Tier (1 through 8)
   const [tier, setTier] = useState(() => {
-    return storageService.getUserData().tier;
+    return storageService.getUserData(activeSubject).tier;
   });
 
   // Persistent Unlocked Curriculum Tiers
   const [unlockedTiers, setUnlockedTiers] = useState(() => {
-    return storageService.getUserData().unlockedTiers;
+    return storageService.getUserData(activeSubject).unlockedTiers;
   });
 
   // Persistent Tier Mastery Percent (0, 25, 50, 75, 100)
   const [tierMasteryPercent, setTierMasteryPercent] = useState(() => {
-    return storageService.getUserData().tierMasteryPercent || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
+    return storageService.getUserData(activeSubject).tierMasteryPercent || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
   });
 
   const [activeProfileId, setActiveProfileId] = useState(() => {
@@ -320,7 +323,7 @@ export default function App() {
 
   // Persistent Tier Best Completion Times in Seconds
   const [tierBestTimes, setTierBestTimes] = useState(() => {
-    return storageService.getUserData().tierBestTimes || {};
+    return storageService.getUserData(activeSubject).tierBestTimes || {};
   });
 
   const [isNewSpeedRecord, setIsNewSpeedRecord] = useState(false);
@@ -332,12 +335,12 @@ export default function App() {
 
   // Persistent Sprint History (last 3 sprints)
   const [sprintHistory, setSprintHistory] = useState(() => {
-    return storageService.getUserData().sprintHistory;
+    return storageService.getUserData(activeSubject).sprintHistory;
   });
 
   // Persistent Re-queued Practice Problems
   const [practiceQueue, setPracticeQueue] = useState(() => {
-    return storageService.getUserData().practiceQueue;
+    return storageService.getUserData(activeSubject).practiceQueue;
   });
 
   // Persistent Inventory & Equipped Accessories
@@ -351,15 +354,15 @@ export default function App() {
 
   // Persistent Lifetime Problems Solved Tracker
   const [totalProblemsSolved, setTotalProblemsSolved] = useState(() => {
-    return storageService.getUserData().totalProblemsSolved || 0;
+    return storageService.getUserData(activeSubject).totalProblemsSolved || 0;
   });
 
   const [cumulativeCorrectStreak, setCumulativeCorrectStreak] = useState(() => {
-    return storageService.getUserData().cumulativeCorrectStreak || 0;
+    return storageService.getUserData(activeSubject).cumulativeCorrectStreak || 0;
   });
 
   const [personalRecords, setPersonalRecords] = useState(() => {
-    return storageService.getUserData().personalRecords || {
+    return storageService.getUserData(activeSubject).personalRecords || {
       fastest12QuestionsTime: null,
       highestCorrectStreak: 0,
       mostPerfectSessions: 0
@@ -368,7 +371,7 @@ export default function App() {
 
   const recordDailyPractice = () => {
     const todayStr = getTodayStr();
-    const uData = storageService.getUserData();
+    const uData = storageService.getUserData(activeSubject);
     const lastDateStr = uData.lastSprintDate;
     let currentStreak = uData.streak ?? streak ?? 0;
 
@@ -380,7 +383,7 @@ export default function App() {
     if (lastDateStr === todayStr) {
       if (currentStreak !== streak) {
         setStreak(currentStreak);
-        storageService.saveUserData({ streak: currentStreak, lastSprintDate: todayStr });
+        storageService.saveUserData({ streak: currentStreak, lastSprintDate: todayStr }, activeSubject);
       }
       return;
     }
@@ -418,10 +421,7 @@ export default function App() {
     }
 
     setStreak(nextStreak);
-    storageService.saveUserData({
-      streak: nextStreak,
-      lastSprintDate: todayStr
-    });
+    storageService.saveUserData({ streak: nextStreak, lastSprintDate: todayStr }, activeSubject);
   };
 
   const handleIncrementLifetimeProblems = (isCorrect = true) => {
@@ -437,7 +437,7 @@ export default function App() {
     };
     setPersonalRecords(nextRecords);
 
-    const uData = storageService.getUserData();
+    const uData = storageService.getUserData(activeSubject);
     const currentRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
     
     let extraSparks = 0;
@@ -458,12 +458,12 @@ export default function App() {
       personalRecords: nextRecords,
       ...(extraSparks > 0 ? { sparks: (sparks || 0) + extraSparks } : {}),
       ...(newlyCalibrated ? { baselineRating: newBaseline, isCalibrated: true } : {})
-    });
+    }, activeSubject);
   };
 
   // Persistent Consumable Power-Ups Inventory
   const [consumables, setConsumables] = useState(() => {
-    const saved = storageService.getUserData().consumables;
+    const saved = storageService.getUserData(activeSubject).consumables;
     return {
       shieldCount: saved?.shieldCount ?? 1,
       streakSaverCount: saved?.streakSaverCount ?? 0,
@@ -476,7 +476,7 @@ export default function App() {
 
   const [preferences, setPreferences] = useState(() => {
     const defaultPrefs = { hideSprintTimer: false, isMuted: false, isHapticsEnabled: true };
-    return { ...defaultPrefs, ...(storageService.getUserData().preferences || {}) };
+    return { ...defaultPrefs, ...(storageService.getUserData(activeSubject).preferences || {}) };
   });
 
   // Apply preferences to audio engine on initial load
@@ -539,7 +539,7 @@ export default function App() {
     setSparks(newSparks);
     setConsumables(nextConsumables);
 
-    const activeData = storageService.getUserData();
+    const activeData = storageService.getUserData(activeSubject);
     const newPurchasesCount = (activeData.shopPurchasesCount || 0) + 1;
     const currentRarities = Array.isArray(activeData.purchasedRarities) ? activeData.purchasedRarities : [];
     const itemRarity = item.rarity || 'common';
@@ -552,7 +552,7 @@ export default function App() {
       purchasedRarities: newRarities
     });
 
-    const refreshedUserData = storageService.getUserData();
+    const refreshedUserData = storageService.getUserData(activeSubject);
     checkAndPromptLinkAccount(
       { purchasesCount: newPurchasesCount },
       setLinkModalMilestone,
@@ -626,7 +626,7 @@ export default function App() {
 
   // Schedule-Aware Streak Validation on App Startup
   useEffect(() => {
-    const uData = storageService.getUserData();
+    const uData = storageService.getUserData(activeSubject);
     const lastDateStr = uData.lastSprintDate;
     const savedDays = storageService.getProfilePracticeDays() || [1, 2, 3, 4, 5];
     const historyStreak = calculateStreakFromHistory(uData.sprintHistory || [], savedDays);
@@ -636,7 +636,7 @@ export default function App() {
 
     if (savedStreak > storedStreak) {
       setStreak(savedStreak);
-      storageService.saveUserData({ streak: savedStreak });
+      storageService.saveUserData({ streak: savedStreak }, activeSubject);
     }
 
     if (!lastDateStr || savedStreak === 0) return;
@@ -676,7 +676,7 @@ export default function App() {
       } else {
         setStreak(0);
         localStorage.setItem('kibo_math_streak', '0');
-        storageService.saveUserData({ streak: 0 });
+        storageService.saveUserData({ streak: 0 }, activeSubject);
       }
     }
   }, []);
@@ -805,7 +805,7 @@ export default function App() {
 
     storageService.saveShopState(updatedEquipped, res.unlockedItems);
 
-    const activeData = storageService.getUserData();
+    const activeData = storageService.getUserData(activeSubject);
     const newPurchasesCount = (activeData.shopPurchasesCount || 0) + 1;
     const currentRarities = Array.isArray(activeData.purchasedRarities) ? activeData.purchasedRarities : [];
     const itemRarity = item.rarity || 'common';
@@ -818,7 +818,7 @@ export default function App() {
     });
 
     // Per-profile check for Save Progress Across All Devices modal (2 items purchased)
-    const refreshedUserData = storageService.getUserData();
+    const refreshedUserData = storageService.getUserData(activeSubject);
 
     checkAndPromptLinkAccount(
       { purchasesCount: newPurchasesCount },
@@ -951,7 +951,7 @@ export default function App() {
   const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStreakSavedModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher;
 
   const [liveCompetenceRating, setLiveCompetenceRating] = useState(() => {
-    const uData = storageService.getUserData();
+    const uData = storageService.getUserData(activeSubject);
     return uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
   });
 
@@ -1116,7 +1116,7 @@ export default function App() {
                 alt="Kibo Mascot"
                 className="w-5 h-5 sm:w-6 sm:h-6 object-contain filter drop-shadow-2xs"
               />
-              <span className="tracking-tight font-black">Kibo Math</span>
+              <span className="tracking-tight font-black">{activeSubject === 'math' ? 'Kibo Math' : 'Kibo Words'}</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSubjectSelector ? 'rotate-180' : ''}`} />
             </button>
 
@@ -1125,8 +1125,11 @@ export default function App() {
                 <button
                   onClick={() => {
                     soundFx.playKeyTap();
+                    setActiveSubject('math');
                     setAppState('adaptive_session');
                     setShowSubjectSelector(false);
+                    // trigger resync
+                    setTimeout(syncAppStateWithStorage, 0);
                   }}
                   className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left"
                 >
@@ -1135,21 +1138,30 @@ export default function App() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-black text-slate-800 leading-tight">Kibo Math</span>
-                    <span className="text-[10px] font-bold text-emerald-600">Active</span>
+                    <span className={`text-[10px] font-bold ${activeSubject === 'math' ? 'text-emerald-600' : 'text-slate-400'}`}>{activeSubject === 'math' ? 'Active' : 'Switch'}</span>
                   </div>
                 </button>
 
                 <div className="h-px bg-slate-100 w-full" />
 
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 opacity-75 cursor-not-allowed">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-200 border border-indigo-300 flex items-center justify-center shrink-0 opacity-50 grayscale">
+                <button
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setActiveSubject('words');
+                    setAppState('adaptive_session');
+                    setShowSubjectSelector(false);
+                    setTimeout(syncAppStateWithStorage, 0);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 border border-indigo-300 flex items-center justify-center shrink-0">
                     <span className="text-lg">📚</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-400 leading-tight">Kibo Words</span>
-                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Coming Soon</span>
+                    <span className="text-sm font-black text-slate-800 leading-tight">Kibo Words</span>
+                    <span className={`text-[10px] font-bold ${activeSubject === 'words' ? 'text-emerald-600' : 'text-slate-400'}`}>{activeSubject === 'words' ? 'Active' : 'Switch'}</span>
                   </div>
-                </div>
+                </button>
 
                 <div className="h-px bg-slate-100 w-full" />
 
@@ -1288,6 +1300,7 @@ export default function App() {
       {/* LEADERBOARD SCREEN */}
       {appState === 'leaderboard' && (
         <LeaderboardScreen
+          activeSubject={activeSubject}
           userState={{
             competenceRank: liveCompetenceRating,
             adaptiveCompetenceRating: liveCompetenceRating,
@@ -1302,9 +1315,47 @@ export default function App() {
       )}
 
       {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
-      {appState === 'adaptive_session' && (
+      {appState === 'adaptive_session' && activeSubject === 'math' && (
         <AdaptiveSessionView
-          key={activeProfileId}
+          key={activeProfileId + '-math'}
+          profileId={activeProfileId}
+          isPaused={isAppPaused}
+          equippedItems={equippedItems}
+          sparks={sparks}
+          streak={streak}
+          userTier={tier}
+          totalProblemsSolved={totalProblemsSolved}
+          isFTUX={showFirstLaunchOnboardingModal}
+          isDoubleSparksActive={isDoubleSparksActive}
+          consumables={consumables}
+          onToggleDoubleSparksPotion={handleToggleDoubleSparksPotion}
+          onConsumeHintScroll={handleConsumeHintScroll}
+          onConsumeShield={handleConsumeShield}
+          onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
+          onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
+          onRecordDailyPractice={recordDailyPractice}
+          onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
+          onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
+          onUpdateCompetenceRating={(newRating) => {
+            setLiveCompetenceRating(newRating);
+            checkAndPromptLinkAccount(
+              { rating: newRating },
+              setLinkModalMilestone,
+              setShowAccountLinkModal
+            );
+          }}
+          onAwardSparks={(earned) => {
+            const updated = sparks + earned;
+            setSparks(updated);
+            localStorage.setItem('kibo_math_sparks', updated.toString());
+          }}
+          onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
+        />
+      )}
+
+      {appState === 'adaptive_session' && activeSubject === 'words' && (
+        <WordsSessionView
+          key={activeProfileId + '-words'}
           profileId={activeProfileId}
           isPaused={isAppPaused}
           equippedItems={equippedItems}
@@ -1446,6 +1497,7 @@ export default function App() {
 
       {/* PARENT DASHBOARD MODAL */}
       <ParentDashboardModal
+        activeSubject={activeSubject}
         isOpen={showParentDashboard}
         onClose={() => setShowParentDashboard(false)}
         currentPin={parentPin}
@@ -1475,12 +1527,13 @@ export default function App() {
 
       {/* TRAIL BADGES SHOWCASE MODAL */}
       <BadgesModal
+        activeSubject={activeSubject}
         isOpen={showBadgesModal}
         onClose={() => setShowBadgesModal(false)}
         unlockedBadges={unlockedBadges}
         personalRecords={personalRecords}
         userState={(() => {
-          const uData = storageService.getUserData();
+          const uData = storageService.getUserData(activeSubject);
           const rating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
           return {
             competenceRank: rating,
@@ -1653,7 +1706,7 @@ export default function App() {
         onAdjustSparks={devState.adjustSparks}
         onUnlockAllWorkshopItems={devState.unlockAllWorkshopItems}
         onStateRefresh={() => {
-          const uData = storageService.getUserData();
+          const uData = storageService.getUserData(activeSubject);
           const sData = storageService.getShopState();
           setSparks(uData.sparks || 0);
           setUnlockedItems(sData.unlockedItems || ['cap']);

@@ -12,7 +12,7 @@ export const shopLedgerService = {
    * @returns {Object} { success: boolean, newSparks: number, unlockedItems: Array, reason?: string }
    */
   purchaseItem(itemId, sparksPrice) {
-    const userData = storageService.getUserData();
+    const userData = storageService.getUserData('math');
     const shopState = storageService.getShopState();
     const currentSparks = userData.sparks || 0;
     const price = Number(sparksPrice) || 0;
@@ -71,7 +71,7 @@ export const shopLedgerService = {
       return { success: false, reason: 'Invalid receipt token format' };
     }
 
-    const userData = storageService.getUserData();
+    const userData = storageService.getUserData('math');
     const updatedEntitlements = {
       isPremium: true,
       adFree: true,

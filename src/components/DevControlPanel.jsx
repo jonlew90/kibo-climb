@@ -4,7 +4,7 @@ import { storageService } from '../services/storageService';
 import { communicationsService } from '../services/communicationsService';
 import { nativeAuthService } from '../services/nativeAuthService';
 import { calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
-import { getTierFromRating } from '../utils/curriculum';
+import { getTierFromRating } from '../utils/mathCurriculum';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 
 export default function DevControlPanel({
@@ -21,7 +21,7 @@ export default function DevControlPanel({
   const [testEmail, setTestEmail] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
-  const currentData = storageService.getUserData();
+  const currentData = storageService.getUserData('math');
   const currentRating = currentData.adaptiveCompetenceRating || currentData.competenceRank || 1000;
   const currentSparks = currentData.sparks || 0;
   const activeProfile = storageService.getActiveProfile() || {};

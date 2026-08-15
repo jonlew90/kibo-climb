@@ -37,7 +37,7 @@ export function initParentChildSchema() {
       child_ids: [defaultChildId]
     };
 
-    const activeUser = storageService.getUserData();
+    const activeUser = storageService.getUserData('math');
     const activeShop = storageService.getShopState();
 
     childProfiles[defaultChildId] = {

@@ -1,0 +1,476 @@
+<<<<<<< SEARCH
+  userData: {
+    adaptiveCompetenceRating: 1000,
+    subjectRatings: { math: 1000 },
+    competenceRank: 1000,
+    tier: 1,
+    unlockedTiers: [1],
+    tierMasteryPercent: { 1: 0 },
+    tierBestTimes: {},
+    masteredTricks: {},
+    streak: 1,
+    streakShields: 1,
+    sparks: 50,
+    completedClimbsCount: 0,
+    shopPurchasesCount: 0,
+    purchasedRarities: [],
+    hasPromptedLink_2Purchases: false,
+    hasPromptedLink_2Climbs: false,
+    hasPromptedLink_3DayStreak: false,
+    promptedLinkMilestones: [],
+    lastPromptedLinkAt: null,
+    totalProblemsSolved: 0,
+    cumulativeCorrectStreak: 0,
+    personalRecords: {
+      fastest12QuestionsTime: null,
+      highestCorrectStreak: 0,
+      mostPerfectSessions: 0
+    },
+    lastSprintDate: null,
+    hasVisitedParentZone: false,
+    practiceQueue: [],
+    sprintHistory: [],
+    skipLogs: [],
+    unlockedBadges: [],
+    consumables: {
+      shieldCount: 1,
+      streakSaverCount: 0,
+      doubleCoinPotionCount: 0
+    },
+    preferences: {
+      hideSprintTimer: false,
+      isMuted: false,
+      isHapticsEnabled: true
+    }
+  },
+=======
+  userData: {
+    adaptiveCompetenceRating: 1000,
+    subjectRatings: { math: 1000, words: 1000 },
+    competenceRank: 1000,
+    tier: 1,
+    unlockedTiers: [1],
+    tierMasteryPercent: { 1: 0 },
+    tierBestTimes: {},
+    masteredTricks: {},
+    streak: 1,
+    streakShields: 1,
+    sparks: 50,
+    completedClimbsCount: 0,
+    shopPurchasesCount: 0,
+    purchasedRarities: [],
+    hasPromptedLink_2Purchases: false,
+    hasPromptedLink_2Climbs: false,
+    hasPromptedLink_3DayStreak: false,
+    promptedLinkMilestones: [],
+    lastPromptedLinkAt: null,
+    totalProblemsSolved: 0,
+    cumulativeCorrectStreak: 0,
+    personalRecords: {
+      fastest12QuestionsTime: null,
+      highestCorrectStreak: 0,
+      mostPerfectSessions: 0
+    },
+    lastSprintDate: null,
+    hasVisitedParentZone: false,
+    practiceQueue: [],
+    sprintHistory: [],
+    skipLogs: [],
+    unlockedBadges: [],
+    consumables: {
+      shieldCount: 1,
+      streakSaverCount: 0,
+      doubleCoinPotionCount: 0
+    },
+    preferences: {
+      hideSprintTimer: false,
+      isMuted: false,
+      isHapticsEnabled: true
+    },
+    // Subject specific states will be nested under subject data.
+    // Top-level fields above serve as defaults or aggregate fields (for math backwards compatibility)
+    subjects: {
+      math: {
+        adaptiveCompetenceRating: 1000,
+        competenceRank: 1000,
+        tier: 1,
+        unlockedTiers: [1],
+        streak: 1,
+        totalProblemsSolved: 0,
+        cumulativeCorrectStreak: 0,
+        personalRecords: { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
+        lastSprintDate: null,
+        practiceQueue: [],
+        sprintHistory: [],
+        skipLogs: []
+      },
+      words: {
+        adaptiveCompetenceRating: 1000,
+        competenceRank: 1000,
+        tier: 1,
+        unlockedTiers: [1],
+        streak: 1,
+        totalProblemsSolved: 0,
+        cumulativeCorrectStreak: 0,
+        personalRecords: { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
+        lastSprintDate: null,
+        practiceQueue: [],
+        sprintHistory: [],
+        skipLogs: []
+      }
+    }
+  },
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+  getUserData() {
+    const active = this.getActiveProfile();
+    const data = active.userData || DEFAULT_PROFILE.userData;
+
+    // Auto-migration: scale legacy ratings (<500) by 10x
+    let modified = false;
+    if (data.adaptiveCompetenceRating && data.adaptiveCompetenceRating < 500) {
+      data.adaptiveCompetenceRating = Math.round(data.adaptiveCompetenceRating * 10);
+      modified = true;
+    } else if (!data.adaptiveCompetenceRating) {
+      data.adaptiveCompetenceRating = 1000;
+      modified = true;
+    }
+
+    if (data.competenceRank && data.competenceRank < 500) {
+      data.competenceRank = Math.round(data.competenceRank * 10);
+      modified = true;
+    } else if (!data.competenceRank) {
+      data.competenceRank = 1000;
+      modified = true;
+    }
+
+    if (modified) {
+      this.saveUserData(data);
+    }
+
+    return data;
+  },
+  saveUserData(userData, subjectId = 'math') {
+    const state = safeGetProfilesState();
+    const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[activeId]) {
+      state.profiles[activeId] = { ...DEFAULT_PROFILE, id: activeId };
+    }
+
+    const currentProfileData = state.profiles[activeId].userData || {};
+    let updatedData = { ...currentProfileData, ...userData };
+
+    // Keep subjectRatings in sync
+    if (!updatedData.subjectRatings) {
+      updatedData.subjectRatings = { math: updatedData.adaptiveCompetenceRating || 1000 };
+    }
+    if (userData.adaptiveCompetenceRating !== undefined) {
+      updatedData.subjectRatings[subjectId] = userData.adaptiveCompetenceRating;
+    }
+
+    const activeRating = updatedData.adaptiveCompetenceRating || updatedData.competenceRank || 1000;
+    const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    let history = Array.isArray(currentProfileData.ratingHistory) ? [...currentProfileData.ratingHistory] : [];
+    if (history.length === 0) {
+      history = [{ label: todayLabel, rating: activeRating }];
+    } else {
+      const existingIdx = history.findIndex((h) => h.label === todayLabel || h.date === todayLabel);
+      if (existingIdx >= 0) {
+        history[existingIdx] = { label: todayLabel, rating: activeRating };
+      } else {
+        history.push({ label: todayLabel, rating: activeRating });
+      }
+    }
+
+    state.profiles[activeId].userData = {
+      ...updatedData,
+      ratingHistory: history
+    };
+    state.profiles[activeId].updatedAtMillis = Date.now();
+    safeSaveProfilesState(state);
+
+    // Sync profile to user's Cloud Firestore document for multi-device sync
+    try {
+      import('./userSyncService').then(({ userSyncService }) => {
+        userSyncService.syncProfileToCloud(activeId);
+      });
+    } catch (e) {
+      console.warn('StorageService: userSyncService trigger failed', e);
+    }
+
+    // Sync rating & avatar gear to cloud leaderboard
+    try {
+      const activeProf = state.profiles[activeId];
+      leaderboardService.syncUserScore({
+        profileId: activeId,
+        name: activeProf?.username || activeProf?.name || 'Kibo Climber',
+        score: activeRating,
+        subjectsMastered: Object.keys(updatedData.masteredTricks || {}).length || 5,
+        equipped: activeProf?.shopState?.equippedItems || []
+      });
+    } catch (e) {
+      console.warn('StorageService: Leaderboard sync skipped', e);
+    }
+  },
+=======
+  getUserData(subjectId = 'math') {
+    const active = this.getActiveProfile();
+    const data = active.userData || DEFAULT_PROFILE.userData;
+
+    // Migrate old math data into subjects if missing
+    if (!data.subjects) {
+      data.subjects = {
+        math: {
+          adaptiveCompetenceRating: data.adaptiveCompetenceRating || 1000,
+          competenceRank: data.competenceRank || 1000,
+          tier: data.tier || 1,
+          unlockedTiers: data.unlockedTiers || [1],
+          streak: data.streak || 1,
+          totalProblemsSolved: data.totalProblemsSolved || 0,
+          cumulativeCorrectStreak: data.cumulativeCorrectStreak || 0,
+          personalRecords: data.personalRecords || { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
+          lastSprintDate: data.lastSprintDate || null,
+          practiceQueue: data.practiceQueue || [],
+          sprintHistory: data.sprintHistory || [],
+          skipLogs: data.skipLogs || []
+        },
+        words: { ...DEFAULT_PROFILE.userData.subjects.words }
+      };
+    } else if (!data.subjects[subjectId]) {
+      data.subjects[subjectId] = { ...DEFAULT_PROFILE.userData.subjects.words };
+    }
+
+    const subjectData = data.subjects[subjectId];
+
+    // Auto-migration: scale legacy ratings (<500) by 10x
+    let modified = false;
+    if (subjectData.adaptiveCompetenceRating && subjectData.adaptiveCompetenceRating < 500) {
+      subjectData.adaptiveCompetenceRating = Math.round(subjectData.adaptiveCompetenceRating * 10);
+      modified = true;
+    } else if (!subjectData.adaptiveCompetenceRating) {
+      subjectData.adaptiveCompetenceRating = 1000;
+      modified = true;
+    }
+
+    if (subjectData.competenceRank && subjectData.competenceRank < 500) {
+      subjectData.competenceRank = Math.round(subjectData.competenceRank * 10);
+      modified = true;
+    } else if (!subjectData.competenceRank) {
+      subjectData.competenceRank = 1000;
+      modified = true;
+    }
+
+    if (modified) {
+      this.saveUserData(subjectData, subjectId);
+    }
+
+    // Merge global data with subject specific data to present a unified object back
+    return { ...data, ...subjectData };
+  },
+
+  saveUserData(userData, subjectId = 'math') {
+    const state = safeGetProfilesState();
+    const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[activeId]) {
+      state.profiles[activeId] = { ...DEFAULT_PROFILE, id: activeId };
+    }
+
+    const currentProfileData = state.profiles[activeId].userData || {};
+
+    // Migrate missing subjects structure if needed
+    if (!currentProfileData.subjects) {
+      currentProfileData.subjects = {
+        math: {
+          adaptiveCompetenceRating: currentProfileData.adaptiveCompetenceRating || 1000,
+          competenceRank: currentProfileData.competenceRank || 1000,
+          tier: currentProfileData.tier || 1,
+          unlockedTiers: currentProfileData.unlockedTiers || [1],
+          streak: currentProfileData.streak || 1,
+          totalProblemsSolved: currentProfileData.totalProblemsSolved || 0,
+          cumulativeCorrectStreak: currentProfileData.cumulativeCorrectStreak || 0,
+          personalRecords: currentProfileData.personalRecords || { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
+          lastSprintDate: currentProfileData.lastSprintDate || null,
+          practiceQueue: currentProfileData.practiceQueue || [],
+          sprintHistory: currentProfileData.sprintHistory || [],
+          skipLogs: currentProfileData.skipLogs || []
+        },
+        words: { ...DEFAULT_PROFILE.userData.subjects.words }
+      };
+    } else if (!currentProfileData.subjects[subjectId]) {
+       currentProfileData.subjects[subjectId] = { ...DEFAULT_PROFILE.userData.subjects.words };
+    }
+
+    // Extract subject specific fields from the payload
+    const subjectSpecificKeys = [
+      'adaptiveCompetenceRating', 'competenceRank', 'tier', 'unlockedTiers', 'streak',
+      'totalProblemsSolved', 'cumulativeCorrectStreak', 'personalRecords', 'lastSprintDate',
+      'practiceQueue', 'sprintHistory', 'skipLogs'
+    ];
+
+    const subjectData = { ...currentProfileData.subjects[subjectId] };
+    const globalData = { ...currentProfileData };
+
+    for (const key of Object.keys(userData)) {
+      if (subjectSpecificKeys.includes(key)) {
+        subjectData[key] = userData[key];
+        // Mirror math to global root for backwards compatibility and fallback
+        if (subjectId === 'math') {
+          globalData[key] = userData[key];
+        }
+      } else {
+        globalData[key] = userData[key];
+      }
+    }
+
+    globalData.subjects[subjectId] = subjectData;
+
+    // Keep subjectRatings in sync
+    if (!globalData.subjectRatings) {
+      globalData.subjectRatings = { math: globalData.adaptiveCompetenceRating || 1000, words: 1000 };
+    }
+    if (userData.adaptiveCompetenceRating !== undefined) {
+      globalData.subjectRatings[subjectId] = userData.adaptiveCompetenceRating;
+    }
+
+    const activeRating = subjectData.adaptiveCompetenceRating || subjectData.competenceRank || 1000;
+    const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    let history = Array.isArray(globalData.ratingHistory) ? [...globalData.ratingHistory] : [];
+    if (history.length === 0) {
+      history = [{ label: todayLabel, rating: activeRating }];
+    } else {
+      const existingIdx = history.findIndex((h) => h.label === todayLabel || h.date === todayLabel);
+      if (existingIdx >= 0) {
+        history[existingIdx] = { label: todayLabel, rating: activeRating };
+      } else {
+        history.push({ label: todayLabel, rating: activeRating });
+      }
+    }
+    globalData.ratingHistory = history;
+
+    state.profiles[activeId].userData = globalData;
+    state.profiles[activeId].updatedAtMillis = Date.now();
+    safeSaveProfilesState(state);
+
+    // Sync profile to user's Cloud Firestore document for multi-device sync
+    try {
+      import('./userSyncService').then(({ userSyncService }) => {
+        userSyncService.syncProfileToCloud(activeId);
+      });
+    } catch (e) {
+      console.warn('StorageService: userSyncService trigger failed', e);
+    }
+
+    // Sync rating & avatar gear to cloud leaderboard
+    try {
+      const activeProf = state.profiles[activeId];
+      // Syncing math score by default or aggregate. Keeping activeRating for now.
+      leaderboardService.syncUserScore({
+        profileId: activeId,
+        name: activeProf?.username || activeProf?.name || 'Kibo Climber',
+        score: globalData.adaptiveCompetenceRating || 1000,
+        subjectsMastered: Object.keys(globalData.masteredTricks || {}).length || 5,
+        equipped: activeProf?.shopState?.equippedItems || []
+      });
+    } catch (e) {
+      console.warn('StorageService: Leaderboard sync skipped', e);
+    }
+  },
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+  getActiveClimbState(profileId = null) {
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    const profile = state.profiles[pid];
+    if (!profile || !profile.userData || !profile.userData.activeClimb) return null;
+    const climb = profile.userData.activeClimb;
+    if (climb.sessionQuestionIndex > 12 || (climb.questionsAnswered && climb.questionsAnswered % 12 === 0 && climb.questionsAnswered > 0)) {
+      this.clearActiveClimbState(pid);
+      return null;
+    }
+    return climb;
+  },
+
+  saveActiveClimbState(climbState, profileId = null) {
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[pid]) return;
+    const currentUserData = state.profiles[pid].userData || {};
+    state.profiles[pid].userData = {
+      ...currentUserData,
+      activeClimb: climbState
+    };
+    safeSaveProfilesState(state);
+  },
+
+  clearActiveClimbState(profileId = null) {
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[pid] || !state.profiles[pid].userData) return;
+    const currentUserData = { ...state.profiles[pid].userData };
+    delete currentUserData.activeClimb;
+    state.profiles[pid].userData = currentUserData;
+    safeSaveProfilesState(state);
+  },
+=======
+  getActiveClimbState(profileId = null, subjectId = 'math') {
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    const profile = state.profiles[pid];
+    if (!profile || !profile.userData) return null;
+
+    let climb = null;
+    if (profile.userData.subjects && profile.userData.subjects[subjectId] && profile.userData.subjects[subjectId].activeClimb) {
+      climb = profile.userData.subjects[subjectId].activeClimb;
+    } else if (subjectId === 'math' && profile.userData.activeClimb) {
+      climb = profile.userData.activeClimb; // Fallback
+    }
+
+    if (!climb) return null;
+
+    if (climb.sessionQuestionIndex > 12 || (climb.questionsAnswered && climb.questionsAnswered % 12 === 0 && climb.questionsAnswered > 0)) {
+      this.clearActiveClimbState(pid, subjectId);
+      return null;
+    }
+    return climb;
+  },
+
+  saveActiveClimbState(climbState, profileId = null, subjectId = 'math') {
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[pid]) return;
+    const currentUserData = state.profiles[pid].userData || {};
+
+    if (!currentUserData.subjects) {
+      currentUserData.subjects = { math: {}, words: {} };
+    }
+    if (!currentUserData.subjects[subjectId]) {
+       currentUserData.subjects[subjectId] = {};
+    }
+    currentUserData.subjects[subjectId].activeClimb = climbState;
+    if (subjectId === 'math') {
+      currentUserData.activeClimb = climbState; // Fallback for math backwards compatibility
+    }
+
+    state.profiles[pid].userData = currentUserData;
+    safeSaveProfilesState(state);
+  },
+
+  clearActiveClimbState(profileId = null, subjectId = 'math') {
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[pid] || !state.profiles[pid].userData) return;
+    const currentUserData = { ...state.profiles[pid].userData };
+
+    if (currentUserData.subjects && currentUserData.subjects[subjectId]) {
+      delete currentUserData.subjects[subjectId].activeClimb;
+    }
+    if (subjectId === 'math') {
+      delete currentUserData.activeClimb;
+    }
+
+    state.profiles[pid].userData = currentUserData;
+    safeSaveProfilesState(state);
+  },
+>>>>>>> REPLACE

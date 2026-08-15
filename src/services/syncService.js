@@ -71,7 +71,7 @@ export const syncService = {
         const check = antiCheatService.validateSessionPayload(item.payload);
         if (check.valid) {
           // Replicate payload into local master profile
-          const userData = storageService.getUserData();
+          const userData = storageService.getUserData('math');
           const updatedHistory = [item.payload, ...(userData.sprintHistory || [])];
           storageService.saveUserData({ sprintHistory: updatedHistory });
           flushedCount++;
