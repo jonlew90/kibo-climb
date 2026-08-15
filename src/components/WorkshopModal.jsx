@@ -183,6 +183,14 @@ export default function WorkshopModal({
       return;
     }
 
+    if (item.realMoneyPrice) {
+      soundFx.playKeyTap();
+      // Forward the real money purchase up to App.jsx for mock checkout processing
+      // Note: `onBuySparksPackage` handles mock checkout natively right now.
+      onBuySparksPackage(item);
+      return;
+    }
+
     if (sparks >= item.cost) {
       soundFx.playVictory();
       onBuyItem(item);
@@ -319,6 +327,30 @@ export default function WorkshopModal({
       {/* DEDICATED INDEPENDENT ITEM GRID SCROLL CONTAINER */}
       <main className="flex-1 min-h-0 max-h-[48vh] sm:max-h-[52vh] overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-3 sm:p-5">
         <div className="space-y-2.5 pb-6">
+
+          {/* Kibo Club Subscription Banner */}
+          {allowRealMoneyPurchases && (
+            <div
+              onClick={() => onBuySparksPackage({ id: 'kibo_club_sub', name: 'Kibo Club Subscription', realMoneyPrice: '$4.99/mo', price: '$4.99/mo', isSubscription: true, description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards!' })}
+              className="mb-4 w-full bg-gradient-to-r from-purple-500 to-indigo-600 border-2 border-purple-400 rounded-2xl p-3 flex flex-row items-center justify-between shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/50 shrink-0">
+                  <Sparkles className="w-6 h-6 text-white animate-pulse" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club!</h3>
+                  <p className="text-[10px] font-bold text-indigo-100 leading-snug">
+                    1.25x Sparks Forever & More • $4.99/mo
+                  </p>
+                </div>
+              </div>
+              <button className="bg-white text-indigo-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap shrink-0 ml-2">
+                Join
+              </button>
+            </div>
+          )}
+
           {/* Promotional Account Link Banner in Shop */}
           {authService.getAuthState().isAnonymous && onRequestAccountLink && (
             <div
@@ -346,10 +378,10 @@ export default function WorkshopModal({
             allowRealMoneyPurchases ? (
               <div className="space-y-2.5">
                 {[
-                  { id: 'sparks_pack_1', name: 'Handful of Sparks', sparks: 500, price: '$1.99', description: 'A nice little boost to get you that special item!' },
-                  { id: 'sparks_pack_2', name: 'Pouch of Sparks', sparks: 1200, price: '$3.99', description: 'More than double the sparks for your adventures!' },
-                  { id: 'sparks_pack_3', name: 'Chest of Sparks', sparks: 3000, price: '$7.99', description: 'A hefty sum for the serious workshop collector.' },
-                  { id: 'sparks_pack_4', name: 'Mountain of Sparks', sparks: 10000, price: '$19.99', description: 'Enough sparks to buy almost anything Kibo has to offer!' },
+                  { id: 'sparks_pack_1', name: 'Handful of Sparks', sparks: 500, price: '$1.99', description: 'A nice little boost to get you that special item!', realMoneyPrice: '$1.99' },
+                  { id: 'sparks_pack_2', name: 'Pouch of Sparks', sparks: 1200, price: '$3.99', description: 'More than double the sparks for your adventures!', realMoneyPrice: '$3.99' },
+                  { id: 'sparks_pack_3', name: 'Chest of Sparks', sparks: 3000, price: '$7.99', description: 'A hefty sum for the serious workshop collector.', realMoneyPrice: '$7.99' },
+                  { id: 'sparks_pack_4', name: 'Mountain of Sparks', sparks: 10000, price: '$19.99', description: 'Enough sparks to buy almost anything Kibo has to offer!', realMoneyPrice: '$19.99' },
                 ].map((pack) => (
                   <div
                     key={pack.id}
@@ -400,8 +432,11 @@ export default function WorkshopModal({
               const isUnlocked = isConsumable ? false : unlockedItems.includes(item.id);
               const isEquippedInApp = equippedItems.includes(item.id);
               const isPreviewedOnStage = stageEquippedItems.includes(item.id);
-              const canAfford = sparks >= item.cost;
-              const shortfall = item.cost - sparks;
+              const isRealMoney = !!item.realMoneyPrice;
+              if (isRealMoney && !allowRealMoneyPurchases) return null; // Hide premium items if real money purchases disabled
+
+              const canAfford = isRealMoney ? true : sparks >= item.cost;
+              const shortfall = isRealMoney ? 0 : item.cost - sparks;
               const rarityInfo = RARITY_TIERS[item.rarity] || RARITY_TIERS.common;
 
               const isJustPurchased = recentlyPurchasedId === item.id;
@@ -462,9 +497,13 @@ export default function WorkshopModal({
                         <span className="text-[9px] font-black uppercase text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-300">
                           🟦 OWNED
                         </span>
-                      ) : !canAfford ? (
+                      ) : !canAfford && !isRealMoney ? (
                         <span className="text-[9px] font-black uppercase text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
                           🔒 Need {shortfall} ⚡ More
+                        </span>
+                      ) : isRealMoney && !isUnlocked ? (
+                         <span className="text-[9px] font-black uppercase text-purple-900 bg-purple-200 px-2 py-0.5 rounded-full border border-purple-400">
+                          💎 PREMIUM
                         </span>
                       ) : null}
 
@@ -534,6 +573,14 @@ export default function WorkshopModal({
                         ) : (
                           'Equip'
                         )}
+                      </button>
+                    ) : isRealMoney ? (
+                       <button
+                        type="button"
+                        onClick={() => handleBuyClick(item)}
+                        className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                      >
+                        Buy for {item.realMoneyPrice}
                       </button>
                     ) : canAfford ? (
                       <button
