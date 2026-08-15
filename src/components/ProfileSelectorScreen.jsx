@@ -3,7 +3,7 @@ import { Plus, ChevronRight, Flame, Star, Zap, CheckCircle2, User, X } from 'luc
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
-import { GRADE_STARTING_RATINGS } from '../utils/curriculum';
+import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 

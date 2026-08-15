@@ -62,7 +62,7 @@ export default function AccountLinkModal({
 
         setTimeout(() => {
           // Send the total sparks of the *current* active profile back via callback if needed
-          const currentData = storageService.getUserData();
+          const currentData = storageService.getUserData('math');
           if (onAccountLinked) onAccountLinked(res.user, currentData.sparks || 0);
           onClose();
         }, 1800);

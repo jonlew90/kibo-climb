@@ -4,7 +4,7 @@ import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
-import { CURRICULUM_TIERS, calculateStars } from '../utils/curriculum';
+import { CURRICULUM_TIERS, calculateStars } from '../utils/mathCurriculum';
 import { storageService } from '../services/storageService';
 
 export default function SprintResultsModal({

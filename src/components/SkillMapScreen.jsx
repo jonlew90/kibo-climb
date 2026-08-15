@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Target, Lock, CheckCircle2, Play, Compass, Award, Star, Flame } from 'lucide-react';
-import { CURRICULUM_TIERS } from '../utils/curriculum';
+import { CURRICULUM_TIERS } from '../utils/mathCurriculum';
 import { soundFx } from '../utils/audio';
 
 export default function SkillMapScreen({

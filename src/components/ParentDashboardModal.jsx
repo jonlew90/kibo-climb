@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug } from 'lucide-react';
-import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/curriculum';
+import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
+import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
@@ -24,6 +25,7 @@ const DAYS_OF_WEEK = [
 ];
 
 export default function ParentDashboardModal({
+  activeSubject = 'math',
   isOpen,
   onClose,
   currentPin,
@@ -54,7 +56,11 @@ export default function ParentDashboardModal({
   const [pinSuccessMsg, setPinSuccessMsg] = useState('');
   const [pinErrorMsg, setPinErrorMsg] = useState('');
 
-  const [liveUserData, setLiveUserData] = useState(() => storageService.getUserData());
+  const [liveUserData, setLiveUserData] = useState(() => storageService.getUserData(activeSubject));
+
+  useEffect(() => {
+    setLiveUserData(storageService.getUserData(activeSubject));
+  }, [activeSubject, isOpen]);
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
   const [profilesList, setProfilesList] = useState(() => storageService.getAllProfiles());
   const [viewingProfileId, setViewingProfileId] = useState(() => storageService.getActiveProfileId());
@@ -66,7 +72,7 @@ export default function ParentDashboardModal({
       const activeId = storageService.getActiveProfileId();
       setViewingProfileId(activeId);
       const profile = storageService.getProfileById(activeId);
-      setLiveUserData(profile ? profile.userData : storageService.getUserData());
+      setLiveUserData(profile ? profile.userData : storageService.getUserData(activeSubject));
       setProfilesList(storageService.getAllProfiles());
     }
   }
@@ -83,7 +89,7 @@ export default function ParentDashboardModal({
     setViewingProfileId(pId);
     storageService.setActiveProfileId(pId);
     const profile = storageService.getProfileById(pId);
-    setLiveUserData(profile ? profile.userData : storageService.getUserData());
+    setLiveUserData(profile ? profile.userData : storageService.getUserData(activeSubject));
     setShowEditProfile(false);
     if (onProfileSwitch) onProfileSwitch();
   };
@@ -101,7 +107,7 @@ export default function ParentDashboardModal({
     soundFx.playVictory();
     storageService.updateProfile(viewingProfileId, { name: editChildName.trim() });
     setProfilesList(storageService.getAllProfiles());
-    setLiveUserData(storageService.getUserData());
+    setLiveUserData(storageService.getUserData(activeSubject));
     setShowEditProfile(false);
   };
 
@@ -118,14 +124,14 @@ export default function ParentDashboardModal({
       const newActive = storageService.getActiveProfileId();
       setViewingProfileId(newActive);
       const profile = storageService.getProfileById(newActive);
-      setLiveUserData(profile ? profile.userData : storageService.getUserData());
+      setLiveUserData(profile ? profile.userData : storageService.getUserData(activeSubject));
       setShowEditProfile(false);
       if (onProfileSwitch) onProfileSwitch();
     }
   };
 
   const [dismissedAlerts, setDismissedAlerts] = useState(() => {
-    return storageService.getUserData().dismissedAlerts || [];
+    return storageService.getUserData(activeSubject).dismissedAlerts || [];
   });
 
   const handleDismissAlert = (alertId) => {
@@ -139,7 +145,7 @@ export default function ParentDashboardModal({
     if (!isOpen) return;
     const fetchUserData = () => {
       const p = storageService.getProfileById(viewingProfileId);
-      setLiveUserData(p ? p.userData : storageService.getUserData());
+      setLiveUserData(p ? p.userData : storageService.getUserData(activeSubject));
     };
     fetchUserData();
     const interval = setInterval(fetchUserData, 3000);
@@ -371,7 +377,7 @@ export default function ParentDashboardModal({
 
             {/* STAT SUMMARY ROW */}
             {(() => {
-              const activeUserData = liveUserData || storageService.getUserData();
+              const activeUserData = liveUserData || storageService.getUserData(activeSubject);
               const historyList = activeUserData.sprintHistory || [];
               const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec) || 0), 0);
               const childStreak = activeUserData.streak ?? 1;
@@ -436,7 +442,7 @@ export default function ParentDashboardModal({
 
             {/* RECENT ACTIVITY LOG */}
             {(() => {
-              const activeUserData = liveUserData || storageService.getUserData();
+              const activeUserData = liveUserData || storageService.getUserData(activeSubject);
               const historyList = activeUserData.sprintHistory || [];
               const recentList = historyList.slice(0, 3);
 
@@ -496,7 +502,7 @@ export default function ParentDashboardModal({
 
             {/* MATH MASTERY SNAPSHOT */}
             {(() => {
-              const activeUserData = liveUserData || storageService.getUserData();
+              const activeUserData = liveUserData || storageService.getUserData(activeSubject);
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = getTierFromRating(actualRating);
               const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
@@ -528,7 +534,7 @@ export default function ParentDashboardModal({
 
             {/* PARENT DIAGNOSTIC INSIGHTS & BOTTLENECK CARDS */}
             {(() => {
-              const activeUserData = liveUserData || storageService.getUserData();
+              const activeUserData = liveUserData || storageService.getUserData(activeSubject);
               const profileName = activeUserData.name || 'Child';
               const skipLogs = activeUserData.skipLogs || [];
               const sprintHistory = activeUserData.sprintHistory || [];
@@ -948,7 +954,7 @@ export default function ParentDashboardModal({
                               onClick={async () => {
                                 soundFx.playKeyTap();
                                 await authService.unlinkAccount();
-                                setLiveUserData(storageService.getUserData());
+                                setLiveUserData(storageService.getUserData(activeSubject));
                                 setShowUnlinkConfirm(false);
                               }}
                               className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs"
@@ -1033,7 +1039,7 @@ export default function ParentDashboardModal({
         milestoneName="Parent Zone Request"
         onAccountLinked={(user, newSparks) => {
           setShowAccountLinkModal(false);
-          setLiveUserData(storageService.getUserData());
+          setLiveUserData(storageService.getUserData(activeSubject));
           if (onAccountLinked) onAccountLinked(user, newSparks);
         }}
       />

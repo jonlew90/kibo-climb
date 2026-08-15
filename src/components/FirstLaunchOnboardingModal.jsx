@@ -4,7 +4,7 @@ import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
-import { GRADE_STARTING_RATINGS } from '../utils/curriculum';
+import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 

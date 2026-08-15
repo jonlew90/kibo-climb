@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Lightbulb, Play, X, Check, Zap } from 'lucide-react';
 import Mascot from './Mascot';
-import { CURRICULUM_TIERS, generateTierProblem } from '../utils/curriculum';
+import { CURRICULUM_TIERS, generateTierProblem } from '../utils/mathCurriculum';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 
@@ -25,7 +25,7 @@ export default function TierIntroModal({
     };
 
     if (isOpen) {
-      const userData = storageService.getUserData();
+      const userData = storageService.getUserData('math');
       const isAlreadyMastered = Boolean(userData.masteredTricks && userData.masteredTricks[tierLevel]);
       setTryOutInput('');
       setIsTryOutSuccess(isAlreadyMastered);
@@ -107,7 +107,7 @@ export default function TierIntroModal({
               if (tryOutInput.trim().toLowerCase() === sample.correctAnswer.toLowerCase()) {
                 soundFx.playVictory();
                 setIsTryOutSuccess(true);
-                const userData = storageService.getUserData();
+                const userData = storageService.getUserData('math');
                 userData.masteredTricks = { ...(userData.masteredTricks || {}), [tierLevel]: true };
                 storageService.saveUserData(userData);
               } else {

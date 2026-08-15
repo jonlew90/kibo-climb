@@ -1,6 +1,6 @@
 // Generates deduplicated arithmetic problems with commutative protection for Kibo Math
 
-import { generateTierProblem, getNormalizedProblemKey } from './curriculum';
+import { generateTierProblem, getNormalizedProblemKey } from './mathCurriculum';
 
 export function generateProblems(count = 20, tier = 1, practiceQueue = [], seenKeysSet = null) {
   const problems = [];

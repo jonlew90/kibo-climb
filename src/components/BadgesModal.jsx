@@ -6,6 +6,7 @@ import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 
 export default function BadgesModal({
+  activeSubject = 'math',
   isOpen,
   onClose,
   unlockedBadges = [],

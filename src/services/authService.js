@@ -56,7 +56,7 @@ export const authService = {
       }
 
       // 2. Check if already linked according to stored user data
-      const userData = storageService.getUserData();
+      const userData = storageService.getUserData('math');
       if (storageService.isAccountGloballyLinked() || (userData && userData.isAnonymous === false)) {
         const activeProfile = storageService.getActiveProfile();
         return {
@@ -101,7 +101,7 @@ export const authService = {
       console.warn('Firebase Anonymous Auth failed, using local fallback guest ID:', e);
       const guestId = getOrCreateGuestId();
       const activeProfile = storageService.getActiveProfile();
-      const userData = storageService.getUserData();
+      const userData = storageService.getUserData('math');
       const isAlreadyLinked = storageService.isAccountGloballyLinked() || (userData && userData.isAnonymous === false);
       return {
         ...activeProfile,
@@ -240,7 +240,7 @@ export const authService = {
         linkedUser = auth.currentUser;
       }
 
-      const currentData = storageService.getUserData();
+      const currentData = storageService.getUserData('math');
       const mergedUserData = {
         ...currentData,
         cloudUid: linkedUser ? linkedUser.uid : `uid_${Date.now()}`,
@@ -260,7 +260,7 @@ export const authService = {
 
       return {
         success: true,
-        user: storageService.getUserData(),
+        user: storageService.getUserData('math'),
         earnedSparks
       };
     } catch (error) {
@@ -307,7 +307,7 @@ export const authService = {
       }
 
       if (targetUser) {
-        const currentData = storageService.getUserData();
+        const currentData = storageService.getUserData('math');
         const providerId = targetUser.providerData[0]?.providerId || 'google.com';
         const mergedUserData = {
           ...currentData,
@@ -320,7 +320,7 @@ export const authService = {
         };
         storageService.setGlobalAccountLinkedState(mergedUserData);
         const earnedSparks = storageService.grantAccountLinkSparksReward();
-        return { success: true, user: storageService.getUserData(), earnedSparks, returnUrl };
+        return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
       }
       return { success: false, reason: 'No redirect result found' };
     } catch (e) {
@@ -334,7 +334,7 @@ export const authService = {
           if (credential) {
             const userCred = await signInWithCredential(auth, credential);
             if (userCred && userCred.user) {
-              const currentData = storageService.getUserData();
+              const currentData = storageService.getUserData('math');
               const providerId = userCred.user.providerData[0]?.providerId || 'google.com';
               const mergedUserData = {
                 ...currentData,
@@ -347,7 +347,7 @@ export const authService = {
               };
               storageService.setGlobalAccountLinkedState(mergedUserData);
               const earnedSparks = storageService.grantAccountLinkSparksReward();
-              return { success: true, user: storageService.getUserData(), earnedSparks, returnUrl };
+              return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
             }
           }
         } catch (signInErr) {
@@ -370,7 +370,7 @@ export const authService = {
    */
   getAuthState() {
     const firebaseUser = auth.currentUser;
-    const data = storageService.getUserData();
+    const data = storageService.getUserData('math');
     const isGlobalLinked = storageService.isAccountGloballyLinked();
 
     // Account is linked if saved in localStorage as non-anonymous OR if firebaseUser is non-anonymous
@@ -443,7 +443,7 @@ export const authService = {
       if (user) {
         const isGlobalLinked = storageService.isAccountGloballyLinked();
         const isAnon = user.isAnonymous && !isGlobalLinked;
-        const currentData = storageService.getUserData();
+        const currentData = storageService.getUserData('math');
         const updated = {
           ...currentData,
           cloudUid: user.uid,

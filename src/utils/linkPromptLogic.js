@@ -12,7 +12,7 @@ export function checkAndPromptLinkAccount({
   const isAnon = authService.getAuthState().isAnonymous;
   if (!isAnon) return false;
 
-  const userData = storageService.getUserData();
+  const userData = storageService.getUserData('math');
   const milestones = userData.promptedLinkMilestones || [];
   const lastPrompted = userData.lastPromptedLinkAt || 0;
 

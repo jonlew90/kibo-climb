@@ -66,7 +66,7 @@ export function useDevState(onStateChange) {
   };
 
   const adjustSparks = (deltaOrSet) => {
-    const currentData = storageService.getUserData();
+    const currentData = storageService.getUserData('math');
     let newSparks = 0;
     if (deltaOrSet === 'clear') {
       newSparks = 0;

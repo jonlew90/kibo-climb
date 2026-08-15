@@ -100,7 +100,7 @@ class UserSyncService {
     if (this.isSyncingFromCloud) return;
 
     const currentUser = auth.currentUser;
-    const uid = currentUser ? currentUser.uid : storageService.getUserData()?.cloudUid;
+    const uid = currentUser ? currentUser.uid : storageService.getUserData('math')?.cloudUid;
     if (!uid) return;
 
     if (this.debounceTimer) {

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { ArrowLeft, Target, Lock, CheckCircle2, Play, Compass, Award, Star, Zap, X, Lightbulb } from 'lucide-react';
 import Mascot from './Mascot';
 import TierIntroModal from './TierIntroModal';
-import { CURRICULUM_TIERS } from '../utils/curriculum';
+import { CURRICULUM_TIERS } from '../utils/mathCurriculum';
 import { soundFx } from '../utils/audio';
 import { getTrickForTier } from '../data/mathTricks';
 import { calculateTierStars } from '../utils/starCalculator';

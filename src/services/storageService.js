@@ -1,6 +1,6 @@
 // Unified Storage Service Adapter for Kibo Math
 // Multi-Profile Storage Engine (profiles[activeProfileId])
-import { getStartingRatingForGrade } from '../utils/curriculum';
+import { getStartingRatingForGrade } from '../utils/mathCurriculum';
 import { leaderboardService } from './leaderboardService';
 
 const KEYS = {
@@ -22,7 +22,7 @@ const DEFAULT_PROFILE = {
   practiceDays: [1, 2, 3, 4, 5],
   userData: {
     adaptiveCompetenceRating: 1000,
-    subjectRatings: { math: 1000 },
+    subjectRatings: { math: 1000, words: 1000 },
     competenceRank: 1000,
     tier: 1,
     unlockedTiers: [1],
@@ -62,6 +62,38 @@ const DEFAULT_PROFILE = {
       hideSprintTimer: false,
       isMuted: false,
       isHapticsEnabled: true
+    },
+    // Subject specific states will be nested under subject data.
+    // Top-level fields above serve as defaults or aggregate fields (for math backwards compatibility)
+    subjects: {
+      math: {
+        adaptiveCompetenceRating: 1000,
+        competenceRank: 1000,
+        tier: 1,
+        unlockedTiers: [1],
+        streak: 1,
+        totalProblemsSolved: 0,
+        cumulativeCorrectStreak: 0,
+        personalRecords: { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
+        lastSprintDate: null,
+        practiceQueue: [],
+        sprintHistory: [],
+        skipLogs: []
+      },
+      words: {
+        adaptiveCompetenceRating: 1000,
+        competenceRank: 1000,
+        tier: 1,
+        unlockedTiers: [1],
+        streak: 1,
+        totalProblemsSolved: 0,
+        cumulativeCorrectStreak: 0,
+        personalRecords: { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
+        lastSprintDate: null,
+        practiceQueue: [],
+        sprintHistory: [],
+        skipLogs: []
+      }
     }
   },
   shopState: {
@@ -277,34 +309,61 @@ export const storageService = {
   },
 
   // User Data (scoped to activeProfileId)
-  getUserData() {
+  getUserData(subjectId = 'math') {
     const active = this.getActiveProfile();
     const data = active.userData || DEFAULT_PROFILE.userData;
 
+    // Migrate old math data into subjects if missing
+    if (!data.subjects) {
+      data.subjects = {
+        math: {
+          adaptiveCompetenceRating: data.adaptiveCompetenceRating || 1000,
+          competenceRank: data.competenceRank || 1000,
+          tier: data.tier || 1,
+          unlockedTiers: data.unlockedTiers || [1],
+          streak: data.streak || 1,
+          totalProblemsSolved: data.totalProblemsSolved || 0,
+          cumulativeCorrectStreak: data.cumulativeCorrectStreak || 0,
+          personalRecords: data.personalRecords || { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
+          lastSprintDate: data.lastSprintDate || null,
+          practiceQueue: data.practiceQueue || [],
+          sprintHistory: data.sprintHistory || [],
+          skipLogs: data.skipLogs || []
+        },
+        words: { ...DEFAULT_PROFILE.userData.subjects.words }
+      };
+    } else if (!data.subjects[subjectId]) {
+      data.subjects[subjectId] = { ...DEFAULT_PROFILE.userData.subjects.words };
+    }
+
+    const subjectData = data.subjects[subjectId];
+
     // Auto-migration: scale legacy ratings (<500) by 10x
     let modified = false;
-    if (data.adaptiveCompetenceRating && data.adaptiveCompetenceRating < 500) {
-      data.adaptiveCompetenceRating = Math.round(data.adaptiveCompetenceRating * 10);
+    if (subjectData.adaptiveCompetenceRating && subjectData.adaptiveCompetenceRating < 500) {
+      subjectData.adaptiveCompetenceRating = Math.round(subjectData.adaptiveCompetenceRating * 10);
       modified = true;
-    } else if (!data.adaptiveCompetenceRating) {
-      data.adaptiveCompetenceRating = 1000;
+    } else if (!subjectData.adaptiveCompetenceRating) {
+      subjectData.adaptiveCompetenceRating = 1000;
       modified = true;
     }
 
-    if (data.competenceRank && data.competenceRank < 500) {
-      data.competenceRank = Math.round(data.competenceRank * 10);
+    if (subjectData.competenceRank && subjectData.competenceRank < 500) {
+      subjectData.competenceRank = Math.round(subjectData.competenceRank * 10);
       modified = true;
-    } else if (!data.competenceRank) {
-      data.competenceRank = 1000;
+    } else if (!subjectData.competenceRank) {
+      subjectData.competenceRank = 1000;
       modified = true;
     }
 
     if (modified) {
-      this.saveUserData(data);
+      this.saveUserData(subjectData, subjectId);
     }
 
-    return data;
+    // Merge global data with subject specific data to present a unified object back
+    return { ...data, ...subjectData };
   },
+
   saveUserData(userData, subjectId = 'math') {
     const state = safeGetProfilesState();
     const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
@@ -313,20 +372,66 @@ export const storageService = {
     }
 
     const currentProfileData = state.profiles[activeId].userData || {};
-    let updatedData = { ...currentProfileData, ...userData };
+
+    // Migrate missing subjects structure if needed
+    if (!currentProfileData.subjects) {
+      currentProfileData.subjects = {
+        math: {
+          adaptiveCompetenceRating: currentProfileData.adaptiveCompetenceRating || 1000,
+          competenceRank: currentProfileData.competenceRank || 1000,
+          tier: currentProfileData.tier || 1,
+          unlockedTiers: currentProfileData.unlockedTiers || [1],
+          streak: currentProfileData.streak || 1,
+          totalProblemsSolved: currentProfileData.totalProblemsSolved || 0,
+          cumulativeCorrectStreak: currentProfileData.cumulativeCorrectStreak || 0,
+          personalRecords: currentProfileData.personalRecords || { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
+          lastSprintDate: currentProfileData.lastSprintDate || null,
+          practiceQueue: currentProfileData.practiceQueue || [],
+          sprintHistory: currentProfileData.sprintHistory || [],
+          skipLogs: currentProfileData.skipLogs || []
+        },
+        words: { ...DEFAULT_PROFILE.userData.subjects.words }
+      };
+    } else if (!currentProfileData.subjects[subjectId]) {
+       currentProfileData.subjects[subjectId] = { ...DEFAULT_PROFILE.userData.subjects.words };
+    }
+
+    // Extract subject specific fields from the payload
+    const subjectSpecificKeys = [
+      'adaptiveCompetenceRating', 'competenceRank', 'tier', 'unlockedTiers', 'streak',
+      'totalProblemsSolved', 'cumulativeCorrectStreak', 'personalRecords', 'lastSprintDate',
+      'practiceQueue', 'sprintHistory', 'skipLogs'
+    ];
+
+    const subjectData = { ...currentProfileData.subjects[subjectId] };
+    const globalData = { ...currentProfileData };
+
+    for (const key of Object.keys(userData)) {
+      if (subjectSpecificKeys.includes(key)) {
+        subjectData[key] = userData[key];
+        // Mirror math to global root for backwards compatibility and fallback
+        if (subjectId === 'math') {
+          globalData[key] = userData[key];
+        }
+      } else {
+        globalData[key] = userData[key];
+      }
+    }
+
+    globalData.subjects[subjectId] = subjectData;
 
     // Keep subjectRatings in sync
-    if (!updatedData.subjectRatings) {
-      updatedData.subjectRatings = { math: updatedData.adaptiveCompetenceRating || 1000 };
+    if (!globalData.subjectRatings) {
+      globalData.subjectRatings = { math: globalData.adaptiveCompetenceRating || 1000, words: 1000 };
     }
     if (userData.adaptiveCompetenceRating !== undefined) {
-      updatedData.subjectRatings[subjectId] = userData.adaptiveCompetenceRating;
+      globalData.subjectRatings[subjectId] = userData.adaptiveCompetenceRating;
     }
 
-    const activeRating = updatedData.adaptiveCompetenceRating || updatedData.competenceRank || 1000;
+    const activeRating = subjectData.adaptiveCompetenceRating || subjectData.competenceRank || 1000;
     const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-    let history = Array.isArray(currentProfileData.ratingHistory) ? [...currentProfileData.ratingHistory] : [];
+    let history = Array.isArray(globalData.ratingHistory) ? [...globalData.ratingHistory] : [];
     if (history.length === 0) {
       history = [{ label: todayLabel, rating: activeRating }];
     } else {
@@ -337,11 +442,9 @@ export const storageService = {
         history.push({ label: todayLabel, rating: activeRating });
       }
     }
+    globalData.ratingHistory = history;
 
-    state.profiles[activeId].userData = {
-      ...updatedData,
-      ratingHistory: history
-    };
+    state.profiles[activeId].userData = globalData;
     state.profiles[activeId].updatedAtMillis = Date.now();
     safeSaveProfilesState(state);
 
@@ -357,11 +460,12 @@ export const storageService = {
     // Sync rating & avatar gear to cloud leaderboard
     try {
       const activeProf = state.profiles[activeId];
+      // Syncing math score by default or aggregate. Keeping activeRating for now.
       leaderboardService.syncUserScore({
         profileId: activeId,
         name: activeProf?.username || activeProf?.name || 'Kibo Climber',
-        score: activeRating,
-        subjectsMastered: Object.keys(updatedData.masteredTricks || {}).length || 5,
+        score: globalData.adaptiveCompetenceRating || 1000,
+        subjectsMastered: Object.keys(globalData.masteredTricks || {}).length || 5,
         equipped: activeProf?.shopState?.equippedItems || []
       });
     } catch (e) {
@@ -370,18 +474,27 @@ export const storageService = {
   },
 
   // Skip Event Diagnostics Logging
-  getSkipLogs() {
-    const userData = this.getUserData();
+  getSkipLogs(subjectId = 'math') {
+    const userData = this.getUserData(subjectId);
     return userData.skipLogs || [];
   },
-  logSkipEvent(skipEventData = {}) {
+  logSkipEvent(skipEventData = {}, subjectId = 'math') {
     const state = safeGetProfilesState();
     const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
     if (!state.profiles[activeId]) {
       state.profiles[activeId] = { ...DEFAULT_PROFILE, id: activeId };
     }
     const currentUserData = state.profiles[activeId].userData || {};
-    const existingLogs = currentUserData.skipLogs || [];
+
+    // Ensure subjects structure exists
+    if (!currentUserData.subjects) {
+      currentUserData.subjects = { math: {}, words: {} };
+    }
+    if (!currentUserData.subjects[subjectId]) {
+      currentUserData.subjects[subjectId] = {};
+    }
+
+    const existingLogs = currentUserData.subjects[subjectId].skipLogs || currentUserData.skipLogs || [];
     const newLog = {
       id: `skip_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       timestamp: new Date().toISOString(),
@@ -393,10 +506,12 @@ export const storageService = {
     // Keep up to 100 recent skip logs
     const updatedLogs = [newLog, ...existingLogs].slice(0, 100);
 
-    state.profiles[activeId].userData = {
-      ...currentUserData,
-      skipLogs: updatedLogs
-    };
+    currentUserData.subjects[subjectId].skipLogs = updatedLogs;
+    if (subjectId === 'math') {
+        currentUserData.skipLogs = updatedLogs; // backward compat fallback
+    }
+
+    state.profiles[activeId].userData = currentUserData;
     safeSaveProfilesState(state);
     return newLog;
   },
@@ -573,37 +688,62 @@ export const storageService = {
   },
 
   // Active Climb Session Persistence (per-profile mid-climb progress)
-  getActiveClimbState(profileId = null) {
+  getActiveClimbState(profileId = null, subjectId = 'math') {
     const state = safeGetProfilesState();
     const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
     const profile = state.profiles[pid];
-    if (!profile || !profile.userData || !profile.userData.activeClimb) return null;
-    const climb = profile.userData.activeClimb;
+    if (!profile || !profile.userData) return null;
+
+    let climb = null;
+    if (profile.userData.subjects && profile.userData.subjects[subjectId] && profile.userData.subjects[subjectId].activeClimb) {
+      climb = profile.userData.subjects[subjectId].activeClimb;
+    } else if (subjectId === 'math' && profile.userData.activeClimb) {
+      climb = profile.userData.activeClimb; // Fallback
+    }
+
+    if (!climb) return null;
+
     if (climb.sessionQuestionIndex > 12 || (climb.questionsAnswered && climb.questionsAnswered % 12 === 0 && climb.questionsAnswered > 0)) {
-      this.clearActiveClimbState(pid);
+      this.clearActiveClimbState(pid, subjectId);
       return null;
     }
     return climb;
   },
 
-  saveActiveClimbState(climbState, profileId = null) {
+  saveActiveClimbState(climbState, profileId = null, subjectId = 'math') {
     const state = safeGetProfilesState();
     const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
     if (!state.profiles[pid]) return;
     const currentUserData = state.profiles[pid].userData || {};
-    state.profiles[pid].userData = {
-      ...currentUserData,
-      activeClimb: climbState
-    };
+
+    if (!currentUserData.subjects) {
+      currentUserData.subjects = { math: {}, words: {} };
+    }
+    if (!currentUserData.subjects[subjectId]) {
+       currentUserData.subjects[subjectId] = {};
+    }
+    currentUserData.subjects[subjectId].activeClimb = climbState;
+    if (subjectId === 'math') {
+      currentUserData.activeClimb = climbState; // Fallback for math backwards compatibility
+    }
+
+    state.profiles[pid].userData = currentUserData;
     safeSaveProfilesState(state);
   },
 
-  clearActiveClimbState(profileId = null) {
+  clearActiveClimbState(profileId = null, subjectId = 'math') {
     const state = safeGetProfilesState();
     const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
     if (!state.profiles[pid] || !state.profiles[pid].userData) return;
     const currentUserData = { ...state.profiles[pid].userData };
-    delete currentUserData.activeClimb;
+
+    if (currentUserData.subjects && currentUserData.subjects[subjectId]) {
+      delete currentUserData.subjects[subjectId].activeClimb;
+    }
+    if (subjectId === 'math') {
+      delete currentUserData.activeClimb;
+    }
+
     state.profiles[pid].userData = currentUserData;
     safeSaveProfilesState(state);
   },

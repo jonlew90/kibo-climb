@@ -145,7 +145,7 @@ export function evaluateBadges(userState, lastSprintResult = null) {
   const updatedUnlocked = Array.from(new Set([...currentUnlocked, ...newlyUnlocked.map((b) => b.id)]));
 
   if (newlyUnlocked.length > 0) {
-    const userData = storageService.getUserData();
+    const userData = storageService.getUserData('math');
     userData.unlockedBadges = updatedUnlocked;
     storageService.saveUserData(userData);
   }
