@@ -1,92 +1,12 @@
+import { SUBJECTS_CONFIG } from '../config/subjects';
 /**
  * Calculates skill domain accuracy and metrics matching the student's actual Competence Rating & Elo Tier.
  * Provides accurate, dynamically updated performance metrics for parent reporting.
  */
 
-export const DOMAIN_DEFINITIONS = [
-  {
-    id: 'add_sub',
-    name: 'Addition & Subtraction',
-    icon: '🌱',
-    subtitle: 'Sums & Differences to 20 (Making 10s)',
-    minUnlockRating: 0,
-    tiers: [1],
-    defaultAcc: 90,
-    defaultSpeed: 1.8
-  },
-  {
-    id: 'mult_foundations',
-    name: 'Multiplication Foundations',
-    icon: '🌲',
-    subtitle: 'Multiplication Facts (0s–5s) & Clock Math',
-    minUnlockRating: 1200,
-    tiers: [2],
-    defaultAcc: 85,
-    defaultSpeed: 2.2
-  },
-  {
-    id: 'adv_multiplication',
-    name: 'Advanced Multiplication & Coins',
-    icon: '🌊',
-    subtitle: 'Tables (6s–9s), 9s Trick & Coins',
-    minUnlockRating: 1400,
-    tiers: [3],
-    defaultAcc: 82,
-    defaultSpeed: 2.5
-  },
-  {
-    id: 'multi_digit',
-    name: 'Multi-Digit Mental Shortcuts',
-    icon: '🏜️',
-    subtitle: '11s Split Shortcut & Left-to-Right Tens',
-    minUnlockRating: 1600,
-    tiers: [4],
-    defaultAcc: 80,
-    defaultSpeed: 2.8
-  },
-  {
-    id: 'money_decimals',
-    name: 'Money & Decimal Arithmetic',
-    icon: '🪙',
-    subtitle: '$1.00 Bridge & Decimal Addition/Subtraction',
-    minUnlockRating: 1800,
-    tiers: [5],
-    defaultAcc: 78,
-    defaultSpeed: 3.0
-  },
-  {
-    id: 'division_ladder',
-    name: 'Explicit Long Division',
-    icon: '⛰️',
-    subtitle: 'Division Fact Families & Long Division',
-    minUnlockRating: 2000,
-    tiers: [6],
-    defaultAcc: 75,
-    defaultSpeed: 3.2
-  },
-  {
-    id: 'fractions_lcm_gcf',
-    name: 'Fractions, % & GCF/LCM',
-    icon: '🧩',
-    subtitle: 'Fraction Reduction, × / ÷, %, LCM & GCF',
-    minUnlockRating: 2200,
-    tiers: [7],
-    defaultAcc: 72,
-    defaultSpeed: 3.5
-  },
-  {
-    id: 'peak_algebra',
-    name: 'Pre-Algebra, Signed & Exponents',
-    icon: '🏔️',
-    subtitle: '2-Step Equations (3x+5=20), Signed (-/+) & Powers',
-    minUnlockRating: 2400,
-    tiers: [8],
-    defaultAcc: 70,
-    defaultSpeed: 3.5
-  }
-];
 
-export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = []) => {
+
+export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = [], subjectId = 'math') => {
   const recentSprints = (sprintHistory || []).slice(-20);
 
   // Extract the initial placement rating from the user's recorded history.
@@ -95,7 +15,8 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
     ? (rawRatingHistory[0]?.rating ?? activeRating)
     : activeRating;
 
-  return DOMAIN_DEFINITIONS.map((def) => {
+  const domainDefs = (SUBJECTS_CONFIG[subjectId] || SUBJECTS_CONFIG['math']).DOMAIN_DEFINITIONS || [];
+  return domainDefs.map((def) => {
     let matchedCorrect = 0;
     let matchedTotal = 0;
     let matchedDuration = 0;
@@ -134,8 +55,8 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
           }
       }
     } else {
-      const currentIndex = DOMAIN_DEFINITIONS.findIndex(d => d.id === def.id);
-      const nextDef = DOMAIN_DEFINITIONS[currentIndex + 1];
+      const currentIndex = domainDefs.findIndex(d => d.id === def.id);
+      const nextDef = domainDefs[currentIndex + 1];
       const isHighestUnlocked = activeRating >= def.minUnlockRating && (!nextDef || activeRating < nextDef.minUnlockRating);
 
       if (isHighestUnlocked) {
@@ -190,8 +111,8 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
   });
 };
 
-export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = []) => {
-  const domains = calculateDomainMastery(sprintHistory, currentTier, activeRating, rawRatingHistory);
+export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTier = 1, activeRating = 1000, rawRatingHistory = [], subjectId = 'math') => {
+  const domains = calculateDomainMastery(sprintHistory, currentTier, activeRating, rawRatingHistory, subjectId);
 
   let masteredCount = 0;
   let practicingCount = 0;
@@ -274,3 +195,6 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
     skillStrandBreakdown: strandBreakdown
   };
 };
+
+// Backward compatibility export
+export const DOMAIN_DEFINITIONS = SUBJECTS_CONFIG['math'].DOMAIN_DEFINITIONS;

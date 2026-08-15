@@ -1,4 +1,5 @@
-import { getKFactor, getProbeTargetTier, getStrandForRating, SKILL_STRANDS } from './SkillTreeConfig.js';
+import { getKFactor, getProbeTargetTier, getStrandForRating, getSubjectStrands } from './SkillTreeConfig.js';
+import { SUBJECTS_CONFIG } from '../config/subjects.js';
 
 /**
  * Determines whether a probe question should be served.
@@ -47,7 +48,8 @@ export function evaluateAdaptiveAttempt({
   totalProblemsSolved = 0,
   isProbeQuestion = false,
   problemTier = 1,
-  isSkip = false
+  isSkip = false,
+  problemSubjectId = 'math'
 }) {
   const responseTimeSec = latencyMs / 1000;
   const effectiveCorrect = isSkip ? false : isCorrect;
@@ -104,9 +106,10 @@ export function evaluateAdaptiveAttempt({
   let rankDelta = Math.round(rawDelta);
 
   // PREVENT VAULTING: Ensure a single rating jump doesn't vault past the NEXT tier entirely.
-  const currentStrand = getStrandForRating(currentCompetenceRank);
+  const currentStrand = getStrandForRating(currentCompetenceRank, problemSubjectId || 'math');
+  const subjectStrands = getSubjectStrands(problemSubjectId || 'math');
   // Find the tier directly above the current tier
-  const nextStrand = SKILL_STRANDS.find(s => s.tier === currentStrand.tier + 1);
+  const nextStrand = subjectStrands.find(s => s.tier === currentStrand.tier + 1);
 
   let nextCompetenceRank = currentCompetenceRank + rankDelta;
 
@@ -234,19 +237,14 @@ export function evaluateAdaptiveSessionEnd({
   };
 }
 
-export const MASTERY_THRESHOLDS = [
-  { threshold: 1150, skillName: 'Sums & Differences to 20' },
-  { threshold: 1300, skillName: 'Multiplication Facts (0s-12s)' },
-  { threshold: 1450, skillName: 'Money & Elapsed Time' },
-  { threshold: 1600, skillName: 'Multi-Digit Mental Math' },
-  { threshold: 1700, skillName: 'Number Theory & Logic' },
-  { threshold: 1750, skillName: 'Exponents, Roots & PEMDAS' }
-];
 
-export function checkSkillMasteryEvents(prevRating, nextRating, existingEvents = []) {
+
+export function checkSkillMasteryEvents(prevRating, nextRating, existingEvents = [], subjectId = 'math') {
   const newEvents = [...(existingEvents || [])];
+  const config = SUBJECTS_CONFIG[subjectId] || SUBJECTS_CONFIG['math'];
+  const thresholds = config.MASTERY_THRESHOLDS || [];
 
-  MASTERY_THRESHOLDS.forEach(({ threshold, skillName }) => {
+  thresholds.forEach(({ threshold, skillName }) => {
     if (prevRating < threshold && nextRating >= threshold) {
       const exists = newEvents.some((ev) => ev.skillName === skillName);
       if (!exists) {
@@ -279,3 +277,6 @@ export function checkCalibrationCompletion(totalProblemsSolved, currentRating, i
   }
   return { justCalibrated: false, scoutBonusSparks: 0, baselineRating: null };
 }
+
+// Backward compatibility export
+export const MASTERY_THRESHOLDS = SUBJECTS_CONFIG['math'].MASTERY_THRESHOLDS;
