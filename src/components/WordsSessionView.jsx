@@ -128,7 +128,8 @@ export default function WordsSessionView({
     const seen = new Set();
     const currentRating = storageService.getUserData('words').adaptiveCompetenceRating || storageService.getUserData('words').competenceRank || 1000;
     const activeTier = isFTUX ? 1 : getTierFromRating(currentRating);
-    const batch = generateProblems(15, activeTier, [], seen);
+    const recentWords = storageService.getUserData('words').recentWords || [];
+    const batch = generateProblems(15, activeTier, recentWords, seen);
     blockSeenKeysRef.current = seen;
     return batch;
   });
@@ -403,7 +404,8 @@ export default function WordsSessionView({
   const replenishQueueIfNeeded = (nextIndex) => {
     if (nextIndex >= problemQueue.length - 3) {
       const nextTier = getTierFromRating(competenceRank);
-      const newBatch = generateProblems(6, nextTier, [], blockSeenKeysRef.current);
+      const recentWords = storageService.getUserData('words').recentWords || [];
+      const newBatch = generateProblems(6, nextTier, recentWords, blockSeenKeysRef.current);
       setProblemQueue((prev) => [...prev, ...newBatch]);
     }
   };
@@ -615,9 +617,14 @@ export default function WordsSessionView({
     const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
     setBlockRatingGain(nextBlockRatingGain);
 
+    const activeWord = (currentProblem.answerString || currentProblem.answer || '').toString().toLowerCase();
+    const existingRecent = storageService.getUserData('words').recentWords || [];
+    const updatedRecent = activeWord ? [activeWord, ...existingRecent.filter(w => w !== activeWord)].slice(0, 60) : existingRecent;
+
     storageService.saveUserData({
       adaptiveCompetenceRating: evalResult.nextCompetenceRank,
-      competenceRank: evalResult.nextCompetenceRank
+      competenceRank: evalResult.nextCompetenceRank,
+      recentWords: updatedRecent
     }, 'words');
 
     const activeUserData = storageService.getUserData('words');

@@ -16,3 +16,26 @@ package-lock.json
 pnpm-lock.yaml
 yarn.lock
 public/assets/
+
+# Dependencies
+functions/node_modules/
+
+# Compiled output (if using TypeScript)
+functions/lib/
+
+# Local environment variables & secrets
+functions/.env
+functions/.env.*
+functions/.runtimeconfig.json
+functions/.secret.local
+
+# Logs and debug files
+functions/npm-debug.log*
+functions/yarn-debug.log*
+functions/yarn-error.log*
+functions/firebase-debug.log*
+functions/firestore-debug.log*
+
+# Service account private keys / credentials
+functions/*credentials*.json
+functions/*service-account*.json
