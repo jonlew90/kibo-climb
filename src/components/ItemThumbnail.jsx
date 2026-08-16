@@ -481,6 +481,26 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
+        {itemId === 'bg_concert_stage' && (
+          <g>
+            <rect x="10" y="10" width="80" height="80" rx="16" fill="#180B2B" stroke="#A855F7" strokeWidth="3" />
+            <polygon points="25,12 48,75 32,75 15,12" fill="#EC4899" opacity="0.5" />
+            <polygon points="75,12 52,75 68,75 85,12" fill="#06B6D4" opacity="0.5" />
+            <polygon points="50,12 40,75 60,75 50,12" fill="#FACC15" opacity="0.4" />
+            <rect x="14" y="14" width="72" height="4" rx="2" fill="#475569" />
+            <circle cx="25" cy="16" r="2.5" fill="#EC4899" />
+            <circle cx="50" cy="16" r="2.5" fill="#FACC15" />
+            <circle cx="75" cy="16" r="2.5" fill="#06B6D4" />
+            <polygon points="14,72 86,72 90,88 10,88" fill="#1E293B" />
+            <line x1="14" y1="72" x2="86" y2="72" stroke="#E879F9" strokeWidth="2" />
+            <circle cx="30" cy="72" r="1.5" fill="#38BDF8" />
+            <circle cx="50" cy="72" r="1.5" fill="#FFFFFF" />
+            <circle cx="70" cy="72" r="1.5" fill="#F472B6" />
+            <rect x="14" y="56" width="8" height="16" rx="1" fill="#0F172A" />
+            <rect x="78" y="56" width="8" height="16" rx="1" fill="#0F172A" />
+          </g>
+        )}
+
         {itemId === 'bg_cosmic' && (
           <g>
             <rect x="10" y="10" width="80" height="80" rx="16" fill="#1E1B4B" stroke="#4338CA" strokeWidth="3" />

@@ -11,6 +11,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasSunsetBg = isEquipped('bg_sunset');
   const hasAuroraBg = isEquipped('bg_aurora');
   const hasVolcanoBg = isEquipped('bg_volcano');
+  const hasConcertStageBg = isEquipped('bg_concert_stage');
   const hasCosmicBg = isEquipped('bg_cosmic');
   const hasCrystalCaveBg = isEquipped('bg_crystal_cave');
   const hasGoldenPalaceBg = isEquipped('bg_golden_palace');
@@ -382,6 +383,27 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <stop offset="100%" stopColor="#451A03" />
           </linearGradient>
 
+          <linearGradient id="svgConcertGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#1E0A3C" />
+            <stop offset="50%" stopColor="#2E0854" />
+            <stop offset="100%" stopColor="#0B0217" />
+          </linearGradient>
+
+          <linearGradient id="concertBeamLeft" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#EC4899" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#EC4899" stopOpacity="0.05" />
+          </linearGradient>
+
+          <linearGradient id="concertBeamRight" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.05" />
+          </linearGradient>
+
+          <linearGradient id="concertBeamCenter" x1="0.5" y1="0" x2="0.5" y2="1">
+            <stop offset="0%" stopColor="#FACC15" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#FACC15" stopOpacity="0.05" />
+          </linearGradient>
+
           <linearGradient id="svgCosmicGrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#312E81" />
             <stop offset="50%" stopColor="#1E1B4B" />
@@ -534,6 +556,54 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <rect x="5" y="5" width="190" height="190" rx="32" fill="url(#svgLavaGrad)" stroke="#9A3412" strokeWidth="4" />
             <polygon points="25,190 100,80 175,190" fill="#451A03" />
             <circle cx="100" cy="80" r="12" fill="#F97316" />
+          </g>
+        )}
+
+        {hasConcertStageBg && (
+          <g>
+            <rect x="5" y="5" width="190" height="190" rx="32" fill="url(#svgConcertGrad)" stroke="#A855F7" strokeWidth="4" />
+            {/* Dramatic crossing spotlights */}
+            <polygon points="35,15 110,185 70,185 20,15" fill="url(#concertBeamLeft)" />
+            <polygon points="165,15 90,185 130,185 180,15" fill="url(#concertBeamRight)" />
+            <polygon points="100,10 70,185 130,185 100,10" fill="url(#concertBeamCenter)" />
+            
+            {/* Stage Truss Bar & Fixtures */}
+            <rect x="15" y="14" width="170" height="7" rx="3" fill="#334155" stroke="#1E293B" strokeWidth="1" />
+            <line x1="20" y1="17" x2="180" y2="17" stroke="#64748B" strokeWidth="2" strokeDasharray="4 4" />
+            {/* Stage Rig Lights with glowing halos */}
+            <circle cx="35" cy="18" r="6" fill="#EC4899" opacity="0.6" />
+            <circle cx="35" cy="18" r="3.5" fill="#FFFFFF" />
+            <circle cx="70" cy="18" r="5" fill="#A855F7" opacity="0.6" />
+            <circle cx="70" cy="18" r="3" fill="#F0ABFC" />
+            <circle cx="100" cy="18" r="7" fill="#FACC15" opacity="0.6" />
+            <circle cx="100" cy="18" r="4" fill="#FFFFFF" />
+            <circle cx="130" cy="18" r="5" fill="#38BDF8" opacity="0.6" />
+            <circle cx="130" cy="18" r="3" fill="#BAE6FD" />
+            <circle cx="165" cy="18" r="6" fill="#06B6D4" opacity="0.6" />
+            <circle cx="165" cy="18" r="3.5" fill="#FFFFFF" />
+
+            {/* Concert Stage Platform */}
+            <polygon points="15,160 185,160 195,195 5,195" fill="#1E293B" stroke="#334155" strokeWidth="2" />
+            <line x1="15" y1="160" x2="185" y2="160" stroke="#E879F9" strokeWidth="3" />
+            {/* Stage Footlight LEDs */}
+            <circle cx="30" cy="160" r="2.5" fill="#38BDF8" />
+            <circle cx="55" cy="160" r="2.5" fill="#F472B6" />
+            <circle cx="80" cy="160" r="2.5" fill="#FACC15" />
+            <circle cx="100" cy="160" r="3" fill="#FFFFFF" />
+            <circle cx="120" cy="160" r="2.5" fill="#FACC15" />
+            <circle cx="145" cy="160" r="2.5" fill="#F472B6" />
+            <circle cx="170" cy="160" r="2.5" fill="#38BDF8" />
+
+            {/* Speaker stacks on stage wings */}
+            <rect x="12" y="125" width="18" height="35" rx="3" fill="#0F172A" stroke="#475569" strokeWidth="1.5" />
+            <circle cx="21" cy="134" r="3.5" fill="#334155" />
+            <circle cx="21" cy="148" r="5" fill="#334155" />
+            <rect x="170" y="125" width="18" height="35" rx="3" fill="#0F172A" stroke="#475569" strokeWidth="1.5" />
+            <circle cx="179" cy="134" r="3.5" fill="#334155" />
+            <circle cx="179" cy="148" r="5" fill="#334155" />
+
+            {/* Cheering crowd hands silhouette at bottom */}
+            <path d="M 20 195 Q 23 183 25 186 Q 28 180 30 188 Q 35 195 38 195 M 50 195 Q 53 182 56 186 Q 60 178 63 187 M 140 195 Q 143 179 146 185 Q 150 177 154 187 M 165 195 Q 168 181 171 185 Q 175 178 178 195" stroke="#4C1D95" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.6" />
           </g>
         )}
 

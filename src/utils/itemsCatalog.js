@@ -438,6 +438,14 @@ export const WORKSHOP_ITEMS = [
     description: 'Fiery volcano peak with molten lava glow.'
   },
   {
+    id: 'bg_concert_stage',
+    name: 'Concert Stage',
+    category: 'background',
+    cost: 520,
+    rarity: 'epic',
+    description: 'Electric live concert stage with blazing spotlights, laser trusses, and rockstar vibes!'
+  },
+  {
     id: 'bg_cosmic',
     name: 'Cosmic Galaxy',
     category: 'background',
