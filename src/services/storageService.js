@@ -65,6 +65,8 @@ const DEFAULT_PROFILE = {
       mostPerfectSessions: 0
     },
     lastSprintDate: null,
+    lastSprintTimestamp: null,
+    lastSprintTimezone: null,
     hasVisitedParentZone: false,
     practiceQueue: [],
     sprintHistory: [],
@@ -389,12 +391,14 @@ export const storageService = {
       this.saveUserData(subjectData, subjectId);
     }
 
-    // Merge global data with subject specific data, ensuring unified streak and lastSprintDate
+    // Merge global data with subject specific data, ensuring unified streak and lastSprintDate/timezone metadata
     return {
       ...data,
       ...subjectData,
       streak: data.streak ?? 0,
-      lastSprintDate: data.lastSprintDate ?? null
+      lastSprintDate: data.lastSprintDate ?? null,
+      lastSprintTimestamp: data.lastSprintTimestamp ?? null,
+      lastSprintTimezone: data.lastSprintTimezone ?? null
     };
   },
 

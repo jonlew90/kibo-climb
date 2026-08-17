@@ -28,6 +28,13 @@ import { BRAND_CONFIG } from './config/brand';
 import { pluralize, normalizeTimeAnswer } from './utils/formatters';
 import { storageService } from './services/storageService';
 import { getCompetenceRankTier } from './utils/GameEconomyModel';
+import { 
+  getTodayStr, 
+  getYesterdayStr, 
+  calculateStreakFromHistory, 
+  getCurrentTimezone, 
+  isWithinTravelGracePeriod 
+} from './utils/dateUtils';
 import { authService } from './services/authService';
 import { syncService } from './services/syncService';
 import { shopLedgerService } from './services/shopLedgerService';
@@ -171,19 +178,8 @@ export default function App() {
   const [placementResultInfo, setPlacementResultInfo] = useState(null);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
 
-  // Date helpers for calendar day streak tracking
-  const getTodayStr = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  };
-
-  const getYesterdayStr = () => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  };
-
-  const calculateStreakFromHistory = (sprintHistory = [], practiceDays = [1, 2, 3, 4, 5]) => {
+  // Aggregate sprint history across subjects and calculate streak with dateUtils
+  const getCombinedSprintHistory = (sprintHistory = []) => {
     const activeProf = storageService.getActiveProfile();
     const allSubjects = activeProf?.userData?.subjects || {};
     const combinedHistory = [
@@ -195,42 +191,12 @@ export default function App() {
         combinedHistory.push(...sub.sprintHistory);
       }
     });
+    return combinedHistory;
+  };
 
-    if (combinedHistory.length === 0) return 0;
-    const playedDates = new Set(
-      combinedHistory
-        .map((item) => item.date || item.timestamp?.split('T')[0])
-        .filter(Boolean)
-    );
-    if (playedDates.size === 0) return 0;
-
-    let checkDate = new Date();
-    let dateStr = getTodayStr();
-
-    if (!playedDates.has(dateStr)) {
-      checkDate.setDate(checkDate.getDate() - 1);
-      dateStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
-      if (!playedDates.has(dateStr)) {
-        return 0;
-      }
-    }
-
-    let streakCount = 0;
-    while (true) {
-      const currentStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
-      if (playedDates.has(currentStr)) {
-        streakCount++;
-        checkDate.setDate(checkDate.getDate() - 1);
-      } else {
-        const dayIdx = checkDate.getDay();
-        if (practiceDays.includes(dayIdx)) {
-          break;
-        } else {
-          checkDate.setDate(checkDate.getDate() - 1);
-        }
-      }
-    }
-    return streakCount;
+  const getActiveStreakFromHistory = (sprintHistory = [], practiceDays = [1, 2, 3, 4, 5]) => {
+    const combined = getCombinedSprintHistory(sprintHistory);
+    return calculateStreakFromHistory(combined, practiceDays);
   };
 
   // Persistent Kibo Shields (Streak Freezes: max capacity 2, default 1)
@@ -333,9 +299,10 @@ export default function App() {
     const todayStr = getTodayStr();
     const uData = storageService.getUserData(activeSubject);
     const lastDateStr = uData.lastSprintDate;
+    const lastTimestamp = uData.lastSprintTimestamp;
     let currentStreak = uData.streak ?? streak ?? 0;
 
-    const historyStreak = calculateStreakFromHistory(uData.sprintHistory || [], storageService.getProfilePracticeDays());
+    const historyStreak = getActiveStreakFromHistory(uData.sprintHistory || [], storageService.getProfilePracticeDays());
     if (historyStreak > currentStreak) {
       currentStreak = historyStreak;
     }
@@ -343,17 +310,23 @@ export default function App() {
     if (lastDateStr === todayStr) {
       if (currentStreak !== streak) {
         setStreak(currentStreak);
-        storageService.saveUserData({ streak: currentStreak, lastSprintDate: todayStr }, activeSubject);
+        storageService.saveUserData({ 
+          streak: currentStreak, 
+          lastSprintDate: todayStr,
+          lastSprintTimestamp: new Date().toISOString(),
+          lastSprintTimezone: getCurrentTimezone()
+        }, activeSubject);
       }
       return;
     }
 
     let nextStreak = currentStreak;
     const yesterdayStr = getYesterdayStr();
+    const isTravelGrace = isWithinTravelGracePeriod(lastTimestamp, new Date(), 36);
 
     if (!lastDateStr) {
       nextStreak = Math.max(1, historyStreak);
-    } else if (lastDateStr === yesterdayStr) {
+    } else if (lastDateStr === yesterdayStr || isTravelGrace) {
       nextStreak = currentStreak + 1;
     } else {
       const savedDays = storageService.getProfilePracticeDays() || [1, 2, 3, 4, 5];
@@ -381,7 +354,12 @@ export default function App() {
     }
 
     setStreak(nextStreak);
-    storageService.saveUserData({ streak: nextStreak, lastSprintDate: todayStr }, activeSubject);
+    storageService.saveUserData({ 
+      streak: nextStreak, 
+      lastSprintDate: todayStr,
+      lastSprintTimestamp: new Date().toISOString(),
+      lastSprintTimezone: getCurrentTimezone()
+    }, activeSubject);
   };
 
   const handleIncrementLifetimeProblems = (isCorrect = true) => {
@@ -670,12 +648,13 @@ export default function App() {
     }
   };
 
-  // Schedule-Aware Streak Validation on App Startup
+  // Schedule-Aware & Timezone-Resilient Streak Validation on App Startup
   useEffect(() => {
     const uData = storageService.getUserData(activeSubject);
     const lastDateStr = uData.lastSprintDate;
+    const lastTimestamp = uData.lastSprintTimestamp;
     const savedDays = storageService.getProfilePracticeDays() || [1, 2, 3, 4, 5];
-    const historyStreak = calculateStreakFromHistory(uData.sprintHistory || [], savedDays);
+    const historyStreak = getActiveStreakFromHistory(uData.sprintHistory || [], savedDays);
     const storedStreak = uData.streak ?? 0;
     const savedStreak = Math.max(storedStreak, historyStreak);
     const savedShields = uData.streakShields ?? 1;
@@ -688,6 +667,14 @@ export default function App() {
     if (!lastDateStr || savedStreak === 0) return;
 
     const todayStr = getTodayStr();
+    // Intact if already played today or yesterday
+    if (lastDateStr === todayStr || lastDateStr === getYesterdayStr()) return;
+
+    // Check if within travel / elapsed time grace period (e.g. traveling eastward across time zones)
+    if (isWithinTravelGracePeriod(lastTimestamp, new Date(), 36)) {
+      return;
+    }
+
     const [y, m, d] = lastDateStr.split('-').map(Number);
     const curr = new Date(y, m - 1, d);
     curr.setDate(curr.getDate() + 1);
