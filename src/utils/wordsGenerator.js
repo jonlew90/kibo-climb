@@ -8563,55 +8563,95 @@ export function generateTierProblem(targetTier, isNearThreshold = false, exclude
   return formatWordProblem(item, effectiveTier, answer);
 }
 
-function formatWordProblem(item, effectiveTier, answer) {
-  // Determine revealed indices based on tier difficulty
-  let revealedIndices = [];
-  if (effectiveTier === 1) {
-    // Reveal 1 letter (middle letter or vowel if possible)
-    revealedIndices.push(Math.floor(Math.random() * answer.length));
-  } else if (effectiveTier === 2) {
-    // Reveal 1 letter
-    revealedIndices.push(Math.floor(Math.random() * answer.length));
-  } else if (effectiveTier === 3 || effectiveTier === 4) {
-    // Reveal 2 distinct letters
-    if (answer.length > 2) {
-      let idx1 = Math.floor(Math.random() * answer.length);
-      let idx2 = Math.floor(Math.random() * answer.length);
-      while (idx1 === idx2) {
-        idx2 = Math.floor(Math.random() * answer.length);
-      }
-      revealedIndices.push(idx1, idx2);
+/**
+ * Calculates the number of letters to reveal for a word based on length, tier, and difficulty.
+ * Guarantees that at least 2 letters remain as unrevealed blanks.
+ * @param {number} wordLength - Length of the word
+ * @param {number} tier - Curriculum tier (1-8)
+ * @returns {number} Number of distinct letters to reveal
+ */
+export function calculateRevealedLetterCount(wordLength, tier = 1) {
+  if (wordLength <= 2) return 0;
+  if (wordLength === 3) return 1;
+
+  let revealCount = 1;
+
+  if (tier <= 2) {
+    // Early phonics / CVC / 4-letter blends
+    if (wordLength >= 5) {
+      revealCount = 1;
     } else {
-      revealedIndices.push(0);
+      revealCount = 1;
     }
-  } else if (effectiveTier === 5) {
-    // Reveal 2 letters
-    if (answer.length > 3) {
-      let idx1 = Math.floor(Math.random() * answer.length);
-      let idx2 = Math.floor(Math.random() * answer.length);
-      while (idx1 === idx2) {
-        idx2 = Math.floor(Math.random() * answer.length);
-      }
-      revealedIndices.push(idx1, idx2);
+  } else if (tier === 3 || tier === 4) {
+    // Elementary digraphs & compound words
+    if (wordLength >= 14) {
+      revealCount = 5;
+    } else if (wordLength >= 11) {
+      revealCount = 4;
+    } else if (wordLength >= 8) {
+      revealCount = 3;
+    } else if (wordLength >= 5) {
+      revealCount = 2;
+    } else {
+      revealCount = 1;
     }
-  } else if (effectiveTier === 6) {
-    // Reveal 1 letter for long words (>=8 chars)
-    if (answer.length >= 8) {
-      revealedIndices.push(Math.floor(Math.random() * answer.length));
+  } else if (tier === 5 || tier === 6) {
+    // Intermediate prefixes, suffixes & advanced vocabulary
+    if (wordLength >= 14) {
+      revealCount = 4;
+    } else if (wordLength >= 11) {
+      revealCount = 3;
+    } else if (wordLength >= 8) {
+      revealCount = 3;
+    } else if (wordLength >= 5) {
+      revealCount = 2;
+    } else {
+      revealCount = 1;
     }
-  } else if (effectiveTier >= 7) {
-    // Reveal 1-2 letters only for very long 10+ letter words
-    if (answer.length >= 12) {
-      let idx1 = Math.floor(Math.random() * answer.length);
-      let idx2 = Math.floor(Math.random() * answer.length);
-      while (idx1 === idx2) {
-        idx2 = Math.floor(Math.random() * answer.length);
-      }
-      revealedIndices.push(idx1, idx2);
-    } else if (answer.length >= 9) {
-      revealedIndices.push(Math.floor(Math.random() * answer.length));
+  } else {
+    // Tier 7-8: Advanced multisyllabic, etymology & summit rhetoric
+    if (wordLength >= 14) {
+      revealCount = 4;
+    } else if (wordLength >= 11) {
+      revealCount = 3;
+    } else if (wordLength >= 8) {
+      revealCount = 2;
+    } else if (wordLength >= 6) {
+      revealCount = 2;
+    } else {
+      revealCount = 1;
     }
   }
+
+  // Safety constraint: Never reveal too many letters; always leave at least 2 blanks
+  const maxAllowed = Math.max(1, wordLength - 2);
+  return Math.min(revealCount, maxAllowed);
+}
+
+/**
+ * Selects distinct random indices to reveal in a word.
+ * @param {number} length - Word length
+ * @param {number} count - Number of indices to select
+ * @returns {number[]} Array of sorted indices
+ */
+function selectRevealedIndices(length, count) {
+  if (count <= 0 || length <= count) return [];
+  const indices = [];
+  const available = Array.from({ length }, (_, i) => i);
+
+  for (let i = 0; i < count && available.length > 0; i++) {
+    const randIndex = Math.floor(Math.random() * available.length);
+    indices.push(available[randIndex]);
+    available.splice(randIndex, 1);
+  }
+
+  return indices.sort((a, b) => a - b);
+}
+
+function formatWordProblem(item, effectiveTier, answer) {
+  const revealCount = calculateRevealedLetterCount(answer.length, effectiveTier);
+  const revealedIndices = selectRevealedIndices(answer.length, revealCount);
 
   const displayString = answer.split('').map((char, index) => {
     return revealedIndices.includes(index) ? char : '_';
