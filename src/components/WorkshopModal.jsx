@@ -413,7 +413,7 @@ export default function WorkshopModal({
 
           {/* Dedicated Promo Redemption Card inside Promo Exclusives category */}
           {activeCategory === 'promo' && (
-            <div className="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 rounded-2xl p-4 text-white shadow-md space-y-3">
+            <div className="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 rounded-2xl p-4 text-white shadow-md">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center border border-white/40">
@@ -431,28 +431,6 @@ export default function WorkshopModal({
                 >
                   Enter Code
                 </button>
-              </div>
-
-              {/* Sample Code Pills */}
-              <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-white/20">
-                <span className="text-[10px] font-bold text-amber-100 uppercase tracking-wide">Popular Codes:</span>
-                {['GOLDENKIBO', 'KIBOSPARKS', 'SUMMERCLIMB', 'CYBERCLIMB'].map((code) => {
-                  const isRedeemed = promoCodeService.hasRedeemedCode(code);
-                  return (
-                    <button
-                      key={code}
-                      type="button"
-                      onClick={() => openPromoDialogWithCode(code)}
-                      className={`text-[10px] font-black px-2 py-0.5 rounded-lg border transition-all ${
-                        isRedeemed
-                          ? 'bg-amber-700/40 text-amber-200 border-amber-400/40 opacity-70 cursor-default'
-                          : 'bg-white/20 hover:bg-white/30 text-white border-white/40 active:scale-95'
-                      }`}
-                    >
-                      {code} {isRedeemed ? '✓' : ''}
-                    </button>
-                  );
-                })}
               </div>
             </div>
           )}
@@ -628,7 +606,7 @@ export default function WorkshopModal({
                       {!isUnlocked && item.promoCodeRequired && (
                         <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1">
                           <Ticket className="w-2.5 h-2.5 text-amber-700" />
-                          Code: {item.promoCodeRequired}
+                          Promo Exclusive
                         </span>
                       )}
 
@@ -739,7 +717,7 @@ export default function WorkshopModal({
                     ) : item.promoCodeRequired ? (
                       <button
                         type="button"
-                        onClick={() => openPromoDialogWithCode(item.promoCodeRequired)}
+                        onClick={() => openPromoDialogWithCode()}
                         className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold shadow-sm"
                       >
                         <Ticket className="w-3.5 h-3.5" /> Redeem Code
@@ -822,7 +800,7 @@ export default function WorkshopModal({
                         handleRedeemPromo();
                       }
                     }}
-                    placeholder="e.g. GOLDENKIBO"
+                    placeholder="ENTER PROMO CODE"
                     className="flex-1 px-3.5 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl font-mono font-bold text-sm tracking-wider uppercase text-slate-800 focus:outline-hidden focus:border-amber-400 focus:bg-white transition-all shadow-inner"
                   />
                   <button
@@ -880,41 +858,15 @@ export default function WorkshopModal({
                 </div>
               )}
 
-              {/* Sample / Available Codes Hint Box */}
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-left space-y-1.5">
-                <div className="flex items-center gap-1 text-[11px] font-black text-slate-600">
+              {/* Promo Code Info Tip */}
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-left space-y-1">
+                <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-700">
                   <Gift className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Try these sample promo codes:</span>
+                  <span>Looking for Promo Codes?</span>
                 </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {[
-                    { code: 'GOLDENKIBO', label: '🎟️ Golden Ticket + 150 ⚡' },
-                    { code: 'KIBOSPARKS', label: '⚡ +300 Sparks' },
-                    { code: 'SUMMERCLIMB', label: '☀️ 2x Shields + Hints' },
-                    { code: 'CYBERCLIMB', label: '🕶️ Cyber Shades' }
-                  ].map(({ code, label }) => {
-                    const isRedeemed = promoCodeService.hasRedeemedCode(code);
-                    return (
-                      <button
-                        key={code}
-                        type="button"
-                        onClick={() => {
-                          if (!isRedeemed) {
-                            setPromoInput(code);
-                            handleRedeemPromo(code);
-                          }
-                        }}
-                        className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition-all ${
-                          isRedeemed
-                            ? 'bg-slate-200 text-slate-400 border-slate-300 cursor-default line-through'
-                            : 'bg-white hover:bg-amber-50 text-slate-800 border-slate-200 shadow-2xs active:scale-95'
-                        }`}
-                      >
-                        {code} {isRedeemed ? '(Redeemed)' : `• ${label}`}
-                      </button>
-                    );
-                  })}
-                </div>
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                  Promo codes are announced during special math challenges, seasonal events, and community milestones!
+                </p>
               </div>
             </div>
 

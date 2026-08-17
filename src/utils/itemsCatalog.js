@@ -521,7 +521,7 @@ export const WORKSHOP_ITEMS = [
     cost: 0,
     rarity: 'legendary',
     promoCodeRequired: 'GOLDENKIBO',
-    description: 'A very special ticket unlocked via exclusive promo code GOLDENKIBO!'
+    description: 'A very special golden ticket unlocked with an exclusive promo code!'
   },
   {
     id: 'cyber_shades',
@@ -531,7 +531,7 @@ export const WORKSHOP_ITEMS = [
     cost: 0,
     rarity: 'rare',
     promoCodeRequired: 'CYBERCLIMB',
-    description: 'Futuristic glowing cyber shades unlocked via exclusive promo code CYBERCLIMB!'
+    description: 'Futuristic glowing cyber shades unlocked with an exclusive promo code!'
   },
 
   // PREMIUM EXCLUSIVES & BUNDLES (Category: premium)
