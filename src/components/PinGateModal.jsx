@@ -13,7 +13,10 @@ export default function PinGateModal({
   onClose,
   onUnlockSuccess
 }) {
-  const [activeTab, setActiveTab] = useState('native'); // 'native' | 'challenge' | 'pin'
+  const [activeTab, setActiveTab] = useState(() => {
+    const prefs = storageService.getNotificationSettings();
+    return prefs.primaryVerificationMethod === 'challenge' ? 'challenge' : 'native';
+  });
   const [lockoutStatus, setLockoutStatus] = useState(() => storageService.getLockoutStatus());
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
@@ -34,6 +37,20 @@ export default function PinGateModal({
   const refreshChallenge = useCallback(() => {
     setChallenge(dynamicChallengeGenerator.generateChallenge());
   }, []);
+
+  // Sync activeTab & state whenever modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const prefs = storageService.getNotificationSettings();
+      const preferred = prefs.primaryVerificationMethod === 'challenge' ? 'challenge' : 'native';
+      setActiveTab(preferred);
+      setPinInput('');
+      setErrorMsg('');
+      setIsShaking(false);
+      setIsAuthenticating(false);
+      refreshChallenge();
+    }
+  }, [isOpen, refreshChallenge]);
 
   // Update lockout countdown
   useEffect(() => {

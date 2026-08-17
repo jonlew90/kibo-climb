@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint } from 'lucide-react';
 import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { BADGES_CATALOG } from '../data/badges';
@@ -79,7 +79,7 @@ export default function ParentDashboardModal({
       ...uData,
       ...subData,
       name: p.name || uData.name || 'Child',
-      streak: uData.streak ?? 1,
+      streak: uData.streak ?? 0,
       lastSprintDate: uData.lastSprintDate ?? null,
       adaptiveCompetenceRating: subData.adaptiveCompetenceRating || (subId === 'math' ? uData.adaptiveCompetenceRating : 1000) || 1000,
       competenceRank: subData.competenceRank || (subId === 'math' ? uData.competenceRank : 1000) || 1000,
@@ -212,6 +212,13 @@ export default function ParentDashboardModal({
   const handleToggleNotifPref = (key) => {
     soundFx.playKeyTap();
     const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
+    setNotifPrefs(updated);
+    saveNotificationPrefs(updated);
+  };
+
+  const handleSetVerificationMethod = (method) => {
+    soundFx.playKeyTap();
+    const updated = { ...notifPrefs, primaryVerificationMethod: method };
     setNotifPrefs(updated);
     saveNotificationPrefs(updated);
   };
@@ -475,7 +482,7 @@ export default function ParentDashboardModal({
               const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG['math'];
               const historyList = activeUserData.sprintHistory || [];
               const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec || curr.durationInSeconds) || 0), 0);
-              const childStreak = activeUserData.streak ?? 1;
+              const childStreak = activeUserData.streak ?? 0;
               const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
               const childRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentTier = activeUserData.tier ?? getTierFromRating(childRating);
@@ -1110,15 +1117,76 @@ export default function ParentDashboardModal({
               </div>
             </div>
 
-            {/* Biometrics & Dynamic Gate Security Info */}
+            {/* Primary Verification Gate Method Selection */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
               <div className="flex items-center gap-2 text-purple-700">
                 <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Biometric & Challenge Security</h4>
+                <h4 className="font-extrabold text-sm text-slate-800">Primary Gate Verification Method</h4>
+              </div>
+              <p className="text-xs text-slate-500 font-medium">
+                Choose which security challenge appears first when accessing restricted parental settings.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                {/* Option 1: Biometrics */}
+                <button
+                  type="button"
+                  onClick={() => handleSetVerificationMethod('biometrics')}
+                  className={`p-3 rounded-xl border-2 text-left transition-all relative flex flex-col justify-between ${
+                    (notifPrefs.primaryVerificationMethod ?? 'biometrics') === 'biometrics'
+                      ? 'bg-purple-50/90 border-purple-500 shadow-sm ring-2 ring-purple-400/20'
+                      : 'bg-white border-slate-200 hover:border-purple-200 opacity-80 hover:opacity-100'
+                  }`}
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 font-extrabold text-xs text-slate-800">
+                        <Fingerprint className="w-4 h-4 text-purple-600 shrink-0" />
+                        Device Biometrics
+                      </span>
+                      {(notifPrefs.primaryVerificationMethod ?? 'biometrics') === 'biometrics' && (
+                        <span className="text-[9px] font-black bg-purple-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-500 font-medium leading-snug">
+                      Instant Face ID, Touch ID, or Passcode prompt on gate open with automatic challenge fallback.
+                    </p>
+                  </div>
+                </button>
+
+                {/* Option 2: Dynamic Challenge */}
+                <button
+                  type="button"
+                  onClick={() => handleSetVerificationMethod('challenge')}
+                  className={`p-3 rounded-xl border-2 text-left transition-all relative flex flex-col justify-between ${
+                    notifPrefs.primaryVerificationMethod === 'challenge'
+                      ? 'bg-purple-50/90 border-purple-500 shadow-sm ring-2 ring-purple-400/20'
+                      : 'bg-white border-slate-200 hover:border-purple-200 opacity-80 hover:opacity-100'
+                  }`}
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 font-extrabold text-xs text-slate-800">
+                        <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
+                        Dynamic Challenges
+                      </span>
+                      {notifPrefs.primaryVerificationMethod === 'challenge' && (
+                        <span className="text-[9px] font-black bg-purple-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-500 font-medium leading-snug">
+                      Requires solving adult math or logic problems directly without launching biometrics.
+                    </p>
+                  </div>
+                </button>
               </div>
 
-              <div className="bg-purple-50/70 border border-purple-200 rounded-xl p-2.5 text-xs font-semibold text-purple-900 leading-snug">
-                🛡️ <strong>Device Biometrics</strong> (Face ID/Passcode) are enabled as your primary Parental Gate. <strong>Dynamic Challenges</strong> serve as your secondary fallback gate.
+              <div className="bg-purple-50/60 border border-purple-100 rounded-xl p-2.5 text-[11px] font-semibold text-purple-900 leading-snug">
+                🛡️ <strong>Flexible Security:</strong> Regardless of your primary default, you can always switch between Face ID and Dynamic Challenges on the lock screen.
               </div>
             </div>
 

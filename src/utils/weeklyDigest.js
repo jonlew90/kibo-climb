@@ -20,7 +20,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
   const userData = profile?.userData || {};
   const childName = profile?.username || profile?.name || 'Kibo Climber';
   const childGrade = profile?.gradeLevel || 'Grade 1–2';
-  const streak = userData.streak ?? 1;
+  const streak = userData.streak ?? 0;
   const sparks = userData.sparks ?? 0;
   const unlockedBadges = userData.unlockedBadges || [];
 

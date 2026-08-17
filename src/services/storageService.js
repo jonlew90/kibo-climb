@@ -45,7 +45,7 @@ const DEFAULT_PROFILE = {
     tierMasteryPercent: { 1: 0 },
     tierBestTimes: {},
     masteredTricks: {},
-    streak: 1,
+    streak: 0,
     streakShields: 1,
     sparks: 50,
     isKiboClub: false,
@@ -105,7 +105,8 @@ const DEFAULT_NOTIF_SETTINGS = {
   reminderTime: '17:00',
   weeklyDigestEnabled: true,
   struggleAlertsEnabled: true,
-  allowRealMoneyPurchases: false
+  allowRealMoneyPurchases: false,
+  primaryVerificationMethod: 'biometrics' // 'biometrics' | 'challenge'
 };
 
 const DEFAULT_PARENT_SETTINGS = {
@@ -392,7 +393,7 @@ export const storageService = {
     return {
       ...data,
       ...subjectData,
-      streak: data.streak ?? 1,
+      streak: data.streak ?? 0,
       lastSprintDate: data.lastSprintDate ?? null
     };
   },
@@ -825,8 +826,8 @@ export const storageService = {
 
   getSubjectStreak(profileId, subjectId = 'math') {
     const profile = this.getProfileById(profileId);
-    if (!profile || !profile.userData) return 1;
-    return profile.userData.streak ?? 1;
+    if (!profile || !profile.userData) return 0;
+    return profile.userData.streak ?? 0;
   },
 
   getAggregateRating(profileId) {

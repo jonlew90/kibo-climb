@@ -58,7 +58,7 @@ export function initParentChildSchema() {
       },
       stats_json: {
         totalProblemsSolved: activeUser.totalProblemsSolved || 0,
-        streak: activeUser.streak || 1,
+        streak: activeUser.streak ?? 0,
         sprintHistory: activeUser.sprintHistory || []
       }
     };
@@ -132,7 +132,7 @@ export const parentChildService = {
       },
       stats_json: {
         totalProblemsSolved: 0,
-        streak: 1,
+        streak: 0,
         sprintHistory: []
       }
     };
