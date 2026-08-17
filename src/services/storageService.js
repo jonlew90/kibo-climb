@@ -34,6 +34,8 @@ const DEFAULT_PROFILE = {
   username: '',          // leaderboard handle — set during first-launch onboarding
   gradeLevel: 'Grade 1–2',
   practiceDays: [1, 2, 3, 4, 5],
+  dailyReminderEnabled: true,
+  reminderTime: '17:00',
   userData: {
     adaptiveCompetenceRating: 1000,
     subjectRatings: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, k) => { acc[k] = 1000; return acc; }, {}),
@@ -148,11 +150,22 @@ export const storageService = {
   },
   getProfileById(id) {
     const state = safeGetProfilesState();
-    return state.profiles[id] || null;
+    const prof = state.profiles[id];
+    if (!prof) return null;
+    return {
+      dailyReminderEnabled: prof.dailyReminderEnabled !== undefined ? prof.dailyReminderEnabled : true,
+      reminderTime: prof.reminderTime || '17:00',
+      ...prof
+    };
   },
   getActiveProfile() {
     const state = safeGetProfilesState();
-    return state.profiles[state.activeProfileId] || DEFAULT_PROFILE;
+    const prof = state.profiles[state.activeProfileId] || DEFAULT_PROFILE;
+    return {
+      dailyReminderEnabled: prof.dailyReminderEnabled !== undefined ? prof.dailyReminderEnabled : true,
+      reminderTime: prof.reminderTime || '17:00',
+      ...prof
+    };
   },
   isAccountGloballyLinked() {
     const state = safeGetProfilesState();
@@ -181,7 +194,11 @@ export const storageService = {
 
   getAllProfiles() {
     const state = safeGetProfilesState();
-    return Object.values(state.profiles);
+    return Object.values(state.profiles).map(prof => ({
+      dailyReminderEnabled: prof.dailyReminderEnabled !== undefined ? prof.dailyReminderEnabled : true,
+      reminderTime: prof.reminderTime || '17:00',
+      ...prof
+    }));
   },
   createProfile(name = 'New Climber', gradeLevel = 'Grade 1–2') {
     const state = safeGetProfilesState();
@@ -592,6 +609,39 @@ export const storageService = {
       state.profiles[targetId] = { ...DEFAULT_PROFILE, id: targetId };
     }
     state.profiles[targetId].practiceDays = newDays;
+    safeSaveProfilesState(state);
+  },
+
+  // Per-Profile Reminder Settings
+  getProfileReminderSettings(profileId) {
+    const state = safeGetProfilesState();
+    const targetId = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    const prof = state.profiles[targetId];
+    if (prof && prof.dailyReminderEnabled !== undefined && prof.reminderTime !== undefined) {
+      return {
+        dailyReminderEnabled: prof.dailyReminderEnabled,
+        reminderTime: prof.reminderTime
+      };
+    }
+    // Fallback / migration: check legacy global settings
+    const globalSettings = this.getNotificationSettings();
+    return {
+      dailyReminderEnabled: prof?.dailyReminderEnabled ?? globalSettings.dailyReminderEnabled ?? true,
+      reminderTime: prof?.reminderTime || globalSettings.reminderTime || '17:00'
+    };
+  },
+  saveProfileReminderSettings(profileId, settings = {}) {
+    const state = safeGetProfilesState();
+    const targetId = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (!state.profiles[targetId]) {
+      state.profiles[targetId] = { ...DEFAULT_PROFILE, id: targetId };
+    }
+    if (settings.dailyReminderEnabled !== undefined) {
+      state.profiles[targetId].dailyReminderEnabled = Boolean(settings.dailyReminderEnabled);
+    }
+    if (settings.reminderTime !== undefined) {
+      state.profiles[targetId].reminderTime = String(settings.reminderTime);
+    }
     safeSaveProfilesState(state);
   },
 

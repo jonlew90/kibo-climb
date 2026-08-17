@@ -32,7 +32,7 @@ import { authService } from './services/authService';
 import { syncService } from './services/syncService';
 import { shopLedgerService } from './services/shopLedgerService';
 import AccountLinkModal from './components/AccountLinkModal';
-import { getNotificationPrefs } from './utils/notifications';
+import { getNotificationPrefs, scheduleAllProfileReminders } from './utils/notifications';
 import MockCheckoutModal from './components/MockCheckoutModal';
 import SettingsScreen from './components/SettingsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
@@ -439,10 +439,11 @@ export default function App() {
     return { ...defaultPrefs, ...(storageService.getUserData(activeSubject).preferences || {}) };
   });
 
-  // Apply preferences to audio engine on initial load
+  // Apply preferences to audio engine and initialize multi-profile reminders on load
   useEffect(() => {
     soundFx.setMuted(preferences.isMuted);
     setHapticsEnabled(preferences.isHapticsEnabled);
+    scheduleAllProfileReminders();
   }, []);
 
   const handleUpdatePreferences = (newPrefs) => {

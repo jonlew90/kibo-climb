@@ -5,7 +5,7 @@ import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
 import { pluralize } from '../utils/formatters';
-import { getNotificationPrefs, saveNotificationPrefs, requestNotificationPermission } from '../utils/notifications';
+import { getNotificationPrefs, saveNotificationPrefs, saveProfileReminderPrefs, requestNotificationPermission } from '../utils/notifications';
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { calculateConceptBreakdown, generateParentInsightCards } from '../utils/skipDiagnosticEngine';
 import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEconomyModel';
@@ -206,7 +206,7 @@ export default function ParentDashboardModal({
     };
   }, [isOpen, onClose]);
 
-  // Notification Preferences State
+  // Notification & Schedule Preferences State
   const [notifPrefs, setNotifPrefs] = useState(() => getNotificationPrefs());
 
   const handleToggleNotifPref = (key) => {
@@ -214,15 +214,32 @@ export default function ParentDashboardModal({
     const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
     setNotifPrefs(updated);
     saveNotificationPrefs(updated);
-    if (key === 'dailyReminderEnabled' && updated.dailyReminderEnabled) {
+  };
+
+  const handleToggleChildReminder = () => {
+    soundFx.playKeyTap();
+    const currentProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+    const isCurrentlyEnabled = currentProf.dailyReminderEnabled ?? true;
+    const updatedEnabled = !isCurrentlyEnabled;
+
+    saveProfileReminderPrefs(viewingProfileId, {
+      dailyReminderEnabled: updatedEnabled,
+      reminderTime: currentProf.reminderTime || '17:00'
+    });
+    setProfilesList(storageService.getAllProfiles());
+
+    if (updatedEnabled) {
       requestNotificationPermission();
     }
   };
 
-  const handleTimeChange = (newTime) => {
-    const updated = { ...notifPrefs, reminderTime: newTime };
-    setNotifPrefs(updated);
-    saveNotificationPrefs(updated);
+  const handleChildReminderTimeChange = (newTime) => {
+    const currentProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+    saveProfileReminderPrefs(viewingProfileId, {
+      dailyReminderEnabled: currentProf.dailyReminderEnabled ?? true,
+      reminderTime: newTime
+    });
+    setProfilesList(storageService.getAllProfiles());
   };
 
   const handleChangePin = (e) => {
@@ -750,256 +767,300 @@ export default function ParentDashboardModal({
         )}
 
         {/* TAB 2: SCHEDULE & NOTIFICATIONS */}
-        {activeTab === 'schedule' && (
-          <div className="flex-1 space-y-4 my-1">
+        {activeTab === 'schedule' && (() => {
+          const viewingProfile = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+          const profileDays = viewingProfile?.practiceDays || [1, 2, 3, 4, 5];
+          const childReminderEnabled = viewingProfile?.dailyReminderEnabled ?? true;
+          const childReminderTime = viewingProfile?.reminderTime || '17:00';
+          const childName = viewingProfile?.name || 'Child';
 
-            {/* Scope Banner */}
-            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3 flex items-start gap-2 text-left">
-              <span className="text-base shrink-0">👤</span>
-              <div>
-                <span className="text-xs font-black text-purple-900 block">Practice Schedule & Notifications</span>
-                <span className="text-[10px] font-medium text-purple-700 leading-snug">
-                  Applies to the <strong>currently selected child profile</strong> — switching profiles above will apply these settings to a different child.
-                </span>
+          return (
+            <div className="flex-1 space-y-4 my-1">
+
+              {/* Scope Banner */}
+              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3 flex items-start gap-2.5 text-left">
+                <span className="text-xl shrink-0">✨</span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-purple-900 block">Hybrid Schedule & Notifications</span>
+                    <span className="text-[9px] font-black uppercase tracking-wider bg-purple-200 text-purple-800 px-1.5 py-0.5 rounded-full">
+                      Smart Scoping
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-medium text-purple-700 leading-snug block mt-0.5">
+                    Practice days and daily streak alarms are <strong>customized per child profile</strong>, while weekly email digests and diagnostic alerts remain <strong>global for parents</strong>.
+                  </span>
+                </div>
               </div>
-            </div>
 
-            {/* Custom 7-Day Practice Schedule */}
-            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-2.5 text-left">
-              <div className="flex items-center gap-2 text-purple-700">
-                <Calendar className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Custom 7-Day Practice Schedule</h4>
-              </div>
+              {/* SECTION 1: CHILD-SPECIFIC PRACTICE SCHEDULE & ALARM */}
+              <div className="bg-gradient-to-b from-purple-50/70 to-slate-50 border-2 border-purple-200 rounded-2xl p-3.5 space-y-3.5 text-left">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-purple-800">
+                    <Calendar className="w-5 h-5 stroke-[2.5]" />
+                    <div>
+                      <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
+                        <span>👤</span>
+                        <span>{childName}'s Practice Schedule & Alarm</span>
+                      </h4>
+                      <span className="text-[10px] text-purple-700 font-bold block">
+                        Child-Specific Setting
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-black bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 rounded-lg truncate max-w-[120px]">
+                    {childName}
+                  </span>
+                </div>
 
-              <div className="grid grid-cols-7 gap-1">
-                {DAYS_OF_WEEK.map((d) => {
-                  const viewingProfile = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId);
-                  const profileDays = viewingProfile?.practiceDays || [1, 2, 3, 4, 5];
-                  const isActive = profileDays.includes(d.idx);
-                  return (
+                {/* 7-Day Practice Schedule Matrix */}
+                <div className="space-y-1.5">
+                  <span className="text-xs font-extrabold text-slate-700 block">
+                    Weekly Practice Days:
+                  </span>
+                  <div className="grid grid-cols-7 gap-1">
+                    {DAYS_OF_WEEK.map((d) => {
+                      const isActive = profileDays.includes(d.idx);
+                      return (
+                        <button
+                          key={d.idx}
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            let newDays;
+                            if (isActive) {
+                              if (profileDays.length === 1) return;
+                              newDays = profileDays.filter((idx) => idx !== d.idx);
+                            } else {
+                              newDays = [...profileDays, d.idx].sort((a, b) => a - b);
+                            }
+                            storageService.saveProfilePracticeDays(viewingProfileId, newDays);
+                            setProfilesList(storageService.getAllProfiles());
+                            if (viewingProfileId === storageService.getActiveProfileId() && onUpdatePracticeDays) {
+                              onUpdatePracticeDays(newDays);
+                            }
+                          }}
+                          className={`py-2 text-xs font-black rounded-xl border-2 transition-all ${
+                            isActive
+                              ? 'bg-purple-600 text-white border-purple-700 shadow-sm scale-[1.02]'
+                              : 'bg-white text-slate-400 border-slate-200 hover:border-purple-300'
+                          }`}
+                        >
+                          {d.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] font-medium text-slate-500 italic leading-snug">
+                    Unselected rest days automatically protect {childName}'s streak without consuming a Kibo Shield.
+                  </p>
+                </div>
+
+                {/* Child-Specific Daily Streak Alarm */}
+                <div className="flex items-center justify-between bg-white border border-purple-100 p-2.5 rounded-xl shadow-xs">
+                  <div>
+                    <span className="font-extrabold text-xs text-slate-800 block">
+                      Daily Streak Reminder for {childName}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-medium">
+                      Alert child on device if daily practice is incomplete
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="time"
+                      value={childReminderTime}
+                      onChange={(e) => handleChildReminderTimeChange(e.target.value)}
+                      disabled={!childReminderEnabled}
+                      className="py-1 px-2 text-xs font-extrabold bg-slate-100 border border-slate-300 rounded-lg cursor-pointer disabled:opacity-50"
+                    />
                     <button
-                      key={d.idx}
                       type="button"
-                      onClick={() => {
-                        soundFx.playKeyTap();
-                        let newDays;
-                        if (isActive) {
-                          if (profileDays.length === 1) return;
-                          newDays = profileDays.filter((idx) => idx !== d.idx);
-                        } else {
-                          newDays = [...profileDays, d.idx].sort((a, b) => a - b);
-                        }
-                        storageService.saveProfilePracticeDays(viewingProfileId, newDays);
-                        setProfilesList(storageService.getAllProfiles());
-                        if (viewingProfileId === storageService.getActiveProfileId() && onUpdatePracticeDays) {
-                          onUpdatePracticeDays(newDays);
-                        }
-                      }}
-                      className={`py-2 text-xs font-black rounded-xl border-2 transition-all ${
-                        isActive
-                          ? 'bg-purple-600 text-white border-purple-700 shadow-sm scale-[1.02]'
-                          : 'bg-white text-slate-400 border-slate-200 hover:border-purple-300'
+                      onClick={handleToggleChildReminder}
+                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                        childReminderEnabled ? 'bg-purple-600' : 'bg-slate-300'
+                      }`}
+                      title={`Toggle daily reminder for ${childName}`}
+                    >
+                      <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                        childReminderEnabled ? 'translate-x-5' : 'translate-x-0'
+                      }`} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: FAMILY & PARENT COMMUNICATIONS (GLOBAL) */}
+              <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-purple-700">
+                    <Bell className="w-5 h-5 stroke-[2.5]" />
+                    <div>
+                      <h4 className="font-extrabold text-sm text-slate-800">Family & Parent Communications</h4>
+                      <span className="text-[10px] text-slate-500 font-medium block">
+                        Account-Wide Delivery Channels
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
+                    All Profiles
+                  </span>
+                </div>
+
+                {/* Weekly Digest */}
+                <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-xl gap-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary</span>
+                      <span className="text-[10px] text-slate-500 font-medium">Weekly multi-subject mastery breakdown digest</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotifPref('weeklyDigestEnabled')}
+                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                        notifPrefs.weeklyDigestEnabled ? 'bg-purple-600' : 'bg-slate-300'
                       }`}
                     >
-                      {d.label}
+                      <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                        notifPrefs.weeklyDigestEnabled ? 'translate-x-5' : 'translate-x-0'
+                      }`} />
                     </button>
-                  );
-                })}
-              </div>
-              <p className="text-[11px] font-medium text-slate-500 italic leading-snug">
-                Unselected rest days automatically protect your child's streak without consuming a Kibo Shield.
-              </p>
-            </div>
-
-            {/* Notification Preferences */}
-            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
-              <div className="flex items-center gap-2 text-purple-700">
-                <Bell className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Notification Preferences</h4>
-              </div>
-
-              {/* Daily Kid Reminder */}
-              <div className="flex items-center justify-between bg-white border border-slate-200 p-2.5 rounded-xl">
-                <div>
-                  <span className="font-extrabold text-xs text-slate-800 block">Daily Streak Reminder</span>
-                  <span className="text-[10px] text-slate-500 font-medium">Alert child if daily climb is incomplete</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="time"
-                    value={notifPrefs.reminderTime || '17:00'}
-                    onChange={(e) => handleTimeChange(e.target.value)}
-                    disabled={!notifPrefs.dailyReminderEnabled}
-                    className="py-1 px-2 text-xs font-extrabold bg-slate-100 border border-slate-300 rounded-lg cursor-pointer disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleToggleNotifPref('dailyReminderEnabled')}
-                    className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
-                      notifPrefs.dailyReminderEnabled ? 'bg-purple-600' : 'bg-slate-300'
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
-                      notifPrefs.dailyReminderEnabled ? 'translate-x-5' : 'translate-x-0'
-                    }`} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Weekly Digest */}
-              <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-xl gap-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary</span>
-                    <span className="text-[10px] text-slate-500 font-medium">Weekly multi-subject mastery breakdown digest</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleNotifPref('weeklyDigestEnabled')}
-                    className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
-                      notifPrefs.weeklyDigestEnabled ? 'bg-purple-600' : 'bg-slate-300'
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
-                      notifPrefs.weeklyDigestEnabled ? 'translate-x-5' : 'translate-x-0'
-                    }`} />
-                  </button>
-                </div>
-                {notifPrefs.weeklyDigestEnabled && (
-                  <div className="space-y-2 pt-1 border-t border-slate-100">
-                    <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2.5 rounded-lg border border-purple-200 leading-snug">
-                      📅 <strong>Schedule:</strong> Sent every <strong>Sunday at 6:00 PM</strong>.<br />
-                      📊 <strong>Includes All Active Subjects:</strong> Multi-subject breakdown covering <strong>Math, Words, and all active subjects</strong> — weekly problems/words solved, competence rating gains, recall speed/latency, mastered topics & unlocked badges.
-                    </p>
+                  {notifPrefs.weeklyDigestEnabled && (
+                    <div className="space-y-2 pt-1 border-t border-slate-100">
+                      <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2.5 rounded-lg border border-purple-200 leading-snug">
+                        📅 <strong>Schedule:</strong> Sent every <strong>Sunday at 6:00 PM</strong>.<br />
+                        📊 <strong>Includes All Active Subjects:</strong> Multi-subject breakdown covering <strong>Math, Words, and all active subjects</strong> — weekly problems/words solved, competence rating gains, recall speed/latency, mastered topics & unlocked badges.
+                      </p>
 
-                    <div className="flex items-center gap-2 flex-wrap pt-0.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          soundFx.playKeyTap();
-                          setShowWeeklyPreview((prev) => !prev);
-                        }}
-                        className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 font-extrabold text-xs rounded-xl border border-purple-300 transition-all active:scale-95"
-                      >
-                        {showWeeklyPreview ? 'Hide Preview' : '👁️ Preview Weekly Summary'}
-                      </button>
-
-                      {authService.getAuthState().email && (
+                      <div className="flex items-center gap-2 flex-wrap pt-0.5">
                         <button
                           type="button"
-                          disabled={isSendingTestDigest}
-                          onClick={async () => {
+                          onClick={() => {
                             soundFx.playKeyTap();
-                            setIsSendingTestDigest(true);
-                            setDigestStatusMsg('');
-                            const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
-                            const res = await communicationsService.sendWeeklyDigest({
-                              email: authService.getAuthState().email,
-                              profile: currentProf,
-                              subjectsConfig: SUBJECTS_CONFIG
-                            });
-                            setIsSendingTestDigest(false);
-                            if (res.success) {
-                              soundFx.playVictory();
-                              setDigestStatusMsg('Test weekly summary email sent!');
-                            } else {
-                              soundFx.playIncorrect();
-                              setDigestStatusMsg(res.error || 'Failed to send test email.');
-                            }
-                            setTimeout(() => setDigestStatusMsg(''), 4000);
+                            setShowWeeklyPreview((prev) => !prev);
                           }}
-                          className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 font-extrabold text-xs rounded-xl border border-sky-300 transition-all active:scale-95 disabled:opacity-50"
+                          className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 font-extrabold text-xs rounded-xl border border-purple-300 transition-all active:scale-95"
                         >
-                          {isSendingTestDigest ? 'Sending...' : '✉️ Send Test Digest to Email'}
+                          {showWeeklyPreview ? 'Hide Preview' : '👁️ Preview Weekly Summary'}
                         </button>
+
+                        {authService.getAuthState().email && (
+                          <button
+                            type="button"
+                            disabled={isSendingTestDigest}
+                            onClick={async () => {
+                              soundFx.playKeyTap();
+                              setIsSendingTestDigest(true);
+                              setDigestStatusMsg('');
+                              const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+                              const res = await communicationsService.sendWeeklyDigest({
+                                email: authService.getAuthState().email,
+                                profile: currentProf,
+                                subjectsConfig: SUBJECTS_CONFIG
+                              });
+                              setIsSendingTestDigest(false);
+                              if (res.success) {
+                                soundFx.playVictory();
+                                setDigestStatusMsg('Test weekly summary email sent!');
+                              } else {
+                                soundFx.playIncorrect();
+                                setDigestStatusMsg(res.error || 'Failed to send test email.');
+                              }
+                              setTimeout(() => setDigestStatusMsg(''), 4000);
+                            }}
+                            className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 font-extrabold text-xs rounded-xl border border-sky-300 transition-all active:scale-95 disabled:opacity-50"
+                          >
+                            {isSendingTestDigest ? 'Sending...' : '✉️ Send Test Digest to Email'}
+                          </button>
+                        )}
+                      </div>
+
+                      {digestStatusMsg && (
+                        <p className="text-[10px] font-extrabold text-purple-700 animate-pop">
+                          {digestStatusMsg}
+                        </p>
                       )}
+
+                      {/* Interactive Preview Drawer */}
+                      {showWeeklyPreview && (() => {
+                        const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+                        const digest = generateWeeklyDigestData(currentProf, SUBJECTS_CONFIG);
+
+                        return (
+                          <div className="bg-slate-50 border border-purple-200 rounded-xl p-3 space-y-3 animate-pop text-left">
+                            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+                              <span className="text-xs font-black text-slate-800">
+                                📋 Summary Preview for {digest.childName}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-500">
+                                Streak: {digest.streak}d · {digest.totalProblemsThisWeek} items this week
+                              </span>
+                            </div>
+
+                            <div className="space-y-2">
+                              {digest.subjects.map((sub) => (
+                                <div key={sub.subjectId} className="bg-white border border-slate-200 rounded-lg p-2 space-y-1">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-black text-slate-800 flex items-center gap-1">
+                                      <span>{sub.icon}</span> {sub.name}
+                                    </span>
+                                    <span className="text-[10px] font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+                                      Rating: {sub.rating} ({sub.rankTitle})
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] font-medium text-slate-600">
+                                    <div>Solved: <strong>{sub.solvedThisWeek}</strong> ({sub.totalSolved} total)</div>
+                                    <div>Accuracy: <strong>{sub.accuracyPct !== null ? `${sub.accuracyPct}%` : '—'}</strong></div>
+                                    <div>Avg Latency: <strong>{sub.avgLatencySec !== null ? `${sub.avgLatencySec}s` : '—'}</strong></div>
+                                    <div>Tier: <strong>Tier {sub.tier}</strong></div>
+                                  </div>
+                                  <div className="text-[10px] text-slate-500 pt-0.5">
+                                    <span className="font-bold text-emerald-700">Mastered: </span>
+                                    {sub.masteredTopics.length > 0 ? sub.masteredTopics.join(', ') : 'Building fundamentals'}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
-
-                    {digestStatusMsg && (
-                      <p className="text-[10px] font-extrabold text-purple-700 animate-pop">
-                        {digestStatusMsg}
-                      </p>
-                    )}
-
-                    {/* Interactive Preview Drawer */}
-                    {showWeeklyPreview && (() => {
-                      const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
-                      const digest = generateWeeklyDigestData(currentProf, SUBJECTS_CONFIG);
-
-                      return (
-                        <div className="bg-slate-50 border border-purple-200 rounded-xl p-3 space-y-3 animate-pop text-left">
-                          <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
-                            <span className="text-xs font-black text-slate-800">
-                              📋 Summary Preview for {digest.childName}
-                            </span>
-                            <span className="text-[10px] font-bold text-slate-500">
-                              Streak: {digest.streak}d · {digest.totalProblemsThisWeek} items this week
-                            </span>
-                          </div>
-
-                          <div className="space-y-2">
-                            {digest.subjects.map((sub) => (
-                              <div key={sub.subjectId} className="bg-white border border-slate-200 rounded-lg p-2 space-y-1">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-black text-slate-800 flex items-center gap-1">
-                                    <span>{sub.icon}</span> {sub.name}
-                                  </span>
-                                  <span className="text-[10px] font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
-                                    Rating: {sub.rating} ({sub.rankTitle})
-                                  </span>
-                                </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] font-medium text-slate-600">
-                                  <div>Solved: <strong>{sub.solvedThisWeek}</strong> ({sub.totalSolved} total)</div>
-                                  <div>Accuracy: <strong>{sub.accuracyPct !== null ? `${sub.accuracyPct}%` : '—'}</strong></div>
-                                  <div>Avg Latency: <strong>{sub.avgLatencySec !== null ? `${sub.avgLatencySec}s` : '—'}</strong></div>
-                                  <div>Tier: <strong>Tier {sub.tier}</strong></div>
-                                </div>
-                                <div className="text-[10px] text-slate-500 pt-0.5">
-                                  <span className="font-bold text-emerald-700">Mastered: </span>
-                                  {sub.masteredTopics.length > 0 ? sub.masteredTopics.join(', ') : 'Building fundamentals'}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
-              </div>
-
-              {/* Struggle / Target Fact Alerts */}
-              <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-extrabold text-xs text-slate-800 block">Struggle & Review Alerts</span>
-                    <span className="text-[10px] text-slate-500 font-medium">Real-time alerts when accuracy drops or frustration triggers</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleNotifPref('struggleAlertsEnabled')}
-                    className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
-                      notifPrefs.struggleAlertsEnabled ? 'bg-purple-600' : 'bg-slate-300'
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
-                      notifPrefs.struggleAlertsEnabled ? 'translate-x-5' : 'translate-x-0'
-                    }`} />
-                  </button>
+                  )}
                 </div>
-                {notifPrefs.struggleAlertsEnabled && (
-                  <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2 rounded-lg border border-purple-200 mt-1 leading-snug">
-                    🛡️ <strong>Child-Safe Privacy:</strong> Displayed exclusively inside <strong>🔒 Parent Zone Dashboard</strong> (never shown on child's screen!).<br />
-                    ⚠️ <strong>Triggers:</strong> Accuracy &lt; 65%, 3+ consecutive misses, or frustration triggers with actionable review tips.
-                  </p>
-                )}
-              </div>
-            </div>
 
-            {/* Account & Data Privacy Card moved to Verification & Controls */}
-          </div>
-        )}
+                {/* Struggle / Target Fact Alerts */}
+                <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-extrabold text-xs text-slate-800 block">Struggle & Review Alerts</span>
+                      <span className="text-[10px] text-slate-500 font-medium">Real-time alerts when accuracy drops or frustration triggers</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotifPref('struggleAlertsEnabled')}
+                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                        notifPrefs.struggleAlertsEnabled ? 'bg-purple-600' : 'bg-slate-300'
+                      }`}
+                    >
+                      <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                        notifPrefs.struggleAlertsEnabled ? 'translate-x-5' : 'translate-x-0'
+                      }`} />
+                    </button>
+                  </div>
+                  {notifPrefs.struggleAlertsEnabled && (
+                    <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2 rounded-lg border border-purple-200 mt-1 leading-snug">
+                      🛡️ <strong>Child-Safe Privacy:</strong> Displayed exclusively inside <strong>🔒 Parent Zone Dashboard</strong> (never shown on child's screen!).<br />
+                      ⚠️ <strong>Triggers:</strong> Accuracy &lt; 65%, 3+ consecutive misses, or frustration triggers with actionable review tips.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          );
+        })()}
 
         {/* TAB 3: VERIFICATION & CONTROLS */}
         {activeTab === 'verification' && (

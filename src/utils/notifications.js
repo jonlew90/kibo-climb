@@ -1,7 +1,7 @@
-// Local Web & Device Notification Engine for Kibo Math
+// Local Web & Device Notification Engine for Kibo Climb (Hybrid Multi-Profile Architecture)
 import { storageService } from '../services/storageService';
 
-let reminderTimeoutId = null;
+let reminderTimeouts = {};
 
 export function getNotificationPrefs() {
   return storageService.getNotificationSettings();
@@ -9,11 +9,15 @@ export function getNotificationPrefs() {
 
 export function saveNotificationPrefs(prefs) {
   storageService.saveNotificationSettings(prefs);
-  if (prefs.dailyReminderEnabled) {
-    scheduleDailyStreakReminder(prefs.reminderTime);
-  } else {
-    cancelPendingReminders();
-  }
+}
+
+export function getProfileReminderPrefs(profileId) {
+  return storageService.getProfileReminderSettings(profileId);
+}
+
+export function saveProfileReminderPrefs(profileId, reminderSettings) {
+  storageService.saveProfileReminderSettings(profileId, reminderSettings);
+  scheduleAllProfileReminders();
 }
 
 export async function requestNotificationPermission() {
@@ -22,6 +26,9 @@ export async function requestNotificationPermission() {
 
   try {
     const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      scheduleAllProfileReminders();
+    }
     return permission;
   } catch (e) {
     return 'denied';
@@ -44,34 +51,55 @@ export function triggerMilestoneNotification(title, body) {
 }
 
 export function cancelPendingReminders() {
-  if (reminderTimeoutId) {
-    clearTimeout(reminderTimeoutId);
-    reminderTimeoutId = null;
-  }
+  Object.values(reminderTimeouts).forEach((id) => {
+    if (id) clearTimeout(id);
+  });
+  reminderTimeouts = {};
 }
 
-export function scheduleDailyStreakReminder(timeStr = '17:00') {
+export function scheduleAllProfileReminders() {
   cancelPendingReminders();
 
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
-  const [targetHour, targetMin] = timeStr.split(':').map(Number);
-  const now = new Date();
-  const target = new Date();
+  const profiles = storageService.getAllProfiles();
 
-  target.setHours(targetHour, targetMin, 0, 0);
+  profiles.forEach((profile) => {
+    const reminderEnabled = profile.dailyReminderEnabled ?? true;
+    const timeStr = profile.reminderTime || '17:00';
 
-  if (now.getTime() >= target.getTime()) {
-    target.setDate(target.getDate() + 1);
+    if (!reminderEnabled) return;
+
+    const [targetHour, targetMin] = timeStr.split(':').map(Number);
+    const now = new Date();
+    const target = new Date();
+
+    target.setHours(targetHour || 17, targetMin || 0, 0, 0);
+
+    if (now.getTime() >= target.getTime()) {
+      target.setDate(target.getDate() + 1);
+    }
+
+    const delayMs = target.getTime() - now.getTime();
+    const childName = profile.name || 'Kibo Climber';
+
+    reminderTimeouts[profile.id] = setTimeout(() => {
+      triggerMilestoneNotification(
+        `🏔️ ${childName}'s Daily Streak Reminder!`,
+        `Keep ${childName}'s learning streak alive! Kibo is waiting for today's climb.`
+      );
+      // Re-schedule for next day
+      scheduleAllProfileReminders();
+    }, delayMs);
+  });
+}
+
+// Backwards-compatible single reminder alias
+export function scheduleDailyStreakReminder(timeStr = '17:00') {
+  const activeProfile = storageService.getActiveProfile();
+  if (activeProfile?.id) {
+    saveProfileReminderPrefs(activeProfile.id, { dailyReminderEnabled: true, reminderTime: timeStr });
+  } else {
+    scheduleAllProfileReminders();
   }
-
-  const delayMs = target.getTime() - now.getTime();
-
-  reminderTimeoutId = setTimeout(() => {
-    triggerMilestoneNotification(
-      '🏔️ Kibo Climb Streak Reminder!',
-      "Keep your daily math streak alive! Kibo is waiting for today's climb."
-    );
-    scheduleDailyStreakReminder(timeStr);
-  }, delayMs);
 }
