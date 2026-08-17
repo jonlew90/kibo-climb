@@ -184,7 +184,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "set",
-      "hint": "A group of matching items, like a set of blocks."
+      "hint": "A collection of matching items that go together, like building blocks or dishes."
     },
     {
       "word": "ten",
@@ -272,7 +272,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "wed",
-      "hint": "To get married in a joyful wedding celebration."
+      "hint": "To unite in marriage during a joyful celebration."
     },
     {
       "word": "bet",
@@ -392,15 +392,15 @@ export const WORD_LISTS = {
     },
     {
       "word": "zip",
-      "hint": "To fasten a jacket using a sliding zipper."
+      "hint": "To fasten a warm jacket with interlocking sliding teeth."
     },
     {
       "word": "bit",
-      "hint": "A small piece or took a bite of an apple."
+      "hint": "A tiny piece, or chewed a small piece off a crunchy apple."
     },
     {
       "word": "kit",
-      "hint": "A set of special tools, like a craft kit."
+      "hint": "A collection of special supplies or tools for crafts or first aid."
     },
     {
       "word": "lit",
@@ -412,7 +412,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "hid",
-      "hint": "Stayed out of sight during hide and seek."
+      "hint": "Stayed concealed out of sight during a game."
     },
     {
       "word": "did",
@@ -476,7 +476,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "pop",
-      "hint": "A quick pleasant sound, like a bubble popping."
+      "hint": "A quick burst sound made when a soapy balloon or bubble bursts."
     },
     {
       "word": "mop",
@@ -492,7 +492,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "dot",
-      "hint": "A tiny round circle mark, like the dot above the letter i."
+      "hint": "A tiny round mark, like the small point above the letter i."
     },
     {
       "word": "rod",
@@ -788,7 +788,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "tea",
-      "hint": "A warm herbal drink brewed in a teapot."
+      "hint": "A soothing warm beverage brewed with fragrant herbs or leaves."
     },
     {
       "word": "pie",
@@ -1298,11 +1298,11 @@ export const WORD_LISTS = {
     },
     {
       "word": "wind",
-      "hint": "Moving air that flies kites and turns windmills."
+      "hint": "Blowing outdoor air that flies kites and rustles tree leaves."
     },
     {
       "word": "fend",
-      "hint": "To defend or care for yourself."
+      "hint": "To protect, ward off danger, or provide for yourself."
     },
     {
       "word": "lend",
@@ -1714,7 +1714,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "pine",
-      "hint": "An evergreen needle tree with pinecones."
+      "hint": "An evergreen forest tree with fragrant needles and woody cones."
     },
     {
       "word": "vine",
@@ -1734,7 +1734,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "cone",
-      "hint": "A 3D shape pointed at top, like an ice cream cone."
+      "hint": "A solid 3D shape that tapers smoothly from a round base to a point."
     },
     {
       "word": "tone",
@@ -1742,7 +1742,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "zone",
-      "hint": "A designated region, like a school zone."
+      "hint": "A designated area or region with special rules or boundaries."
     },
     {
       "word": "rope",
@@ -1778,7 +1778,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "pole",
-      "hint": "A tall straight rod, like the North Pole or flagpole."
+      "hint": "A long, slender rounded post used to hoist a flag or support a tent."
     },
     {
       "word": "sole",
@@ -1786,7 +1786,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "tube",
-      "hint": "A hollow cylinder, like a tube of toothpaste."
+      "hint": "A hollow, long cylinder made of plastic, glass, or cardboard."
     },
     {
       "word": "mule",
@@ -2062,7 +2062,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "mail",
-      "hint": "Envelopes and packages delivered to your mailbox."
+      "hint": "Letters, postcards, and parcels delivered by a postal carrier."
     },
     {
       "word": "tail",
@@ -2172,7 +2172,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "chick",
-      "hint": "A fluffy yellow baby chicken."
+      "hint": "A fluffy yellow baby bird that recently hatched from an egg."
     },
     {
       "word": "chief",
@@ -2216,7 +2216,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "shake",
-      "hint": "To move back and forth quickly, like shaking hands."
+      "hint": "To vibrate or move back and forth rapidly with quick motions."
     },
     {
       "word": "shape",
@@ -2404,7 +2404,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "phase",
-      "hint": "A stage in a cycle, like the phases of the moon."
+      "hint": "A distinct stage or step in a recurring developmental cycle."
     },
     {
       "word": "quail",
@@ -2720,7 +2720,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "tooth",
-      "hint": "A single tooth inside your mouth."
+      "hint": "One of the hard white enamel structures in your mouth used for chewing."
     },
     {
       "word": "troop",
@@ -3084,7 +3084,7 @@ export const WORD_LISTS = {
     },
     {
       "word": "lemon",
-      "hint": "A sour, bright yellow citrus fruit used for lemonade."
+      "hint": "A sour, bright yellow citrus fruit with tangy tart juice."
     },
     {
       "word": "magic",

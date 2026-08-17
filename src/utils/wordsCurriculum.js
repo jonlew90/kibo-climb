@@ -211,7 +211,7 @@ export const WORDS_CURRICULUM_TIERS = [
       description: 'Strip away the prefix at the front and suffix at the back to reveal the root word (un-kind-ness), then assemble step-by-step!',
       summary: 'Strip away prefix and suffix to verify the root word!',
       sampleProblem: {
-        question: 'f e a r _ e s s (Brave without fear)',
+        question: 'f e a r _ e s s (Brave and bold without being afraid)',
         correctAnswer: 'fearless',
         hint: 'Root "fear" + suffix "-less" means without fear!'
       }
