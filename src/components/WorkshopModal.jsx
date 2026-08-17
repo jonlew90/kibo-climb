@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft, User, Ticket, Gift, Clock, AlertCircle } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
-import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, SEASONAL_EVENTS, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus } from '../utils/itemsCatalog';
+import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, SEASONAL_EVENTS, getAvailableSeasonalEvents, isSeasonalEventAvailableOrUpcoming, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus, isItemVisibleInShop } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
@@ -189,6 +189,12 @@ export default function WorkshopModal({
   if (!isOpen) return null;
 
   const currentDate = storageService.getCurrentDate();
+  const availableSeasonalEvents = getAvailableSeasonalEvents(currentDate);
+
+  // If currently selected seasonal event filter is not among available/upcoming filters, fall back to 'all_active'
+  const effectiveSeasonalEventFilter = availableSeasonalEvents.some((e) => e.id === seasonalEventFilter)
+    ? seasonalEventFilter
+    : 'all_active';
 
   // Compute active stage items (merges saved equipped items with active preview slots)
   const computeStageEquipped = () => {
@@ -218,10 +224,12 @@ export default function WorkshopModal({
 
   const getDisplayItems = () => {
     if (activeCategory === 'seasonal') {
-      if (seasonalEventFilter === 'all_active') {
+      if (effectiveSeasonalEventFilter === 'all_active') {
         return getItemsByCategory('seasonal', unlockedItems, currentDate);
       }
-      return WORKSHOP_ITEMS.filter((item) => item.category === 'seasonal' && item.seasonId === seasonalEventFilter);
+      return WORKSHOP_ITEMS.filter(
+        (item) => item.category === 'seasonal' && item.seasonId === effectiveSeasonalEventFilter && isItemVisibleInShop(item, unlockedItems, currentDate)
+      );
     }
     return getItemsByCategory(activeCategory, unlockedItems, currentDate);
   };
@@ -460,9 +468,9 @@ export default function WorkshopModal({
                   </div>
                   <div>
                     <h3 className="text-xs sm:text-sm font-black leading-tight">
-                      {seasonalEventFilter === 'all_active'
+                      {effectiveSeasonalEventFilter === 'all_active'
                         ? '🐾 Recurring Seasonal Catalog'
-                        : (SEASONAL_EVENTS.find((e) => e.id === seasonalEventFilter)?.label || 'Seasonal Event')}
+                        : (availableSeasonalEvents.find((e) => e.id === effectiveSeasonalEventFilter)?.label || 'Seasonal Event')}
                     </h3>
                     <p className="text-[10.5px] font-bold text-teal-100 leading-snug">
                       Items rotate automatically throughout the year for seasons & holidays! Unlocked items stay forever.
@@ -473,7 +481,7 @@ export default function WorkshopModal({
 
               {/* Event Sub-Navigation Pills */}
               <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 px-0.5 touch-pan-x">
-                {SEASONAL_EVENTS.map((event) => (
+                {availableSeasonalEvents.map((event) => (
                   <button
                     key={event.id}
                     onClick={() => {
@@ -481,7 +489,7 @@ export default function WorkshopModal({
                       setSeasonalEventFilter(event.id);
                     }}
                     className={`py-1 px-2.5 text-[10.5px] font-extrabold rounded-xl shrink-0 transition-all ${
-                      seasonalEventFilter === event.id
+                      effectiveSeasonalEventFilter === event.id
                         ? 'bg-teal-700 text-white shadow-xs border border-teal-800 scale-[1.02]'
                         : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-2xs'
                     }`}

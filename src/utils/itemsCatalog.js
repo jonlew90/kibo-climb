@@ -1478,3 +1478,36 @@ export const SEASONAL_EVENTS = [
   { id: 'thanksgiving', label: '🦃 Thanksgiving', sampleDate: '2026-11-26T12:00:00Z' },
   { id: 'holiday_season', label: '🎄 Holiday Wonderland', sampleDate: '2026-12-25T12:00:00Z' }
 ];
+
+/**
+ * Checks whether a seasonal event is currently active or upcoming within its preview window.
+ * @param {string|object} eventOrId - The event object or event id
+ * @param {Date|string|number} [currentDate=new Date()]
+ * @returns {boolean}
+ */
+export function isSeasonalEventAvailableOrUpcoming(eventOrId, currentDate = new Date()) {
+  const eventId = typeof eventOrId === 'string' ? eventOrId : eventOrId?.id;
+  if (!eventId || eventId === 'all_active') return true;
+
+  const eventItems = WORKSHOP_ITEMS.filter((item) => item.category === 'seasonal' && item.seasonId === eventId);
+  if (eventItems.length === 0) return false;
+
+  return eventItems.some((item) => {
+    const availability = getItemAvailabilityStatus(item, currentDate);
+    return availability.status === 'active' || availability.status === 'upcoming';
+  });
+}
+
+/**
+ * Returns the list of seasonal event filters that are currently active or upcoming.
+ * 'all_active' is always included at the beginning.
+ * @param {Date|string|number} [currentDate=new Date()]
+ * @returns {Array<object>}
+ */
+export function getAvailableSeasonalEvents(currentDate = new Date()) {
+  return SEASONAL_EVENTS.filter((event) => {
+    if (event.id === 'all_active') return true;
+    return isSeasonalEventAvailableOrUpcoming(event, currentDate);
+  });
+}
+

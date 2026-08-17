@@ -1,4 +1,4 @@
-import { WORKSHOP_ITEMS, SEASONAL_EVENTS, calculateRecurringWindow, getItemAvailabilityStatus, getItemsByCategory, isItemVisibleInShop } from '../src/utils/itemsCatalog.js';
+import { WORKSHOP_ITEMS, SEASONAL_EVENTS, calculateRecurringWindow, getItemAvailabilityStatus, getItemsByCategory, isItemVisibleInShop, isSeasonalEventAvailableOrUpcoming, getAvailableSeasonalEvents } from '../src/utils/itemsCatalog.js';
 
 console.log('🧪 Starting Seasonal Catalog Test Suite...\n');
 
@@ -87,6 +87,34 @@ assert(isVisibleOwned === true, 'Owned Pumpkin Hat is visible in wardrobe even w
 const unownedPumpkinVisible = isItemVisibleInShop(pumpkinHat, [], outOfSeasonDate);
 assert(unownedPumpkinVisible === false, 'Unowned Pumpkin Hat is hidden from general shop view in May');
 
+// 4. Seasonal filter visibility tests (only currently available or upcoming filters are shown)
+console.log('\n🔍 Testing Seasonal Filter Availability:');
+const aug17 = new Date('2026-08-17T12:00:00Z');
+const aug17Filters = getAvailableSeasonalEvents(aug17);
+const aug17Ids = aug17Filters.map((e) => e.id);
+assert(aug17Ids.includes('all_active'), 'aug17 filters includes all_active');
+assert(aug17Ids.includes('summer'), 'aug17 filters includes summer (active)');
+assert(!aug17Ids.includes('winter'), 'aug17 filters excludes winter (far off)');
+assert(!aug17Ids.includes('halloween'), 'aug17 filters excludes halloween (far off in August)');
+assert(!aug17Ids.includes('holiday_season'), 'aug17 filters excludes holiday_season (far off in August)');
+
+// Test upcoming event inclusion
+const sep22 = new Date('2026-09-22T12:00:00Z');
+const sep22Filters = getAvailableSeasonalEvents(sep22);
+const sep22Ids = sep22Filters.map((e) => e.id);
+assert(sep22Ids.includes('autumn'), 'sep22 filters includes autumn (active in Sep)');
+assert(sep22Ids.includes('halloween'), 'sep22 filters includes halloween (upcoming preview within 14 days of Oct 1)');
+assert(!sep22Ids.includes('spring'), 'sep22 filters excludes spring');
+
+// Test winter holiday inclusion
+const dec25 = new Date('2026-12-25T12:00:00Z');
+const dec25Filters = getAvailableSeasonalEvents(dec25);
+const dec25Ids = dec25Filters.map((e) => e.id);
+assert(dec25Ids.includes('winter'), 'dec25 filters includes winter');
+assert(dec25Ids.includes('holiday_season'), 'dec25 filters includes holiday_season');
+assert(dec25Ids.includes('new_year'), 'dec25 filters includes new_year (upcoming preview for Dec 28)');
+assert(!dec25Ids.includes('summer'), 'dec25 filters excludes summer');
+
 console.log(`\n========================================`);
 console.log(`Test Results: ${passCount} Passed, ${failCount} Failed`);
 console.log(`========================================`);
@@ -96,3 +124,4 @@ if (failCount > 0) {
 } else {
   console.log('🎉 All Seasonal Catalog Tests Passed Successfully!');
 }
+
