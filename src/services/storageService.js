@@ -862,5 +862,32 @@ export const storageService = {
     if (values.length === 0) return 1000;
     const sum = values.reduce((a, b) => a + b, 0);
     return Math.round(sum / values.length);
+  },
+
+  getSimulatedDate() {
+    try {
+      const stored = localStorage.getItem('kibo_dev_simulated_date');
+      return stored ? new Date(stored) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  setSimulatedDate(dateVal) {
+    try {
+      if (!dateVal) {
+        localStorage.removeItem('kibo_dev_simulated_date');
+      } else {
+        const iso = (dateVal instanceof Date ? dateVal : new Date(dateVal)).toISOString();
+        localStorage.setItem('kibo_dev_simulated_date', iso);
+      }
+    } catch {
+      // ignore
+    }
+  },
+
+  getCurrentDate() {
+    return this.getSimulatedDate() || new Date();
   }
 };
+

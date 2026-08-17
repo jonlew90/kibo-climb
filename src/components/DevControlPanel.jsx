@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail, Fingerprint, Lock, ShieldAlert } from 'lucide-react';
+import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail, Fingerprint, Lock, ShieldAlert, Calendar } from 'lucide-react';
 import { storageService } from '../services/storageService';
 import { communicationsService } from '../services/communicationsService';
 import { nativeAuthService } from '../services/nativeAuthService';
 import { calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { getTierFromRating } from '../utils/mathCurriculum';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
+import { SEASONAL_EVENTS } from '../utils/itemsCatalog';
 
 export default function DevControlPanel({
   isOpen,
@@ -20,6 +21,7 @@ export default function DevControlPanel({
   const [successMessage, setSuccessMessage] = useState('');
   const [testEmail, setTestEmail] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [customDateInput, setCustomDateInput] = useState('');
 
   const currentData = storageService.getUserData('math');
   const currentRating = currentData.adaptiveCompetenceRating || currentData.competenceRank || 1000;
@@ -194,6 +196,80 @@ export default function DevControlPanel({
             >
               🔓 Unlock All Workshop Accessories & Gear
             </button>
+          </div>
+
+          {/* SECTION 3.5: SEASON & HOLIDAY SIMULATOR */}
+          <div className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-4 space-y-3">
+            <span className="text-xs font-extrabold text-teal-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-teal-400" />
+              Season & Holiday Simulator
+            </span>
+
+            <p className="text-[10px] text-slate-400 leading-snug">
+              Simulate any holiday or season to test recurring catalog rotation, shop items, and countdown timers.
+            </p>
+
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                onClick={() => {
+                  storageService.setSimulatedDate(null);
+                  showToast('Reset to Live Real-Time Date');
+                  if (onStateRefresh) onStateRefresh();
+                }}
+                className={`text-[11px] font-extrabold py-1.5 px-2 rounded-xl border text-center transition-all ${
+                  !storageService.getSimulatedDate()
+                    ? 'bg-teal-600 text-white border-teal-400 shadow-sm'
+                    : 'bg-slate-900/60 hover:bg-slate-900 border-slate-700 text-slate-300'
+                }`}
+              >
+                🕒 Live Real Time
+              </button>
+
+              {SEASONAL_EVENTS.filter((e) => e.id !== 'all_active').map((evt) => {
+                const isSelected = storageService.getSimulatedDate() && evt.sampleDate && storageService.getSimulatedDate().toISOString().startsWith(evt.sampleDate);
+                return (
+                  <button
+                    key={evt.id}
+                    onClick={() => {
+                      if (evt.sampleDate) {
+                        storageService.setSimulatedDate(new Date(evt.sampleDate));
+                        showToast(`Simulating ${evt.label}`);
+                        if (onStateRefresh) onStateRefresh();
+                      }
+                    }}
+                    className={`text-[10.5px] font-extrabold py-1.5 px-2 rounded-xl border text-left truncate transition-all ${
+                      isSelected
+                        ? 'bg-teal-600 text-white border-teal-400 shadow-sm'
+                        : 'bg-slate-900/60 hover:bg-slate-900 border-slate-700 text-slate-300'
+                    }`}
+                  >
+                    {evt.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <input
+                type="date"
+                value={customDateInput}
+                onChange={(e) => setCustomDateInput(e.target.value)}
+                className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 font-mono"
+              />
+              <button
+                disabled={!customDateInput}
+                onClick={() => {
+                  if (customDateInput) {
+                    storageService.setSimulatedDate(new Date(customDateInput));
+                    showToast(`Simulating ${customDateInput}`);
+                    if (onStateRefresh) onStateRefresh();
+                  }
+                }}
+                className="bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl transition-all active:scale-95 whitespace-nowrap"
+              >
+                Set Date
+              </button>
+            </div>
           </div>
 
           {/* SECTION 4: COMMUNICATIONS / NOTIFICATIONS */}

@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft, User, Ticket, Gift, Clock, AlertCircle } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
-import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus } from '../utils/itemsCatalog';
+import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, SEASONAL_EVENTS, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
 import { promoCodeService } from '../services/promoCodeService';
 
-export function sortShopItems(items, userSparks, unlockedItems = [], equippedItems = []) {
+export function sortShopItems(items, userSparks, unlockedItems = [], equippedItems = [], currentDate = new Date()) {
   return [...items].sort((a, b) => {
     const aEquipped = equippedItems.includes(a.id);
     const bEquipped = equippedItems.includes(b.id);
@@ -18,8 +18,8 @@ export function sortShopItems(items, userSparks, unlockedItems = [], equippedIte
     const bUnlocked = unlockedItems.includes(b.id);
     if (aUnlocked !== bUnlocked) return aUnlocked ? -1 : 1;
 
-    const aAvail = getItemAvailabilityStatus(a);
-    const bAvail = getItemAvailabilityStatus(b);
+    const aAvail = getItemAvailabilityStatus(a, currentDate);
+    const bAvail = getItemAvailabilityStatus(b, currentDate);
     if (aAvail.isUpcoming !== bAvail.isUpcoming) {
       return aAvail.isUpcoming ? 1 : -1;
     }
@@ -61,6 +61,7 @@ export default function WorkshopModal({
   };
 
   const [activeCategory, setActiveCategory] = useState('powerups');
+  const [seasonalEventFilter, setSeasonalEventFilter] = useState('all_active');
   const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
   const [recentlyPurchasedId, setRecentlyPurchasedId] = useState(null);
 
@@ -71,6 +72,7 @@ export default function WorkshopModal({
   const [isRedeeming, setIsRedeeming] = useState(false);
 
   const categoryScrollRef = useRef(null);
+  const seasonalEventScrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
@@ -186,6 +188,8 @@ export default function WorkshopModal({
 
   if (!isOpen) return null;
 
+  const currentDate = storageService.getCurrentDate();
+
   // Compute active stage items (merges saved equipped items with active preview slots)
   const computeStageEquipped = () => {
     const stageItems = [];
@@ -211,7 +215,18 @@ export default function WorkshopModal({
   };
 
   const stageEquippedItems = computeStageEquipped();
-  const currentCategoryItems = getItemsByCategory(activeCategory, unlockedItems, new Date());
+
+  const getDisplayItems = () => {
+    if (activeCategory === 'seasonal') {
+      if (seasonalEventFilter === 'all_active') {
+        return getItemsByCategory('seasonal', unlockedItems, currentDate);
+      }
+      return WORKSHOP_ITEMS.filter((item) => item.category === 'seasonal' && item.seasonId === seasonalEventFilter);
+    }
+    return getItemsByCategory(activeCategory, unlockedItems, currentDate);
+  };
+
+  const currentCategoryItems = getDisplayItems();
 
   // Check if any active preview overrides exist
   const hasActivePreview = Object.values(previewSlots).some((v) => v !== null);
@@ -435,6 +450,49 @@ export default function WorkshopModal({
             </div>
           )}
 
+          {/* Dedicated Seasonal Events Explorer Bar inside Seasonal category */}
+          {activeCategory === 'seasonal' && (
+            <div className="space-y-2 mb-2">
+              <div className="bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600 rounded-2xl p-3.5 text-white shadow-md flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center border border-white/40 shrink-0">
+                    <Sparkles className="w-5 h-5 text-amber-300 animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-black leading-tight">
+                      {seasonalEventFilter === 'all_active'
+                        ? '🐾 Recurring Seasonal Catalog'
+                        : (SEASONAL_EVENTS.find((e) => e.id === seasonalEventFilter)?.label || 'Seasonal Event')}
+                    </h3>
+                    <p className="text-[10.5px] font-bold text-teal-100 leading-snug">
+                      Items rotate automatically throughout the year for seasons & holidays! Unlocked items stay forever.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Sub-Navigation Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 px-0.5 touch-pan-x">
+                {SEASONAL_EVENTS.map((event) => (
+                  <button
+                    key={event.id}
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setSeasonalEventFilter(event.id);
+                    }}
+                    className={`py-1 px-2.5 text-[10.5px] font-extrabold rounded-xl shrink-0 transition-all ${
+                      seasonalEventFilter === event.id
+                        ? 'bg-teal-700 text-white shadow-xs border border-teal-800 scale-[1.02]'
+                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-2xs'
+                    }`}
+                  >
+                    {event.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Kibo Club Subscription Banner */}
           {allowRealMoneyPurchases && (
             <div
@@ -526,11 +584,11 @@ export default function WorkshopModal({
           ) : currentCategoryItems.length === 0 ? (
             <div className="py-8 text-center text-slate-500 font-bold space-y-2 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-4">
               <ShoppingBag className="w-8 h-8 mx-auto text-slate-400 stroke-[1.5]" />
-              <p className="text-sm font-black text-slate-700">No items available in this category yet!</p>
-              <p className="text-xs text-slate-500">Check back soon for new seasonal gear and promotions.</p>
+              <p className="text-sm font-black text-slate-700">No seasonal items available right now!</p>
+              <p className="text-xs text-slate-500">Pick another holiday or season above to explore upcoming items.</p>
             </div>
           ) : (
-            sortShopItems(currentCategoryItems, sparks, unlockedItems, equippedItems).map((item) => {
+            sortShopItems(currentCategoryItems, sparks, unlockedItems, equippedItems, currentDate).map((item) => {
               const isConsumable = item.isConsumable;
               const shieldOwned = consumables?.shieldCount ?? 1;
               const isShieldFull = isConsumable && item.id === 'kibo_shield' && shieldOwned >= 2;
@@ -538,14 +596,14 @@ export default function WorkshopModal({
               const isEquippedInApp = equippedItems.includes(item.id);
               const isPreviewedOnStage = stageEquippedItems.includes(item.id) || (item.bundleItems && item.bundleItems.some((id) => stageEquippedItems.includes(id)));
               const isRealMoney = !!item.realMoneyPrice;
-              if (isRealMoney && !allowRealMoneyPurchases) return null; // Hide premium items if real money purchases disabled
+              if (isRealMoney && !allowRealMoneyPurchases) return null;
 
               const canAfford = isRealMoney ? true : sparks >= item.cost;
               const shortfall = isRealMoney ? 0 : item.cost - sparks;
               const rarityInfo = RARITY_TIERS[item.rarity] || RARITY_TIERS.common;
 
               const isJustPurchased = recentlyPurchasedId === item.id;
-              const availability = getItemAvailabilityStatus(item, new Date());
+              const availability = getItemAvailabilityStatus(item, currentDate);
 
               return (
                 <div
