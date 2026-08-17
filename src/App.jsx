@@ -141,6 +141,7 @@ export default function App() {
     setUnlockedTiers(uData.unlockedTiers || [1]);
     setStreak(uData.streak ?? 1);
     setSparks(uData.sparks ?? 0);
+    setIsKiboClub(uData.isKiboClub ?? false);
     setTotalProblemsSolved(uData.totalProblemsSolved ?? 0);
     setUnlockedBadges(uData.unlockedBadges ?? []);
     setPracticeDays(storageService.getProfilePracticeDays());
@@ -300,6 +301,10 @@ export default function App() {
   // Persistent Sparks Currency (⚡)
   const [sparks, setSparks] = useState(() => {
     return storageService.getUserData(activeSubject).sparks;
+  });
+
+  const [isKiboClub, setIsKiboClub] = useState(() => {
+    return storageService.getUserData(activeSubject).isKiboClub || false;
   });
 
   // Persistent Active Skill Tier (1 through 8)
@@ -1345,7 +1350,9 @@ export default function App() {
             );
           }}
           onAwardSparks={(earned) => {
-            const updated = sparks + earned;
+            const clubMultiplier = isKiboClub ? 1.25 : 1;
+            const finalEarned = Math.round(earned * clubMultiplier);
+            const updated = sparks + finalEarned;
             setSparks(updated);
             localStorage.setItem('kibo_math_sparks', updated.toString());
           }}
@@ -1383,7 +1390,9 @@ export default function App() {
             );
           }}
           onAwardSparks={(earned) => {
-            const updated = sparks + earned;
+            const clubMultiplier = isKiboClub ? 1.25 : 1;
+            const finalEarned = Math.round(earned * clubMultiplier);
+            const updated = sparks + finalEarned;
             setSparks(updated);
             localStorage.setItem('kibo_math_sparks', updated.toString());
           }}
@@ -1665,10 +1674,49 @@ export default function App() {
         }}
         packageInfo={pendingSparksPurchase}
         onConfirm={(pack) => {
-          const newSparks = sparks + pack.sparks;
+          let newSparks = sparks + (pack.sparks || pack.sparksIncluded || 0);
+
+          let nextConsumables = { ...consumables };
+          if (pack.bundleConsumables) {
+            Object.keys(pack.bundleConsumables).forEach((key) => {
+              nextConsumables[key] = (nextConsumables[key] || 0) + pack.bundleConsumables[key];
+            });
+            setConsumables(nextConsumables);
+            storageService.saveUserData({
+              streakShields: nextConsumables.shieldCount,
+              streakSaverCount: nextConsumables.streakSaverCount,
+              hintScrollCount: nextConsumables.hintScrollCount,
+              doubleSparksPotionCount: nextConsumables.doubleSparksPotionCount,
+            });
+          }
+
+          let nextUnlocked = [...unlockedItems];
+          if (pack.bundleItems) {
+            pack.bundleItems.forEach(itemId => {
+               if (!nextUnlocked.includes(itemId)) {
+                 nextUnlocked.push(itemId);
+               }
+            });
+            setUnlockedItems(nextUnlocked);
+            storageService.saveShopState(equippedItems, nextUnlocked);
+          } else if (pack.realMoneyPrice && !pack.isSubscription && !pack.sparks && !pack.bundleItems && !pack.bundleConsumables) {
+             // For single premium items
+             if (!nextUnlocked.includes(pack.id)) {
+                 nextUnlocked.push(pack.id);
+             }
+             setUnlockedItems(nextUnlocked);
+             storageService.saveShopState(equippedItems, nextUnlocked);
+          }
+
+          if (pack.isSubscription) {
+             setIsKiboClub(true);
+             storageService.saveUserData({ isKiboClub: true });
+          }
+
           setSparks(newSparks);
           storageService.saveUserData({ sparks: newSparks });
           localStorage.setItem('kibo_math_sparks', newSparks.toString());
+
           soundFx.playSparkCollect();
           setShowMockCheckoutModal(false);
           setPendingSparksPurchase(null);

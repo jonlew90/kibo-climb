@@ -11,7 +11,8 @@ export const ITEM_CATEGORIES = [
   { id: 'background', label: 'Backgrounds' },
   { id: 'seasonal', label: 'Seasonal' },
   { id: 'promo', label: 'Promo Exclusives' },
-  { id: 'get_sparks', label: 'Get Sparks' }
+  { id: 'get_sparks', label: 'Get Sparks' },
+  { id: 'premium', label: 'Premium & Bundles' }
 ];
 
 export const RARITY_TIERS = {
@@ -489,6 +490,44 @@ export const WORKSHOP_ITEMS = [
     cost: 0,
     rarity: 'legendary',
     description: 'A very special ticket unlocked via an exclusive promo code!'
+  },
+
+  // PREMIUM EXCLUSIVES & BUNDLES (Category: premium)
+  {
+    id: 'starter_bundle',
+    name: 'Kibo Starter Bundle',
+    category: 'premium',
+    realMoneyPrice: '$4.99',
+    rarity: 'epic',
+    description: 'Includes 1000 Sparks, 5 Streak Savers, and the exclusive Explorer Fedora!',
+    sparksIncluded: 1000,
+    bundleItems: ['explorer_hat'],
+    bundleConsumables: { streakSaverCount: 5 }
+  },
+  {
+    id: 'dragon_pet_premium',
+    name: 'Dragon Whelp Pet',
+    category: 'premium',
+    realMoneyPrice: '$2.99',
+    rarity: 'epic',
+    description: 'A tiny fire-breathing dragon companion that flies beside Kibo. Real money exclusive.'
+  },
+  {
+    id: 'galaxy_skin_premium',
+    name: 'Nebula Galaxy Skin',
+    category: 'premium',
+    realMoneyPrice: '$3.99',
+    rarity: 'legendary',
+    description: 'An animated shimmering galaxy skin for Kibo! Real money exclusive.'
+  },
+  {
+    id: 'kibo_club_sub',
+    name: 'Kibo Club Subscription',
+    category: 'premium',
+    realMoneyPrice: '$4.99/mo',
+    isSubscription: true,
+    rarity: 'legendary',
+    description: 'Join the Kibo Club! Enjoy a permanent 1.25x Spark Multiplier, a golden username tag, and 100 daily Sparks.'
   }
 ];
 

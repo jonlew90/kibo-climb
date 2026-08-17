@@ -32,6 +32,7 @@ const DEFAULT_PROFILE = {
     streak: 1,
     streakShields: 1,
     sparks: 50,
+    isKiboClub: false,
     completedClimbsCount: 0,
     shopPurchasesCount: 0,
     purchasedRarities: [],
