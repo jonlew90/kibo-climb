@@ -5,6 +5,8 @@
 
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../config/firebase';
+import { generateWeeklyDigestData, formatWeeklyDigestText, formatWeeklyDigestHtml } from '../utils/weeklyDigest';
+import { SUBJECTS_CONFIG } from '../config/subjects';
 
 class CommunicationsService {
   /**
@@ -36,7 +38,7 @@ class CommunicationsService {
                 <tr>
                   <td>
                     <span style="font-size: 28px;">🏔️</span>
-                    <h1 style="margin: 8px 0 0 0; color: #ffffff; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Kibo Math Progress</h1>
+                    <h1 style="margin: 8px 0 0 0; color: #ffffff; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Kibo Climb Progress</h1>
                   </td>
                 </tr>
               </table>
@@ -60,7 +62,7 @@ class CommunicationsService {
           <tr>
             <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 32px; text-align: center;">
               <p style="margin: 0; color: #94a3b8; font-size: 12px;">
-                © ${new Date().getFullYear()} Kibo Climb Math. All rights reserved.
+                © ${new Date().getFullYear()} Kibo Climb. All rights reserved.
               </p>
             </td>
           </tr>
@@ -121,6 +123,35 @@ class CommunicationsService {
         error: errorMessage,
       };
     }
+  }
+
+  /**
+   * Sends a complete multi-subject weekly digest across all active subjects for a child profile.
+   *
+   * @param {Object} params
+   * @param {string} params.email - Parent recipient email
+   * @param {Object} params.profile - Child profile object
+   * @param {Object} [params.subjectsConfig=SUBJECTS_CONFIG] - Active subjects configuration
+   * @returns {Promise<Object>}
+   */
+  async sendWeeklyDigest({ email, profile, subjectsConfig = SUBJECTS_CONFIG }) {
+    if (!profile) {
+      return { success: false, error: 'Child profile is required to generate weekly digest.' };
+    }
+
+    const childName = profile.username || profile.name || 'Student';
+    const digestData = generateWeeklyDigestData(profile, subjectsConfig);
+    const subjectLine = `Weekly Progress Summary for ${childName}`;
+    const textMessage = formatWeeklyDigestText({ childName, digestData });
+    const htmlMessage = formatWeeklyDigestHtml({ childName, digestData });
+
+    return this.sendParentNotification({
+      email,
+      subject: subjectLine,
+      message: textMessage,
+      htmlBody: htmlMessage,
+      type: 'digest'
+    });
   }
 }
 

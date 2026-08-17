@@ -1,3 +1,5 @@
+import { SUBJECTS_CONFIG } from '../config/subjects.js';
+
 /**
  * Skip Diagnostic Engine
  * Handles concept categorization, stuck vs avoidance categorization,
@@ -15,6 +17,19 @@ export const MATH_CONCEPTS = [
   { id: 'fractions_lcm_gcf', name: 'Fractions & GCF/LCM', icon: '🧩' },
   { id: 'peak_algebra', name: 'Pre-Algebra & Exponents', icon: '🏔️' }
 ];
+
+export function getConceptsForSubject(subjectId = 'math') {
+  const cfg = SUBJECTS_CONFIG[subjectId] || SUBJECTS_CONFIG['math'];
+  if (cfg?.DOMAIN_DEFINITIONS && cfg.DOMAIN_DEFINITIONS.length > 0) {
+    return cfg.DOMAIN_DEFINITIONS.map((d) => ({
+      id: d.id,
+      name: d.name,
+      icon: d.icon,
+      tiers: d.tiers || [1]
+    }));
+  }
+  return MATH_CONCEPTS;
+}
 
 /**
  * Maps a math problem object to its human-readable concept name.
@@ -161,16 +176,18 @@ export function detectDiagnosticTriggers(skipLogs = []) {
 }
 
 /**
- * Calculates Correct vs Incorrect vs Skipped metrics per math concept across history and skip logs.
+ * Calculates Correct vs Incorrect vs Skipped metrics per subject concept across history and skip logs.
  */
-export function calculateConceptBreakdown(sprintHistory = [], skipLogs = []) {
+export function calculateConceptBreakdown(sprintHistory = [], skipLogs = [], subjectId = 'math') {
   const breakdown = {};
+  const concepts = getConceptsForSubject(subjectId);
 
-  MATH_CONCEPTS.forEach((c) => {
+  concepts.forEach((c) => {
     breakdown[c.name] = {
       id: c.id,
       name: c.name,
       icon: c.icon,
+      tiers: c.tiers || [1],
       correct: 0,
       incorrect: 0,
       skipped: 0,
@@ -181,20 +198,15 @@ export function calculateConceptBreakdown(sprintHistory = [], skipLogs = []) {
   // Process sprint history
   (sprintHistory || []).forEach((sprint) => {
     const tier = Number(sprint.tier) || 1;
-    let conceptName = 'Addition & Subtraction';
-    if (tier === 2) conceptName = 'Multiplication Foundations';
-    else if (tier === 3) conceptName = 'Advanced Multiplication';
-    else if (tier === 4) conceptName = 'Multi-Digit Shortcuts';
-    else if (tier === 5) conceptName = 'Money & Decimals';
-    else if (tier === 6) conceptName = 'Division';
-    else if (tier === 7) conceptName = 'Fractions & GCF/LCM';
-    else if (tier >= 8) conceptName = 'Pre-Algebra & Exponents';
+    let matchedConcept = concepts.find((c) => c.tiers && c.tiers.includes(tier)) || concepts[0];
+    const conceptName = matchedConcept ? matchedConcept.name : (concepts[0]?.name || 'Fundamentals');
 
     if (!breakdown[conceptName]) {
       breakdown[conceptName] = {
-        id: `concept_${tier}`,
+        id: matchedConcept?.id || `concept_${tier}`,
         name: conceptName,
-        icon: '🔢',
+        icon: matchedConcept?.icon || '🔢',
+        tiers: [tier],
         correct: 0,
         incorrect: 0,
         skipped: 0,
@@ -212,7 +224,7 @@ export function calculateConceptBreakdown(sprintHistory = [], skipLogs = []) {
 
   // Process skip logs
   (skipLogs || []).forEach((log) => {
-    const conceptName = log.concept || 'Addition & Subtraction';
+    const conceptName = log.concept || concepts[0]?.name || 'Fundamentals';
     if (!breakdown[conceptName]) {
       breakdown[conceptName] = {
         id: 'concept_custom',
@@ -248,10 +260,12 @@ export function calculateConceptBreakdown(sprintHistory = [], skipLogs = []) {
 /**
  * Generates warm, actionable parent diagnostic insight cards based on triggers and skip categorization.
  */
-export function generateParentInsightCards(skipLogs = [], sprintHistory = [], profileName = 'Child') {
+export function generateParentInsightCards(skipLogs = [], sprintHistory = [], profileName = 'Child', subjectId = 'math') {
   const cards = [];
   const name = profileName || 'Child';
   const triggers = detectDiagnosticTriggers(skipLogs);
+  const cfg = SUBJECTS_CONFIG[subjectId] || SUBJECTS_CONFIG['math'];
+  const subjectName = cfg.name || 'Subject';
 
   // 1. Topic Bottlenecks Cards
   triggers.topicBottlenecks.forEach((b) => {
@@ -267,15 +281,19 @@ export function generateParentInsightCards(skipLogs = [], sprintHistory = [], pr
       tip = 'Counting change up to $1.00 using physical coins or benchmark jumps can work wonders!';
     } else if (b.concept.includes('Division')) {
       tip = 'Remind them that division is just multiplication in reverse (asking how many groups)!';
+    } else if (b.concept.includes('Sight') || b.concept.includes('Spelling')) {
+      tip = 'Sounding out phonics chunks and flash card practice will boost spelling fluency!';
+    } else if (b.concept.includes('Grammar') || b.concept.includes('Vocab')) {
+      tip = 'Exploring word roots and prefixes together makes vocabulary memorable!';
     }
 
     let detailMsg = '';
     if (deliberateCount >= 2) {
-      detailMsg = `${name} skipped ${b.count} ${b.concept.toLowerCase()} problems today after trying for over 30 seconds each.`;
+      detailMsg = `${name} skipped ${b.count} ${b.concept.toLowerCase()} questions today after trying for over 30 seconds each.`;
     } else if (immediateCount >= 2) {
-      detailMsg = `${name} passed ${b.count} ${b.concept.toLowerCase()} problems in under 3 seconds each, suggesting a prerequisite knowledge gap.`;
+      detailMsg = `${name} passed ${b.count} ${b.concept.toLowerCase()} questions in under 3 seconds each, suggesting a prerequisite knowledge gap.`;
     } else {
-      detailMsg = `${name} passed ${b.count} ${b.concept.toLowerCase()} problems during recent climbs.`;
+      detailMsg = `${name} passed ${b.count} ${b.concept.toLowerCase()} questions during recent climbs.`;
     }
 
     cards.push({
@@ -311,7 +329,7 @@ export function generateParentInsightCards(skipLogs = [], sprintHistory = [], pr
       icon: '💪',
       badge: 'Active Solve',
       badgeClass: 'bg-emerald-100 text-emerald-900 border-emerald-300',
-      description: `${name} gave deliberate effort (30+ seconds) on challenging problems before choosing to try another. This shows great mathematical perseverance!`
+      description: `${name} gave deliberate effort (30+ seconds) on challenging questions before choosing to try another. This shows great perseverance in ${subjectName}!`
     });
   }
 
@@ -320,11 +338,11 @@ export function generateParentInsightCards(skipLogs = [], sprintHistory = [], pr
     cards.push({
       id: 'steady-climb',
       type: 'steady',
-      title: 'Steady Climb Progress',
-      icon: '🏔️',
+      title: `Steady ${subjectName} Progress`,
+      icon: subjectId === 'words' ? '📖' : '🏔️',
       badge: 'On Track',
       badgeClass: 'bg-indigo-100 text-indigo-900 border-indigo-300',
-      description: `${name} is maintaining a balanced pacing through problem sets with great stamina and no major bottlenecks!`
+      description: `${name} is maintaining a balanced pacing through ${subjectName.toLowerCase()} sets with great stamina and no major bottlenecks!`
     });
   }
 

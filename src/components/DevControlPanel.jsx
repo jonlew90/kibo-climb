@@ -219,79 +219,22 @@ export default function DevControlPanel({
                 disabled={isSendingEmail || !testEmail.includes('@')}
                 onClick={async () => {
                   setIsSendingEmail(true);
-
-                  // Gather user metrics for email
-                  const sprintHistory = currentData.sprintHistory || [];
-                  const unlockedBadges = currentData.unlockedBadges || [];
-                  const totalProblemsSolved = currentData.totalProblemsSolved || 0;
-                  const currentMathTier = getTierFromRating(currentRating);
-                  const rankTitle = getCompetenceRankTier(currentRating);
-
-                  // Use recent sprint history to estimate "weekly" stats
-                  // In a real app we'd filter by date, but since mock data might not have dates, we'll just use the last few sprints.
-                  const recentSprints = sprintHistory.slice(-10);
-                  const recentProblemsSolved = recentSprints.reduce((acc, sprint) => acc + (sprint.totalQuestions || 12), 0);
-
-                  // Calculate recall latency
-                  let avgLatency = 0;
-                  let totalQuestions = 0;
-                  recentSprints.forEach(sprint => {
-                    const duration = Number(sprint.durationInSeconds || 0);
-                    const qCount = Number(sprint.totalQuestions || (sprint.answers ? sprint.answers.length : 12));
-                    if (qCount > 0) {
-                      avgLatency += duration;
-                      totalQuestions += qCount;
-                    }
-                  });
-                  const latencySec = totalQuestions > 0 ? (avgLatency / totalQuestions).toFixed(1) : 'N/A';
-
-                  // Adaptive competence profile
-                  const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, currentRating, currentData.ratingHistory || []);
-
-                  const masteredTopics = Object.values(adaptiveProfile.skillStrandBreakdown)
-                    .filter(strand => strand.status === 'Mastered')
-                    .map(strand => strand.strandName);
-
-                  const masteredTopicsText = masteredTopics.length > 0 ? masteredTopics.join(', ') : 'None yet, keep practicing!';
-                  const badgesText = unlockedBadges.length > 0 ? `${unlockedBadges.length} unlocked` : 'None yet';
-
-                  // Format the email message
-                  const emailSubject = `Weekly Progress Summary for ${childName}`;
-                  const emailMessage = `
-Hi there!
-
-Here is the Weekly Progress Summary for ${childName}:
-
-📊 PERFORMANCE METRICS
-• Competence Rating: ${currentRating} (${rankTitle})
-• Math Tier: Tier ${currentMathTier}
-• Problems Solved: ${recentProblemsSolved} this week (${totalProblemsSolved} total)
-• Avg Recall Latency: ${latencySec}s per question
-
-🏆 ACHIEVEMENTS
-• Mastered Topics: ${masteredTopicsText}
-• Unlocked Badges: ${badgesText}
-
-Keep up the great work!
-                  `.trim();
-
-                  const result = await communicationsService.sendParentNotification({
+                  const activeProf = storageService.getActiveProfile();
+                  const result = await communicationsService.sendWeeklyDigest({
                     email: testEmail,
-                    subject: emailSubject,
-                    message: emailMessage,
-                    type: 'email'
+                    profile: activeProf
                   });
                   setIsSendingEmail(false);
 
                   if (result.success) {
-                    showToast('Weekly Progress Summary sent successfully!');
+                    showToast('Weekly Progress Summary (All Subjects) sent successfully!');
                   } else {
                     alert('Failed to send notification: ' + result.error);
                   }
                 }}
                 className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 px-4 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-2"
               >
-                {isSendingEmail ? 'Sending...' : 'Send Test Notification'}
+                {isSendingEmail ? 'Sending...' : 'Send Test Notification (All Subjects)'}
               </button>
             </div>
           </div>

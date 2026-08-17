@@ -1,4 +1,4 @@
-import { SUBJECTS_CONFIG } from '../config/subjects';
+import { SUBJECTS_CONFIG } from '../config/subjects.js';
 /**
  * Calculates skill domain accuracy and metrics matching the student's actual Competence Rating & Elo Tier.
  * Provides accurate, dynamically updated performance metrics for parent reporting.

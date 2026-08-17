@@ -1,5 +1,5 @@
 // Game Economy Model & Competence Rating Tier Scale for Kibo Climb
-import { SUBJECTS_CONFIG } from '../config/subjects';
+import { SUBJECTS_CONFIG } from '../config/subjects.js';
 
 export const INITIAL_COMPETENCE_RATING = 1000;
 

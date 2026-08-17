@@ -1,5 +1,5 @@
 // Skill Tree Configuration & Rating Band Mapping for Kibo Climb
-import { SUBJECTS_CONFIG } from '../config/subjects';
+import { SUBJECTS_CONFIG } from '../config/subjects.js';
 
 /**
  * Returns dynamic K-factor based on user's total lifetime problems solved.

@@ -12,6 +12,8 @@ import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEc
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
 import { communicationsService } from '../services/communicationsService';
+import { SUBJECTS_CONFIG } from '../config/subjects';
+import { generateWeeklyDigestData, formatWeeklyDigestText } from '../utils/weeklyDigest';
 import AccountLinkModal from './AccountLinkModal';
 
 const DAYS_OF_WEEK = [
@@ -48,6 +50,7 @@ export default function ParentDashboardModal({
   onAccountLinked
 }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'schedule' | 'verification'
+  const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
 
   // PIN Change State
   const [oldPinInput, setOldPinInput] = useState('');
@@ -56,23 +59,53 @@ export default function ParentDashboardModal({
   const [pinSuccessMsg, setPinSuccessMsg] = useState('');
   const [pinErrorMsg, setPinErrorMsg] = useState('');
 
-  const [liveUserData, setLiveUserData] = useState(() => storageService.getUserData(activeSubject));
-
-  useEffect(() => {
-    setLiveUserData(storageService.getUserData(activeSubject));
-  }, [activeSubject, isOpen]);
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
   const [profilesList, setProfilesList] = useState(() => storageService.getAllProfiles());
   const [viewingProfileId, setViewingProfileId] = useState(() => storageService.getActiveProfileId());
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+  // Weekly digest preview & test sending states
+  const [showWeeklyPreview, setShowWeeklyPreview] = useState(false);
+  const [isSendingTestDigest, setIsSendingTestDigest] = useState(false);
+  const [digestStatusMsg, setDigestStatusMsg] = useState('');
+
+  // Helper to extract a profile's subject specific data
+  const getProfileSubjectData = (profileId, subId) => {
+    const p = storageService.getProfileById(profileId);
+    if (!p || !p.userData) return storageService.getUserData(subId);
+    const uData = p.userData;
+    const subData = uData.subjects?.[subId] || (subId === 'math' ? uData : {}) || {};
+    return {
+      ...uData,
+      ...subData,
+      name: p.name || uData.name || 'Child',
+      streak: uData.streak ?? 1,
+      lastSprintDate: uData.lastSprintDate ?? null,
+      adaptiveCompetenceRating: subData.adaptiveCompetenceRating || (subId === 'math' ? uData.adaptiveCompetenceRating : 1000) || 1000,
+      competenceRank: subData.competenceRank || (subId === 'math' ? uData.competenceRank : 1000) || 1000,
+      totalProblemsSolved: subData.totalProblemsSolved ?? (subId === 'math' ? (uData.totalProblemsSolved ?? 0) : 0),
+      tier: subData.tier ?? (subId === 'math' ? (uData.tier ?? 1) : 1),
+      sprintHistory: subData.sprintHistory || (subId === 'math' ? (uData.sprintHistory || []) : []),
+      skipLogs: subData.skipLogs || (subId === 'math' ? (uData.skipLogs || []) : [])
+    };
+  };
+
+  const [liveUserData, setLiveUserData] = useState(() => getProfileSubjectData(storageService.getActiveProfileId(), selectedSubject));
+
+  useEffect(() => {
+    setSelectedSubject(activeSubject || 'math');
+  }, [activeSubject]);
+
+  useEffect(() => {
+    setLiveUserData(getProfileSubjectData(viewingProfileId, selectedSubject));
+  }, [selectedSubject, viewingProfileId, isOpen]);
 
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
     if (isOpen) {
       const activeId = storageService.getActiveProfileId();
       setViewingProfileId(activeId);
-      const profile = storageService.getProfileById(activeId);
-      setLiveUserData(profile ? profile.userData : storageService.getUserData(activeSubject));
+      setLiveUserData(getProfileSubjectData(activeId, selectedSubject));
       setProfilesList(storageService.getAllProfiles());
     }
   }
@@ -88,10 +121,15 @@ export default function ParentDashboardModal({
     soundFx.playKeyTap();
     setViewingProfileId(pId);
     storageService.setActiveProfileId(pId);
-    const profile = storageService.getProfileById(pId);
-    setLiveUserData(profile ? profile.userData : storageService.getUserData(activeSubject));
+    setLiveUserData(getProfileSubjectData(pId, selectedSubject));
     setShowEditProfile(false);
     if (onProfileSwitch) onProfileSwitch();
+  };
+
+  const handleSelectSubject = (subId) => {
+    soundFx.playKeyTap();
+    setSelectedSubject(subId);
+    setLiveUserData(getProfileSubjectData(viewingProfileId, subId));
   };
 
   const handleOpenEditProfile = () => {
@@ -107,7 +145,7 @@ export default function ParentDashboardModal({
     soundFx.playVictory();
     storageService.updateProfile(viewingProfileId, { name: editChildName.trim() });
     setProfilesList(storageService.getAllProfiles());
-    setLiveUserData(storageService.getUserData(activeSubject));
+    setLiveUserData(getProfileSubjectData(viewingProfileId, selectedSubject));
     setShowEditProfile(false);
   };
 
@@ -123,34 +161,32 @@ export default function ParentDashboardModal({
       setProfilesList(updatedList);
       const newActive = storageService.getActiveProfileId();
       setViewingProfileId(newActive);
-      const profile = storageService.getProfileById(newActive);
-      setLiveUserData(profile ? profile.userData : storageService.getUserData(activeSubject));
+      setLiveUserData(getProfileSubjectData(newActive, selectedSubject));
       setShowEditProfile(false);
       if (onProfileSwitch) onProfileSwitch();
     }
   };
 
   const [dismissedAlerts, setDismissedAlerts] = useState(() => {
-    return storageService.getUserData(activeSubject).dismissedAlerts || [];
+    return storageService.getUserData(selectedSubject).dismissedAlerts || [];
   });
 
   const handleDismissAlert = (alertId) => {
     soundFx.playKeyTap();
     const updated = [...dismissedAlerts, alertId];
     setDismissedAlerts(updated);
-    storageService.saveUserData({ dismissedAlerts: updated });
+    storageService.saveUserData({ dismissedAlerts: updated }, selectedSubject);
   };
 
   useEffect(() => {
     if (!isOpen) return;
     const fetchUserData = () => {
-      const p = storageService.getProfileById(viewingProfileId);
-      setLiveUserData(p ? p.userData : storageService.getUserData(activeSubject));
+      setLiveUserData(getProfileSubjectData(viewingProfileId, selectedSubject));
     };
     fetchUserData();
     const interval = setInterval(fetchUserData, 3000);
     return () => clearInterval(interval);
-  }, [isOpen, viewingProfileId]);
+  }, [isOpen, viewingProfileId, selectedSubject]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -327,6 +363,47 @@ export default function ParentDashboardModal({
         </div>
       </div>
 
+      {/* SUBJECT SELECTOR BAR (TOGGLE BETWEEN ALL ACTIVE SUBJECTS PER PROFILE) */}
+      <div className="w-full max-w-4xl mx-auto px-4 pt-1.5 pb-1 shrink-0">
+        <div className="bg-white border-2 border-purple-200 rounded-2xl p-2.5 shadow-xs flex items-center justify-between gap-2 flex-wrap text-left">
+          <div className="flex items-center gap-1.5 text-purple-900">
+            <Layers className="w-4 h-4 stroke-[2.5] text-purple-600" />
+            <span className="text-xs font-black uppercase tracking-wider">Subject Focus</span>
+          </div>
+
+          {/* Subject Switcher Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none touch-pan-x">
+            {Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).map((subKey) => {
+              const subConfig = SUBJECTS_CONFIG[subKey] || {};
+              const isSelected = selectedSubject === subKey;
+              const subData = getProfileSubjectData(viewingProfileId, subKey);
+              const subRating = subData.adaptiveCompetenceRating || 1000;
+              const subIcon = subKey === 'words' ? '📖' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🏔️'));
+
+              return (
+                <button
+                  key={subKey}
+                  type="button"
+                  onClick={() => handleSelectSubject(subKey)}
+                  className={`px-3 py-1.5 rounded-xl border-2 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
+                    isSelected
+                      ? (subKey === 'words' ? 'bg-teal-600 text-white border-teal-700 shadow-sm scale-105' : 'bg-purple-600 text-white border-purple-700 shadow-sm scale-105')
+                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-purple-300'
+                  }`}
+                >
+                  <span>{subIcon}</span>
+                  <span>{subConfig.name || subKey}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${isSelected ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : 'bg-purple-800 text-purple-100') : 'bg-slate-200 text-slate-600'}`}>
+                    {subRating}
+                  </span>
+                  {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* TAB SELECTOR HEADER */}
       <div className="w-full max-w-4xl mx-auto px-4 pt-3 shrink-0">
         <div className="flex bg-slate-200/80 p-1 rounded-2xl font-extrabold text-xs sm:text-sm shadow-inner gap-1">
@@ -377,14 +454,15 @@ export default function ParentDashboardModal({
 
             {/* STAT SUMMARY ROW */}
             {(() => {
-              const activeUserData = liveUserData || storageService.getUserData(activeSubject);
+              const activeUserData = getProfileSubjectData(viewingProfileId, selectedSubject);
+              const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG['math'];
               const historyList = activeUserData.sprintHistory || [];
-              const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec) || 0), 0);
+              const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec || curr.durationInSeconds) || 0), 0);
               const childStreak = activeUserData.streak ?? 1;
               const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
               const childRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
-              const currentMathTier = getTierFromRating(childRating);
-              const rankTitle = getCompetenceRankTier(childRating, activeSubject);
+              const currentTier = activeUserData.tier ?? getTierFromRating(childRating);
+              const rankTitle = getCompetenceRankTier(childRating, selectedSubject);
 
               const formatTime = (sec) => {
                 if (!sec || sec <= 0) return '0m';
@@ -399,15 +477,20 @@ export default function ParentDashboardModal({
                   return (now - new Date(s.date)) / (1000 * 60 * 60 * 24) <= 14;
               });
               let recentAccuracy = 'N/A';
-              if (recentSprints.length > 0) {
+              const sprintsForAcc = recentSprints.length > 0 ? recentSprints : historyList.slice(0, 10);
+              if (sprintsForAcc.length > 0) {
                   let totalCorrect = 0;
                   let totalQs = 0;
-                  recentSprints.forEach(s => {
+                  sprintsForAcc.forEach(s => {
                       totalCorrect += Number(s.correctCount || s.score || 0);
                       totalQs += Number(s.totalQuestions || (s.answers ? s.answers.length : 12));
                   });
                   recentAccuracy = totalQs > 0 ? `${Math.round((totalCorrect / totalQs) * 100)}%` : 'N/A';
               }
+
+              const unitLabel = selectedSubject === 'words' ? 'Words Solved' : 'Problems Solved';
+              const timeLabel = `${subjectConfig.name} Time`;
+              const ratingLabel = `${subjectConfig.name} Rating`;
 
               return (
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
@@ -418,17 +501,17 @@ export default function ParentDashboardModal({
                   </div>
                   <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
-                    <span className="text-[9px] uppercase font-black text-emerald-900 block">Problems Solved</span>
+                    <span className="text-[9px] uppercase font-black text-emerald-900 block">{unitLabel}</span>
                     <span className="text-lg font-black text-slate-800">{childTotalSolved}</span>
                   </div>
                   <div className="bg-sky-50 border border-sky-200 rounded-2xl p-3">
                     <Clock className="w-5 h-5 text-sky-600 mx-auto mb-1 stroke-[2.5]" />
-                    <span className="text-[9px] uppercase font-black text-sky-900 block">Math Time</span>
+                    <span className="text-[9px] uppercase font-black text-sky-900 block">{timeLabel}</span>
                     <span className="text-lg font-black text-sky-950">{formatTime(activeLearningTimeSec)}</span>
                   </div>
                   <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-3">
                     <Award className="w-5 h-5 text-indigo-600 mx-auto mb-1 stroke-[2.5]" />
-                    <span className="text-[9px] uppercase font-black text-indigo-900 block">Skill Rating</span>
+                    <span className="text-[9px] uppercase font-black text-indigo-900 block">{ratingLabel}</span>
                     <span className="text-lg font-black text-indigo-900">{childRating}</span>
                   </div>
                   <div className="bg-fuchsia-50 border border-fuchsia-200 rounded-2xl p-3">
@@ -442,7 +525,8 @@ export default function ParentDashboardModal({
 
             {/* RECENT ACTIVITY LOG */}
             {(() => {
-              const activeUserData = liveUserData || storageService.getUserData(activeSubject);
+              const activeUserData = getProfileSubjectData(viewingProfileId, selectedSubject);
+              const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG['math'];
               const historyList = activeUserData.sprintHistory || [];
               const recentList = historyList.slice(0, 3);
 
@@ -461,7 +545,7 @@ export default function ParentDashboardModal({
               return (
                 <section className="bg-white rounded-2xl p-4 border-2 border-slate-200 text-left space-y-3 shadow-xs">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-black text-slate-800">Recent Activity</h2>
+                    <h2 className="text-sm font-black text-slate-800">Recent {subjectConfig.name} Activity</h2>
                     {takingBreak && (
                         <span className="text-[10px] font-black text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full border border-rose-300">
                           Taking a Break
@@ -469,7 +553,7 @@ export default function ParentDashboardModal({
                     )}
                   </div>
                   {recentList.length === 0 ? (
-                      <p className="text-xs font-semibold text-slate-500 italic">No recent climbs yet.</p>
+                      <p className="text-xs font-semibold text-slate-500 italic">No recent {subjectConfig.name.toLowerCase()} climbs yet.</p>
                   ) : (
                       <div className="space-y-2">
                           {recentList.map((sprint, i) => (
@@ -500,21 +584,22 @@ export default function ParentDashboardModal({
               );
             })()}
 
-            {/* MATH MASTERY SNAPSHOT */}
+            {/* SUBJECT MASTERY SNAPSHOT */}
             {(() => {
-              const activeUserData = liveUserData || storageService.getUserData(activeSubject);
+              const activeUserData = getProfileSubjectData(viewingProfileId, selectedSubject);
+              const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG['math'];
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
-              const currentMathTier = getTierFromRating(actualRating);
+              const currentTier = activeUserData.tier ?? getTierFromRating(actualRating);
               const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
-              const rankTitle = getCompetenceRankTier(actualRating, activeSubject);
+              const rankTitle = getCompetenceRankTier(actualRating, selectedSubject);
               const gradeLvl = getGradeLevelFromRating(actualRating);
 
               return (
                 <section className="bg-white rounded-2xl p-4 border-2 border-indigo-200 text-left space-y-3 shadow-xs">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
-                      <h2 className="text-sm font-black text-slate-800">Math Mastery</h2>
-                      <span className="text-[10px] text-indigo-600 font-bold block">{gradeLvl} level · Tier {currentMathTier} Climber</span>
+                      <h2 className="text-sm font-black text-slate-800">{subjectConfig.name} Mastery</h2>
+                      <span className="text-[10px] text-indigo-600 font-bold block">{gradeLvl} level · Tier {currentTier} Climber</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       {childTotalSolved < 15 && (
@@ -526,7 +611,7 @@ export default function ParentDashboardModal({
                     </div>
                   </div>
                   <p className="text-xs font-semibold text-slate-700 bg-indigo-50/60 p-2.5 rounded-xl border border-indigo-100 leading-relaxed">
-                    {getCompetenceDescription(actualRating, childTotalSolved)}
+                    {getCompetenceDescription(actualRating, childTotalSolved, selectedSubject)}
                   </p>
                 </section>
               );
@@ -534,25 +619,26 @@ export default function ParentDashboardModal({
 
             {/* PARENT DIAGNOSTIC INSIGHTS & BOTTLENECK CARDS */}
             {(() => {
-              const activeUserData = liveUserData || storageService.getUserData(activeSubject);
+              const activeUserData = getProfileSubjectData(viewingProfileId, selectedSubject);
+              const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG['math'];
               const profileName = activeUserData.name || 'Child';
               const skipLogs = activeUserData.skipLogs || [];
               const sprintHistory = activeUserData.sprintHistory || [];
 
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
-              const currentMathTier = getTierFromRating(actualRating);
-              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentMathTier, actualRating, activeUserData.ratingHistory || []);
+              const currentTier = activeUserData.tier ?? getTierFromRating(actualRating);
+              const adaptiveProfile = calculateAdaptiveCompetenceProfile(sprintHistory, currentTier, actualRating, activeUserData.ratingHistory || [], selectedSubject);
               const { skillStrandBreakdown } = adaptiveProfile;
 
-              const insightCards = generateParentInsightCards(skipLogs, sprintHistory, profileName);
-              const conceptBreakdown = calculateConceptBreakdown(sprintHistory, skipLogs);
+              const insightCards = generateParentInsightCards(skipLogs, sprintHistory, profileName, selectedSubject);
+              const conceptBreakdown = calculateConceptBreakdown(sprintHistory, skipLogs, selectedSubject);
 
               return (
                 <section className="bg-white rounded-2xl p-4 border-2 border-purple-200 text-left space-y-4 shadow-xs">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-purple-600 stroke-[2.5]" />
-                      <h2 className="text-sm font-black text-slate-800">Parent Diagnostic Insights</h2>
+                      <h2 className="text-sm font-black text-slate-800">Parent Diagnostic Insights ({subjectConfig.name})</h2>
                     </div>
                     <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
                       Adaptive Tracking
@@ -582,7 +668,7 @@ export default function ParentDashboardModal({
                   {/* VISUAL BREAKDOWN: CORRECT VS INCORRECT VS SKIPPED PER CONCEPT */}
                   <div className="pt-2 border-t border-purple-100 space-y-3">
                     <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">
-                      Concept Breakdown (Correct vs. Incorrect vs. Skipped)
+                      {subjectConfig.name} Concept Breakdown (Correct vs. Incorrect vs. Skipped)
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {Object.values(conceptBreakdown).map((concept) => {
@@ -762,11 +848,11 @@ export default function ParentDashboardModal({
               </div>
 
               {/* Weekly Digest */}
-              <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
+              <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-xl gap-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary</span>
-                    <span className="text-[10px] text-slate-500 font-medium">Weekly mastery breakdown digest</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Weekly multi-subject mastery breakdown digest</span>
                   </div>
                   <button
                     type="button"
@@ -781,10 +867,105 @@ export default function ParentDashboardModal({
                   </button>
                 </div>
                 {notifPrefs.weeklyDigestEnabled && (
-                  <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2 rounded-lg border border-purple-200 mt-1 leading-snug">
-                    📅 <strong>Schedule:</strong> Sent every <strong>Sunday at 6:00 PM</strong>.<br />
-                    📊 <strong>Includes:</strong> Weekly problems solved, rating gain, recall latency breakdown, mastered topics & unlocked badges.
-                  </p>
+                  <div className="space-y-2 pt-1 border-t border-slate-100">
+                    <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2.5 rounded-lg border border-purple-200 leading-snug">
+                      📅 <strong>Schedule:</strong> Sent every <strong>Sunday at 6:00 PM</strong>.<br />
+                      📊 <strong>Includes All Active Subjects:</strong> Multi-subject breakdown covering <strong>Math, Words, and all active subjects</strong> — weekly problems/words solved, competence rating gains, recall speed/latency, mastered topics & unlocked badges.
+                    </p>
+
+                    <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playKeyTap();
+                          setShowWeeklyPreview((prev) => !prev);
+                        }}
+                        className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 font-extrabold text-xs rounded-xl border border-purple-300 transition-all active:scale-95"
+                      >
+                        {showWeeklyPreview ? 'Hide Preview' : '👁️ Preview Weekly Summary'}
+                      </button>
+
+                      {authService.getAuthState().email && (
+                        <button
+                          type="button"
+                          disabled={isSendingTestDigest}
+                          onClick={async () => {
+                            soundFx.playKeyTap();
+                            setIsSendingTestDigest(true);
+                            setDigestStatusMsg('');
+                            const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+                            const res = await communicationsService.sendWeeklyDigest({
+                              email: authService.getAuthState().email,
+                              profile: currentProf,
+                              subjectsConfig: SUBJECTS_CONFIG
+                            });
+                            setIsSendingTestDigest(false);
+                            if (res.success) {
+                              soundFx.playVictory();
+                              setDigestStatusMsg('Test weekly summary email sent!');
+                            } else {
+                              soundFx.playIncorrect();
+                              setDigestStatusMsg(res.error || 'Failed to send test email.');
+                            }
+                            setTimeout(() => setDigestStatusMsg(''), 4000);
+                          }}
+                          className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 font-extrabold text-xs rounded-xl border border-sky-300 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                          {isSendingTestDigest ? 'Sending...' : '✉️ Send Test Digest to Email'}
+                        </button>
+                      )}
+                    </div>
+
+                    {digestStatusMsg && (
+                      <p className="text-[10px] font-extrabold text-purple-700 animate-pop">
+                        {digestStatusMsg}
+                      </p>
+                    )}
+
+                    {/* Interactive Preview Drawer */}
+                    {showWeeklyPreview && (() => {
+                      const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+                      const digest = generateWeeklyDigestData(currentProf, SUBJECTS_CONFIG);
+
+                      return (
+                        <div className="bg-slate-50 border border-purple-200 rounded-xl p-3 space-y-3 animate-pop text-left">
+                          <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+                            <span className="text-xs font-black text-slate-800">
+                              📋 Summary Preview for {digest.childName}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-500">
+                              Streak: {digest.streak}d · {digest.totalProblemsThisWeek} items this week
+                            </span>
+                          </div>
+
+                          <div className="space-y-2">
+                            {digest.subjects.map((sub) => (
+                              <div key={sub.subjectId} className="bg-white border border-slate-200 rounded-lg p-2 space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-black text-slate-800 flex items-center gap-1">
+                                    <span>{sub.icon}</span> {sub.name}
+                                  </span>
+                                  <span className="text-[10px] font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+                                    Rating: {sub.rating} ({sub.rankTitle})
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] font-medium text-slate-600">
+                                  <div>Solved: <strong>{sub.solvedThisWeek}</strong> ({sub.totalSolved} total)</div>
+                                  <div>Accuracy: <strong>{sub.accuracyPct !== null ? `${sub.accuracyPct}%` : '—'}</strong></div>
+                                  <div>Avg Latency: <strong>{sub.avgLatencySec !== null ? `${sub.avgLatencySec}s` : '—'}</strong></div>
+                                  <div>Tier: <strong>Tier {sub.tier}</strong></div>
+                                </div>
+                                <div className="text-[10px] text-slate-500 pt-0.5">
+                                  <span className="font-bold text-emerald-700">Mastered: </span>
+                                  {sub.masteredTopics.length > 0 ? sub.masteredTopics.join(', ') : 'Building fundamentals'}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
                 )}
               </div>
 
