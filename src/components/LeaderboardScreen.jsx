@@ -235,8 +235,8 @@ export default function LeaderboardScreen({
         </div>
 
         {/* Fairness Banner */}
-        <div className="mx-4 mt-2.5 bg-indigo-50/90 border border-indigo-200 text-indigo-900 rounded-xl px-3 py-2 text-[10px] font-semibold flex items-start gap-2 shadow-inner">
-          <Info className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+        <div className="mx-4 mt-2.5 bg-indigo-50/90 border border-indigo-200 text-indigo-900 rounded-xl px-3 py-2 text-[10px] font-semibold flex items-center gap-2 shadow-inner">
+          <Info className="w-4 h-4 text-indigo-500 shrink-0" />
           <p className="leading-tight">
             {selectedSubject === 'words'
               ? 'Words competence is dynamically measured based on spelling accuracy, vocabulary fluency, and speed.'
