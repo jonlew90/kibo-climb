@@ -2,6 +2,7 @@
 // Multi-Profile Storage Engine (profiles[activeProfileId])
 import { getStartingRatingForGrade } from '../utils/mathCurriculum';
 import { leaderboardService } from './leaderboardService';
+import { SUBJECTS_CONFIG } from '../config/subjects';
 
 const KEYS = {
   PROFILES: 'kibo_profiles_data',
@@ -14,6 +15,21 @@ const KEYS = {
 
 const DEFAULT_PROFILE_ID = 'default_child';
 
+export const createDefaultSubjectState = (startingRating = 1000) => ({
+  adaptiveCompetenceRating: startingRating,
+  competenceRank: startingRating,
+  tier: 1,
+  unlockedTiers: [1],
+  streak: 1,
+  totalProblemsSolved: 0,
+  cumulativeCorrectStreak: 0,
+  personalRecords: { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
+  lastSprintDate: null,
+  practiceQueue: [],
+  sprintHistory: [],
+  skipLogs: []
+});
+
 const DEFAULT_PROFILE = {
   id: DEFAULT_PROFILE_ID,
   name: 'Kibo Climber',
@@ -22,7 +38,7 @@ const DEFAULT_PROFILE = {
   practiceDays: [1, 2, 3, 4, 5],
   userData: {
     adaptiveCompetenceRating: 1000,
-    subjectRatings: { math: 1000, words: 1000 },
+    subjectRatings: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, k) => { acc[k] = 1000; return acc; }, {}),
     competenceRank: 1000,
     tier: 1,
     unlockedTiers: [1],
@@ -66,36 +82,10 @@ const DEFAULT_PROFILE = {
     },
     // Subject specific states will be nested under subject data.
     // Top-level fields above serve as defaults or aggregate fields (for math backwards compatibility)
-    subjects: {
-      math: {
-        adaptiveCompetenceRating: 1000,
-        competenceRank: 1000,
-        tier: 1,
-        unlockedTiers: [1],
-        streak: 1,
-        totalProblemsSolved: 0,
-        cumulativeCorrectStreak: 0,
-        personalRecords: { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
-        lastSprintDate: null,
-        practiceQueue: [],
-        sprintHistory: [],
-        skipLogs: []
-      },
-      words: {
-        adaptiveCompetenceRating: 1000,
-        competenceRank: 1000,
-        tier: 1,
-        unlockedTiers: [1],
-        streak: 1,
-        totalProblemsSolved: 0,
-        cumulativeCorrectStreak: 0,
-        personalRecords: { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
-        lastSprintDate: null,
-        practiceQueue: [],
-        sprintHistory: [],
-        skipLogs: []
-      }
-    }
+    subjects: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, subId) => {
+      acc[subId] = createDefaultSubjectState(1000);
+      return acc;
+    }, {})
   },
   shopState: {
     equippedItems: [],
@@ -215,13 +205,21 @@ export const storageService = {
       userData: {
         ...DEFAULT_PROFILE.userData,
         adaptiveCompetenceRating: startingRating,
-        subjectRatings: { math: startingRating },
+        subjectRatings: { math: startingRating, words: startingRating },
         competenceRank: startingRating,
         isAnonymous: isLinked ? false : true,
         cloudUid: isLinked ? activeProf.userData?.cloudUid : undefined,
         authProvider: isLinked ? activeProf.userData?.authProvider : undefined,
         email: isLinked ? activeProf.userData?.email : undefined,
-        accountLinkedAt: isLinked ? activeProf.userData?.accountLinkedAt : undefined
+        accountLinkedAt: isLinked ? activeProf.userData?.accountLinkedAt : undefined,
+        subjectRatings: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, subId) => {
+          acc[subId] = startingRating;
+          return acc;
+        }, {}),
+        subjects: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, subId) => {
+          acc[subId] = createDefaultSubjectState(startingRating);
+          return acc;
+        }, {})
       }
     };
     state.profiles[id] = newProfile;
@@ -299,11 +297,23 @@ export const storageService = {
     if (gradeLevel) {
       state.profiles[activeId].gradeLevel = gradeLevel;
       const startingRating = getStartingRatingForGrade(gradeLevel);
+      const prevUserData = state.profiles[activeId].userData || DEFAULT_PROFILE.userData;
+      const subjectRatings = {};
+      const updatedSubjects = { ...(prevUserData.subjects || {}) };
+      Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).forEach(subId => {
+        subjectRatings[subId] = startingRating;
+        updatedSubjects[subId] = {
+          ...(updatedSubjects[subId] || createDefaultSubjectState(startingRating)),
+          adaptiveCompetenceRating: startingRating,
+          competenceRank: startingRating
+        };
+      });
       state.profiles[activeId].userData = {
-        ...(state.profiles[activeId].userData || DEFAULT_PROFILE.userData),
+        ...prevUserData,
         adaptiveCompetenceRating: startingRating,
-        subjectRatings: { math: startingRating },
+        subjectRatings,
         competenceRank: startingRating,
+        subjects: updatedSubjects
       };
     }
     safeSaveProfilesState(state);
@@ -316,25 +326,19 @@ export const storageService = {
 
     // Migrate old math data into subjects if missing
     if (!data.subjects) {
-      data.subjects = {
-        math: {
-          adaptiveCompetenceRating: data.adaptiveCompetenceRating || 1000,
-          competenceRank: data.competenceRank || 1000,
-          tier: data.tier || 1,
-          unlockedTiers: data.unlockedTiers || [1],
-          streak: data.streak || 1,
-          totalProblemsSolved: data.totalProblemsSolved || 0,
-          cumulativeCorrectStreak: data.cumulativeCorrectStreak || 0,
-          personalRecords: data.personalRecords || { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
-          lastSprintDate: data.lastSprintDate || null,
-          practiceQueue: data.practiceQueue || [],
-          sprintHistory: data.sprintHistory || [],
-          skipLogs: data.skipLogs || []
-        },
-        words: { ...DEFAULT_PROFILE.userData.subjects.words }
-      };
+      data.subjects = {};
+      Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).forEach(id => {
+        data.subjects[id] = createDefaultSubjectState(id === 'math' ? (data.adaptiveCompetenceRating || 1000) : 1000);
+      });
+      if (data.subjects.math) {
+        data.subjects.math.totalProblemsSolved = data.totalProblemsSolved || 0;
+        data.subjects.math.streak = data.streak || 1;
+        data.subjects.math.tier = data.tier || 1;
+        data.subjects.math.unlockedTiers = data.unlockedTiers || [1];
+        data.subjects.math.sprintHistory = data.sprintHistory || [];
+      }
     } else if (!data.subjects[subjectId]) {
-      data.subjects[subjectId] = { ...DEFAULT_PROFILE.userData.subjects.words };
+      data.subjects[subjectId] = createDefaultSubjectState(1000);
     }
 
     const subjectData = data.subjects[subjectId];

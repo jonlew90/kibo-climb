@@ -746,13 +746,10 @@ export default function AdaptiveSessionView({
       setBlockRatingGain(0);
       setBlockShieldsUsed(0);
 
-      const currentRecords = activeUserData.personalRecords || {};
-
+      const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
       const updatedRecords = {
         ...currentRecords,
-        fastest12QuestionsTime: (isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime))
-          ? blockTimeSec
-          : currentRecords.fastest12QuestionsTime,
+        fastest12QuestionsTime: isNewSpeedRecord ? blockTimeSec : currentRecords.fastest12QuestionsTime,
         mostPerfectSessions: isPerfectBlock
           ? (currentRecords.mostPerfectSessions || 0) + 1
           : (currentRecords.mostPerfectSessions || 0)
@@ -765,16 +762,37 @@ export default function AdaptiveSessionView({
       if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
       if (onRecordDailyPractice) onRecordDailyPractice();
 
-      // Immediately evaluate and claim any newly met badges at block completion (e.g. 3rd Perfect Run)
+      // Immediately evaluate and claim any newly met badges at block completion (e.g. Flawless Ascent, Trailblazer Record, 3rd Perfect Run)
       const postBlockUserData = storageService.getUserData('math');
       const blockBadgeEval = evaluateBadges({
         ...postBlockUserData,
         inSessionStreak: evalResult.nextInSessionStreak,
         competenceRank: evalResult.nextCompetenceRank,
-        blockRatingGain: nextBlockRatingGain
-      });
+        blockRatingGain: nextBlockRatingGain,
+        isNewSpeedRecord,
+        hasSetPersonalRecord: isNewSpeedRecord || isPerfectBlock,
+        subjectId: 'math'
+      }, newSessionRecord);
+
       if (blockBadgeEval?.updatedUnlocked && onUnlockedBadgesChange) {
         onUnlockedBadgesChange(blockBadgeEval.updatedUnlocked);
+      }
+
+      if (blockBadgeEval?.newlyUnlocked && blockBadgeEval.newlyUnlocked.length > 0) {
+        const highestBadge = blockBadgeEval.newlyUnlocked[0];
+        const bonusSparks = 25;
+        if (onAwardSparks) onAwardSparks(bonusSparks);
+        setSessionSparksEarned((prev) => prev + bonusSparks);
+        setBlockSparksEarned((prev) => prev + bonusSparks);
+        soundFx.playVictory();
+        setCelebrationEvent({
+          type: 'badge',
+          title: '🏆 NEW BADGE UNLOCKED!',
+          icon: highestBadge.icon || '🏅',
+          name: highestBadge.title || highestBadge.name,
+          description: highestBadge.description,
+          bonusSparks: bonusSparks
+        });
       }
     }
 

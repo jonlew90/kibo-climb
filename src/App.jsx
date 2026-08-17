@@ -143,7 +143,8 @@ export default function App() {
     setSparks(uData.sparks ?? 0);
     setIsKiboClub(uData.isKiboClub ?? false);
     setTotalProblemsSolved(uData.totalProblemsSolved ?? 0);
-    setUnlockedBadges(uData.unlockedBadges ?? []);
+    const badgeEval = evaluateBadges({ ...uData, subjectId: activeSubject });
+    setUnlockedBadges(badgeEval?.updatedUnlocked || uData.unlockedBadges || []);
     setPracticeDays(storageService.getProfilePracticeDays());
     setEquippedItems(sData.equippedItems ?? []);
     setUnlockedItems(sData.unlockedItems ?? ['cap']);
@@ -191,11 +192,11 @@ export default function App() {
 
   useEffect(() => {
     const activeUserData = storageService.getUserData(activeSubject);
-    const evalRes = evaluateBadges(activeUserData);
+    const evalRes = evaluateBadges({ ...activeUserData, subjectId: activeSubject });
     if (evalRes?.updatedUnlocked) {
       setUnlockedBadges(evalRes.updatedUnlocked);
     }
-  }, []);
+  }, [activeSubject]);
 
   // First-Time User Onboarding Modal State
   const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
