@@ -465,11 +465,11 @@ export const storageService = {
     // Sync rating & avatar gear to cloud leaderboard
     try {
       const activeProf = state.profiles[activeId];
-      // Syncing math score by default or aggregate. Keeping activeRating for now.
       leaderboardService.syncUserScore({
         profileId: activeId,
+        subject: subjectId,
         name: activeProf?.username || activeProf?.name || 'Kibo Climber',
-        score: globalData.adaptiveCompetenceRating || 1000,
+        score: activeRating,
         subjectsMastered: Object.keys(globalData.masteredTricks || {}).length || 5,
         equipped: activeProf?.shopState?.equippedItems || []
       });
@@ -755,7 +755,13 @@ export const storageService = {
 
   getSubjectRating(profileId, subjectId = 'math') {
     const profile = this.getProfileById(profileId);
-    return profile?.userData?.subjectRatings?.[subjectId] || profile?.userData?.adaptiveCompetenceRating || 1000;
+    if (!profile || !profile.userData) return 1000;
+    if (profile.userData.subjects && profile.userData.subjects[subjectId]) {
+      const sub = profile.userData.subjects[subjectId];
+      if (sub.adaptiveCompetenceRating !== undefined) return sub.adaptiveCompetenceRating;
+      if (sub.competenceRank !== undefined) return sub.competenceRank;
+    }
+    return profile?.userData?.subjectRatings?.[subjectId] || (subjectId === 'math' ? profile?.userData?.adaptiveCompetenceRating : 1000) || 1000;
   },
 
   getAggregateRating(profileId) {

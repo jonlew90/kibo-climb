@@ -119,7 +119,7 @@ export default function BadgesModal({
             </span>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
-                {getCompetenceRankTier(userRating)} · {userRating} pts
+                {getCompetenceRankTier(userRating, activeSubject)} · {userRating} pts
               </span>
               <span className="bg-amber-200 px-3 py-0.5 rounded-full border border-amber-300">
                 {progressPct}% unlocked

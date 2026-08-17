@@ -82,13 +82,6 @@ export default function App() {
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
   const [workshopOriginState, setWorkshopOriginState] = useState('adaptive_session');
 
-  const devState = useDevState(() => {
-    const uData = storageService.getUserData(activeSubject);
-    const sData = storageService.getShopState();
-    setSparks(uData.sparks || 0);
-    setUnlockedItems(sData.unlockedItems || ['cap']);
-  });
-
   const handleOpenWorkshop = (overrideOrigin = null) => {
     soundFx.playKeyTap();
     setWorkshopOriginState(overrideOrigin || appState);
@@ -128,62 +121,6 @@ export default function App() {
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
   const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
-
-
-  const syncAppStateWithStorage = () => {
-    const uData = storageService.getUserData(activeSubject);
-    const sData = storageService.getShopState();
-    const cRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
-
-    setActiveProfileId(storageService.getActiveProfileId());
-    setLiveCompetenceRating(cRating);
-    setTier(uData.tier || 1);
-    setUnlockedTiers(uData.unlockedTiers || [1]);
-    setStreak(uData.streak ?? 1);
-    setSparks(uData.sparks ?? 0);
-    setIsKiboClub(uData.isKiboClub ?? false);
-    setTotalProblemsSolved(uData.totalProblemsSolved ?? 0);
-    const badgeEval = evaluateBadges({ ...uData, subjectId: activeSubject });
-    setUnlockedBadges(badgeEval?.updatedUnlocked || uData.unlockedBadges || []);
-    setPracticeDays(storageService.getProfilePracticeDays());
-    setEquippedItems(sData.equippedItems ?? []);
-    setUnlockedItems(sData.unlockedItems ?? ['cap']);
-    setHasVisitedParentZone(uData.hasVisitedParentZone || false);
-
-    // Sync Audio & Haptics preferences
-    const prefs = {
-      hideSprintTimer: false,
-      isMuted: false,
-      isHapticsEnabled: true,
-      ...(uData.preferences || {})
-    };
-    soundFx.setMuted(prefs.isMuted);
-    setHapticsEnabled(prefs.isHapticsEnabled);
-    setPreferences(prefs);
-    setIsDoubleSparksActive(false);
-  };
-
-  // Initialize Auth (including OAuth redirect resolution) & Offline Background Sync Queue on Launch
-  useEffect(() => {
-    const initAppAuth = async () => {
-      const authRes = await authService.initAnonymousGuest();
-      syncAppStateWithStorage();
-      syncService.initBackgroundSync();
-
-      // If returning from OAuth redirect flow, preserve and restore original route
-      if (authRes && authRes.returnUrl && authRes.returnUrl !== window.location.pathname) {
-        let targetState = 'adaptive_session';
-        if (authRes.returnUrl.includes('/settings')) targetState = 'settings';
-        else if (authRes.returnUrl.includes('/privacy')) targetState = 'privacy';
-        else if (authRes.returnUrl.includes('/terms')) targetState = 'terms';
-        else if (authRes.returnUrl.includes('/leaderboard')) targetState = 'leaderboard';
-
-        window.history.replaceState({}, '', authRes.returnUrl);
-        setAppState(targetState);
-      }
-    };
-    initAppAuth();
-  }, []);
 
   const [unlockedBadges, setUnlockedBadges] = useState(() => {
     return storageService.getUserData(activeSubject).unlockedBadges || [];
@@ -325,6 +262,11 @@ export default function App() {
 
   const [activeProfileId, setActiveProfileId] = useState(() => {
     return storageService.getActiveProfileId();
+  });
+
+  const [liveCompetenceRating, setLiveCompetenceRating] = useState(() => {
+    const uData = storageService.getUserData(activeSubject);
+    return uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
   });
 
   // Persistent Tier Best Completion Times in Seconds
@@ -513,6 +455,73 @@ export default function App() {
 
   const [isShieldProtected, setIsShieldProtected] = useState(false);
   const [isDoubleSparksActive, setIsDoubleSparksActive] = useState(false);
+
+  const devState = useDevState(() => {
+    const uData = storageService.getUserData(activeSubject);
+    const sData = storageService.getShopState();
+    setSparks(uData.sparks || 0);
+    setUnlockedItems(sData.unlockedItems || ['cap']);
+  });
+
+  const syncAppStateWithStorage = (subjectOverride) => {
+    const sub = subjectOverride || activeSubject;
+    const uData = storageService.getUserData(sub);
+    const sData = storageService.getShopState();
+    const cRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
+
+    setActiveProfileId(storageService.getActiveProfileId());
+    setLiveCompetenceRating(cRating);
+    setTier(uData.tier || 1);
+    setUnlockedTiers(uData.unlockedTiers || [1]);
+    setStreak(uData.streak ?? 1);
+    setSparks(uData.sparks ?? 0);
+    setIsKiboClub(uData.isKiboClub ?? false);
+    setTotalProblemsSolved(uData.totalProblemsSolved ?? 0);
+    const badgeEval = evaluateBadges({ ...uData, subjectId: sub });
+    setUnlockedBadges(badgeEval?.updatedUnlocked || uData.unlockedBadges || []);
+    setPracticeDays(storageService.getProfilePracticeDays());
+    setEquippedItems(sData.equippedItems ?? []);
+    setUnlockedItems(sData.unlockedItems ?? ['cap']);
+    setHasVisitedParentZone(uData.hasVisitedParentZone || false);
+
+    // Sync Audio & Haptics preferences
+    const prefs = {
+      hideSprintTimer: false,
+      isMuted: false,
+      isHapticsEnabled: true,
+      ...(uData.preferences || {})
+    };
+    soundFx.setMuted(prefs.isMuted);
+    setHapticsEnabled(prefs.isHapticsEnabled);
+    setPreferences(prefs);
+    setIsDoubleSparksActive(false);
+  };
+
+  useEffect(() => {
+    syncAppStateWithStorage(activeSubject);
+  }, [activeSubject, activeProfileId]);
+
+  // Initialize Auth (including OAuth redirect resolution) & Offline Background Sync Queue on Launch
+  useEffect(() => {
+    const initAppAuth = async () => {
+      const authRes = await authService.initAnonymousGuest();
+      syncAppStateWithStorage();
+      syncService.initBackgroundSync();
+
+      // If returning from OAuth redirect flow, preserve and restore original route
+      if (authRes && authRes.returnUrl && authRes.returnUrl !== window.location.pathname) {
+        let targetState = 'adaptive_session';
+        if (authRes.returnUrl.includes('/settings')) targetState = 'settings';
+        else if (authRes.returnUrl.includes('/privacy')) targetState = 'privacy';
+        else if (authRes.returnUrl.includes('/terms')) targetState = 'terms';
+        else if (authRes.returnUrl.includes('/leaderboard')) targetState = 'leaderboard';
+
+        window.history.replaceState({}, '', authRes.returnUrl);
+        setAppState(targetState);
+      }
+    };
+    initAppAuth();
+  }, []);
 
   const handleBuyConsumable = (itemInput) => {
     const item = typeof itemInput === 'string' ? getItemById(itemInput) : itemInput;
@@ -956,10 +965,6 @@ export default function App() {
 
   const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStreakSavedModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher;
 
-  const [liveCompetenceRating, setLiveCompetenceRating] = useState(() => {
-    const uData = storageService.getUserData(activeSubject);
-    return uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
-  });
 
   const closeAllNavModals = (except = null) => {
     if (except !== 'workshop') setIsWorkshopOpen(false);
@@ -1251,7 +1256,7 @@ export default function App() {
           <div className="flex items-center gap-1 sm:gap-2">
             {/* 4. Competence Rank Button: Royal Purple / Violet */}
             {(() => {
-              const rankTitle = getCompetenceRankTier(liveCompetenceRating);
+              const rankTitle = getCompetenceRankTier(liveCompetenceRating, activeSubject);
               return (
                 <button
                   type="button"

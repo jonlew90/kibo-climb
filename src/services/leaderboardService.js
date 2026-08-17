@@ -42,7 +42,7 @@ class LeaderboardService {
   }
 
   // Sync user score and equipped gear to Firestore
-  async syncUserScore({ profileId, name, score, subjectsMastered = 5, equipped = [] }) {
+  async syncUserScore({ profileId, name, score, subjectsMastered = 5, equipped = [], subject = 'math' }) {
     try {
       // Ensure user is authenticated before attempting sync
       let user = this.currentUser || auth.currentUser;
@@ -64,12 +64,14 @@ class LeaderboardService {
 
       const baseUid = user.uid;
       const safeProfileId = profileId || 'default_child';
-      const documentId = `${baseUid}_${safeProfileId}`;
+      const safeSubject = subject || 'math';
+      const documentId = `${baseUid}_${safeProfileId}_${safeSubject}`;
       const userRef = doc(db, LEADERBOARD_COLLECTION, documentId);
 
       const payload = {
         uid: baseUid,
         profileId: safeProfileId,
+        subject: safeSubject,
         name: name || 'Kibo Climber',
         score: Number(score) || 1000,
         subjectsMastered: Number(subjectsMastered) || 0,
@@ -101,21 +103,28 @@ class LeaderboardService {
     }
   }
 
-  // Real-time listener for top standings
-  subscribeToLeaderboard(limitCount = 20, onUpdate) {
+  // Real-time listener for top standings separated by subject
+  subscribeToLeaderboard(subject = 'math', limitCount = 20, onUpdate) {
     try {
+      // Query top items and filter in memory to avoid requiring complex Firestore composite indices
       const q = query(
         collection(db, LEADERBOARD_COLLECTION),
         orderBy('score', 'desc'),
-        limit(limitCount)
+        limit(50)
       );
 
       return onSnapshot(q, (snapshot) => {
-        const standings = snapshot.docs.map((docSnap, index) => ({
-          id: docSnap.id,
-          rank: index + 1,
-          ...docSnap.data()
-        }));
+        const standings = snapshot.docs
+          .map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }))
+          .filter(p => (p.subject || 'math') === (subject || 'math'))
+          .slice(0, limitCount)
+          .map((player, index) => ({
+            ...player,
+            rank: index + 1
+          }));
         onUpdate(standings);
       }, (error) => {
         console.warn('LeaderboardService: Firestore subscription fallback', error);

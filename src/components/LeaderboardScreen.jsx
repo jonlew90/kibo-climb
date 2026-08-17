@@ -1,22 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap } from 'lucide-react';
+import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
+import { SUBJECTS_CONFIG } from '../config/subjects';
 
+const MOCK_COMPETITORS_BY_SUBJECT = {
+  math: [
+    { id: 'mock_math_1', name: 'Maya Matrix', score: 1680, subjectsMastered: 8, equipped: ['crown', 'cape'] },
+    { id: 'mock_math_2', name: 'Leo Apex', score: 1490, subjectsMastered: 6, equipped: ['party_hat', 'scarf'] },
+    { id: 'mock_math_3', name: 'Sam Numerator', score: 1380, subjectsMastered: 5, equipped: ['cap', 'boots'] },
+    { id: 'mock_math_4', name: 'Zoe Cipher', score: 1260, subjectsMastered: 4, equipped: ['headband'] },
+    { id: 'mock_math_5', name: 'Lucas Vector', score: 1180, subjectsMastered: 3, equipped: ['astronaut_helmet'] },
+    { id: 'mock_math_6', name: 'Elena Prime', score: 1110, subjectsMastered: 2, equipped: [] },
+    { id: 'mock_math_7', name: 'Oliver Tangent', score: 1040, subjectsMastered: 2, equipped: [] }
+  ],
+  words: [
+    { id: 'mock_words_1', name: 'Emma Lexicon', score: 1620, subjectsMastered: 7, equipped: ['crown', 'cape'] },
+    { id: 'mock_words_2', name: 'Liam Speller', score: 1470, subjectsMastered: 6, equipped: ['party_hat', 'scarf'] },
+    { id: 'mock_words_3', name: 'Sophia Bard', score: 1350, subjectsMastered: 5, equipped: ['cap', 'boots'] },
+    { id: 'mock_words_4', name: 'Noah Syntax', score: 1250, subjectsMastered: 4, equipped: ['headband'] },
+    { id: 'mock_words_5', name: 'Ava Rhyme', score: 1170, subjectsMastered: 3, equipped: ['astronaut_helmet'] },
+    { id: 'mock_words_6', name: 'Ethan Vocab', score: 1100, subjectsMastered: 2, equipped: [] },
+    { id: 'mock_words_7', name: 'Chloe Prose', score: 1030, subjectsMastered: 1, equipped: [] }
+  ]
+};
 
 export default function LeaderboardScreen({
-  activeSubject = 'math', userState, renderFooter, equippedItems = [] }) {
+  activeSubject = 'math',
+  userState,
+  renderFooter,
+  equippedItems = []
+}) {
+  const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
   const [liveStandings, setLiveStandings] = useState([]);
+
+  // Sync selected subject if active subject prop changes
+  useEffect(() => {
+    if (activeSubject) {
+      setSelectedSubject(activeSubject);
+    }
+  }, [activeSubject]);
 
   const activeProfile = storageService.getActiveProfile();
   const username = storageService.getUsername() || activeProfile?.username || activeProfile?.name || 'You';
-  const userScore = storageService.getAggregateRating(activeProfile?.id) || userState?.competenceRank || activeProfile?.userData?.adaptiveCompetenceRating || 1000;
+
+  // Get user score for selected subject
+  const userScore = (selectedSubject === activeSubject && userState?.competenceRank)
+    ? userState.competenceRank
+    : storageService.getSubjectRating(activeProfile?.id, selectedSubject);
+
   const userEquippedItems = (equippedItems && equippedItems.length > 0)
     ? equippedItems
     : (activeProfile?.shopState?.equippedItems || []);
+
   const userSubjectsMastered = (
     activeProfile?.userData?.subjectsMastered
     ?? Object.keys(activeProfile?.userData?.masteredTricks || {}).length
@@ -29,7 +68,7 @@ export default function LeaderboardScreen({
     const pName = isCurrent ? username : (p.username || p.name || 'Climber');
     const pScore = isCurrent 
       ? userScore 
-      : (p.userData?.adaptiveCompetenceRating || p.userData?.competenceRank || 1000);
+      : storageService.getSubjectRating(p.id, selectedSubject);
     const pEquipped = isCurrent 
       ? userEquippedItems 
       : (p.shopState?.equippedItems || []);
@@ -45,15 +84,17 @@ export default function LeaderboardScreen({
       name: pName,
       score: pScore,
       subjectsMastered: pSubjects,
-      equipped: pEquipped
+      equipped: pEquipped,
+      subject: selectedSubject
     };
   });
 
-  // Subscribe to Firestore real-time updates and sync all account profiles
+  // Subscribe to Firestore real-time updates and sync all account profiles for selected subject
   useEffect(() => {
     accountPlayers.forEach(p => {
       leaderboardService.syncUserScore({
         profileId: p.id,
+        subject: selectedSubject,
         name: p.name,
         score: p.score,
         subjectsMastered: p.subjectsMastered,
@@ -61,21 +102,23 @@ export default function LeaderboardScreen({
       });
     });
 
-    const unsubscribe = leaderboardService.subscribeToLeaderboard(20, (remoteData) => {
+    const unsubscribe = leaderboardService.subscribeToLeaderboard(selectedSubject, 20, (remoteData) => {
       if (remoteData && remoteData.length > 0) {
         setLiveStandings(remoteData);
+      } else {
+        setLiveStandings([]);
       }
     });
 
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
     };
-  }, [userScore, username, activeProfile?.id]);
+  }, [selectedSubject, userScore, username, activeProfile?.id]);
 
   const accountNames = new Set(accountPlayers.map(p => p.name));
   const accountIds = new Set(accountPlayers.map(p => p.id));
 
-  // Combine live/mock data with all account profiles and sort descending by score
+  // Combine live data with all account profiles and fallback mock competitors
   const baseStandings = liveStandings;
   const filteredRemote = baseStandings.filter(p => 
     !accountNames.has(p.name) && 
@@ -83,8 +126,29 @@ export default function LeaderboardScreen({
     !accountIds.has(p.id)
   );
 
-  const combinedStandings = [...filteredRemote, ...accountPlayers]
-    .sort((a, b) => b.score - a.score);
+  let mergedList = [...filteredRemote, ...accountPlayers];
+
+  // If we have fewer than 3 players, supplement with mock competitors for a lively top 3 experience
+  if (mergedList.length < 3) {
+    const mockList = MOCK_COMPETITORS_BY_SUBJECT[selectedSubject] || MOCK_COMPETITORS_BY_SUBJECT.math;
+    const existingNames = new Set(mergedList.map(p => p.name));
+    for (const mock of mockList) {
+      if (!existingNames.has(mock.name)) {
+        mergedList.push({
+          id: mock.id,
+          name: mock.name,
+          score: mock.score,
+          subjectsMastered: mock.subjectsMastered,
+          equipped: mock.equipped,
+          isCurrentUser: false,
+          isAccountProfile: false
+        });
+        if (mergedList.length >= 7) break;
+      }
+    }
+  }
+
+  const combinedStandings = mergedList.sort((a, b) => b.score - a.score);
 
   // Assign ranks
   const rankedStandings = combinedStandings.map((player, index) => ({
@@ -105,33 +169,78 @@ export default function LeaderboardScreen({
   const top3 = rankedStandings.slice(0, 3);
   const others = rankedStandings.slice(3, 20);
 
-  // Helper to get title based on score
+  // Helper to get title based on score & selected subject
   const getRankTitle = (score) => {
-    return getCompetenceRankTier(score);
+    return getCompetenceRankTier(score, selectedSubject);
   };
+
+  const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG.math;
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-slate-50 via-stone-50 to-slate-100 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
 
       {/* HEADER & CONTROLS */}
-      <div className="bg-white border-b-2 border-slate-200 z-10 shrink-0 shadow-sm relative pb-2">
-        <div className="px-4 py-3 flex items-center justify-between">
+      <div className="bg-white border-b-2 border-slate-200 z-10 shrink-0 shadow-sm relative pb-3">
+        <div className="px-4 pt-3 pb-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-slate-800">
             <Trophy className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
             <h2 className="text-lg font-black tracking-tight">Global Standings</h2>
           </div>
 
           <div className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">
-            <Activity className="w-3.5 h-3.5" />
-            Competence Score
+            <Activity className="w-3.5 h-3.5 text-indigo-600" />
+            <span>{subjectConfig.name} Competence</span>
           </div>
         </div>
 
+        {/* SUBJECT SELECTION TABS */}
+        <div className="px-4 pt-1 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setSelectedSubject('math');
+            }}
+            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
+              selectedSubject === 'math'
+                ? 'bg-amber-500 text-white border-amber-600 shadow-sm scale-[1.02]'
+                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
+            }`}
+          >
+            <span>🏔️</span>
+            <span>Kibo Math</span>
+            {selectedSubject === 'math' && (
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setSelectedSubject('words');
+            }}
+            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
+              selectedSubject === 'words'
+                ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm scale-[1.02]'
+                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
+            }`}
+          >
+            <span>📚</span>
+            <span>Kibo Words</span>
+            {selectedSubject === 'words' && (
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            )}
+          </button>
+        </div>
+
         {/* Fairness Banner */}
-        <div className="mx-4 mt-2 bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-xl px-3 py-2 text-[10px] font-semibold flex items-start gap-2 shadow-inner">
+        <div className="mx-4 mt-2.5 bg-indigo-50/90 border border-indigo-200 text-indigo-900 rounded-xl px-3 py-2 text-[10px] font-semibold flex items-start gap-2 shadow-inner">
           <Info className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
           <p className="leading-tight">
-            Competence is dynamically measured based on mastery accuracy and speed across active subjects. Standings update daily.
+            {selectedSubject === 'words'
+              ? 'Words competence is dynamically measured based on spelling accuracy, vocabulary fluency, and speed.'
+              : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.'}
           </p>
         </div>
       </div>
@@ -140,13 +249,6 @@ export default function LeaderboardScreen({
       <div className="flex-1 overflow-y-auto custom-scrollbar relative pb-6">
 
         {/* HERO PODIUM (Top 3) */}
-        {top3.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-            <Trophy className="w-16 h-16 text-slate-300 mb-4" />
-            <h3 className="text-xl font-bold text-slate-700 mb-2">No Standings Yet</h3>
-            <p className="text-sm text-slate-500">Check back later once players have started earning points!</p>
-          </div>
-        )}
         {top3.length >= 3 && (
           <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
 
@@ -241,7 +343,7 @@ export default function LeaderboardScreen({
                 {player.rank}
               </div>
 
-              {/* Avatar Placeholder */}
+              {/* Avatar Mascot */}
               <div className={`w-10 h-10 rounded-full border flex items-center justify-center shrink-0 overflow-hidden relative ${
                 player.isCurrentUser ? 'bg-indigo-100 border-indigo-300' : 'bg-slate-100 border-slate-200'
               }`}>
@@ -262,7 +364,7 @@ export default function LeaderboardScreen({
                 </div>
                 <span className="text-[10px] text-slate-500 font-medium truncate flex items-center gap-1">
                   <Activity className="w-3 h-3 text-slate-400" />
-                  {player.subjectsMastered} Subjects Qualified
+                  {player.subjectsMastered} Skills Mastered
                 </span>
               </div>
 
@@ -287,7 +389,7 @@ export default function LeaderboardScreen({
 
             {/* User Rank */}
             <div className="w-8 h-8 rounded-full bg-indigo-800/80 border border-indigo-400 flex items-center justify-center font-black text-white shrink-0 shadow-inner z-10">
-              {currentUserRank}
+              #{currentUserRank}
             </div>
 
             {/* User Avatar (Actual Mascot + Items) */}
@@ -307,14 +409,14 @@ export default function LeaderboardScreen({
               </div>
               <div className="flex items-center gap-1 mt-0.5">
                 <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
-                <span className="text-indigo-200 font-bold text-xs">{userScore} pts</span>
+                <span className="text-indigo-200 font-bold text-xs">{userScore} pts ({subjectConfig.name})</span>
               </div>
 
               {/* Contextual progress message */}
               <p className="text-[10px] text-indigo-300 mt-1 leading-tight font-medium">
                 {currentUserRank > 1
-                  ? `+${pointsNeeded} pts needed to rank up`
-                  : "You are currently holding 1st place! Keep it up!"}
+                  ? `+${pointsNeeded} pts needed to rank up in ${subjectConfig.name}`
+                  : `You are currently holding 1st place in ${subjectConfig.name}! Keep it up!`}
               </p>
             </div>
           </div>

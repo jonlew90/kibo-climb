@@ -82,6 +82,13 @@ const getSubjectMeta = (subjectKey) => {
   return { ...config, ...theme, name: config.name || theme.name };
 };
 
+const formatGradeDisplay = (grade) => {
+  if (!grade) return '';
+  if (grade === 'Pre-Algebra / Middle School') return 'Pre-Algebra';
+  if (grade === 'Algebra & Beyond') return 'Algebra+';
+  return grade;
+};
+
 function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' }) {
   const userData = profile.userData || {};
   const streak = userData.streak ?? 0;
@@ -148,17 +155,20 @@ function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' 
         <h3 className="text-xs sm:text-sm font-black text-slate-800 tracking-tight leading-tight truncate max-w-[140px] mx-auto">
           {displayName}
         </h3>
-        <div className="flex items-center justify-center gap-1.5 flex-wrap">
+        <div className="flex items-center justify-center gap-1 w-full max-w-full flex-nowrap overflow-hidden">
           {profile.gradeLevel && (
-            <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-md leading-tight">
-              {profile.gradeLevel}
+            <span
+              title={profile.gradeLevel}
+              className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md leading-tight truncate shrink min-w-0"
+            >
+              {formatGradeDisplay(profile.gradeLevel)}
             </span>
           )}
-          <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-200/60 px-1.5 py-0.2 rounded-md">
-            <Flame className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />{streak}d
+          <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded-md shrink-0 whitespace-nowrap">
+            <Flame className="w-2.5 h-2.5 fill-amber-500 text-amber-500 shrink-0" />{streak}d
           </span>
-          <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.2 rounded-md">
-            <Zap className="w-2.5 h-2.5 fill-emerald-500 text-emerald-500" />{totalSolvedAll}
+          <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-md shrink-0 whitespace-nowrap">
+            <Zap className="w-2.5 h-2.5 fill-emerald-500 text-emerald-500 shrink-0" />{totalSolvedAll}
           </span>
         </div>
       </div>
