@@ -2,6 +2,7 @@ export const SUBJECTS_CONFIG = {
   math: {
     id: 'math',
     name: 'Math',
+    icon: '🔢',
     COMPETENCE_RANK_TIERS: [
       { min: 0, max: 1199, tier: 1, name: 'Meadow Scout', location: 'Sunny Meadow' },
       { min: 1200, max: 1399, tier: 2, name: 'Trail Navigator', location: 'Forest Trail' },
@@ -57,6 +58,7 @@ export const SUBJECTS_CONFIG = {
   words: {
     id: 'words',
     name: 'Words',
+    icon: '📚',
     COMPETENCE_RANK_TIERS: [
       { min: 0, max: 1199, tier: 1, name: 'Letter Scout', location: 'Alphabet Meadow' },
       { min: 1200, max: 1399, tier: 2, name: 'Word Builder', location: 'Phonics Forest' },

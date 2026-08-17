@@ -94,7 +94,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
     return {
       subjectId,
       name: config.name || subjectId,
-      icon: subjectId === 'words' ? '📖' : (subjectId === 'science' ? '🧪' : (subjectId === 'coding' ? '💻' : '🏔️')),
+      icon: config.icon || (subjectId === 'words' ? '📖' : (subjectId === 'science' ? '🧪' : (subjectId === 'coding' ? '💻' : '🔢'))),
       rating,
       rankTitle,
       tier,

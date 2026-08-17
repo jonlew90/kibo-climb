@@ -449,7 +449,7 @@ export default function ParentDashboardModal({
                   const isSelected = selectedSubject === subKey;
                   const subData = getProfileSubjectData(viewingProfileId, subKey);
                   const subRating = subData.adaptiveCompetenceRating || 1000;
-                  const subIcon = subKey === 'words' ? '📖' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🏔️'));
+                  const subIcon = subConfig.icon || (subKey === 'words' ? '📖' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🔢')));
 
                   return (
                     <button

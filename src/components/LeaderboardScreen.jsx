@@ -207,7 +207,7 @@ export default function LeaderboardScreen({
                 : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
             }`}
           >
-            <span>🏔️</span>
+            <span>🔢</span>
             <span>Kibo Math</span>
             {selectedSubject === 'math' && (
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />

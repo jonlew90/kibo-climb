@@ -1137,14 +1137,16 @@ export default function App() {
                 soundFx.playKeyTap();
                 setShowSubjectSelector(!showSubjectSelector);
               }}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 font-black text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border-2 border-amber-300 hover:border-amber-400"
+              className={`flex items-center gap-1.5 font-black text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border-2 ${
+                activeSubject === 'words'
+                  ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 hover:border-indigo-200'
+                  : 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 hover:border-amber-400'
+              }`}
               title="Subject Selector"
             >
-              <img
-                src="/kibo_mascot.svg"
-                alt="Kibo Mascot"
-                className="w-5 h-5 sm:w-6 sm:h-6 object-contain filter drop-shadow-2xs"
-              />
+              <span className="text-sm sm:text-base leading-none select-none drop-shadow-2xs">
+                {activeSubject === 'words' ? '📚' : '🔢'}
+              </span>
               <span className="tracking-tight font-black">{activeSubject === 'math' ? 'Kibo Math' : 'Kibo Words'}</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSubjectSelector ? 'rotate-180' : ''}`} />
             </button>
@@ -1156,7 +1158,7 @@ export default function App() {
                   className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 border border-amber-300 flex items-center justify-center shrink-0">
-                    <span className="text-lg">🏔️</span>
+                    <span className="text-lg">🔢</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-black text-slate-800 leading-tight">Kibo Math</span>

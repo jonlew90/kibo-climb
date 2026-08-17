@@ -12,7 +12,7 @@ const SUBJECT_THEMES = {
   math: {
     id: 'math',
     name: 'Math',
-    icon: '🏔️',
+    icon: '🔢',
     border: 'border-amber-300/70',
     bg: 'bg-amber-500/10',
     activeBg: 'bg-amber-500 text-white',
