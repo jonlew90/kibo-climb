@@ -253,12 +253,12 @@ export default function LeaderboardScreen({
           <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
 
             {/* 2nd Place */}
-            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[120px] sm:max-w-[150px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
                 top3[1].isCurrentUser ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40' : 'bg-slate-200 border-slate-300'
               }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
-                  <Mascot size={48} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} />
+                <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
+                  <Mascot size={56} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} className="w-full h-full" />
                 </div>
               </div>
               <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[1].name}>
@@ -276,15 +276,15 @@ export default function LeaderboardScreen({
             </div>
 
             {/* 1st Place */}
-            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[140px] sm:max-w-[170px] relative z-20 animate-fade-in-up">
+            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[145px] sm:max-w-[175px] relative z-20 animate-fade-in-up">
               <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
                 <Crown className="w-6 h-6 fill-amber-400" />
               </div>
-              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
                 top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
               }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
-                  <Mascot size={64} mood="excited" equipped={top3[0].equipped} />
+                <div className="absolute inset-0 flex items-center justify-center scale-[0.88] sm:scale-95">
+                  <Mascot size={72} mood="excited" equipped={top3[0].equipped} className="w-full h-full" />
                 </div>
               </div>
               <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[0].name}>
@@ -303,12 +303,12 @@ export default function LeaderboardScreen({
             </div>
 
             {/* 3rd Place */}
-            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[120px] sm:max-w-[150px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
                 top3[2].isCurrentUser ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40' : 'bg-orange-100 border-orange-300'
               }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-[0.6]">
-                  <Mascot size={48} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} />
+                <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
+                  <Mascot size={56} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} className="w-full h-full" />
                 </div>
               </div>
               <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[2].name}>
@@ -344,11 +344,11 @@ export default function LeaderboardScreen({
               </div>
 
               {/* Avatar Mascot */}
-              <div className={`w-10 h-10 rounded-full border flex items-center justify-center shrink-0 overflow-hidden relative ${
-                player.isCurrentUser ? 'bg-indigo-100 border-indigo-300' : 'bg-slate-100 border-slate-200'
+              <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border flex items-center justify-center shrink-0 overflow-hidden relative ${
+                player.isCurrentUser ? 'bg-indigo-100 border-indigo-300 ring-2 ring-indigo-400/30' : 'bg-slate-100 border-slate-200'
               }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-[0.7]">
-                  <Mascot size={32} mood={player.isCurrentUser ? "happy" : "neutral"} equipped={player.equipped} />
+                <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
+                  <Mascot size={44} mood={player.isCurrentUser ? "happy" : "neutral"} equipped={player.equipped} className="w-full h-full" />
                 </div>
               </div>
 
@@ -393,9 +393,9 @@ export default function LeaderboardScreen({
             </div>
 
             {/* User Avatar (Actual Mascot + Items) */}
-            <div className="w-12 h-12 bg-white rounded-full border-2 border-indigo-300 flex items-center justify-center shrink-0 overflow-hidden z-10 relative">
-               <div className="absolute inset-0 flex items-center justify-center scale-[0.7]">
-                 <Mascot size={40} mood="happy" equipped={equippedItems} />
+            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-white rounded-full border-2 border-indigo-300 flex items-center justify-center shrink-0 overflow-hidden z-10 relative">
+               <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
+                 <Mascot size={48} mood="happy" equipped={equippedItems} className="w-full h-full" />
                </div>
             </div>
 
