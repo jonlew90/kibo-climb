@@ -135,6 +135,17 @@ export default function WordsSessionView({
   });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [shouldPulseHint, setShouldPulseHint] = useState(false);
+  const [highlightedGivenIndex, setHighlightedGivenIndex] = useState(null);
+  const [acknowledgedGivenIndices, setAcknowledgedGivenIndices] = useState(() => new Set());
+  const highlightTimerRef = useRef(null);
+
+  const triggerGivenHighlight = (index) => {
+    if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    setHighlightedGivenIndex(index);
+    highlightTimerRef.current = setTimeout(() => {
+      setHighlightedGivenIndex(null);
+    }, 450);
+  };
 
   const currentProblem = problemQueue[currentIndex] || {};
   const isMoneyQuestion =
@@ -467,28 +478,29 @@ export default function WordsSessionView({
 
     const nextIdx = currentIndex + 1;
     replenishQueueIfNeeded(nextIdx);
+    setAcknowledgedGivenIndices(new Set());
     setCurrentIndex(nextIdx);
   };
 
   const getFullWordFromInput = (input) => {
-    const targetStr = (currentProblem.answerString || currentProblem.answer || '').toString();
     const displayStr = currentProblem.displayString || '';
+    const displayParts = displayStr.split(' ').filter((c) => c.length > 0);
+    const wordSlots = displayParts.length > 0 ? displayParts : displayStr.split('');
 
     let fullWord = '';
     let inputIdx = 0;
 
-    for (let i = 0; i < displayStr.length; i++) {
-        if (displayStr[i] === ' ') continue;
-        if (displayStr[i] === '_') {
-            if (inputIdx < input.length) {
-                fullWord += input[inputIdx];
-                inputIdx++;
-            } else {
-                fullWord += '_'; // missing input
-            }
+    for (let i = 0; i < wordSlots.length; i++) {
+      if (wordSlots[i] === '_') {
+        if (inputIdx < input.length) {
+          fullWord += input[inputIdx];
+          inputIdx++;
         } else {
-            fullWord += displayStr[i];
+          fullWord += '_'; // missing input
         }
+      } else {
+        fullWord += wordSlots[i];
+      }
     }
     return fullWord.toLowerCase();
   };
@@ -795,6 +807,7 @@ export default function WordsSessionView({
 
     const nextIdx = currentIndex + 1;
     replenishQueueIfNeeded(nextIdx);
+    setAcknowledgedGivenIndices(new Set());
     setCurrentIndex(nextIdx);
 
     if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
@@ -807,15 +820,89 @@ export default function WordsSessionView({
     if (problemStartTimeRef.current === 0) {
       problemStartTimeRef.current = performance.now();
     }
+    if (!val || typeof val !== 'string') return;
+    const charInput = val.toLowerCase().trim();
+    if (!charInput) return;
+
     soundFx.playKeyTap();
 
-    let newInput = inputVal + val;
-    newInput = newInput.trim();
+    const displayStr = currentProblem.displayString || '';
+    const displayParts = displayStr.split(' ').filter((c) => c.length > 0);
+    const wordSlots = displayParts.length > 0 ? displayParts : displayStr.split('');
 
+    const blankSlotIndices = [];
+    wordSlots.forEach((slot, idx) => {
+      if (slot === '_') {
+        blankSlotIndices.push(idx);
+      }
+    });
+
+    const filledCount = inputVal.length;
+
+    // Check if player is typing a pre-filled/given letter for the current segment
+    if (filledCount < blankSlotIndices.length) {
+      const activeBlankSlotIndex = blankSlotIndices[filledCount];
+      const prevBlankSlotIndex = filledCount === 0 ? -1 : blankSlotIndices[filledCount - 1];
+
+      // Check given letters in the interval (prevBlankSlotIndex, activeBlankSlotIndex)
+      let matchedGivenIdx = -1;
+      for (let i = prevBlankSlotIndex + 1; i < activeBlankSlotIndex; i++) {
+        if (!acknowledgedGivenIndices.has(i)) {
+          // Check if all prior given letters in this chunk were acknowledged
+          let priorGivenAllAcked = true;
+          for (let j = prevBlankSlotIndex + 1; j < i; j++) {
+            if (!acknowledgedGivenIndices.has(j)) {
+              priorGivenAllAcked = false;
+              break;
+            }
+          }
+          if (priorGivenAllAcked && wordSlots[i].toLowerCase() === charInput) {
+            matchedGivenIdx = i;
+            break;
+          }
+          // If the very next unacknowledged given letter in order does not match, break out
+          // so input can directly fill the active blank
+          break;
+        }
+      }
+
+      if (matchedGivenIdx !== -1) {
+        // Mark this given slot as acknowledged so repeated presses of the same letter fill the blank!
+        setAcknowledgedGivenIndices((prev) => {
+          const next = new Set(prev);
+          next.add(matchedGivenIdx);
+          return next;
+        });
+        triggerGivenHighlight(matchedGivenIdx);
+        return;
+      }
+    } else if (blankSlotIndices.length > 0) {
+      // All blanks are already filled. Check trailing given letters (after the last blank)
+      const lastBlankSlotIndex = blankSlotIndices[blankSlotIndices.length - 1];
+      let matchedTrailingIdx = -1;
+      for (let i = lastBlankSlotIndex + 1; i < wordSlots.length; i++) {
+        if (wordSlots[i].toLowerCase() === charInput) {
+          matchedTrailingIdx = i;
+          break;
+        }
+      }
+
+      if (matchedTrailingIdx !== -1) {
+        triggerGivenHighlight(matchedTrailingIdx);
+        const normTargetAns = (currentProblem.answerString || currentProblem.answer || '').toString().toLowerCase();
+        const fullWordGuess = getFullWordFromInput(inputVal);
+        if (fullWordGuess === normTargetAns) {
+          processAnswerEvaluation(inputVal);
+        }
+        return;
+      }
+    }
+
+    // Otherwise, fill the active blank
+    const newInput = inputVal + charInput;
     const normTargetAns = (currentProblem.answerString || currentProblem.answer || '').toString().toLowerCase();
     const fullWordGuess = getFullWordFromInput(newInput);
-
-    const blanksCount = (currentProblem.displayString || '').split('').filter(c => c === '_').length;
+    const blanksCount = blankSlotIndices.length;
 
     const isCorrect = fullWordGuess === normTargetAns;
 
@@ -825,8 +912,8 @@ export default function WordsSessionView({
     }
 
     if (newInput.length >= blanksCount) {
-       processAnswerEvaluation(newInput);
-       return;
+      processAnswerEvaluation(newInput);
+      return;
     }
 
     setInputVal(newInput);
@@ -835,12 +922,19 @@ export default function WordsSessionView({
 
   const handleDeleteDigit = () => {
     soundFx.playKeyTap();
-    setInputVal((prev) => prev.slice(0, -1));
+    setInputVal((prev) => {
+      const nextVal = prev.slice(0, -1);
+      if (nextVal.length === 0) {
+        setAcknowledgedGivenIndices(new Set());
+      }
+      return nextVal;
+    });
   };
 
   const handleClearInput = () => {
     soundFx.playKeyTap();
     setInputVal('');
+    setAcknowledgedGivenIndices(new Set());
   };
 
   const handleSubmit = () => {
@@ -1234,26 +1328,57 @@ export default function WordsSessionView({
               const displayStr = currentProblem.displayString || '';
               const targetStr = (currentProblem.answerString || currentProblem.answer || '').toString();
 
-              // Helper to interleave the input with the blanks
+              // Helper to interleave the input with the blanks and highlight given letters
               const renderWordDisplay = () => {
-                 let inputIndex = 0;
-                 return displayStr.split(' ').map((char, index) => {
-                     if (char === '_') {
-                         const typedChar = inputVal[inputIndex];
-                         inputIndex++;
-                         return (
-                            <span key={index} className="inline-block mx-0.5 w-6 border-b-4 border-slate-400 text-center text-kibo-teal">
-                               {typedChar || '\u00A0'}
-                            </span>
-                         );
-                     } else {
-                         return (
-                            <span key={index} className="inline-block mx-0.5 w-6 text-center text-slate-800">
-                               {char}
-                            </span>
-                         );
-                     }
-                 });
+                const displayParts = displayStr.split(' ').filter((c) => c.length > 0);
+                const wordSlots = displayParts.length > 0 ? displayParts : displayStr.split('');
+
+                let inputIndex = 0;
+                const activeBlankOrderIndex = inputVal.length;
+
+                return (
+                  <div className="flex items-center justify-center flex-wrap gap-1.5 sm:gap-2 max-w-full">
+                    {wordSlots.map((char, index) => {
+                      if (char === '_') {
+                        const thisBlankOrder = inputIndex;
+                        const typedChar = inputVal[inputIndex];
+                        const isCurrentActiveBlank = thisBlankOrder === activeBlankOrderIndex;
+                        inputIndex++;
+
+                        return (
+                          <span
+                            key={index}
+                            className={`relative inline-flex items-center justify-center min-w-[2.25rem] sm:min-w-[2.75rem] h-11 sm:h-13 px-1.5 sm:px-2 rounded-xl text-xl sm:text-2xl font-black transition-all duration-150 ${
+                              typedChar
+                                ? 'bg-teal-50 text-teal-800 border-2 border-teal-500 shadow-xs'
+                                : isCurrentActiveBlank
+                                ? 'bg-white text-teal-600 border-2 border-dashed border-teal-400 shadow-inner ring-2 ring-teal-200/70 animate-pulse'
+                                : 'bg-slate-50 text-slate-300 border-2 border-dashed border-slate-300'
+                            }`}
+                          >
+                            {typedChar ? typedChar.toUpperCase() : isCurrentActiveBlank ? (
+                              <span className="w-2.5 h-0.5 bg-teal-400 rounded-full animate-ping" />
+                            ) : '\u00A0'}
+                          </span>
+                        );
+                      } else {
+                        const isPulsing = highlightedGivenIndex === index;
+                        return (
+                          <span
+                            key={index}
+                            className={`relative inline-flex items-center justify-center min-w-[2.25rem] sm:min-w-[2.75rem] h-11 sm:h-13 px-1.5 sm:px-2 rounded-xl text-xl sm:text-2xl font-black select-none transition-all duration-200 ${
+                              isPulsing
+                                ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-400 ring-4 ring-emerald-300/80 scale-110 shadow-md'
+                                : 'bg-slate-100/90 text-slate-700 border-2 border-slate-200/90 shadow-xs'
+                            }`}
+                          >
+                            {char.toUpperCase()}
+                          </span>
+                        );
+                      }
+                    })}
+                  </div>
+                );
               };
 
               const getWordHintMessage = () => {
