@@ -917,8 +917,8 @@ export default function ParentDashboardModal({
                 <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-xl gap-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary</span>
-                      <span className="text-[10px] text-slate-500 font-medium">Weekly multi-subject mastery breakdown digest</span>
+                      <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary (Per Profile)</span>
+                      <span className="text-[10px] text-slate-500 font-medium">Individual weekly mastery & topics digest sent per child</span>
                     </div>
                     <button
                       type="button"
@@ -936,7 +936,8 @@ export default function ParentDashboardModal({
                     <div className="space-y-2 pt-1 border-t border-slate-100">
                       <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2.5 rounded-lg border border-purple-200 leading-snug">
                         📅 <strong>Schedule:</strong> Sent every <strong>Sunday at 6:00 PM</strong>.<br />
-                        📊 <strong>Includes All Active Subjects:</strong> Multi-subject breakdown covering <strong>Math, Words, and all active subjects</strong> — weekly problems/words solved, competence rating gains, recall speed/latency, mastered topics & unlocked badges.
+                        👤 <strong>Sent Per Profile:</strong> Each child profile receives a dedicated report with the <strong>🐾 Kibo mascot</strong> in the subject line.<br />
+                        📚 <strong>All Played Topics Included:</strong> Full list of all topics tackled across Math, Words, and active subjects with mastery status, accuracy, and links back to the game.
                       </p>
 
                       <div className="flex items-center gap-2 flex-wrap pt-0.5">
@@ -948,37 +949,69 @@ export default function ParentDashboardModal({
                           }}
                           className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 font-extrabold text-xs rounded-xl border border-purple-300 transition-all active:scale-95"
                         >
-                          {showWeeklyPreview ? 'Hide Preview' : '👁️ Preview Weekly Summary'}
+                          {showWeeklyPreview ? 'Hide Preview' : `👁️ Preview Digest for ${childName}`}
                         </button>
 
                         {authService.getAuthState().email && (
-                          <button
-                            type="button"
-                            disabled={isSendingTestDigest}
-                            onClick={async () => {
-                              soundFx.playKeyTap();
-                              setIsSendingTestDigest(true);
-                              setDigestStatusMsg('');
-                              const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
-                              const res = await communicationsService.sendWeeklyDigest({
-                                email: authService.getAuthState().email,
-                                profile: currentProf,
-                                subjectsConfig: SUBJECTS_CONFIG
-                              });
-                              setIsSendingTestDigest(false);
-                              if (res.success) {
-                                soundFx.playVictory();
-                                setDigestStatusMsg('Test weekly summary email sent!');
-                              } else {
-                                soundFx.playIncorrect();
-                                setDigestStatusMsg(res.error || 'Failed to send test email.');
-                              }
-                              setTimeout(() => setDigestStatusMsg(''), 4000);
-                            }}
-                            className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 font-extrabold text-xs rounded-xl border border-sky-300 transition-all active:scale-95 disabled:opacity-50"
-                          >
-                            {isSendingTestDigest ? 'Sending...' : '✉️ Send Test Digest to Email'}
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              disabled={isSendingTestDigest}
+                              onClick={async () => {
+                                soundFx.playKeyTap();
+                                setIsSendingTestDigest(true);
+                                setDigestStatusMsg('');
+                                const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+                                const res = await communicationsService.sendWeeklyDigest({
+                                  email: authService.getAuthState().email,
+                                  profile: currentProf,
+                                  subjectsConfig: SUBJECTS_CONFIG
+                                });
+                                setIsSendingTestDigest(false);
+                                if (res.success) {
+                                  soundFx.playVictory();
+                                  setDigestStatusMsg(`Test weekly summary sent for ${currentProf.name || childName}! Check inbox.`);
+                                } else {
+                                  soundFx.playIncorrect();
+                                  setDigestStatusMsg(res.error || 'Failed to send test email.');
+                                }
+                                setTimeout(() => setDigestStatusMsg(''), 4000);
+                              }}
+                              className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 font-extrabold text-xs rounded-xl border border-sky-300 transition-all active:scale-95 disabled:opacity-50"
+                            >
+                              {isSendingTestDigest ? 'Sending...' : `✉️ Send Test Digest for ${childName}`}
+                            </button>
+
+                            {profilesList.length > 1 && (
+                              <button
+                                type="button"
+                                disabled={isSendingTestDigest}
+                                onClick={async () => {
+                                  soundFx.playKeyTap();
+                                  setIsSendingTestDigest(true);
+                                  setDigestStatusMsg('');
+                                  const allProfs = storageService.getAllProfiles();
+                                  const res = await communicationsService.sendAllWeeklyDigests({
+                                    email: authService.getAuthState().email,
+                                    profiles: allProfs,
+                                    subjectsConfig: SUBJECTS_CONFIG
+                                  });
+                                  setIsSendingTestDigest(false);
+                                  if (res.success) {
+                                    soundFx.playVictory();
+                                    setDigestStatusMsg(`Dispatched ${res.totalSent} individual weekly digests for all profiles!`);
+                                  } else {
+                                    soundFx.playIncorrect();
+                                    setDigestStatusMsg(res.error || 'Failed to dispatch digests.');
+                                  }
+                                  setTimeout(() => setDigestStatusMsg(''), 4000);
+                                }}
+                                className="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-extrabold text-xs rounded-xl border border-emerald-300 transition-all active:scale-95 disabled:opacity-50"
+                              >
+                                {isSendingTestDigest ? 'Sending All...' : `✉️ Send For All (${profilesList.length}) Profiles`}
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
 
@@ -996,8 +1029,8 @@ export default function ParentDashboardModal({
                         return (
                           <div className="bg-slate-50 border border-purple-200 rounded-xl p-3 space-y-3 animate-pop text-left">
                             <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
-                              <span className="text-xs font-black text-slate-800">
-                                📋 Summary Preview for {digest.childName}
+                              <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                                <span>🐾 🏔️</span> Summary Preview for {digest.childName} ({digest.childGrade})
                               </span>
                               <span className="text-[10px] font-bold text-slate-500">
                                 Streak: {digest.streak}d · {digest.totalProblemsThisWeek} items this week
@@ -1006,10 +1039,10 @@ export default function ParentDashboardModal({
 
                             <div className="space-y-2">
                               {digest.subjects.map((sub) => (
-                                <div key={sub.subjectId} className="bg-white border border-slate-200 rounded-lg p-2 space-y-1">
+                                <div key={sub.subjectId} className="bg-white border border-slate-200 rounded-lg p-2.5 space-y-2">
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs font-black text-slate-800 flex items-center gap-1">
-                                      <span>{sub.icon}</span> {sub.name}
+                                      <span>{sub.icon}</span> {sub.name} Progress
                                     </span>
                                     <span className="text-[10px] font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
                                       Rating: {sub.rating} ({sub.rankTitle})
@@ -1021,12 +1054,35 @@ export default function ParentDashboardModal({
                                     <div>Avg Latency: <strong>{sub.avgLatencySec !== null ? `${sub.avgLatencySec}s` : '—'}</strong></div>
                                     <div>Tier: <strong>Tier {sub.tier}</strong></div>
                                   </div>
-                                  <div className="text-[10px] text-slate-500 pt-0.5">
-                                    <span className="font-bold text-emerald-700">Mastered: </span>
-                                    {sub.masteredTopics.length > 0 ? sub.masteredTopics.join(', ') : 'Building fundamentals'}
+
+                                  {/* Played Topics Pill List */}
+                                  <div className="text-[10px] text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 space-y-1">
+                                    <strong className="block text-slate-800 text-[10px] uppercase">
+                                      All Topics Played ({sub.allPlayedTopics.length}):
+                                    </strong>
+                                    <div className="flex flex-wrap gap-1 pt-0.5">
+                                      {sub.allPlayedTopics.map((t) => (
+                                        <span
+                                          key={t.id || t.name}
+                                          className={`px-1.5 py-0.5 rounded-md text-[9px] font-extrabold border ${
+                                            t.status === 'Mastered'
+                                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                              : (t.status === 'Needs Review' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-purple-50 text-purple-800 border-purple-200')
+                                          }`}
+                                        >
+                                          {t.status === 'Mastered' ? '✅' : '🎯'} {t.name} {t.accuracyPct !== null ? `(${t.accuracyPct}%)` : ''}
+                                        </span>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
                               ))}
+
+                              {digest.unstartedSubjects.length > 0 && (
+                                <div className="bg-sky-50 border border-sky-200 rounded-lg p-2 text-[10px] text-sky-900">
+                                  <strong>🌟 Unstarted Subjects:</strong> {digest.unstartedSubjects.map(s => s.name).join(', ')} — included in email with invite to begin climb!
+                                </div>
+                              )}
                             </div>
                           </div>
                         );

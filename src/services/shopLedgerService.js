@@ -1,8 +1,8 @@
 // Authoritative Balance Ledger & Transaction Processing Service for Kibo Climb
 // Executes server-side item purchases in Kibo's Corner & validates subscription receipts
 
-import { storageService } from './storageService';
-import { antiCheatService } from './antiCheatService';
+import { storageService } from './storageService.js';
+import { antiCheatService } from './antiCheatService.js';
 
 export const shopLedgerService = {
   /**

@@ -200,11 +200,11 @@ export default function DevControlPanel({
           <div className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-4 space-y-3">
             <span className="text-xs font-extrabold text-blue-300 uppercase tracking-wider flex items-center gap-1.5">
               <Mail className="w-4 h-4 text-blue-400" />
-              Test Communications
+              Test Communications (Per Profile & Mascot Subject)
             </span>
 
             <p className="text-[10px] text-slate-400 leading-snug">
-              Send a test notification to verify the communications pipeline.
+              Send a test weekly progress digest with mascot subject line (🐾 🏔️) and played topics breakdown.
             </p>
 
             <div className="flex flex-col gap-2">
@@ -215,27 +215,51 @@ export default function DevControlPanel({
                 placeholder="parent@example.com"
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
               />
-              <button
-                disabled={isSendingEmail || !testEmail.includes('@')}
-                onClick={async () => {
-                  setIsSendingEmail(true);
-                  const activeProf = storageService.getActiveProfile();
-                  const result = await communicationsService.sendWeeklyDigest({
-                    email: testEmail,
-                    profile: activeProf
-                  });
-                  setIsSendingEmail(false);
+              <div className="flex gap-2">
+                <button
+                  disabled={isSendingEmail || !testEmail.includes('@')}
+                  onClick={async () => {
+                    setIsSendingEmail(true);
+                    const activeProf = storageService.getActiveProfile();
+                    const result = await communicationsService.sendWeeklyDigest({
+                      email: testEmail,
+                      profile: activeProf
+                    });
+                    setIsSendingEmail(false);
 
-                  if (result.success) {
-                    showToast('Weekly Progress Summary (All Subjects) sent successfully!');
-                  } else {
-                    alert('Failed to send notification: ' + result.error);
-                  }
-                }}
-                className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 px-4 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-2"
-              >
-                {isSendingEmail ? 'Sending...' : 'Send Test Notification (All Subjects)'}
-              </button>
+                    if (result.success) {
+                      showToast(`Weekly Digest sent for ${activeProf.name || childName}!`);
+                    } else {
+                      alert('Failed to send notification: ' + result.error);
+                    }
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 px-3 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-1.5"
+                >
+                  {isSendingEmail ? 'Sending...' : `Send for ${childName}`}
+                </button>
+
+                <button
+                  disabled={isSendingEmail || !testEmail.includes('@')}
+                  onClick={async () => {
+                    setIsSendingEmail(true);
+                    const allProfs = storageService.getAllProfiles();
+                    const result = await communicationsService.sendAllWeeklyDigests({
+                      email: testEmail,
+                      profiles: allProfs
+                    });
+                    setIsSendingEmail(false);
+
+                    if (result.success) {
+                      showToast(`Dispatched ${result.totalSent} individual digests for all profiles!`);
+                    } else {
+                      alert('Failed to send notification: ' + result.error);
+                    }
+                  }}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 px-3 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-1.5"
+                >
+                  {isSendingEmail ? 'Sending...' : 'Send All Profiles'}
+                </button>
+              </div>
             </div>
           </div>
 

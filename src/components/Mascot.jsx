@@ -21,10 +21,13 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasSnowWhiteSkin = isEquipped('snow_white_skin');
   const hasMidnightSkin = isEquipped('midnight_shadow_skin');
   const hasJadeSkin = isEquipped('emerald_jade_skin');
+  const hasGalaxySkin = isEquipped('galaxy_skin_premium');
 
-  const hasCustomSkin = hasGoldenSkin || hasSnowWhiteSkin || hasMidnightSkin || hasJadeSkin;
+  const hasCustomSkin = hasGoldenSkin || hasSnowWhiteSkin || hasMidnightSkin || hasJadeSkin || hasGalaxySkin;
 
-  const bodyFill = hasGoldenSkin
+  const bodyFill = hasGalaxySkin
+    ? 'url(#galaxyBodyGrad)'
+    : hasGoldenSkin
     ? 'url(#goldBodyGrad)'
     : hasSnowWhiteSkin
     ? 'url(#snowWhiteBodyGrad)'
@@ -34,7 +37,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? 'url(#jadeBodyGrad)'
     : 'url(#kibo3DBodyGrad)';
 
-  const secondaryFill = hasGoldenSkin
+  const secondaryFill = hasGalaxySkin
+    ? 'url(#galaxyDarkGrad)'
+    : hasGoldenSkin
     ? 'url(#goldDarkGrad)'
     : hasSnowWhiteSkin
     ? 'url(#snowWhiteDarkGrad)'
@@ -44,7 +49,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? 'url(#jadeDarkGrad)'
     : 'url(#kibo3DDarkGrad)';
 
-  const tailFill = hasGoldenSkin
+  const tailFill = hasGalaxySkin
+    ? 'url(#galaxyBodyGrad)'
+    : hasGoldenSkin
     ? 'url(#goldBodyGrad)'
     : hasSnowWhiteSkin
     ? 'url(#snowWhiteBodyGrad)'
@@ -54,7 +61,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? 'url(#jadeBodyGrad)'
     : 'url(#tailGrad)';
 
-  const bodyStroke = hasGoldenSkin
+  const bodyStroke = hasGalaxySkin
+    ? '#4338CA'
+    : hasGoldenSkin
     ? '#B45309'
     : hasSnowWhiteSkin
     ? '#0284C7'
@@ -64,7 +73,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? '#047857'
     : '#8A2500';
 
-  const secondaryStroke = hasGoldenSkin
+  const secondaryStroke = hasGalaxySkin
+    ? '#312E81'
+    : hasGoldenSkin
     ? '#78350F'
     : hasSnowWhiteSkin
     ? '#0369A1'
@@ -74,7 +85,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? '#064E3B'
     : '#5c3021';
 
-  const earInnerFill = hasGoldenSkin
+  const earInnerFill = hasGalaxySkin
+    ? 'url(#galaxyEarInnerGrad)'
+    : hasGoldenSkin
     ? 'url(#goldEarInnerGrad)'
     : hasSnowWhiteSkin
     ? 'url(#snowWhiteEarInnerGrad)'
@@ -84,7 +97,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? 'url(#jadeEarInnerGrad)'
     : 'url(#kibo3DEarInner)';
 
-  const facePatchFill = hasGoldenSkin
+  const facePatchFill = hasGalaxySkin
+    ? 'url(#galaxyFaceGrad)'
+    : hasGoldenSkin
     ? 'url(#goldFaceGrad)'
     : hasSnowWhiteSkin
     ? 'url(#snowWhiteFaceGrad)'
@@ -94,7 +109,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? 'url(#jadeFaceGrad)'
     : 'url(#kibo3DWhiteGrad)';
 
-  const pawPadFill = hasGoldenSkin
+  const pawPadFill = hasGalaxySkin
+    ? '#F472B6'
+    : hasGoldenSkin
     ? '#FEF08A'
     : hasSnowWhiteSkin
     ? '#7DD3FC'
@@ -104,7 +121,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? '#A7F3D0'
     : '#fca4a9';
 
-  const eyebrowFill = hasGoldenSkin
+  const eyebrowFill = hasGalaxySkin
+    ? '#E0E7FF'
+    : hasGoldenSkin
     ? '#FEF08A'
     : hasSnowWhiteSkin
     ? '#E0F2FE'
@@ -114,7 +133,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? '#A7F3D0'
     : '#ffffff';
 
-  const whiskerStroke = hasGoldenSkin
+  const whiskerStroke = hasGalaxySkin
+    ? '#A5B4FC'
+    : hasGoldenSkin
     ? '#78350F'
     : hasSnowWhiteSkin
     ? '#0284C7'
@@ -124,7 +145,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     ? '#047857'
     : '#5c3021';
 
-  const eyeFill = hasGoldenSkin
+  const eyeFill = hasGalaxySkin
+    ? '#6366F1'
+    : hasGoldenSkin
     ? '#78350F'
     : hasSnowWhiteSkin
     ? '#0C4A6E'
@@ -138,7 +161,9 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const noseFill = eyeFill;
   const mouthStroke = eyeFill;
 
-  const blushFill = hasGoldenSkin
+  const blushFill = hasGalaxySkin
+    ? '#F472B6'
+    : hasGoldenSkin
     ? '#FCD34D'
     : hasSnowWhiteSkin
     ? '#F472B6'
@@ -151,9 +176,11 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   // Pets
   const hasSnowyOwl = isEquipped('snowy_owl');
   const hasAlpineFox = isEquipped('alpine_fox');
+  const hasMiniRobot = isEquipped('mini_robot');
   const hasPhoenixPet = isEquipped('phoenix_pet');
   const hasFrostDragon = isEquipped('frost_dragon');
   const hasCosmicGriffin = isEquipped('cosmic_griffin');
+  const hasDragonPet = isEquipped('dragon_pet_premium');
 
   // Visual FX
   const hasSparkleDust = isEquipped('sparkle_dust');
@@ -166,8 +193,13 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasBandana = isEquipped('bandana');
   const hasPartyHat = isEquipped('party_hat');
   const hasGoggles = isEquipped('goggles');
+  const hasNinjaHeadband = isEquipped('ninja_headband');
   const hasWizardHat = isEquipped('wizard_hat');
   const hasExplorerHat = isEquipped('explorer_hat');
+  const hasPumpkinHat = isEquipped('pumpkin_hat');
+  const hasSummerVisor = isEquipped('summer_visor');
+  const hasWinterBeanie = isEquipped('winter_beanie');
+  const hasCyberShades = isEquipped('cyber_shades');
   const hasCrown = isEquipped('crown');
 
   // Body & Gear Accessories
@@ -175,11 +207,14 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasNeonHeadphones = isEquipped('headphones_neon') || isEquipped('headphones');
   const hasJetpack = isEquipped('jetpack');
   const hasBackpack = isEquipped('backpack');
+  const hasGrapplingHook = isEquipped('grappling_hook');
   const hasCanteen = isEquipped('canteen');
   const hasLantern = isEquipped('lantern');
   const hasClimbingPoles = isEquipped('climbing_poles') || isEquipped('golden_compass');
   const hasVest = isEquipped('vest');
   const hasSummitScarf = isEquipped('summit_scarf');
+  const hasAstronautSuit = isEquipped('astronaut_suit');
+  const hasGoldenTicket = isEquipped('golden_ticket');
   const hasRoyalCape = isEquipped('royal_cape');
 
   // Consumable Power-Ups Stage Previews
@@ -511,11 +546,60 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <stop offset="100%" stopColor="#A7F3D0" />
           </radialGradient>
 
+          {/* NEBULA GALAXY SKIN GRADIENT */}
+          <linearGradient id="galaxyBodyGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#C084FC" />
+            <stop offset="35%" stopColor="#6366F1" />
+            <stop offset="70%" stopColor="#312E81" />
+            <stop offset="100%" stopColor="#0F172A" />
+          </linearGradient>
+          <linearGradient id="galaxyDarkGrad" x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#7E22CE" />
+            <stop offset="50%" stopColor="#4338CA" />
+            <stop offset="100%" stopColor="#020617" />
+          </linearGradient>
+          <linearGradient id="galaxyEarInnerGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#F472B6" />
+            <stop offset="100%" stopColor="#818CF8" />
+          </linearGradient>
+          <radialGradient id="galaxyFaceGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#E0E7FF" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#A5B4FC" stopOpacity="0.75" />
+          </radialGradient>
+
           {/* Neon Headphones Gradient */}
           <linearGradient id="neonHeadphoneGrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#22D3EE" />
             <stop offset="50%" stopColor="#0EA5E9" />
             <stop offset="100%" stopColor="#0369A1" />
+          </linearGradient>
+
+          {/* JACK-O-LANTERN PUMPKIN GRADIENTS */}
+          <linearGradient id="pumpkinOuterLobeGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FB923C" />
+            <stop offset="55%" stopColor="#EA580C" />
+            <stop offset="100%" stopColor="#9A3412" />
+          </linearGradient>
+          <linearGradient id="pumpkinMidLobeGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FDBA74" />
+            <stop offset="50%" stopColor="#F97316" />
+            <stop offset="100%" stopColor="#C2410C" />
+          </linearGradient>
+          <linearGradient id="pumpkinCenterLobeGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FED7AA" />
+            <stop offset="35%" stopColor="#FB923C" />
+            <stop offset="80%" stopColor="#EA580C" />
+            <stop offset="100%" stopColor="#9A3412" />
+          </linearGradient>
+          <radialGradient id="pumpkinCarveGlow" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stopColor="#FEF08A" />
+            <stop offset="60%" stopColor="#FBBF24" />
+            <stop offset="100%" stopColor="#EA580C" />
+          </radialGradient>
+          <linearGradient id="pumpkinStemGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#22C55E" />
+            <stop offset="50%" stopColor="#15803D" />
+            <stop offset="100%" stopColor="#14532D" />
           </linearGradient>
 
 
@@ -695,6 +779,50 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <polygon points="170,44 184,48 170,51" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
             <circle cx="161" cy="42" r="3" fill="#FFFFFF" />
             <circle cx="161" cy="42" r="1.5" fill="#78350F" />
+          </g>
+        )}
+
+        {hasMiniRobot && (
+          <g className="animate-bounce" style={{ animationDuration: '2.4s' }}>
+            {/* Floating shadow/glow */}
+            <ellipse cx="165" cy="74" rx="10" ry="3" fill="#38BDF8" opacity="0.35" />
+            {/* Antenna */}
+            <line x1="165" y1="32" x2="165" y2="40" stroke="#64748B" strokeWidth="2" />
+            <circle cx="165" cy="30" r="3" fill="#22D3EE" stroke="#0284C7" strokeWidth="1.5" />
+            {/* Robot Head/Body */}
+            <rect x="151" y="40" width="28" height="24" rx="8" fill="#E2E8F0" stroke="#334155" strokeWidth="2" />
+            {/* Digital Screen Visor */}
+            <rect x="154" y="44" width="22" height="12" rx="4" fill="#0F172A" />
+            {/* Visor digital eyes */}
+            <circle cx="160" cy="50" r="1.5" fill="#38BDF8" />
+            <circle cx="170" cy="50" r="1.5" fill="#38BDF8" />
+            {/* Ear bolts */}
+            <rect x="148" y="48" width="3" height="6" rx="1" fill="#64748B" />
+            <rect x="179" y="48" width="3" height="6" rx="1" fill="#64748B" />
+            {/* Bottom Thruster */}
+            <polygon points="160,64 170,64 165,70" fill="#0EA5E9" />
+          </g>
+        )}
+
+        {hasDragonPet && (
+          <g className="animate-bounce" style={{ animationDuration: '2.1s' }}>
+            {/* Dragon Tail */}
+            <path d="M 158 66 Q 140 84 146 96 Q 158 87 160 72 Z" fill="#DC2626" />
+            {/* Dragon Body */}
+            <ellipse cx="165" cy="60" rx="13" ry="16" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+            {/* Golden Belly */}
+            <ellipse cx="162" cy="62" rx="6" ry="10" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1" />
+            {/* Dragon Head & Horns */}
+            <circle cx="165" cy="44" r="10" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+            <polygon points="158,36 153,24 162,33" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
+            <polygon points="168,36 173,24 165,33" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
+            {/* Bat Wings */}
+            <path d="M 166 52 Q 192 38 188 64 Q 174 62 166 58 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="1.5" />
+            {/* Eye & Snout */}
+            <circle cx="162" cy="42" r="3" fill="#FFFFFF" />
+            <circle cx="162" cy="42" r="1.5" fill="#451A03" />
+            {/* Tiny flame spark from mouth */}
+            <circle cx="154" cy="46" r="2.5" fill="#F97316" className="animate-ping" />
           </g>
         )}
 
@@ -993,6 +1121,20 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
                 <rect x="94" y="124" width="12" height="12" rx="4" fill="#DC2626" stroke="#7F1D1D" strokeWidth="2.5" />
               </g>
             )}
+
+            {hasAstronautSuit && (
+              <g>
+                {/* Astronaut Space Suit Chest & Collar */}
+                <path d="M 60 115 C 60 115, 100 122, 140 115 L 140 162 C 140 162, 100 172, 60 162 Z" fill="#F8FAFC" stroke="#64748B" strokeWidth="3" />
+                <line x1="100" y1="118" x2="100" y2="166" stroke="#94A3B8" strokeWidth="2.5" />
+                {/* Mission Patch */}
+                <rect x="74" y="126" width="14" height="10" rx="2" fill="#0284C7" stroke="#0369A1" strokeWidth="1" />
+                <circle cx="81" cy="131" r="2.5" fill="#FDE047" />
+                {/* Oxygen Control Knobs */}
+                <circle cx="120" cy="130" r="3" fill="#22C55E" stroke="#16A34A" strokeWidth="1" />
+                <circle cx="128" cy="130" r="3" fill="#EF4444" stroke="#DC2626" strokeWidth="1" />
+              </g>
+            )}
           </g>
 
           {/* ==================================================== */}
@@ -1094,6 +1236,43 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
               </g>
             )}
 
+            {hasGrapplingHook && (
+              <g id="gear-grappling-hook">
+                <g transform="rotate(15 136 146)">
+                  {/* Coiled Rope */}
+                  <ellipse cx="136" cy="146" rx="14" ry="10" fill="#D97706" stroke="#78350F" strokeWidth="2" />
+                  <ellipse cx="136" cy="146" rx="9" ry="5" fill="#FEF3C7" stroke="#78350F" strokeWidth="1" />
+                  {/* Hook Metal Shaft */}
+                  <line x1="136" y1="134" x2="136" y2="114" stroke="#334155" strokeWidth="3.5" strokeLinecap="round" />
+                  {/* Attachment Ring */}
+                  <circle cx="136" cy="136" r="4" fill="none" stroke="#64748B" strokeWidth="2" />
+                  {/* Triple Prongs */}
+                  <path d="M 136 122 Q 120 122 122 110" stroke="#334155" strokeWidth="3" fill="none" strokeLinecap="round" />
+                  <path d="M 136 122 Q 152 122 150 110" stroke="#334155" strokeWidth="3" fill="none" strokeLinecap="round" />
+                </g>
+              </g>
+            )}
+
+            {hasGoldenTicket && (
+              <g id="gear-golden-ticket" transform="rotate(-15 48 140)">
+                {/* Glowing Ticket Back Aura */}
+                <rect x="24" y="122" width="46" height="28" rx="4" fill="#FEF08A" opacity="0.45" className="animate-pulse" />
+                {/* Gold Ticket Body */}
+                <rect x="26" y="124" width="42" height="24" rx="3" fill="url(#goldBodyGrad)" stroke="#78350F" strokeWidth="1.5" />
+                {/* Notches */}
+                <circle cx="26" cy="136" r="3" fill="#FFFBEB" stroke="#78350F" strokeWidth="1" />
+                <circle cx="68" cy="136" r="3" fill="#FFFBEB" stroke="#78350F" strokeWidth="1" />
+                {/* Dashed Border */}
+                <rect x="31" y="127" width="32" height="18" rx="2" fill="#FDE047" stroke="#92400E" strokeWidth="1" strokeDasharray="2 1" />
+                {/* Ticket Text / Stars */}
+                <text x="47" y="135" textAnchor="middle" fontSize="4.5" fontWeight="900" fill="#78350F">VIP PASS</text>
+                <text x="47" y="142" textAnchor="middle" fontSize="4" fontWeight="900" fill="#92400E">★ GOLDEN ★</text>
+                {/* Twinkling Sparkles */}
+                <circle cx="22" cy="120" r="2" fill="#FEF08A" className="animate-ping" />
+                <circle cx="70" cy="120" r="1.5" fill="#FFFFFF" className="animate-ping" />
+              </g>
+            )}
+
             {hasLantern && (
               <g >
                 {/* Glowing Ambient Aura */}
@@ -1170,11 +1349,122 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
               </g>
             )}
 
+            {hasNinjaHeadband && (
+              <g>
+                {/* Ninja Headband Ribbon Tails */}
+                <path d="M 48 48 Q 28 54 32 74 Q 40 66 48 54 Z" fill="#1E293B" stroke="#0F172A" strokeWidth="2" />
+                <path d="M 52 46 Q 30 62 42 78 Q 48 70 54 52 Z" fill="#334155" stroke="#0F172A" strokeWidth="2" />
+                {/* Headband Fabric */}
+                <path d="M 48 48 Q 100 28 152 48 L 148 58 Q 100 38 52 58 Z" fill="#1E293B" stroke="#0F172A" strokeWidth="2.5" />
+                {/* Metal Forehead Plate */}
+                <rect x="84" y="38" width="32" height="15" rx="3" fill="url(#thumbMetalGrad)" stroke="#0F172A" strokeWidth="2" />
+                <circle cx="87" cy="45.5" r="1" fill="#0F172A" />
+                <circle cx="113" cy="45.5" r="1" fill="#0F172A" />
+                {/* Engraved Mountain Crest */}
+                <path d="M 94 49 L 100 41 L 106 49" stroke="#0F172A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              </g>
+            )}
+
             {hasExplorerHat && (
               <g >
                 <path d="M 70 45 Q 100 12 130 45 Z" fill="#92400E" stroke="#451A03" strokeWidth="3" />
                 <path d="M 68 42 Q 100 35 132 42" stroke="#F59E0B" strokeWidth="5" fill="none" />
                 <ellipse cx="100" cy="46" rx="54" ry="10" fill="#78350F" stroke="#451A03" strokeWidth="3" />
+              </g>
+            )}
+
+            {hasPumpkinHat && (
+              <g id="jack-o-lantern-head">
+                {/* Back Tendril Vine */}
+                <path d="M 100 19 C 106 11, 116 7, 122 11 C 126 15, 121 21, 116 19" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                <path d="M 100 17 C 94 9, 84 5, 78 10" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" fill="none" />
+
+                {/* Back Outer Lobes */}
+                <ellipse cx="66" cy="46" rx="16" ry="24" fill="url(#pumpkinOuterLobeGrad)" stroke="#9A3412" strokeWidth="2.5" />
+                <ellipse cx="134" cy="46" rx="16" ry="24" fill="url(#pumpkinOuterLobeGrad)" stroke="#9A3412" strokeWidth="2.5" />
+
+                {/* Mid Lobes */}
+                <ellipse cx="79" cy="47" rx="18" ry="26" fill="url(#pumpkinMidLobeGrad)" stroke="#9A3412" strokeWidth="2.5" />
+                <ellipse cx="121" cy="47" rx="18" ry="26" fill="url(#pumpkinMidLobeGrad)" stroke="#9A3412" strokeWidth="2.5" />
+
+                {/* Center / Front Lobe */}
+                <ellipse cx="100" cy="48" rx="19" ry="28" fill="url(#pumpkinCenterLobeGrad)" stroke="#9A3412" strokeWidth="2.5" />
+
+                {/* Pumpkin Rib Crevices & Top Highlight */}
+                <path d="M 87 23 Q 84 48 88 74" stroke="#EA580C" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6" />
+                <path d="M 113 23 Q 116 48 112 74" stroke="#EA580C" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6" />
+                <path d="M 86 24 Q 100 21 114 24" stroke="#FEF08A" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.55" />
+
+                {/* Top Calyx / Leaf Base */}
+                <path d="M 93 23 Q 100 18 107 23 L 104 27 L 96 27 Z" fill="#15803D" stroke="#14532D" strokeWidth="1" />
+                
+                {/* Thick Woody Pumpkin Stem */}
+                <path d="M 96 23 C 94 12, 102 7, 106 2 L 110 3.5 C 107 9, 103 14, 103 23 Z" fill="url(#pumpkinStemGrad)" stroke="#14532D" strokeWidth="2" strokeLinejoin="round" />
+                <ellipse cx="108" cy="2.8" rx="2.2" ry="1.4" fill="#86EFAC" />
+
+                {/* Carved Glowing Eyes (Expressive Angled Jack-o'-Lantern) */}
+                {/* Left Eye */}
+                <polygon points="76,43 90,39 86,49" fill="url(#pumpkinCarveGlow)" stroke="#7C2D12" strokeWidth="1.5" strokeLinejoin="round" />
+                <polygon points="78,44 88,41 85,48" fill="#FEF08A" opacity="0.9" />
+
+                {/* Right Eye */}
+                <polygon points="124,43 110,39 114,49" fill="url(#pumpkinCarveGlow)" stroke="#7C2D12" strokeWidth="1.5" strokeLinejoin="round" />
+                <polygon points="122,44 112,41 115,48" fill="#FEF08A" opacity="0.9" />
+
+                {/* Carved Glowing Nose */}
+                <polygon points="96,49 104,49 100,43" fill="url(#pumpkinCarveGlow)" stroke="#7C2D12" strokeWidth="1.5" strokeLinejoin="round" />
+                <polygon points="97,48.5 103,48.5 100,44.5" fill="#FEF08A" opacity="0.9" />
+
+                {/* Carved Glowing Smile with Classic Alternating Teeth */}
+                <path d="M 74 55 Q 100 75 126 55 L 122 59 L 117 56 L 113 62 L 100 58 L 87 62 L 83 56 L 78 59 Z" fill="url(#pumpkinCarveGlow)" stroke="#7C2D12" strokeWidth="1.5" strokeLinejoin="round" />
+                <path d="M 78 56 Q 100 72 122 56 L 119 59 L 115 57 L 111 62 L 100 59 L 89 62 L 85 57 L 81 59 Z" fill="#FEF08A" opacity="0.85" />
+              </g>
+            )}
+
+            {hasSummerVisor && (
+              <g id="summer-visor-headwear">
+                {/* Visor Band Wrapping Forehead */}
+                <path d="M 64 54 C 64 38, 136 38, 136 54 L 134 60 C 134 46, 66 46, 66 60 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2.5" />
+                <path d="M 72 50 Q 100 42 128 50" stroke="#FEF08A" strokeWidth="1.5" fill="none" />
+                {/* Visor Peak / Brim */}
+                <path d="M 66 54 C 70 72, 130 72, 134 54 C 128 66, 72 66, 66 54 Z" fill="#0284C7" stroke="#0369A1" strokeWidth="2.5" />
+                <path d="M 74 56 C 82 66, 118 66, 126 56" stroke="#38BDF8" strokeWidth="2" fill="none" opacity="0.8" />
+                {/* Sun Emblem */}
+                <circle cx="100" cy="48" r="5" fill="#FDE047" stroke="#CA8A04" strokeWidth="1.5" />
+                <circle cx="100" cy="48" r="2.5" fill="#EA580C" />
+              </g>
+            )}
+
+            {hasWinterBeanie && (
+              <g id="winter-beanie-headwear">
+                {/* Beanie Knit Dome */}
+                <path d="M 66 62 C 60 26, 80 12, 100 12 C 120 12, 140 26, 134 62 Z" fill="#3B82F6" stroke="#1D4ED8" strokeWidth="3" />
+                <path d="M 72 44 Q 100 38 128 44" stroke="#DBEAFE" strokeWidth="3" strokeDasharray="4 3" fill="none" />
+                <path d="M 70 32 Q 100 26 130 32" stroke="#93C5FD" strokeWidth="2.5" fill="none" />
+                {/* Folded Brim */}
+                <rect x="62" y="56" width="76" height="14" rx="5" fill="#1D4ED8" stroke="#1E3A8A" strokeWidth="2.5" />
+                <line x1="76" y1="56" x2="76" y2="70" stroke="#60A5FA" strokeWidth="1.5" />
+                <line x1="90" y1="56" x2="90" y2="70" stroke="#60A5FA" strokeWidth="1.5" />
+                <line x1="110" y1="56" x2="110" y2="70" stroke="#60A5FA" strokeWidth="1.5" />
+                <line x1="124" y1="56" x2="124" y2="70" stroke="#60A5FA" strokeWidth="1.5" />
+                {/* Fluffy Pom-Pom */}
+                <circle cx="100" cy="10" r="10" fill="#F8FAFC" stroke="#94A3B8" strokeWidth="2" />
+                <circle cx="98" cy="8" r="3" fill="#FFFFFF" />
+              </g>
+            )}
+
+            {hasCyberShades && (
+              <g id="cyber-shades-headwear">
+                {/* Glow aura */}
+                <rect x="68" y="60" width="64" height="22" rx="6" fill="#06B6D4" opacity="0.35" />
+                {/* Cyber Glasses Frame */}
+                <polygon points="70,62 130,62 126,80 106,84 100,76 94,84 74,80" fill="#0F172A" stroke="#06B6D4" strokeWidth="2.5" />
+                {/* Left & Right Visor Lens */}
+                <polygon points="74,65 96,65 92,78 78,76" fill="#06B6D4" stroke="#22D3EE" strokeWidth="1.5" />
+                <polygon points="104,65 126,65 122,76 108,78" fill="#EC4899" stroke="#F472B6" strokeWidth="1.5" />
+                {/* HUD Lines */}
+                <line x1="77" y1="70" x2="92" y2="70" stroke="#FFFFFF" strokeWidth="1.5" strokeDasharray="3 2" />
+                <line x1="108" y1="70" x2="123" y2="70" stroke="#FFFFFF" strokeWidth="1.5" strokeDasharray="3 2" />
               </g>
             )}
 

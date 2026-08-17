@@ -1,8 +1,8 @@
 // Unified Storage Service Adapter for Kibo Math
 // Multi-Profile Storage Engine (profiles[activeProfileId])
-import { getStartingRatingForGrade } from '../utils/mathCurriculum';
-import { leaderboardService } from './leaderboardService';
-import { SUBJECTS_CONFIG } from '../config/subjects';
+import { getStartingRatingForGrade } from '../utils/mathCurriculum.js';
+import { leaderboardService } from './leaderboardService.js';
+import { SUBJECTS_CONFIG } from '../config/subjects.js';
 
 const KEYS = {
   PROFILES: 'kibo_profiles_data',
@@ -92,6 +92,7 @@ const DEFAULT_PROFILE = {
   shopState: {
     equippedItems: [],
     unlockedItems: [],
+    redeemedPromoCodes: []
   }
 };
 
@@ -486,9 +487,9 @@ export const storageService = {
 
     // Sync profile to user's Cloud Firestore document for multi-device sync
     try {
-      import('./userSyncService').then(({ userSyncService }) => {
+      import('./userSyncService.js').then(({ userSyncService }) => {
         userSyncService.syncProfileToCloud(activeId);
-      });
+      }).catch((e) => {});
     } catch (e) {
       console.warn('StorageService: userSyncService trigger failed', e);
     }
@@ -557,14 +558,34 @@ export const storageService = {
     const active = this.getActiveProfile();
     return active.shopState || DEFAULT_PROFILE.shopState;
   },
-  saveShopState(equippedItems, unlockedItems) {
+  saveShopState(equippedItems, unlockedItems, redeemedPromoCodes) {
     const state = safeGetProfilesState();
     const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
     if (!state.profiles[activeId]) {
       state.profiles[activeId] = { ...DEFAULT_PROFILE, id: activeId };
     }
-    state.profiles[activeId].shopState = { equippedItems, unlockedItems };
+    const currentShopState = state.profiles[activeId].shopState || {};
+    state.profiles[activeId].shopState = {
+      equippedItems: equippedItems ?? currentShopState.equippedItems ?? [],
+      unlockedItems: unlockedItems ?? currentShopState.unlockedItems ?? [],
+      redeemedPromoCodes: redeemedPromoCodes ?? currentShopState.redeemedPromoCodes ?? []
+    };
     safeSaveProfilesState(state);
+  },
+  getRedeemedPromoCodes() {
+    const shopState = this.getShopState();
+    return Array.isArray(shopState.redeemedPromoCodes) ? shopState.redeemedPromoCodes : [];
+  },
+  addRedeemedPromoCode(code) {
+    const currentCodes = this.getRedeemedPromoCodes();
+    const normalized = String(code).toUpperCase().trim();
+    if (!currentCodes.includes(normalized)) {
+      const updated = [...currentCodes, normalized];
+      const shopState = this.getShopState();
+      this.saveShopState(shopState.equippedItems, shopState.unlockedItems, updated);
+      return updated;
+    }
+    return currentCodes;
   },
 
   // Notification Preferences

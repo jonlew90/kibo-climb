@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft, User } from 'lucide-react';
+import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft, User, Ticket, Gift, Clock, AlertCircle } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
-import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, getItemsByCategory, getItemById } from '../utils/itemsCatalog';
+import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
+import { promoCodeService } from '../services/promoCodeService';
 
 export function sortShopItems(items, userSparks, unlockedItems = [], equippedItems = []) {
   return [...items].sort((a, b) => {
@@ -16,6 +17,12 @@ export function sortShopItems(items, userSparks, unlockedItems = [], equippedIte
     const aUnlocked = unlockedItems.includes(a.id);
     const bUnlocked = unlockedItems.includes(b.id);
     if (aUnlocked !== bUnlocked) return aUnlocked ? -1 : 1;
+
+    const aAvail = getItemAvailabilityStatus(a);
+    const bAvail = getItemAvailabilityStatus(b);
+    if (aAvail.isUpcoming !== bAvail.isUpcoming) {
+      return aAvail.isUpcoming ? 1 : -1;
+    }
 
     const aCanAfford = userSparks >= a.cost;
     const bCanAfford = userSparks >= b.cost;
@@ -36,6 +43,7 @@ export default function WorkshopModal({
   onBuyItem,
   onBuyConsumable,
   onToggleEquip,
+  onRedeemPromoCode,
   allowRealMoneyPurchases,
   onBuySparksPackage,
   onRequestAccountLink,
@@ -56,6 +64,12 @@ export default function WorkshopModal({
   const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
   const [recentlyPurchasedId, setRecentlyPurchasedId] = useState(null);
 
+  // Promo Code Modal State
+  const [showPromoModal, setShowPromoModal] = useState(false);
+  const [promoInput, setPromoInput] = useState('');
+  const [promoFeedback, setPromoFeedback] = useState(null);
+  const [isRedeeming, setIsRedeeming] = useState(false);
+
   const categoryScrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -73,8 +87,12 @@ export default function WorkshopModal({
   // Reset preview slots when modal opens and add Escape key listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen && onClose) {
-        onClose();
+      if (e.key === 'Escape' && isOpen) {
+        if (showPromoModal) {
+          setShowPromoModal(false);
+        } else if (onClose) {
+          onClose();
+        }
       }
     };
 
@@ -89,7 +107,7 @@ export default function WorkshopModal({
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, showPromoModal]);
 
   const handleScrollLeft = () => {
     soundFx.playKeyTap();
@@ -113,24 +131,78 @@ export default function WorkshopModal({
     }
   };
 
+  const handleRedeemPromo = (codeOverride) => {
+    const targetCode = promoCodeService.normalizeCode(codeOverride || promoInput);
+    if (!targetCode) {
+      soundFx.playIncorrect();
+      setPromoFeedback({ type: 'error', message: 'Please enter a promo code.' });
+      return;
+    }
+
+    soundFx.playKeyTap();
+    setIsRedeeming(true);
+    setPromoFeedback(null);
+
+    const res = promoCodeService.redeemCode(targetCode);
+    setIsRedeeming(false);
+
+    if (res.success) {
+      soundFx.playVictory();
+      setPromoFeedback({
+        type: 'success',
+        message: res.message,
+        reward: res.reward
+      });
+      setPromoInput('');
+
+      // Auto-preview newly unlocked item on stage if an item was unlocked
+      if (res.reward.items && res.reward.items.length > 0) {
+        const firstItemId = res.reward.items[0];
+        const itemObj = getItemById(firstItemId);
+        if (itemObj) {
+          const slot = getItemSlot(itemObj);
+          setPreviewSlots((prev) => ({ ...prev, [slot]: firstItemId }));
+        }
+      }
+
+      if (onRedeemPromoCode) {
+        onRedeemPromoCode(res);
+      }
+    } else {
+      soundFx.playIncorrect();
+      setPromoFeedback({
+        type: 'error',
+        message: res.reason || 'Failed to redeem promo code.'
+      });
+    }
+  };
+
+  const openPromoDialogWithCode = (code = '') => {
+    soundFx.playKeyTap();
+    setPromoInput(code);
+    setPromoFeedback(null);
+    setShowPromoModal(true);
+  };
+
   if (!isOpen) return null;
 
   // Compute active stage items (merges saved equipped items with active preview slots)
   const computeStageEquipped = () => {
     const stageItems = [];
+    const SLOTS = ['headwear', 'gear', 'outfits', 'pets', 'fx', 'skins', 'effects', 'background'];
 
-    ['headwear', 'gear', 'outfits', 'pets', 'fx', 'skins', 'effects', 'background'].forEach((cat) => {
-      if (previewSlots[cat] !== null && previewSlots[cat] !== undefined) {
-        if (previewSlots[cat]) {
-          stageItems.push(previewSlots[cat]);
+    SLOTS.forEach((slot) => {
+      if (previewSlots[slot] !== null && previewSlots[slot] !== undefined) {
+        if (previewSlots[slot]) {
+          stageItems.push(previewSlots[slot]);
         }
       } else {
-        const savedItemInCat = equippedItems.find((id) => {
+        const savedItemInSlot = equippedItems.find((id) => {
           const item = getItemById(id);
-          return item ? item.category === cat : false;
+          return item ? getItemSlot(item) === slot : false;
         });
-        if (savedItemInCat) {
-          stageItems.push(savedItemInCat);
+        if (savedItemInSlot) {
+          stageItems.push(savedItemInSlot);
         }
       }
     });
@@ -139,7 +211,7 @@ export default function WorkshopModal({
   };
 
   const stageEquippedItems = computeStageEquipped();
-  const currentCategoryItems = getItemsByCategory(activeCategory);
+  const currentCategoryItems = getItemsByCategory(activeCategory, unlockedItems, new Date());
 
   // Check if any active preview overrides exist
   const hasActivePreview = Object.values(previewSlots).some((v) => v !== null);
@@ -158,12 +230,13 @@ export default function WorkshopModal({
   const handlePreviewToggle = (item) => {
     if (item.isConsumable) return;
     soundFx.playKeyTap();
-    const cat = item.category;
+    const slot = getItemSlot(item);
+    const previewId = (item.bundleItems && item.bundleItems.length > 0) ? item.bundleItems[0] : item.id;
 
-    if (previewSlots[cat] === item.id) {
-      setPreviewSlots((prev) => ({ ...prev, [cat]: null }));
+    if (previewSlots[slot] === previewId) {
+      setPreviewSlots((prev) => ({ ...prev, [slot]: null }));
     } else {
-      setPreviewSlots((prev) => ({ ...prev, [cat]: item.id }));
+      setPreviewSlots((prev) => ({ ...prev, [slot]: previewId }));
     }
   };
 
@@ -199,10 +272,11 @@ export default function WorkshopModal({
 
       // Auto-equip into preview slot upon purchase
       if (!item.isConsumable) {
-        const cat = item.category;
+        const slot = getItemSlot(item);
+        const previewId = (item.bundleItems && item.bundleItems.length > 0) ? item.bundleItems[0] : item.id;
         setPreviewSlots((prev) => ({
           ...prev,
-          [cat]: item.id
+          [slot]: previewId
         }));
       }
     } else {
@@ -223,10 +297,19 @@ export default function WorkshopModal({
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => openPromoDialogWithCode()}
+            className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-xs rounded-full shadow-xs active:scale-95 transition-all border border-amber-600"
+          >
+            <Ticket className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span className="hidden sm:inline">Redeem</span> Code
+          </button>
+
           {(() => {
             const username = storageService.getUsername() || storageService.getActiveProfile()?.name || '';
             return username ? (
-              <span className="hidden sm:flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+              <span className="hidden md:flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
                 <User className="w-3 h-3" />{username}
               </span>
             ) : null;
@@ -328,6 +411,52 @@ export default function WorkshopModal({
       <main className="flex-1 min-h-0 max-h-[48vh] sm:max-h-[52vh] overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-3 sm:p-5">
         <div className="space-y-2.5 pb-6">
 
+          {/* Dedicated Promo Redemption Card inside Promo Exclusives category */}
+          {activeCategory === 'promo' && (
+            <div className="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 rounded-2xl p-4 text-white shadow-md space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center border border-white/40">
+                    <Ticket className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black leading-tight">Have a Secret Promo Code?</h3>
+                    <p className="text-[11px] font-bold text-amber-100">Redeem exclusive gear, companions, and bonus Sparks!</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openPromoDialogWithCode()}
+                  className="bg-white text-amber-900 font-extrabold text-xs px-3.5 py-1.5 rounded-xl shadow hover:bg-amber-50 active:scale-95 transition-all whitespace-nowrap"
+                >
+                  Enter Code
+                </button>
+              </div>
+
+              {/* Sample Code Pills */}
+              <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-white/20">
+                <span className="text-[10px] font-bold text-amber-100 uppercase tracking-wide">Popular Codes:</span>
+                {['GOLDENKIBO', 'KIBOSPARKS', 'SUMMERCLIMB', 'CYBERCLIMB'].map((code) => {
+                  const isRedeemed = promoCodeService.hasRedeemedCode(code);
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      onClick={() => openPromoDialogWithCode(code)}
+                      className={`text-[10px] font-black px-2 py-0.5 rounded-lg border transition-all ${
+                        isRedeemed
+                          ? 'bg-amber-700/40 text-amber-200 border-amber-400/40 opacity-70 cursor-default'
+                          : 'bg-white/20 hover:bg-white/30 text-white border-white/40 active:scale-95'
+                      }`}
+                    >
+                      {code} {isRedeemed ? '✓' : ''}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Kibo Club Subscription Banner */}
           {allowRealMoneyPurchases && (
             <div
@@ -374,55 +503,53 @@ export default function WorkshopModal({
             </div>
           )}
 
-          {activeCategory === 'get_sparks' ? (
-            allowRealMoneyPurchases ? (
-              <div className="space-y-2.5">
-                {[
-                  { id: 'sparks_pack_1', name: 'Handful of Sparks', sparks: 500, price: '$1.99', description: 'A nice little boost to get you that special item!', realMoneyPrice: '$1.99' },
-                  { id: 'sparks_pack_2', name: 'Pouch of Sparks', sparks: 1200, price: '$3.99', description: 'More than double the sparks for your adventures!', realMoneyPrice: '$3.99' },
-                  { id: 'sparks_pack_3', name: 'Chest of Sparks', sparks: 3000, price: '$7.99', description: 'A hefty sum for the serious workshop collector.', realMoneyPrice: '$7.99' },
-                  { id: 'sparks_pack_4', name: 'Mountain of Sparks', sparks: 10000, price: '$19.99', description: 'Enough sparks to buy almost anything Kibo has to offer!', realMoneyPrice: '$19.99' },
-                ].map((pack) => (
-                  <div
-                    key={pack.id}
-                    className="bg-white p-2.5 sm:p-3 rounded-2xl border-2 border-amber-200 shadow-sm transition-all flex items-center justify-between gap-3"
-                  >
-                    <div className="w-10 h-10 shrink-0 bg-amber-100 rounded-xl flex items-center justify-center border-2 border-amber-300">
-                      <Zap className="w-5 h-5 fill-amber-500 text-amber-600" />
-                    </div>
-                    <div className="space-y-1 text-left flex-1 min-w-0">
-                      <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{pack.name}</h4>
-                      <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block">
-                        ⚡ {pack.sparks} Sparks
-                      </span>
-                      <p className="text-xs text-slate-500 font-medium leading-tight">{pack.description}</p>
-                    </div>
-                    <div className="shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => onBuySparksPackage(pack)}
-                        className="btn-3d-orange px-3 py-1.5 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
-                      >
-                        Buy for {pack.price}
-                      </button>
-                    </div>
+          {(activeCategory === 'get_sparks' || activeCategory === 'premium') && !allowRealMoneyPurchases ? (
+            <div className="py-8 text-center text-slate-500 font-bold space-y-3 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-4">
+              <Lock className="w-8 h-8 mx-auto text-slate-400 stroke-[1.5]" />
+              <p className="text-sm font-black text-slate-700">Real-Money Purchases Disabled</p>
+              <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                Ask your parent to enable this feature in the <strong>Parent Zone</strong> dashboard.
+              </p>
+            </div>
+          ) : activeCategory === 'get_sparks' ? (
+            <div className="space-y-2.5">
+              {[
+                { id: 'sparks_pack_1', name: 'Handful of Sparks', sparks: 500, price: '$1.99', description: 'A nice little boost to get you that special item!', realMoneyPrice: '$1.99' },
+                { id: 'sparks_pack_2', name: 'Pouch of Sparks', sparks: 1200, price: '$3.99', description: 'More than double the sparks for your adventures!', realMoneyPrice: '$3.99' },
+                { id: 'sparks_pack_3', name: 'Chest of Sparks', sparks: 3000, price: '$7.99', description: 'A hefty sum for the serious workshop collector.', realMoneyPrice: '$7.99' },
+                { id: 'sparks_pack_4', name: 'Mountain of Sparks', sparks: 10000, price: '$19.99', description: 'Enough sparks to buy almost anything Kibo has to offer!', realMoneyPrice: '$19.99' },
+              ].map((pack) => (
+                <div
+                  key={pack.id}
+                  className="bg-white p-2.5 sm:p-3 rounded-2xl border-2 border-amber-200 shadow-sm transition-all flex items-center justify-between gap-3"
+                >
+                  <div className="w-10 h-10 shrink-0 bg-amber-100 rounded-xl flex items-center justify-center border-2 border-amber-300">
+                    <Zap className="w-5 h-5 fill-amber-500 text-amber-600" />
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-8 text-center text-slate-500 font-bold space-y-3 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-4">
-                <Lock className="w-8 h-8 mx-auto text-slate-400 stroke-[1.5]" />
-                <p className="text-sm font-black text-slate-700">Real-Money Purchases Disabled</p>
-                <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                  Ask your parent to enable this feature in the <strong>Parent Zone</strong> dashboard.
-                </p>
-              </div>
-            )
+                  <div className="space-y-1 text-left flex-1 min-w-0">
+                    <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{pack.name}</h4>
+                    <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block">
+                      ⚡ {pack.sparks} Sparks
+                    </span>
+                    <p className="text-xs text-slate-500 font-medium leading-tight">{pack.description}</p>
+                  </div>
+                  <div className="shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => onBuySparksPackage(pack)}
+                      className="btn-3d-orange px-3 py-1.5 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                    >
+                      Buy for {pack.price}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : currentCategoryItems.length === 0 ? (
             <div className="py-8 text-center text-slate-500 font-bold space-y-2 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-4">
               <ShoppingBag className="w-8 h-8 mx-auto text-slate-400 stroke-[1.5]" />
               <p className="text-sm font-black text-slate-700">No items available in this category yet!</p>
-              <p className="text-xs text-slate-500">Check back soon for new gear and power-ups.</p>
+              <p className="text-xs text-slate-500">Check back soon for new seasonal gear and promotions.</p>
             </div>
           ) : (
             sortShopItems(currentCategoryItems, sparks, unlockedItems, equippedItems).map((item) => {
@@ -431,7 +558,7 @@ export default function WorkshopModal({
               const isShieldFull = isConsumable && item.id === 'kibo_shield' && shieldOwned >= 2;
               const isUnlocked = isConsumable ? false : unlockedItems.includes(item.id);
               const isEquippedInApp = equippedItems.includes(item.id);
-              const isPreviewedOnStage = stageEquippedItems.includes(item.id);
+              const isPreviewedOnStage = stageEquippedItems.includes(item.id) || (item.bundleItems && item.bundleItems.some((id) => stageEquippedItems.includes(id)));
               const isRealMoney = !!item.realMoneyPrice;
               if (isRealMoney && !allowRealMoneyPurchases) return null; // Hide premium items if real money purchases disabled
 
@@ -440,6 +567,7 @@ export default function WorkshopModal({
               const rarityInfo = RARITY_TIERS[item.rarity] || RARITY_TIERS.common;
 
               const isJustPurchased = recentlyPurchasedId === item.id;
+              const availability = getItemAvailabilityStatus(item, new Date());
 
               return (
                 <div
@@ -452,6 +580,8 @@ export default function WorkshopModal({
                       ? 'bg-purple-50/90 border-purple-400 shadow-md ring-2 ring-purple-200'
                       : isUnlocked
                       ? 'bg-white border-slate-200 shadow-sm hover:border-slate-300'
+                      : availability.isUpcoming
+                      ? 'bg-slate-100/80 border-slate-300 opacity-90'
                       : canAfford
                       ? 'bg-amber-50/40 border-amber-300 shadow-sm hover:border-amber-400'
                       : 'bg-slate-50 border-slate-200 opacity-95 hover:border-slate-300'
@@ -478,7 +608,31 @@ export default function WorkshopModal({
                         </span>
                       )}
 
-                      {/* Status Badges (DEDUPED SINGLE BADGE PER POWERUP) */}
+                      {/* Rotation / Expiration Countdown Pill */}
+                      {!isUnlocked && availability.status === 'active' && availability.daysRemaining !== null && (
+                        <span className="text-[9px] font-black uppercase text-orange-950 bg-orange-200/90 border border-orange-400 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-2xs">
+                          <Clock className="w-2.5 h-2.5 text-orange-700" />
+                          Leaves in {availability.daysRemaining}d
+                        </span>
+                      )}
+
+                      {/* Upcoming Preview Badge */}
+                      {!isUnlocked && availability.status === 'upcoming' && (
+                        <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-200 border border-amber-400 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                          <Lock className="w-2.5 h-2.5 text-amber-800" />
+                          Coming Soon ({availability.formattedDate})
+                        </span>
+                      )}
+
+                      {/* Promo Code Required Badge */}
+                      {!isUnlocked && item.promoCodeRequired && (
+                        <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Ticket className="w-2.5 h-2.5 text-amber-700" />
+                          Code: {item.promoCodeRequired}
+                        </span>
+                      )}
+
+                      {/* Status Badges */}
                       {isConsumable ? (
                         <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border transition-all duration-300 ${
                           isJustPurchased
@@ -497,7 +651,7 @@ export default function WorkshopModal({
                         <span className="text-[9px] font-black uppercase text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-300">
                           🟦 OWNED
                         </span>
-                      ) : !canAfford && !isRealMoney ? (
+                      ) : !canAfford && !isRealMoney && !item.promoCodeRequired && !availability.isUpcoming ? (
                         <span className="text-[9px] font-black uppercase text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
                           🔒 Need {shortfall} ⚡ More
                         </span>
@@ -574,6 +728,22 @@ export default function WorkshopModal({
                           'Equip'
                         )}
                       </button>
+                    ) : availability.isUpcoming ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="bg-slate-100 text-slate-400 border-2 border-slate-200 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed flex items-center gap-1"
+                      >
+                        <Lock className="w-3.5 h-3.5" /> Coming Soon
+                      </button>
+                    ) : item.promoCodeRequired ? (
+                      <button
+                        type="button"
+                        onClick={() => openPromoDialogWithCode(item.promoCodeRequired)}
+                        className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold shadow-sm"
+                      >
+                        <Ticket className="w-3.5 h-3.5" /> Redeem Code
+                      </button>
                     ) : isRealMoney ? (
                        <button
                         type="button"
@@ -607,6 +777,160 @@ export default function WorkshopModal({
           )}
         </div>
       </main>
+
+      {/* PROMO CODE REDEMPTION MODAL DIALOG */}
+      {showPromoModal && (
+        <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div
+            className="bg-white rounded-3xl border-3 border-amber-300 p-5 sm:p-6 w-full max-w-md shadow-2xl space-y-4 animate-scale-in relative text-slate-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center">
+                  <Ticket className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900">Redeem Promo Code</h3>
+                  <p className="text-xs text-slate-500 font-medium">Unlock exclusive gear & bonus Sparks!</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setShowPromoModal(false);
+                }}
+                className="p-1.5 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Input Form */}
+            <div className="space-y-3">
+              <div className="space-y-1 text-left">
+                <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Enter Code</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={promoInput}
+                    onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleRedeemPromo();
+                      }
+                    }}
+                    placeholder="e.g. GOLDENKIBO"
+                    className="flex-1 px-3.5 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl font-mono font-bold text-sm tracking-wider uppercase text-slate-800 focus:outline-hidden focus:border-amber-400 focus:bg-white transition-all shadow-inner"
+                  />
+                  <button
+                    type="button"
+                    disabled={isRedeeming || !promoInput.trim()}
+                    onClick={() => handleRedeemPromo()}
+                    className="btn-3d-orange px-4 py-2.5 text-xs rounded-xl font-black whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isRedeeming ? 'Checking...' : 'Redeem'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Feedback Message */}
+              {promoFeedback && (
+                <div
+                  className={`p-3 rounded-2xl border text-xs font-bold space-y-1.5 animate-fade-in text-left ${
+                    promoFeedback.type === 'success'
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                      : 'bg-rose-50 border-rose-300 text-rose-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 font-black">
+                    {promoFeedback.type === 'success' ? (
+                      <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-rose-600 stroke-[2.5]" />
+                    )}
+                    <span>{promoFeedback.message}</span>
+                  </div>
+
+                  {/* If reward breakdown exists */}
+                  {promoFeedback.reward && (
+                    <div className="pt-1.5 border-t border-emerald-200/60 flex items-center gap-2 flex-wrap text-[11px]">
+                      {promoFeedback.reward.sparks > 0 && (
+                        <span className="bg-amber-100 text-amber-950 font-black px-2 py-0.5 rounded-md border border-amber-300">
+                          ⚡ +{promoFeedback.reward.sparks} Sparks
+                        </span>
+                      )}
+                      {promoFeedback.reward.newlyUnlockedItems?.map((id) => {
+                        const item = getItemById(id);
+                        return item ? (
+                          <span key={id} className="bg-purple-100 text-purple-950 font-black px-2 py-0.5 rounded-md border border-purple-300">
+                            🎁 {item.name}
+                          </span>
+                        ) : null;
+                      })}
+                      {Object.keys(promoFeedback.reward.consumables || {}).map((cKey) => (
+                        <span key={cKey} className="bg-sky-100 text-sky-950 font-black px-2 py-0.5 rounded-md border border-sky-300">
+                          🎒 +{promoFeedback.reward.consumables[cKey]} {cKey === 'streakSaverCount' ? 'Streak Savers' : 'Hint Scrolls'}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Sample / Available Codes Hint Box */}
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-left space-y-1.5">
+                <div className="flex items-center gap-1 text-[11px] font-black text-slate-600">
+                  <Gift className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Try these sample promo codes:</span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[
+                    { code: 'GOLDENKIBO', label: '🎟️ Golden Ticket + 150 ⚡' },
+                    { code: 'KIBOSPARKS', label: '⚡ +300 Sparks' },
+                    { code: 'SUMMERCLIMB', label: '☀️ 2x Shields + Hints' },
+                    { code: 'CYBERCLIMB', label: '🕶️ Cyber Shades' }
+                  ].map(({ code, label }) => {
+                    const isRedeemed = promoCodeService.hasRedeemedCode(code);
+                    return (
+                      <button
+                        key={code}
+                        type="button"
+                        onClick={() => {
+                          if (!isRedeemed) {
+                            setPromoInput(code);
+                            handleRedeemPromo(code);
+                          }
+                        }}
+                        className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition-all ${
+                          isRedeemed
+                            ? 'bg-slate-200 text-slate-400 border-slate-300 cursor-default line-through'
+                            : 'bg-white hover:bg-amber-50 text-slate-800 border-slate-200 shadow-2xs active:scale-95'
+                        }`}
+                      >
+                        {code} {isRedeemed ? '(Redeemed)' : `• ${label}`}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setShowPromoModal(false)}
+                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl transition-all"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* STICKY BOTTOM NAVIGATION FOOTER */}
       {renderFooter ? renderFooter() : null}

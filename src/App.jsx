@@ -21,7 +21,7 @@ import { evaluateBadges } from './utils/badgeManager';
 import { BADGES_CATALOG } from './data/badges';
 import { generateProblems } from './utils/mathGenerator';
 import { CURRICULUM_TIERS, calculateStars } from './utils/mathCurriculum';
-import { getItemById } from './utils/itemsCatalog';
+import { getItemById, getItemSlot } from './utils/itemsCatalog';
 import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
@@ -887,16 +887,29 @@ export default function App() {
     if (equippedItems.includes(itemId)) {
       updatedEquipped = equippedItems.filter((id) => id !== itemId);
     } else {
-      const currentSlotCat = targetItem ? targetItem.category : null;
+      const currentSlot = getItemSlot(targetItem);
       const filteredSameSlot = equippedItems.filter((id) => {
         const item = getItemById(id);
-        return item ? item.category !== currentSlotCat : true;
+        return item ? getItemSlot(item) !== currentSlot : true;
       });
       updatedEquipped = [...filteredSameSlot, itemId];
     }
 
     setEquippedItems(updatedEquipped);
     storageService.saveShopState(updatedEquipped, unlockedItems);
+  };
+
+  const handleRedeemPromoCode = (res) => {
+    if (!res || !res.updated) return;
+    if (typeof res.updated.sparks === 'number') {
+      setSparks(res.updated.sparks);
+    }
+    if (Array.isArray(res.updated.unlockedItems)) {
+      setUnlockedItems(res.updated.unlockedItems);
+    }
+    if (res.updated.consumables) {
+      setConsumables(res.updated.consumables);
+    }
   };
 
   const handleUpdatePin = (newPin) => {
@@ -1670,6 +1683,7 @@ export default function App() {
         onBuyItem={handleBuyItem}
         onBuyConsumable={handleBuyConsumable}
         onToggleEquip={handleToggleEquip}
+        onRedeemPromoCode={handleRedeemPromoCode}
         allowRealMoneyPurchases={notifPrefs.allowRealMoneyPurchases}
         onBuySparksPackage={(pack) => {
           setPendingSparksPurchase(pack);

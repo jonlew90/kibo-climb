@@ -1,5 +1,5 @@
 // src/services/leaderboardService.js
-import { db, auth } from '../config/firebase';
+import { db, auth } from '../config/firebase.js';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { 
   collection, 

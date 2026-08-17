@@ -474,12 +474,42 @@ export const WORKSHOP_ITEMS = [
 
   // SEASONAL (Category: seasonal)
   {
+    id: 'summer_visor',
+    name: 'Sunny Sun Visor',
+    category: 'seasonal',
+    slot: 'headwear',
+    cost: 120,
+    rarity: 'rare',
+    seasonName: 'Summer Splash',
+    availableFrom: '2026-06-01T00:00:00Z',
+    availableUntil: '2026-08-31T23:59:59Z',
+    description: 'Bright sun-shielding visor for sunny mountain peak climbs! (Summer Exclusive)'
+  },
+  {
     id: 'pumpkin_hat',
     name: 'Jack-o\'-Lantern Head',
     category: 'seasonal',
+    slot: 'headwear',
     cost: 150,
     rarity: 'rare',
-    description: 'Spooky scary pumpkin hat for autumn climbing!'
+    seasonName: 'Autumn Harvest',
+    availableFrom: '2026-09-01T00:00:00Z',
+    availableUntil: '2026-11-15T23:59:59Z',
+    previewFrom: '2026-08-01T00:00:00Z',
+    description: 'Spooky glowing pumpkin hat for autumn climbing! (Autumn Exclusive)'
+  },
+  {
+    id: 'winter_beanie',
+    name: 'Cozy Snowflake Beanie',
+    category: 'seasonal',
+    slot: 'headwear',
+    cost: 180,
+    rarity: 'rare',
+    seasonName: 'Winter Frost',
+    availableFrom: '2026-12-01T00:00:00Z',
+    availableUntil: '2027-02-28T23:59:59Z',
+    previewFrom: '2026-11-01T00:00:00Z',
+    description: 'Warm knitted wool beanie with a fluffy pom-pom for chilly summits! (Winter Exclusive)'
   },
 
   // PROMO EXCLUSIVES (Category: promo)
@@ -487,9 +517,21 @@ export const WORKSHOP_ITEMS = [
     id: 'golden_ticket',
     name: 'Golden Ticket',
     category: 'promo',
+    slot: 'gear',
     cost: 0,
     rarity: 'legendary',
-    description: 'A very special ticket unlocked via an exclusive promo code!'
+    promoCodeRequired: 'GOLDENKIBO',
+    description: 'A very special ticket unlocked via exclusive promo code GOLDENKIBO!'
+  },
+  {
+    id: 'cyber_shades',
+    name: 'Cyber Neon Shades',
+    category: 'promo',
+    slot: 'headwear',
+    cost: 0,
+    rarity: 'rare',
+    promoCodeRequired: 'CYBERCLIMB',
+    description: 'Futuristic glowing cyber shades unlocked via exclusive promo code CYBERCLIMB!'
   },
 
   // PREMIUM EXCLUSIVES & BUNDLES (Category: premium)
@@ -497,6 +539,7 @@ export const WORKSHOP_ITEMS = [
     id: 'starter_bundle',
     name: 'Kibo Starter Bundle',
     category: 'premium',
+    slot: 'headwear',
     realMoneyPrice: '$4.99',
     rarity: 'epic',
     description: 'Includes 1000 Sparks, 5 Streak Savers, and the exclusive Explorer Fedora!',
@@ -508,6 +551,7 @@ export const WORKSHOP_ITEMS = [
     id: 'dragon_pet_premium',
     name: 'Dragon Whelp Pet',
     category: 'premium',
+    slot: 'pets',
     realMoneyPrice: '$2.99',
     rarity: 'epic',
     description: 'A tiny fire-breathing dragon companion that flies beside Kibo. Real money exclusive.'
@@ -516,6 +560,7 @@ export const WORKSHOP_ITEMS = [
     id: 'galaxy_skin_premium',
     name: 'Nebula Galaxy Skin',
     category: 'premium',
+    slot: 'skins',
     realMoneyPrice: '$3.99',
     rarity: 'legendary',
     description: 'An animated shimmering galaxy skin for Kibo! Real money exclusive.'
@@ -524,6 +569,7 @@ export const WORKSHOP_ITEMS = [
     id: 'kibo_club_sub',
     name: 'Kibo Club Subscription',
     category: 'premium',
+    slot: 'fx',
     realMoneyPrice: '$4.99/mo',
     isSubscription: true,
     rarity: 'legendary',
@@ -535,7 +581,123 @@ export function getItemById(id) {
   return WORKSHOP_ITEMS.find((item) => item.id === id);
 }
 
-export function getItemsByCategory(category) {
-  if (!category || category === 'all') return WORKSHOP_ITEMS;
-  return WORKSHOP_ITEMS.filter((item) => item.category === category);
+export function getItemSlot(item) {
+  if (!item) return null;
+  if (item.slot) return item.slot;
+  if (item.category === 'seasonal') {
+    if (item.id === 'pumpkin_hat' || item.id === 'summer_visor' || item.id === 'winter_beanie') return 'headwear';
+  }
+  if (item.category === 'promo') {
+    if (item.id === 'golden_ticket') return 'gear';
+    if (item.id === 'cyber_shades') return 'headwear';
+  }
+  if (item.category === 'premium') {
+    if (item.id === 'dragon_pet_premium') return 'pets';
+    if (item.id === 'galaxy_skin_premium') return 'skins';
+    if (item.id === 'starter_bundle') return 'headwear';
+  }
+  return item.category;
+}
+
+/**
+ * Computes availability status for limited-time / seasonal / promo items.
+ * @param {object} item
+ * @param {Date|string|number} [currentDate=new Date()]
+ * @returns {{ status: 'permanent'|'active'|'upcoming'|'expired', isAvailable: boolean, isUpcoming: boolean, isExpired: boolean, daysRemaining?: number, startsInDays?: number, formattedDate?: string }}
+ */
+export function getItemAvailabilityStatus(item, currentDate = new Date()) {
+  if (!item) return { status: 'permanent', isAvailable: true, isUpcoming: false, isExpired: false };
+  
+  if (!item.availableFrom && !item.availableUntil && !item.previewFrom) {
+    return { status: 'permanent', isAvailable: true, isUpcoming: false, isExpired: false };
+  }
+
+  const now = (currentDate instanceof Date ? currentDate : new Date(currentDate)).getTime();
+  const availFrom = item.availableFrom ? new Date(item.availableFrom).getTime() : null;
+  const availUntil = item.availableUntil ? new Date(item.availableUntil).getTime() : null;
+  const prevFrom = item.previewFrom ? new Date(item.previewFrom).getTime() : (availFrom ? availFrom - (14 * 86400000) : null);
+
+  // 1. Expired check
+  if (availUntil && now > availUntil) {
+    return {
+      status: 'expired',
+      isAvailable: false,
+      isUpcoming: false,
+      isExpired: true,
+      expiredAt: item.availableUntil
+    };
+  }
+
+  // 2. Upcoming check (before availableFrom)
+  if (availFrom && now < availFrom) {
+    const daysUntilStart = Math.max(1, Math.ceil((availFrom - now) / (1000 * 60 * 60 * 24)));
+    const isWithinPreview = !prevFrom || now >= prevFrom;
+    
+    // Format human-friendly launch date (e.g. "Sept 1")
+    const d = new Date(availFrom);
+    const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    return {
+      status: 'upcoming',
+      isAvailable: false,
+      isUpcoming: true,
+      isExpired: false,
+      isWithinPreview,
+      startsInDays: daysUntilStart,
+      availableFrom: item.availableFrom,
+      formattedDate
+    };
+  }
+
+  // 3. Active rotation check
+  let daysRemaining = null;
+  let formattedEndDate = null;
+  if (availUntil) {
+    daysRemaining = Math.max(0, Math.ceil((availUntil - now) / (1000 * 60 * 60 * 24)));
+    const d = new Date(availUntil);
+    formattedEndDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  return {
+    status: 'active',
+    isAvailable: true,
+    isUpcoming: false,
+    isExpired: false,
+    daysRemaining,
+    availableUntil: item.availableUntil,
+    formattedEndDate
+  };
+}
+
+/**
+ * Determines if an item should be shown in the workshop list.
+ * Note: If an item is already unlocked/purchased by the player, it is ALWAYS visible!
+ */
+export function isItemVisibleInShop(item, unlockedItems = [], currentDate = new Date()) {
+  if (!item) return false;
+  // If player owns it, it ALWAYS remains visible in their shop & wardrobe
+  if (unlockedItems && unlockedItems.includes(item.id)) {
+    return true;
+  }
+
+  const availability = getItemAvailabilityStatus(item, currentDate);
+  if (availability.status === 'permanent' || availability.status === 'active') {
+    return true;
+  }
+  if (availability.status === 'upcoming') {
+    return !!availability.isWithinPreview;
+  }
+  // Expired unowned items are hidden
+  return false;
+}
+
+/**
+ * Returns filtered shop items by category, taking ownership and rotation schedules into account.
+ */
+export function getItemsByCategory(category, unlockedItems = [], currentDate = new Date()) {
+  const items = (!category || category === 'all')
+    ? WORKSHOP_ITEMS
+    : WORKSHOP_ITEMS.filter((item) => item.category === category);
+
+  return items.filter((item) => isItemVisibleInShop(item, unlockedItems, currentDate));
 }

@@ -5,7 +5,7 @@
 
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../config/firebase';
-import { generateWeeklyDigestData, formatWeeklyDigestText, formatWeeklyDigestHtml } from '../utils/weeklyDigest';
+import { generateWeeklyDigestData, formatWeeklyDigestText, formatWeeklyDigestHtml, getAppBaseUrl } from '../utils/weeklyDigest';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 
 class CommunicationsService {
@@ -37,8 +37,10 @@ class CommunicationsService {
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td>
-                    <span style="font-size: 28px;">🏔️</span>
-                    <h1 style="margin: 8px 0 0 0; color: #ffffff; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Kibo Climb Progress</h1>
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background-color: #f97316; border-radius: 10px; font-size: 24px;">
+                      🐾
+                    </div>
+                    <h1 style="margin: 10px 0 0 0; color: #ffffff; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Kibo Climb Progress</h1>
                   </td>
                 </tr>
               </table>
@@ -126,22 +128,26 @@ class CommunicationsService {
   }
 
   /**
-   * Sends a complete multi-subject weekly digest across all active subjects for a child profile.
+   * Sends a complete multi-subject weekly digest across all active subjects for a single child profile.
+   * Includes the mascot icon in the subject line (e.g. like the favicon) and detailed played topics.
    *
    * @param {Object} params
    * @param {string} params.email - Parent recipient email
    * @param {Object} params.profile - Child profile object
    * @param {Object} [params.subjectsConfig=SUBJECTS_CONFIG] - Active subjects configuration
+   * @param {string} [params.baseUrl] - Web app base URL
    * @returns {Promise<Object>}
    */
-  async sendWeeklyDigest({ email, profile, subjectsConfig = SUBJECTS_CONFIG }) {
+  async sendWeeklyDigest({ email, profile, subjectsConfig = SUBJECTS_CONFIG, baseUrl }) {
     if (!profile) {
       return { success: false, error: 'Child profile is required to generate weekly digest.' };
     }
 
-    const childName = profile.username || profile.name || 'Student';
-    const digestData = generateWeeklyDigestData(profile, subjectsConfig);
-    const subjectLine = `Weekly Progress Summary for ${childName}`;
+    const childName = profile.username || profile.name || 'Kibo Climber';
+    const digestData = generateWeeklyDigestData(profile, subjectsConfig, baseUrl);
+    
+    // Subject line includes the Kibo Red Panda mascot icon 🐾 🏔️
+    const subjectLine = `🐾 🏔️ Kibo Weekly Progress for ${childName} | Topics & Mastery Summary`;
     const textMessage = formatWeeklyDigestText({ childName, digestData });
     const htmlMessage = formatWeeklyDigestHtml({ childName, digestData });
 
@@ -152,6 +158,48 @@ class CommunicationsService {
       htmlBody: htmlMessage,
       type: 'digest'
     });
+  }
+
+  /**
+   * Sends personalized weekly progress digests per profile for ALL child profiles in an account.
+   *
+   * @param {Object} params
+   * @param {string} params.email - Parent recipient email
+   * @param {Array<Object>} params.profiles - Array of child profile objects
+   * @param {Object} [params.subjectsConfig=SUBJECTS_CONFIG] - Active subjects configuration
+   * @param {string} [params.baseUrl] - Web app base URL
+   * @returns {Promise<{ success: boolean, totalSent: number, results: Array<Object> }>}
+   */
+  async sendAllWeeklyDigests({ email, profiles = [], subjectsConfig = SUBJECTS_CONFIG, baseUrl }) {
+    if (!email) {
+      return { success: false, totalSent: 0, error: 'Parent email address is required.' };
+    }
+
+    if (!Array.isArray(profiles) || profiles.length === 0) {
+      return { success: false, totalSent: 0, error: 'No profiles available to dispatch weekly digests.' };
+    }
+
+    const results = [];
+    let successCount = 0;
+
+    for (const profile of profiles) {
+      const res = await this.sendWeeklyDigest({ email, profile, subjectsConfig, baseUrl });
+      results.push({
+        profileId: profile.id,
+        profileName: profile.name || profile.username || 'Child',
+        ...res
+      });
+      if (res.success) {
+        successCount++;
+      }
+    }
+
+    return {
+      success: successCount > 0,
+      totalSent: successCount,
+      totalProfiles: profiles.length,
+      results
+    };
   }
 }
 
