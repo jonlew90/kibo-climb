@@ -12,13 +12,24 @@ export default function RollingNumberTicker({
   className = '',
   icon = null,
   showDeltaBadge = false,
-  profileId = null
+  profileId = null,
+  subjectId = null
 }) {
   const [displayValue, setDisplayValue] = useState(value);
   const prevValueRef = useRef(value);
   const prevProfileIdRef = useRef(profileId);
+  const prevSubjectIdRef = useRef(subjectId);
 
   useEffect(() => {
+    // If context changed (profile or subject switched), update immediately without slot machine rolling
+    if (prevProfileIdRef.current !== profileId || prevSubjectIdRef.current !== subjectId) {
+      prevValueRef.current = value;
+      prevProfileIdRef.current = profileId;
+      prevSubjectIdRef.current = subjectId;
+      setDisplayValue(value);
+      return;
+    }
+
     const prev = prevValueRef.current;
     const diff = value - prev;
 
@@ -41,16 +52,14 @@ export default function RollingNumberTicker({
       }, stepDuration);
 
       prevValueRef.current = value;
-      prevProfileIdRef.current = profileId;
 
       return () => {
         clearInterval(interval);
       };
     } else {
       setDisplayValue(value);
-      prevProfileIdRef.current = profileId;
     }
-  }, [value, profileId]);
+  }, [value, profileId, subjectId]);
 
   return (
     <div className={`relative inline-flex items-center gap-1 select-none ${className}`}>

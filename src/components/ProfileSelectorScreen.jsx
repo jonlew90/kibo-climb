@@ -117,6 +117,7 @@ function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' 
 
   const isFiltered = activeSubjectLens !== 'all' && SUBJECTS_CONFIG[activeSubjectLens];
   const focusedSubject = isFiltered ? subjectStats.find((s) => s.key === activeSubjectLens) || subjectStats[0] : null;
+  const displayStreak = userData.streak ?? 0;
 
   return (
     <button
@@ -165,7 +166,7 @@ function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' 
             </span>
           )}
           <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded-md shrink-0 whitespace-nowrap">
-            <Flame className="w-2.5 h-2.5 fill-amber-500 text-amber-500 shrink-0" />{streak}d
+            <Flame className="w-2.5 h-2.5 fill-amber-500 text-amber-500 shrink-0" />{displayStreak}d
           </span>
           <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-md shrink-0 whitespace-nowrap">
             <Zap className="w-2.5 h-2.5 fill-emerald-500 text-emerald-500 shrink-0" />{totalSolvedAll}

@@ -369,6 +369,7 @@ export default function WordsSessionView({
       problemStartTimeRef.current = 0;
     }
     setShouldPulseHint(false);
+    setShowFrustrationCard(false);
 
     const hintTimer = setTimeout(() => {
       setShouldPulseHint(true);
@@ -549,7 +550,13 @@ export default function WordsSessionView({
       if (shouldTriggerProbeQuestion({ totalProblemsSolved: totalProblemsSolved + 1, inSessionStreak: evalResult.nextInSessionStreak })) {
         const curTier = getTierFromRating(evalResult.nextCompetenceRank);
         const probeTier = getProbeTargetTier(curTier);
-        const probeData = generateTierProblem(probeTier);
+        const recentWords = storageService.getUserData('words').recentWords || [];
+        const probeExclude = new Set([...blockSeenKeysRef.current, ...recentWords]);
+        const probeData = generateTierProblem(probeTier, false, probeExclude);
+        const probeWord = (probeData.answerString || probeData.answer || '').toString().toLowerCase();
+        if (probeWord) {
+          blockSeenKeysRef.current.add(probeWord);
+        }
         const probeProblem = {
           ...probeData,
           id: `probe-${Date.now()}`,
@@ -735,6 +742,7 @@ export default function WordsSessionView({
       setBlockRatingGain(0);
       setBlockShieldsUsed(0);
 
+      const currentRecords = activeUserData.personalRecords || {};
       const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
       const updatedRecords = {
         ...currentRecords,
@@ -922,7 +930,8 @@ export default function WordsSessionView({
           blockStartTimeRef.current = 0;
           problemStartTimeRef.current = 0;
           const nextTier = getTierFromRating(competenceRank);
-          const freshBatch = generateProblems(15, nextTier, [], blockSeenKeysRef.current);
+          const recentWords = storageService.getUserData('words').recentWords || [];
+          const freshBatch = generateProblems(15, nextTier, recentWords, blockSeenKeysRef.current);
           setProblemQueue(freshBatch);
           setCurrentIndex(0);
           if (onOpenWorkshop) onOpenWorkshop();
@@ -948,7 +957,8 @@ export default function WordsSessionView({
           blockStartTimeRef.current = 0;
           problemStartTimeRef.current = 0;
           const nextTier = getTierFromRating(competenceRank);
-          const freshBatch = generateProblems(15, nextTier, [], blockSeenKeysRef.current);
+          const recentWords = storageService.getUserData('words').recentWords || [];
+          const freshBatch = generateProblems(15, nextTier, recentWords, blockSeenKeysRef.current);
           setProblemQueue(freshBatch);
           setCurrentIndex(0);
         }}
@@ -1244,7 +1254,50 @@ export default function WordsSessionView({
                          );
                      }
                  });
-              }
+              };
+
+              const getWordHintMessage = () => {
+                if (!targetStr) return "Sound out the word and try your best!";
+
+                // Split displayStr into individual slot characters
+                const displayParts = displayStr.split(' ').filter(p => p.length > 0);
+                const chars = displayParts.length === targetStr.length
+                  ? displayParts
+                  : displayStr.replace(/\s+/g, '').split('');
+
+                // Find indices that are currently unrevealed blanks ('_')
+                const blankIndices = [];
+                for (let i = 0; i < targetStr.length; i++) {
+                  if (chars[i] === '_' || !chars[i]) {
+                    blankIndices.push(i);
+                  }
+                }
+
+                if (blankIndices.length === 0) {
+                  return `The word is "${targetStr.toUpperCase()}"!`;
+                }
+
+                const getOrdinal = (n) => {
+                  const rem100 = n % 100;
+                  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
+                  const rem10 = n % 10;
+                  const suffixes = { 1: 'st', 2: 'nd', 3: 'rd' };
+                  return `${n}${suffixes[rem10] || 'th'}`;
+                };
+
+                // Pick the first unrevealed blank position
+                const targetBlankIndex = blankIndices[0];
+                const letter = targetStr.charAt(targetBlankIndex).toUpperCase();
+                const pos = targetBlankIndex + 1;
+
+                if (targetBlankIndex === 0) {
+                  return `The 1st letter is "${letter}"!`;
+                } else if (targetBlankIndex === targetStr.length - 1 && blankIndices.length === 1) {
+                  return `The last letter is "${letter}"!`;
+                } else {
+                  return `The ${getOrdinal(pos)} letter is "${letter}"!`;
+                }
+              };
 
               return (
                 <div className="space-y-1.5 w-full">
@@ -1259,7 +1312,7 @@ export default function WordsSessionView({
                   {showFrustrationCard && (
                     <div className="w-full pt-1.5 border-t border-indigo-100 text-[11px] font-bold text-indigo-900 bg-indigo-50/90 p-2 rounded-2xl animate-pop text-center space-y-0.5 mt-1">
                       <span className="block font-black text-indigo-950">💪 Kibo Wisdom Hint:</span>
-                      <span className="italic block text-indigo-800">The word starts with "{targetStr.charAt(0).toUpperCase()}"!</span>
+                      <span className="italic block text-indigo-800">{getWordHintMessage()}</span>
                     </div>
                   )}
                 </div>

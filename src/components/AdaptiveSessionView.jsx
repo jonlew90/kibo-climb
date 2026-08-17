@@ -746,6 +746,7 @@ export default function AdaptiveSessionView({
       setBlockRatingGain(0);
       setBlockShieldsUsed(0);
 
+      const currentRecords = activeUserData.personalRecords || {};
       const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
       const updatedRecords = {
         ...currentRecords,

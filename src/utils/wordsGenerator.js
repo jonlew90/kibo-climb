@@ -8521,9 +8521,15 @@ function shuffleArray(array) {
  * @param {boolean} isNearThreshold - Whether user is near promotion
  * @param {Set|Array} excludeWords - Words to avoid repeating
  */
-export function generateTierProblem(targetTier, isNearThreshold = false, excludeWords = new Set()) {
+export function generateTierProblem(targetTier, isNearThreshold = false, excludeWords = new Set(), specificWordItem = null) {
   let effectiveTier = targetTier;
   const excludeSet = excludeWords instanceof Set ? excludeWords : new Set(excludeWords || []);
+
+  if (specificWordItem) {
+    const item = specificWordItem;
+    const answer = item.word.toLowerCase();
+    return formatWordProblem(item, effectiveTier, answer);
+  }
 
   // Occasionally review lower tiers (15% chance if not near threshold)
   if (!isNearThreshold && targetTier > 1 && Math.random() < 0.15) {
@@ -8535,12 +8541,29 @@ export function generateTierProblem(targetTier, isNearThreshold = false, exclude
   // Filter out excluded words if there are sufficient candidates left
   let candidateList = list.filter(item => !excludeSet.has(item.word.toLowerCase()));
   if (candidateList.length === 0) {
+    // If current effectiveTier is exhausted, check other tiers before falling back to full list
+    for (let t = 1; t <= 8; t++) {
+      if (WORD_LISTS[t]) {
+        const altCandidates = WORD_LISTS[t].filter(item => !excludeSet.has(item.word.toLowerCase()));
+        if (altCandidates.length > 0) {
+          candidateList = altCandidates;
+          effectiveTier = t;
+          break;
+        }
+      }
+    }
+  }
+
+  if (candidateList.length === 0) {
     candidateList = list;
   }
 
   const item = candidateList[Math.floor(Math.random() * candidateList.length)];
   const answer = item.word.toLowerCase();
+  return formatWordProblem(item, effectiveTier, answer);
+}
 
+function formatWordProblem(item, effectiveTier, answer) {
   // Determine revealed indices based on tier difficulty
   let revealedIndices = [];
   if (effectiveTier === 1) {
@@ -8632,7 +8655,7 @@ export function generateProblems(count, targetTier, history = [], seenKeys = new
       sessionSeen.add(w);
       seenKeys.add(w);
 
-      const prob = generateTierProblem(targetTier, false, masterExclude);
+      const prob = generateTierProblem(targetTier, false, masterExclude, item);
       problems.push({
         ...prob,
         answer: w,
@@ -8652,7 +8675,7 @@ export function generateProblems(count, targetTier, history = [], seenKeys = new
         sessionSeen.add(w);
         seenKeys.add(w);
 
-        const prob = generateTierProblem(targetTier, false, sessionSeen);
+        const prob = generateTierProblem(targetTier, false, sessionSeen, item);
         problems.push({
           ...prob,
           answer: w,
@@ -8664,9 +8687,38 @@ export function generateProblems(count, targetTier, history = [], seenKeys = new
     }
   }
 
-  // 3. Fallback pass (if count exceeds total list size): generate with fresh IDs
+  // 3. Third pass: Check adjacent/other curriculum tiers not seen in the active session
+  if (problems.length < count) {
+    for (let t = 1; t <= 8; t++) {
+      if (problems.length >= count) break;
+      if (t === targetTier) continue;
+      const otherList = shuffleArray(WORD_LISTS[t] || []);
+      for (const item of otherList) {
+        if (problems.length >= count) break;
+        const w = item.word.toLowerCase();
+        if (!sessionSeen.has(w)) {
+          sessionSeen.add(w);
+          seenKeys.add(w);
+
+          const prob = generateTierProblem(t, false, sessionSeen, item);
+          problems.push({
+            ...prob,
+            answer: w,
+            answerString: w,
+            hint: item.hint,
+            id: `prob_${Date.now()}_tier${t}_${problems.length}_${Math.random().toString(36).substring(2, 7)}`
+          });
+        }
+      }
+    }
+  }
+
+  // 4. Fallback pass (only if entire 1000+ word dictionary was exhausted): generate while updating seen
   while (problems.length < count) {
-    const prob = generateTierProblem(targetTier, false);
+    const prob = generateTierProblem(targetTier, false, sessionSeen);
+    const w = prob.answer.toLowerCase();
+    sessionSeen.add(w);
+    seenKeys.add(w);
     problems.push({
       ...prob,
       id: `prob_${Date.now()}_fallback_${problems.length}_${Math.random().toString(36).substring(2, 7)}`

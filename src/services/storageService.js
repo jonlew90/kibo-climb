@@ -20,11 +20,9 @@ export const createDefaultSubjectState = (startingRating = 1000) => ({
   competenceRank: startingRating,
   tier: 1,
   unlockedTiers: [1],
-  streak: 1,
   totalProblemsSolved: 0,
   cumulativeCorrectStreak: 0,
   personalRecords: { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
-  lastSprintDate: null,
   practiceQueue: [],
   sprintHistory: [],
   skipLogs: []
@@ -332,7 +330,6 @@ export const storageService = {
       });
       if (data.subjects.math) {
         data.subjects.math.totalProblemsSolved = data.totalProblemsSolved || 0;
-        data.subjects.math.streak = data.streak || 1;
         data.subjects.math.tier = data.tier || 1;
         data.subjects.math.unlockedTiers = data.unlockedTiers || [1];
         data.subjects.math.sprintHistory = data.sprintHistory || [];
@@ -361,12 +358,26 @@ export const storageService = {
       modified = true;
     }
 
+    // Preserve any legacy higher streak across subject records into profile streak
+    const legacyMathStreak = data.subjects?.math?.streak || 0;
+    const legacyWordsStreak = data.subjects?.words?.streak || 0;
+    const maxLegacyStreak = Math.max(data.streak || 0, legacyMathStreak, legacyWordsStreak);
+    if (maxLegacyStreak > (data.streak || 0)) {
+      data.streak = maxLegacyStreak;
+      modified = true;
+    }
+
     if (modified) {
       this.saveUserData(subjectData, subjectId);
     }
 
-    // Merge global data with subject specific data to present a unified object back
-    return { ...data, ...subjectData };
+    // Merge global data with subject specific data, ensuring unified streak and lastSprintDate
+    return {
+      ...data,
+      ...subjectData,
+      streak: data.streak ?? 1,
+      lastSprintDate: data.lastSprintDate ?? null
+    };
   },
 
   saveUserData(userData, subjectId = 'math') {
@@ -386,11 +397,9 @@ export const storageService = {
           competenceRank: currentProfileData.competenceRank || 1000,
           tier: currentProfileData.tier || 1,
           unlockedTiers: currentProfileData.unlockedTiers || [1],
-          streak: currentProfileData.streak || 1,
           totalProblemsSolved: currentProfileData.totalProblemsSolved || 0,
           cumulativeCorrectStreak: currentProfileData.cumulativeCorrectStreak || 0,
           personalRecords: currentProfileData.personalRecords || { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
-          lastSprintDate: currentProfileData.lastSprintDate || null,
           practiceQueue: currentProfileData.practiceQueue || [],
           sprintHistory: currentProfileData.sprintHistory || [],
           skipLogs: currentProfileData.skipLogs || []
@@ -401,10 +410,10 @@ export const storageService = {
        currentProfileData.subjects[subjectId] = { ...DEFAULT_PROFILE.userData.subjects.words };
     }
 
-    // Extract subject specific fields from the payload
+    // Extract subject specific fields from the payload (streak and lastSprintDate are profile-global)
     const subjectSpecificKeys = [
-      'adaptiveCompetenceRating', 'competenceRank', 'tier', 'unlockedTiers', 'streak',
-      'totalProblemsSolved', 'cumulativeCorrectStreak', 'personalRecords', 'lastSprintDate',
+      'adaptiveCompetenceRating', 'competenceRank', 'tier', 'unlockedTiers',
+      'totalProblemsSolved', 'cumulativeCorrectStreak', 'personalRecords',
       'practiceQueue', 'sprintHistory', 'skipLogs'
     ];
 
@@ -762,6 +771,12 @@ export const storageService = {
       if (sub.competenceRank !== undefined) return sub.competenceRank;
     }
     return profile?.userData?.subjectRatings?.[subjectId] || (subjectId === 'math' ? profile?.userData?.adaptiveCompetenceRating : 1000) || 1000;
+  },
+
+  getSubjectStreak(profileId, subjectId = 'math') {
+    const profile = this.getProfileById(profileId);
+    if (!profile || !profile.userData) return 1;
+    return profile.userData.streak ?? 1;
   },
 
   getAggregateRating(profileId) {

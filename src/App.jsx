@@ -184,9 +184,21 @@ export default function App() {
   };
 
   const calculateStreakFromHistory = (sprintHistory = [], practiceDays = [1, 2, 3, 4, 5]) => {
-    if (!sprintHistory || sprintHistory.length === 0) return 0;
+    const activeProf = storageService.getActiveProfile();
+    const allSubjects = activeProf?.userData?.subjects || {};
+    const combinedHistory = [
+      ...(Array.isArray(sprintHistory) ? sprintHistory : []),
+      ...(Array.isArray(activeProf?.userData?.sprintHistory) ? activeProf.userData.sprintHistory : [])
+    ];
+    Object.values(allSubjects).forEach(sub => {
+      if (Array.isArray(sub?.sprintHistory)) {
+        combinedHistory.push(...sub.sprintHistory);
+      }
+    });
+
+    if (combinedHistory.length === 0) return 0;
     const playedDates = new Set(
-      sprintHistory
+      combinedHistory
         .map((item) => item.date || item.timestamp?.split('T')[0])
         .filter(Boolean)
     );
@@ -473,10 +485,20 @@ export default function App() {
     setLiveCompetenceRating(cRating);
     setTier(uData.tier || 1);
     setUnlockedTiers(uData.unlockedTiers || [1]);
+    setTierMasteryPercent(uData.tierMasteryPercent || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 });
+    setTierBestTimes(uData.tierBestTimes || {});
     setStreak(uData.streak ?? 1);
     setSparks(uData.sparks ?? 0);
     setIsKiboClub(uData.isKiboClub ?? false);
     setTotalProblemsSolved(uData.totalProblemsSolved ?? 0);
+    setCumulativeCorrectStreak(uData.cumulativeCorrectStreak ?? 0);
+    setPersonalRecords(uData.personalRecords || {
+      fastest12QuestionsTime: null,
+      highestCorrectStreak: 0,
+      mostPerfectSessions: 0
+    });
+    setSprintHistory(uData.sprintHistory || []);
+    setPracticeQueue(uData.practiceQueue || []);
     const badgeEval = evaluateBadges({ ...uData, subjectId: sub });
     setUnlockedBadges(badgeEval?.updatedUnlocked || uData.unlockedBadges || []);
     setPracticeDays(storageService.getProfilePracticeDays());
@@ -495,6 +517,14 @@ export default function App() {
     setHapticsEnabled(prefs.isHapticsEnabled);
     setPreferences(prefs);
     setIsDoubleSparksActive(false);
+  };
+
+  const handleSubjectChange = (newSubject) => {
+    soundFx.playKeyTap();
+    setActiveSubject(newSubject);
+    setAppState('adaptive_session');
+    setShowSubjectSelector(false);
+    syncAppStateWithStorage(newSubject);
   };
 
   useEffect(() => {
@@ -1134,15 +1164,8 @@ export default function App() {
             {showSubjectSelector && (
               <div className="absolute top-full left-0 mt-2 w-48 bg-white border-2 border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden flex flex-col">
                 <button
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    setActiveSubject('math');
-                    setAppState('adaptive_session');
-                    setShowSubjectSelector(false);
-                    // trigger resync
-                    setTimeout(syncAppStateWithStorage, 0);
-                  }}
-                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left"
+                  onClick={() => handleSubjectChange('math')}
+                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 border border-amber-300 flex items-center justify-center shrink-0">
                     <span className="text-lg">🏔️</span>
@@ -1156,14 +1179,8 @@ export default function App() {
                 <div className="h-px bg-slate-100 w-full" />
 
                 <button
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    setActiveSubject('words');
-                    setAppState('adaptive_session');
-                    setShowSubjectSelector(false);
-                    setTimeout(syncAppStateWithStorage, 0);
-                  }}
-                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left"
+                  onClick={() => handleSubjectChange('words')}
+                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 border border-indigo-300 flex items-center justify-center shrink-0">
                     <span className="text-lg">📚</span>
@@ -1227,6 +1244,7 @@ export default function App() {
               value={streak}
               suffix={` ${streak === 1 ? 'day' : 'days'}`}
               profileId={activeProfileId}
+              subjectId={activeSubject}
               icon={<Flame className="w-3.5 h-3.5 text-amber-300 fill-amber-300 shrink-0" />}
             />
             {((consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0) && (
@@ -1250,6 +1268,7 @@ export default function App() {
               value={sparks}
               icon={<Zap className="w-3.5 h-3.5 text-amber-800 fill-amber-500 stroke-[2.5]" />}
               profileId={activeProfileId}
+              subjectId={activeSubject}
             />
           </button>
 
@@ -1270,6 +1289,7 @@ export default function App() {
                   <RollingNumberTicker
                     value={liveCompetenceRating}
                     profileId={activeProfileId}
+                    subjectId={activeSubject}
                     icon={<Trophy className="w-3.5 h-3.5 text-purple-700 stroke-[2.5]" />}
                   />
                 </button>

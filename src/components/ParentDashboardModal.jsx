@@ -384,7 +384,7 @@ export default function ParentDashboardModal({
               const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
               const childRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = getTierFromRating(childRating);
-              const rankTitle = getCompetenceRankTier(childRating);
+              const rankTitle = getCompetenceRankTier(childRating, activeSubject);
 
               const formatTime = (sec) => {
                 if (!sec || sec <= 0) return '0m';
@@ -506,7 +506,7 @@ export default function ParentDashboardModal({
               const actualRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentMathTier = getTierFromRating(actualRating);
               const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
-              const rankTitle = getCompetenceRankTier(actualRating);
+              const rankTitle = getCompetenceRankTier(actualRating, activeSubject);
               const gradeLvl = getGradeLevelFromRating(actualRating);
 
               return (
