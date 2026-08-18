@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Play, Settings, Trophy, Clock, Target, Zap, ArrowLeft, CheckCircle2, XCircle, ShoppingBag, Sparkles, Layers, Swords, Award, Info, X, Lock, ShieldCheck, Compass, MapPin, Users, Mountain, ChevronDown } from 'lucide-react';
+import { Flame, Settings, Trophy, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown } from 'lucide-react';
 import Mascot from './components/Mascot';
-import Keypad from './components/Keypad';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
 import PinGateModal from './components/PinGateModal';
 import ParentDashboardModal from './components/ParentDashboardModal';
 import StreakSavedModal from './components/StreakSavedModal';
-import MicroHintCard from './components/MicroHintCard';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import ProfileSelectorScreen from './components/ProfileSelectorScreen';
 import BadgesModal from './components/BadgesModal';
@@ -19,13 +17,11 @@ import { checkAndPromptLinkAccount } from './utils/linkPromptLogic';
 import { useDevState } from './hooks/useDevState';
 import { evaluateBadges } from './utils/badgeManager';
 import { BADGES_CATALOG } from './data/badges';
-import { generateProblems } from './utils/mathGenerator';
-import { CURRICULUM_TIERS, calculateStars } from './utils/mathCurriculum';
+import { CURRICULUM_TIERS } from './utils/mathCurriculum';
 import { getItemById, getItemSlot } from './utils/itemsCatalog';
-import { classifyLatency } from './utils/latencyEngine';
 import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
-import { pluralize, normalizeTimeAnswer } from './utils/formatters';
+import { pluralize } from './utils/formatters';
 import { storageService } from './services/storageService';
 import { getCompetenceRankTier } from './utils/GameEconomyModel';
 import { 
@@ -966,63 +962,6 @@ export default function App() {
     localStorage.setItem('kibo_math_tier', newTier.toString());
     localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(updatedUnlocked));
   };
-
-  const calculateStats = (results = []) => {
-    if (!results || results.length === 0) {
-      return {
-        totalTimeSec: '0',
-        accuracyPct: 0,
-        avgVelocitySec: '0',
-        superFastCount: 0,
-        fluentCount: 0,
-        practiceCount: 0,
-        total: 0
-      };
-    }
-
-    const correctCount = results.filter((r) => r.isCorrect).length;
-    const totalLatencyMs = results.reduce((acc, r) => acc + r.latencyMs, 0);
-
-    const totalTimeSec = (totalLatencyMs / 1000).toFixed(1);
-    const accuracyPct = Math.round((correctCount / results.length) * 100);
-    const avgVelocitySec = (totalLatencyMs / (results.length * 1000)).toFixed(2);
-
-    const instantRecall = results.filter((p) => {
-      const sec = p.responseTimeSeconds !== undefined
-        ? (p.responseTimeSeconds > 100 ? p.responseTimeSeconds / 1000 : p.responseTimeSeconds)
-        : (p.latencyMs > 100 ? p.latencyMs / 1000 : p.latencyMs);
-      return p.isCorrect && sec < 3.5;
-    });
-
-    const workedOut = results.filter((p) => {
-      const sec = p.responseTimeSeconds !== undefined
-        ? (p.responseTimeSeconds > 100 ? p.responseTimeSeconds / 1000 : p.responseTimeSeconds)
-        : (p.latencyMs > 100 ? p.latencyMs / 1000 : p.latencyMs);
-      return p.isCorrect && sec >= 3.5;
-    });
-
-    const focusArea = results.filter((p) => !p.isCorrect);
-
-    const superFastCount = instantRecall.length;
-    const fluentCount = workedOut.length;
-    const practiceCount = focusArea.length;
-
-    const starsEarned = calculateStars(accuracyPct, totalTimeSec);
-
-    return {
-      totalTimeSec,
-      accuracyPct,
-      avgVelocitySec,
-      superFastCount,
-      fluentCount,
-      practiceCount,
-      correctCount,
-      starsEarned,
-      total: results.length
-    };
-  };
-
-  const stats = calculateStats();
 
   const getTierMeta = (t) => {
     return CURRICULUM_TIERS.find((item) => item.tier === t) || CURRICULUM_TIERS[0];
