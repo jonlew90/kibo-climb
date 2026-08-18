@@ -87,32 +87,38 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         if (sprintHistory && sprintHistory.length >= 2) {
           const latestSprint = sprintHistory[0];
           const previousSprint = sprintHistory[1];
-          if (latestSprint.date && previousSprint.date) {
-            const latestDate = new Date(latestSprint.date);
-            const prevDate = new Date(previousSprint.date);
+          const latestDateVal = latestSprint?.timestamp || latestSprint?.date;
+          const prevDateVal = previousSprint?.timestamp || previousSprint?.date;
+          if (latestDateVal && prevDateVal) {
+            const latestDate = new Date(latestDateVal);
+            const prevDate = new Date(prevDateVal);
             const diffDays = (latestDate - prevDate) / (1000 * 60 * 60 * 24);
             unlocked = diffDays >= 5;
           }
         }
         break;
-      case 'early_bird':
-        if (lastSprintResult && lastSprintResult.date) {
-          const sprintTime = new Date(lastSprintResult.date);
-          unlocked = sprintTime.getHours() < 8;
-        } else if (sprintHistory && sprintHistory.length > 0) {
-          const sprintTime = new Date(sprintHistory[0].date);
-          unlocked = sprintTime.getHours() < 8;
+      case 'early_bird': {
+        const targetRecord = lastSprintResult || (sprintHistory && sprintHistory.length > 0 ? sprintHistory[0] : null);
+        const isoString = targetRecord?.timestamp || (typeof targetRecord?.date === 'string' && targetRecord.date.includes('T') ? targetRecord.date : null);
+        if (isoString) {
+          const sprintTime = new Date(isoString);
+          if (!isNaN(sprintTime.getTime())) {
+            unlocked = sprintTime.getHours() < 8;
+          }
         }
         break;
-      case 'night_owl':
-        if (lastSprintResult && lastSprintResult.date) {
-          const sprintTime = new Date(lastSprintResult.date);
-          unlocked = sprintTime.getHours() >= 18;
-        } else if (sprintHistory && sprintHistory.length > 0) {
-          const sprintTime = new Date(sprintHistory[0].date);
-          unlocked = sprintTime.getHours() >= 18;
+      }
+      case 'night_owl': {
+        const targetRecord = lastSprintResult || (sprintHistory && sprintHistory.length > 0 ? sprintHistory[0] : null);
+        const isoString = targetRecord?.timestamp || (typeof targetRecord?.date === 'string' && targetRecord.date.includes('T') ? targetRecord.date : null);
+        if (isoString) {
+          const sprintTime = new Date(isoString);
+          if (!isNaN(sprintTime.getTime())) {
+            unlocked = sprintTime.getHours() >= 18;
+          }
         }
         break;
+      }
       case 'grit':
         if (sprintHistory && sprintHistory.length >= 2) {
           const latestSprint = sprintHistory[0];
