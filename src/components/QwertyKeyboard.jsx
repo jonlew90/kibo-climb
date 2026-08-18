@@ -2,16 +2,22 @@ import React, { useEffect, useCallback } from 'react';
 import { Delete, Send, RotateCcw } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
-export default function QwertyKeyboard({ onChar, onDelete, onClear, onSubmit }) {
+export default function QwertyKeyboard({ onChar, onDelete, onClear, onSubmit, prunedKeys = [] }) {
   const row1 = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'];
   const row2 = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'];
   const row3 = ['Z', 'X', 'C', 'V', 'B', 'N', 'M'];
 
+  const isPruned = (char) => {
+    if (!prunedKeys || prunedKeys.length === 0) return false;
+    return prunedKeys.includes(char.toUpperCase()) || (prunedKeys.has && prunedKeys.has(char.toUpperCase()));
+  };
+
   const handleCharClick = useCallback((char, e) => {
     e.preventDefault();
+    if (isPruned(char)) return;
     soundFx.playKeyTap();
     onChar(char.toLowerCase());
-  }, [onChar]);
+  }, [onChar, prunedKeys]);
 
   const handleDeleteClick = useCallback((e) => {
     e.preventDefault();
@@ -47,28 +53,44 @@ export default function QwertyKeyboard({ onChar, onDelete, onClear, onSubmit }) 
 
       {/* Row 1 */}
       <div className="flex justify-center gap-1 sm:gap-1.5 w-full">
-        {row1.map((char) => (
-          <button
-            key={char}
-            onPointerDown={(e) => handleCharClick(char, e)}
-            className="flex-1 h-12 sm:h-14 bg-white border-2 border-slate-200 rounded-xl shadow-sm text-lg sm:text-xl font-black text-slate-800 active:bg-amber-100 active:border-amber-400 active:text-amber-900 active:scale-95 transition-all flex items-center justify-center cursor-pointer min-w-0"
-          >
-            {char}
-          </button>
-        ))}
+        {row1.map((char) => {
+          const pruned = isPruned(char);
+          return (
+            <button
+              key={char}
+              disabled={pruned}
+              onPointerDown={(e) => handleCharClick(char, e)}
+              className={`flex-1 h-12 sm:h-14 rounded-xl shadow-sm text-lg sm:text-xl font-black transition-all flex items-center justify-center min-w-0 ${
+                pruned
+                  ? 'bg-slate-100/60 border-2 border-slate-200 text-slate-300 opacity-25 cursor-not-allowed scale-90'
+                  : 'bg-white border-2 border-slate-200 text-slate-800 active:bg-amber-100 active:border-amber-400 active:text-amber-900 active:scale-95 cursor-pointer'
+              }`}
+            >
+              {char}
+            </button>
+          );
+        })}
       </div>
 
       {/* Row 2 */}
       <div className="flex justify-center gap-1 sm:gap-1.5 w-[90%] mx-auto">
-        {row2.map((char) => (
-          <button
-            key={char}
-            onPointerDown={(e) => handleCharClick(char, e)}
-            className="flex-1 h-12 sm:h-14 bg-white border-2 border-slate-200 rounded-xl shadow-sm text-lg sm:text-xl font-black text-slate-800 active:bg-amber-100 active:border-amber-400 active:text-amber-900 active:scale-95 transition-all flex items-center justify-center cursor-pointer min-w-0"
-          >
-            {char}
-          </button>
-        ))}
+        {row2.map((char) => {
+          const pruned = isPruned(char);
+          return (
+            <button
+              key={char}
+              disabled={pruned}
+              onPointerDown={(e) => handleCharClick(char, e)}
+              className={`flex-1 h-12 sm:h-14 rounded-xl shadow-sm text-lg sm:text-xl font-black transition-all flex items-center justify-center min-w-0 ${
+                pruned
+                  ? 'bg-slate-100/60 border-2 border-slate-200 text-slate-300 opacity-25 cursor-not-allowed scale-90'
+                  : 'bg-white border-2 border-slate-200 text-slate-800 active:bg-amber-100 active:border-amber-400 active:text-amber-900 active:scale-95 cursor-pointer'
+              }`}
+            >
+              {char}
+            </button>
+          );
+        })}
       </div>
 
       {/* Row 3 */}
@@ -80,15 +102,23 @@ export default function QwertyKeyboard({ onChar, onDelete, onClear, onSubmit }) 
           <Send className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
         </button>
 
-        {row3.map((char) => (
-          <button
-            key={char}
-            onPointerDown={(e) => handleCharClick(char, e)}
-            className="flex-1 h-12 sm:h-14 bg-white border-2 border-slate-200 rounded-xl shadow-sm text-lg sm:text-xl font-black text-slate-800 active:bg-amber-100 active:border-amber-400 active:text-amber-900 active:scale-95 transition-all flex items-center justify-center cursor-pointer min-w-0"
-          >
-            {char}
-          </button>
-        ))}
+        {row3.map((char) => {
+          const pruned = isPruned(char);
+          return (
+            <button
+              key={char}
+              disabled={pruned}
+              onPointerDown={(e) => handleCharClick(char, e)}
+              className={`flex-1 h-12 sm:h-14 rounded-xl shadow-sm text-lg sm:text-xl font-black transition-all flex items-center justify-center min-w-0 ${
+                pruned
+                  ? 'bg-slate-100/60 border-2 border-slate-200 text-slate-300 opacity-25 cursor-not-allowed scale-90'
+                  : 'bg-white border-2 border-slate-200 text-slate-800 active:bg-amber-100 active:border-amber-400 active:text-amber-900 active:scale-95 cursor-pointer'
+              }`}
+            >
+              {char}
+            </button>
+          );
+        })}
 
         <button
           onPointerDown={handleDeleteClick}

@@ -678,7 +678,15 @@ export default function WorkshopModal({
                         }`}>
                           {item.id === 'kibo_shield'
                             ? `🛡️ CAPACITY: ${shieldOwned}/2`
-                            : `🎒 OWNED: ${item.id === 'streak_saver' ? (consumables?.streakSaverCount ?? 0) : item.id === 'hint_scroll' ? (consumables?.hintScrollCount ?? 0) : (consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0)}`}
+                            : item.id === 'streak_saver'
+                            ? `🎒 OWNED: ${consumables?.streakSaverCount ?? 0}`
+                            : item.id === 'hint_scroll'
+                            ? `🎒 OWNED: ${consumables?.hintScrollCount ?? 0}`
+                            : item.id === 'letter_spyglass'
+                            ? `🎒 OWNED: ${consumables?.letterSpyglassCount ?? 0}`
+                            : item.id === 'letter_pruner'
+                            ? `🎒 OWNED: ${consumables?.letterPrunerCount ?? 0}`
+                            : `🎒 OWNED: ${consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0}`}
                         </span>
                       ) : isEquippedInApp ? (
                         <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5">

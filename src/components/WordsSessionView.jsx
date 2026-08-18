@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame } from 'lucide-react';
 import Mascot from './Mascot';
 
@@ -43,7 +43,7 @@ function getStreakTierConfig(streak) {
   return {
     label: `🔥 ${streak} STREAK`,
     pillClass: 'bg-slate-100 text-slate-700 border-slate-300',
-    cardGlow: 'border-slate-300 hover:border-slate-400'
+    cardGlow: ''
   };
 }
 
@@ -67,6 +67,8 @@ export default function WordsSessionView({
   consumables = {},
   onToggleDoubleSparksPotion,
   onConsumeHintScroll,
+  onConsumeLetterSpyglass,
+  onConsumeLetterPruner,
   onConsumeShield,
   onResetDoubleSparks
 }) {
@@ -157,6 +159,100 @@ export default function WordsSessionView({
 
   const problemStartTimeRef = useRef(0);
   const pauseStartRef = useRef(null);
+
+  // Kibo Words Specialized Power-Up States
+  const [isLetterPrunerActive, setIsLetterPrunerActive] = useState(false);
+  const [spyglassRevealedSlots, setSpyglassRevealedSlots] = useState({});
+
+  // Reset per-word power-up state on question transition
+  useEffect(() => {
+    setIsLetterPrunerActive(false);
+    setSpyglassRevealedSlots({});
+  }, [currentIndex]);
+
+  // Compute base slots and effective slots (including permanent spyglass-revealed letters)
+  const effectiveWordSlots = useMemo(() => {
+    const displayStr = currentProblem.displayString || '';
+    const displayParts = displayStr.split(' ').filter((c) => c.length > 0);
+    const baseSlots = displayParts.length > 0 ? displayParts : displayStr.split('');
+    return baseSlots.map((char, idx) => (char === '_' && spyglassRevealedSlots[idx] ? spyglassRevealedSlots[idx] : char));
+  }, [currentProblem.displayString, spyglassRevealedSlots]);
+
+  const blankSlotIndices = useMemo(() => {
+    const indices = [];
+    effectiveWordSlots.forEach((slot, idx) => {
+      if (slot === '_') indices.push(idx);
+    });
+    return indices;
+  }, [effectiveWordSlots]);
+
+  // Compute pruned keys when Letter Pruner power-up is active
+  const prunedKeys = useMemo(() => {
+    if (!isLetterPrunerActive || !targetStr) return [];
+    const targetLetters = new Set(targetStr.toUpperCase().replace(/[^A-Z]/g, '').split(''));
+    const allAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    return allAlphabet.filter((char) => !targetLetters.has(char));
+  }, [isLetterPrunerActive, targetStr]);
+
+  const handleUseLetterSpyglass = () => {
+    const owned = consumables?.letterSpyglassCount ?? 0;
+    if (owned <= 0) {
+      if (onOpenWorkshop) onOpenWorkshop();
+      return;
+    }
+
+    if (blankSlotIndices.length === 0) {
+      triggerToastBanner({
+        type: 'info',
+        text: 'All letters already revealed! Tap Submit (➤).'
+      }, 1500);
+      return;
+    }
+
+    // Pick the first remaining blank slot position to turn into a permanent given letter
+    const targetPos = blankSlotIndices[0];
+    const answerStr = (currentProblem.answerString || currentProblem.answer || '').toString();
+    const letterToReveal = answerStr.charAt(targetPos).toUpperCase();
+
+    if (onConsumeLetterSpyglass && onConsumeLetterSpyglass()) {
+      setSpyglassRevealedSlots((prev) => ({
+        ...prev,
+        [targetPos]: letterToReveal
+      }));
+      // Reset or adjust typed input so it only fills the remaining blank slots
+      setInputVal('');
+      setAcknowledgedGivenIndices(new Set());
+
+      triggerToastBanner({
+        type: 'success',
+        text: `Permanent Letter Revealed: "${letterToReveal}"! 🔍`
+      }, 1500);
+
+      // If this was the last remaining blank, celebrate and auto-evaluate!
+      if (blankSlotIndices.length === 1) {
+        setTimeout(() => {
+          processAnswerEvaluation('');
+        }, 350);
+      }
+    }
+  };
+
+  const handleUseLetterPruner = () => {
+    if (isLetterPrunerActive) return;
+    const owned = consumables?.letterPrunerCount ?? 0;
+    if (owned <= 0) {
+      if (onOpenWorkshop) onOpenWorkshop();
+      return;
+    }
+
+    if (onConsumeLetterPruner && onConsumeLetterPruner()) {
+      setIsLetterPrunerActive(true);
+      triggerToastBanner({
+        type: 'success',
+        text: 'Distractor Keys Pruned! ✂️'
+      }, 1500);
+    }
+  };
 
   const saveCurrentClimbProgress = () => {
     if (!hasStartedClimb || showBreakOverlay) return;
@@ -483,15 +579,11 @@ export default function WordsSessionView({
   };
 
   const getFullWordFromInput = (input) => {
-    const displayStr = currentProblem.displayString || '';
-    const displayParts = displayStr.split(' ').filter((c) => c.length > 0);
-    const wordSlots = displayParts.length > 0 ? displayParts : displayStr.split('');
-
     let fullWord = '';
     let inputIdx = 0;
 
-    for (let i = 0; i < wordSlots.length; i++) {
-      if (wordSlots[i] === '_') {
+    for (let i = 0; i < effectiveWordSlots.length; i++) {
+      if (effectiveWordSlots[i] === '_') {
         if (inputIdx < input.length) {
           fullWord += input[inputIdx];
           inputIdx++;
@@ -499,16 +591,15 @@ export default function WordsSessionView({
           fullWord += '_'; // missing input
         }
       } else {
-        fullWord += wordSlots[i];
+        fullWord += effectiveWordSlots[i];
       }
     }
     return fullWord.toLowerCase();
   };
 
-  const processAnswerEvaluation = (userAnsString) => {
-    if (!userAnsString || !userAnsString.trim()) return;
-
-    setInputVal(userAnsString);
+  const processAnswerEvaluation = (userAnsString = inputVal) => {
+    const rawInput = typeof userAnsString === 'string' ? userAnsString : inputVal;
+    setInputVal(rawInput);
     setConsecutiveSkips(0);
 
     if (problemStartTimeRef.current === 0) {
@@ -516,7 +607,7 @@ export default function WordsSessionView({
     }
 
     const normTargetAns = (currentProblem.answerString || currentProblem.answer || '').toString().toLowerCase();
-    const fullWordGuess = getFullWordFromInput(userAnsString);
+    const fullWordGuess = getFullWordFromInput(rawInput);
 
     const isCorrect = fullWordGuess === normTargetAns;
     const latencyMs = performance.now() - problemStartTimeRef.current;
@@ -826,17 +917,6 @@ export default function WordsSessionView({
 
     soundFx.playKeyTap();
 
-    const displayStr = currentProblem.displayString || '';
-    const displayParts = displayStr.split(' ').filter((c) => c.length > 0);
-    const wordSlots = displayParts.length > 0 ? displayParts : displayStr.split('');
-
-    const blankSlotIndices = [];
-    wordSlots.forEach((slot, idx) => {
-      if (slot === '_') {
-        blankSlotIndices.push(idx);
-      }
-    });
-
     const filledCount = inputVal.length;
 
     // Check if player is typing a pre-filled/given letter for the current segment
@@ -856,7 +936,7 @@ export default function WordsSessionView({
               break;
             }
           }
-          if (priorGivenAllAcked && wordSlots[i].toLowerCase() === charInput) {
+          if (priorGivenAllAcked && effectiveWordSlots[i].toLowerCase() === charInput) {
             matchedGivenIdx = i;
             break;
           }
@@ -880,8 +960,8 @@ export default function WordsSessionView({
       // All blanks are already filled. Check trailing given letters (after the last blank)
       const lastBlankSlotIndex = blankSlotIndices[blankSlotIndices.length - 1];
       let matchedTrailingIdx = -1;
-      for (let i = lastBlankSlotIndex + 1; i < wordSlots.length; i++) {
-        if (wordSlots[i].toLowerCase() === charInput) {
+      for (let i = lastBlankSlotIndex + 1; i < effectiveWordSlots.length; i++) {
+        if (effectiveWordSlots[i].toLowerCase() === charInput) {
           matchedTrailingIdx = i;
           break;
         }
@@ -1307,6 +1387,46 @@ export default function WordsSessionView({
                     💡 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
                   </button>
 
+                  {/* LETTER SPYGLASS BUTTON */}
+                  <button
+                    type="button"
+                    onClick={handleUseLetterSpyglass}
+                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                      (consumables?.letterSpyglassCount ?? 0) > 0
+                        ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                    }`}
+                    title={
+                      (consumables?.letterSpyglassCount ?? 0) > 0
+                        ? 'Use Letter Spyglass to reveal the next blank letter!'
+                        : 'Get Letter Spyglass in Kibo\'s Corner'
+                    }
+                  >
+                    🔍 {(consumables?.letterSpyglassCount ?? 0) > 0 ? `Spyglass (${consumables.letterSpyglassCount})` : 'Spyglass'}
+                  </button>
+
+                  {/* LETTER PRUNER BUTTON */}
+                  <button
+                    type="button"
+                    onClick={handleUseLetterPruner}
+                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                      isLetterPrunerActive
+                        ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
+                        : (consumables?.letterPrunerCount ?? 0) > 0
+                        ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                    }`}
+                    title={
+                      isLetterPrunerActive
+                        ? 'Distractors pruned for this word!'
+                        : (consumables?.letterPrunerCount ?? 0) > 0
+                        ? 'Prune unused keyboard keys!'
+                        : 'Get Letter Pruner in Kibo\'s Corner'
+                    }
+                  >
+                    ✂️ {isLetterPrunerActive ? 'Pruned' : (consumables?.letterPrunerCount ?? 0) > 0 ? `Prune (${consumables.letterPrunerCount})` : 'Prune'}
+                  </button>
+
                   {isDoubleSparksActive && (
                     <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
                       ⚡ 2x Active!
@@ -1338,7 +1458,7 @@ export default function WordsSessionView({
 
                 return (
                   <div className="flex items-center justify-center flex-wrap gap-1.5 sm:gap-2 max-w-full">
-                    {wordSlots.map((char, index) => {
+                    {effectiveWordSlots.map((char, index) => {
                       if (char === '_') {
                         const thisBlankOrder = inputIndex;
                         const typedChar = inputVal[inputIndex];
@@ -1362,6 +1482,7 @@ export default function WordsSessionView({
                           </span>
                         );
                       } else {
+                        const isSpyglassRevealed = !!spyglassRevealedSlots[index];
                         const isPulsing = highlightedGivenIndex === index;
                         return (
                           <span
@@ -1369,10 +1490,17 @@ export default function WordsSessionView({
                             className={`relative inline-flex items-center justify-center min-w-[2.25rem] sm:min-w-[2.75rem] h-11 sm:h-13 px-1.5 sm:px-2 rounded-xl text-xl sm:text-2xl font-black select-none transition-all duration-200 ${
                               isPulsing
                                 ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-400 ring-4 ring-emerald-300/80 scale-110 shadow-md'
+                                : isSpyglassRevealed
+                                ? 'bg-amber-100 text-amber-950 border-2 border-amber-400 ring-2 ring-amber-300 shadow-xs scale-105'
                                 : 'bg-slate-100/90 text-slate-700 border-2 border-slate-200/90 shadow-xs'
                             }`}
                           >
                             {char.toUpperCase()}
+                            {isSpyglassRevealed && (
+                              <span className="absolute -top-1.5 -right-1 text-[9px] bg-amber-400 text-amber-950 rounded-full w-4 h-4 flex items-center justify-center shadow-xs font-bold ring-1 ring-white">
+                                🔍
+                              </span>
+                            )}
                           </span>
                         );
                       }
@@ -1453,6 +1581,7 @@ export default function WordsSessionView({
       {hasStartedClimb && (
         <div className="w-full max-w-sm shrink-0 animate-pop mt-0.5 sm:mt-2 max-h-[35vh]">
           <QwertyKeyboard
+            prunedKeys={prunedKeys}
             onChar={handleCharInput}
             onDelete={handleDeleteDigit}
             onClear={handleClearInput}

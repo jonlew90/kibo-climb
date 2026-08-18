@@ -59,6 +59,28 @@ export const WORKSHOP_ITEMS = [
     description: 'Costs 8 Sparks. Instantly reveals a helpful step-by-step Kibo hint for any active problem!'
   },
   {
+    id: 'letter_spyglass',
+    name: 'Letter Spyglass',
+    category: 'powerups',
+    cost: 15,
+    rarity: 'rare',
+    isConsumable: true,
+    icon: '🔍',
+    badgeTag: 'Kibo Words Only',
+    description: 'Costs 15 Sparks. (Kibo Words Exclusive) Instantly reveals and permanently gives the next missing blank letter in your active word!'
+  },
+  {
+    id: 'letter_pruner',
+    name: 'Letter Pruner',
+    category: 'powerups',
+    cost: 15,
+    rarity: 'rare',
+    isConsumable: true,
+    icon: '✂️',
+    badgeTag: 'Kibo Words Only',
+    description: 'Costs 15 Sparks. (Kibo Words Exclusive) Eliminates distractor letters on the keyboard, leaving only valid letters for this word!'
+  },
+  {
     id: 'kibo_shield',
     name: 'Kibo Shield',
     category: 'powerups',

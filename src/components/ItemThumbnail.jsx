@@ -188,6 +188,39 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
+        {itemId === 'letter_spyglass' && (
+          <g>
+            {/* Handle */}
+            <path d="M 62 62 L 80 80" stroke="#78350F" strokeWidth="9" strokeLinecap="round" />
+            <path d="M 63 63 L 78 78" stroke="#D97706" strokeWidth="5" strokeLinecap="round" />
+            {/* Glass Rim */}
+            <circle cx="44" cy="44" r="24" fill="#E0F2FE" stroke="#F59E0B" strokeWidth="6" />
+            <circle cx="44" cy="44" r="20" fill="#BAE6FD" opacity="0.6" />
+            {/* Glare */}
+            <path d="M 32 30 A 18 18 0 0 1 56 30" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.8" />
+            {/* Letter Inside */}
+            <text x="44" y="52" textAnchor="middle" fontSize="22" fontWeight="900" fill="#0369A1">A</text>
+            <circle cx="58" cy="30" r="3" fill="#FDE047" />
+          </g>
+        )}
+
+        {itemId === 'letter_pruner' && (
+          <g>
+            {/* Pruner handles */}
+            <path d="M 32 72 Q 22 82 28 88 Q 38 88 44 76 L 50 56" fill="#047857" stroke="#065F46" strokeWidth="2.5" />
+            <path d="M 68 72 Q 78 82 72 88 Q 62 88 56 76 L 50 56" fill="#047857" stroke="#065F46" strokeWidth="2.5" />
+            {/* Blades */}
+            <path d="M 50 56 L 36 24 C 36 24 44 26 50 48" fill="#CBD5E1" stroke="#475569" strokeWidth="2" />
+            <path d="M 50 56 L 64 24 C 64 24 56 26 50 48" fill="#E2E8F0" stroke="#475569" strokeWidth="2" />
+            {/* Center Pivot Bolt */}
+            <circle cx="50" cy="54" r="4.5" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+            {/* Trimmed letter snippets */}
+            <text x="30" y="32" fontSize="12" fontWeight="900" fill="#EF4444" opacity="0.75">✕</text>
+            <text x="70" y="32" fontSize="12" fontWeight="900" fill="#EF4444" opacity="0.75">✕</text>
+            <text x="50" y="22" textAnchor="middle" fontSize="11" fontWeight="900" fill="#10B981">✂️</text>
+          </g>
+        )}
+
         {itemId === 'kibo_shield' && (
           <g>
             <path d="M 50 15 C 70 15, 80 25, 80 45 C 80 70, 50 88, 50 88 C 50 88, 20 70, 20 45 C 20 25, 30 15, 50 15 Z" fill="#0EA5E9" stroke="#0284C7" strokeWidth="4" />

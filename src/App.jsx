@@ -406,7 +406,9 @@ export default function App() {
       shieldCount: saved?.shieldCount ?? 1,
       streakSaverCount: saved?.streakSaverCount ?? 0,
       doubleSparksPotionCount: saved?.doubleSparksPotionCount ?? saved?.doubleCoinPotionCount ?? 0,
-      hintScrollCount: saved?.hintScrollCount ?? 2
+      hintScrollCount: saved?.hintScrollCount ?? 2,
+      letterSpyglassCount: saved?.letterSpyglassCount ?? 2,
+      letterPrunerCount: saved?.letterPrunerCount ?? 2
     };
   });
 
@@ -541,6 +543,8 @@ export default function App() {
     let nextStreakSaverCount = consumables.streakSaverCount || 0;
     let nextPotionCount = consumables.doubleSparksPotionCount || consumables.doubleCoinPotionCount || 0;
     let nextHintScrollCount = consumables.hintScrollCount || 0;
+    let nextLetterSpyglassCount = consumables.letterSpyglassCount || 0;
+    let nextLetterPrunerCount = consumables.letterPrunerCount || 0;
 
     if (item.id === 'kibo_shield') {
       nextShieldCount += 1;
@@ -550,6 +554,10 @@ export default function App() {
       nextPotionCount += 1;
     } else if (item.id === 'hint_scroll') {
       nextHintScrollCount += 1;
+    } else if (item.id === 'letter_spyglass') {
+      nextLetterSpyglassCount += 1;
+    } else if (item.id === 'letter_pruner') {
+      nextLetterPrunerCount += 1;
     }
 
     const nextConsumables = {
@@ -557,7 +565,9 @@ export default function App() {
       streakSaverCount: nextStreakSaverCount,
       doubleSparksPotionCount: nextPotionCount,
       doubleCoinPotionCount: nextPotionCount,
-      hintScrollCount: nextHintScrollCount
+      hintScrollCount: nextHintScrollCount,
+      letterSpyglassCount: nextLetterSpyglassCount,
+      letterPrunerCount: nextLetterPrunerCount
     };
 
     setSparks(newSparks);
@@ -610,6 +620,32 @@ export default function App() {
     const nextConsumables = {
       ...consumables,
       hintScrollCount: owned - 1
+    };
+    setConsumables(nextConsumables);
+    storageService.saveUserData({ consumables: nextConsumables });
+    return true;
+  };
+
+  const handleConsumeLetterSpyglass = () => {
+    const owned = consumables.letterSpyglassCount ?? 0;
+    if (owned <= 0) return false;
+    soundFx.playSparkCollect();
+    const nextConsumables = {
+      ...consumables,
+      letterSpyglassCount: owned - 1
+    };
+    setConsumables(nextConsumables);
+    storageService.saveUserData({ consumables: nextConsumables });
+    return true;
+  };
+
+  const handleConsumeLetterPruner = () => {
+    const owned = consumables.letterPrunerCount ?? 0;
+    if (owned <= 0) return false;
+    soundFx.playKeyTap();
+    const nextConsumables = {
+      ...consumables,
+      letterPrunerCount: owned - 1
     };
     setConsumables(nextConsumables);
     storageService.saveUserData({ consumables: nextConsumables });
@@ -1404,6 +1440,8 @@ export default function App() {
           consumables={consumables}
           onToggleDoubleSparksPotion={handleToggleDoubleSparksPotion}
           onConsumeHintScroll={handleConsumeHintScroll}
+          onConsumeLetterSpyglass={handleConsumeLetterSpyglass}
+          onConsumeLetterPruner={handleConsumeLetterPruner}
           onConsumeShield={handleConsumeShield}
           onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
