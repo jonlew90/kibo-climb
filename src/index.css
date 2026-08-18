@@ -548,6 +548,77 @@ svg {
   animation: planetPulseGlow 3s ease-in-out infinite;
 }
 
+/* --- SUMMER SPLASH OCEAN WAVE BOBBING & SWIRL --- */
+@keyframes waveBob {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateY(-4px) rotate(-1.5deg) scale(1.02);
+  }
+  50% {
+    transform: translateY(-7px) rotate(0.5deg) scale(1.04);
+  }
+  75% {
+    transform: translateY(-3px) rotate(2deg) scale(1.01);
+  }
+}
+
+@keyframes waterSwirl {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.06);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.animate-wave-bob {
+  animation: waveBob 2.8s ease-in-out infinite;
+  transform-origin: 100px 160px;
+}
+
+.animate-water-swirl {
+  animation: waterSwirl 8s linear infinite;
+  transform-origin: 100px 182px;
+}
+
+/* --- CYBER NEON HUD PULSE --- */
+@keyframes cyberPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px #06b6d4) drop-shadow(0 0 6px rgba(6, 182, 212, 0.6));
+    opacity: 0.95;
+  }
+  50% {
+    filter: drop-shadow(0 0 6px #22d3ee) drop-shadow(0 0 12px rgba(236, 72, 153, 0.7));
+    opacity: 1;
+  }
+}
+
+.animate-cyber-pulse {
+  animation: cyberPulse 2s ease-in-out infinite;
+}
+
+/* --- VIP KIBO CLUB GLOW & LEVITATION --- */
+@keyframes vipGlow {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+    filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.8)) drop-shadow(0 0 10px rgba(245, 158, 11, 0.5));
+  }
+  50% {
+    transform: translateY(-5px) scale(1.05);
+    filter: drop-shadow(0 0 8px rgba(253, 224, 71, 0.95)) drop-shadow(0 0 16px rgba(217, 119, 6, 0.7));
+  }
+}
+
+.animate-vip-glow {
+  animation: vipGlow 2.6s ease-in-out infinite;
+  transform-origin: 100px 30px;
+}
+
 /* Prevent unwanted double-tap zoom & text selection on mobile/tablet */
 html, body, #root {
   height: 100%;

@@ -557,8 +557,8 @@ export const WORKSHOP_ITEMS = [
     description: 'A giant waffle cone with strawberry, mint, and vanilla scoops! (Summer Exclusive)'
   },
   {
-    id: 'summer_sunshine_aura',
-    name: 'Summer Solstice Sunshine',
+    id: 'summer_splash_aura',
+    name: 'Summer Splash Wave Aura',
     category: 'seasonal',
     slot: 'fx',
     cost: 180,
@@ -567,7 +567,7 @@ export const WORKSHOP_ITEMS = [
     seasonName: 'Summer Splash',
     seasonType: 'season',
     recurringSchedule: { startMonth: 6, startDay: 1, endMonth: 8, endDay: 31, previewDays: 14 },
-    description: 'Radiant golden solar flares and dancing sunbeams surrounding Kibo! (Summer Exclusive)'
+    description: 'Cascading ocean waves, sparkling seafoam, and tropical water splash rings dancing around Kibo! (Summer Exclusive)'
   },
 
   // 3. AUTUMN / FALL SEASON (September 1 – November 30)
@@ -1213,8 +1213,49 @@ export const WORKSHOP_ITEMS = [
   }
 ];
 
+export const SPARKS_PACKAGES = [
+  {
+    id: 'sparks_pack_1',
+    name: 'Handful of Sparks',
+    sparks: 500,
+    price: '$1.99',
+    realMoneyPrice: '$1.99',
+    rarity: 'common',
+    description: 'A glowing handful of 500 Sparks to grab that special cosmetic or power-up!'
+  },
+  {
+    id: 'sparks_pack_2',
+    name: 'Pouch of Sparks',
+    sparks: 1200,
+    price: '$3.99',
+    realMoneyPrice: '$3.99',
+    rarity: 'rare',
+    description: 'An adventurer coin pouch packed with 1,200 crackling Sparks for your journey!'
+  },
+  {
+    id: 'sparks_pack_3',
+    name: 'Chest of Sparks',
+    sparks: 3000,
+    price: '$7.99',
+    realMoneyPrice: '$7.99',
+    rarity: 'epic',
+    description: 'A heavy treasure chest overflowing with 3,000 glowing Sparks & golden energy!'
+  },
+  {
+    id: 'sparks_pack_4',
+    name: 'Mountain of Sparks',
+    sparks: 10000,
+    price: '$19.99',
+    realMoneyPrice: '$19.99',
+    rarity: 'legendary',
+    description: 'A colossal hoard vault of 10,000 Sparks to unlock everything on Mount Kibo!'
+  }
+];
+
 export function getItemById(id) {
-  return WORKSHOP_ITEMS.find((item) => item.id === id);
+  const found = WORKSHOP_ITEMS.find((item) => item.id === id);
+  if (found) return found;
+  return SPARKS_PACKAGES.find((pack) => pack.id === id);
 }
 
 export function getItemSlot(item) {
@@ -1228,6 +1269,7 @@ export function getItemSlot(item) {
     if (item.id === 'dragon_pet_premium') return 'pets';
     if (item.id === 'galaxy_skin_premium') return 'skins';
     if (item.id === 'starter_bundle') return 'headwear';
+    if (item.id === 'kibo_club_sub') return 'fx';
   }
   return item.category;
 }

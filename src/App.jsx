@@ -1727,6 +1727,9 @@ export default function App() {
                  nextUnlocked.push(itemId);
                }
             });
+            if (pack.id && !nextUnlocked.includes(pack.id)) {
+              nextUnlocked.push(pack.id);
+            }
             setUnlockedItems(nextUnlocked);
             storageService.saveShopState(equippedItems, nextUnlocked);
           } else if (pack.realMoneyPrice && !pack.isSubscription && !pack.sparks && !pack.bundleItems && !pack.bundleConsumables) {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft, User, Ticket, Gift, Clock, AlertCircle } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
-import { ITEM_CATEGORIES, WORKSHOP_ITEMS, RARITY_TIERS, SEASONAL_EVENTS, getAvailableSeasonalEvents, isSeasonalEventAvailableOrUpcoming, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus, isItemVisibleInShop } from '../utils/itemsCatalog';
+import { ITEM_CATEGORIES, WORKSHOP_ITEMS, SPARKS_PACKAGES, RARITY_TIERS, SEASONAL_EVENTS, getAvailableSeasonalEvents, isSeasonalEventAvailableOrUpcoming, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus, isItemVisibleInShop } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
@@ -557,19 +557,12 @@ export default function WorkshopModal({
             </div>
           ) : activeCategory === 'get_sparks' ? (
             <div className="space-y-2.5">
-              {[
-                { id: 'sparks_pack_1', name: 'Handful of Sparks', sparks: 500, price: '$1.99', description: 'A nice little boost to get you that special item!', realMoneyPrice: '$1.99' },
-                { id: 'sparks_pack_2', name: 'Pouch of Sparks', sparks: 1200, price: '$3.99', description: 'More than double the sparks for your adventures!', realMoneyPrice: '$3.99' },
-                { id: 'sparks_pack_3', name: 'Chest of Sparks', sparks: 3000, price: '$7.99', description: 'A hefty sum for the serious workshop collector.', realMoneyPrice: '$7.99' },
-                { id: 'sparks_pack_4', name: 'Mountain of Sparks', sparks: 10000, price: '$19.99', description: 'Enough sparks to buy almost anything Kibo has to offer!', realMoneyPrice: '$19.99' },
-              ].map((pack) => (
+              {SPARKS_PACKAGES.map((pack) => (
                 <div
                   key={pack.id}
-                  className="bg-white p-2.5 sm:p-3 rounded-2xl border-2 border-amber-200 shadow-sm transition-all flex items-center justify-between gap-3"
+                  className="bg-white p-2.5 sm:p-3 rounded-2xl border-2 border-amber-200 shadow-sm hover:border-amber-300 transition-all flex items-center justify-between gap-3"
                 >
-                  <div className="w-10 h-10 shrink-0 bg-amber-100 rounded-xl flex items-center justify-center border-2 border-amber-300">
-                    <Zap className="w-5 h-5 fill-amber-500 text-amber-600" />
-                  </div>
+                  <ItemThumbnail itemId={pack.id} rarity={pack.rarity || 'legendary'} className="w-13 h-13 sm:w-14 sm:h-14 shrink-0" />
                   <div className="space-y-1 text-left flex-1 min-w-0">
                     <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{pack.name}</h4>
                     <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block">
@@ -581,7 +574,7 @@ export default function WorkshopModal({
                     <button
                       type="button"
                       onClick={() => onBuySparksPackage(pack)}
-                      className="btn-3d-orange px-3 py-1.5 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                      className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                     >
                       Buy for {pack.price}
                     </button>

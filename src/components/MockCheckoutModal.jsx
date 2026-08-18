@@ -1,5 +1,6 @@
 import React from "react";
 import { Zap, X, CheckCircle2 } from "lucide-react";
+import ItemThumbnail from "./ItemThumbnail";
 
 export default function MockCheckoutModal({ isOpen, onClose, packageInfo, onConfirm }) {
   if (!isOpen || !packageInfo) return null;
@@ -14,9 +15,11 @@ export default function MockCheckoutModal({ isOpen, onClose, packageInfo, onConf
           <X className="w-6 h-6 stroke-[2.5]" />
         </button>
 
-        <div className="w-16 h-16 bg-amber-100 text-amber-500 rounded-2xl flex items-center justify-center mx-auto border-2 border-amber-300 mb-4">
-          <Zap className="w-10 h-10 fill-amber-500 stroke-amber-600" />
-        </div>
+        <ItemThumbnail
+          itemId={packageInfo.id}
+          rarity={packageInfo.rarity || 'legendary'}
+          className="w-16 h-16 mx-auto mb-4 shadow-md"
+        />
 
         <h3 className="text-xl font-extrabold text-slate-800 mb-1">Confirm Purchase</h3>
         <p className="text-sm text-slate-500 font-medium mb-4">

@@ -194,11 +194,12 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasLightningSparks = isEquipped('lightning_sparks');
   const hasRainbowNebula = isEquipped('rainbow_nebula');
   const hasSpringSakuraHalo = isEquipped('spring_sakura_halo');
-  const hasSummerSunshineAura = isEquipped('summer_sunshine_aura');
+  const hasSummerSplashAura = isEquipped('summer_splash_aura') || isEquipped('summer_sunshine_aura');
   const hasValentinesLoveSparks = isEquipped('valentines_love_sparks');
   const hasStPatricksRainbow = isEquipped('st_patricks_rainbow_trail');
   const hasJuly4Fireworks = isEquipped('july4_liberty_fireworks');
   const hasHolidayTwinkleLights = isEquipped('holiday_twinkle_lights');
+  const hasKiboClub = isEquipped('kibo_club_sub');
 
   // Headwear
   const hasCap = isEquipped('cap');
@@ -386,8 +387,8 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
       {hasJadeSkin && (
         <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-emerald-300 via-teal-400 to-emerald-600 opacity-85 blur-xl animate-pulse pointer-events-none scale-125" />
       )}
-      {hasSummerSunshineAura && (
-        <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400 opacity-80 blur-2xl animate-pulse pointer-events-none scale-125" />
+      {hasSummerSplashAura && (
+        <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-cyan-400 via-sky-300 to-teal-400 opacity-80 blur-2xl animate-pulse pointer-events-none scale-125" />
       )}
       {hasStarlightAura && !hasCustomSkin && (
         <div className="absolute w-full h-full rounded-full bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 opacity-70 blur-lg animate-pulse pointer-events-none scale-110" />
@@ -644,6 +645,43 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <stop offset="0%" stopColor="#22C55E" />
             <stop offset="50%" stopColor="#15803D" />
             <stop offset="100%" stopColor="#14532D" />
+          </linearGradient>
+
+          {/* Summer Visor & Splash Gradients */}
+          <linearGradient id="summerVisorBrimGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#67E8F9" stopOpacity="0.95" />
+            <stop offset="40%" stopColor="#38BDF8" stopOpacity="0.9" />
+            <stop offset="80%" stopColor="#0284C7" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#0369A1" stopOpacity="0.95" />
+          </linearGradient>
+          <linearGradient id="summerWaveSplashGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#67E8F9" />
+            <stop offset="35%" stopColor="#38BDF8" />
+            <stop offset="70%" stopColor="#0284C7" />
+            <stop offset="100%" stopColor="#0369A1" />
+          </linearGradient>
+
+          {/* Cyber Neon Gradients & Filter */}
+          <linearGradient id="cyberVisorGradCyan" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#67E8F9" />
+            <stop offset="60%" stopColor="#06B6D4" />
+            <stop offset="100%" stopColor="#0891B2" />
+          </linearGradient>
+          <linearGradient id="cyberVisorGradPink" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#F472B6" />
+            <stop offset="60%" stopColor="#EC4899" />
+            <stop offset="100%" stopColor="#BE185D" />
+          </linearGradient>
+          <filter id="cyberNeonGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3.5" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+
+          {/* VIP Kibo Club Crown Gradient */}
+          <linearGradient id="vipCrownGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FEF08A" />
+            <stop offset="50%" stopColor="#F59E0B" />
+            <stop offset="100%" stopColor="#B45309" />
           </linearGradient>
         </defs>
 
@@ -1550,10 +1588,66 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
             {hasSummerVisor && (
               <g id="summer-visor-headwear">
-                <path d="M 64 54 C 64 38, 136 38, 136 54 L 134 60 C 134 46, 66 46, 66 60 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2.5" />
-                <path d="M 72 50 Q 100 42 128 50" stroke="#FEF08A" strokeWidth="1.5" fill="none" />
-                <path d="M 66 54 C 70 72, 130 72, 134 54 C 128 66, 72 66, 66 54 Z" fill="#0284C7" stroke="#0369A1" strokeWidth="2.5" />
-                <circle cx="100" cy="48" r="5" fill="#FDE047" stroke="#CA8A04" strokeWidth="1.5" />
+                {/* Back strap around the crown */}
+                <path d="M 60 50 Q 100 36 140 50 L 138 58 Q 100 44 62 58 Z" fill="#0369A1" stroke="#0C4A6E" strokeWidth="2" />
+                <path d="M 64 52 Q 100 38 136 52" stroke="#38BDF8" strokeWidth="1.5" fill="none" opacity="0.6" />
+
+                {/* 3D Visor Brim projecting forward over the brow with translucent aqua-blue sun shield */}
+                <path
+                  d="M 54 52 Q 100 36 146 52 Q 152 74 100 78 Q 48 74 54 52 Z"
+                  fill="url(#summerVisorBrimGrad)"
+                  stroke="#0284C7"
+                  strokeWidth="3"
+                  strokeLinejoin="round"
+                />
+                {/* Visor brim underside contour */}
+                <path
+                  d="M 58 55 Q 100 40 142 55 Q 146 72 100 75 Q 54 72 58 55 Z"
+                  fill="#0284C7"
+                  opacity="0.35"
+                />
+                {/* Specular gloss reflection curve */}
+                <path
+                  d="M 66 60 Q 100 70 134 60"
+                  stroke="#FFFFFF"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  fill="none"
+                  opacity="0.88"
+                />
+                <path
+                  d="M 76 66 Q 100 73 124 66"
+                  stroke="#E0F2FE"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  fill="none"
+                  opacity="0.6"
+                />
+
+                {/* Front Structured Padded Headband */}
+                <path
+                  d="M 58 48 Q 100 34 142 48 L 140 58 Q 100 44 60 58 Z"
+                  fill="url(#vipCrownGrad)"
+                  stroke="#B45309"
+                  strokeWidth="2.5"
+                />
+                {/* Contrast stitched headband top & bottom trim */}
+                <path d="M 60 50 Q 100 36 140 50" stroke="#FEF08A" strokeWidth="2" fill="none" />
+                <path d="M 62 56 Q 100 42 138 56" stroke="#D97706" strokeWidth="1.2" fill="none" />
+
+                {/* Side Pivot Clasps / Metallic Rivets */}
+                <circle cx="56" cy="53" r="4" fill="#64748B" stroke="#0F172A" strokeWidth="1.5" />
+                <circle cx="56" cy="53" r="1.5" fill="#E2E8F0" />
+                <circle cx="144" cy="53" r="4" fill="#64748B" stroke="#0F172A" strokeWidth="1.5" />
+                <circle cx="144" cy="53" r="1.5" fill="#E2E8F0" />
+
+                {/* Embroidered Sun Emblem Badge */}
+                <circle cx="100" cy="46" r="6" fill="#FDE047" stroke="#B45309" strokeWidth="1.5" />
+                <circle cx="100" cy="46" r="4" fill="#F59E0B" />
+                <line x1="100" y1="37" x2="100" y2="39.5" stroke="#B45309" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="100" y1="52.5" x2="100" y2="55" stroke="#B45309" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="91" y1="46" x2="93.5" y2="46" stroke="#B45309" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="106.5" y1="46" x2="109" y2="46" stroke="#B45309" strokeWidth="1.5" strokeLinecap="round" />
               </g>
             )}
 
@@ -1576,12 +1670,57 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             )}
 
             {hasCyberShades && (
-              <g id="cyber-shades-headwear">
-                <polygon points="70,62 130,62 126,80 106,84 100,76 94,84 74,80" fill="#0F172A" stroke="#06B6D4" strokeWidth="2.5" />
-                <polygon points="74,65 96,65 92,78 78,76" fill="#06B6D4" stroke="#22D3EE" strokeWidth="1.5" />
-                <polygon points="104,65 126,65 122,76 108,78" fill="#EC4899" stroke="#F472B6" strokeWidth="1.5" />
-                <line x1="77" y1="70" x2="92" y2="70" stroke="#FFFFFF" strokeWidth="1.5" strokeDasharray="3 2" />
-                <line x1="108" y1="70" x2="123" y2="70" stroke="#FFFFFF" strokeWidth="1.5" strokeDasharray="3 2" />
+              <g id="cyber-shades-headwear" className="animate-cyber-pulse">
+                {/* Cyberpunk Neon Glow Aura */}
+                <polygon points="62,74 138,74 134,96 108,100 100,90 92,100 66,96" fill="#06B6D4" opacity="0.3" filter="url(#cyberNeonGlow)" />
+
+                {/* Outer Matte Black Cyber Frame */}
+                <polygon
+                  points="62,74 138,74 134,96 108,100 100,90 92,100 66,96"
+                  fill="#0F172A"
+                  stroke="#06B6D4"
+                  strokeWidth="2.5"
+                  strokeLinejoin="bevel"
+                />
+
+                {/* Top Neon Brow Accent Bar */}
+                <path d="M 64 75 L 136 75" stroke="#22D3EE" strokeWidth="2" strokeLinecap="round" />
+
+                {/* Left Holographic Cyan Visor Lens */}
+                <polygon
+                  points="66,78 97,78 93,95 69,92"
+                  fill="url(#cyberVisorGradCyan)"
+                  stroke="#06B6D4"
+                  strokeWidth="1.2"
+                  strokeLinejoin="bevel"
+                />
+                {/* Right Holographic Magenta Visor Lens */}
+                <polygon
+                  points="103,78 134,78 131,92 107,95"
+                  fill="url(#cyberVisorGradPink)"
+                  stroke="#EC4899"
+                  strokeWidth="1.2"
+                  strokeLinejoin="bevel"
+                />
+
+                {/* Cyberpunk HUD Laser Scanlines */}
+                <line x1="69" y1="83" x2="94" y2="83" stroke="#FFFFFF" strokeWidth="1.2" strokeDasharray="3 2" opacity="0.85" />
+                <line x1="72" y1="88" x2="91" y2="88" stroke="#A5F3FC" strokeWidth="1" strokeDasharray="4 2" opacity="0.6" />
+                <line x1="106" y1="83" x2="131" y2="83" stroke="#FFFFFF" strokeWidth="1.2" strokeDasharray="3 2" opacity="0.85" />
+                <line x1="109" y1="88" x2="128" y2="88" stroke="#FBCFE8" strokeWidth="1" strokeDasharray="4 2" opacity="0.6" />
+
+                {/* Laser Specular Diagonal Flare */}
+                <polygon points="74,78 80,78 72,93 68,93" fill="#FFFFFF" opacity="0.45" />
+                <polygon points="118,78 124,78 116,93 112,93" fill="#FFFFFF" opacity="0.45" />
+
+                {/* Status LED Indicator Nodes */}
+                <circle cx="64" cy="76" r="1.8" fill="#22D3EE" />
+                <circle cx="136" cy="76" r="1.8" fill="#F472B6" />
+                <circle cx="100" cy="76" r="1.5" fill="#FEF08A" />
+
+                {/* Sleek Temple Arms Wrapping to Kibo's Ears */}
+                <path d="M 62 76 L 52 82 L 50 88" stroke="#0F172A" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+                <path d="M 138 76 L 148 82 L 150 88" stroke="#0F172A" strokeWidth="2.5" fill="none" strokeLinecap="round" />
               </g>
             )}
 
@@ -1760,6 +1899,103 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
               <ellipse cx="100" cy="30" rx="45" ry="16" stroke="#F472B6" strokeWidth="3" strokeDasharray="6 4" fill="none" />
               <circle cx="65" cy="24" r="5" fill="#FBCFE8" />
               <circle cx="135" cy="36" r="5" fill="#FBCFE8" />
+            </g>
+          )}
+
+          {hasSummerSplashAura && (
+            <g id="summer-splash-fx">
+              {/* Base swirling ocean ripple waves under Kibo */}
+              <g className="animate-pulse">
+                <ellipse cx="100" cy="182" rx="72" ry="20" fill="#38BDF8" opacity="0.35" stroke="#0284C7" strokeWidth="2" strokeDasharray="8 4" />
+                <ellipse cx="100" cy="182" rx="52" ry="14" fill="#67E8F9" opacity="0.45" stroke="#06B6D4" strokeWidth="1.5" />
+              </g>
+
+              {/* Swirling wave splash curves around Kibo with smooth bobbing */}
+              <g className="animate-wave-bob">
+                <path
+                  d="M 26 178 C 24 142, 44 116, 68 118 C 78 119, 82 130, 74 138 C 66 146, 54 138, 52 130 C 42 138, 38 156, 42 178 Z"
+                  fill="url(#summerWaveSplashGrad)"
+                  stroke="#0284C7"
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                />
+                {/* White foamy wave crest on left */}
+                <path
+                  d="M 48 124 C 60 120, 78 126, 74 136 C 70 142, 62 138, 56 132 Z"
+                  fill="#F0F9FF"
+                  stroke="#BAE6FD"
+                  strokeWidth="1.5"
+                />
+
+                <path
+                  d="M 174 178 C 176 142, 156 116, 132 118 C 122 119, 118 130, 126 138 C 134 146, 146 138, 148 130 C 158 138, 162 156, 158 178 Z"
+                  fill="url(#summerWaveSplashGrad)"
+                  stroke="#0284C7"
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                />
+                {/* White foamy wave crest on right */}
+                <path
+                  d="M 152 124 C 140 120, 122 126, 126 136 C 130 142, 138 138, 144 132 Z"
+                  fill="#F0F9FF"
+                  stroke="#BAE6FD"
+                  strokeWidth="1.5"
+                />
+              </g>
+
+              {/* Floating animated splashing water droplets and bubbles */}
+              <g className="animate-bounce">
+                <circle cx="38" cy="110" r="5" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
+                <circle cx="36.5" cy="108.5" r="1.5" fill="#FFFFFF" />
+
+                <circle cx="162" cy="108" r="5.5" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
+                <circle cx="160" cy="106" r="1.8" fill="#FFFFFF" />
+
+                <circle cx="100" cy="14" r="4.5" fill="#67E8F9" stroke="#0284C7" strokeWidth="1.2" />
+                <circle cx="98.5" cy="12.5" r="1.5" fill="#FFFFFF" />
+              </g>
+
+              <g className="animate-pulse">
+                <circle cx="26" cy="136" r="3.5" fill="#7DD3FC" stroke="#0284C7" strokeWidth="1" />
+                <circle cx="174" cy="134" r="3.5" fill="#7DD3FC" stroke="#0284C7" strokeWidth="1" />
+                <circle cx="56" cy="36" r="4" fill="#A5F3FC" opacity="0.85" stroke="#06B6D4" strokeWidth="1" />
+                <circle cx="144" cy="34" r="4" fill="#A5F3FC" opacity="0.85" stroke="#06B6D4" strokeWidth="1" />
+
+                {/* Ocean sparkle stars */}
+                <polygon points="100,2 101.5,6 106,7.5 101.5,9 100,13 98.5,9 94,7.5 98.5,6" fill="#E0F2FE" />
+                <polygon points="42,90 43.5,93 46.5,94 43.5,95 42,98 40.5,95 37.5,94 40.5,93" fill="#E0F2FE" />
+                <polygon points="158,90 159.5,93 162.5,94 159.5,95 158,98 156.5,95 153.5,94 156.5,93" fill="#E0F2FE" />
+              </g>
+            </g>
+          )}
+
+          {hasKiboClub && (
+            <g id="kibo-club-vip-fx" className="animate-vip-glow">
+              {/* Radiant VIP Glow Halo behind crown */}
+              <circle cx="100" cy="24" r="28" fill="#FBBF24" opacity="0.3" filter="url(#cyberNeonGlow)" />
+
+              {/* Floating Royal Golden Kibo Club Crown */}
+              <path
+                d="M 72 34 L 78 14 L 88 24 L 100 8 L 112 24 L 122 14 L 128 34 Z"
+                fill="url(#vipCrownGrad)"
+                stroke="#78350F"
+                strokeWidth="2.5"
+                strokeLinejoin="round"
+              />
+              {/* Embossed Crown Base Ribbon */}
+              <path d="M 73 30 Q 100 38 127 30" stroke="#78350F" strokeWidth="2.5" fill="none" />
+              <path d="M 74 32 Q 100 40 126 32" stroke="#FEF08A" strokeWidth="1.5" fill="none" />
+
+              {/* Royal Crown Jewels */}
+              <circle cx="78" cy="14" r="2.5" fill="#38BDF8" stroke="#0284C7" strokeWidth="1" />
+              <circle cx="100" cy="8" r="3.5" fill="#EF4444" stroke="#991B1B" strokeWidth="1" />
+              <circle cx="122" cy="14" r="2.5" fill="#38BDF8" stroke="#0284C7" strokeWidth="1" />
+              <circle cx="100" cy="24" r="3" fill="#FEF08A" stroke="#B45309" strokeWidth="1" />
+
+              {/* Floating Golden Sparks & Starbursts */}
+              <polygon points="62,18 63.5,22 67,23 63.5,24 62,28 60.5,24 57,23 60.5,22" fill="#FEF08A" />
+              <polygon points="138,18 139.5,22 143,23 139.5,24 138,28 136.5,24 133,23 136.5,22" fill="#FEF08A" />
+              <polygon points="100,-2 101.5,2 105,3 101.5,4 100,8 98.5,4 95,3 98.5,2" fill="#FFFFFF" />
             </g>
           )}
 

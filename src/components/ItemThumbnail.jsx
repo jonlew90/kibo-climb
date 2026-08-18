@@ -125,6 +125,48 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
             <stop offset="50%" stopColor="#15803D" />
             <stop offset="100%" stopColor="#14532D" />
           </linearGradient>
+
+          {/* Summer Visor and Splash FX Gradients */}
+          <linearGradient id="thumbVisorBrimGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#67E8F9" stopOpacity="0.95" />
+            <stop offset="40%" stopColor="#38BDF8" stopOpacity="0.9" />
+            <stop offset="80%" stopColor="#0284C7" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#0369A1" stopOpacity="0.95" />
+          </linearGradient>
+          <linearGradient id="thumbWaveSplashGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#67E8F9" />
+            <stop offset="35%" stopColor="#38BDF8" />
+            <stop offset="70%" stopColor="#0284C7" />
+            <stop offset="100%" stopColor="#0369A1" />
+          </linearGradient>
+
+          {/* Cyber Neon Gradients & Filter */}
+          <linearGradient id="thumbCyberCyanGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#67E8F9" />
+            <stop offset="60%" stopColor="#06B6D4" />
+            <stop offset="100%" stopColor="#0891B2" />
+          </linearGradient>
+          <linearGradient id="thumbCyberPinkGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#F472B6" />
+            <stop offset="60%" stopColor="#EC4899" />
+            <stop offset="100%" stopColor="#BE185D" />
+          </linearGradient>
+          <filter id="thumbCyberGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+
+          {/* Treasure Chest & Sparks Gradients */}
+          <linearGradient id="thumbTreasureWoodGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#B45309" />
+            <stop offset="50%" stopColor="#92400E" />
+            <stop offset="100%" stopColor="#78350F" />
+          </linearGradient>
+          <linearGradient id="thumbTreasureWoodDarkGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#78350F" />
+            <stop offset="50%" stopColor="#451A03" />
+            <stop offset="100%" stopColor="#290E02" />
+          </linearGradient>
         </defs>
 
         {/* --- POWER-UPS --- */}
@@ -640,10 +682,66 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
         {/* 2. SUMMER ITEMS */}
         {itemId === 'summer_visor' && (
           <g>
-            <ellipse cx="50" cy="50" rx="38" ry="14" fill="#38BDF8" opacity="0.25" />
-            <path d="M 16 48 C 16 36, 84 36, 84 48 L 82 54 C 82 44, 18 44, 18 54 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2.5" />
-            <path d="M 18 48 C 22 66, 78 66, 82 48 C 76 60, 24 60, 18 48 Z" fill="#0284C7" stroke="#0369A1" strokeWidth="2.5" />
-            <circle cx="50" cy="43" r="5" fill="#FDE047" stroke="#CA8A04" strokeWidth="1.5" />
+            {/* Back strap */}
+            <path d="M 20 44 Q 50 32 80 44 L 78 52 Q 50 40 22 52 Z" fill="#0369A1" stroke="#0C4A6E" strokeWidth="1.5" />
+            <path d="M 22 45 Q 50 34 78 45" stroke="#38BDF8" strokeWidth="1" fill="none" opacity="0.6" />
+
+            {/* Visor Brim Base Depth Layer */}
+            <path
+              d="M 12 48 Q 50 38 88 48 Q 84 76 50 78 Q 16 76 12 48 Z"
+              fill="url(#thumbVisorBrimGrad)"
+              stroke="#0284C7"
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+            />
+            {/* Translucent tinted UV shield inner depth */}
+            <path
+              d="M 16 51 Q 50 42 84 51 Q 80 72 50 74 Q 20 72 16 51 Z"
+              fill="#0284C7"
+              opacity="0.35"
+            />
+            {/* High-gloss curved specular highlight reflection */}
+            <path
+              d="M 22 56 Q 50 66 78 56"
+              stroke="#FFFFFF"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.9"
+            />
+            <path
+              d="M 30 62 Q 50 69 70 62"
+              stroke="#E0F2FE"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.65"
+            />
+
+            {/* Front Athletic Headband */}
+            <path
+              d="M 16 46 Q 50 34 84 46 L 82 56 Q 50 44 18 56 Z"
+              fill="url(#thumbGoldGrad)"
+              stroke="#B45309"
+              strokeWidth="2"
+            />
+            {/* Contrast Stitched Edges */}
+            <path d="M 17 48 Q 50 36 83 48" stroke="#FEF08A" strokeWidth="1.5" fill="none" />
+            <path d="M 19 54 Q 50 42 81 54" stroke="#D97706" strokeWidth="1" fill="none" />
+
+            {/* Side Hinges */}
+            <circle cx="17" cy="51" r="3.5" fill="#64748B" stroke="#0F172A" strokeWidth="1.2" />
+            <circle cx="17" cy="51" r="1.2" fill="#E2E8F0" />
+            <circle cx="83" cy="51" r="3.5" fill="#64748B" stroke="#0F172A" strokeWidth="1.2" />
+            <circle cx="83" cy="51" r="1.2" fill="#E2E8F0" />
+
+            {/* Center Radiant 3D Sun Crest */}
+            <circle cx="50" cy="45" r="5.5" fill="#FEF08A" stroke="#B45309" strokeWidth="1.5" />
+            <circle cx="50" cy="45" r="3.5" fill="#F59E0B" />
+            <line x1="50" y1="36" x2="50" y2="38.5" stroke="#B45309" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="50" y1="51.5" x2="50" y2="54" stroke="#B45309" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="41" y1="45" x2="43.5" y2="45" stroke="#B45309" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="56.5" y1="45" x2="59" y2="45" stroke="#B45309" strokeWidth="1.5" strokeLinecap="round" />
           </g>
         )}
 
@@ -668,11 +766,53 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'summer_sunshine_aura' && (
+        {(itemId === 'summer_splash_aura' || itemId === 'summer_sunshine_aura') && (
           <g>
-            <circle cx="50" cy="50" r="20" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="2" />
-            <path d="M 50 12 L 50 24 M 50 76 L 50 88 M 12 50 L 24 50 M 76 50 L 88 50" stroke="#F59E0B" strokeWidth="4" strokeLinecap="round" />
-            <path d="M 23 23 L 32 32 M 68 68 L 77 77 M 77 23 L 68 32 M 23 77 L 32 68" stroke="#F59E0B" strokeWidth="4" strokeLinecap="round" />
+            {/* Ambient Water Pool Base */}
+            <ellipse cx="50" cy="76" rx="38" ry="14" fill="#38BDF8" opacity="0.35" stroke="#0284C7" strokeWidth="1.5" strokeDasharray="5 3" />
+            <ellipse cx="50" cy="76" rx="26" ry="8" fill="#67E8F9" opacity="0.45" />
+
+            {/* Dynamic Swirling Ocean Waves */}
+            <path
+              d="M 14 74 C 12 44, 28 20, 56 18 C 76 16, 86 30, 78 40 C 70 50, 56 42, 54 34 C 42 42, 32 58, 34 76 Z"
+              fill="url(#thumbWaveSplashGrad)"
+              stroke="#0369A1"
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+            />
+            {/* Rising Counter Wave on Right */}
+            <path
+              d="M 86 74 C 88 52, 78 36, 64 36 C 68 44, 66 52, 60 56 C 72 60, 76 68, 76 76 Z"
+              fill="url(#thumbWaveSplashGrad)"
+              stroke="#0284C7"
+              strokeWidth="1.5"
+              opacity="0.85"
+            />
+            {/* Frothing White Seafoam Wave Crest */}
+            <path
+              d="M 50 18 C 66 16, 82 24, 80 36 C 76 42, 68 40, 60 34 C 54 28, 48 24, 50 18 Z"
+              fill="#F0F9FF"
+              stroke="#BAE6FD"
+              strokeWidth="1.5"
+            />
+            {/* Wave Curl Specular Highlights */}
+            <path d="M 24 64 C 26 48, 38 32, 54 22" stroke="#FFFFFF" strokeWidth="2.2" fill="none" strokeLinecap="round" opacity="0.85" />
+            <path d="M 32 72 C 34 60, 44 48, 56 42" stroke="#E0F2FE" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.6" />
+
+            {/* Splashing Droplets with Specular Highlights */}
+            <circle cx="82" cy="18" r="4.5" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
+            <circle cx="80.5" cy="16.5" r="1.5" fill="#FFFFFF" />
+
+            <circle cx="22" cy="30" r="3.5" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.2" />
+            <circle cx="21" cy="29" r="1" fill="#FFFFFF" />
+
+            <circle cx="88" cy="38" r="3" fill="#67E8F9" stroke="#0284C7" strokeWidth="1" />
+            <circle cx="12" cy="50" r="2.5" fill="#7DD3FC" stroke="#0284C7" strokeWidth="1" />
+            <circle cx="68" cy="62" r="2.5" fill="#BAE6FD" />
+
+            {/* Radiant Sparkle Stars */}
+            <polygon points="46,12 47.5,16 52,17.5 47.5,19 46,23 44.5,19 40,17.5 44.5,16" fill="#FFFFFF" opacity="0.95" />
+            <polygon points="76,46 77,49 80,50 77,51 76,54 75,51 72,50 75,49" fill="#FFFFFF" opacity="0.85" />
           </g>
         )}
 
@@ -1154,58 +1294,357 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
 
         {itemId === 'cyber_shades' && (
           <g>
-            <rect x="14" y="36" width="72" height="28" rx="6" fill="#06B6D4" opacity="0.3" />
-            <polygon points="16,38 84,38 80,60 56,64 50,56 44,64 20,60" fill="#0F172A" stroke="#06B6D4" strokeWidth="2.5" />
-            <polygon points="20,42 46,42 42,58 24,56" fill="#06B6D4" stroke="#22D3EE" strokeWidth="1.5" />
-            <polygon points="54,42 80,42 76,56 58,58" fill="#EC4899" stroke="#F472B6" strokeWidth="1.5" />
+            {/* Cyberpunk Neon Glow Aura Behind */}
+            <polygon points="10,40 90,40 84,66 58,72 50,62 42,72 16,66" fill="#06B6D4" opacity="0.25" filter="url(#thumbCyberGlow)" />
+
+            {/* Outer Matte Black Cyber Frame */}
+            <polygon
+              points="10,38 90,38 84,66 58,72 50,62 42,72 16,66"
+              fill="#0F172A"
+              stroke="#06B6D4"
+              strokeWidth="2.5"
+              strokeLinejoin="bevel"
+            />
+
+            {/* Top Neon Brow Accent Bar */}
+            <path d="M 12 39 L 88 39" stroke="#22D3EE" strokeWidth="2" strokeLinecap="round" />
+
+            {/* Left Holographic Cyan Visor Lens */}
+            <polygon
+              points="15,43 47,43 43,65 20,61"
+              fill="url(#thumbCyberCyanGrad)"
+              stroke="#06B6D4"
+              strokeWidth="1.2"
+              strokeLinejoin="bevel"
+            />
+            {/* Right Holographic Magenta Visor Lens */}
+            <polygon
+              points="53,43 85,43 80,61 57,65"
+              fill="url(#thumbCyberPinkGrad)"
+              stroke="#EC4899"
+              strokeWidth="1.2"
+              strokeLinejoin="bevel"
+            />
+
+            {/* Cyberpunk HUD Laser Scanlines & Grid Marks */}
+            <line x1="18" y1="48" x2="44" y2="48" stroke="#FFFFFF" strokeWidth="1.2" strokeDasharray="3 2" opacity="0.85" />
+            <line x1="22" y1="54" x2="41" y2="54" stroke="#A5F3FC" strokeWidth="1" strokeDasharray="4 2" opacity="0.6" />
+            <line x1="56" y1="48" x2="82" y2="48" stroke="#FFFFFF" strokeWidth="1.2" strokeDasharray="3 2" opacity="0.85" />
+            <line x1="59" y1="54" x2="78" y2="54" stroke="#FBCFE8" strokeWidth="1" strokeDasharray="4 2" opacity="0.6" />
+
+            {/* Laser Specular Diagonal Flare */}
+            <polygon points="26,43 32,43 22,62 16,62" fill="#FFFFFF" opacity="0.45" />
+            <polygon points="68,43 74,43 64,62 58,62" fill="#FFFFFF" opacity="0.45" />
+
+            {/* Status LED Indicator Nodes */}
+            <circle cx="13" cy="41" r="1.8" fill="#22D3EE" />
+            <circle cx="87" cy="41" r="1.8" fill="#F472B6" />
+            <circle cx="50" cy="41" r="1.5" fill="#FEF08A" />
+
+            {/* Angular Wrap-Around Temple Arms */}
+            <path d="M 10 40 L 4 48 L 4 56" stroke="#0F172A" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+            <path d="M 90 40 L 96 48 L 96 56" stroke="#0F172A" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          </g>
+        )}
+
+        {/* --- GET SPARKS PACKAGES --- */}
+        {itemId === 'sparks_pack_1' && (
+          <g>
+            {/* Glowing Handful of Sparks */}
+            <circle cx="50" cy="50" r="34" fill="#FEF08A" opacity="0.25" />
+            {/* Open Palm / Hand Cradle */}
+            <path
+              d="M 24 74 C 28 66, 36 64, 46 68 L 54 68 C 64 64, 72 66, 76 74 C 70 84, 30 84, 24 74 Z"
+              fill="#F59E0B"
+              stroke="#B45309"
+              strokeWidth="2.5"
+            />
+            <path d="M 28 72 Q 50 80 72 72" stroke="#FEF08A" strokeWidth="2" fill="none" />
+            {/* Floating Sparks & Starbursts */}
+            <polygon points="50,20 54,34 68,38 54,42 50,56 46,42 32,38 46,34" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1.5" />
+            <polygon points="32,40 34,48 42,50 34,52 32,60 30,52 22,50 30,48" fill="#FDE047" stroke="#D97706" strokeWidth="1.2" />
+            <polygon points="68,40 70,48 78,50 70,52 68,60 66,52 58,50 66,48" fill="#FDE047" stroke="#D97706" strokeWidth="1.2" />
+            <circle cx="50" cy="38" r="4" fill="#FFFFFF" />
+            <circle cx="32" cy="50" r="2.5" fill="#FFFFFF" />
+            <circle cx="68" cy="50" r="2.5" fill="#FFFFFF" />
+          </g>
+        )}
+
+        {itemId === 'sparks_pack_2' && (
+          <g>
+            {/* Pouch of Sparks - Drawstring adventurer coin pouch bursting with sparks */}
+            <circle cx="50" cy="52" r="35" fill="#F59E0B" opacity="0.2" />
+            {/* Pouch Body */}
+            <path
+              d="M 32 38 C 22 42, 18 58, 22 74 C 26 86, 74 86, 78 74 C 82 58, 78 42, 68 38 Z"
+              fill="#92400E"
+              stroke="#451A03"
+              strokeWidth="3"
+            />
+            {/* Pouch Front Highlight */}
+            <path
+              d="M 30 46 C 24 58, 24 72, 32 78 C 42 84, 58 84, 68 78 C 76 72, 76 58, 70 46 Z"
+              fill="#B45309"
+            />
+            {/* Tied Drawstring Neck */}
+            <rect x="30" y="34" width="40" height="8" rx="3" fill="#D97706" stroke="#78350F" strokeWidth="2" />
+            <ellipse cx="50" cy="34" rx="14" ry="4" fill="#78350F" />
+            {/* Drawstring Rope & Golden Beads */}
+            <path d="M 38 40 Q 34 52 30 58 M 62 40 Q 66 52 70 58" stroke="#FDE047" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+            <circle cx="30" cy="58" r="3" fill="url(#thumbGoldGrad)" stroke="#78350F" strokeWidth="1" />
+            <circle cx="70" cy="58" r="3" fill="url(#thumbGoldGrad)" stroke="#78350F" strokeWidth="1" />
+            {/* Sparks Bursting Out from the Pouch Top */}
+            <polygon points="50,10 54,22 66,25 54,28 50,40 46,28 34,25 46,22" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1.5" />
+            <polygon points="34,22 36,28 42,30 36,32 34,38 32,32 26,30 32,28" fill="#FEF08A" stroke="#B45309" strokeWidth="1" />
+            <polygon points="66,22 68,28 74,30 68,32 66,38 64,32 58,30 64,28" fill="#FEF08A" stroke="#B45309" strokeWidth="1" />
+            <circle cx="50" cy="25" r="3.5" fill="#FFFFFF" />
+          </g>
+        )}
+
+        {(itemId === 'sparks_pack_3' || itemId === 'chest_of_sparks') && (
+          <g>
+            {/* Chest of Sparks - 3D Open Treasure Chest Overflowing with Sparks */}
+            {/* Ambient Energy Glow Behind Chest */}
+            <ellipse cx="50" cy="50" rx="38" ry="34" fill="#F59E0B" opacity="0.3" />
+            <circle cx="50" cy="42" r="22" fill="#FEF08A" opacity="0.45" />
+
+            {/* Chest Base Box */}
+            <path
+              d="M 18 50 L 82 50 L 78 84 A 6 6 0 0 1 72 90 L 28 90 A 6 6 0 0 1 22 84 Z"
+              fill="url(#thumbTreasureWoodGrad)"
+              stroke="#451A03"
+              strokeWidth="3"
+              strokeLinejoin="round"
+            />
+            {/* Inner Dark Void Behind Open Lid */}
+            <ellipse cx="50" cy="50" rx="30" ry="10" fill="#451A03" />
+
+            {/* Open Chest Lid (Swung Upward & Tilted Back) */}
+            <path
+              d="M 16 48 C 16 26, 84 26, 84 48 L 78 36 C 78 20, 22 20, 22 36 Z"
+              fill="url(#thumbTreasureWoodDarkGrad)"
+              stroke="#451A03"
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M 22 36 C 22 18, 78 18, 78 36 L 82 46 C 82 24, 18 24, 18 46 Z"
+              fill="url(#thumbTreasureWoodGrad)"
+              stroke="#451A03"
+              strokeWidth="2"
+            />
+
+            {/* Gold Corner Brackets & Trim Bands on Lid */}
+            <path d="M 20 46 C 20 25, 30 22, 30 38" stroke="url(#thumbGoldGrad)" strokeWidth="3.5" fill="none" />
+            <path d="M 80 46 C 80 25, 70 22, 70 38" stroke="url(#thumbGoldGrad)" strokeWidth="3.5" fill="none" />
+
+            {/* Gold Corner Brackets & Trim Bands on Base */}
+            <path d="M 19 50 L 23 85" stroke="url(#thumbGoldGrad)" strokeWidth="4" />
+            <path d="M 81 50 L 77 85" stroke="url(#thumbGoldGrad)" strokeWidth="4" />
+            <path d="M 40 50 L 40 88" stroke="url(#thumbGoldGrad)" strokeWidth="3.5" />
+            <path d="M 60 50 L 60 88" stroke="url(#thumbGoldGrad)" strokeWidth="3.5" />
+            <path d="M 20 52 L 80 52" stroke="url(#thumbGoldGrad)" strokeWidth="3" />
+            <path d="M 24 86 L 76 86" stroke="url(#thumbGoldGrad)" strokeWidth="3" />
+
+            {/* Golden Keyhole Lock Plate */}
+            <rect x="44" y="52" width="12" height="15" rx="3" fill="url(#thumbGoldGrad)" stroke="#78350F" strokeWidth="1.5" />
+            <circle cx="50" cy="57" r="2" fill="#451A03" />
+            <polygon points="49,57 51,57 52,63 48,63" fill="#451A03" />
+
+            {/* MASSIVE GLOWING SPARKS & GOLDEN COINS OVERFLOWING INSIDE */}
+            {/* Glowing Golden Coins Pile */}
+            <ellipse cx="38" cy="48" rx="7" ry="4" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1" />
+            <ellipse cx="62" cy="48" rx="7" ry="4" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1" />
+            <ellipse cx="50" cy="49" rx="8" ry="4.5" fill="#FEF08A" stroke="#B45309" strokeWidth="1" />
+
+            {/* Electric Glowing Sparks ⚡ Shooting Out of the Chest */}
+            <polygon points="50,14 55,28 72,32 56,38 52,54 46,38 30,32 46,28" fill="url(#thumbGoldGrad)" stroke="#78350F" strokeWidth="2" />
+            <polygon points="32,24 35,32 44,35 35,38 32,46 29,38 20,35 29,32" fill="#FEF08A" stroke="#B45309" strokeWidth="1.2" />
+            <polygon points="68,24 71,32 80,35 71,38 68,46 65,38 56,35 65,32" fill="#FEF08A" stroke="#B45309" strokeWidth="1.2" />
+
+            {/* Center Pure White Hot Sparks Flare */}
+            <circle cx="50" cy="33" r="5" fill="#FFFFFF" />
+            <circle cx="32" cy="35" r="3" fill="#FFFFFF" />
+            <circle cx="68" cy="35" r="3" fill="#FFFFFF" />
+
+            {/* Electric Arc Bolts */}
+            <path d="M 28 20 L 34 26 L 30 30" stroke="#FDE047" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+            <path d="M 72 20 L 66 26 L 70 30" stroke="#FDE047" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+          </g>
+        )}
+
+        {itemId === 'sparks_pack_4' && (
+          <g>
+            {/* Mountain of Sparks - Colossal Hoard Vault overflowing with Sparks & Diamonds */}
+            <circle cx="50" cy="48" r="36" fill="#F59E0B" opacity="0.25" />
+            {/* Mountain Base of Golden Treasure */}
+            <path
+              d="M 12 88 Q 50 62 88 88 Z"
+              fill="url(#thumbGoldGrad)"
+              stroke="#B45309"
+              strokeWidth="2.5"
+            />
+            {/* Master Vault Chest Nestled in the Summit */}
+            <path
+              d="M 24 54 L 76 54 L 72 82 L 28 82 Z"
+              fill="url(#thumbTreasureWoodGrad)"
+              stroke="#451A03"
+              strokeWidth="2.5"
+            />
+            <path d="M 22 52 C 22 34, 78 34, 78 52 Z" fill="url(#thumbTreasureWoodDarkGrad)" stroke="#451A03" strokeWidth="2" />
+            <path d="M 24 54 L 76 54" stroke="url(#thumbGoldGrad)" strokeWidth="4" />
+            <path d="M 40 54 L 40 82 M 60 54 L 60 82" stroke="url(#thumbGoldGrad)" strokeWidth="3" />
+
+            {/* Glowing Diamonds on the Treasure Mountain */}
+            <polygon points="20,74 26,68 32,74 26,82" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.2" />
+            <polygon points="74,72 80,66 86,72 80,80" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.2" />
+
+            {/* Radiant Giant Sparks Explosion Above Mountain */}
+            <polygon points="50,6 56,24 78,28 58,36 54,54 46,36 24,28 46,24" fill="url(#thumbGoldGrad)" stroke="#78350F" strokeWidth="2.5" />
+            <polygon points="28,18 31,28 42,32 31,35 28,45 25,35 14,32 25,28" fill="#FEF08A" stroke="#B45309" strokeWidth="1.5" />
+            <polygon points="72,18 75,28 86,32 75,35 72,45 69,35 58,32 69,28" fill="#FEF08A" stroke="#B45309" strokeWidth="1.5" />
+
+            <circle cx="50" cy="30" r="6" fill="#FFFFFF" />
+            <circle cx="28" cy="32" r="3.5" fill="#FFFFFF" />
+            <circle cx="72" cy="32" r="3.5" fill="#FFFFFF" />
           </g>
         )}
 
         {/* --- PREMIUM & BUNDLES --- */}
         {itemId === 'starter_bundle' && (
           <g>
-            <rect x="16" y="38" width="68" height="48" rx="8" fill="#7C3AED" stroke="#4C1D95" strokeWidth="3" />
-            <rect x="12" y="30" width="76" height="14" rx="4" fill="#9333EA" stroke="#4C1D95" strokeWidth="3" />
-            <rect x="44" y="38" width="12" height="48" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1" />
-            <rect x="12" y="34" width="76" height="6" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1" />
-            <ellipse cx="38" cy="24" rx="10" ry="7" fill="#FBBF24" stroke="#B45309" strokeWidth="2" transform="rotate(-20 38 24)" />
-            <ellipse cx="62" cy="24" rx="10" ry="7" fill="#FBBF24" stroke="#B45309" strokeWidth="2" transform="rotate(20 62 24)" />
-            <circle cx="50" cy="25" r="5" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
+            {/* Royal Purple & Gold Bundle Chest with Explorer Fedora & Sparks Included */}
+            <rect x="14" y="36" width="72" height="50" rx="10" fill="url(#thumbPurpleGrad)" stroke="#4C1D95" strokeWidth="3" />
+            <rect x="10" y="28" width="80" height="16" rx="5" fill="#9333EA" stroke="#4C1D95" strokeWidth="2.5" />
+            {/* Gold Ribbon Crossing */}
+            <rect x="44" y="36" width="12" height="50" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1" />
+            <rect x="10" y="32" width="80" height="7" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1" />
+            {/* Large Gold Bow Tie */}
+            <ellipse cx="36" cy="22" rx="11" ry="8" fill="#FBBF24" stroke="#B45309" strokeWidth="2" transform="rotate(-20 36 22)" />
+            <ellipse cx="64" cy="22" rx="11" ry="8" fill="#FBBF24" stroke="#B45309" strokeWidth="2" transform="rotate(20 64 22)" />
+            <circle cx="50" cy="23" r="6" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
+
+            {/* Explorer Hat Badge on Bundle */}
+            <ellipse cx="50" cy="62" rx="18" ry="6" fill="#78350F" stroke="#451A03" strokeWidth="1.5" />
+            <path d="M 38 62 C 38 48, 62 48, 62 62 Z" fill="#92400E" stroke="#451A03" strokeWidth="1.5" />
+            <rect x="38" y="58" width="24" height="3" fill="#D97706" />
+
+            {/* Spark Tag Badge */}
+            <circle cx="72" cy="44" r="8" fill="#FEF08A" stroke="#B45309" strokeWidth="1.5" />
+            <text x="72" y="47" textAnchor="middle" fontSize="9" fontWeight="900" fill="#B45309">⚡</text>
           </g>
         )}
 
         {itemId === 'dragon_pet_premium' && (
           <g>
-            <path d="M 44 64 Q 20 84 30 94 Q 44 82 48 68 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="2" />
-            <path d="M 44 48 Q 12 30 18 64 Q 34 60 44 54 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="2" />
-            <path d="M 58 48 Q 88 30 82 64 Q 66 60 58 54 Z" fill="#B91C1C" stroke="#7F1D1D" strokeWidth="2" />
-            <ellipse cx="50" cy="58" rx="18" ry="22" fill="#EF4444" stroke="#991B1B" strokeWidth="3" />
-            <circle cx="50" cy="36" r="16" fill="#EF4444" stroke="#991B1B" strokeWidth="3" />
-            <path d="M 40 26 Q 30 12 36 8 Q 42 14 44 23 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
-            <path d="M 60 26 Q 70 12 64 8 Q 58 14 56 23 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
+            {/* Fiery Dragon Whelp Pet */}
+            {/* Dragon Wings */}
+            <path d="M 40 48 Q 10 24 16 62 Q 32 58 42 52 Z" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
+            <path d="M 20 36 L 36 52 M 22 48 L 38 54" stroke="#F59E0B" strokeWidth="1.5" />
+            <path d="M 60 48 Q 90 24 84 62 Q 68 58 58 52 Z" fill="#DC2626" stroke="#7F1D1D" strokeWidth="2" />
+            <path d="M 80 36 L 64 52 M 78 48 L 62 54" stroke="#F59E0B" strokeWidth="1.5" />
+
+            {/* Curled Dragon Tail with Flame Tip */}
+            <path d="M 44 68 Q 20 88 32 94 Q 46 84 50 72 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="2" />
+            <polygon points="26,90 20,96 32,96" fill="#F59E0B" />
+
+            {/* Dragon Body */}
+            <ellipse cx="50" cy="60" rx="18" ry="22" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+            {/* Golden Belly Scales */}
+            <ellipse cx="50" cy="64" rx="10" ry="14" fill="#FEF08A" stroke="#D97706" strokeWidth="1.2" />
+            <line x1="42" y1="58" x2="58" y2="58" stroke="#D97706" strokeWidth="1.2" />
+            <line x1="42" y1="66" x2="58" y2="66" stroke="#D97706" strokeWidth="1.2" />
+
+            {/* Dragon Head */}
+            <circle cx="50" cy="36" r="16" fill="#EF4444" stroke="#991B1B" strokeWidth="2.5" />
+            {/* Horns */}
+            <path d="M 40 26 Q 30 10 38 6 Q 44 12 45 22 Z" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1.5" />
+            <path d="M 60 26 Q 70 10 62 6 Q 56 12 55 22 Z" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1.5" />
+
+            {/* Cute Expressive Dragon Eyes */}
+            <ellipse cx="44" cy="34" rx="4" ry="5" fill="#FEF08A" stroke="#B45309" strokeWidth="1" />
+            <circle cx="44" cy="34" r="2.5" fill="#78350F" />
+            <circle cx="43" cy="33" r="1" fill="#FFFFFF" />
+
+            <ellipse cx="56" cy="34" rx="4" ry="5" fill="#FEF08A" stroke="#B45309" strokeWidth="1" />
+            <circle cx="56" cy="34" r="2.5" fill="#78350F" />
+            <circle cx="55" cy="33" r="1" fill="#FFFFFF" />
+
+            {/* Snout with Nostril Smoke Puffs */}
+            <ellipse cx="50" cy="42" rx="7" ry="4" fill="#DC2626" />
+            <circle cx="48" cy="42" r="1" fill="#7F1D1D" />
+            <circle cx="52" cy="42" r="1" fill="#7F1D1D" />
+            {/* Little Flame Puff */}
+            <polygon points="50,44 48,50 52,50" fill="#F59E0B" />
           </g>
         )}
 
         {itemId === 'galaxy_skin_premium' && (
           <g>
-            <circle cx="50" cy="50" r="38" fill="#312E81" opacity="0.3" />
-            <circle cx="50" cy="50" r="32" fill="url(#thumbGalaxyGrad)" stroke="#A855F7" strokeWidth="3.5" />
-            <path d="M 24 58 C 30 72 65 74 74 54 C 80 40 60 26 44 32 C 32 36 34 50 48 50 C 58 50 64 42 62 36" stroke="#EC4899" strokeWidth="4" strokeLinecap="round" fill="none" opacity="0.8" />
-            <polygon points="50,22 52,28 58,30 53,34 55,40 50,36 45,40 47,34 42,30 48,28" fill="#FEF08A" />
+            {/* Nebula Galaxy Cosmic Skin */}
+            <circle cx="50" cy="50" r="38" fill="#1E1B4B" opacity="0.4" />
+            <circle cx="50" cy="50" r="34" fill="url(#thumbGalaxyGrad)" stroke="#A855F7" strokeWidth="3.5" />
+
+            {/* Swirling Nebula Spiral Arms */}
+            <path
+              d="M 22 54 C 28 72, 68 76, 76 54 C 82 38, 60 22, 42 30 C 28 36, 32 54, 48 54 C 60 54, 66 44, 62 36"
+              stroke="#EC4899"
+              strokeWidth="4.5"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.85"
+            />
+            <path
+              d="M 28 48 C 32 64, 64 66, 70 50"
+              stroke="#38BDF8"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.75"
+            />
+
+            {/* Twinkling Cosmic Stars */}
+            <polygon points="50,18 52,24 58,26 53,30 55,36 50,32 45,36 47,30 42,26 48,24" fill="#FEF08A" />
+            <circle cx="28" cy="30" r="2" fill="#FFFFFF" />
+            <circle cx="72" cy="68" r="2" fill="#FFFFFF" />
+            <circle cx="76" cy="28" r="1.5" fill="#A5F3FC" />
+            <circle cx="24" cy="70" r="1.5" fill="#FBCFE8" />
           </g>
         )}
 
         {itemId === 'kibo_club_sub' && (
           <g>
-            <rect x="12" y="18" width="76" height="64" rx="12" fill="url(#thumbPurpleGrad)" stroke="#F59E0B" strokeWidth="3.5" />
-            <path d="M 34 44 L 38 30 L 44 38 L 50 25 L 56 38 L 62 30 L 66 44 Z" fill="url(#thumbGoldGrad)" stroke="#78350F" strokeWidth="2" strokeLinejoin="round" />
-            <rect x="22" y="52" width="56" height="12" rx="4" fill="url(#thumbGoldGrad)" stroke="#78350F" strokeWidth="1.5" />
-            <text x="50" y="61" textAnchor="middle" fontSize="6.5" fontWeight="900" fill="#78350F" letterSpacing="0.8">KIBO CLUB</text>
+            {/* Kibo Club VIP Pass - Golden Crown & Permanent Sparks Multiplier Card */}
+            <rect x="10" y="16" width="80" height="68" rx="14" fill="url(#thumbPurpleGrad)" stroke="url(#thumbGoldGrad)" strokeWidth="3.5" />
+            {/* Card Inner Gold Border */}
+            <rect x="14" y="20" width="72" height="60" rx="10" fill="none" stroke="#FDE047" strokeWidth="1" strokeDasharray="4 2" opacity="0.7" />
+
+            {/* Floating Royal Golden VIP Crown */}
+            <path
+              d="M 32 44 L 36 28 L 44 37 L 50 22 L 56 37 L 64 28 L 68 44 Z"
+              fill="url(#thumbGoldGrad)"
+              stroke="#78350F"
+              strokeWidth="2"
+              strokeLinejoin="round"
+            />
+            {/* Crown Jewels */}
+            <circle cx="36" cy="28" r="2" fill="#38BDF8" stroke="#0284C7" strokeWidth="0.8" />
+            <circle cx="50" cy="22" r="2.5" fill="#EF4444" stroke="#991B1B" strokeWidth="0.8" />
+            <circle cx="64" cy="28" r="2" fill="#38BDF8" stroke="#0284C7" strokeWidth="0.8" />
+            <circle cx="50" cy="38" r="2" fill="#FDE047" />
+
+            {/* VIP Multiplier Ribbon */}
+            <rect x="20" y="52" width="60" height="14" rx="4" fill="url(#thumbGoldGrad)" stroke="#78350F" strokeWidth="1.5" />
+            <text x="50" y="62" textAnchor="middle" fontSize="7" fontWeight="900" fill="#78350F" letterSpacing="0.8">1.25x VIP CLUB</text>
+
+            {/* Sparkle Glints */}
+            <polygon points="22,26 23,29 26,30 23,31 22,34 21,31 18,30 21,29" fill="#FEF08A" />
+            <polygon points="78,26 79,29 82,30 79,31 78,34 77,31 74,30 77,29" fill="#FEF08A" />
           </g>
         )}
 
         {/* Fallback for unmapped IDs */}
-        {!WORKSHOP_ITEMS.some((i) => i.id === itemId) && (
+        {!WORKSHOP_ITEMS.some((i) => i.id === itemId) && !['sparks_pack_1', 'sparks_pack_2', 'sparks_pack_3', 'sparks_pack_4', 'chest_of_sparks'].includes(itemId) && (
           <g>
             <circle cx="50" cy="50" r="30" fill="#F1F5F9" stroke="#94A3B8" strokeWidth="2.5" />
             <polygon points="50,30 55,42 68,44 58,54 61,66 50,60 39,66 42,54 32,44 45,42" fill="#FACC15" stroke="#CA8A04" strokeWidth="2" />
