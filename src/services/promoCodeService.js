@@ -3,83 +3,8 @@
 
 import { storageService } from './storageService.js';
 import { shopLedgerService } from './shopLedgerService.js';
-
-export const PROMO_CODES_REGISTRY = {
-  GOLDENKIBO: {
-    code: 'GOLDENKIBO',
-    title: 'Golden Ticket VIP',
-    description: 'Unlocks the legendary Golden Ticket gear and 150 bonus Sparks!',
-    badge: '🎟️ VIP EXCLUSIVE',
-    rewards: {
-      sparks: 150,
-      items: ['golden_ticket']
-    },
-    availableFrom: '2026-01-01T00:00:00Z',
-    expiresAt: '2027-01-01T00:00:00Z'
-  },
-  KIBOSPARKS: {
-    code: 'KIBOSPARKS',
-    title: 'Spark Shower Boost',
-    description: 'Grants +300 Sparks directly to your balance to gear up Kibo!',
-    badge: '⚡ +300 SPARKS',
-    rewards: {
-      sparks: 300
-    },
-    availableFrom: '2026-01-01T00:00:00Z',
-    expiresAt: '2027-01-01T00:00:00Z'
-  },
-  SUMMERCLIMB: {
-    code: 'SUMMERCLIMB',
-    title: 'Summer Climber Supply Pack',
-    description: 'Grants 2x Streak Savers, 2x Hint Scrolls, and 100 bonus Sparks!',
-    badge: '☀️ SUMMER SPECIAL',
-    rewards: {
-      sparks: 100,
-      consumables: {
-        streakSaverCount: 2,
-        hintScrollCount: 2
-      }
-    },
-    availableFrom: '2026-06-01T00:00:00Z',
-    expiresAt: '2026-09-30T23:59:59Z'
-  },
-  CYBERCLIMB: {
-    code: 'CYBERCLIMB',
-    title: 'Cyberpunk Headwear Drop',
-    description: 'Unlocks Cyber Neon Shades and 150 bonus Sparks!',
-    badge: '🕶️ PROMO GEAR',
-    rewards: {
-      sparks: 150,
-      items: ['cyber_shades']
-    },
-    availableFrom: '2026-01-01T00:00:00Z',
-    expiresAt: '2027-01-01T00:00:00Z'
-  },
-  KIBOFRIEND: {
-    code: 'KIBOFRIEND',
-    title: 'Robot Buddy Rescue',
-    description: 'Unlocks the Mini Robot pet companion and 100 Sparks!',
-    badge: '🤖 PET COMPANION',
-    rewards: {
-      sparks: 100,
-      items: ['mini_robot']
-    },
-    availableFrom: '2026-01-01T00:00:00Z',
-    expiresAt: '2027-01-01T00:00:00Z'
-  },
-  OCTOBERFEST: {
-    code: 'OCTOBERFEST',
-    title: 'Autumn Harvest Celebration',
-    description: 'Unlocks the Jack-o\'-Lantern Headwear and 100 Sparks!',
-    badge: '🎃 AUTUMN SPECIAL',
-    rewards: {
-      sparks: 100,
-      items: ['pumpkin_hat']
-    },
-    availableFrom: '2026-08-01T00:00:00Z',
-    expiresAt: '2026-11-30T23:59:59Z'
-  }
-};
+import { functions } from '../config/firebase.js';
+import { httpsCallable } from 'firebase/functions';
 
 export const promoCodeService = {
   /**
@@ -100,50 +25,34 @@ export const promoCodeService = {
   },
 
   /**
-   * Validates a code without mutating state.
-   * @returns {{ valid: boolean, reason?: string, promoData?: object }}
+   * Executes promo code redemption by validating via Firebase Cloud Function,
+   * modifies storage, records transaction audit, and returns results.
    */
-  validateCode(codeStr, customDate = new Date()) {
+  async redeemCode(codeStr) {
     const normalized = this.normalizeCode(codeStr);
     if (!normalized) {
-      return { valid: false, reason: 'Please enter a promo code.' };
-    }
-
-    const promo = PROMO_CODES_REGISTRY[normalized];
-    if (!promo) {
-      return { valid: false, reason: 'Invalid promo code. Check your spelling and try again.' };
+      return { success: false, reason: 'Please enter a promo code.' };
     }
 
     if (this.hasRedeemedCode(normalized)) {
-      return { valid: false, reason: 'This promo code has already been redeemed on this profile.' };
+      return { success: false, reason: 'This promo code has already been redeemed on this profile.' };
     }
 
-    const now = (customDate instanceof Date ? customDate : new Date(customDate)).getTime();
-    if (promo.availableFrom && now < new Date(promo.availableFrom).getTime()) {
-      return { valid: false, reason: 'This promo code is not active yet. Check back soon!' };
-    }
-
-    if (promo.expiresAt && now > new Date(promo.expiresAt).getTime()) {
-      return { valid: false, reason: 'This promo code has expired.' };
-    }
-
-    return { valid: true, promoData: promo };
-  },
-
-  /**
-   * Executes promo code redemption, modifies storage, records transaction audit, and returns results.
-   */
-  redeemCode(codeStr, customDate = new Date()) {
-    const validation = this.validateCode(codeStr, customDate);
-    if (!validation.valid) {
+    let promo;
+    try {
+      const validateFn = httpsCallable(functions, 'validatePromoCode');
+      const result = await validateFn({ code: normalized });
+      promo = result.data;
+    } catch (error) {
+      console.error('Error validating promo code:', error);
       return {
         success: false,
-        reason: validation.reason
+        reason: error.message || 'Failed to validate promo code. Please try again.'
       };
     }
 
-    const promo = validation.promoData;
-    const normalized = promo.code;
+    // Use the normalized code from the server to be safe, or fallback to local normalized
+    const validatedCode = promo.code || normalized;
 
     // Load active profile data
     const activeProf = storageService.getActiveProfile();
@@ -183,7 +92,7 @@ export const promoCodeService = {
     }
 
     // 4. Save state & record redeemed code
-    const updatedRedeemed = storageService.addRedeemedPromoCode(normalized);
+    const updatedRedeemed = storageService.addRedeemedPromoCode(validatedCode);
     storageService.saveShopState(shopState.equippedItems || [], unlocked, updatedRedeemed);
     storageService.saveUserData({
       sparks: nextSparks,
@@ -193,7 +102,7 @@ export const promoCodeService = {
     // 5. Audit log
     shopLedgerService.recordTransactionLedger({
       type: 'PROMO_CODE_REDEMPTION',
-      code: normalized,
+      code: validatedCode,
       rewardTitle: promo.title,
       sparksGranted: rewards.sparks || 0,
       itemsGranted: grantedItems,
@@ -222,10 +131,4 @@ export const promoCodeService = {
     };
   },
 
-  /**
-   * Returns all promo codes in registry for display or hints.
-   */
-  getAvailableCodesList() {
-    return Object.values(PROMO_CODES_REGISTRY);
-  }
 };

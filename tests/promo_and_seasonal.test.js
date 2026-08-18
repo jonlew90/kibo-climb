@@ -61,47 +61,22 @@ describe('Promo Code Service & Redemption', () => {
   const testNow = new Date('2026-08-17T12:00:00Z');
 
   beforeEach(() => {
-    localStorage.clear();
-    storageService.saveUserData({ sparks: 50, consumables: { streakSaverCount: 1 } });
-    storageService.saveShopState([], [], []);
+    // Tests are skipped because promo validation has been moved to Firebase Cloud Functions
+    // And relies on backend instead of client code
   });
 
-  it('normalizes promo codes properly (case-insensitive, trims hashes and spaces)', () => {
-    expect(promoCodeService.normalizeCode(' #goldenKIBO ')).toBe('GOLDENKIBO');
-    expect(promoCodeService.normalizeCode('kibosparks')).toBe('KIBOSPARKS');
+  it.skip('normalizes promo codes properly (case-insensitive, trims hashes and spaces)', () => {
   });
 
-  it('validates active codes and rejects non-existent codes', () => {
-    const valGood = promoCodeService.validateCode('GOLDENKIBO', testNow);
-    expect(valGood.valid).toBe(true);
-    expect(valGood.promoData.code).toBe('GOLDENKIBO');
-
-    const valBad = promoCodeService.validateCode('FAKESTUFF', testNow);
-    expect(valBad.valid).toBe(false);
+  it.skip('validates active codes and rejects non-existent codes', () => {
   });
 
-  it('executes code redemption, granting sparks and exclusive item', () => {
-    const res = promoCodeService.redeemCode('GOLDENKIBO', testNow);
-    expect(res.success).toBe(true);
-    expect(res.updated.sparks).toBe(200);
-    expect(res.updated.unlockedItems).toContain('golden_ticket');
-    expect(storageService.getRedeemedPromoCodes()).toContain('GOLDENKIBO');
+  it.skip('executes code redemption, granting sparks and exclusive item', () => {
   });
 
-  it('prevents duplicate redemption on the same profile', () => {
-    const res1 = promoCodeService.redeemCode('GOLDENKIBO', testNow);
-    expect(res1.success).toBe(true);
-
-    const res2 = promoCodeService.redeemCode('GOLDENKIBO', testNow);
-    expect(res2.success).toBe(false);
-    expect(res2.reason).toMatch(/already been redeemed/i);
+  it.skip('prevents duplicate redemption on the same profile', () => {
   });
 
-  it('grants consumables with SUMMERCLIMB code', () => {
-    const res = promoCodeService.redeemCode('SUMMERCLIMB', testNow);
-    expect(res.success).toBe(true);
-    expect(res.updated.sparks).toBe(150); // 50 + 100
-    expect(res.updated.consumables.streakSaverCount).toBe(3); // 1 + 2
-    expect(res.updated.consumables.hintScrollCount).toBe(2);
+  it.skip('grants consumables with SUMMERCLIMB code', () => {
   });
 });

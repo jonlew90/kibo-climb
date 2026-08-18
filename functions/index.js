@@ -63,3 +63,51 @@ exports.sendParentEmail = onCall(
     }
   }
 );
+
+/**
+ * Callable function to validate a promo code.
+ * Queries the 'promoCodes' collection in Firestore.
+ * Returns the promo data if valid, throws an error if invalid, expired, or not active.
+ */
+exports.validatePromoCode = onCall(
+  {
+    cors: true,
+    invoker: "public"
+  },
+  async (request) => {
+    const { code } = request.data || {};
+
+    if (!code || typeof code !== 'string') {
+      throw new HttpsError('invalid-argument', 'Please enter a promo code.');
+    }
+
+    const normalizedCode = code.trim().replace(/^#/, '').toUpperCase();
+
+    try {
+      const db = admin.firestore();
+      const promoRef = db.collection('promoCodes').doc(normalizedCode);
+      const promoSnap = await promoRef.get();
+
+      if (!promoSnap.exists) {
+        throw new HttpsError('not-found', 'Invalid promo code. Check your spelling and try again.');
+      }
+
+      const promoData = promoSnap.data();
+      const now = Date.now();
+
+      if (promoData.availableFrom && now < new Date(promoData.availableFrom).getTime()) {
+        throw new HttpsError('failed-precondition', 'This promo code is not active yet. Check back soon!');
+      }
+
+      if (promoData.expiresAt && now > new Date(promoData.expiresAt).getTime()) {
+        throw new HttpsError('failed-precondition', 'This promo code has expired.');
+      }
+
+      return promoData;
+    } catch (error) {
+      if (error instanceof HttpsError) throw error;
+      console.error('Error validating promo code:', error);
+      throw new HttpsError('internal', 'An error occurred while validating the promo code.');
+    }
+  }
+);
