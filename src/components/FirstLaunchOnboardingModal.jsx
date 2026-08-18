@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Zap, Flame, ShoppingBag, ArrowRight, User, CheckCircle2, GraduationCap } from 'lucide-react';
+import { Play, Zap, Flame, ShoppingBag, ArrowRight, User, CheckCircle2, GraduationCap, BookOpen, Calculator, Sparkles } from 'lucide-react';
 import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
+import { SUBJECTS_CONFIG } from '../config/subjects';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 
@@ -18,14 +19,42 @@ function validateUsername(val) {
   return null;
 }
 
-const GRADE_DESCRIPTIONS = {
-  'Kindergarten':                 'Counting, basic single-digit addition & subtraction',
-  'Grade 1–2':                    'Sums & differences to 20, making 10s regrouping',
-  'Grade 3–4':                    'Multiplication tables (0s–9s) & quarter-hour time',
-  'Grade 5–6':                    'Money decimals ($1.00 bridge) & decimal addition/subtraction',
-  'Pre-Algebra / Middle School':  'Multi-digit mental arithmetic & explicit long division',
-  'Grade 7–8':                    'Fraction operations, percentages & PEMDAS order of operations',
-  'Algebra & Beyond':             '2-step algebra equations, negative numbers, exponents & square roots',
+export const GRADE_CURRICULUM_DETAILS = {
+  'Kindergarten': {
+    math: 'Counting, single-digit + / -',
+    words: 'Alphabet & basic phonics',
+    summary: 'Numbers, shapes & foundational letter sounds'
+  },
+  'Grade 1–2': {
+    math: 'Sums & differences to 20, making 10s',
+    words: 'Sight words & basic spelling',
+    summary: 'Addition/subtraction fluency & reading roots'
+  },
+  'Grade 3–4': {
+    math: 'Multiplication (0s–9s) & time math',
+    words: 'Vocabulary & compound words',
+    summary: 'Multiplication tables & vocabulary building'
+  },
+  'Grade 5–6': {
+    math: 'Money decimals, fractions & division',
+    words: 'Advanced spelling & prefixes/suffixes',
+    summary: 'Decimal arithmetic, fractions & word mastery'
+  },
+  'Pre-Algebra / Middle School': {
+    math: 'Multi-digit math & long division',
+    words: 'Sentence structure & parts of speech',
+    summary: 'Pre-algebra foundations & grammar mechanics'
+  },
+  'Grade 7–8': {
+    math: 'Fractions, % & PEMDAS operations',
+    words: 'Complex grammar & word roots',
+    summary: 'Order of operations & verbal reasoning'
+  },
+  'Algebra & Beyond': {
+    math: 'Linear equations, negatives & powers',
+    words: 'Advanced verbal & language mastery',
+    summary: 'Summit pre-algebra & comprehensive vocabulary'
+  },
 };
 
 export default function FirstLaunchOnboardingModal({
@@ -44,6 +73,7 @@ export default function FirstLaunchOnboardingModal({
   const [usernameError, setUsernameError] = useState('');
   const [usernameConfirmed, setUsernameConfirmed] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState('');
+  const [selectedStartingSubject, setSelectedStartingSubject] = useState('math');
   const inputRef = useRef(null);
 
   // Pre-fill if username already set (e.g. returning to this screen)
@@ -71,7 +101,7 @@ export default function FirstLaunchOnboardingModal({
     const handleKeyDown = (e) => {
       if (!isOpen) return;
       if (e.key === 'Escape' && step === 3 && onStartAdaptiveClimb) {
-        onStartAdaptiveClimb();
+        onStartAdaptiveClimb(selectedStartingSubject);
       }
     };
     if (isOpen) {
@@ -82,7 +112,7 @@ export default function FirstLaunchOnboardingModal({
         window.removeEventListener('keydown', handleKeyDown);
       };
     }
-  }, [isOpen, step, onStartAdaptiveClimb]);
+  }, [isOpen, step, selectedStartingSubject, onStartAdaptiveClimb]);
 
   if (!isOpen) return null;
 
@@ -108,16 +138,16 @@ export default function FirstLaunchOnboardingModal({
   const handleGradeConfirm = () => {
     if (!selectedGrade) return;
     const cleaned = usernameInput.trim();
-    // Save username + grade + starting rating together
+    // Save username + grade + starting rating together across all subjects
     storageService.saveUsername(cleaned, selectedGrade);
     if (onUsernameSet) onUsernameSet(cleaned);
     soundFx.playVictory();
     setStep(3);
   };
 
-  const handleStart = () => {
+  const handleStart = (subjectToStart = selectedStartingSubject) => {
     soundFx.playVictory();
-    if (typeof onStartAdaptiveClimb === 'function') onStartAdaptiveClimb();
+    if (typeof onStartAdaptiveClimb === 'function') onStartAdaptiveClimb(subjectToStart);
     else if (typeof onStartAtTier1 === 'function') onStartAtTier1();
     else if (typeof onStartPlacementTest === 'function') onStartPlacementTest();
   };
@@ -125,10 +155,10 @@ export default function FirstLaunchOnboardingModal({
   // ─── STEP 1: Username ─────────────────────────────────────────────────────
   if (step === 1) {
     return (
-      <div className="fixed inset-0 z-[1000] h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-6 select-none animate-pop overflow-hidden">
+      <div className="fixed inset-0 z-[1000] h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-4 sm:p-6 select-none animate-pop overflow-hidden">
         <div className="absolute w-96 h-96 rounded-full bg-purple-600/20 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
 
-        <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6 text-center">
+        <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-4 sm:gap-5 text-center">
           {/* Step indicator */}
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
             <span className="text-amber-400">Step 1</span>
@@ -139,18 +169,23 @@ export default function FirstLaunchOnboardingModal({
           <div className="relative flex justify-center p-1 overflow-visible">
             <div className="absolute w-32 h-32 rounded-full bg-amber-400/20 blur-2xl animate-pulse pointer-events-none" />
             <Mascot mood="happy" state="idle" equipped={equippedItems}
-              className="w-28 h-28 aspect-square filter drop-shadow-xl animate-bounce relative z-10" />
+              className="w-24 h-24 sm:w-28 sm:h-28 aspect-square filter drop-shadow-xl animate-bounce relative z-10" />
           </div>
 
-          <div className="space-y-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full inline-block">
-              🏔️ Kibo Climb
-            </span>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+              <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                🏔️ Kibo Climb
+              </span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                🔢 Math + 📚 Words
+              </span>
+            </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
               What should we<br />call you, Climber?
             </h1>
-            <p className="text-sm text-slate-300 font-medium leading-relaxed">
-              Pick a username for the <strong className="text-amber-400">global leaderboard</strong>.
+            <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
+              Pick your climber tag for <strong className="text-amber-400">Math & Words</strong> leaderboards.
             </p>
           </div>
 
@@ -162,7 +197,7 @@ export default function FirstLaunchOnboardingModal({
                 type="text"
                 value={usernameInput}
                 onChange={(e) => { setUsernameInput(e.target.value); setUsernameError(''); }}
-                placeholder="e.g. MathKing42"
+                placeholder="e.g. StarClimber42"
                 maxLength={20}
                 autoComplete="off"
                 autoCapitalize="none"
@@ -178,11 +213,11 @@ export default function FirstLaunchOnboardingModal({
               )}
             </div>
             {usernameError && <p className="text-xs font-bold text-rose-400 text-left px-1">{usernameError}</p>}
-            <p className="text-[10px] text-slate-500 font-medium text-left px-1">
-              3–20 characters · Letters, numbers, and underscores only · Your leaderboard name
+            <p className="text-[10px] text-slate-400 font-medium text-left px-1">
+              3–20 characters · Letters, numbers, and underscores only
             </p>
             <button type="submit"
-              className="w-full h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2">
+              className="w-full h-13 sm:h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 cursor-pointer">
               {usernameConfirmed ? (
                 <><CheckCircle2 className="w-5 h-5 stroke-[2.5]" /> Confirmed!</>
               ) : (
@@ -205,10 +240,10 @@ export default function FirstLaunchOnboardingModal({
   // ─── STEP 2: Grade Selection ──────────────────────────────────────────────
   if (step === 2) {
     return (
-      <div className="fixed inset-0 z-[1000] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-4 sm:p-6 select-none animate-pop overflow-hidden">
+      <div className="fixed inset-0 z-[1000] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-3 sm:p-5 select-none animate-pop overflow-hidden">
         <div className="absolute w-96 h-96 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
 
-        <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-3 sm:gap-4 text-center max-h-[96dvh] overflow-hidden py-2">
+        <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-2.5 sm:gap-3 text-center max-h-[96dvh] overflow-hidden py-1 sm:py-2">
           {/* Step indicator */}
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 shrink-0">
             <span className="text-slate-600">Step 1</span>
@@ -220,43 +255,61 @@ export default function FirstLaunchOnboardingModal({
             <div className="flex items-center justify-center gap-2 text-amber-400">
               <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
               <span className="text-[10px] font-black uppercase tracking-widest bg-amber-400/10 border border-amber-400/30 px-3 py-0.5 rounded-full">
-                Grade Level
+                Multi-Subject Grade Level
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-tight">
+            <h1 className="text-lg sm:text-2xl font-black tracking-tight leading-tight">
               What grade is<br />{usernameInput || 'the climber'} in?
             </h1>
-            <p className="text-xs text-slate-300 font-medium">
-              Sets starting difficulty so problems feel just right.
+            <p className="text-[11px] sm:text-xs text-slate-300 font-medium max-w-xs mx-auto">
+              Calibrates starting difficulty for <strong className="text-amber-300">Math & Words</strong> so challenges feel just right.
             </p>
           </div>
 
           {/* Bounded Vertically Scrollable Grade Option Tiles */}
-          <div className="w-full max-h-40 sm:max-h-48 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar shrink">
-            {GRADE_OPTIONS.map((grade) => (
-              <button
-                key={grade}
-                type="button"
-                onClick={() => handleGradeSelect(grade)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 sm:py-2.5 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
-                  selectedGrade === grade
-                    ? 'border-amber-400 bg-amber-400/15 shadow-md shadow-amber-500/10'
-                    : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10'
-                }`}
-              >
-                <div className={`w-3.5 h-3.5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
-                  selectedGrade === grade ? 'border-amber-400 bg-amber-400' : 'border-slate-600'
-                }`}>
-                  {selectedGrade === grade && <div className="w-1.5 h-1.5 rounded-full bg-slate-900" />}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span className="block text-xs sm:text-sm font-black text-white truncate">{grade}</span>
-                  <span className="block text-[10px] text-slate-400 font-medium leading-tight truncate">
-                    {GRADE_DESCRIPTIONS[grade]}
-                  </span>
-                </div>
-              </button>
-            ))}
+          <div className="w-full max-h-48 sm:max-h-56 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar shrink">
+            {GRADE_OPTIONS.map((grade) => {
+              const details = GRADE_CURRICULUM_DETAILS[grade] || { math: '', words: '', summary: '' };
+              const isSelected = selectedGrade === grade;
+              return (
+                <button
+                  key={grade}
+                  type="button"
+                  onClick={() => handleGradeSelect(grade)}
+                  className={`w-full flex items-start gap-2.5 px-3 py-2 sm:py-2.5 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
+                    isSelected
+                      ? 'border-amber-400 bg-amber-400/15 shadow-md shadow-amber-500/10'
+                      : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10'
+                  }`}
+                >
+                  <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center mt-0.5 transition-all ${
+                    isSelected ? 'border-amber-400 bg-amber-400' : 'border-slate-600'
+                  }`}>
+                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-slate-900" />}
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-xs sm:text-sm font-black text-white truncate">{grade}</span>
+                      {isSelected && (
+                        <span className="text-[9px] font-black uppercase text-amber-400 bg-amber-400/20 px-1.5 py-0.5 rounded-md">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[10px]">
+                      <div className="flex items-center gap-1 text-amber-200/90 font-medium truncate">
+                        <span className="text-[11px] shrink-0">🔢</span>
+                        <span className="truncate">{details.math}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-teal-200/90 font-medium truncate">
+                        <span className="text-[11px] shrink-0">📚</span>
+                        <span className="truncate">{details.words}</span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           <button
@@ -281,64 +334,101 @@ export default function FirstLaunchOnboardingModal({
     <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-hidden overflow-x-hidden select-none animate-pop border-none">
       <ConfettiCanvas />
 
-      <div className="w-full max-w-2xl mx-auto min-h-full flex flex-col justify-between p-4 sm:p-6 md:p-8 box-border relative z-10 text-center gap-4">
+      <div className="w-full max-w-2xl mx-auto min-h-full flex flex-col justify-between p-3.5 sm:p-5 md:p-6 box-border relative z-10 text-center gap-3">
 
-        <div className="shrink-0 flex flex-col items-center text-center space-y-2 pt-2">
-          <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 px-4 py-1 rounded-full border border-amber-500 shadow-sm inline-block tracking-wider animate-pulse">
-            🏔️ Welcome to Kibo Climb
-          </span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight drop-shadow-xs leading-tight">
+        <div className="shrink-0 flex flex-col items-center text-center space-y-1.5 pt-1">
+          <div className="flex items-center justify-center gap-1.5">
+            <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 px-3.5 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block tracking-wider animate-pulse">
+              🏔️ Welcome to Kibo Climb
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
             Ready, <span className="text-purple-700">{usernameInput || storageService.getUsername()}</span>? 🚀
           </h1>
-          <p className="text-sm sm:text-base md:text-lg font-extrabold text-purple-900 max-w-lg mx-auto leading-normal">
-            Bite-Sized Daily Ascents (~3 Mins) — Adaptive Math Training That Evolves With Your Mind
+          <p className="text-xs sm:text-sm md:text-base font-extrabold text-purple-900 max-w-lg mx-auto leading-normal">
+            Bite-Sized Daily Ascents (~3 Mins) — Adaptive Multi-Subject Training (Math, Words & More) That Evolves With Your Mind
           </p>
         </div>
 
-        <div className="flex-1 min-h-0 flex flex-col justify-center gap-4 py-2 my-auto">
-          <div className="relative py-2 flex justify-center items-center shrink-0 p-1 overflow-visible">
-            <div className="absolute w-36 sm:w-48 h-36 sm:h-48 rounded-full bg-amber-400/30 blur-2xl animate-pulse pointer-events-none" />
+        <div className="flex-1 min-h-0 flex flex-col justify-center gap-3 py-1 my-auto">
+          <div className="relative py-1 flex justify-center items-center shrink-0 p-1 overflow-visible">
+            <div className="absolute w-32 sm:w-40 h-32 sm:h-40 rounded-full bg-amber-400/30 blur-2xl animate-pulse pointer-events-none" />
             <Mascot mood="happy" state="idle" equipped={equippedItems}
-              className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 aspect-square filter drop-shadow-xl animate-bounce" />
+              className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 aspect-square filter drop-shadow-xl animate-bounce" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white/95 border-2 border-amber-200/90 rounded-3xl p-3.5 sm:p-5 shadow-xl shrink-0 text-left">
-            <div className="flex sm:flex-col items-start gap-3 bg-amber-50/90 border border-amber-200 rounded-2xl p-3 sm:p-3.5 transition-transform hover:scale-[1.02]">
-              <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 fill-amber-400 shrink-0 mt-0.5 sm:mt-0" />
-              <div>
-                <h4 className="text-xs sm:text-sm font-black text-slate-800">Adaptive Engine</h4>
-                <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-snug mt-0.5">
-                  Problems adjust dynamically to your exact skill level as you climb.
-                </p>
+          {/* Multi-Subject Showcase Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 bg-white/95 border-2 border-amber-200/90 rounded-3xl p-3 sm:p-4 shadow-xl shrink-0 text-left">
+            {/* Math Subject Card */}
+            <div className="flex sm:flex-col items-start gap-2.5 bg-amber-50/90 border border-amber-200 rounded-2xl p-2.5 sm:p-3 transition-transform hover:scale-[1.02]">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-lg">🔢</span>
+                  <h4 className="text-xs sm:text-sm font-black text-amber-950">Math Ascent</h4>
+                </div>
+                <span className="text-[9px] font-black uppercase text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-md">
+                  Active
+                </span>
               </div>
+              <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-snug">
+                Adaptive addition, multiplication tables, money decimals, fractions & pre-algebra.
+              </p>
             </div>
-            <div className="flex sm:flex-col items-start gap-3 bg-orange-50/90 border border-orange-200 rounded-2xl p-3 sm:p-3.5 transition-transform hover:scale-[1.02]">
-              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 fill-orange-400 shrink-0 mt-0.5 sm:mt-0" />
-              <div>
-                <h4 className="text-xs sm:text-sm font-black text-slate-800">Daily Streaks</h4>
-                <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-snug mt-0.5">
-                  Solve 12 problems daily to build long-term memory & earn Sparks!
-                </p>
+
+            {/* Words Subject Card */}
+            <div className="flex sm:flex-col items-start gap-2.5 bg-teal-50/90 border border-teal-200 rounded-2xl p-2.5 sm:p-3 transition-transform hover:scale-[1.02]">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-lg">📚</span>
+                  <h4 className="text-xs sm:text-sm font-black text-teal-950">Words Ascent</h4>
+                </div>
+                <span className="text-[9px] font-black uppercase text-teal-700 bg-teal-100 px-1.5 py-0.5 rounded-md">
+                  Active
+                </span>
               </div>
+              <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-snug">
+                Dynamic phonics, sight words, spelling builder, vocabulary & grammar quests.
+              </p>
             </div>
-            <div className="flex sm:flex-col items-start gap-3 bg-purple-50/90 border border-purple-200 rounded-2xl p-3 sm:p-3.5 transition-transform hover:scale-[1.02]">
-              <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 shrink-0 mt-0.5 sm:mt-0" />
-              <div>
-                <h4 className="text-xs sm:text-sm font-black text-slate-800">Kibo's Corner 🐾</h4>
-                <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-snug mt-0.5">
-                  Unlock hats, outfits, pets, backgrounds, and power-up items!
-                </p>
+
+            {/* Daily Streaks & Shop Card */}
+            <div className="flex sm:flex-col items-start gap-2.5 bg-purple-50/90 border border-purple-200 rounded-2xl p-2.5 sm:p-3 transition-transform hover:scale-[1.02]">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-1.5">
+                  <Flame className="w-4 h-4 text-orange-500 fill-orange-400" />
+                  <h4 className="text-xs sm:text-sm font-black text-purple-950">Streaks & Shop</h4>
+                </div>
+                <span className="text-[9px] font-black uppercase text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded-md">
+                  🐾 Kibo's
+                </span>
               </div>
+              <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-snug">
+                Solve 12 daily problems to build retention & earn Sparks for outfits and pets!
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="shrink-0 space-y-2 pt-2 pb-2 w-full">
-          <button type="button" onClick={handleStart}
-            className="btn-3d-orange w-full h-16 min-h-[64px] py-4 text-lg sm:text-xl font-extrabold rounded-2xl flex items-center justify-center gap-3 shadow-bouncy-orange active:scale-95 transition-all tracking-wide cursor-pointer">
-            <Play className="w-6 h-6 fill-white stroke-[2.5]" />
-            Start Kibo Climb! 🚀
-          </button>
+        {/* Subject Start Actions */}
+        <div className="shrink-0 space-y-2 pt-1 pb-2 w-full">
+          <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
+            <button
+              type="button"
+              onClick={() => handleStart('math')}
+              className="w-full py-3 sm:py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-sm sm:text-base rounded-2xl border-b-4 border-orange-700 shadow-md shadow-amber-500/20 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>🔢</span>
+              <span>Start Math</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStart('words')}
+              className="w-full py-3 sm:py-3.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-black text-sm sm:text-base rounded-2xl border-b-4 border-teal-800 shadow-md shadow-teal-600/20 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>📚</span>
+              <span>Start Words</span>
+            </button>
+          </div>
 
           {onOpenParentZone && (
             <button type="button"
@@ -348,8 +438,8 @@ export default function FirstLaunchOnboardingModal({
             </button>
           )}
 
-          <span className="text-xs sm:text-sm font-extrabold text-slate-500 block text-center pt-1">
-            Kibo Math by Kibo Climb • Bite-Sized Daily Ascents (~3 Mins)
+          <span className="text-[11px] sm:text-xs font-extrabold text-slate-500 block text-center">
+            Kibo Climb • Multi-Subject Daily Ascents (~3 Mins) • Math & Words
           </span>
         </div>
       </div>

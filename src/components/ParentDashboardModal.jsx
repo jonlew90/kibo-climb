@@ -63,6 +63,7 @@ export default function ParentDashboardModal({
   const [profilesList, setProfilesList] = useState(() => storageService.getAllProfiles());
   const [viewingProfileId, setViewingProfileId] = useState(() => storageService.getActiveProfileId());
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  const [overviewTimeframe, setOverviewTimeframe] = useState('7d'); // '7d' | '30d' | 'all'
 
   // Weekly digest preview & test sending states
   const [showWeeklyPreview, setShowWeeklyPreview] = useState(false);
@@ -511,19 +512,26 @@ export default function ParentDashboardModal({
               </div>
             </div>
 
-            {/* STAT SUMMARY ROW */}
+            {/* STAT SUMMARY & TIMEFRAME FILTER */}
             {(() => {
               const activeUserData = getProfileSubjectData(viewingProfileId, selectedSubject);
               const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG['math'];
               const historyList = activeUserData.sprintHistory || [];
-              const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec || curr.durationInSeconds) || 0), 0);
+              const now = new Date();
+
+              const daysLimit = overviewTimeframe === '7d' ? 7 : (overviewTimeframe === '30d' ? 30 : Infinity);
+              const filteredSprints = historyList.filter(s => {
+                if (daysLimit === Infinity) return true;
+                if (!s.date) return false;
+                return (now - new Date(s.date)) / (1000 * 60 * 60 * 24) <= daysLimit;
+              });
+
+              const activeLearningTimeSec = filteredSprints.reduce((acc, curr) => acc + (Number(curr.totalTimeSec || curr.durationInSeconds) || 0), 0);
               const bestAnswerStreak = Math.max(
                 activeUserData.personalRecords?.highestCorrectStreak || 0,
                 activeUserData.cumulativeCorrectStreak || 0
               );
-              const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
               const childRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
-              const currentTier = activeUserData.tier ?? getTierFromRating(childRating);
               const rankTitle = getCompetenceRankTier(childRating, selectedSubject);
 
               const formatTime = (sec) => {
@@ -533,53 +541,170 @@ export default function ParentDashboardModal({
                 return mins > 0 ? `${mins}m` : `${sec}s`;
               };
 
-              const now = new Date();
-              const recentSprints = historyList.filter(s => {
-                  if (!s.date) return false;
-                  return (now - new Date(s.date)) / (1000 * 60 * 60 * 24) <= 14;
+              let totalCorrect = 0;
+              let totalQs = 0;
+              filteredSprints.forEach(s => {
+                totalCorrect += Number(s.correctCount || s.score || 0);
+                totalQs += Number(s.totalQuestions || (s.answers ? s.answers.length : 12));
               });
-              let recentAccuracy = 'N/A';
-              const sprintsForAcc = recentSprints.length > 0 ? recentSprints : historyList.slice(0, 10);
-              if (sprintsForAcc.length > 0) {
-                  let totalCorrect = 0;
-                  let totalQs = 0;
-                  sprintsForAcc.forEach(s => {
-                      totalCorrect += Number(s.correctCount || s.score || 0);
-                      totalQs += Number(s.totalQuestions || (s.answers ? s.answers.length : 12));
-                  });
-                  recentAccuracy = totalQs > 0 ? `${Math.round((totalCorrect / totalQs) * 100)}%` : 'N/A';
-              }
+
+              // Base all-time stats on totalProblemsSolved so accuracy denominator and solved count match
+              const effectiveTotalQs = overviewTimeframe === 'all'
+                ? Math.max(activeUserData.totalProblemsSolved ?? 0, totalQs)
+                : totalQs;
+
+              const effectiveTotalCorrect = overviewTimeframe === 'all' && totalQs > 0
+                ? Math.min(effectiveTotalQs, Math.round((totalCorrect / totalQs) * effectiveTotalQs))
+                : (overviewTimeframe === 'all' ? (activeUserData.totalProblemsSolved ?? 0) : totalCorrect);
+
+              const solvedCount = overviewTimeframe === 'all'
+                ? effectiveTotalQs
+                : totalCorrect;
+
+              const accuracyVal = effectiveTotalQs > 0
+                ? `${Math.round((effectiveTotalCorrect / effectiveTotalQs) * 100)}%`
+                : (overviewTimeframe === 'all' && historyList.length === 0 && (activeUserData.totalProblemsSolved ?? 0) === 0 ? 'N/A' : '0%');
+
+              // Average Pace per question/word
+              const avgPaceSec = effectiveTotalQs > 0 && activeLearningTimeSec > 0
+                ? (activeLearningTimeSec / effectiveTotalQs).toFixed(1)
+                : null;
+              const paceUnit = selectedSubject === 'words' ? '/ word' : '/ problem';
 
               const unitLabel = selectedSubject === 'words' ? 'Words Solved' : 'Problems Solved';
               const timeLabel = `${subjectConfig.name} Time`;
               const ratingLabel = `${subjectConfig.name} Rating`;
+              const timeframeSubtitle = overviewTimeframe === '7d' ? 'Past 7 Days' : (overviewTimeframe === '30d' ? 'Past 30 Days' : 'All-Time');
 
               return (
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3">
-                    <Flame className="w-5 h-5 text-orange-500 fill-orange-400 mx-auto mb-1 stroke-[2.5]" />
-                    <span className="text-[9px] uppercase font-black text-amber-900 block">Best Answer Streak</span>
-                    <span className="text-lg font-black text-slate-800">{bestAnswerStreak} {bestAnswerStreak === 1 ? 'Q' : 'Qs'}</span>
+                <div className="space-y-3">
+                  {/* Timeframe Filter Bar */}
+                  <div className="flex items-center justify-between gap-2 flex-wrap px-1">
+                    <div className="flex items-center gap-1.5 text-slate-700">
+                      <Calendar className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
+                      <span className="text-xs font-black uppercase tracking-wider">Practice Stats</span>
+                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                        {timeframeSubtitle}
+                      </span>
+                    </div>
+                    <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-extrabold gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setOverviewTimeframe('7d')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          overviewTimeframe === '7d'
+                            ? 'bg-white text-purple-900 shadow-xs font-black'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Past 7 Days
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setOverviewTimeframe('30d')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          overviewTimeframe === '30d'
+                            ? 'bg-white text-purple-900 shadow-xs font-black'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Past 30 Days
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setOverviewTimeframe('all')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          overviewTimeframe === 'all'
+                            ? 'bg-white text-purple-900 shadow-xs font-black'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        All Time
+                      </button>
+                    </div>
                   </div>
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
-                    <span className="text-[9px] uppercase font-black text-emerald-900 block">{unitLabel}</span>
-                    <span className="text-lg font-black text-slate-800">{childTotalSolved}</span>
-                  </div>
-                  <div className="bg-sky-50 border border-sky-200 rounded-2xl p-3">
-                    <Clock className="w-5 h-5 text-sky-600 mx-auto mb-1 stroke-[2.5]" />
-                    <span className="text-[9px] uppercase font-black text-sky-900 block">{timeLabel}</span>
-                    <span className="text-lg font-black text-sky-950">{formatTime(activeLearningTimeSec)}</span>
-                  </div>
-                  <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-3">
-                    <Award className="w-5 h-5 text-indigo-600 mx-auto mb-1 stroke-[2.5]" />
-                    <span className="text-[9px] uppercase font-black text-indigo-900 block">{ratingLabel}</span>
-                    <span className="text-lg font-black text-indigo-900">{childRating}</span>
-                  </div>
-                  <div className="bg-fuchsia-50 border border-fuchsia-200 rounded-2xl p-3">
-                    <CheckCircle2 className="w-5 h-5 text-fuchsia-600 mx-auto mb-1 stroke-[2.5]" />
-                    <span className="text-[9px] uppercase font-black text-fuchsia-900 block">Recent Accuracy</span>
-                    <span className="text-lg font-black text-fuchsia-900">{recentAccuracy}</span>
+
+                  {/* 6 Metric Cards Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
+                    {/* Practice Time */}
+                    <div className="bg-sky-50 border border-sky-200 rounded-2xl p-3 flex flex-col justify-between">
+                      <div>
+                        <Clock className="w-5 h-5 text-sky-600 mx-auto mb-1 stroke-[2.5]" />
+                        <span className="text-[9px] uppercase font-black text-sky-900 block truncate">{timeLabel}</span>
+                      </div>
+                      <div className="mt-1">
+                        <span className="text-lg font-black text-sky-950 block">{formatTime(activeLearningTimeSec)}</span>
+                        <span className="text-[9px] font-bold text-sky-700/80 block truncate">{timeframeSubtitle}</span>
+                      </div>
+                    </div>
+
+                    {/* Avg Pace */}
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex flex-col justify-between">
+                      <div>
+                        <Zap className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
+                        <span className="text-[9px] uppercase font-black text-amber-900 block truncate">Avg Pace</span>
+                      </div>
+                      <div className="mt-1">
+                        <span className="text-lg font-black text-amber-950 block">
+                          {avgPaceSec ? `${avgPaceSec}s` : '—'}
+                        </span>
+                        <span className="text-[9px] font-bold text-amber-800/80 block truncate">
+                          {avgPaceSec ? paceUnit : 'No sessions'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Problems / Words Solved */}
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex flex-col justify-between">
+                      <div>
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
+                        <span className="text-[9px] uppercase font-black text-emerald-900 block truncate">{unitLabel}</span>
+                      </div>
+                      <div className="mt-1">
+                        <span className="text-lg font-black text-slate-800 block">{solvedCount}</span>
+                        <span className="text-[9px] font-bold text-emerald-700/80 block truncate">
+                          {overviewTimeframe === 'all' ? 'All-time total' : 'In period'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Accuracy */}
+                    <div className="bg-fuchsia-50 border border-fuchsia-200 rounded-2xl p-3 flex flex-col justify-between">
+                      <div>
+                        <Target className="w-5 h-5 text-fuchsia-600 mx-auto mb-1 stroke-[2.5]" />
+                        <span className="text-[9px] uppercase font-black text-fuchsia-900 block truncate">Accuracy</span>
+                      </div>
+                      <div className="mt-1">
+                        <span className="text-lg font-black text-fuchsia-900 block">{accuracyVal}</span>
+                        <span className="text-[9px] font-bold text-fuchsia-700/80 block truncate">
+                          {effectiveTotalQs > 0 ? `${effectiveTotalCorrect}/${effectiveTotalQs} correct` : 'No attempts'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Rating */}
+                    <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-3 flex flex-col justify-between">
+                      <div>
+                        <Award className="w-5 h-5 text-indigo-600 mx-auto mb-1 stroke-[2.5]" />
+                        <span className="text-[9px] uppercase font-black text-indigo-900 block truncate">{ratingLabel}</span>
+                      </div>
+                      <div className="mt-1">
+                        <span className="text-lg font-black text-indigo-900 block">{childRating}</span>
+                        <span className="text-[9px] font-bold text-indigo-700/80 block truncate">{rankTitle}</span>
+                      </div>
+                    </div>
+
+                    {/* Best Streak */}
+                    <div className="bg-orange-50 border border-orange-200 rounded-2xl p-3 flex flex-col justify-between">
+                      <div>
+                        <Flame className="w-5 h-5 text-orange-500 fill-orange-400 mx-auto mb-1 stroke-[2.5]" />
+                        <span className="text-[9px] uppercase font-black text-orange-900 block truncate">Best Streak</span>
+                      </div>
+                      <div className="mt-1">
+                        <span className="text-lg font-black text-slate-800 block">{bestAnswerStreak} {bestAnswerStreak === 1 ? 'Q' : 'Qs'}</span>
+                        <span className="text-[9px] font-bold text-orange-700/80 block truncate">Personal best</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );

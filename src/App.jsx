@@ -1470,8 +1470,13 @@ export default function App() {
       {/* PROFILE SELECTOR — shown on every load when 2+ profiles exist */}
       {showProfileSelector && (
         <ProfileSelectorScreen
-          onSelectProfile={(profile) => {
-            syncAppStateWithStorage();
+          onSelectProfile={(profile, preferredSubject) => {
+            if (preferredSubject && (preferredSubject === 'words' || preferredSubject === 'math')) {
+              setActiveSubject(preferredSubject);
+              syncAppStateWithStorage(preferredSubject);
+            } else {
+              syncAppStateWithStorage();
+            }
             setShowProfileSelector(false);
             setAppState('adaptive_session');
           }}
@@ -1486,8 +1491,13 @@ export default function App() {
       {/* MANUAL PROFILE SELECTOR */}
       {showManualProfileSwitcher && (
         <ProfileSelectorScreen
-          onSelectProfile={(profile) => {
-            syncAppStateWithStorage();
+          onSelectProfile={(profile, preferredSubject) => {
+            if (preferredSubject && (preferredSubject === 'words' || preferredSubject === 'math')) {
+              setActiveSubject(preferredSubject);
+              syncAppStateWithStorage(preferredSubject);
+            } else {
+              syncAppStateWithStorage();
+            }
             setShowManualProfileSwitcher(false);
             setAppState('adaptive_session');
           }}
@@ -1515,8 +1525,13 @@ export default function App() {
           setPinGateSource('onboarding');
           setShowPinGateModal(true);
         }}
-        onStartAdaptiveClimb={() => {
-          syncAppStateWithStorage();
+        onStartAdaptiveClimb={(startingSubject = 'math') => {
+          if (startingSubject && (startingSubject === 'words' || startingSubject === 'math')) {
+            setActiveSubject(startingSubject);
+            syncAppStateWithStorage(startingSubject);
+          } else {
+            syncAppStateWithStorage();
+          }
           setShowFirstLaunchOnboardingModal(false);
           setAppState('adaptive_session');
         }}
