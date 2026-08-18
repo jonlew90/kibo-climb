@@ -84,6 +84,8 @@ export default function ParentDashboardModal({
       adaptiveCompetenceRating: subData.adaptiveCompetenceRating || (subId === 'math' ? uData.adaptiveCompetenceRating : 1000) || 1000,
       competenceRank: subData.competenceRank || (subId === 'math' ? uData.competenceRank : 1000) || 1000,
       totalProblemsSolved: subData.totalProblemsSolved ?? (subId === 'math' ? (uData.totalProblemsSolved ?? 0) : 0),
+      cumulativeCorrectStreak: subData.cumulativeCorrectStreak ?? (subId === 'math' ? (uData.cumulativeCorrectStreak ?? 0) : 0),
+      personalRecords: subData.personalRecords || (subId === 'math' ? (uData.personalRecords || {}) : {}),
       tier: subData.tier ?? (subId === 'math' ? (uData.tier ?? 1) : 1),
       sprintHistory: subData.sprintHistory || (subId === 'math' ? (uData.sprintHistory || []) : []),
       skipLogs: subData.skipLogs || (subId === 'math' ? (uData.skipLogs || []) : [])
@@ -365,6 +367,7 @@ export default function ParentDashboardModal({
               const isActive = p.id === viewingProfileId;
               const childRating = p.userData?.adaptiveCompetenceRating || p.userData?.competenceRank || 1000;
               const displayGrade = getGradeLevelFromRating(childRating);
+              const profileStreak = p.userData?.streak ?? 0;
               return (
                 <button
                   key={p.id}
@@ -379,6 +382,11 @@ export default function ParentDashboardModal({
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${isActive ? 'bg-purple-800 text-purple-100' : 'bg-slate-200 text-slate-600'}`}>
                     {displayGrade}
                   </span>
+                  {profileStreak > 0 && (
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-md flex items-center gap-0.5 ${isActive ? 'bg-amber-400 text-amber-950 font-black' : 'bg-amber-100 text-amber-900'}`}>
+                      🔥 {profileStreak}d
+                    </span>
+                  )}
                   {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
                 </button>
               );
@@ -435,6 +443,35 @@ export default function ParentDashboardModal({
         {activeTab === 'overview' && (
           <div className="flex-1 space-y-4 my-1">
 
+            {/* CHILD GLOBAL HABIT BANNER */}
+            {(() => {
+              const currentProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+              const profileStreak = currentProf.userData?.streak ?? 0;
+              const childName = currentProf.name || 'Your Climber';
+              return (
+                <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-purple-500/10 border border-amber-200/90 rounded-2xl p-3 flex items-center justify-between gap-3 text-left shadow-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-sm shrink-0">
+                      <Flame className="w-6 h-6 fill-white stroke-[2.5]" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-amber-950 uppercase tracking-wider">Overall Daily Practice Streak</span>
+                        <span className="bg-amber-200/80 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded-md">All Subjects</span>
+                      </div>
+                      <p className="text-xs text-slate-600 font-bold mt-0.5">
+                        {childName} has practiced for <strong className="text-amber-950 font-black">{pluralize(profileStreak, 'Day')}</strong> in a row across Math & Words.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 bg-white/80 border border-amber-200 px-3 py-1.5 rounded-xl shadow-xs">
+                    <span className="text-xl font-black text-amber-600 tracking-tight leading-none block">{profileStreak}</span>
+                    <span className="text-[9px] font-black uppercase text-amber-800 tracking-wider block mt-0.5">{profileStreak === 1 ? 'Day' : 'Days'}</span>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* SUBJECT SELECTOR BAR (TOGGLE BETWEEN ALL ACTIVE SUBJECTS PER PROFILE) */}
             <div className="bg-white border-2 border-purple-200 rounded-2xl p-2.5 shadow-xs flex items-center justify-between gap-2 flex-wrap text-left">
               <div className="flex items-center gap-1.5 text-purple-900">
@@ -480,7 +517,10 @@ export default function ParentDashboardModal({
               const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG['math'];
               const historyList = activeUserData.sprintHistory || [];
               const activeLearningTimeSec = historyList.reduce((acc, curr) => acc + (Number(curr.totalTimeSec || curr.durationInSeconds) || 0), 0);
-              const childStreak = activeUserData.streak ?? 0;
+              const bestAnswerStreak = Math.max(
+                activeUserData.personalRecords?.highestCorrectStreak || 0,
+                activeUserData.cumulativeCorrectStreak || 0
+              );
               const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
               const childRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
               const currentTier = activeUserData.tier ?? getTierFromRating(childRating);
@@ -517,9 +557,9 @@ export default function ParentDashboardModal({
               return (
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
                   <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3">
-                    <Flame className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
-                    <span className="text-[9px] uppercase font-black text-amber-900 block">Streak</span>
-                    <span className="text-lg font-black text-slate-800">{pluralize(childStreak, 'Day')}</span>
+                    <Flame className="w-5 h-5 text-orange-500 fill-orange-400 mx-auto mb-1 stroke-[2.5]" />
+                    <span className="text-[9px] uppercase font-black text-amber-900 block">Best Answer Streak</span>
+                    <span className="text-lg font-black text-slate-800">{bestAnswerStreak} {bestAnswerStreak === 1 ? 'Q' : 'Qs'}</span>
                   </div>
                   <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
