@@ -1363,7 +1363,7 @@ export default function WordsSessionView({
                         setShowFrustrationCard(true);
                         triggerToastBanner({
                           type: 'success',
-                          text: 'Kibo Wisdom Hint Unlocked! 💡'
+                          text: 'Kibo Wisdom Clue Unlocked! 📜'
                         }, 1200);
                       } else if (onOpenWorkshop) {
                         onOpenWorkshop();
@@ -1380,11 +1380,11 @@ export default function WordsSessionView({
                     }`}
                     title={
                       (consumables?.hintScrollCount ?? 0) > 0
-                        ? 'Use Wisdom Scroll to reveal a hint!'
+                        ? 'Use Wisdom Scroll for phonics & word structure clues!'
                         : 'Get Hint Scrolls in Kibo\'s Corner'
                     }
                   >
-                    💡 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
+                    📜 {showFrustrationCard ? 'Clue Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Clue (${consumables.hintScrollCount})` : 'Clue'}
                   </button>
 
                   {/* LETTER SPYGLASS BUTTON */}
@@ -1398,7 +1398,7 @@ export default function WordsSessionView({
                     }`}
                     title={
                       (consumables?.letterSpyglassCount ?? 0) > 0
-                        ? 'Use Letter Spyglass to reveal the next blank letter!'
+                        ? 'Use Letter Spyglass to reveal & fill 1 missing letter slot!'
                         : 'Get Letter Spyglass in Kibo\'s Corner'
                     }
                   >
@@ -1511,45 +1511,27 @@ export default function WordsSessionView({
 
               const getWordHintMessage = () => {
                 if (!targetStr) return "Sound out the word and try your best!";
+                const word = targetStr.toUpperCase();
+                const vowels = word.split('').filter(c => 'AEIOU'.includes(c));
+                const uniqueVowels = Array.from(new Set(vowels)).join(', ');
 
-                // Split displayStr into individual slot characters
-                const displayParts = displayStr.split(' ').filter(p => p.length > 0);
-                const chars = displayParts.length === targetStr.length
-                  ? displayParts
-                  : displayStr.replace(/\s+/g, '').split('');
+                // Identify starting blends / digraphs
+                const blends = ['STR', 'SPR', 'SPL', 'SCR', 'SH', 'CH', 'TH', 'WH', 'PH', 'BL', 'CL', 'FL', 'GL', 'PL', 'SL', 'BR', 'CR', 'DR', 'FR', 'GR', 'PR', 'TR', 'SK', 'SM', 'SN', 'SP', 'ST', 'SW', 'TW', 'QU'];
+                const matchedBlend = blends.find(b => word.startsWith(b));
+                const startClue = matchedBlend 
+                  ? `Starts with '${matchedBlend}' blend`
+                  : `Starts with '${word[0]}'`;
 
-                // Find indices that are currently unrevealed blanks ('_')
-                const blankIndices = [];
-                for (let i = 0; i < targetStr.length; i++) {
-                  if (chars[i] === '_' || !chars[i]) {
-                    blankIndices.push(i);
-                  }
-                }
+                const endingClue = word.length > 3 ? `ends with '${word[word.length - 1]}'` : null;
+                const vowelClue = uniqueVowels ? `Vowel${uniqueVowels.includes(',') ? 's' : ''}: ${uniqueVowels}` : null;
 
-                if (blankIndices.length === 0) {
-                  return `The word is "${targetStr.toUpperCase()}"!`;
-                }
+                const clues = [
+                  startClue,
+                  vowelClue,
+                  endingClue
+                ].filter(Boolean).join(' • ');
 
-                const getOrdinal = (n) => {
-                  const rem100 = n % 100;
-                  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
-                  const rem10 = n % 10;
-                  const suffixes = { 1: 'st', 2: 'nd', 3: 'rd' };
-                  return `${n}${suffixes[rem10] || 'th'}`;
-                };
-
-                // Pick the first unrevealed blank position
-                const targetBlankIndex = blankIndices[0];
-                const letter = targetStr.charAt(targetBlankIndex).toUpperCase();
-                const pos = targetBlankIndex + 1;
-
-                if (targetBlankIndex === 0) {
-                  return `The 1st letter is "${letter}"!`;
-                } else if (targetBlankIndex === targetStr.length - 1 && blankIndices.length === 1) {
-                  return `The last letter is "${letter}"!`;
-                } else {
-                  return `The ${getOrdinal(pos)} letter is "${letter}"!`;
-                }
+                return `🔤 ${clues} (${word.length} letters)`;
               };
 
               return (
@@ -1563,9 +1545,11 @@ export default function WordsSessionView({
 
                   {/* INTEGRATED KIBO HINT */}
                   {showFrustrationCard && (
-                    <div className="w-full pt-1.5 border-t border-indigo-100 text-[11px] font-bold text-indigo-900 bg-indigo-50/90 p-2 rounded-2xl animate-pop text-center space-y-0.5 mt-1">
-                      <span className="block font-black text-indigo-950">💪 Kibo Wisdom Hint:</span>
-                      <span className="italic block text-indigo-800">{getWordHintMessage()}</span>
+                    <div className="w-full pt-1.5 border-t border-indigo-100 text-[11px] font-bold text-indigo-900 bg-indigo-50/90 p-2 rounded-2xl animate-pop text-center space-y-0.5 mt-1 shadow-2xs">
+                      <span className="block font-black text-indigo-950 flex items-center justify-center gap-1">
+                        <span>📜</span> Kibo Wisdom Clue:
+                      </span>
+                      <span className="font-semibold block text-indigo-800 text-xs">{getWordHintMessage()}</span>
                     </div>
                   )}
                 </div>

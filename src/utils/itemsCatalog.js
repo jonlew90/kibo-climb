@@ -55,8 +55,8 @@ export const WORKSHOP_ITEMS = [
     rarity: 'common',
     isConsumable: true,
     icon: '📜',
-    badgeTag: 'Instant Hint!',
-    description: 'Costs 8 Sparks. Instantly reveals a helpful step-by-step Kibo hint for any active problem!'
+    badgeTag: 'Phonics & Clues',
+    description: 'Costs 8 Sparks. Instantly reveals a helpful phonics, word structure, or conceptual clue from Kibo to guide your thinking!'
   },
   {
     id: 'letter_spyglass',
@@ -67,7 +67,7 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '🔍',
     badgeTag: 'Kibo Words Only',
-    description: 'Costs 15 Sparks. (Kibo Words Exclusive) Instantly reveals and permanently gives the next missing blank letter in your active word!'
+    description: 'Costs 15 Sparks. (Kibo Words Exclusive) Instantly uncovers and fills 1 missing blank letter directly into your puzzle board!'
   },
   {
     id: 'letter_pruner',
