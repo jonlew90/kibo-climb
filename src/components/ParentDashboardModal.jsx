@@ -1477,7 +1477,7 @@ export default function ParentDashboardModal({
                         </button>
                       ) : (
                         <div className="bg-amber-100 p-3 rounded-xl border border-amber-300 space-y-2">
-                          <p className="text-xs font-bold text-amber-900">Are you sure you want to unlink your account? Your local progress will remain on this device, but it will no longer sync to the cloud.</p>
+                          <p className="text-xs font-bold text-amber-900">Are you sure you want to unlink your account? Your local progress will remain on this device, but it will no longer sync to the cloud. You will also permanently lose access to any real-money purchases on this device if local data is cleared.</p>
                           <div className="flex gap-2">
                             <button
                               onClick={async () => {

@@ -37,6 +37,7 @@ import { shopLedgerService } from './services/shopLedgerService';
 import AccountLinkModal from './components/AccountLinkModal';
 import { getNotificationPrefs, scheduleAllProfileReminders } from './utils/notifications';
 import MockCheckoutModal from './components/MockCheckoutModal';
+import StripeCheckoutModal from './components/StripeCheckoutModal';
 import SettingsScreen from './components/SettingsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import TermsOfServiceScreen from './components/TermsOfServiceScreen';
@@ -120,6 +121,7 @@ export default function App() {
 
   const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
+  const [showStripeCheckoutModal, setShowStripeCheckoutModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
@@ -969,7 +971,7 @@ export default function App() {
 
   const currentTierMeta = getTierMeta(tier);
 
-  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStreakSavedModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher;
+  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher;
 
 
   const closeAllNavModals = (except = null) => {
@@ -1513,7 +1515,11 @@ export default function App() {
               setLinkModalMilestone('Real-Money Purchase Backup');
               setShowAccountLinkModal(true);
             } else {
-              setShowMockCheckoutModal(true);
+              if (pendingSparksPurchase.realMoneyPrice) {
+                setShowStripeCheckoutModal(true);
+              } else {
+                setShowMockCheckoutModal(true);
+              }
             }
           } else {
             setShowParentDashboard(true);
@@ -1748,6 +1754,51 @@ export default function App() {
         }}
       />
 
+      <StripeCheckoutModal
+        isOpen={showStripeCheckoutModal}
+        onClose={() => {
+          setShowStripeCheckoutModal(false);
+          setPendingSparksPurchase(null);
+        }}
+        packageInfo={pendingSparksPurchase}
+        onConfirm={(pack) => {
+          let newSparks = sparks + (pack.sparks || pack.sparksIncluded || 0);
+
+          let nextConsumables = { ...consumables };
+          if (pack.bundleConsumables) {
+            Object.keys(pack.bundleConsumables).forEach((key) => {
+              nextConsumables[key] = (nextConsumables[key] || 0) + pack.bundleConsumables[key];
+            });
+            setConsumables(nextConsumables);
+            storageService.saveUserData({
+              streakShields: nextConsumables.shieldCount,
+              streakSaverCount: nextConsumables.streakSaverCount,
+              hintScrollCount: nextConsumables.hintScrollCount,
+              doubleSparksPotionCount: nextConsumables.doubleSparksPotionCount,
+            });
+          }
+
+          let nextUnlocked = [...unlockedItems];
+          if (pack.bundleItems) {
+            pack.bundleItems.forEach((id) => {
+              if (!nextUnlocked.includes(id)) {
+                nextUnlocked.push(id);
+              }
+            });
+            setUnlockedItems(nextUnlocked);
+            storageService.saveShopState({ unlockedItems: nextUnlocked });
+          }
+
+          setSparks(newSparks);
+          storageService.saveUserData({ sparks: newSparks });
+          localStorage.setItem('kibo_math_sparks', newSparks.toString());
+
+          soundFx.playSparkCollect();
+          setShowStripeCheckoutModal(false);
+          setPendingSparksPurchase(null);
+        }}
+      />
+
       {/* Account Link Modal */}
       <AccountLinkModal
         isOpen={showAccountLinkModal}
@@ -1765,7 +1816,11 @@ export default function App() {
           syncAppStateWithStorage();
           setShowAccountLinkModal(false);
           if (pendingSparksPurchase) {
-            setShowMockCheckoutModal(true);
+            if (pendingSparksPurchase.realMoneyPrice) {
+              setShowStripeCheckoutModal(true);
+            } else {
+              setShowMockCheckoutModal(true);
+            }
           }
         }}
       />
