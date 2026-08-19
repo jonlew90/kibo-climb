@@ -27,7 +27,7 @@ export default function KiboBreakOverlay({
       <div className="w-full max-w-md mx-auto h-full flex flex-col justify-between p-4 sm:p-5 box-border relative z-10 text-center">
         {/* TOP CONTAINER (flex-shrink: 0) */}
         <div className="shrink-0 flex flex-col items-center text-center space-y-1">
-          <span className="text-[10px] sm:text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 px-3.5 py-1 rounded-full border border-amber-500 shadow-xs inline-block tracking-wider animate-pulse">
+          <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 px-3.5 py-1 rounded-full border border-amber-500 shadow-xs inline-block tracking-wider animate-pulse">
             🏔️ Ascent Checkpoint Reached
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight drop-shadow-xs leading-tight">
@@ -55,7 +55,7 @@ export default function KiboBreakOverlay({
           <div className="grid grid-cols-2 gap-2.5 bg-white border-2 border-amber-200/90 rounded-2xl p-3 sm:p-4 shadow-md text-center flex-1 min-h-0 flex flex-col justify-center">
             {/* Accuracy Tile */}
             <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center relative overflow-hidden">
-              <span className="text-[10px] font-black uppercase text-emerald-800 flex items-center justify-center gap-1">
+              <span className="text-xs font-black uppercase text-emerald-800 flex items-center justify-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Accuracy
               </span>
               <div className="flex items-baseline justify-center gap-1.5 w-full">
@@ -63,8 +63,8 @@ export default function KiboBreakOverlay({
                 <span className="text-xs sm:text-sm font-extrabold text-emerald-600">({accuracyPct}%)</span>
               </div>
               {shieldsUsed > 0 && (
-                <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-sky-100 border border-sky-300 rounded-full text-[9px] font-black text-sky-800">
-                  <ShieldAlert className="w-3 h-3 text-sky-600" />
+                <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-sky-100 border border-sky-300 rounded-full text-xs font-black text-sky-800">
+                  <ShieldAlert className="w-3.5 h-3.5 text-sky-600" />
                   <span>{shieldsUsed} Shield{shieldsUsed > 1 ? 's' : ''} Consumed</span>
                 </div>
               )}
@@ -72,7 +72,7 @@ export default function KiboBreakOverlay({
 
             {/* Sparks Earned Tile */}
             <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center">
-              <span className="text-[10px] font-black uppercase text-amber-800 flex items-center justify-center gap-1">
+              <span className="text-xs font-black uppercase text-amber-800 flex items-center justify-center gap-1">
                 <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400" /> Sparks Earned
               </span>
               <div className="text-2xl sm:text-3xl font-black text-amber-700 flex items-center justify-center gap-1">
@@ -82,7 +82,7 @@ export default function KiboBreakOverlay({
 
             {/* Streak Boost Tile */}
             <div className="bg-orange-50/80 border border-orange-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center">
-              <span className="text-[10px] font-black uppercase text-orange-800 flex items-center justify-center gap-1">
+              <span className="text-xs font-black uppercase text-orange-800 flex items-center justify-center gap-1">
                 <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" /> Answer Streak
               </span>
               <div className="text-2xl sm:text-3xl font-black text-orange-700 flex items-center justify-center">
@@ -92,7 +92,7 @@ export default function KiboBreakOverlay({
 
             {/* Competence Rank Delta Tile */}
             <div className="bg-cyan-50/80 border border-cyan-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center">
-              <span className="text-[10px] font-black uppercase text-cyan-800 flex items-center justify-center gap-1">
+              <span className="text-xs font-black uppercase text-cyan-800 flex items-center justify-center gap-1">
                 <TrendingUp className="w-3.5 h-3.5 text-cyan-600" /> Rank Delta
               </span>
               <div className="text-2xl sm:text-3xl font-black text-cyan-700 flex items-center justify-center">
@@ -132,7 +132,7 @@ export default function KiboBreakOverlay({
             Visit Kibo's Corner 🐾
           </button>
 
-          <span className="text-[10px] sm:text-xs font-bold text-slate-500 block text-center pt-1">
+          <span className="text-xs sm:text-sm font-bold text-slate-500 block text-center pt-1">
             Kibo Math by Kibo Climb • Bite-Sized Daily Ascents (~3 Mins)
           </span>
         </div>

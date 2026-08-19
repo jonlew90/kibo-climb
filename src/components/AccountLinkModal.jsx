@@ -199,8 +199,8 @@ export default function AccountLinkModal({
         )}
 
         {/* Security Footer Note */}
-        <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-500 pt-2 border-t border-slate-100">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500 pt-2 border-t border-slate-100">
+          <ShieldCheck className="w-4 h-4 text-emerald-600" />
           <span>100% Passwordless Security • No Passwords Required</span>
         </div>
       </div>

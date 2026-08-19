@@ -44,7 +44,7 @@ export default function QwertyKeyboard({ onChar, onDelete, onClear, onSubmit, pr
       <div className="flex justify-end gap-2 mb-1 px-1">
           <button
             onPointerDown={handleClearClick}
-            className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-black text-[10px] sm:text-xs shadow-sm active:scale-95 transition-transform"
+            className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-black text-xs sm:text-sm shadow-sm active:scale-95 transition-transform"
           >
             <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
             CLEAR

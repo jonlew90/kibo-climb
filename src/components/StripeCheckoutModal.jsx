@@ -107,7 +107,7 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
           </button>
         </div>
 
-        <div className="mt-5 flex items-center justify-center gap-2 text-[10px] text-slate-400 font-medium">
+        <div className="mt-5 flex items-center justify-center gap-2 text-xs text-slate-500 font-medium">
           <span>🔒</span>
           <span>Secured by Stripe</span>
         </div>

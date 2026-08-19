@@ -1267,17 +1267,17 @@ export default function AdaptiveSessionView({
       <div className="w-full shrink-0 flex flex-col items-center justify-center my-1 space-y-2">
         {!hasStartedClimb ? (
           /* PRE-CLIMB START SCREEN HERO CARD */
-          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[42vh]">
+          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 sm:p-5 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[42vh]">
             <div className="space-y-1.5">
-              <span className="text-[11px] font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
+              <span className="text-xs sm:text-sm font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
                 {savedClimbState && savedClimbState.sessionQuestionIndex <= 12
                   ? `🏔️ Mountain Climb • Question ${savedClimbState.sessionQuestionIndex || 1} of 12`
                   : '🏔️ Mountain Climb • 12 Problems'}
               </span>
-              <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {savedClimbState && savedClimbState.sessionQuestionIndex <= 12 ? 'Climb in Progress!' : 'Ready for the Climb?'}
               </h2>
-              <p className="text-xs text-slate-600 font-semibold leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed">
                 {savedClimbState && savedClimbState.sessionQuestionIndex <= 12
                   ? 'You have a climb in progress! Click Resume Climb to continue where you left off.'
                   : 'Click Start Climb when you are ready! Your timer will begin as soon as you start.'}
@@ -1290,7 +1290,7 @@ export default function AdaptiveSessionView({
                 const owned = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
                 if (isDoubleSparksActive) {
                   return (
-                    <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 animate-pulse shadow-xs flex items-center gap-1">
+                    <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 animate-pulse shadow-xs flex items-center gap-1">
                       ⚡ 2x Sparks Active!
                     </span>
                   );
@@ -1308,7 +1308,7 @@ export default function AdaptiveSessionView({
                           }, 1400);
                         }
                       }}
-                      className="text-xs font-black uppercase px-3 py-1 rounded-full border transition-all active:scale-95 flex items-center gap-1 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
+                      className="text-xs sm:text-sm font-black uppercase px-3 py-1 rounded-full border transition-all active:scale-95 flex items-center gap-1 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
                     >
                       ⚡ Activate 2x Potion ({owned})
                     </button>
@@ -1318,19 +1318,19 @@ export default function AdaptiveSessionView({
               })()}
 
               {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
-                <span className="text-xs font-black uppercase text-sky-950 bg-sky-100 px-3 py-1 rounded-full border border-sky-300 shadow-2xs flex items-center gap-1">
+                <span className="text-xs sm:text-sm font-black uppercase text-sky-950 bg-sky-100 px-3 py-1 rounded-full border border-sky-300 shadow-2xs flex items-center gap-1">
                   🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
                 </span>
               )}
 
               {(consumables?.letterSpyglassCount ?? 0) > 0 && (
-                <span className="text-xs font-black uppercase text-amber-950 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 shadow-2xs flex items-center gap-1">
+                <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 shadow-2xs flex items-center gap-1">
                   🔍 Spyglasses ({consumables.letterSpyglassCount})
                 </span>
               )}
 
               {(consumables?.letterPrunerCount ?? 0) > 0 && (
-                <span className="text-xs font-black uppercase text-emerald-950 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 shadow-2xs flex items-center gap-1">
+                <span className="text-xs sm:text-sm font-black uppercase text-emerald-950 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 shadow-2xs flex items-center gap-1">
                   ✂️ Pruners ({consumables.letterPrunerCount})
                 </span>
               )}
@@ -1341,7 +1341,7 @@ export default function AdaptiveSessionView({
               <button
                 type="button"
                 onClick={savedClimbState && savedClimbState.sessionQuestionIndex <= 12 ? handleResumeClimb : handleStartClimb}
-                className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer"
+                className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-xl sm:text-2xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer"
               >
                 <Play className="w-7 h-7 fill-current" />
                 <span>{savedClimbState && savedClimbState.sessionQuestionIndex <= 12 ? 'RESUME CLIMB 🏔️' : 'START CLIMB 🏔️'}</span>
@@ -1370,21 +1370,21 @@ export default function AdaptiveSessionView({
                 )}
 
                 <div className="w-full flex flex-wrap items-center justify-center gap-1.5 py-0.5">
-                  <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 shrink-0 shadow-2xs">
+                  <span className="text-xs font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-purple-200 shrink-0 shadow-2xs">
                     🎯 Q #{currentQuestionNum}/12
                   </span>
                   {isNearTierThreshold(competenceRank) && !currentProblem.isProbe && (
-                    <span className="text-[10px] font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-0.5 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
+                    <span className="text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
                       ⚡ TIER GATEKEEPER
                     </span>
                   )}
                   {currentProblem.isProbe && (
-                    <span className="text-[10px] font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-0.5 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
+                    <span className="text-xs font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
                       🚀 SKILL PROBE (+120)
                     </span>
                   )}
                   <span
-                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
+                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
                   >
                     {streakCfg.label}
                   </span>
@@ -1394,7 +1394,7 @@ export default function AdaptiveSessionView({
                     type="button"
                     onClick={handlePassQuestion}
                     disabled={consecutiveSkips >= 2}
-                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                       consecutiveSkips >= 2
                         ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                         : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -1426,7 +1426,7 @@ export default function AdaptiveSessionView({
                         onOpenWorkshop();
                       }
                     }}
-                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       showFrustrationCard
                         ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                         : shouldPulseHint
@@ -1448,7 +1448,7 @@ export default function AdaptiveSessionView({
                   <button
                     type="button"
                     onClick={handleUseLetterSpyglass}
-                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       (consumables?.letterSpyglassCount ?? 0) > 0
                         ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
                         : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
@@ -1466,7 +1466,7 @@ export default function AdaptiveSessionView({
                   <button
                     type="button"
                     onClick={handleUseLetterPruner}
-                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       isLetterPrunerActive
                         ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
                         : (consumables?.letterPrunerCount ?? 0) > 0
@@ -1485,7 +1485,7 @@ export default function AdaptiveSessionView({
                   </button>
 
                   {isDoubleSparksActive && (
-                    <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
+                    <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
                       ⚡ 2x Active!
                     </span>
                   )}
@@ -1493,7 +1493,7 @@ export default function AdaptiveSessionView({
                   {/* KIBO SHIELD ACTIVE PILL */}
                   {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
                     <span
-                      className="text-[10px] font-black uppercase text-sky-950 bg-sky-100 px-2.5 py-0.5 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
+                      className="text-xs font-black uppercase text-sky-950 bg-sky-100 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
                       title="Kibo Shield Active: Your climb & streak are protected!"
                     >
                       🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
@@ -1511,7 +1511,7 @@ export default function AdaptiveSessionView({
               return (
                 <div className="space-y-1.5 w-full">
                   <div className={`w-full flex items-center justify-center gap-2 sm:gap-3 flex-wrap my-1 ${
-                    isLongText ? 'text-sm sm:text-base leading-tight font-bold' : 'text-2xl sm:text-3xl font-extrabold'
+                    isLongText ? 'text-base sm:text-lg leading-tight font-bold' : 'text-3xl sm:text-4xl font-extrabold'
                   } text-slate-800`}>
                     {hasUnderscoreBlank ? (
                       (() => {
@@ -1519,7 +1519,7 @@ export default function AdaptiveSessionView({
                         return (
                           <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap w-full">
                             {parts[0] && <span className="text-center leading-tight">{parts[0]}</span>}
-                            <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-2xl sm:text-3xl shadow-inner shrink-0 animate-pop">
+                            <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-3xl sm:text-4xl shadow-inner shrink-0 animate-pop">
                               {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
                             </span>
                             {parts[1] && <span className="text-center leading-tight">{parts[1]}</span>}
@@ -1532,7 +1532,7 @@ export default function AdaptiveSessionView({
                         {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
 
                         {/* Answer Display */}
-                        <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-2xl sm:text-3xl shadow-inner shrink-0">
+                        <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-3xl sm:text-4xl shadow-inner shrink-0">
                           {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
                         </span>
                       </>
@@ -1541,7 +1541,7 @@ export default function AdaptiveSessionView({
 
                   {/* INTEGRATED KIBO HINT */}
                   {showFrustrationCard && (
-                    <div className="w-full pt-1.5 border-t border-indigo-100 text-[11px] font-bold text-indigo-900 bg-indigo-50/90 p-2 rounded-2xl animate-pop text-center space-y-0.5 mt-1">
+                    <div className="w-full pt-1.5 border-t border-indigo-100 text-xs sm:text-sm font-bold text-indigo-900 bg-indigo-50/90 p-2.5 rounded-2xl animate-pop text-center space-y-0.5 mt-1">
                       <span className="block font-black text-indigo-950">💪 Kibo Wisdom Hint:</span>
                       <span className="italic block text-indigo-800">{currentProblem.hint || "Take your time! Break the problem into simple steps."}</span>
                     </div>

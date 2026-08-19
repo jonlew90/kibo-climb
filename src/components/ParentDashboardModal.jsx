@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3 } from 'lucide-react';
 import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
-import { pluralize } from '../utils/formatters';
+import { pluralize, formatTime } from '../utils/formatters';
 import { getNotificationPrefs, saveNotificationPrefs, saveProfileReminderPrefs, requestNotificationPermission } from '../utils/notifications';
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { calculateConceptBreakdown, generateParentInsightCards } from '../utils/skipDiagnosticEngine';
@@ -326,7 +326,7 @@ export default function ParentDashboardModal({
               <button
                 type="button"
                 onClick={handleOpenEditProfile}
-                className="text-[11px] font-extrabold text-slate-700 hover:text-purple-900 bg-slate-100 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-slate-200 flex items-center gap-1 transition-all"
+                className="text-xs font-extrabold text-slate-700 hover:text-purple-900 bg-slate-100 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-slate-200 flex items-center gap-1 transition-all"
               >
                 ✏️ {showEditProfile ? 'Cancel Edit' : 'Rename / Edit'}
               </button>
@@ -380,11 +380,11 @@ export default function ParentDashboardModal({
                   }`}
                 >
                   <span>{p.name || 'Child'}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${isActive ? 'bg-purple-800 text-purple-100' : 'bg-slate-200 text-slate-600'}`}>
+                  <span className={`text-xs px-1.5 py-0.5 rounded-md ${isActive ? 'bg-purple-800 text-purple-100' : 'bg-slate-200 text-slate-600'}`}>
                     {displayGrade}
                   </span>
                   {profileStreak > 0 && (
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-md flex items-center gap-0.5 ${isActive ? 'bg-amber-400 text-amber-950 font-black' : 'bg-amber-100 text-amber-900'}`}>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-md flex items-center gap-0.5 ${isActive ? 'bg-amber-400 text-amber-950 font-black' : 'bg-amber-100 text-amber-900'}`}>
                       🔥 {profileStreak}d
                     </span>
                   )}
@@ -458,7 +458,7 @@ export default function ParentDashboardModal({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-black text-amber-950 uppercase tracking-wider">Overall Daily Practice Streak</span>
-                        <span className="bg-amber-200/80 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded-md">All Subjects</span>
+                        <span className="bg-amber-200/80 text-amber-900 text-xs font-extrabold px-2 py-0.5 rounded-md">All Subjects</span>
                       </div>
                       <p className="text-xs text-slate-600 font-bold mt-0.5">
                         {childName} has practiced for <strong className="text-amber-950 font-black">{pluralize(profileStreak, 'Day')}</strong> in a row across Math & Words.
@@ -467,7 +467,7 @@ export default function ParentDashboardModal({
                   </div>
                   <div className="text-right shrink-0 bg-white/80 border border-amber-200 px-3 py-1.5 rounded-xl shadow-xs">
                     <span className="text-xl font-black text-amber-600 tracking-tight leading-none block">{profileStreak}</span>
-                    <span className="text-[9px] font-black uppercase text-amber-800 tracking-wider block mt-0.5">{profileStreak === 1 ? 'Day' : 'Days'}</span>
+                    <span className="text-xs font-black uppercase text-amber-800 tracking-wider block mt-0.5">{profileStreak === 1 ? 'Day' : 'Days'}</span>
                   </div>
                 </div>
               );
@@ -502,7 +502,7 @@ export default function ParentDashboardModal({
                     >
                       <span>{subIcon}</span>
                       <span>{subConfig.name || subKey}</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${isSelected ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : 'bg-purple-800 text-purple-100') : 'bg-slate-200 text-slate-600'}`}>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-md ${isSelected ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : 'bg-purple-800 text-purple-100') : 'bg-slate-200 text-slate-600'}`}>
                         {subRating}
                       </span>
                       {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
@@ -519,103 +519,102 @@ export default function ParentDashboardModal({
               const historyList = activeUserData.sprintHistory || [];
               const now = new Date();
 
-              const daysLimit = overviewTimeframe === '7d' ? 7 : (overviewTimeframe === '30d' ? 30 : Infinity);
-              const filteredSprints = historyList.filter(s => {
-                if (daysLimit === Infinity) return true;
-                if (!s.date) return false;
-                return (now - new Date(s.date)) / (1000 * 60 * 60 * 24) <= daysLimit;
+              // Calculate start date based on selected timeframe
+              let cutoffDate = null;
+              if (overviewTimeframe === '7d') {
+                cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              } else if (overviewTimeframe === '30d') {
+                cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+              }
+
+              // Filter sprints
+              const filteredSprints = cutoffDate
+                ? historyList.filter((s) => s.timestamp ? new Date(s.timestamp) >= cutoffDate : (s.date ? new Date(s.date) >= cutoffDate : true))
+                : historyList;
+
+              // Aggregate stats
+              let activeLearningTimeSec = 0;
+              let effectiveTotalQs = 0;
+              let effectiveTotalCorrect = 0;
+              let bestAnswerStreak = activeUserData.personalRecords?.highestCorrectStreak || 0;
+
+              filteredSprints.forEach((s) => {
+                const dur = s.totalTimeSec || s.durationInSeconds || 0;
+                activeLearningTimeSec += dur;
+
+                const qCount = Number(s.totalQuestions || (s.answers ? s.answers.length : 12));
+                const cCount = Number(s.correctCount || s.score || 0);
+                effectiveTotalQs += qCount;
+                effectiveTotalCorrect += cCount;
+
+                if (s.streak && s.streak > bestAnswerStreak) {
+                  bestAnswerStreak = s.streak;
+                }
               });
 
-              const activeLearningTimeSec = filteredSprints.reduce((acc, curr) => acc + (Number(curr.totalTimeSec || curr.durationInSeconds) || 0), 0);
-              const bestAnswerStreak = Math.max(
-                activeUserData.personalRecords?.highestCorrectStreak || 0,
-                activeUserData.cumulativeCorrectStreak || 0
-              );
-              const childRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
-              const rankTitle = getCompetenceRankTier(childRating, selectedSubject);
+              // Fallback to all-time totals if no sprints in timeframe but all-time selected
+              let solvedCount = overviewTimeframe === 'all'
+                ? (activeUserData.totalProblemsSolved || effectiveTotalCorrect)
+                : effectiveTotalCorrect;
 
-              const formatTime = (sec) => {
-                if (!sec || sec <= 0) return '0m';
-                const mins = Math.floor(sec / 60);
-                if (mins >= 60) return `${Math.floor(mins / 60)}h ${mins % 60}m`;
-                return mins > 0 ? `${mins}m` : `${sec}s`;
-              };
-
-              let totalCorrect = 0;
-              let totalQs = 0;
-              filteredSprints.forEach(s => {
-                totalCorrect += Number(s.correctCount || s.score || 0);
-                totalQs += Number(s.totalQuestions || (s.answers ? s.answers.length : 12));
-              });
-
-              // Base all-time stats on totalProblemsSolved so accuracy denominator and solved count match
-              const effectiveTotalQs = overviewTimeframe === 'all'
-                ? Math.max(activeUserData.totalProblemsSolved ?? 0, totalQs)
-                : totalQs;
-
-              const effectiveTotalCorrect = overviewTimeframe === 'all' && totalQs > 0
-                ? Math.min(effectiveTotalQs, Math.round((totalCorrect / totalQs) * effectiveTotalQs))
-                : (overviewTimeframe === 'all' ? (activeUserData.totalProblemsSolved ?? 0) : totalCorrect);
-
-              const solvedCount = overviewTimeframe === 'all'
-                ? effectiveTotalQs
-                : totalCorrect;
+              const avgPaceSec = solvedCount > 0 && activeLearningTimeSec > 0
+                ? Number((activeLearningTimeSec / solvedCount).toFixed(1))
+                : null;
 
               const accuracyVal = effectiveTotalQs > 0
                 ? `${Math.round((effectiveTotalCorrect / effectiveTotalQs) * 100)}%`
-                : (overviewTimeframe === 'all' && historyList.length === 0 && (activeUserData.totalProblemsSolved ?? 0) === 0 ? 'N/A' : '0%');
+                : (overviewTimeframe === 'all' && activeUserData.accuracy !== undefined ? `${activeUserData.accuracy}%` : '—');
 
-              // Average Pace per question/word
-              const avgPaceSec = effectiveTotalQs > 0 && activeLearningTimeSec > 0
-                ? (activeLearningTimeSec / effectiveTotalQs).toFixed(1)
-                : null;
-              const paceUnit = selectedSubject === 'words' ? '/ word' : '/ problem';
+              const childRating = activeUserData.adaptiveCompetenceRating || activeUserData.competenceRank || 1000;
+              const rankTitle = getCompetenceRankTier(childRating, selectedSubject);
+              const unitLabel = subjectConfig.unitsLabel || 'Items Solved';
+              const paceUnit = subjectConfig.paceUnit || 'per item';
+              const ratingLabel = subjectConfig.ratingLabel || 'Rank Rating';
 
-              const unitLabel = selectedSubject === 'words' ? 'Words Solved' : 'Problems Solved';
-              const timeLabel = `${subjectConfig.name} Time`;
-              const ratingLabel = `${subjectConfig.name} Rating`;
-              const timeframeSubtitle = overviewTimeframe === '7d' ? 'Past 7 Days' : (overviewTimeframe === '30d' ? 'Past 30 Days' : 'All-Time');
+              const timeLabel = overviewTimeframe === '7d' ? 'Past 7 Days' : (overviewTimeframe === '30d' ? 'Past 30 Days' : 'All-Time Total');
+              const timeframeSubtitle = overviewTimeframe === '7d' ? 'Last 7 days' : (overviewTimeframe === '30d' ? 'Last 30 days' : 'All-time practice');
 
               return (
-                <div className="space-y-3">
-                  {/* Timeframe Filter Bar */}
-                  <div className="flex items-center justify-between gap-2 flex-wrap px-1">
-                    <div className="flex items-center gap-1.5 text-slate-700">
-                      <Calendar className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
-                      <span className="text-xs font-black uppercase tracking-wider">Practice Stats</span>
-                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-                        {timeframeSubtitle}
-                      </span>
+                <div className="space-y-3 text-left">
+                  {/* Timeframe selector header */}
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-purple-700 stroke-[2.5]" />
+                      <h3 className="text-sm font-black text-slate-800">
+                        {subjectConfig.name} Performance Overview
+                      </h3>
                     </div>
-                    <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-extrabold gap-1">
+
+                    {/* Filter Pills */}
+                    <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1 text-xs font-black">
                       <button
                         type="button"
                         onClick={() => setOverviewTimeframe('7d')}
-                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                           overviewTimeframe === '7d'
-                            ? 'bg-white text-purple-900 shadow-xs font-black'
+                            ? 'bg-purple-600 text-white shadow-xs'
                             : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
-                        Past 7 Days
+                        7 Days
                       </button>
                       <button
                         type="button"
                         onClick={() => setOverviewTimeframe('30d')}
-                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                           overviewTimeframe === '30d'
-                            ? 'bg-white text-purple-900 shadow-xs font-black'
+                            ? 'bg-purple-600 text-white shadow-xs'
                             : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
-                        Past 30 Days
+                        30 Days
                       </button>
                       <button
                         type="button"
                         onClick={() => setOverviewTimeframe('all')}
-                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                           overviewTimeframe === 'all'
-                            ? 'bg-white text-purple-900 shadow-xs font-black'
+                            ? 'bg-purple-600 text-white shadow-xs'
                             : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
@@ -630,11 +629,11 @@ export default function ParentDashboardModal({
                     <div className="bg-sky-50 border border-sky-200 rounded-2xl p-3 flex flex-col justify-between">
                       <div>
                         <Clock className="w-5 h-5 text-sky-600 mx-auto mb-1 stroke-[2.5]" />
-                        <span className="text-[9px] uppercase font-black text-sky-900 block truncate">{timeLabel}</span>
+                        <span className="text-xs uppercase font-black text-sky-900 block truncate">{timeLabel}</span>
                       </div>
                       <div className="mt-1">
                         <span className="text-lg font-black text-sky-950 block">{formatTime(activeLearningTimeSec)}</span>
-                        <span className="text-[9px] font-bold text-sky-700/80 block truncate">{timeframeSubtitle}</span>
+                        <span className="text-xs font-bold text-sky-700/80 block truncate">{timeframeSubtitle}</span>
                       </div>
                     </div>
 
@@ -642,13 +641,13 @@ export default function ParentDashboardModal({
                     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex flex-col justify-between">
                       <div>
                         <Zap className="w-5 h-5 text-amber-500 fill-amber-400 mx-auto mb-1 stroke-[2.5]" />
-                        <span className="text-[9px] uppercase font-black text-amber-900 block truncate">Avg Pace</span>
+                        <span className="text-xs uppercase font-black text-amber-900 block truncate">Avg Pace</span>
                       </div>
                       <div className="mt-1">
                         <span className="text-lg font-black text-amber-950 block">
                           {avgPaceSec ? `${avgPaceSec}s` : '—'}
                         </span>
-                        <span className="text-[9px] font-bold text-amber-800/80 block truncate">
+                        <span className="text-xs font-bold text-amber-800/80 block truncate">
                           {avgPaceSec ? paceUnit : 'No sessions'}
                         </span>
                       </div>
@@ -658,11 +657,11 @@ export default function ParentDashboardModal({
                     <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex flex-col justify-between">
                       <div>
                         <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1 stroke-[2.5]" />
-                        <span className="text-[9px] uppercase font-black text-emerald-900 block truncate">{unitLabel}</span>
+                        <span className="text-xs uppercase font-black text-emerald-900 block truncate">{unitLabel}</span>
                       </div>
                       <div className="mt-1">
                         <span className="text-lg font-black text-slate-800 block">{solvedCount}</span>
-                        <span className="text-[9px] font-bold text-emerald-700/80 block truncate">
+                        <span className="text-xs font-bold text-emerald-700/80 block truncate">
                           {overviewTimeframe === 'all' ? 'All-time total' : 'In period'}
                         </span>
                       </div>
@@ -672,11 +671,11 @@ export default function ParentDashboardModal({
                     <div className="bg-fuchsia-50 border border-fuchsia-200 rounded-2xl p-3 flex flex-col justify-between">
                       <div>
                         <Target className="w-5 h-5 text-fuchsia-600 mx-auto mb-1 stroke-[2.5]" />
-                        <span className="text-[9px] uppercase font-black text-fuchsia-900 block truncate">Accuracy</span>
+                        <span className="text-xs uppercase font-black text-fuchsia-900 block truncate">Accuracy</span>
                       </div>
                       <div className="mt-1">
                         <span className="text-lg font-black text-fuchsia-900 block">{accuracyVal}</span>
-                        <span className="text-[9px] font-bold text-fuchsia-700/80 block truncate">
+                        <span className="text-xs font-bold text-fuchsia-700/80 block truncate">
                           {effectiveTotalQs > 0 ? `${effectiveTotalCorrect}/${effectiveTotalQs} correct` : 'No attempts'}
                         </span>
                       </div>
@@ -686,11 +685,11 @@ export default function ParentDashboardModal({
                     <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-3 flex flex-col justify-between">
                       <div>
                         <Award className="w-5 h-5 text-indigo-600 mx-auto mb-1 stroke-[2.5]" />
-                        <span className="text-[9px] uppercase font-black text-indigo-900 block truncate">{ratingLabel}</span>
+                        <span className="text-xs uppercase font-black text-indigo-900 block truncate">{ratingLabel}</span>
                       </div>
                       <div className="mt-1">
                         <span className="text-lg font-black text-indigo-900 block">{childRating}</span>
-                        <span className="text-[9px] font-bold text-indigo-700/80 block truncate">{rankTitle}</span>
+                        <span className="text-xs font-bold text-indigo-700/80 block truncate">{rankTitle}</span>
                       </div>
                     </div>
 
@@ -698,11 +697,11 @@ export default function ParentDashboardModal({
                     <div className="bg-orange-50 border border-orange-200 rounded-2xl p-3 flex flex-col justify-between">
                       <div>
                         <Flame className="w-5 h-5 text-orange-500 fill-orange-400 mx-auto mb-1 stroke-[2.5]" />
-                        <span className="text-[9px] uppercase font-black text-orange-900 block truncate">Best Streak</span>
+                        <span className="text-xs uppercase font-black text-orange-900 block truncate">Best Streak</span>
                       </div>
                       <div className="mt-1">
                         <span className="text-lg font-black text-slate-800 block">{bestAnswerStreak} {bestAnswerStreak === 1 ? 'Q' : 'Qs'}</span>
-                        <span className="text-[9px] font-bold text-orange-700/80 block truncate">Personal best</span>
+                        <span className="text-xs font-bold text-orange-700/80 block truncate">Personal best</span>
                       </div>
                     </div>
                   </div>
@@ -734,7 +733,7 @@ export default function ParentDashboardModal({
                   <div className="flex items-center justify-between">
                     <h2 className="text-sm font-black text-slate-800">Recent {subjectConfig.name} Activity</h2>
                     {takingBreak && (
-                        <span className="text-[10px] font-black text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full border border-rose-300">
+                        <span className="text-xs font-black text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full border border-rose-300">
                           Taking a Break
                         </span>
                     )}
@@ -747,7 +746,7 @@ export default function ParentDashboardModal({
                               <div key={i} className="flex justify-between items-center bg-slate-50 border border-slate-100 p-2 rounded-xl">
                                   <div className="flex flex-col">
                                       <span className="text-xs font-extrabold text-slate-700">{formatShortDate(sprint.date)}</span>
-                                      <span className="text-[10px] text-slate-500">
+                                      <span className="text-xs text-slate-500">
                                           {(() => {
                                               const totalSeconds = sprint.totalTimeSec ? Math.round(sprint.totalTimeSec) : (sprint.durationInSeconds ? Math.round(sprint.durationInSeconds) : null);
                                               if (totalSeconds === null) return '—';
@@ -761,7 +760,7 @@ export default function ParentDashboardModal({
                                       <span className={`text-xs font-black ${sprint.accuracyPct >= 80 ? 'text-emerald-600' : (sprint.accuracyPct >= 60 ? 'text-amber-600' : 'text-rose-600')}`}>
                                           {sprint.accuracyPct ?? Math.round((Number(sprint.correctCount||sprint.score||0)/Number(sprint.totalQuestions||(sprint.answers?sprint.answers.length:12)))*100)}% Accuracy
                                       </span>
-                                      <span className="text-[10px] text-slate-500 font-bold">{sprint.ratingGain > 0 ? `+${sprint.ratingGain} rating` : (sprint.ratingGain < 0 ? `${sprint.ratingGain} rating` : '=')}</span>
+                                      <span className="text-xs text-slate-500 font-bold">{sprint.ratingGain > 0 ? `+${sprint.ratingGain} rating` : (sprint.ratingGain < 0 ? `${sprint.ratingGain} rating` : '=')}</span>
                                   </div>
                               </div>
                           ))}
@@ -786,11 +785,11 @@ export default function ParentDashboardModal({
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <h2 className="text-sm font-black text-slate-800">{subjectConfig.name} Mastery</h2>
-                      <span className="text-[10px] text-indigo-600 font-bold block">{gradeLvl} level · Tier {currentTier} Climber</span>
+                      <span className="text-xs text-indigo-600 font-bold block">{gradeLvl} level · Tier {currentTier} Climber</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       {childTotalSolved < 15 && (
-                        <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse">⏳ Calibrating</span>
+                        <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full border border-amber-400 animate-pulse">⏳ Calibrating</span>
                       )}
                       <span className="text-xs font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200 flex items-center gap-1">
                         <Trophy className="w-3.5 h-3.5 stroke-[2.5]" />{rankTitle}
@@ -827,7 +826,7 @@ export default function ParentDashboardModal({
                       <Sparkles className="w-5 h-5 text-purple-600 stroke-[2.5]" />
                       <h2 className="text-sm font-black text-slate-800">Parent Diagnostic Insights ({subjectConfig.name})</h2>
                     </div>
-                    <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+                    <span className="text-xs font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
                       Adaptive Tracking
                     </span>
                   </div>
@@ -840,7 +839,7 @@ export default function ParentDashboardModal({
                         <div className="flex-1 min-w-0 space-y-1">
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <h3 className="text-xs font-black text-slate-900">{card.title}</h3>
-                            <span className={`text-[9px] font-black uppercase px-2 py-0.2 rounded-full border ${card.badgeClass}`}>
+                            <span className={`text-xs font-black uppercase px-2 py-0.5 rounded-full border ${card.badgeClass}`}>
                               {card.badge}
                             </span>
                           </div>
@@ -872,17 +871,17 @@ export default function ParentDashboardModal({
                                 <div className="min-w-0">
                                   <span className="font-extrabold text-slate-800 block truncate">{concept.name}</span>
                                   {showAccuracy && (
-                                    <span className="text-[10px] text-purple-700 font-bold block">{calculatedAcc}% accuracy</span>
+                                    <span className="text-xs text-purple-700 font-bold block">{calculatedAcc}% accuracy</span>
                                   )}
                                 </div>
                               </div>
                               <div className="shrink-0 text-right">
                                 {isSkipped ? (
-                                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full border bg-sky-100 text-sky-800 border-sky-300">
+                                  <span className="text-xs font-black uppercase px-2 py-0.5 rounded-full border bg-sky-100 text-sky-800 border-sky-300">
                                     Skipped
                                   </span>
                                 ) : (
-                                  <span className="text-[10px] font-bold text-slate-500">
+                                  <span className="text-xs font-bold text-slate-500">
                                     {concept.total > 0 ? `${concept.total} Total` : 'No data'}
                                   </span>
                                 )}
@@ -918,7 +917,7 @@ export default function ParentDashboardModal({
 
                             {/* COUNTS LEGEND */}
                             {!isSkipped && (
-                              <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 pt-0.5">
+                              <div className="flex items-center justify-between text-xs font-bold text-slate-600 pt-0.5">
                                 <span className="text-emerald-700">✓ {concept.correct} Correct</span>
                                 <span className="text-rose-700">✕ {concept.incorrect} Incorrect</span>
                                 <span className="text-sky-700">🔄 {concept.skipped} Skipped</span>
@@ -953,11 +952,11 @@ export default function ParentDashboardModal({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black text-purple-900 block">Hybrid Schedule & Notifications</span>
-                    <span className="text-[9px] font-black uppercase tracking-wider bg-purple-200 text-purple-800 px-1.5 py-0.5 rounded-full">
+                    <span className="text-xs font-black uppercase tracking-wider bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full">
                       Smart Scoping
                     </span>
                   </div>
-                  <span className="text-[11px] font-medium text-purple-700 leading-snug block mt-0.5">
+                  <span className="text-xs font-medium text-purple-700 leading-snug block mt-0.5">
                     Practice days and daily streak alarms are <strong>customized per child profile</strong>, while weekly email digests and diagnostic alerts remain <strong>global for parents</strong>.
                   </span>
                 </div>
@@ -973,12 +972,12 @@ export default function ParentDashboardModal({
                         <span>👤</span>
                         <span>{childName}'s Practice Schedule & Alarm</span>
                       </h4>
-                      <span className="text-[10px] text-purple-700 font-bold block">
+                      <span className="text-xs text-purple-700 font-bold block">
                         Child-Specific Setting
                       </span>
                     </div>
                   </div>
-                  <span className="text-[10px] font-black bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 rounded-lg truncate max-w-[120px]">
+                  <span className="text-xs font-black bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 rounded-lg truncate max-w-[120px]">
                     {childName}
                   </span>
                 </div>
@@ -1021,7 +1020,7 @@ export default function ParentDashboardModal({
                       );
                     })}
                   </div>
-                  <p className="text-[11px] font-medium text-slate-500 italic leading-snug">
+                  <p className="text-xs font-medium text-slate-500 italic leading-snug">
                     Unselected rest days automatically protect {childName}'s streak without consuming a Kibo Shield.
                   </p>
                 </div>
@@ -1032,7 +1031,7 @@ export default function ParentDashboardModal({
                     <span className="font-extrabold text-xs text-slate-800 block">
                       Daily Streak Reminder for {childName}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-medium">
+                    <span className="text-xs text-slate-500 font-medium">
                       Alert child on device if daily practice is incomplete
                     </span>
                   </div>
@@ -1068,12 +1067,12 @@ export default function ParentDashboardModal({
                     <Bell className="w-5 h-5 stroke-[2.5]" />
                     <div>
                       <h4 className="font-extrabold text-sm text-slate-800">Family & Parent Communications</h4>
-                      <span className="text-[10px] text-slate-500 font-medium block">
+                      <span className="text-xs text-slate-500 font-medium block">
                         Account-Wide Delivery Channels
                       </span>
                     </div>
                   </div>
-                  <span className="text-[9px] font-black uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-black uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
                     All Profiles
                   </span>
                 </div>
@@ -1083,7 +1082,7 @@ export default function ParentDashboardModal({
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary (Per Profile)</span>
-                      <span className="text-[10px] text-slate-500 font-medium">Individual weekly mastery & topics digest sent per child</span>
+                      <span className="text-xs text-slate-500 font-medium">Individual weekly mastery & topics digest sent per child</span>
                     </div>
                     <button
                       type="button"
@@ -1099,7 +1098,7 @@ export default function ParentDashboardModal({
                   </div>
                   {notifPrefs.weeklyDigestEnabled && (
                     <div className="space-y-2 pt-1 border-t border-slate-100">
-                      <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2.5 rounded-lg border border-purple-200 leading-snug">
+                      <p className="text-xs text-purple-900 font-medium bg-purple-50/80 p-2.5 rounded-lg border border-purple-200 leading-snug">
                         📅 <strong>Schedule:</strong> Sent every <strong>Sunday at 6:00 PM</strong>.<br />
                         👤 <strong>Sent Per Profile:</strong> Each child profile receives a dedicated report with the <strong>🐾 Kibo mascot</strong> in the subject line.<br />
                         📚 <strong>All Played Topics Included:</strong> Full list of all topics tackled across Math, Words, and active subjects with mastery status, accuracy, and links back to the game.
@@ -1181,7 +1180,7 @@ export default function ParentDashboardModal({
                       </div>
 
                       {digestStatusMsg && (
-                        <p className="text-[10px] font-extrabold text-purple-700 animate-pop">
+                        <p className="text-xs font-extrabold text-purple-700 animate-pop">
                           {digestStatusMsg}
                         </p>
                       )}
@@ -1197,7 +1196,7 @@ export default function ParentDashboardModal({
                               <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
                                 <span>🐾 🏔️</span> Summary Preview for {digest.childName} ({digest.childGrade})
                               </span>
-                              <span className="text-[10px] font-bold text-slate-500">
+                              <span className="text-xs font-bold text-slate-500">
                                 Streak: {digest.streak}d · {digest.totalProblemsThisWeek} items this week
                               </span>
                             </div>
@@ -1209,11 +1208,11 @@ export default function ParentDashboardModal({
                                     <span className="text-xs font-black text-slate-800 flex items-center gap-1">
                                       <span>{sub.icon}</span> {sub.name} Progress
                                     </span>
-                                    <span className="text-[10px] font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+                                    <span className="text-xs font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
                                       Rating: {sub.rating} ({sub.rankTitle})
                                     </span>
                                   </div>
-                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] font-medium text-slate-600">
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 text-xs font-medium text-slate-600">
                                     <div>Solved: <strong>{sub.solvedThisWeek}</strong> ({sub.totalSolved} total)</div>
                                     <div>Accuracy: <strong>{sub.accuracyPct !== null ? `${sub.accuracyPct}%` : '—'}</strong></div>
                                     <div>Avg Latency: <strong>{sub.avgLatencySec !== null ? `${sub.avgLatencySec}s` : '—'}</strong></div>
@@ -1221,15 +1220,15 @@ export default function ParentDashboardModal({
                                   </div>
 
                                   {/* Played Topics Pill List */}
-                                  <div className="text-[10px] text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 space-y-1">
-                                    <strong className="block text-slate-800 text-[10px] uppercase">
+                                  <div className="text-xs text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 space-y-1">
+                                    <strong className="block text-slate-800 text-xs uppercase">
                                       All Topics Played ({sub.allPlayedTopics.length}):
                                     </strong>
                                     <div className="flex flex-wrap gap-1 pt-0.5">
                                       {sub.allPlayedTopics.map((t) => (
                                         <span
                                           key={t.id || t.name}
-                                          className={`px-1.5 py-0.5 rounded-md text-[9px] font-extrabold border ${
+                                          className={`px-1.5 py-0.5 rounded-md text-xs font-extrabold border ${
                                             t.status === 'Mastered'
                                               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                                               : (t.status === 'Needs Review' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-purple-50 text-purple-800 border-purple-200')
@@ -1244,7 +1243,7 @@ export default function ParentDashboardModal({
                               ))}
 
                               {digest.unstartedSubjects.length > 0 && (
-                                <div className="bg-sky-50 border border-sky-200 rounded-lg p-2 text-[10px] text-sky-900">
+                                <div className="bg-sky-50 border border-sky-200 rounded-lg p-2 text-xs text-sky-900">
                                   <strong>🌟 Unstarted Subjects:</strong> {digest.unstartedSubjects.map(s => s.name).join(', ')} — included in email with invite to begin climb!
                                 </div>
                               )}
@@ -1261,7 +1260,7 @@ export default function ParentDashboardModal({
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-extrabold text-xs text-slate-800 block">Struggle & Review Alerts</span>
-                      <span className="text-[10px] text-slate-500 font-medium">Real-time alerts when accuracy drops or frustration triggers</span>
+                      <span className="text-xs text-slate-500 font-medium">Real-time alerts when accuracy drops or frustration triggers</span>
                     </div>
                     <button
                       type="button"
@@ -1276,7 +1275,7 @@ export default function ParentDashboardModal({
                     </button>
                   </div>
                   {notifPrefs.struggleAlertsEnabled && (
-                    <p className="text-[10px] text-purple-900 font-medium bg-purple-50/80 p-2 rounded-lg border border-purple-200 mt-1 leading-snug">
+                    <p className="text-xs text-purple-900 font-medium bg-purple-50/80 p-2 rounded-lg border border-purple-200 mt-1 leading-snug">
                       🛡️ <strong>Child-Safe Privacy:</strong> Displayed exclusively inside <strong>🔒 Parent Zone Dashboard</strong> (never shown on child's screen!).<br />
                       ⚠️ <strong>Triggers:</strong> Accuracy &lt; 65%, 3+ consecutive misses, or frustration triggers with actionable review tips.
                     </p>
@@ -1314,7 +1313,7 @@ export default function ParentDashboardModal({
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-xs text-slate-800 block">Allow Real-Money Purchases</span>
-                    <span className="text-[10px] text-slate-500 font-medium">Allow kids to buy Sparks with real money</span>
+                    <span className="text-xs text-slate-500 font-medium">Allow kids to buy Sparks with real money</span>
                   </div>
                   <button
                     type="button"
@@ -1329,7 +1328,7 @@ export default function ParentDashboardModal({
                   </button>
                 </div>
                 {notifPrefs.allowRealMoneyPurchases && (
-                  <p className="text-[10px] text-amber-900 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200 mt-1 leading-snug">
+                  <p className="text-xs text-amber-900 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200 mt-1 leading-snug">
                     ⚠️ <strong>Note:</strong> Biometric verification or dynamic challenges will be required before any actual payment can be processed.
                   </p>
                 )}
@@ -1364,12 +1363,12 @@ export default function ParentDashboardModal({
                         Device Biometrics
                       </span>
                       {(notifPrefs.primaryVerificationMethod ?? 'biometrics') === 'biometrics' && (
-                        <span className="text-[9px] font-black bg-purple-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        <span className="text-xs font-black bg-purple-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
                           Default
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-slate-500 font-medium leading-snug">
+                    <p className="text-xs text-slate-500 font-medium leading-snug">
                       Instant Face ID, Touch ID, or Passcode prompt on gate open with automatic challenge fallback.
                     </p>
                   </div>
@@ -1392,19 +1391,19 @@ export default function ParentDashboardModal({
                         Dynamic Challenges
                       </span>
                       {notifPrefs.primaryVerificationMethod === 'challenge' && (
-                        <span className="text-[9px] font-black bg-purple-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        <span className="text-xs font-black bg-purple-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
                           Active
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-slate-500 font-medium leading-snug">
+                    <p className="text-xs text-slate-500 font-medium leading-snug">
                       Requires solving adult math or logic problems directly without launching biometrics.
                     </p>
                   </div>
                 </button>
               </div>
 
-              <div className="bg-purple-50/60 border border-purple-100 rounded-xl p-2.5 text-[11px] font-semibold text-purple-900 leading-snug">
+              <div className="bg-purple-50/60 border border-purple-100 rounded-xl p-2.5 text-xs font-semibold text-purple-900 leading-snug">
                 🛡️ <strong>Flexible Security:</strong> Regardless of your primary default, you can always switch between Face ID and Dynamic Challenges on the lock screen.
               </div>
             </div>
@@ -1430,7 +1429,7 @@ export default function ParentDashboardModal({
                           })()})`}
                     </span>
                     {authService.getAuthState().isAnonymous && (
-                      <span className="text-[10px] text-slate-500 font-medium block">
+                      <span className="text-xs text-slate-500 font-medium block">
                         Link with Google, Apple, or Email to back up progress across devices
                       </span>
                     )}

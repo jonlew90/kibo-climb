@@ -118,10 +118,10 @@ export default function BadgesModal({
               Trail Badges
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+              <span className="text-xs font-black text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
                 {getCompetenceRankTier(userRating, activeSubject)} · {userRating} pts
               </span>
-              <span className="bg-amber-200 px-3 py-0.5 rounded-full border border-amber-300">
+              <span className="bg-amber-200 px-3 py-1 rounded-full border border-amber-300">
                 {progressPct}% unlocked
               </span>
             </div>
@@ -243,7 +243,7 @@ export default function BadgesModal({
                   <p className="text-xs text-slate-600 font-medium leading-snug">
                     {badge.description}
                   </p>
-                  <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border inline-block mt-0.5 ${
+                  <span className={`text-xs font-black uppercase px-2.5 py-1 rounded-full border inline-block mt-0.5 ${
                     isUnlocked
                       ? 'text-emerald-900 bg-emerald-100 border-emerald-300'
                       : 'text-amber-800 bg-amber-100 border-amber-300'

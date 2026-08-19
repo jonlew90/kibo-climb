@@ -160,7 +160,7 @@ export default function FirstLaunchOnboardingModal({
 
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-4 sm:gap-5 text-center">
           {/* Step indicator */}
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500">
             <span className="text-amber-400">Step 1</span>
             <span>/</span>
             <span>2</span>
@@ -174,10 +174,10 @@ export default function FirstLaunchOnboardingModal({
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-center gap-1.5 flex-wrap">
-              <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+              <span className="text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
                 🏔️ Kibo Climb
               </span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+              <span className="text-xs font-black uppercase tracking-widest text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
                 🔢 Math + 📚 Words
               </span>
             </div>
@@ -213,7 +213,7 @@ export default function FirstLaunchOnboardingModal({
               )}
             </div>
             {usernameError && <p className="text-xs font-bold text-rose-400 text-left px-1">{usernameError}</p>}
-            <p className="text-[10px] text-slate-400 font-medium text-left px-1">
+            <p className="text-xs text-slate-400 font-medium text-left px-1">
               3–20 characters · Letters, numbers, and underscores only
             </p>
             <button type="submit"
@@ -245,7 +245,7 @@ export default function FirstLaunchOnboardingModal({
 
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-2.5 sm:gap-3 text-center max-h-[96dvh] overflow-hidden py-1 sm:py-2">
           {/* Step indicator */}
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 shrink-0">
+          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500 shrink-0">
             <span className="text-slate-600">Step 1</span>
             <span>/</span>
             <span className="text-amber-400">Step 2</span>
@@ -254,14 +254,14 @@ export default function FirstLaunchOnboardingModal({
           <div className="space-y-1 shrink-0">
             <div className="flex items-center justify-center gap-2 text-amber-400">
               <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
-              <span className="text-[10px] font-black uppercase tracking-widest bg-amber-400/10 border border-amber-400/30 px-3 py-0.5 rounded-full">
+              <span className="text-xs font-black uppercase tracking-widest bg-amber-400/10 border border-amber-400/30 px-3 py-0.5 rounded-full">
                 Multi-Subject Grade Level
               </span>
             </div>
             <h1 className="text-lg sm:text-2xl font-black tracking-tight leading-tight">
               What grade is<br />{usernameInput || 'the climber'} in?
             </h1>
-            <p className="text-[11px] sm:text-xs text-slate-300 font-medium max-w-xs mx-auto">
+            <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xs mx-auto">
               Calibrates starting difficulty for <strong className="text-amber-300">Math & Words</strong> so challenges feel just right.
             </p>
           </div>
@@ -291,18 +291,18 @@ export default function FirstLaunchOnboardingModal({
                     <div className="flex items-center justify-between gap-1">
                       <span className="text-xs sm:text-sm font-black text-white truncate">{grade}</span>
                       {isSelected && (
-                        <span className="text-[9px] font-black uppercase text-amber-400 bg-amber-400/20 px-1.5 py-0.5 rounded-md">
+                        <span className="text-xs font-black uppercase text-amber-400 bg-amber-400/20 px-1.5 py-0.5 rounded-md">
                           Selected
                         </span>
                       )}
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[10px]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs">
                       <div className="flex items-center gap-1 text-amber-200/90 font-medium truncate">
-                        <span className="text-[11px] shrink-0">🔢</span>
+                        <span className="text-xs shrink-0">🔢</span>
                         <span className="truncate">{details.math}</span>
                       </div>
                       <div className="flex items-center gap-1 text-teal-200/90 font-medium truncate">
-                        <span className="text-[11px] shrink-0">📚</span>
+                        <span className="text-xs shrink-0">📚</span>
                         <span className="truncate">{details.words}</span>
                       </div>
                     </div>
@@ -366,11 +366,11 @@ export default function FirstLaunchOnboardingModal({
                   <span className="text-lg">🔢</span>
                   <h4 className="text-xs sm:text-sm font-black text-amber-950">Math Ascent</h4>
                 </div>
-                <span className="text-[9px] font-black uppercase text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-md">
+                <span className="text-xs font-black uppercase text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-md">
                   Active
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-snug">
+              <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-snug">
                 Adaptive addition, multiplication tables, money decimals, fractions & pre-algebra.
               </p>
             </div>
@@ -382,11 +382,11 @@ export default function FirstLaunchOnboardingModal({
                   <span className="text-lg">📚</span>
                   <h4 className="text-xs sm:text-sm font-black text-teal-950">Words Ascent</h4>
                 </div>
-                <span className="text-[9px] font-black uppercase text-teal-700 bg-teal-100 px-1.5 py-0.5 rounded-md">
+                <span className="text-xs font-black uppercase text-teal-700 bg-teal-100 px-1.5 py-0.5 rounded-md">
                   Active
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-snug">
+              <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-snug">
                 Dynamic phonics, sight words, spelling builder, vocabulary & grammar quests.
               </p>
             </div>
@@ -398,11 +398,11 @@ export default function FirstLaunchOnboardingModal({
                   <Flame className="w-4 h-4 text-orange-500 fill-orange-400" />
                   <h4 className="text-xs sm:text-sm font-black text-purple-950">Streaks & Shop</h4>
                 </div>
-                <span className="text-[9px] font-black uppercase text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded-md">
+                <span className="text-xs font-black uppercase text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded-md">
                   🐾 Kibo's
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-snug">
+              <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-snug">
                 Solve 12 daily problems to build retention & earn Sparks for outfits and pets!
               </p>
             </div>
@@ -438,7 +438,7 @@ export default function FirstLaunchOnboardingModal({
             </button>
           )}
 
-          <span className="text-[11px] sm:text-xs font-extrabold text-slate-500 block text-center">
+          <span className="text-xs sm:text-sm font-extrabold text-slate-500 block text-center">
             Kibo Climb • Multi-Subject Daily Ascents (~3 Mins) • Math & Words
           </span>
         </div>

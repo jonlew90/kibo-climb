@@ -390,16 +390,16 @@ export default function PinGateModal({
               <div className="space-y-4 py-1 animate-fade-in">
                 <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-left relative">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] uppercase font-black tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
+                    <span className="text-xs uppercase font-black tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
                       {challenge.title}
                     </span>
                     <button
                       type="button"
                       onClick={refreshChallenge}
-                      className="text-slate-400 hover:text-purple-600 p-1 flex items-center gap-1 text-[10px] font-bold"
+                      className="text-slate-400 hover:text-purple-600 p-1 flex items-center gap-1 text-xs font-bold"
                       title="Generate new challenge"
                     >
-                      <RefreshCw className="w-3 h-3" /> Refresh
+                      <RefreshCw className="w-3.5 h-3.5" /> Refresh
                     </button>
                   </div>
 

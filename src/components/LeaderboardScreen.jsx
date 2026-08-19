@@ -235,7 +235,7 @@ export default function LeaderboardScreen({
         </div>
 
         {/* Fairness Banner */}
-        <div className="mx-4 mt-2.5 bg-indigo-50/90 border border-indigo-200 text-indigo-900 rounded-xl px-3 py-2 text-[10px] font-semibold flex items-center gap-2 shadow-inner">
+        <div className="mx-4 mt-2.5 bg-indigo-50/90 border border-indigo-200 text-indigo-900 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-inner">
           <Info className="w-4 h-4 text-indigo-500 shrink-0" />
           <p className="leading-tight">
             {selectedSubject === 'words'
@@ -266,10 +266,10 @@ export default function LeaderboardScreen({
                   {top3[1].name}
                 </span>
                 {top3[1].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black shrink-0">YOU</span>
+                  <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
                 )}
               </div>
-              <span className="text-[10px] text-slate-500 font-semibold mb-2">{top3[1].score} pts</span>
+              <span className="text-xs text-slate-500 font-bold mb-2">{top3[1].score} pts</span>
               <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                 <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
               </div>
@@ -292,7 +292,7 @@ export default function LeaderboardScreen({
                   {top3[0].name}
                 </span>
                 {top3[0].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black shrink-0">YOU</span>
+                  <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
                 )}
               </div>
               <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{top3[0].score} pts</span>
@@ -316,10 +316,10 @@ export default function LeaderboardScreen({
                   {top3[2].name}
                 </span>
                 {top3[2].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-[8px] px-1 py-0.2 rounded-full font-black shrink-0">YOU</span>
+                  <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
                 )}
               </div>
-              <span className="text-[10px] text-slate-500 font-semibold mb-2">{top3[2].score} pts</span>
+              <span className="text-xs text-slate-500 font-bold mb-2">{top3[2].score} pts</span>
               <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                 <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
               </div>
@@ -357,13 +357,13 @@ export default function LeaderboardScreen({
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-sm text-slate-800 truncate">{player.name}</span>
                   {player.isCurrentUser && (
-                    <span className="bg-indigo-600 text-white text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">
+                    <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
                       YOU
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] text-slate-500 font-medium truncate flex items-center gap-1">
-                  <Activity className="w-3 h-3 text-slate-400" />
+                <span className="text-xs text-slate-500 font-medium truncate flex items-center gap-1">
+                  <Activity className="w-3.5 h-3.5 text-slate-400" />
                   {player.subjectsMastered} Skills Mastered
                 </span>
               </div>
@@ -371,7 +371,7 @@ export default function LeaderboardScreen({
               {/* Score / Rank Badge */}
               <div className="flex flex-col items-end shrink-0">
                 <span className="font-black text-indigo-700 text-sm">{player.score}</span>
-                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">
+                <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
                   {getRankTitle(player.score)}
                 </span>
               </div>
@@ -403,17 +403,17 @@ export default function LeaderboardScreen({
             <div className="flex-1 min-w-0 flex flex-col z-10">
               <div className="flex items-center gap-1.5">
                 <span className="font-black text-white text-sm truncate">You ({username})</span>
-                <span className="bg-indigo-500 text-indigo-50 text-[9px] uppercase px-1.5 py-0.5 rounded font-bold tracking-wider">
+                <span className="bg-indigo-500 text-indigo-50 text-xs uppercase px-2 py-0.5 rounded font-bold tracking-wider">
                   {getRankTitle(userScore)}
                 </span>
               </div>
               <div className="flex items-center gap-1 mt-0.5">
-                <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+                <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                 <span className="text-indigo-200 font-bold text-xs">{userScore} pts ({subjectConfig.name})</span>
               </div>
 
               {/* Contextual progress message */}
-              <p className="text-[10px] text-indigo-300 mt-1 leading-tight font-medium">
+              <p className="text-xs text-indigo-300 mt-1 leading-tight font-medium">
                 {currentUserRank > 1
                   ? `+${pointsNeeded} pts needed to rank up in ${subjectConfig.name}`
                   : `You are currently holding 1st place in ${subjectConfig.name}! Keep it up!`}

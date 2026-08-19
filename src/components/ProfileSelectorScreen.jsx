@@ -133,7 +133,7 @@ function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' 
       {isSelected && (
         <>
           <div className="absolute inset-0 rounded-2xl ring-2 ring-amber-400/40 ring-offset-2 ring-offset-transparent pointer-events-none" />
-          <div className="absolute -top-2.5 bg-amber-400 text-amber-950 font-black text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1 z-20">
+          <div className="absolute -top-2.5 bg-amber-400 text-amber-950 font-black text-xs uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1 z-20">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
             Active
           </div>
@@ -161,15 +161,15 @@ function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' 
           {profile.gradeLevel && (
             <span
               title={profile.gradeLevel}
-              className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md leading-tight truncate shrink min-w-0"
+              className="text-xs font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md leading-tight truncate shrink min-w-0"
             >
               {formatGradeDisplay(profile.gradeLevel)}
             </span>
           )}
-          <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded-md shrink-0 whitespace-nowrap">
+          <span className="inline-flex items-center gap-0.5 text-xs font-black text-amber-600 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded-md shrink-0 whitespace-nowrap">
             <Flame className="w-2.5 h-2.5 fill-amber-500 text-amber-500 shrink-0" />{displayStreak}d
           </span>
-          <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-md shrink-0 whitespace-nowrap">
+          <span className="inline-flex items-center gap-0.5 text-xs font-black text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-md shrink-0 whitespace-nowrap">
             <Zap className="w-2.5 h-2.5 fill-emerald-500 text-emerald-500 shrink-0" />{totalSolvedAll}
           </span>
         </div>
@@ -181,19 +181,19 @@ function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' 
         <div className="w-full pt-1">
           <div className={`flex flex-col ${focusedSubject.meta.bg} border ${focusedSubject.meta.border} rounded-xl p-2 text-left transition-colors`}>
             <div className="flex items-center justify-between gap-1 mb-0.5">
-              <span className={`text-[10px] font-black ${focusedSubject.meta.text} flex items-center gap-0.5`}>
+              <span className={`text-xs font-black ${focusedSubject.meta.text} flex items-center gap-0.5`}>
                 <span>{focusedSubject.meta.icon}</span> {focusedSubject.meta.name}
               </span>
-              <span className="text-[9px] font-extrabold text-slate-600">
+              <span className="text-xs font-extrabold text-slate-600">
                 {focusedSubject.solved} {focusedSubject.meta.solvedUnit}
               </span>
             </div>
-            <div className="flex items-center justify-between text-[10px] font-black text-slate-800">
+            <div className="flex items-center justify-between text-xs font-black text-slate-800">
               <span className="flex items-center gap-0.5">
                 <Star className={`w-2.5 h-2.5 ${focusedSubject.meta.star} shrink-0`} />
                 {focusedSubject.rating}
               </span>
-              <span className="text-[8.5px] font-bold text-slate-500">
+              <span className="text-xs font-bold text-slate-500">
                 Tier {focusedSubject.tier}
               </span>
             </div>
@@ -208,14 +208,14 @@ function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' 
               className={`flex flex-col ${meta.bg} border ${meta.border} rounded-xl p-1.5 text-left transition-colors`}
             >
               <div className="flex items-center justify-between gap-1 mb-0.5">
-                <span className={`text-[10px] font-black ${meta.text} flex items-center gap-0.5 truncate`}>
+                <span className={`text-xs font-black ${meta.text} flex items-center gap-0.5 truncate`}>
                   <span>{meta.icon}</span> {meta.name}
                 </span>
-                <span className="text-[8.5px] font-extrabold text-slate-600 shrink-0">
+                <span className="text-xs font-extrabold text-slate-600 shrink-0">
                   {solved}{meta.solvedUnit}
                 </span>
               </div>
-              <div className="flex items-center gap-0.5 text-[10px] font-black text-slate-800">
+              <div className="flex items-center gap-0.5 text-xs font-black text-slate-800">
                 <Star className={`w-2.5 h-2.5 ${meta.star} shrink-0`} />
                 <span>{rating}</span>
               </div>
@@ -229,7 +229,7 @@ function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' 
             {subjectStats.map(({ key, meta, rating }) => (
               <div
                 key={key}
-                className={`flex items-center justify-between px-2 py-1 rounded-lg border ${meta.border} ${meta.bg} text-[9px] font-black ${meta.text}`}
+                className={`flex items-center justify-between px-2 py-1 rounded-lg border ${meta.border} ${meta.bg} text-xs font-black ${meta.text}`}
               >
                 <div className="flex items-center gap-1 truncate">
                   <span>{meta.icon}</span>
@@ -289,7 +289,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
           <GraduationCap className="w-4 h-4 stroke-[2.5]" />
           <span className="text-xs font-black uppercase tracking-wide">Create Climber Profile</span>
         </div>
-        <p className="text-[11px] text-slate-500 font-medium">
+        <p className="text-xs text-slate-500 font-medium">
           Calibrates starting skill levels across <strong className="text-slate-700">Math 🔢 & Words 📚</strong>
         </p>
       </div>
@@ -297,7 +297,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
       <form onSubmit={handleCreateSubmit} className="space-y-3 text-left">
         {/* Name */}
         <div>
-          <label className="text-[10px] font-black uppercase tracking-wide text-slate-500 block mb-1">
+          <label className="text-xs font-black uppercase tracking-wide text-slate-500 block mb-1">
             Climber Name
           </label>
           <div className="relative">
@@ -314,16 +314,16 @@ function AddProfilePanel({ onCancel, onCreated }) {
               }`}
             />
           </div>
-          {nameError && <p className="text-[10px] text-rose-500 font-bold mt-1">{nameError}</p>}
+          {nameError && <p className="text-xs text-rose-500 font-bold mt-1">{nameError}</p>}
         </div>
 
         {/* Grade */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-[10px] font-black uppercase tracking-wide text-slate-500">
+            <label className="text-xs font-black uppercase tracking-wide text-slate-500">
               Grade Level
             </label>
-            <span className="text-[9px] font-black uppercase text-amber-600 bg-amber-50 border border-amber-200/60 px-1.5 py-0.2 rounded">
+            <span className="text-xs font-black uppercase text-amber-600 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded">
               Multi-Subject
             </span>
           </div>
@@ -340,11 +340,11 @@ function AddProfilePanel({ onCancel, onCreated }) {
 
         {/* Live Subject Curriculum Preview Card */}
         <div className="bg-slate-50/90 border border-slate-200/80 rounded-xl p-2.5 space-y-1.5 text-left">
-          <div className="text-[10px] font-black uppercase tracking-wider text-slate-600 flex items-center justify-between">
+          <div className="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center justify-between">
             <span>Starting Calibration:</span>
             <span className="text-slate-700 font-black">{childGrade}</span>
           </div>
-          <div className="space-y-1 text-[10px]">
+          <div className="space-y-1 text-xs">
             <div className="flex items-center gap-1.5 text-amber-900 bg-amber-50/80 border border-amber-200/60 px-2 py-1 rounded-lg">
               <span className="text-xs">🔢</span>
               <span className="font-bold">Math:</span>
@@ -364,8 +364,8 @@ function AddProfilePanel({ onCancel, onCreated }) {
             Cancel
           </button>
           <button type="submit"
-            className="flex-1 py-2.5 text-xs font-black text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-xl transition-all shadow-md shadow-amber-500/20 border-b-2 border-orange-700 active:border-b-0 active:translate-y-0.5 cursor-pointer">
-            Create Profile 🚀
+            className="flex-1 py-2.5 text-xs font-black text-amber-950 bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 border border-amber-500 rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer">
+            Create Profile
           </button>
         </div>
       </form>
@@ -374,29 +374,52 @@ function AddProfilePanel({ onCancel, onCreated }) {
 }
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
-export default function ProfileSelectorScreen({ onSelectProfile, onClose, onOpenParentZone }) {
-  const [profiles, setProfiles] = useState(() => storageService.getAllProfiles());
-  const [selectedId, setSelectedId] = useState(() => storageService.getActiveProfileId());
+export default function ProfileSelectorScreen({
+  onSelectProfile,
+  onOpenParentZone,
+  canClose = false,
+  onClose,
+  initialSubjectLens = 'all'
+}) {
+  const [profiles, setProfiles] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
   const [showAddPanel, setShowAddPanel] = useState(false);
-  const [subjectLens, setSubjectLens] = useState('all');
+  const [subjectLens, setSubjectLens] = useState(initialSubjectLens);
 
-  const subjectKeys = Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} });
+  const loadProfiles = () => {
+    const list = storageService.getAllProfiles();
+    setProfiles(list);
+    const active = storageService.getActiveProfile();
+    setSelectedId(active?.id || (list.length > 0 ? list[0].id : null));
+  };
 
-  const handleSelect = (profile, preferredSubject) => {
-    soundFx.playKeyTap();
+  useEffect(() => {
+    loadProfiles();
+  }, []);
+
+  const handleSelect = (profile) => {
     setSelectedId(profile.id);
-    storageService.setActiveProfileId(profile.id);
-    onSelectProfile(profile, preferredSubject);
+    storageService.setActiveProfile(profile.id);
+    if (onSelectProfile) {
+      onSelectProfile(profile);
+    }
   };
 
   const handleProfileCreated = (newProfile) => {
-    storageService.setActiveProfileId(newProfile.id);
-    onSelectProfile(newProfile);
+    setShowAddPanel(false);
+    loadProfiles();
+    handleSelect(newProfile);
   };
 
+  const subjectKeys = Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} });
+
   return (
-    <div className="fixed inset-0 z-[900] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 select-none overflow-hidden flex items-center justify-center p-2 sm:p-4">
-      {onClose && (
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-between p-4 overflow-y-auto custom-scrollbar animate-fade-in">
+      {/* Background ambient lighting */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Dismiss button if modal can be closed */}
+      {canClose && onClose && (
         <button
           onClick={() => {
             soundFx.playKeyTap();
@@ -412,7 +435,7 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose, onOpen
 
         {/* Header */}
         <div className="text-center space-y-0.5 shrink-0">
-          <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">
+          <span className="text-xs font-black uppercase tracking-widest text-amber-600">
             🏔️ Kibo Climb • Multi-Subject
           </span>
           <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
@@ -431,7 +454,7 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose, onOpen
             <button
               type="button"
               onClick={() => { soundFx.playKeyTap(); setSubjectLens('all'); }}
-              className={`px-3 py-1 rounded-full text-[10px] font-black transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
                 subjectLens === 'all'
                   ? 'bg-slate-800 text-white shadow-xs'
                   : 'bg-white/80 text-slate-600 hover:bg-white border border-slate-200'
@@ -447,7 +470,7 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose, onOpen
                   key={key}
                   type="button"
                   onClick={() => { soundFx.playKeyTap(); setSubjectLens(key); }}
-                  className={`px-3 py-1 rounded-full text-[10px] font-black transition-all flex items-center gap-1 shrink-0 cursor-pointer ${
+                  className={`px-3 py-1 rounded-full text-xs font-black transition-all flex items-center gap-1 shrink-0 cursor-pointer ${
                     isCurrent
                       ? `${meta.activeBg} shadow-xs`
                       : 'bg-white/80 text-slate-600 hover:bg-white border border-slate-200'
@@ -499,7 +522,7 @@ export default function ProfileSelectorScreen({ onSelectProfile, onClose, onOpen
           )
         )}
 
-        <p className="text-[10px] text-slate-500 font-medium text-center shrink-0">
+        <p className="text-xs text-slate-500 font-medium text-center shrink-0">
           Manage profiles, schedule, and settings in the{' '}
           {onOpenParentZone ? (
             <button

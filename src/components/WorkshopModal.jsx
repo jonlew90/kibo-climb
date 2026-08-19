@@ -356,11 +356,11 @@ export default function WorkshopModal({
           <div className="text-left space-y-2 flex-1 max-w-[240px] shrink-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               {hasUnownedPreview ? (
-                <span className="bg-purple-600 text-white font-black text-[9px] sm:text-xs uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-sm">
+                <span className="bg-purple-600 text-white font-black text-xs uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-sm">
                   <Sparkles className="w-3 h-3 fill-amber-300 stroke-[2.5]" /> Preview Mode
                 </span>
               ) : (
-                <span className="bg-emerald-600 text-white font-black text-[9px] sm:text-xs uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                <span className="bg-emerald-600 text-white font-black text-xs uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
                   <ShieldCheck className="w-3 h-3 stroke-[2.5]" /> Active Look
                 </span>
               )}
@@ -368,7 +368,7 @@ export default function WorkshopModal({
               {hasActivePreview && (
                 <button
                   onClick={handleResetPreview}
-                  className="text-[10px] sm:text-xs font-extrabold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition-all border border-slate-200"
+                  className="text-xs font-extrabold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition-all border border-slate-200"
                 >
                   <RotateCcw className="w-2.5 h-2.5" /> Reset
                 </button>
@@ -406,7 +406,7 @@ export default function WorkshopModal({
                 <button
                   key={cat.id}
                   onClick={() => handleCategorySelect(cat.id)}
-                  className={`py-1.5 px-3 text-[11px] font-extrabold rounded-xl shrink-0 transition-all ${
+                  className={`py-1.5 px-3 text-xs font-extrabold rounded-xl shrink-0 transition-all ${
                     activeCategory === cat.id
                       ? 'bg-white text-slate-900 shadow-sm border border-amber-300 scale-[1.02]'
                       : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
@@ -444,7 +444,7 @@ export default function WorkshopModal({
                   </div>
                   <div>
                     <h3 className="text-sm font-black leading-tight">Have a Secret Promo Code?</h3>
-                    <p className="text-[11px] font-bold text-amber-100">Redeem exclusive gear, companions, and bonus Sparks!</p>
+                    <p className="text-xs font-bold text-amber-100">Redeem exclusive gear, companions, and bonus Sparks!</p>
                   </div>
                 </div>
                 <button
@@ -472,7 +472,7 @@ export default function WorkshopModal({
                         ? '🐾 Recurring Seasonal Catalog'
                         : (availableSeasonalEvents.find((e) => e.id === effectiveSeasonalEventFilter)?.label || 'Seasonal Event')}
                     </h3>
-                    <p className="text-[10.5px] font-bold text-teal-100 leading-snug">
+                    <p className="text-xs font-bold text-teal-100 leading-snug">
                       Items rotate automatically throughout the year for seasons & holidays! Unlocked items stay forever.
                     </p>
                   </div>
@@ -488,7 +488,7 @@ export default function WorkshopModal({
                       soundFx.playKeyTap();
                       setSeasonalEventFilter(event.id);
                     }}
-                    className={`py-1 px-2.5 text-[10.5px] font-extrabold rounded-xl shrink-0 transition-all ${
+                    className={`py-1 px-2.5 text-xs font-extrabold rounded-xl shrink-0 transition-all ${
                       effectiveSeasonalEventFilter === event.id
                         ? 'bg-teal-700 text-white shadow-xs border border-teal-800 scale-[1.02]'
                         : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-2xs'
@@ -513,7 +513,7 @@ export default function WorkshopModal({
                 </div>
                 <div className="text-left">
                   <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club!</h3>
-                  <p className="text-[10px] font-bold text-indigo-100 leading-snug">
+                  <p className="text-xs font-bold text-indigo-100 leading-snug">
                     1.25x Sparks Forever & More • $4.99/mo
                   </p>
                 </div>
@@ -536,7 +536,7 @@ export default function WorkshopModal({
                 </div>
                 <div className="text-left">
                   <h3 className="text-sm font-black text-amber-950 leading-tight">Link Account for +200 ⚡</h3>
-                  <p className="text-[10px] font-bold text-amber-800 leading-snug">
+                  <p className="text-xs font-bold text-amber-800 leading-snug">
                     Save your progress and get free Sparks instantly!
                   </p>
                 </div>
@@ -565,7 +565,7 @@ export default function WorkshopModal({
                   <ItemThumbnail itemId={pack.id} rarity={pack.rarity || 'legendary'} className="w-13 h-13 sm:w-14 sm:h-14 shrink-0" />
                   <div className="space-y-1 text-left flex-1 min-w-0">
                     <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{pack.name}</h4>
-                    <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block">
+                    <span className="text-xs font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block">
                       ⚡ {pack.sparks} Sparks
                     </span>
                     <p className="text-xs text-slate-500 font-medium leading-tight">{pack.description}</p>
@@ -626,7 +626,7 @@ export default function WorkshopModal({
                 >
                   {/* Floating +1 Purchase Notification Badge */}
                   {isJustPurchased && (
-                    <span className="absolute -top-3 right-6 text-[10px] font-black text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-0.5 rounded-full border-2 border-white shadow-lg animate-bounce flex items-center gap-1 z-30">
+                    <span className="absolute -top-3 right-6 text-xs font-black text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-0.5 rounded-full border-2 border-white shadow-lg animate-bounce flex items-center gap-1 z-30">
                       ✨ +1 Purchased!
                     </span>
                   )}
@@ -640,14 +640,14 @@ export default function WorkshopModal({
                       <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{item.name}</h4>
                       
                       {item.badgeTag && (
-                        <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 animate-pulse shadow-xs">
+                        <span className="text-xs font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 animate-pulse shadow-xs">
                           🚀 {item.badgeTag}
                         </span>
                       )}
 
                       {/* Rotation / Expiration Countdown Pill */}
                       {!isUnlocked && availability.status === 'active' && availability.daysRemaining !== null && (
-                        <span className="text-[9px] font-black uppercase text-orange-950 bg-orange-200/90 border border-orange-400 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-2xs">
+                        <span className="text-xs font-black uppercase text-orange-950 bg-orange-200/90 border border-orange-400 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-2xs">
                           <Clock className="w-2.5 h-2.5 text-orange-700" />
                           Leaves in {availability.daysRemaining}d
                         </span>
@@ -655,7 +655,7 @@ export default function WorkshopModal({
 
                       {/* Upcoming Preview Badge */}
                       {!isUnlocked && availability.status === 'upcoming' && (
-                        <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-200 border border-amber-400 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                        <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 border border-amber-400 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
                           <Lock className="w-2.5 h-2.5 text-amber-800" />
                           Coming Soon ({availability.formattedDate})
                         </span>
@@ -663,7 +663,7 @@ export default function WorkshopModal({
 
                       {/* Promo Code Required Badge */}
                       {!isUnlocked && item.promoCodeRequired && (
-                        <span className="text-[9px] font-black uppercase text-amber-950 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="text-xs font-black uppercase text-amber-950 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1">
                           <Ticket className="w-2.5 h-2.5 text-amber-700" />
                           Promo Exclusive
                         </span>
@@ -671,7 +671,7 @@ export default function WorkshopModal({
 
                       {/* Status Badges */}
                       {isConsumable ? (
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border transition-all duration-300 ${
+                        <span className={`text-xs font-black uppercase px-2 py-0.5 rounded-full border transition-all duration-300 ${
                           isJustPurchased
                             ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-600 scale-110 ring-4 ring-emerald-300 shadow-md animate-pulse'
                             : 'text-amber-950 bg-amber-100 border-amber-300'
@@ -689,26 +689,26 @@ export default function WorkshopModal({
                             : `🎒 OWNED: ${consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0}`}
                         </span>
                       ) : isEquippedInApp ? (
-                        <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5">
+                        <span className="text-xs font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5">
                           🟢 EQUIPPED
                         </span>
                       ) : isUnlocked ? (
-                        <span className="text-[9px] font-black uppercase text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-300">
+                        <span className="text-xs font-black uppercase text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-300">
                           🟦 OWNED
                         </span>
                       ) : !canAfford && !isRealMoney && !item.promoCodeRequired && !availability.isUpcoming ? (
-                        <span className="text-[9px] font-black uppercase text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                        <span className="text-xs font-black uppercase text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
                           🔒 Need {shortfall} ⚡ More
                         </span>
                       ) : isRealMoney && !isUnlocked ? (
-                         <span className="text-[9px] font-black uppercase text-purple-900 bg-purple-200 px-2 py-0.5 rounded-full border border-purple-400">
+                         <span className="text-xs font-black uppercase text-purple-900 bg-purple-200 px-2 py-0.5 rounded-full border border-purple-400">
                           💎 PREMIUM
                         </span>
                       ) : null}
 
                       {/* CLEAR PREVIEW TAP INDICATOR */}
                       {!isUnlocked && !isConsumable && (
-                        <span className={`text-[9.5px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all ${
+                        <span className={`text-xs font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all ${
                           isPreviewedOnStage
                             ? 'bg-purple-600 text-white border border-purple-700'
                             : 'bg-purple-100 text-purple-800 border border-purple-300'
@@ -717,7 +717,7 @@ export default function WorkshopModal({
                         </span>
                       )}
 
-                      <span className={`text-[9px] uppercase px-2 py-0.5 rounded-full border ${rarityInfo.badgeClass}`}>
+                      <span className={`text-xs uppercase px-2 py-0.5 rounded-full border ${rarityInfo.badgeClass}`}>
                         {rarityInfo.label}
                       </span>
                     </div>
@@ -750,7 +750,7 @@ export default function WorkshopModal({
                         <button
                           type="button"
                           disabled
-                          className="bg-slate-100 text-rose-600 border-2 border-slate-300 text-[11px] px-3 py-2 rounded-xl font-bold cursor-not-allowed"
+                          className="bg-slate-100 text-rose-600 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
                         >
                           Need {shortfall} ⚡ More
                         </button>
@@ -810,7 +810,7 @@ export default function WorkshopModal({
                       <button
                         type="button"
                         disabled
-                        className="bg-slate-100 text-slate-400 border-2 border-slate-200 text-[11px] px-3 py-2 rounded-xl font-bold cursor-not-allowed"
+                        className="bg-slate-100 text-slate-400 border-2 border-slate-200 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
                       >
                         Need {shortfall} ⚡ More
                       </button>
@@ -901,7 +901,7 @@ export default function WorkshopModal({
 
                   {/* If reward breakdown exists */}
                   {promoFeedback.reward && (
-                    <div className="pt-1.5 border-t border-emerald-200/60 flex items-center gap-2 flex-wrap text-[11px]">
+                    <div className="pt-1.5 border-t border-emerald-200/60 flex items-center gap-2 flex-wrap text-xs">
                       {promoFeedback.reward.sparks > 0 && (
                         <span className="bg-amber-100 text-amber-950 font-black px-2 py-0.5 rounded-md border border-amber-300">
                           ⚡ +{promoFeedback.reward.sparks} Sparks
@@ -927,11 +927,11 @@ export default function WorkshopModal({
 
               {/* Promo Code Info Tip */}
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-left space-y-1">
-                <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-700">
+                <div className="flex items-center gap-1.5 text-xs font-black text-slate-700">
                   <Gift className="w-3.5 h-3.5 text-amber-500" />
                   <span>Looking for Promo Codes?</span>
                 </div>
-                <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
                   Promo codes are announced during special math challenges, seasonal events, and community milestones!
                 </p>
               </div>

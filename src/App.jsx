@@ -986,7 +986,7 @@ export default function App() {
 
   const renderNavigationFooter = () => (
     <footer className="sticky bottom-0 z-40 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 px-2 py-2 sm:py-3 flex items-center justify-around shadow-xs shrink-0 gap-1 sm:gap-2">
-      {/* 0. Climb (Home) Button: Emerald Green */}
+      {/* 0. Climb (Main Session) Button: Emerald / Green */}
       <button
         type="button"
         onClick={() => {
@@ -994,14 +994,14 @@ export default function App() {
           closeAllNavModals();
           setAppState('adaptive_session');
         }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
           !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-105 font-bold' : ''
         }`}
         aria-label="Return to Main Climb Session"
         title="Main Mountain Climb"
       >
         <Mountain className="w-5 h-5 text-emerald-700 stroke-[2.5]" />
-        <span className="text-[10px] font-black tracking-wide">Climb</span>
+        <span className="text-xs font-black tracking-wide">Climb</span>
       </button>
 
       {/* 1. Shop Button: Warm Orange / Amber */}
@@ -1011,14 +1011,14 @@ export default function App() {
           closeAllNavModals('workshop');
           handleOpenWorkshop();
         }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-amber-100 via-orange-50 to-amber-100 text-amber-950 border-2 border-amber-400 rounded-xl hover:from-amber-200 hover:to-orange-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-amber-100 via-orange-50 to-amber-100 text-amber-950 border-2 border-amber-400 rounded-xl hover:from-amber-200 hover:to-orange-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
           isWorkshopOpen ? 'ring-2 ring-amber-500 scale-105 font-bold' : ''
         }`}
         aria-label="Open Kibo's Corner"
         title="Kibo's Workshop & Shop"
       >
         <ShoppingBag className="w-5 h-5 text-amber-700 stroke-[2.5]" />
-        <span className="text-[10px] font-black tracking-wide">Shop</span>
+        <span className="text-xs font-black tracking-wide">Shop</span>
       </button>
 
       {/* 2. Badges Button: Golden Yellow */}
@@ -1029,13 +1029,13 @@ export default function App() {
           closeAllNavModals('badges');
           setShowBadgesModal(true);
         }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-yellow-100 via-amber-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-amber-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-yellow-100 via-amber-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-amber-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
           showBadgesModal ? 'ring-2 ring-yellow-500 scale-105 font-bold' : ''
         }`}
         title="View Badges"
       >
         <Award className="w-5 h-5 text-yellow-700 stroke-[2.5]" />
-        <span className="text-[10px] font-black tracking-wide">Badges</span>
+        <span className="text-xs font-black tracking-wide">Badges</span>
       </button>
 
       {/* 3. Switch Profile Button: Ocean Cyan / Sky Blue */}
@@ -1047,13 +1047,13 @@ export default function App() {
             closeAllNavModals('profile');
             setShowManualProfileSwitcher(true);
           }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-sky-100 via-cyan-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-cyan-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+          className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-sky-100 via-cyan-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-cyan-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
             showManualProfileSwitcher ? 'ring-2 ring-sky-500 scale-105 font-bold' : ''
           }`}
           title="Switch Player Profile"
         >
           <Users className="w-5 h-5 text-sky-700 stroke-[2.5]" />
-          <span className="text-[10px] font-black tracking-wide">Switch</span>
+          <span className="text-xs font-black tracking-wide">Switch</span>
         </button>
       )}
 
@@ -1065,14 +1065,14 @@ export default function App() {
           closeAllNavModals();
           setAppState('leaderboard');
         }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
           !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'ring-2 ring-indigo-500 scale-105 font-bold' : ''
         }`}
         aria-label="Leaderboard"
         title="Leaderboard"
       >
         <LeaderboardIcon className="w-5 h-5 text-indigo-700" isActive={!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard'} />
-        <span className="text-[10px] font-black tracking-wide">Rank</span>
+        <span className="text-xs font-black tracking-wide">Rank</span>
       </button>
 
       {/* 5. Parents Button: Royal Purple */}
@@ -1084,13 +1084,13 @@ export default function App() {
           setPinGateSource(null);
           setShowPinGateModal(true);
         }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
           showPinGateModal || showParentDashboard ? 'ring-2 ring-purple-500 scale-105 font-bold' : ''
         }`}
         title="Parent Dashboard & Settings"
       >
         <Lock className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-        <span className="text-[10px] font-black tracking-wide">Parents</span>
+        <span className="text-xs font-black tracking-wide">Parents</span>
       </button>
 
       {/* 6. Settings Button: Slate Gray */}
@@ -1101,14 +1101,14 @@ export default function App() {
           closeAllNavModals();
           setAppState('settings');
         }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
           !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'settings' ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
         }`}
         aria-label="Settings"
         title="Settings"
       >
         <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
-        <span className="text-[10px] font-black tracking-wide">Settings</span>
+        <span className="text-xs font-black tracking-wide">Settings</span>
       </button>
     </footer>
   );
@@ -1116,7 +1116,7 @@ export default function App() {
   return (
     <div className="app-viewport-root w-full h-full relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col">
       {/* Sticky Top HUD Header Bar */}
-      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-4 py-2 sm:py-3 flex items-center justify-between shadow-xs shrink-0 gap-1.5">
+      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between shadow-xs shrink-0 gap-1.5">
         {/* Brand Logo & Stats */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 w-full justify-between">
           {/* 1. Brand Button: Warm Amber / Orange & Subject Selector */}
@@ -1127,7 +1127,7 @@ export default function App() {
                 soundFx.playKeyTap();
                 setShowSubjectSelector(!showSubjectSelector);
               }}
-              className={`flex items-center gap-1.5 font-black text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border-2 ${
+              className={`flex items-center gap-1.5 font-black text-xs sm:text-sm px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border-2 ${
                 activeSubject === 'words'
                   ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 hover:border-indigo-200'
                   : 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 hover:border-amber-400'
@@ -1152,7 +1152,7 @@ export default function App() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-black text-slate-800 leading-tight">Kibo Math</span>
-                    <span className={`text-[10px] font-bold ${activeSubject === 'math' ? 'text-emerald-600' : 'text-slate-400'}`}>{activeSubject === 'math' ? 'Active' : 'Switch'}</span>
+                    <span className={`text-xs font-bold ${activeSubject === 'math' ? 'text-emerald-600' : 'text-slate-400'}`}>{activeSubject === 'math' ? 'Active' : 'Switch'}</span>
                   </div>
                 </button>
 
@@ -1167,7 +1167,7 @@ export default function App() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-black text-slate-800 leading-tight">Kibo Words</span>
-                    <span className={`text-[10px] font-bold ${activeSubject === 'words' ? 'text-emerald-600' : 'text-slate-400'}`}>{activeSubject === 'words' ? 'Active' : 'Switch'}</span>
+                    <span className={`text-xs font-bold ${activeSubject === 'words' ? 'text-emerald-600' : 'text-slate-400'}`}>{activeSubject === 'words' ? 'Active' : 'Switch'}</span>
                   </div>
                 </button>
 
@@ -1179,7 +1179,7 @@ export default function App() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-black text-slate-400 leading-tight">Kibo World</span>
-                    <span className="text-[10px] font-bold text-teal-500 uppercase tracking-wider">Coming Soon</span>
+                    <span className="text-xs font-bold text-teal-500 uppercase tracking-wider">Coming Soon</span>
                   </div>
                 </div>
 
@@ -1191,7 +1191,7 @@ export default function App() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-black text-slate-400 leading-tight">Kibo Money</span>
-                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Coming Soon</span>
+                    <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Coming Soon</span>
                   </div>
                 </div>
 
@@ -1203,7 +1203,7 @@ export default function App() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-black text-slate-400 leading-tight">Kibo Music</span>
-                    <span className="text-[10px] font-bold text-pink-500 uppercase tracking-wider">Coming Soon</span>
+                    <span className="text-xs font-bold text-pink-500 uppercase tracking-wider">Coming Soon</span>
                   </div>
                 </div>
               </div>
@@ -1213,7 +1213,7 @@ export default function App() {
           {/* 2. Streak Badge Button: Fiery Red Gradient with White Shield Background Badge */}
           <button
             type="button"
-            className="flex items-center gap-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 text-white border-2 border-rose-300 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[11px] font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer"
+            className="flex items-center gap-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 text-white border-2 border-rose-300 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer"
             title={(consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0 ? "Daily Streak & Shield Active! 🛡️" : `Daily Streak: ${streak} ${streak === 1 ? 'day' : 'days'}`}
             onClick={() => {
               soundFx.playKeyTap();
@@ -1225,10 +1225,10 @@ export default function App() {
               suffix={` ${streak === 1 ? 'day' : 'days'}`}
               profileId={activeProfileId}
               subjectId={activeSubject}
-              icon={<Flame className="w-3.5 h-3.5 text-amber-300 fill-amber-300 shrink-0" />}
+              icon={<Flame className="w-4 h-4 text-amber-300 fill-amber-300 shrink-0" />}
             />
             {((consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0) && (
-              <span className="inline-flex items-center justify-center bg-white/95 rounded-full w-4 h-4 text-[11px] ml-0.5 animate-pulse shadow-2xs border border-rose-200 leading-none shrink-0" title="Kibo Shield Active">
+              <span className="inline-flex items-center justify-center bg-white/95 rounded-full w-4 h-4 text-xs ml-0.5 animate-pulse shadow-2xs border border-rose-200 leading-none shrink-0" title="Kibo Shield Active">
                 🛡️
               </span>
             )}
@@ -1241,12 +1241,12 @@ export default function App() {
               soundFx.playKeyTap();
               handleOpenWorkshop('adaptive_session');
             }}
-            className="flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[11px] font-black shadow-xs hover:scale-105 active:scale-95 transition-all relative shrink-0 overflow-visible cursor-pointer"
+            className="flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all relative shrink-0 overflow-visible cursor-pointer"
             title="Open Kibo Workshop"
           >
             <RollingNumberTicker
               value={sparks}
-              icon={<Zap className="w-3.5 h-3.5 text-amber-800 fill-amber-500 stroke-[2.5]" />}
+              icon={<Zap className="w-4 h-4 text-amber-800 fill-amber-500 stroke-[2.5]" />}
               profileId={activeProfileId}
               subjectId={activeSubject}
             />
@@ -1263,14 +1263,14 @@ export default function App() {
                     soundFx.playKeyTap();
                     setShowBadgesModal(true);
                   }}
-                  className="flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[11px] font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
+                  className="flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
                   title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
                 >
                   <RollingNumberTicker
                     value={liveCompetenceRating}
                     profileId={activeProfileId}
                     subjectId={activeSubject}
-                    icon={<Trophy className="w-3.5 h-3.5 text-purple-700 stroke-[2.5]" />}
+                    icon={<Trophy className="w-4 h-4 text-purple-700 stroke-[2.5]" />}
                   />
                 </button>
               );

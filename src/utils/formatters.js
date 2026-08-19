@@ -80,3 +80,26 @@ export function normalizeOperator(val) {
   return str;
 }
 
+/**
+ * Formats seconds into human-readable time (e.g., "12m 30s", "45s", "1h 15m").
+ * @param {number} totalSeconds - Total time in seconds
+ * @returns {string} - Formatted string (e.g. "0m", "45s", "12m", "1h 5m")
+ */
+export function formatTime(totalSeconds) {
+  const sec = typeof totalSeconds === 'number' && !isNaN(totalSeconds) ? Math.round(totalSeconds) : 0;
+  if (sec <= 0) return '0m';
+
+  const hours = Math.floor(sec / 3600);
+  const minutes = Math.floor((sec % 3600) / 60);
+  const remainingSeconds = sec % 60;
+
+  if (hours > 0) {
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+  if (minutes > 0) {
+    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+  }
+  return `${remainingSeconds}s`;
+}
+
+

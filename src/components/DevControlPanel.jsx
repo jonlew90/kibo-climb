@@ -64,11 +64,11 @@ export default function DevControlPanel({
             <div>
               <h3 className="font-extrabold text-base tracking-tight text-slate-100 flex items-center gap-2">
                 Developer Control Panel
-                <span className="text-[9px] font-black uppercase text-indigo-300 bg-indigo-950 px-2 py-0.5 rounded-full border border-indigo-700">
+                <span className="text-xs font-black uppercase text-indigo-300 bg-indigo-950 px-2 py-0.5 rounded-full border border-indigo-700">
                   kibodev
                 </span>
               </h3>
-              <p className="text-[11px] text-slate-400 font-medium">Quick state overrides for debugging & testing</p>
+              <p className="text-xs text-slate-400 font-medium">Quick state overrides for debugging & testing</p>
             </div>
           </div>
           <button
@@ -130,7 +130,7 @@ export default function DevControlPanel({
                     showToast(`Rating set to ${preset}!`);
                     if (onStateRefresh) onStateRefresh();
                   }}
-                  className="text-[10px] font-bold bg-slate-900 hover:bg-indigo-950 text-indigo-300 border border-indigo-800/50 px-2.5 py-1 rounded-lg transition-all"
+                  className="text-xs font-bold bg-slate-900 hover:bg-indigo-950 text-indigo-300 border border-indigo-800/50 px-2.5 py-1 rounded-lg transition-all"
                 >
                   {preset}
                 </button>
@@ -205,7 +205,7 @@ export default function DevControlPanel({
               Season & Holiday Simulator
             </span>
 
-            <p className="text-[10px] text-slate-400 leading-snug">
+            <p className="text-xs text-slate-400 leading-snug">
               Simulate any holiday or season to test recurring catalog rotation, shop items, and countdown timers.
             </p>
 
@@ -216,7 +216,7 @@ export default function DevControlPanel({
                   showToast('Reset to Live Real-Time Date');
                   if (onStateRefresh) onStateRefresh();
                 }}
-                className={`text-[11px] font-extrabold py-1.5 px-2 rounded-xl border text-center transition-all ${
+                className={`text-xs font-extrabold py-1.5 px-2 rounded-xl border text-center transition-all ${
                   !storageService.getSimulatedDate()
                     ? 'bg-teal-600 text-white border-teal-400 shadow-sm'
                     : 'bg-slate-900/60 hover:bg-slate-900 border-slate-700 text-slate-300'
@@ -237,7 +237,7 @@ export default function DevControlPanel({
                         if (onStateRefresh) onStateRefresh();
                       }
                     }}
-                    className={`text-[10.5px] font-extrabold py-1.5 px-2 rounded-xl border text-left truncate transition-all ${
+                    className={`text-xs font-extrabold py-1.5 px-2 rounded-xl border text-left truncate transition-all ${
                       isSelected
                         ? 'bg-teal-600 text-white border-teal-400 shadow-sm'
                         : 'bg-slate-900/60 hover:bg-slate-900 border-slate-700 text-slate-300'
@@ -279,7 +279,7 @@ export default function DevControlPanel({
               Test Communications (Per Profile & Mascot Subject)
             </span>
 
-            <p className="text-[10px] text-slate-400 leading-snug">
+            <p className="text-xs text-slate-400 leading-snug">
               Send a test weekly progress digest with mascot subject line (🐾 🏔️) and played topics breakdown.
             </p>
 

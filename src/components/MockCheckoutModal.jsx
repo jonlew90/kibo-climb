@@ -53,7 +53,7 @@ export default function MockCheckoutModal({ isOpen, onClose, packageInfo, onConf
           </button>
         </div>
 
-        <p className="text-[10px] text-slate-400 mt-4 px-4 leading-tight">
+        <p className="text-xs text-slate-500 mt-4 px-4 leading-tight font-medium">
           This is a simulated in-app purchase. No real money will be charged.
         </p>
       </div>
