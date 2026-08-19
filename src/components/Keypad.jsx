@@ -13,11 +13,19 @@ export default function Keypad({
   answerString,
   displayString,
   operatorSymbol,
-  options
+  options,
+  prunedKeys = []
 }) {
   const handleInputDigit = onDigit || onKeyPress || (() => {});
   const handleDelete = onDelete || (() => {});
   const handleClear = onClear || (() => {});
+
+  const isKeyPruned = (k) => {
+    if (!prunedKeys) return false;
+    if (Array.isArray(prunedKeys)) return prunedKeys.includes(k);
+    if (prunedKeys instanceof Set) return prunedKeys.has(k);
+    return false;
+  };
 
   const isBooleanQuestion = Boolean(
     (options && options.includes('Yes')) ||
@@ -89,29 +97,45 @@ export default function Keypad({
   );
 
   if (isChoiceQuestion && choiceOptions && choiceOptions.length >= 2) {
+    const operatorColors = [
+      'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-b-4 border-emerald-700',
+      'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-b-4 border-amber-700',
+      'bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 border-b-4 border-indigo-700',
+      'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-b-4 border-purple-700'
+    ];
+
     return (
-      <div className="w-full max-w-sm mx-auto flex items-center justify-center gap-3 p-2.5 sm:p-3.5 bg-slate-100/90 rounded-2xl sm:rounded-3xl border-2 border-slate-200 shadow-inner my-1.5 sm:my-4">
-        {choiceOptions.map((opt, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              if (onSubmit) {
-                onSubmit(opt);
-              } else {
-                handleInputDigit(opt);
-              }
-            }}
-            className={`flex-1 py-4 text-xl sm:text-2xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all cursor-pointer ${
-              idx === 0
-                ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-b-4 border-amber-700'
-                : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 border-b-4 border-indigo-700'
-            }`}
-          >
-            {opt}
-          </button>
-        ))}
+      <div className={`w-full max-w-sm mx-auto p-2.5 sm:p-3.5 bg-slate-100/90 rounded-2xl sm:rounded-3xl border-2 border-slate-200 shadow-inner my-1.5 sm:my-4 ${
+        choiceOptions.length > 2 ? 'grid grid-cols-2 sm:grid-cols-4 gap-2' : 'flex items-center justify-center gap-3.5'
+      }`}>
+        {choiceOptions.map((opt, idx) => {
+          const pruned = isKeyPruned(opt);
+          const colorClass = operatorColors[idx % operatorColors.length];
+
+          return (
+            <button
+              key={idx}
+              type="button"
+              disabled={pruned}
+              onClick={() => {
+                if (pruned) return;
+                soundFx.playKeyTap();
+                if (onSubmit) {
+                  onSubmit(opt);
+                } else {
+                  handleInputDigit(opt);
+                }
+              }}
+              className={`flex-1 py-4 text-2xl sm:text-3xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all ${
+                pruned
+                  ? 'opacity-20 pointer-events-none grayscale scale-95 cursor-not-allowed bg-slate-400 border-slate-500'
+                  : `active:scale-95 cursor-pointer ${colorClass}`
+              }`}
+            >
+              {opt}
+            </button>
+          );
+        })}
       </div>
     );
   }
@@ -249,11 +273,21 @@ export default function Keypad({
           );
         }
 
+        const pruned = isKeyPruned(keyVal);
+
         return (
           <button
             key={`${keyVal}-${idx}`}
-            onClick={() => handleKeyClick(keyVal)}
-            className="btn-3d-key text-slate-800"
+            disabled={pruned}
+            onClick={() => {
+              if (pruned) return;
+              handleKeyClick(keyVal);
+            }}
+            className={`btn-3d-key transition-all ${
+              pruned
+                ? 'opacity-20 pointer-events-none grayscale scale-95 cursor-not-allowed bg-slate-200 text-slate-400 border-slate-300 shadow-none'
+                : 'text-slate-800'
+            }`}
             aria-label={`Digit ${keyVal}`}
           >
             {keyVal}

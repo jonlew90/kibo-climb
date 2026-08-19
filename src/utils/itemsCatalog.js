@@ -60,25 +60,25 @@ export const WORKSHOP_ITEMS = [
   },
   {
     id: 'letter_spyglass',
-    name: 'Letter Spyglass',
+    name: 'Climber Spyglass',
     category: 'powerups',
     cost: 15,
     rarity: 'rare',
     isConsumable: true,
     icon: '🔍',
-    badgeTag: 'Kibo Words Only',
-    description: 'Costs 15 Sparks. (Kibo Words Exclusive) Instantly uncovers and fills 1 missing blank letter directly into your puzzle board!'
+    badgeTag: 'Auto-Reveal Blank',
+    description: 'Costs 15 Sparks. Instantly uncovers and fills 1 missing blank slot or digit directly into your climb challenge!'
   },
   {
     id: 'letter_pruner',
-    name: 'Letter Pruner',
+    name: 'Climber Pruner',
     category: 'powerups',
     cost: 15,
     rarity: 'rare',
     isConsumable: true,
     icon: '✂️',
-    badgeTag: 'Kibo Words Only',
-    description: 'Costs 15 Sparks. (Kibo Words Exclusive) Eliminates distractor letters on the keyboard, leaving only valid letters for this word!'
+    badgeTag: 'Prune Distractors',
+    description: 'Costs 15 Sparks. Eliminates distractor choices and non-solution keys for the current problem!'
   },
   {
     id: 'kibo_shield',

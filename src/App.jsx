@@ -1341,6 +1341,8 @@ export default function App() {
           consumables={consumables}
           onToggleDoubleSparksPotion={handleToggleDoubleSparksPotion}
           onConsumeHintScroll={handleConsumeHintScroll}
+          onConsumeLetterSpyglass={handleConsumeLetterSpyglass}
+          onConsumeLetterPruner={handleConsumeLetterPruner}
           onConsumeShield={handleConsumeShield}
           onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}

@@ -66,6 +66,8 @@ export default function AdaptiveSessionView({
   consumables = {},
   onToggleDoubleSparksPotion,
   onConsumeHintScroll,
+  onConsumeLetterSpyglass,
+  onConsumeLetterPruner,
   onConsumeShield,
   onResetDoubleSparks
 }) {
@@ -134,6 +136,16 @@ export default function AdaptiveSessionView({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [shouldPulseHint, setShouldPulseHint] = useState(false);
 
+  // Power-up States for Math Climbs
+  const [isLetterPrunerActive, setIsLetterPrunerActive] = useState(false);
+  const [spyglassRevealedAnswer, setSpyglassRevealedAnswer] = useState(null);
+
+  // Reset per-question power-up state on question transition
+  useEffect(() => {
+    setIsLetterPrunerActive(false);
+    setSpyglassRevealedAnswer(null);
+  }, [currentIndex]);
+
   const currentProblem = problemQueue[currentIndex] || {};
   const isMoneyQuestion =
     currentProblem.type === 'money' ||
@@ -141,6 +153,17 @@ export default function AdaptiveSessionView({
     /quarter|dime|nickel|penny|\$|¢|change|costing/i.test(currentProblem.displayString || '');
   const isTimeQuestion = currentProblem.type === 'time';
   const targetStr = String(currentProblem.answerString || currentProblem.answer || '');
+
+  // Compute pruned keys when Climber Pruner is active
+  const prunedKeys = React.useMemo(() => {
+    if (!isLetterPrunerActive) return [];
+    if (currentProblem.options && Array.isArray(currentProblem.options)) {
+      return currentProblem.options.filter(opt => opt !== targetStr && opt !== currentProblem.answer);
+    }
+    const targetChars = new Set(targetStr.split(''));
+    const allDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    return allDigits.filter(d => !targetChars.has(d));
+  }, [isLetterPrunerActive, currentProblem, targetStr]);
 
   const problemStartTimeRef = useRef(0);
   const pauseStartRef = useRef(null);
@@ -468,6 +491,54 @@ export default function AdaptiveSessionView({
     const nextIdx = currentIndex + 1;
     replenishQueueIfNeeded(nextIdx);
     setCurrentIndex(nextIdx);
+  };
+
+  const handleUseLetterSpyglass = () => {
+    const owned = consumables?.letterSpyglassCount ?? 0;
+    if (owned <= 0) {
+      if (onOpenWorkshop) onOpenWorkshop();
+      return;
+    }
+
+    const targetAnswer = String(currentProblem.answerString || currentProblem.answer || '');
+    if (inputVal === targetAnswer) {
+      triggerToastBanner({
+        type: 'info',
+        text: 'Answer already revealed! Tap Submit.'
+      }, 1500);
+      return;
+    }
+
+    if (onConsumeLetterSpyglass && onConsumeLetterSpyglass()) {
+      setInputVal(targetAnswer);
+      setSpyglassRevealedAnswer(targetAnswer);
+      triggerToastBanner({
+        type: 'success',
+        text: `Permanent Clue Revealed: "${targetAnswer}"! 🔍`
+      }, 1500);
+
+      // Auto-evaluate after 400ms for smooth game feel
+      setTimeout(() => {
+        processAnswerEvaluation(targetAnswer);
+      }, 400);
+    }
+  };
+
+  const handleUseLetterPruner = () => {
+    if (isLetterPrunerActive) return;
+    const owned = consumables?.letterPrunerCount ?? 0;
+    if (owned <= 0) {
+      if (onOpenWorkshop) onOpenWorkshop();
+      return;
+    }
+
+    if (onConsumeLetterPruner && onConsumeLetterPruner()) {
+      setIsLetterPrunerActive(true);
+      triggerToastBanner({
+        type: 'success',
+        text: 'Distractor choices pruned! ✂️'
+      }, 1400);
+    }
   };
 
   const processAnswerEvaluation = (userAnsString) => {
@@ -1214,6 +1285,18 @@ export default function AdaptiveSessionView({
                   🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
                 </span>
               )}
+
+              {(consumables?.letterSpyglassCount ?? 0) > 0 && (
+                <span className="text-xs font-black uppercase text-amber-950 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 shadow-2xs flex items-center gap-1">
+                  🔍 Spyglasses ({consumables.letterSpyglassCount})
+                </span>
+              )}
+
+              {(consumables?.letterPrunerCount ?? 0) > 0 && (
+                <span className="text-xs font-black uppercase text-emerald-950 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 shadow-2xs flex items-center gap-1">
+                  ✂️ Pruners ({consumables.letterPrunerCount})
+                </span>
+              )}
             </div>
 
             {/* START / RESUME CLIMB MAIN CTA BUTTON */}
@@ -1324,6 +1407,46 @@ export default function AdaptiveSessionView({
                     💡 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
                   </button>
 
+                  {/* CLIMBER SPYGLASS BUTTON */}
+                  <button
+                    type="button"
+                    onClick={handleUseLetterSpyglass}
+                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                      (consumables?.letterSpyglassCount ?? 0) > 0
+                        ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                    }`}
+                    title={
+                      (consumables?.letterSpyglassCount ?? 0) > 0
+                        ? 'Use Spyglass to reveal & fill 1 missing blank slot or answer!'
+                        : 'Get Spyglasses in Kibo\'s Corner'
+                    }
+                  >
+                    🔍 {(consumables?.letterSpyglassCount ?? 0) > 0 ? `Spyglass (${consumables.letterSpyglassCount})` : 'Spyglass'}
+                  </button>
+
+                  {/* CLIMBER PRUNER BUTTON */}
+                  <button
+                    type="button"
+                    onClick={handleUseLetterPruner}
+                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                      isLetterPrunerActive
+                        ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
+                        : (consumables?.letterPrunerCount ?? 0) > 0
+                        ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                    }`}
+                    title={
+                      isLetterPrunerActive
+                        ? 'Distractors pruned for this problem!'
+                        : (consumables?.letterPrunerCount ?? 0) > 0
+                        ? 'Prune distractor options / keys!'
+                        : 'Get Pruners in Kibo\'s Corner'
+                    }
+                  >
+                    ✂️ {isLetterPrunerActive ? 'Pruned' : (consumables?.letterPrunerCount ?? 0) > 0 ? `Prune (${consumables.letterPrunerCount})` : 'Prune'}
+                  </button>
+
                   {isDoubleSparksActive && (
                     <span className="text-[10px] font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
                       ⚡ 2x Active!
@@ -1343,22 +1466,40 @@ export default function AdaptiveSessionView({
 
             {(() => {
               const rawDisplay = currentProblem.displayString || `${currentProblem.num1} ${currentProblem.operatorSymbol} ${currentProblem.num2}`;
+              const hasUnderscoreBlank = rawDisplay.includes('_');
               const cleanDisplay = rawDisplay.replace(/\s*=\s*\?\s*¢?/gi, '').replace(/\s*=\s*\?\s*cents?/gi, '').trim();
               const hasQuestionSuffix = cleanDisplay.endsWith('?') || cleanDisplay.includes('Change?') || cleanDisplay.includes('Leftover?') || cleanDisplay.includes('End time?');
-              const isLongText = cleanDisplay.length > 22;
+              const isLongText = cleanDisplay.length > 24;
 
               return (
                 <div className="space-y-1.5 w-full">
                   <div className={`w-full flex items-center justify-center gap-2 sm:gap-3 flex-wrap my-1 ${
                     isLongText ? 'text-sm sm:text-base leading-tight font-bold' : 'text-2xl sm:text-3xl font-extrabold'
                   } text-slate-800`}>
-                    <span className="max-w-full text-center leading-tight">{cleanDisplay}</span>
-                    {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
+                    {hasUnderscoreBlank ? (
+                      (() => {
+                        const parts = rawDisplay.split('_');
+                        return (
+                          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap w-full">
+                            {parts[0] && <span className="text-center leading-tight">{parts[0]}</span>}
+                            <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-2xl sm:text-3xl shadow-inner shrink-0 animate-pop">
+                              {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
+                            </span>
+                            {parts[1] && <span className="text-center leading-tight">{parts[1]}</span>}
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      <>
+                        <span className="max-w-full text-center leading-tight">{cleanDisplay}</span>
+                        {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
 
-                    {/* Answer Display */}
-                    <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-2xl sm:text-3xl shadow-inner shrink-0">
-                      {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
-                    </span>
+                        {/* Answer Display */}
+                        <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-2xl sm:text-3xl shadow-inner shrink-0">
+                          {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
+                        </span>
+                      </>
+                    )}
                   </div>
 
                   {/* INTEGRATED KIBO HINT */}
@@ -1393,6 +1534,7 @@ export default function AdaptiveSessionView({
             displayString={currentProblem.displayString}
             operatorSymbol={currentProblem.operatorSymbol}
             options={currentProblem.options}
+            prunedKeys={prunedKeys}
           />
         </div>
       )}

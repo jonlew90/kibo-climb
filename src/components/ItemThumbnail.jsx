@@ -198,8 +198,8 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
             <circle cx="44" cy="44" r="20" fill="#BAE6FD" opacity="0.6" />
             {/* Glare */}
             <path d="M 32 30 A 18 18 0 0 1 56 30" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.8" />
-            {/* Letter Inside */}
-            <text x="44" y="52" textAnchor="middle" fontSize="22" fontWeight="900" fill="#0369A1">A</text>
+            {/* Symbol Inside */}
+            <text x="44" y="52" textAnchor="middle" fontSize="22" fontWeight="900" fill="#0369A1">?</text>
             <circle cx="58" cy="30" r="3" fill="#FDE047" />
           </g>
         )}

@@ -382,10 +382,10 @@ export function calculateStars(accuracyPct, durationInSeconds, tierConfig = null
 
 // Helper to calculate normalized key for commutative protection and deduplication
 export function getNormalizedProblemKey(probData) {
-  const { num1, num2, operatorSymbol, displayString } = probData;
+  const { num1, num2, operatorSymbol, displayString, blankPosition, type } = probData;
 
-  // Commutative protection for Addition (+) and Multiplication (×)
-  if (operatorSymbol === '+' || operatorSymbol === '×') {
+  // Commutative protection for standard Addition (+) and Multiplication (×)
+  if ((operatorSymbol === '+' || operatorSymbol === '×') && !blankPosition && type !== 'fill_blank' && type !== 'missing_operator') {
     if (typeof num1 === 'number' && typeof num2 === 'number') {
       const minVal = Math.min(num1, num2);
       const maxVal = Math.max(num1, num2);
@@ -414,32 +414,137 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
 
   switch (effectiveTier) {
     case 1: {
-      if (Math.random() > 0.4) {
-        num1 = Math.floor(Math.random() * 9) + 1;
-        num2 = Math.floor(Math.random() * 9) + 1;
-        answer = num1 + num2;
-        operatorSymbol = '+';
-        const maxVal = Math.max(num1, num2);
-        const minVal = Math.min(num1, num2);
-        hint = `Tip: Start at ${maxVal} and count on ${minVal}!`;
-      } else {
-        num1 = Math.floor(Math.random() * 9) + 1;
-        num2 = Math.floor(Math.random() * num1) + 1;
-        answer = num1 - num2;
-        operatorSymbol = '−';
-        const diff = num1 - num2;
-        if (diff === 1) {
-          hint = `Tip: How far apart are ${num1} and ${num2}? Just 1 step!`;
+      const mode = Math.random();
+      if (mode < 0.35) {
+        if (Math.random() > 0.4) {
+          num1 = Math.floor(Math.random() * 9) + 1;
+          num2 = Math.floor(Math.random() * 9) + 1;
+          answer = num1 + num2;
+          operatorSymbol = '+';
+          const maxVal = Math.max(num1, num2);
+          const minVal = Math.min(num1, num2);
+          hint = `Tip: Start at ${maxVal} and count on ${minVal}!`;
         } else {
-          hint = `Tip: Start at ${num1} and count back ${num2}!`;
+          num1 = Math.floor(Math.random() * 9) + 1;
+          num2 = Math.floor(Math.random() * num1) + 1;
+          answer = num1 - num2;
+          operatorSymbol = '−';
+          const diff = num1 - num2;
+          if (diff === 1) {
+            hint = `Tip: How far apart are ${num1} and ${num2}? Just 1 step!`;
+          } else {
+            hint = `Tip: Start at ${num1} and count back ${num2}!`;
+          }
         }
+        displayString = `${num1} ${operatorSymbol} ${num2}`;
+      } else if (mode < 0.65) {
+        // Missing Operand (Fill-in-the-blank)
+        const isAdd = Math.random() > 0.4;
+        if (isAdd) {
+          const a = Math.floor(Math.random() * 8) + 1;
+          const b = Math.floor(Math.random() * 8) + 1;
+          const sum = a + b;
+          const missingPos = Math.random() > 0.5 ? 'second' : 'first';
+          num1 = a;
+          num2 = b;
+          operatorSymbol = '+';
+          if (missingPos === 'second') {
+            answer = b;
+            displayString = `${a} + _ = ${sum}`;
+            hint = `Tip: ${a} plus what equals ${sum}?`;
+          } else {
+            answer = a;
+            displayString = `_ + ${b} = ${sum}`;
+            hint = `Tip: What plus ${b} equals ${sum}?`;
+          }
+          return {
+            tier: effectiveTier,
+            num1,
+            num2,
+            operatorSymbol,
+            answer: answer.toString(),
+            answerString: answer.toString(),
+            displayString,
+            type: 'fill_blank',
+            blankPosition: missingPos,
+            hint
+          };
+        } else {
+          const b = Math.floor(Math.random() * 7) + 1;
+          const diff = Math.floor(Math.random() * 7) + 1;
+          const a = b + diff;
+          const missingPos = Math.random() > 0.5 ? 'second' : 'first';
+          num1 = a;
+          num2 = b;
+          operatorSymbol = '−';
+          if (missingPos === 'second') {
+            answer = b;
+            displayString = `${a} − _ = ${diff}`;
+            hint = `Tip: ${a} minus what equals ${diff}?`;
+          } else {
+            answer = a;
+            displayString = `_ − ${b} = ${diff}`;
+            hint = `Tip: What minus ${b} leaves ${diff}?`;
+          }
+          return {
+            tier: effectiveTier,
+            num1,
+            num2,
+            operatorSymbol,
+            answer: answer.toString(),
+            answerString: answer.toString(),
+            displayString,
+            type: 'fill_blank',
+            blankPosition: missingPos,
+            hint
+          };
+        }
+      } else if (mode < 0.85) {
+        // Missing Operator
+        const isAdd = Math.random() > 0.5;
+        const a = Math.floor(Math.random() * 8) + 2;
+        const b = Math.floor(Math.random() * (isAdd ? 8 : a - 1)) + 1;
+        const res = isAdd ? a + b : a - b;
+        const opAns = isAdd ? '+' : '−';
+        return {
+          tier: effectiveTier,
+          num1: a,
+          num2: b,
+          operatorSymbol: '?',
+          answer: opAns,
+          answerString: opAns,
+          displayString: `${a} _ ${b} = ${res}`,
+          options: ['+', '−'],
+          type: 'missing_operator',
+          blankPosition: 'operator',
+          hint: `Tip: Does ${a} need to add or subtract ${b} to equal ${res}?`
+        };
+      } else {
+        // Sequence Fill-in-the-blank
+        const step = Math.random() > 0.5 ? 2 : 1;
+        const start = Math.floor(Math.random() * 10) + 1;
+        const seq = [start, start + step, start + 2 * step, start + 3 * step];
+        const blankIdx = Math.floor(Math.random() * 4);
+        const ansVal = seq[blankIdx];
+        const seqDisplay = seq.map((v, i) => (i === blankIdx ? '_' : v)).join(', ');
+        return {
+          tier: effectiveTier,
+          num1: start,
+          num2: step,
+          operatorSymbol: '📈',
+          answer: ansVal.toString(),
+          answerString: ansVal.toString(),
+          displayString: seqDisplay,
+          type: 'fill_blank',
+          blankPosition: 'sequence',
+          hint: `Tip: Follow the pattern! Count by ${step}s.`
+        };
       }
-      displayString = `${num1} ${operatorSymbol} ${num2}`;
       break;
     }
     case 2: {
       const type = Math.random();
-      if (type < 0.25) {
+      if (type < 0.20) {
         const hours = Math.floor(Math.random() * 8) + 1;
         const minsAdd = [15, 30, 45][Math.floor(Math.random() * 3)];
         num1 = hours;
@@ -448,32 +553,105 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
         operatorSymbol = '⏰';
         displayString = `What time is ${minsAdd} mins after ${hours}:00 PM?`;
         hint = 'Hint: Count forward by 15-minute quarters!';
-      } else if (type < 0.50) {
+      } else if (type < 0.40) {
         num1 = Math.floor(Math.random() * 5) + 5;
         num2 = Math.floor(Math.random() * 5) + 6;
         answer = num1 + num2;
         operatorSymbol = '+';
         displayString = `${num1} ${operatorSymbol} ${num2}`;
-      } else if (type < 0.75) {
-        num1 = Math.floor(Math.random() * 9) + 11;
-        num2 = Math.floor(Math.random() * 8) + 3;
-        answer = num1 - num2;
-        operatorSymbol = '−';
-        displayString = `${num1} ${operatorSymbol} ${num2}`;
+      } else if (type < 0.60) {
+        // Missing Multiplication Operand
+        const tables = [2, 3, 4, 5];
+        const a = tables[Math.floor(Math.random() * tables.length)];
+        const b = Math.floor(Math.random() * 9) + 1;
+        const prod = a * b;
+        const missingPos = Math.random() > 0.5 ? 'second' : 'first';
+        num1 = a;
+        num2 = b;
+        operatorSymbol = '×';
+        if (missingPos === 'second') {
+          answer = b;
+          displayString = `${a} × _ = ${prod}`;
+          hint = `Tip: ${a} times what equals ${prod}?`;
+        } else {
+          answer = a;
+          displayString = `_ × ${b} = ${prod}`;
+          hint = `Tip: What times ${b} equals ${prod}?`;
+        }
+        return {
+          tier: effectiveTier,
+          num1,
+          num2,
+          operatorSymbol,
+          answer: answer.toString(),
+          answerString: answer.toString(),
+          displayString,
+          type: 'fill_blank',
+          blankPosition: missingPos,
+          hint
+        };
+      } else if (type < 0.80) {
+        // Missing Operator
+        const ops = ['+', '−', '×', '÷'];
+        const opChoice = ops[Math.floor(Math.random() * ops.length)];
+        let a, b, res;
+        if (opChoice === '+') {
+          a = Math.floor(Math.random() * 8) + 4;
+          b = Math.floor(Math.random() * 8) + 2;
+          res = a + b;
+        } else if (opChoice === '−') {
+          a = Math.floor(Math.random() * 10) + 10;
+          b = Math.floor(Math.random() * 8) + 2;
+          res = a - b;
+        } else if (opChoice === '×') {
+          a = Math.floor(Math.random() * 4) + 2;
+          b = Math.floor(Math.random() * 5) + 2;
+          res = a * b;
+        } else {
+          b = Math.floor(Math.random() * 4) + 2;
+          const q = Math.floor(Math.random() * 4) + 2;
+          a = b * q;
+          res = q;
+        }
+        return {
+          tier: effectiveTier,
+          num1: a,
+          num2: b,
+          operatorSymbol: '?',
+          answer: opChoice,
+          answerString: opChoice,
+          displayString: `${a} _ ${b} = ${res}`,
+          options: ['+', '−', '×', '÷'],
+          type: 'missing_operator',
+          blankPosition: 'operator',
+          hint: `Tip: Which operation turns ${a} and ${b} into ${res}?`
+        };
       } else {
-        const total = Math.floor(Math.random() * 8) + 11;
-        const known = Math.floor(Math.random() * (total - 3)) + 2;
-        answer = total - known;
-        num1 = known;
-        num2 = '?';
-        operatorSymbol = '+';
-        displayString = `${known} + ? = ${total}`;
+        // Sequence Fill
+        const step = [2, 5, 10][Math.floor(Math.random() * 3)];
+        const start = step;
+        const seq = [start, start + step, start + 2 * step, start + 3 * step, start + 4 * step];
+        const blankIdx = Math.floor(Math.random() * 5);
+        const ansVal = seq[blankIdx];
+        const seqDisplay = seq.map((v, i) => (i === blankIdx ? '_' : v)).join(', ');
+        return {
+          tier: effectiveTier,
+          num1: start,
+          num2: step,
+          operatorSymbol: '📈',
+          answer: ansVal.toString(),
+          answerString: ansVal.toString(),
+          displayString: seqDisplay,
+          type: 'fill_blank',
+          blankPosition: 'sequence',
+          hint: `Tip: Skip count by ${step}s!`
+        };
       }
       break;
     }
     case 3: {
       const subType = Math.random();
-      if (subType < 0.25) {
+      if (subType < 0.20) {
         const q = Math.floor(Math.random() * 3) + 1;
         const d = Math.floor(Math.random() * 3) + 1;
         answer = q * 25 + d * 10;
@@ -488,7 +666,7 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
           type: 'money',
           hint: 'Hint: Quarters are 25¢, Dimes are 10¢!'
         };
-      } else if (subType < 0.45) {
+      } else if (subType < 0.40) {
         const cost = (Math.floor(Math.random() * 15) + 5) * 5;
         answer = 100 - cost;
         return {
@@ -502,8 +680,75 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
           type: 'money',
           hint: 'Hint: Subtract the cost from 100¢!'
         };
+      } else if (subType < 0.65) {
+        // Missing Multiplication Operand (6s - 9s)
+        const tables = [6, 7, 8, 9];
+        const a = tables[Math.floor(Math.random() * tables.length)];
+        const b = Math.floor(Math.random() * 9) + 2;
+        const prod = a * b;
+        const missingPos = Math.random() > 0.5 ? 'second' : 'first';
+        num1 = a;
+        num2 = b;
+        operatorSymbol = '×';
+        if (missingPos === 'second') {
+          answer = b;
+          displayString = `${a} × _ = ${prod}`;
+          hint = `Tip: ${a} times what equals ${prod}?`;
+        } else {
+          answer = a;
+          displayString = `_ × ${b} = ${prod}`;
+          hint = `Tip: What times ${b} equals ${prod}?`;
+        }
+        return {
+          tier: effectiveTier,
+          num1,
+          num2,
+          operatorSymbol,
+          answer: answer.toString(),
+          answerString: answer.toString(),
+          displayString,
+          type: 'fill_blank',
+          blankPosition: missingPos,
+          hint
+        };
+      } else if (subType < 0.85) {
+        // Missing Operator
+        const ops = ['+', '−', '×', '÷'];
+        const opChoice = ops[Math.floor(Math.random() * ops.length)];
+        let a, b, res;
+        if (opChoice === '+') {
+          a = Math.floor(Math.random() * 20) + 15;
+          b = Math.floor(Math.random() * 15) + 10;
+          res = a + b;
+        } else if (opChoice === '−') {
+          a = Math.floor(Math.random() * 30) + 30;
+          b = Math.floor(Math.random() * 20) + 10;
+          res = a - b;
+        } else if (opChoice === '×') {
+          a = Math.floor(Math.random() * 4) + 6;
+          b = Math.floor(Math.random() * 5) + 3;
+          res = a * b;
+        } else {
+          b = Math.floor(Math.random() * 5) + 4;
+          const q = Math.floor(Math.random() * 6) + 3;
+          a = b * q;
+          res = q;
+        }
+        return {
+          tier: effectiveTier,
+          num1: a,
+          num2: b,
+          operatorSymbol: '?',
+          answer: opChoice,
+          answerString: opChoice,
+          displayString: `${a} _ ${b} = ${res}`,
+          options: ['+', '−', '×', '÷'],
+          type: 'missing_operator',
+          blankPosition: 'operator',
+          hint: `Tip: Which operation connects ${a} and ${b} to make ${res}?`
+        };
       } else {
-        const tables = [2, 5, 10];
+        const tables = [6, 7, 8, 9];
         num1 = tables[Math.floor(Math.random() * tables.length)];
         num2 = Math.floor(Math.random() * 9) + 1;
         answer = num1 * num2;
@@ -514,7 +759,37 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
     }
     case 4: {
       const type = Math.random();
-      if (type < 0.50) {
+      if (type < 0.30) {
+        // Missing Division Operand
+        const b = Math.floor(Math.random() * 7) + 3;
+        const q = Math.floor(Math.random() * 7) + 2;
+        const a = b * q;
+        const missingPos = Math.random() > 0.5 ? 'second' : 'first';
+        num1 = a;
+        num2 = b;
+        operatorSymbol = '÷';
+        if (missingPos === 'second') {
+          answer = b;
+          displayString = `${a} ÷ _ = ${q}`;
+          hint = `Tip: ${a} divided by what equals ${q}? (${a} ÷ ${q})`;
+        } else {
+          answer = a;
+          displayString = `_ ÷ ${b} = ${q}`;
+          hint = `Tip: What divided by ${b} equals ${q}? (${q} × ${b})`;
+        }
+        return {
+          tier: effectiveTier,
+          num1,
+          num2,
+          operatorSymbol,
+          answer: answer.toString(),
+          answerString: answer.toString(),
+          displayString,
+          type: 'fill_blank',
+          blankPosition: missingPos,
+          hint
+        };
+      } else if (type < 0.60) {
         // Intermediate: Comparing Fractions
         const pairs = [
           { f1: '3/4', f2: '5/8', larger: '3/4' },
