@@ -197,29 +197,58 @@ export function calculateConceptBreakdown(sprintHistory = [], skipLogs = [], sub
 
   // Process sprint history
   (sprintHistory || []).forEach((sprint) => {
-    const tier = Number(sprint.tier) || 1;
-    let matchedConcept = concepts.find((c) => c.tiers && c.tiers.includes(tier)) || concepts[0];
-    const conceptName = matchedConcept ? matchedConcept.name : (concepts[0]?.name || 'Fundamentals');
+    if (Array.isArray(sprint.answers) && sprint.answers.length > 0) {
+      sprint.answers.forEach((ans) => {
+        const qTier = Number(ans.tier || ans.problemTier || sprint.tier || 1);
+        let matchedConcept = concepts.find((c) => c.tiers && c.tiers.includes(qTier)) || concepts[0];
+        const conceptName = matchedConcept ? matchedConcept.name : (concepts[0]?.name || 'Fundamentals');
 
-    if (!breakdown[conceptName]) {
-      breakdown[conceptName] = {
-        id: matchedConcept?.id || `concept_${tier}`,
-        name: conceptName,
-        icon: matchedConcept?.icon || '🔢',
-        tiers: [tier],
-        correct: 0,
-        incorrect: 0,
-        skipped: 0,
-        total: 0
-      };
+        if (!breakdown[conceptName]) {
+          breakdown[conceptName] = {
+            id: matchedConcept?.id || `concept_${qTier}`,
+            name: conceptName,
+            icon: matchedConcept?.icon || '🔢',
+            tiers: [qTier],
+            correct: 0,
+            incorrect: 0,
+            skipped: 0,
+            total: 0
+          };
+        }
+
+        if (ans.isSkip) {
+          breakdown[conceptName].skipped += 1;
+        } else if (ans.isCorrect) {
+          breakdown[conceptName].correct += 1;
+        } else {
+          breakdown[conceptName].incorrect += 1;
+        }
+      });
+    } else {
+      const tier = Number(sprint.tier) || 1;
+      let matchedConcept = concepts.find((c) => c.tiers && c.tiers.includes(tier)) || concepts[0];
+      const conceptName = matchedConcept ? matchedConcept.name : (concepts[0]?.name || 'Fundamentals');
+
+      if (!breakdown[conceptName]) {
+        breakdown[conceptName] = {
+          id: matchedConcept?.id || `concept_${tier}`,
+          name: conceptName,
+          icon: matchedConcept?.icon || '🔢',
+          tiers: [tier],
+          correct: 0,
+          incorrect: 0,
+          skipped: 0,
+          total: 0
+        };
+      }
+
+      const correct = Number(sprint.correctCount || sprint.score || 0);
+      const totalQ = Number(sprint.totalQuestions || 12);
+      const incorrect = Math.max(0, totalQ - correct);
+
+      breakdown[conceptName].correct += correct;
+      breakdown[conceptName].incorrect += incorrect;
     }
-
-    const correct = Number(sprint.correctCount || sprint.score || 0);
-    const totalQ = Number(sprint.totalQuestions || 12);
-    const incorrect = Math.max(0, totalQ - correct);
-
-    breakdown[conceptName].correct += correct;
-    breakdown[conceptName].incorrect += incorrect;
   });
 
   // Process skip logs

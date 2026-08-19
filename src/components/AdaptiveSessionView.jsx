@@ -134,6 +134,10 @@ export default function AdaptiveSessionView({
     return batch;
   });
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [blockAnswers, setBlockAnswers] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId);
+    return saved?.blockAnswers || [];
+  });
   const [shouldPulseHint, setShouldPulseHint] = useState(false);
 
   // Power-up States for Math Climbs
@@ -208,6 +212,7 @@ export default function AdaptiveSessionView({
       inSessionIncorrectStreak,
       consecutiveSkips,
       competenceRank,
+      blockAnswers,
       accumulatedBlockTime,
       accumulatedProblemTime,
       isDoubleSparksActive
@@ -223,6 +228,7 @@ export default function AdaptiveSessionView({
     problemStartTimeRef.current = performance.now();
     storageService.clearActiveClimbState(profileId);
     setSavedClimbState(null);
+    setBlockAnswers([]);
     setHasStartedClimb(true);
   };
 
@@ -246,6 +252,7 @@ export default function AdaptiveSessionView({
       setInSessionIncorrectStreak(saved.inSessionIncorrectStreak || 0);
       setConsecutiveSkips(saved.consecutiveSkips || 0);
       if (saved.competenceRank) setCompetenceRank(saved.competenceRank);
+      if (Array.isArray(saved.blockAnswers)) setBlockAnswers(saved.blockAnswers);
 
       const now = performance.now();
       const blockTime = saved.accumulatedBlockTime || 0;
@@ -282,6 +289,7 @@ export default function AdaptiveSessionView({
     inSessionIncorrectStreak,
     consecutiveSkips,
     competenceRank,
+    blockAnswers,
     isDoubleSparksActive
   ]);
 
@@ -484,6 +492,17 @@ export default function AdaptiveSessionView({
       competenceRank: evalResult.nextCompetenceRank
     });
 
+    const answerRecord = {
+      problemId: currentProblem.id || `prob_${currentIndex}`,
+      tier: currentProblem.tier || getTierFromRating(competenceRank),
+      concept: concept,
+      isCorrect: false,
+      responseTimeSec: Number(timeElapsedSec.toFixed(1)),
+      isSkip: true,
+      isProbe: !!currentProblem.isProbe
+    };
+    setBlockAnswers((prev) => [...prev, answerRecord]);
+
     triggerToastBanner({
       type: 'success',
       text: 'Trying another problem 🔄'
@@ -604,6 +623,19 @@ export default function AdaptiveSessionView({
 
     const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch || isDecimalImplicitMatch || isOperatorMatch;
     const latencyMs = performance.now() - problemStartTimeRef.current;
+    const timeElapsedSec = latencyMs / 1000;
+    const concept = getConceptForProblem(currentProblem);
+    const answerRecord = {
+      problemId: currentProblem.id || `prob_${currentIndex}`,
+      tier: currentProblem.tier || getTierFromRating(competenceRank),
+      concept: concept,
+      isCorrect: isCorrect,
+      responseTimeSec: Number(timeElapsedSec.toFixed(1)),
+      isSkip: false,
+      isProbe: !!currentProblem.isProbe
+    };
+    const nextBlockAnswers = [...blockAnswers, answerRecord];
+    setBlockAnswers(nextBlockAnswers);
 
     const evalResult = evaluateAdaptiveAttempt({
       isCorrect,
@@ -808,7 +840,8 @@ export default function AdaptiveSessionView({
         totalQuestions: 12,
         sparksEarned: finalBlockSparks,
         accuracyPct: Math.round((finalBlockCorrect / 12) * 100),
-        ratingGain: nextBlockRatingGain
+        ratingGain: nextBlockRatingGain,
+        answers: nextBlockAnswers
       };
 
       const existingHistory = activeUserData.sprintHistory || [];
@@ -826,6 +859,7 @@ export default function AdaptiveSessionView({
       setBlockSparksEarned(0);
       setBlockRatingGain(0);
       setBlockShieldsUsed(0);
+      setBlockAnswers([]);
 
       const currentRecords = activeUserData.personalRecords || {};
       const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);

@@ -23,17 +23,35 @@ export const calculateDomainMastery = (sprintHistory = [], currentTier = 1, acti
     let lastPracticeDate = null;
 
     recentSprints.forEach((sprint) => {
-      if (sprint.tier && def.tiers.includes(sprint.tier)) {
+      if (Array.isArray(sprint.answers) && sprint.answers.length > 0) {
+        sprint.answers.forEach((ans) => {
+          const qTier = Number(ans.tier || ans.problemTier || sprint.tier || 1);
+          if (def.tiers.includes(qTier)) {
+            matchedTotal += 1;
+            if (ans.isCorrect) matchedCorrect += 1;
+            const respTime = ans.responseTimeSec !== undefined
+              ? Number(ans.responseTimeSec)
+              : (ans.latencyMs ? Number(ans.latencyMs) / 1000 : (sprint.totalTimeSec ? Number(sprint.totalTimeSec) / sprint.answers.length : 0));
+            matchedDuration += respTime;
+            if (sprint.date) {
+              const sprintDate = new Date(sprint.date);
+              if (!lastPracticeDate || sprintDate > lastPracticeDate) {
+                lastPracticeDate = sprintDate;
+              }
+            }
+          }
+        });
+      } else if (sprint.tier && def.tiers.includes(sprint.tier)) {
         const correct = Number(sprint.correctCount || sprint.score || 0);
-        const total = Number(sprint.totalQuestions || (sprint.answers ? sprint.answers.length : 12));
+        const total = Number(sprint.totalQuestions || 12);
         matchedCorrect += correct;
         matchedTotal += total;
-        matchedDuration += Number(sprint.durationInSeconds || 0);
+        matchedDuration += Number(sprint.totalTimeSec || sprint.durationInSeconds || 0);
         if (sprint.date) {
-            const sprintDate = new Date(sprint.date);
-            if (!lastPracticeDate || sprintDate > lastPracticeDate) {
-                lastPracticeDate = sprintDate;
-            }
+          const sprintDate = new Date(sprint.date);
+          if (!lastPracticeDate || sprintDate > lastPracticeDate) {
+            lastPracticeDate = sprintDate;
+          }
         }
       }
     });

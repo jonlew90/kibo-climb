@@ -120,8 +120,17 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
 
     const curriculumCatalog = subjectId === 'words' ? WORDS_CURRICULUM_TIERS : CURRICULUM_TIERS;
 
-    // Find all tiers played in sprints
-    const playedTiersSet = new Set(sprintHistory.map((s) => Number(s.tier) || 1));
+    // Find all tiers played in sprints (including individual question tiers from answers)
+    const playedTiersSet = new Set();
+    (sprintHistory || []).forEach((s) => {
+      if (Array.isArray(s.answers) && s.answers.length > 0) {
+        s.answers.forEach((ans) => {
+          playedTiersSet.add(Number(ans.tier || ans.problemTier || s.tier || 1));
+        });
+      } else {
+        playedTiersSet.add(Number(s.tier) || 1);
+      }
+    });
     playedTiersSet.add(tier);
 
     // Build comprehensive list of all played topics
