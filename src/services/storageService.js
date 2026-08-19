@@ -152,6 +152,10 @@ export const storageService = {
       safeSaveProfilesState(state);
     }
   },
+  setActiveProfile(profileOrId) {
+    const id = typeof profileOrId === 'object' && profileOrId !== null ? profileOrId.id : profileOrId;
+    return this.setActiveProfileId(id);
+  },
   getProfileById(id) {
     const state = safeGetProfilesState();
     const prof = state.profiles[id];

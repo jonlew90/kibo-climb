@@ -9,7 +9,7 @@ import StreakSavedModal from './components/StreakSavedModal';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import ProfileSelectorScreen from './components/ProfileSelectorScreen';
 import BadgesModal from './components/BadgesModal';
-import AdaptiveSessionView from './components/AdaptiveSessionView';
+import MathSessionView from './components/MathSessionView';
 import WordsSessionView from './components/WordsSessionView';
 import DevControlPanel from './components/DevControlPanel';
 import RollingNumberTicker from './components/RollingNumberTicker';
@@ -1039,23 +1039,21 @@ export default function App() {
       </button>
 
       {/* 3. Switch Profile Button: Ocean Cyan / Sky Blue */}
-      {storageService.getAllProfiles().length > 1 && (
-        <button
-          type="button"
-          onClick={() => {
-            soundFx.playKeyTap();
-            closeAllNavModals('profile');
-            setShowManualProfileSwitcher(true);
-          }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-sky-100 via-cyan-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-cyan-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-            showManualProfileSwitcher ? 'ring-2 ring-sky-500 scale-105 font-bold' : ''
-          }`}
-          title="Switch Player Profile"
-        >
-          <Users className="w-5 h-5 text-sky-700 stroke-[2.5]" />
-          <span className="text-xs font-black tracking-wide">Switch</span>
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => {
+          soundFx.playKeyTap();
+          closeAllNavModals('profile');
+          setShowManualProfileSwitcher(true);
+        }}
+        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-sky-100 via-cyan-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-cyan-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+          showManualProfileSwitcher ? 'ring-2 ring-sky-500 scale-105 font-bold' : ''
+        }`}
+        title="Switch Player Profile"
+      >
+        <Users className="w-5 h-5 text-sky-700 stroke-[2.5]" />
+        <span className="text-xs font-black tracking-wide">Switch</span>
+      </button>
 
       {/* 4. Leaderboard Button: Sapphire Blue */}
       <button
@@ -1327,7 +1325,7 @@ export default function App() {
 
       {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
       {appState === 'adaptive_session' && activeSubject === 'math' && (
-        <AdaptiveSessionView
+        <MathSessionView
           key={activeProfileId + '-math'}
           profileId={activeProfileId}
           isPaused={isAppPaused}

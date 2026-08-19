@@ -399,7 +399,7 @@ export default function ProfileSelectorScreen({
 
   const handleSelect = (profile) => {
     setSelectedId(profile.id);
-    storageService.setActiveProfile(profile.id);
+    storageService.setActiveProfileId(profile.id);
     if (onSelectProfile) {
       onSelectProfile(profile);
     }
