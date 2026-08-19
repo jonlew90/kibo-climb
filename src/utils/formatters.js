@@ -67,3 +67,16 @@ export function parseFractionValue(str) {
   return null;
 }
 
+/**
+ * Normalizes arithmetic operators so "+", "-", "−", "*", "x", "×", "/", "÷" evaluate consistently.
+ */
+export function normalizeOperator(val) {
+  if (val === null || val === undefined) return '';
+  const str = String(val).trim();
+  if (str === '+' || str === '=') return '+';
+  if (str === '-' || str === '−' || str === '–' || str === '—' || str === '_') return '−';
+  if (str === '*' || str === 'x' || str === 'X' || str === '×' || str === '•') return '×';
+  if (str === '/' || str === '÷') return '÷';
+  return str;
+}
+

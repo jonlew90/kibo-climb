@@ -8,7 +8,7 @@ import { generateProblems } from '../utils/mathGenerator';
 import { getTierFromRating, generateTierProblem, isNearTierThreshold } from '../utils/mathCurriculum';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
-import { normalizeTimeAnswer, normalizeDecimal, parseFractionValue } from '../utils/formatters';
+import { normalizeTimeAnswer, normalizeDecimal, parseFractionValue, normalizeOperator } from '../utils/formatters';
 import { evaluateAdaptiveAttempt, checkSkillMasteryEvents, shouldTriggerProbeQuestion } from '../utils/AdaptiveEngine';
 import { getProbeTargetTier } from '../utils/SkillTreeConfig';
 import KiboBreakOverlay from './KiboBreakOverlay';
@@ -152,6 +152,12 @@ export default function AdaptiveSessionView({
     currentProblem.operatorSymbol === '🪙' ||
     /quarter|dime|nickel|penny|\$|¢|change|costing/i.test(currentProblem.displayString || '');
   const isTimeQuestion = currentProblem.type === 'time';
+  const isOperatorQuestion = Boolean(
+    currentProblem.type === 'missing_operator' ||
+    currentProblem.blankPosition === 'operator' ||
+    (currentProblem.options && currentProblem.options.some((opt) => ['+', '-', '−', '×', '*', '÷', '/'].includes(opt))) ||
+    ['+', '-', '−', '×', '*', '÷', '/'].includes(String(currentProblem.answerString || currentProblem.answer || '').trim())
+  );
   const targetStr = String(currentProblem.answerString || currentProblem.answer || '');
 
   // Compute pruned keys when Climber Pruner is active
@@ -554,6 +560,10 @@ export default function AdaptiveSessionView({
     const normUserAns = normalizeTimeAnswer(normalizeDecimal(userAnsString));
     const normTargetAns = normalizeTimeAnswer(normalizeDecimal(currentProblem.answerString || currentProblem.answer?.toString()));
 
+    const normUserOp = normalizeOperator(userAnsString);
+    const normTargetOp = normalizeOperator(currentProblem.answerString || currentProblem.answer);
+    const isOperatorMatch = normUserOp === normTargetOp && ['+', '−', '×', '÷'].includes(normTargetOp);
+
     const userNum = Number(normalizeDecimal(userAnsString));
     const targetNum = Number(normalizeDecimal(currentProblem.answerString || currentProblem.answer));
 
@@ -592,7 +602,7 @@ export default function AdaptiveSessionView({
       }
     }
 
-    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch || isDecimalImplicitMatch;
+    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch || isDecimalImplicitMatch || isOperatorMatch;
     const latencyMs = performance.now() - problemStartTimeRef.current;
 
     const evalResult = evaluateAdaptiveAttempt({
@@ -884,6 +894,16 @@ export default function AdaptiveSessionView({
     }
     soundFx.playKeyTap();
 
+    if (isOperatorQuestion || ['+', '−', '×', '÷'].includes(normalizeOperator(val))) {
+      const normOp = normalizeOperator(val);
+      const targetOp = normalizeOperator(targetStr);
+      if (isOperatorQuestion || ['+', '−', '×', '÷'].includes(targetOp)) {
+        const matchedOpt = currentProblem?.options?.find((o) => normalizeOperator(o) === normOp) || normOp;
+        processAnswerEvaluation(matchedOpt);
+        return;
+      }
+    }
+
     let newInput = inputVal;
 
     if (val === '.' || val === ':' || val === '/' || val === '-') {
@@ -942,6 +962,10 @@ export default function AdaptiveSessionView({
 
     const normUserAns = normalizeTimeAnswer(normalizeDecimal(newInput));
     const normTargetAns = normalizeTimeAnswer(normalizeDecimal(targetStr));
+    const normUserOp = normalizeOperator(newInput);
+    const normTargetOp = normalizeOperator(targetStr);
+    const isOperatorMatch = normUserOp === normTargetOp && ['+', '−', '×', '÷'].includes(normTargetOp);
+
     const userNum = Number(normalizeDecimal(newInput));
     const targetNum = Number(normalizeDecimal(targetStr));
     const isNumMatch = !isNaN(userNum) && !isNaN(targetNum) && (userNum === targetNum || Math.abs(userNum - targetNum) < 0.0001);
@@ -976,7 +1000,7 @@ export default function AdaptiveSessionView({
       }
     }
 
-    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch || isDecimalImplicitMatch;
+    const isCorrect = normUserAns === normTargetAns || isNumMatch || isMoneyMatch || isFractionMatch || isDecimalImplicitMatch || isOperatorMatch;
 
     // Auto-detect instant match
     if (isCorrect) {
@@ -1051,7 +1075,20 @@ export default function AdaptiveSessionView({
       if (e.key === 'Backspace' || e.key === 'Delete') {
         e.preventDefault();
         handleDeleteDigit();
-      } else if (/^[0-9]$/.test(e.key) || e.key === '.' || e.key === ':' || e.key === '/' || e.key === '-') {
+      } else if (
+        isOperatorQuestion &&
+        (
+          e.key === '+' || e.key === '=' ||
+          e.key === '-' || e.key === '_' || e.key === '−' ||
+          e.key === '*' || e.key.toLowerCase() === 'x' || e.key === '×' ||
+          e.key === '/' || e.key === '÷'
+        )
+      ) {
+        e.preventDefault();
+        const normOp = normalizeOperator(e.key);
+        const matchedOpt = currentProblem?.options?.find((o) => normalizeOperator(o) === normOp) || normOp;
+        processAnswerEvaluation(matchedOpt);
+      } else if (/^[0-9]$/.test(e.key) || e.key === '.' || e.key === ':' || e.key === '/' || e.key === '-' || e.key === '+' || e.key === '*' || e.key.toLowerCase() === 'x') {
         e.preventDefault();
         handleDigitInput(e.key);
       } else if (e.key === 'Enter') {
@@ -1070,7 +1107,7 @@ export default function AdaptiveSessionView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [inputVal, currentProblem, competenceRank, hasStartedClimb]);
+  }, [inputVal, currentProblem, competenceRank, hasStartedClimb, isOperatorQuestion]);
 
   const lastBannerTypeRef = useRef('success');
   const lastBannerTextRef = useRef('');
