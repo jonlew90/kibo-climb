@@ -201,9 +201,9 @@ export default function LeaderboardScreen({
               soundFx.playKeyTap();
               setSelectedSubject('math');
             }}
-            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
+            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
               selectedSubject === 'math'
-                ? 'bg-amber-500 text-white border-amber-600 shadow-sm scale-[1.02]'
+                ? 'bg-amber-500 text-white border-amber-600 shadow-sm ring-2 ring-amber-400/30'
                 : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
             }`}
           >
@@ -220,9 +220,9 @@ export default function LeaderboardScreen({
               soundFx.playKeyTap();
               setSelectedSubject('words');
             }}
-            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
+            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
               selectedSubject === 'words'
-                ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm scale-[1.02]'
+                ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm ring-2 ring-indigo-400/30'
                 : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
             }`}
           >

@@ -400,15 +400,15 @@ export default function WorkshopModal({
               ref={categoryScrollRef}
               onScroll={checkScroll}
               onWheel={handleCategoryWheel}
-              className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl overflow-x-auto scrollbar-none w-full touch-pan-x"
+              className="flex items-center gap-2 p-1 bg-slate-100 rounded-full overflow-x-auto scrollbar-none w-full touch-pan-x"
             >
               {ITEM_CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => handleCategorySelect(cat.id)}
-                  className={`py-1.5 px-3 text-xs font-extrabold rounded-xl shrink-0 transition-all ${
+                  className={`py-1.5 px-3 text-xs font-extrabold rounded-full shrink-0 transition-all cursor-pointer ${
                     activeCategory === cat.id
-                      ? 'bg-white text-slate-900 shadow-sm border border-amber-300 scale-[1.02]'
+                      ? 'bg-white text-slate-900 shadow-sm border border-amber-300 ring-2 ring-amber-400/20'
                       : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
                   }`}
                 >
@@ -488,9 +488,9 @@ export default function WorkshopModal({
                       soundFx.playKeyTap();
                       setSeasonalEventFilter(event.id);
                     }}
-                    className={`py-1 px-2.5 text-xs font-extrabold rounded-xl shrink-0 transition-all ${
+                    className={`py-1 px-3 text-xs font-extrabold rounded-full shrink-0 transition-all cursor-pointer ${
                       effectiveSeasonalEventFilter === event.id
-                        ? 'bg-teal-700 text-white shadow-xs border border-teal-800 scale-[1.02]'
+                        ? 'bg-teal-700 text-white shadow-xs border border-teal-800 ring-2 ring-teal-400/20'
                         : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-2xs'
                     }`}
                   >

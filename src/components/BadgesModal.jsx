@@ -163,7 +163,7 @@ export default function BadgesModal({
                 soundFx.playKeyTap();
                 setActiveCategory('all');
               }}
-              className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-colors ${
+              className={`py-1.5 px-3.5 text-xs font-extrabold rounded-full shrink-0 transition-colors cursor-pointer ${
                 activeCategory === 'all'
                   ? 'bg-amber-500 text-white shadow-md'
                   : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
@@ -183,7 +183,7 @@ export default function BadgesModal({
                     soundFx.playKeyTap();
                     setActiveCategory(key);
                   }}
-                  className={`py-2 px-4 text-xs font-extrabold rounded-2xl shrink-0 transition-colors ${
+                  className={`py-1.5 px-3.5 text-xs font-extrabold rounded-full shrink-0 transition-colors cursor-pointer ${
                     activeCategory === key
                       ? 'bg-amber-500 text-white shadow-md'
                       : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
