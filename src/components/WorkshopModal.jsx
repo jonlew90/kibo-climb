@@ -133,7 +133,7 @@ export default function WorkshopModal({
     }
   };
 
-  const handleRedeemPromo = (codeOverride) => {
+  const handleRedeemPromo = async (codeOverride) => {
     const targetCode = promoCodeService.normalizeCode(codeOverride || promoInput);
     if (!targetCode) {
       soundFx.playIncorrect();
@@ -145,7 +145,7 @@ export default function WorkshopModal({
     setIsRedeeming(true);
     setPromoFeedback(null);
 
-    const res = promoCodeService.redeemCode(targetCode);
+    const res = await promoCodeService.redeemCode(targetCode);
     setIsRedeeming(false);
 
     if (res.success) {
