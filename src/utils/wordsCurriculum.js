@@ -16,13 +16,17 @@ export const GRADE_STARTING_RATINGS = {
   'Grade 1–2':                      1000,  // Tier 1 — CVC & sight words
   'Grade 3–4':                      1200,  // Tier 2 — 4-letter words & consonant blends
   'Grade 5–6':                      1800,  // Tier 5 — prefixes, suffixes & word roots
-  'Pre-Algebra / Middle School':    2000,  // Tier 6 — advanced academic vocabulary
   'Grade 7–8':                      2200,  // Tier 7 — multisyllabic & etymology
-  'Algebra & Beyond':               2400,  // Tier 8 — peak literary & summit vocabulary
+  'High School & Beyond':           2400,  // Tier 8 — peak literary & summit vocabulary
 };
 
 export function getStartingRatingForGrade(gradeLevel) {
-  return GRADE_STARTING_RATINGS[gradeLevel] ?? 1000;
+  if (GRADE_STARTING_RATINGS[gradeLevel]) {
+    return GRADE_STARTING_RATINGS[gradeLevel];
+  }
+  if (gradeLevel === 'Pre-Algebra / Middle School' || gradeLevel === 'Pre-Algebra') return 2000;
+  if (gradeLevel === 'Algebra & Beyond' || gradeLevel === 'Algebra+') return 2400;
+  return 1000;
 }
 
 // Maps rating back to grade-level label for parent dashboard

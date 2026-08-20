@@ -151,16 +151,16 @@ export const GEOGRAPHIC_FOUNDATIONS = [
 
 export const US_STATES = [
   { name: 'Alabama', capital: 'Montgomery', region: 'South', nickname: 'Yellowhammer State' },
-  { name: 'Alaska', capital: 'Juneau', region: 'West', nickname: 'The Last Frontier', trivia: 'Largest US state by land area', shapeSvg: 'M38,48 L135,28 L135,80 L148,92 L142,112 L125,92 L95,95 L68,82 L38,76 L22,90 L18,88 L28,75 Z M20,95 L12,100 L4,102 L2,104' },
+  { name: 'Alaska', capital: 'Juneau', region: 'West', nickname: 'The Last Frontier', trivia: 'Largest US state by land area', shapeSvg: 'M72,18 L128,22 L128,68 L136,78 L148,92 L144,112 L136,94 L126,78 L116,84 L104,78 L96,86 L92,80 L82,84 L68,96 L54,106 L38,114 L24,118 L12,122 L14,118 L26,114 L42,108 L56,98 L60,84 L48,72 L58,62 L46,52 L58,44 L48,38 L58,32 L62,22 Z M100,92 A4,3 0 1,0 108,92 A4,3 0 1,0 100,92' },
   { name: 'Arizona', capital: 'Phoenix', region: 'West', nickname: 'Grand Canyon State', trivia: 'Home to the Grand Canyon' },
   { name: 'Arkansas', capital: 'Little Rock', region: 'South', nickname: 'Natural State' },
-  { name: 'California', capital: 'Sacramento', region: 'West', nickname: 'Golden State', trivia: 'Most populous US state, borders Pacific Ocean', shapeSvg: 'M60,30 L102,30 L138,95 L145,130 L115,130 L95,115 L70,80 L52,50 Z' },
+  { name: 'California', capital: 'Sacramento', region: 'West', nickname: 'Golden State', trivia: 'Most populous US state, borders Pacific Ocean', shapeSvg: 'M56,18 L108,18 L98,48 L146,96 L150,124 L114,124 L104,114 L88,102 L74,76 L68,62 L50,36 Z M76,108 A2.5,2.5 0 1,0 81,108 A2.5,2.5 0 1,0 76,108 M84,114 A2,2 0 1,0 88,114 A2,2 0 1,0 84,114' },
   { name: 'Colorado', capital: 'Denver', region: 'West', nickname: 'Centennial State', trivia: 'Known for the Rocky Mountains and Mile High City', shapeSvg: 'M55,35 L145,35 L145,105 L55,105 Z' },
   { name: 'Connecticut', capital: 'Hartford', region: 'Northeast', nickname: 'Constitution State' },
   { name: 'Delaware', capital: 'Dover', region: 'South', nickname: 'First State', trivia: 'First state to ratify the US Constitution' },
-  { name: 'Florida', capital: 'Tallahassee', region: 'South', nickname: 'Sunshine State', trivia: 'Peninsula state known for Everglades and sunshine', shapeSvg: 'M35,38 L85,38 L120,40 L132,65 L140,105 L128,122 L118,120 L115,95 L105,65 L70,48 L35,48 Z' },
+  { name: 'Florida', capital: 'Tallahassee', region: 'South', nickname: 'Sunshine State', trivia: 'Peninsula state known for Everglades and sunshine', shapeSvg: 'M34,38 L54,38 L86,36 L124,36 L138,64 L136,92 L132,110 L126,118 L114,122 L102,122 L94,120 L96,116 L108,118 L118,114 L112,102 L102,78 L92,58 L86,50 L72,46 L48,42 L34,48 Z' },
   { name: 'Georgia', capital: 'Atlanta', region: 'South', nickname: 'Peach State' },
-  { name: 'Hawaii', capital: 'Honolulu', region: 'West', nickname: 'Aloha State', trivia: 'Only US state made entirely of islands in Pacific Ocean', shapeSvg: 'M32,40 A6,6 0 1,0 44,40 A6,6 0 1,0 32,40 M68,52 A7,7 0 1,0 82,52 A7,7 0 1,0 68,52 M98,62 A5,5 0 1,0 108,62 A5,5 0 1,0 98,62 M118,72 A8,8 0 1,0 134,72 A8,8 0 1,0 118,72 M145,95 A14,14 0 1,0 173,95 A14,14 0 1,0 145,95' },
+  { name: 'Hawaii', capital: 'Honolulu', region: 'West', nickname: 'Aloha State', trivia: 'Only US state made entirely of islands in Pacific Ocean', shapeSvg: 'M26,38 A6,5 0 1,0 38,38 A6,5 0 1,0 26,38 M18,44 A2.5,2 0 1,0 23,44 A2.5,2 0 1,0 18,44 M62,50 L76,46 L82,54 L72,60 L60,56 Z M94,60 L110,58 L108,64 L94,64 Z M96,68 L104,66 L102,74 L94,72 Z M112,66 L124,62 L132,70 L126,80 L116,76 Z M148,88 L168,82 L180,98 L174,122 L154,126 L142,108 Z' },
   { name: 'Idaho', capital: 'Boise', region: 'West', nickname: 'Gem State' },
   { name: 'Illinois', capital: 'Springfield', region: 'Midwest', nickname: 'Prairie State' },
   { name: 'Indiana', capital: 'Indianapolis', region: 'Midwest', nickname: 'Hoosier State' },
@@ -171,7 +171,7 @@ export const US_STATES = [
   { name: 'Maine', capital: 'Augusta', region: 'Northeast', nickname: 'Pine Tree State', trivia: 'Northeasternmost state in the US' },
   { name: 'Maryland', capital: 'Annapolis', region: 'South', nickname: 'Old Line State' },
   { name: 'Massachusetts', capital: 'Boston', region: 'Northeast', nickname: 'Bay State' },
-  { name: 'Michigan', capital: 'Lansing', region: 'Midwest', nickname: 'Great Lakes State', trivia: 'Surrounded by 4 of the 5 Great Lakes', shapeSvg: 'M45,35 L118,30 L115,48 L80,50 L50,45 Z M78,65 L115,62 L128,82 L120,118 L80,118 L75,90 Z' },
+  { name: 'Michigan', capital: 'Lansing', region: 'Midwest', nickname: 'Great Lakes State', trivia: 'Surrounded by 4 of the 5 Great Lakes', shapeSvg: 'M66,44 L74,24 L94,32 L122,28 L114,42 L80,48 Z M114,46 L136,68 L138,76 L132,108 L82,114 L82,92 L98,54 Z' },
   { name: 'Minnesota', capital: 'St. Paul', region: 'Midwest', nickname: 'North Star State', trivia: 'Known as the Land of 10,000 Lakes and source of Mississippi River' },
   { name: 'Mississippi', capital: 'Jackson', region: 'South', nickname: 'Magnolia State' },
   { name: 'Missouri', capital: 'Jefferson City', region: 'Midwest', nickname: 'Show-Me State' },
@@ -181,7 +181,7 @@ export const US_STATES = [
   { name: 'New Hampshire', capital: 'Concord', region: 'Northeast', nickname: 'Granite State' },
   { name: 'New Jersey', capital: 'Trenton', region: 'Northeast', nickname: 'Garden State' },
   { name: 'New Mexico', capital: 'Santa Fe', region: 'West', nickname: 'Land of Enchantment', trivia: 'Santa Fe is the oldest state capital in the US' },
-  { name: 'New York', capital: 'Albany', region: 'Northeast', nickname: 'Empire State', shapeSvg: 'M35,62 L85,42 L132,32 L148,32 L148,105 L135,105 L132,82 L35,82 Z M136,108 L170,112 L170,118 L136,114 Z' },
+  { name: 'New York', capital: 'Albany', region: 'Northeast', nickname: 'Empire State', shapeSvg: 'M78,32 L114,18 L134,18 L136,56 L138,82 L136,96 L132,102 L148,104 L176,106 L152,112 L130,108 L118,92 L52,92 L42,82 L42,70 L72,54 Z' },
   { name: 'North Carolina', capital: 'Raleigh', region: 'South', nickname: 'Tar Heel State' },
   { name: 'North Dakota', capital: 'Bismarck', region: 'Midwest', nickname: 'Peace Garden State' },
   { name: 'Ohio', capital: 'Columbus', region: 'Midwest', nickname: 'Buckeye State' },
@@ -192,7 +192,7 @@ export const US_STATES = [
   { name: 'South Carolina', capital: 'Columbia', region: 'South', nickname: 'Palmetto State' },
   { name: 'South Dakota', capital: 'Pierre', region: 'Midwest', nickname: 'Mount Rushmore State', trivia: 'Home to Mount Rushmore' },
   { name: 'Tennessee', capital: 'Nashville', region: 'South', nickname: 'Volunteer State' },
-  { name: 'Texas', capital: 'Austin', region: 'South', nickname: 'Lone Star State', trivia: 'Second largest US state by both area and population', shapeSvg: 'M55,25 L95,25 L95,38 L135,38 L148,80 L140,110 L115,132 L95,115 L65,80 L45,80 L45,55 L55,55 Z' },
+  { name: 'Texas', capital: 'Austin', region: 'South', nickname: 'Lone Star State', trivia: 'Second largest US state by both area and population', shapeSvg: 'M58,20 L88,20 L88,38 L132,38 L136,72 L138,92 L128,102 L118,114 L108,126 L98,136 L84,122 L68,96 L54,102 L42,94 L24,68 L24,48 L58,48 Z' },
   { name: 'Utah', capital: 'Salt Lake City', region: 'West', nickname: 'Beehive State', trivia: 'Home to the Great Salt Lake' },
   { name: 'Vermont', capital: 'Montpelier', region: 'Northeast', nickname: 'Green Mountain State' },
   { name: 'Virginia', capital: 'Richmond', region: 'South', nickname: 'Old Dominion' },
@@ -244,7 +244,7 @@ export const COUNTRIES = [
   { name: 'Ukraine', capital: 'Kyiv', continent: 'Europe', landmark: 'Saint Sophia Cathedral' },
 
   // Asia
-  { name: 'Japan', capital: 'Tokyo', continent: 'Asia', landmark: 'Mount Fuji', trivia: 'East Asian archipelago of over 6,800 islands', shapeSvg: 'M152,14 L172,20 L168,36 L148,38 L142,26 Z M142,40 L156,52 L152,68 L142,82 L132,90 L118,98 L98,104 L84,108 L96,96 L115,84 L132,64 L138,48 Z M96,102 L112,100 L108,112 L94,110 Z M74,104 L88,104 L84,122 L70,122 L68,112 Z M45,128 L52,130 L48,134 Z' },
+  { name: 'Japan', capital: 'Tokyo', continent: 'Asia', landmark: 'Mount Fuji', trivia: 'East Asian archipelago of over 6,800 islands', shapeSvg: 'M146,14 L172,18 L168,36 L146,38 L140,26 Z M140,40 L158,50 L154,68 L144,82 L132,90 L118,98 L98,104 L84,108 L96,96 L115,84 L132,64 L136,48 Z M96,102 L114,100 L110,112 L94,110 Z M72,104 L88,104 L84,124 L68,124 L66,112 Z M44,128 L50,130 L48,134 Z' },
   { name: 'China', capital: 'Beijing', continent: 'Asia', landmark: 'Great Wall of China', trivia: 'Home to the Great Wall and Yangtze River' },
   { name: 'India', capital: 'New Delhi', continent: 'Asia', landmark: 'Taj Mahal', trivia: 'South Asian peninsula bounded by Indian Ocean', shapeSvg: 'M68,16 L82,14 L92,22 L102,28 L126,30 L132,28 L138,30 L148,28 L165,26 L168,38 L158,48 L148,46 L142,42 L138,54 L132,68 L122,88 L108,112 L96,126 L88,114 L78,94 L70,74 L54,72 L48,62 L58,56 L52,48 L62,38 Z' },
   { name: 'South Korea', capital: 'Seoul', continent: 'Asia', landmark: 'Gyeongbokgung Palace' },
@@ -260,7 +260,7 @@ export const COUNTRIES = [
   { name: 'Israel', capital: 'Jerusalem', continent: 'Asia', landmark: 'Western Wall' },
 
   // Africa
-  { name: 'Egypt', capital: 'Cairo', continent: 'Africa', landmark: 'Pyramids of Giza', trivia: 'Northeast African nation home to the Nile River and Great Sphinx', shapeSvg: 'M56,30 L88,32 L98,24 L112,24 L122,30 L138,24 L142,44 L138,56 L130,48 L124,38 L132,60 L144,82 L152,104 L156,120 L56,120 Z' },
+  { name: 'Egypt', capital: 'Cairo', continent: 'Africa', landmark: 'Pyramids of Giza', trivia: 'Northeast African nation home to the Nile River and Great Sphinx', shapeSvg: 'M56,36 L70,38 L86,36 L94,30 L108,30 L118,34 L132,32 L140,42 L134,62 L124,48 L120,40 L124,48 L134,62 L144,76 L148,86 L154,98 L162,118 L56,118 Z' },
   { name: 'South Africa', capital: 'Pretoria', continent: 'Africa', landmark: 'Table Mountain (Cape Town)', trivia: 'Southernmost country in Africa' },
   { name: 'Nigeria', capital: 'Abuja', continent: 'Africa', landmark: 'Zuma Rock', trivia: 'Most populous country in Africa' },
   { name: 'Kenya', capital: 'Nairobi', continent: 'Africa', landmark: 'Maasai Mara', trivia: 'East African nation famous for scenic savannah safaris' },
@@ -268,10 +268,10 @@ export const COUNTRIES = [
   { name: 'Ghana', capital: 'Accra', continent: 'Africa', landmark: 'Cape Coast Castle', trivia: 'West African nation on the Gulf of Guinea' },
   { name: 'Ethiopia', capital: 'Addis Ababa', continent: 'Africa', landmark: 'Rock-Hewn Churches of Lalibela', trivia: 'Horn of Africa country that was never colonized' },
   { name: 'Tanzania', capital: 'Dodoma', continent: 'Africa', landmark: 'Mount Kilimanjaro', trivia: 'Home to Mount Kilimanjaro, the highest peak in Africa' },
-  { name: 'Madagascar', capital: 'Antananarivo', continent: 'Africa', landmark: 'Avenue of the Baobabs', trivia: 'Fourth largest island in the world, located off southeast coast of Africa', shapeSvg: 'M114,18 L124,28 L132,38 L126,44 L122,64 L114,92 L104,116 L94,124 L86,122 L88,102 L92,80 L98,54 L106,34 Z' },
+  { name: 'Madagascar', capital: 'Antananarivo', continent: 'Africa', landmark: 'Avenue of the Baobabs', trivia: 'Fourth largest island in the world, located off southeast coast of Africa', shapeSvg: 'M118,16 L132,34 L130,54 L122,88 L102,126 L88,114 L90,84 L96,52 L108,28 Z' },
 
   // Oceania
-  { name: 'Australia', capital: 'Canberra', continent: 'Australia', landmark: 'Sydney Opera House', trivia: 'Sixth largest country by total area and the only country spanning an entire continent', shapeSvg: 'M136,26 L126,38 L114,34 L104,28 L92,30 L78,38 L62,44 L42,54 L34,70 L40,90 L48,104 L62,104 L78,98 L96,98 L110,104 L114,102 L122,108 L134,112 L144,108 L152,94 L154,74 L148,54 L138,38 Z M134,120 L144,120 L142,132 L132,130 Z' },
+  { name: 'Australia', capital: 'Canberra', continent: 'Australia', landmark: 'Sydney Opera House', trivia: 'Sixth largest country by total area and the only country spanning an entire continent', shapeSvg: 'M136,24 L116,32 L102,26 L88,30 L74,38 L40,52 L32,70 L38,92 L46,104 L64,104 L80,98 L98,100 L108,104 L124,110 L144,104 L152,88 L148,50 Z M132,120 L144,120 L142,132 L132,130 Z' },
   { name: 'New Zealand', capital: 'Wellington', continent: 'Australia', landmark: 'Milford Sound', trivia: 'Island nation composed of North Island and South Island in the southwestern Pacific' },
   { name: 'Fiji', capital: 'Suva', continent: 'Australia', landmark: 'Coral Coast' }
 ];

@@ -96,8 +96,9 @@ const getSubjectMeta = (subjectKey) => {
 
 const formatGradeDisplay = (grade) => {
   if (!grade) return '';
-  if (grade === 'Pre-Algebra / Middle School') return 'Pre-Algebra';
-  if (grade === 'Algebra & Beyond') return 'Algebra+';
+  if (grade === 'Pre-Algebra / Middle School' || grade === 'Pre-Algebra') return 'Grade 7–8';
+  if (grade === 'Algebra & Beyond' || grade === 'Algebra+') return 'High School+';
+  if (grade === 'High School & Beyond') return 'High School+';
   return grade;
 };
 
@@ -301,11 +302,11 @@ function AddProfilePanel({ onCancel, onCreated }) {
           <span className="text-xs font-black uppercase tracking-wide">Create Climber Profile</span>
         </div>
         <p className="text-xs text-slate-500 font-medium">
-          Calibrates starting skill levels across <strong className="text-slate-700">Math 🔢 & Words 📚</strong>
+          Calibrates starting skill levels across <strong className="text-slate-700">Math 🔢, Words 📚 & World 🌍</strong>
         </p>
       </div>
 
-      <form onSubmit={handleCreateSubmit} className="space-y-3 text-left">
+      <form onSubmit={handleCreateSubmit} className="space-y-2.5 text-left">
         {/* Name */}
         <div>
           <label className="text-xs font-black uppercase tracking-wide text-slate-500 block mb-1">
@@ -320,7 +321,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
               onChange={(e) => { setChildName(e.target.value); setNameError(''); }}
               placeholder="e.g. Alex"
               maxLength={20}
-              className={`w-full pl-9 pr-3 py-2 text-xs sm:text-sm font-bold text-slate-800 bg-slate-50/50 border rounded-xl focus:outline-none transition-colors placeholder:text-slate-400 ${
+              className={`w-full pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-slate-800 bg-slate-50/50 border rounded-xl focus:outline-none transition-colors placeholder:text-slate-400 ${
                 nameError ? 'border-rose-500 bg-rose-50' : 'border-slate-300 focus:border-amber-500 focus:bg-white'
               }`}
             />
@@ -341,7 +342,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
           <select
             value={childGrade}
             onChange={(e) => setChildGrade(e.target.value)}
-            className="w-full px-3 py-2 text-xs sm:text-sm font-bold text-slate-800 bg-slate-50/50 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-500 focus:bg-white cursor-pointer"
+            className="w-full px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-slate-800 bg-slate-50/50 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-500 focus:bg-white cursor-pointer"
           >
             {GRADE_OPTIONS.map((g) => (
               <option key={g} value={g}>{g}</option>
@@ -350,22 +351,29 @@ function AddProfilePanel({ onCancel, onCreated }) {
         </div>
 
         {/* Live Subject Curriculum Preview Card */}
-        <div className="bg-slate-50/90 border border-slate-200/80 rounded-xl p-2.5 space-y-1.5 text-left">
+        <div className="bg-slate-50/90 border border-slate-200/80 rounded-xl p-2 sm:p-2.5 space-y-1 text-left">
           <div className="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center justify-between">
             <span>Starting Calibration:</span>
             <span className="text-slate-700 font-black">{childGrade}</span>
           </div>
           <div className="space-y-1 text-xs">
-            <div className="flex items-center gap-1.5 text-amber-900 bg-amber-50/80 border border-amber-200/60 px-2 py-1 rounded-lg">
+            <div className="flex items-center gap-1.5 text-amber-900 bg-amber-50/80 border border-amber-200/60 px-2 py-0.5 sm:py-1 rounded-lg">
               <span className="text-xs">🔢</span>
               <span className="font-bold">Math:</span>
               <span className="text-slate-600 truncate">{selectedCurriculum.math}</span>
             </div>
-            <div className="flex items-center gap-1.5 text-teal-900 bg-teal-50/80 border border-teal-200/60 px-2 py-1 rounded-lg">
+            <div className="flex items-center gap-1.5 text-teal-900 bg-teal-50/80 border border-teal-200/60 px-2 py-0.5 sm:py-1 rounded-lg">
               <span className="text-xs">📚</span>
               <span className="font-bold">Words:</span>
               <span className="text-slate-600 truncate">{selectedCurriculum.words}</span>
             </div>
+            {selectedCurriculum.world && (
+              <div className="flex items-center gap-1.5 text-emerald-900 bg-emerald-50/80 border border-emerald-200/60 px-2 py-0.5 sm:py-1 rounded-lg">
+                <span className="text-xs">🌍</span>
+                <span className="font-bold">World:</span>
+                <span className="text-slate-600 truncate">{selectedCurriculum.world}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -449,113 +457,125 @@ export default function ProfileSelectorScreen({
         )}
       </header>
 
-      {/* Main Fullscreen Scrollable Content */}
-      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-4">
-        {/* Header Title Card */}
-        <div className="text-center space-y-1 shrink-0 pb-2">
-          <span className="text-xs font-black uppercase tracking-widest text-amber-600">
-            Kibo Climb • Multi-Subject
-          </span>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
-            {profiles.length === 1
-              ? `Ready to climb, ${profiles[0].username || profiles[0].name}?`
-              : "Who's climbing today?"}
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">
-            {profiles.length === 1 ? 'Tap your card to start your daily ascent' : 'Pick your profile to continue your ascent across Math, Words & World'}
-          </p>
-        </div>
-
-        {/* Subject Filter / Lens Tabs (shown when multiple subjects exist) */}
-        {subjectKeys.length >= 2 && (
-          <div className="flex items-center justify-center gap-1.5 overflow-x-auto pb-1 max-w-full px-1 scrollbar-none shrink-0 mx-auto">
-            <button
-              type="button"
-              onClick={() => { soundFx.playKeyTap(); setSubjectLens('all'); }}
-              className={`px-3 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
-                subjectLens === 'all'
-                  ? 'bg-slate-800 text-white shadow-xs'
-                  : 'bg-white/80 text-slate-600 hover:bg-white border border-slate-200'
-              }`}
-            >
-              🌟 All Subjects
-            </button>
-            {subjectKeys.map((key) => {
-              const meta = getSubjectMeta(key);
-              const isCurrent = subjectLens === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => { soundFx.playKeyTap(); setSubjectLens(key); }}
-                  className={`px-3 py-1 rounded-full text-xs font-black transition-all flex items-center gap-1 shrink-0 cursor-pointer ${
-                    isCurrent
-                      ? `${meta.activeBg} shadow-xs`
-                      : 'bg-white/80 text-slate-600 hover:bg-white border border-slate-200'
-                  }`}
-                >
-                  <span>{meta.icon}</span>
-                  <span>{meta.name}</span>
-                </button>
-              );
-            })}
+      {/* Main Fullscreen Content */}
+      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-3xl mx-auto px-4 py-2 sm:py-3 flex flex-col justify-between items-center gap-2 sm:gap-3">
+        {/* Top Section: Header Title & Tabs */}
+        <div className="w-full flex flex-col items-center space-y-1 sm:space-y-2 shrink-0">
+          <div className="text-center space-y-0.5">
+            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-amber-600">
+              Kibo Climb • Multi-Subject
+            </span>
+            <h1 className="text-lg sm:text-2xl font-black text-slate-800 tracking-tight leading-tight">
+              {profiles.length === 1
+                ? `Ready to climb, ${profiles[0].username || profiles[0].name}?`
+                : "Who's climbing today?"}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+              {profiles.length === 1 ? 'Tap your card to start your daily ascent' : 'Pick your profile to continue your ascent across Math, Words & World'}
+            </p>
           </div>
-        )}
 
-        {/* Profile grid */}
-        <div className={`w-full p-1 grid gap-2 sm:gap-3 shrink-0 ${
-          profiles.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' :
-          profiles.length === 2 ? 'grid-cols-2 max-w-md mx-auto' :
-          'grid-cols-2 sm:grid-cols-3'
-        }`}>
-          {profiles.map((profile) => (
-            <ProfileCard
-              key={profile.id}
-              profile={profile}
-              onSelect={handleSelect}
-              isSelected={selectedId === profile.id}
-              activeSubjectLens={subjectLens}
-            />
-          ))}
-        </div>
-
-        {/* Add Profile — toggle inline panel */}
-        {profiles.length < 6 && (
-          !showAddPanel ? (
-            <div className="flex justify-center w-full">
+          {/* Subject Filter / Lens Tabs (shown when multiple subjects exist) */}
+          {subjectKeys.length >= 2 && !showAddPanel && (
+            <div className="flex items-center justify-center gap-1.5 overflow-x-auto pb-0.5 max-w-full px-1 scrollbar-none shrink-0 mx-auto">
               <button
                 type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowAddPanel(true); }}
-                className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors py-1 group shrink-0 cursor-pointer"
+                onClick={() => { soundFx.playKeyTap(); setSubjectLens('all'); }}
+                className={`px-2.5 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
+                  subjectLens === 'all'
+                    ? 'bg-slate-800 text-white shadow-xs'
+                    : 'bg-white/80 text-slate-600 hover:bg-white border border-slate-200'
+                }`}
               >
-                <div className="w-6 h-6 rounded-full border border-slate-400 group-hover:border-slate-600 flex items-center justify-center transition-colors bg-white/60">
-                  <Plus className="w-3.5 h-3.5" />
-                </div>
-                <span>Add a climber profile</span>
+                🌟 All Subjects
               </button>
+              {subjectKeys.map((key) => {
+                const meta = getSubjectMeta(key);
+                const isCurrent = subjectLens === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => { soundFx.playKeyTap(); setSubjectLens(key); }}
+                    className={`px-2.5 py-1 rounded-full text-xs font-black transition-all flex items-center gap-1 shrink-0 cursor-pointer ${
+                      isCurrent
+                        ? `${meta.activeBg} shadow-xs`
+                        : 'bg-white/80 text-slate-600 hover:bg-white border border-slate-200'
+                    }`}
+                  >
+                    <span>{meta.icon}</span>
+                    <span>{meta.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Middle Section: Profiles Grid OR Add Profile Panel */}
+        <div className="w-full flex-1 flex flex-col justify-center items-center my-auto min-h-0">
+          {!showAddPanel ? (
+            <div className="w-full flex flex-col items-center gap-2 sm:gap-3">
+              {/* Profile grid */}
+              <div className={`w-full grid gap-2 sm:gap-3 ${
+                profiles.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' :
+                profiles.length === 2 ? 'grid-cols-2 max-w-md mx-auto' :
+                'grid-cols-2 sm:grid-cols-3 max-w-2xl mx-auto'
+              }`}>
+                {profiles.map((profile) => (
+                  <ProfileCard
+                    key={profile.id}
+                    profile={profile}
+                    onSelect={handleSelect}
+                    isSelected={selectedId === profile.id}
+                    activeSubjectLens={subjectLens}
+                  />
+                ))}
+              </div>
+
+              {/* Add Profile button */}
+              {profiles.length < 6 && (
+                <div className="flex justify-center w-full pt-1">
+                  <button
+                    type="button"
+                    onClick={() => { soundFx.playKeyTap(); setShowAddPanel(true); }}
+                    className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors py-1 group shrink-0 cursor-pointer"
+                  >
+                    <div className="w-6 h-6 rounded-full border border-slate-400 group-hover:border-slate-600 flex items-center justify-center transition-colors bg-white/60">
+                      <Plus className="w-3.5 h-3.5" />
+                    </div>
+                    <span>Add a climber profile</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
-            <AddProfilePanel
-              onCancel={() => setShowAddPanel(false)}
-              onCreated={handleProfileCreated}
-            />
-          )
-        )}
+            <div className="w-full flex justify-center items-center">
+              <AddProfilePanel
+                onCancel={() => setShowAddPanel(false)}
+                onCreated={handleProfileCreated}
+              />
+            </div>
+          )}
+        </div>
 
-        <p className="text-xs text-slate-500 font-medium text-center shrink-0">
-          Manage profiles, schedule, and settings in the{' '}
-          {onOpenParentZone ? (
-            <button
-              type="button"
-              onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
-              className="font-bold text-amber-600 hover:text-amber-700 hover:underline cursor-pointer"
-            >
-              Parent Zone
-            </button>
-          ) : (
-            <span className="font-bold text-slate-700">Parent Zone</span>
-          )}.
-        </p>
+        {/* Footer info */}
+        <div className="w-full shrink-0 pb-1">
+          <p className="text-xs text-slate-500 font-medium text-center">
+            Manage profiles, schedule, and settings in the{' '}
+            {onOpenParentZone ? (
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
+                className="font-bold text-amber-600 hover:text-amber-700 hover:underline cursor-pointer"
+              >
+                Parent Zone
+              </button>
+            ) : (
+              <span className="font-bold text-slate-700">Parent Zone</span>
+            )}.
+          </p>
+        </div>
       </main>
     </div>
   );

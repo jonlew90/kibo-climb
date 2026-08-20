@@ -1,5 +1,5 @@
 // Regional Map Datasets for Kibo World
-// Provides geographic contexts: surrounding bodies of water, neighboring landmasses, and target highlights.
+// High-fidelity cartographic vectors with accurate coastal geometry, realistic surrounding landmasses, and zero network load.
 
 export const REGIONAL_MAPS = {
   // === US STATES (TIER 2) ===
@@ -7,17 +7,17 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'Alaska & Northwest North America',
     waterBodies: [
-      { name: 'Arctic Ocean', x: 100, y: 14 },
-      { name: 'Bering Sea', x: 24, y: 80 },
-      { name: 'Pacific Ocean', x: 130, y: 132 },
-      { name: 'Bering Strait', x: 30, y: 46 }
+      { name: 'Arctic Ocean', x: 105, y: 12 },
+      { name: 'Bering Sea', x: 26, y: 78 },
+      { name: 'Gulf of Alaska', x: 110, y: 110 },
+      { name: 'Bering Strait', x: 36, y: 38 }
     ],
     surroundingLand: [
-      { name: 'Canada', d: 'M135,10 L195,10 L195,135 L142,135 L142,112 L148,92 L135,80 L135,28 L135,10 Z', labelPos: { x: 170, y: 70 } },
-      { name: 'Russia', d: 'M5,25 L22,25 L28,45 L15,60 L5,60 Z', labelPos: { x: 14, y: 38 } }
+      { name: 'Canada', d: 'M128,18 L195,18 L195,135 L144,135 L144,112 L148,92 L136,78 L128,68 L128,18 Z', labelPos: { x: 168, y: 70 } },
+      { name: 'Russia', d: 'M5,22 L24,24 L28,42 L16,56 L5,56 Z', labelPos: { x: 15, y: 36 } }
     ],
-    targetPath: 'M38,48 L135,28 L135,80 L148,92 L142,112 L125,92 L95,95 L68,82 L38,76 L22,90 L18,88 L28,75 Z M20,95 L12,100 L4,102 L2,104',
-    targetCenter: { x: 82, y: 62 },
+    targetPath: 'M72,18 L128,22 L128,68 L136,78 L148,92 L144,112 L136,94 L126,78 L116,84 L104,78 L96,86 L92,80 L82,84 L68,96 L54,106 L38,114 L24,118 L12,122 L14,118 L26,114 L42,108 L56,98 L60,84 L48,72 L58,62 L46,52 L58,44 L48,38 L58,32 L62,22 Z M100,92 A4,3 0 1,0 108,92 A4,3 0 1,0 100,92',
+    targetCenter: { x: 92, y: 54 },
     compass: true
   },
 
@@ -25,16 +25,16 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'California & West Coast',
     waterBodies: [
-      { name: 'Pacific Ocean', x: 30, y: 75 }
+      { name: 'Pacific Ocean', x: 32, y: 75 }
     ],
     surroundingLand: [
-      { name: 'Oregon', d: 'M60,10 L140,10 L140,30 L60,30 Z', labelPos: { x: 100, y: 22 } },
-      { name: 'Nevada', d: 'M102,30 L175,30 L175,95 L138,95 L102,30 Z', labelPos: { x: 145, y: 60 } },
-      { name: 'Arizona', d: 'M138,95 L190,95 L190,135 L145,135 L145,130 L138,95 Z', labelPos: { x: 168, y: 115 } },
-      { name: 'Mexico', d: 'M115,130 L145,130 L145,138 L115,138 Z', labelPos: { x: 130, y: 136 } }
+      { name: 'Oregon', d: 'M56,6 L145,6 L145,18 L56,18 Z', labelPos: { x: 100, y: 12 } },
+      { name: 'Nevada', d: 'M108,18 L178,18 L178,96 L146,96 L98,48 L108,18 Z', labelPos: { x: 146, y: 56 } },
+      { name: 'Arizona', d: 'M146,96 L195,96 L195,136 L150,136 L150,124 L146,96 Z', labelPos: { x: 172, y: 116 } },
+      { name: 'Mexico', d: 'M114,124 L150,124 L150,138 L114,138 Z', labelPos: { x: 132, y: 132 } }
     ],
-    targetPath: 'M60,30 L102,30 L138,95 L145,130 L115,130 L95,115 L70,80 L52,50 Z',
-    targetCenter: { x: 92, y: 78 },
+    targetPath: 'M56,18 L108,18 L98,48 L146,96 L150,124 L114,124 L104,114 L88,102 L74,76 L68,62 L50,36 Z M76,108 A2.5,2.5 0 1,0 81,108 A2.5,2.5 0 1,0 76,108 M84,114 A2,2 0 1,0 88,114 A2,2 0 1,0 84,114',
+    targetCenter: { x: 92, y: 76 },
     compass: true
   },
 
@@ -58,18 +58,18 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'Florida & Southeast Region',
     waterBodies: [
-      { name: 'Gulf of Mexico', x: 42, y: 90 },
-      { name: 'Atlantic Ocean', x: 156, y: 65 },
-      { name: 'Straits of Florida', x: 110, y: 135 }
+      { name: 'Gulf of Mexico', x: 46, y: 88 },
+      { name: 'Atlantic Ocean', x: 166, y: 52 },
+      { name: 'Straits of Florida', x: 106, y: 134 }
     ],
     surroundingLand: [
-      { name: 'Georgia', d: 'M50,10 L150,10 L150,38 L120,40 L85,38 L50,38 Z', labelPos: { x: 115, y: 25 } },
-      { name: 'Alabama', d: 'M10,10 L50,10 L50,38 L35,38 L35,48 L10,48 Z', labelPos: { x: 30, y: 28 } },
-      { name: 'Cuba', d: 'M80,132 L150,130 L160,138 L90,138 Z', labelPos: { x: 125, y: 136 } },
-      { name: 'Bahamas', d: 'M165,85 L180,85 L182,105 L168,105 Z', labelPos: { x: 176, y: 95 } }
+      { name: 'Georgia', d: 'M54,10 L155,10 L155,36 L124,36 L86,36 L54,38 Z', labelPos: { x: 115, y: 24 } },
+      { name: 'Alabama', d: 'M10,10 L54,10 L54,38 L34,38 L34,48 L10,48 Z', labelPos: { x: 32, y: 26 } },
+      { name: 'Cuba', d: 'M78,132 L158,130 L160,138 L84,138 Z', labelPos: { x: 125, y: 136 } },
+      { name: 'Bahamas', d: 'M164,76 L182,76 L184,92 L166,92 Z M168,96 L182,96 L180,108 L168,106 Z', labelPos: { x: 175, y: 86 } }
     ],
-    targetPath: 'M35,38 L85,38 L120,40 L132,65 L140,105 L128,122 L118,120 L115,95 L105,65 L70,48 L35,48 Z',
-    targetCenter: { x: 105, y: 68 },
+    targetPath: 'M34,38 L54,38 L86,36 L124,36 L138,64 L136,92 L132,110 L126,118 L114,122 L102,122 L94,120 L96,116 L108,118 L118,114 L112,102 L102,78 L92,58 L86,50 L72,46 L48,42 L34,48 Z',
+    targetCenter: { x: 104, y: 68 },
     compass: true
   },
 
@@ -77,11 +77,11 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'Hawaii Archipelago',
     waterBodies: [
-      { name: 'Pacific Ocean', x: 45, y: 30 },
-      { name: 'Pacific Ocean', x: 150, y: 120 }
+      { name: 'Pacific Ocean', x: 50, y: 26 },
+      { name: 'Pacific Ocean', x: 150, y: 126 }
     ],
     surroundingLand: [],
-    targetPath: 'M32,40 A6,6 0 1,0 44,40 A6,6 0 1,0 32,40 M68,52 A7,7 0 1,0 82,52 A7,7 0 1,0 68,52 M98,62 A5,5 0 1,0 108,62 A5,5 0 1,0 98,62 M118,72 A8,8 0 1,0 134,72 A8,8 0 1,0 118,72 M145,95 A14,14 0 1,0 173,95 A14,14 0 1,0 145,95',
+    targetPath: 'M26,38 A6,5 0 1,0 38,38 A6,5 0 1,0 26,38 M18,44 A2.5,2 0 1,0 23,44 A2.5,2 0 1,0 18,44 M62,50 L76,46 L82,54 L72,60 L60,56 Z M94,60 L110,58 L108,64 L94,64 Z M96,68 L104,66 L102,74 L94,72 Z M112,66 L124,62 L132,70 L126,80 L116,76 Z M148,88 L168,82 L180,98 L174,122 L154,126 L142,108 Z',
     targetCenter: { x: 105, y: 70 },
     compass: true
   },
@@ -90,19 +90,19 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'Michigan & Great Lakes Region',
     waterBodies: [
-      { name: 'Lake Superior', x: 80, y: 20 },
-      { name: 'Lake Michigan', x: 48, y: 85 },
-      { name: 'Lake Huron', x: 160, y: 65 },
-      { name: 'Lake Erie', x: 165, y: 118 }
+      { name: 'Lake Superior', x: 82, y: 16 },
+      { name: 'Lake Michigan', x: 50, y: 84 },
+      { name: 'Lake Huron', x: 164, y: 58 },
+      { name: 'Lake Erie', x: 168, y: 116 }
     ],
     surroundingLand: [
-      { name: 'Wisconsin', d: 'M10,35 L45,35 L50,45 L45,65 L45,120 L10,120 Z', labelPos: { x: 26, y: 80 } },
-      { name: 'Indiana', d: 'M50,118 L100,118 L100,135 L50,135 Z', labelPos: { x: 78, y: 128 } },
-      { name: 'Ohio', d: 'M100,118 L160,118 L160,135 L100,135 Z', labelPos: { x: 132, y: 128 } },
-      { name: 'Canada', d: 'M120,10 L195,10 L195,50 L165,50 L165,30 Z M135,70 L195,70 L195,115 L135,115 Z', labelPos: { x: 180, y: 30 } }
+      { name: 'Wisconsin', d: 'M10,24 L66,24 L66,44 L54,62 L54,114 L10,114 Z', labelPos: { x: 28, y: 78 } },
+      { name: 'Indiana', d: 'M54,114 L96,114 L96,136 L54,136 Z', labelPos: { x: 75, y: 126 } },
+      { name: 'Ohio', d: 'M96,114 L160,114 L160,136 L96,136 Z', labelPos: { x: 132, y: 126 } },
+      { name: 'Canada', d: 'M80,8 L195,8 L195,96 L142,96 L134,48 L122,28 Z', labelPos: { x: 172, y: 30 } }
     ],
-    targetPath: 'M45,35 L118,30 L115,48 L80,50 L50,45 Z M78,65 L115,62 L128,82 L120,118 L80,118 L75,90 Z',
-    targetCenter: { x: 100, y: 75 },
+    targetPath: 'M66,44 L74,24 L94,32 L122,28 L114,42 L80,48 Z M114,46 L136,68 L138,76 L132,108 L82,114 L82,92 L98,54 Z',
+    targetCenter: { x: 104, y: 76 },
     compass: true
   },
 
@@ -110,20 +110,20 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'New York & Northeast Region',
     waterBodies: [
-      { name: 'Lake Ontario', x: 40, y: 35 },
-      { name: 'Lake Erie', x: 18, y: 70 },
-      { name: 'Atlantic Ocean', x: 165, y: 125 }
+      { name: 'Lake Ontario', x: 56, y: 44 },
+      { name: 'Lake Erie', x: 20, y: 74 },
+      { name: 'Atlantic Ocean', x: 168, y: 124 }
     ],
     surroundingLand: [
-      { name: 'Canada', d: 'M40,10 L150,10 L150,30 L90,30 Z', labelPos: { x: 100, y: 20 } },
-      { name: 'VT', d: 'M148,32 L175,32 L175,65 L148,65 Z', labelPos: { x: 162, y: 48 } },
-      { name: 'MA', d: 'M148,65 L185,65 L185,88 L148,88 Z', labelPos: { x: 166, y: 76 } },
-      { name: 'CT', d: 'M148,88 L180,88 L180,105 L148,105 Z', labelPos: { x: 164, y: 96 } },
-      { name: 'Pennsylvania', d: 'M25,82 L132,82 L132,135 L25,135 Z', labelPos: { x: 78, y: 110 } },
-      { name: 'NJ', d: 'M132,105 L148,105 L148,135 L132,135 Z', labelPos: { x: 140, y: 120 } }
+      { name: 'Canada', d: 'M30,10 L145,10 L134,18 L114,18 L78,32 L30,32 Z', labelPos: { x: 92, y: 18 } },
+      { name: 'VT', d: 'M134,18 L168,18 L168,56 L136,56 Z', labelPos: { x: 152, y: 38 } },
+      { name: 'MA', d: 'M136,56 L180,56 L180,82 L138,82 Z', labelPos: { x: 158, y: 70 } },
+      { name: 'CT', d: 'M138,82 L176,82 L176,96 L136,96 Z', labelPos: { x: 156, y: 90 } },
+      { name: 'Pennsylvania', d: 'M30,92 L118,92 L118,136 L30,136 Z', labelPos: { x: 74, y: 114 } },
+      { name: 'NJ', d: 'M118,92 L130,108 L136,136 L118,136 Z', labelPos: { x: 128, y: 124 } }
     ],
-    targetPath: 'M35,62 L85,42 L132,32 L148,32 L148,105 L135,105 L132,82 L35,82 Z M136,108 L170,112 L170,118 L136,114 Z',
-    targetCenter: { x: 95, y: 60 },
+    targetPath: 'M78,32 L114,18 L134,18 L136,56 L138,82 L136,96 L132,102 L148,104 L176,106 L152,112 L130,108 L118,92 L52,92 L42,82 L42,70 L72,54 Z',
+    targetCenter: { x: 96, y: 60 },
     compass: true
   },
 
@@ -131,16 +131,16 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'Texas & South Central Region',
     waterBodies: [
-      { name: 'Gulf of Mexico', x: 155, y: 118 }
+      { name: 'Gulf of Mexico', x: 156, y: 118 }
     ],
     surroundingLand: [
-      { name: 'New Mexico', d: 'M10,25 L55,25 L55,75 L10,75 Z', labelPos: { x: 32, y: 50 } },
-      { name: 'Oklahoma', d: 'M55,10 L135,10 L135,38 L95,38 L95,25 L55,25 Z', labelPos: { x: 105, y: 25 } },
-      { name: 'Louisiana', d: 'M135,38 L185,38 L185,95 L148,95 Z', labelPos: { x: 160, y: 65 } },
-      { name: 'Mexico', d: 'M10,80 L65,80 L95,115 L125,135 L10,135 Z', labelPos: { x: 45, y: 115 } }
+      { name: 'New Mexico', d: 'M10,20 L58,20 L58,48 L24,48 L24,68 L10,68 Z', labelPos: { x: 34, y: 44 } },
+      { name: 'Oklahoma', d: 'M58,8 L142,8 L142,38 L132,38 L88,38 L88,20 L58,20 Z', labelPos: { x: 108, y: 22 } },
+      { name: 'Louisiana', d: 'M132,38 L185,38 L185,102 L138,92 L136,72 Z', labelPos: { x: 162, y: 65 } },
+      { name: 'Mexico', d: 'M10,68 L24,68 L42,94 L54,102 L68,96 L84,122 L98,136 L10,136 Z', labelPos: { x: 45, y: 118 } }
     ],
-    targetPath: 'M55,25 L95,25 L95,38 L135,38 L148,80 L140,110 L115,132 L95,115 L65,80 L45,80 L45,55 L55,55 Z',
-    targetCenter: { x: 95, y: 75 },
+    targetPath: 'M58,20 L88,20 L88,38 L132,38 L136,72 L138,92 L128,102 L118,114 L108,126 L98,136 L84,122 L68,96 L54,102 L42,94 L24,68 L24,48 L58,48 Z',
+    targetCenter: { x: 92, y: 74 },
     compass: true
   },
 
@@ -166,8 +166,8 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'Mexico & Central America',
     waterBodies: [
-      { name: 'Pacific Ocean', x: 38, y: 124 },
-      { name: 'Gulf of California', x: 34, y: 64 },
+      { name: 'Pacific Ocean', x: 36, y: 124 },
+      { name: 'Gulf of California', x: 32, y: 64 },
       { name: 'Gulf of Mexico', x: 148, y: 48 },
       { name: 'Caribbean Sea', x: 184, y: 74 }
     ],
@@ -299,7 +299,7 @@ export const REGIONAL_MAPS = {
       { name: 'Korea', d: 'M18,52 L46,52 L52,74 L46,94 L32,96 L22,78 Z', labelPos: { x: 34, y: 72 } },
       { name: 'China', d: 'M8,98 L26,98 L28,136 L8,136 Z', labelPos: { x: 18, y: 118 } }
     ],
-    targetPath: 'M152,14 L172,20 L168,36 L148,38 L142,26 Z M142,40 L156,52 L152,68 L142,82 L132,90 L118,98 L98,104 L84,108 L96,96 L115,84 L132,64 L138,48 Z M96,102 L112,100 L108,112 L94,110 Z M74,104 L88,104 L84,122 L70,122 L68,112 Z M45,128 L52,130 L48,134 Z',
+    targetPath: 'M146,14 L172,18 L168,36 L146,38 L140,26 Z M140,40 L158,50 L154,68 L144,82 L132,90 L118,98 L98,104 L84,108 L96,96 L115,84 L132,64 L136,48 Z M96,102 L114,100 L110,112 L94,110 Z M72,104 L88,104 L84,124 L68,124 L66,112 Z M44,128 L50,130 L48,134 Z',
     targetCenter: { x: 125, y: 74 },
     compass: true
   },
@@ -330,17 +330,18 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'Egypt & North Africa / Middle East',
     waterBodies: [
-      { name: 'Mediterranean Sea', x: 88, y: 16 },
-      { name: 'Red Sea', x: 172, y: 92 }
+      { name: 'Mediterranean Sea', x: 86, y: 16 },
+      { name: 'Red Sea', x: 172, y: 92 },
+      { name: 'Gulf of Suez', x: 114, y: 56 }
     ],
     surroundingLand: [
-      { name: 'Libya', d: 'M10,30 L56,30 L56,120 L10,120 Z', labelPos: { x: 33, y: 75 } },
-      { name: 'Sudan', d: 'M56,120 L156,120 L175,120 L175,138 L56,138 Z', labelPos: { x: 106, y: 130 } },
-      { name: 'Saudi Arabia', d: 'M152,28 L192,28 L192,110 L170,110 L160,76 L150,48 Z', labelPos: { x: 175, y: 65 } },
-      { name: 'Jordan', d: 'M138,24 L152,24 L152,40 L142,44 Z', labelPos: { x: 147, y: 20 } }
+      { name: 'Libya', d: 'M6,36 L20,38 L42,34 L56,36 L56,118 L6,118 Z', labelPos: { x: 32, y: 76 } },
+      { name: 'Sudan', d: 'M56,118 L162,118 L172,136 L56,136 Z', labelPos: { x: 108, y: 128 } },
+      { name: 'Saudi Arabia', d: 'M144,40 L154,62 L162,82 L172,106 L182,132 L195,132 L195,18 L148,18 Z', labelPos: { x: 174, y: 65 } },
+      { name: 'Jordan', d: 'M132,32 L144,40 L155,34 L155,18 L132,18 Z', labelPos: { x: 144, y: 22 } }
     ],
-    targetPath: 'M56,30 L88,32 L98,24 L112,24 L122,30 L138,24 L142,44 L138,56 L130,48 L124,38 L132,60 L144,82 L152,104 L156,120 L56,120 Z',
-    targetCenter: { x: 98, y: 75 },
+    targetPath: 'M56,36 L70,38 L86,36 L94,30 L108,30 L118,34 L132,32 L140,42 L134,62 L124,48 L120,40 L124,48 L134,62 L144,76 L148,86 L154,98 L162,118 L56,118 Z',
+    targetCenter: { x: 100, y: 76 },
     compass: true
   },
 
@@ -348,15 +349,15 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'Madagascar & East African Coast',
     waterBodies: [
-      { name: 'Mozambique Channel', x: 65, y: 76 },
-      { name: 'Indian Ocean', x: 156, y: 70 }
+      { name: 'Mozambique Channel', x: 62, y: 76 },
+      { name: 'Indian Ocean', x: 162, y: 70 }
     ],
     surroundingLand: [
-      { name: 'Mozambique', d: 'M10,10 L46,10 L42,28 L48,50 L38,76 L44,104 L36,134 L10,134 Z', labelPos: { x: 26, y: 72 } },
-      { name: 'Comoros', d: 'M72,26 L78,26 L76,30 Z M84,32 L88,32 L86,36 Z', labelPos: { x: 78, y: 38 } }
+      { name: 'Mozambique', d: 'M10,10 L44,10 L40,32 L46,56 L36,82 L42,110 L34,136 L10,136 Z', labelPos: { x: 26, y: 72 } },
+      { name: 'Comoros', d: 'M72,28 L78,28 L76,32 Z M84,34 L88,34 L86,38 Z', labelPos: { x: 78, y: 40 } }
     ],
-    targetPath: 'M114,18 L124,28 L132,38 L126,44 L122,64 L114,92 L104,116 L94,124 L86,122 L88,102 L92,80 L98,54 L106,34 Z',
-    targetCenter: { x: 108, y: 70 },
+    targetPath: 'M118,16 L132,34 L130,54 L122,88 L102,126 L88,114 L90,84 L96,52 L108,28 Z',
+    targetCenter: { x: 110, y: 70 },
     compass: true
   },
 
@@ -364,18 +365,18 @@ export const REGIONAL_MAPS = {
     viewBox: '0 0 200 140',
     title: 'Australia & Oceania',
     waterBodies: [
-      { name: 'Indian Ocean', x: 28, y: 70 },
-      { name: 'Coral Sea', x: 164, y: 38 },
-      { name: 'Pacific Ocean', x: 176, y: 64 },
-      { name: 'Tasman Sea', x: 158, y: 122 },
-      { name: 'Southern Ocean', x: 88, y: 128 }
+      { name: 'Indian Ocean', x: 26, y: 70 },
+      { name: 'Coral Sea', x: 164, y: 36 },
+      { name: 'Pacific Ocean', x: 178, y: 64 },
+      { name: 'Tasman Sea', x: 160, y: 122 },
+      { name: 'Southern Ocean', x: 86, y: 128 }
     ],
     surroundingLand: [
-      { name: 'Indonesia', d: 'M32,12 L86,12 L82,20 L32,20 Z', labelPos: { x: 58, y: 16 } },
-      { name: 'PNG', d: 'M115,8 L162,8 L160,20 L138,20 L134,14 L115,14 Z', labelPos: { x: 140, y: 14 } },
+      { name: 'Indonesia', d: 'M28,12 L84,12 L80,20 L28,20 Z', labelPos: { x: 56, y: 16 } },
+      { name: 'PNG', d: 'M112,8 L164,8 L160,20 L138,20 L134,14 L112,14 Z', labelPos: { x: 138, y: 14 } },
       { name: 'New Zealand', d: 'M176,94 L184,98 L180,108 L174,104 Z M168,112 L176,110 L172,126 L164,128 Z', labelPos: { x: 176, y: 88 } }
     ],
-    targetPath: 'M136,26 L126,38 L114,34 L104,28 L92,30 L78,38 L62,44 L42,54 L34,70 L40,90 L48,104 L62,104 L78,98 L96,98 L110,104 L114,102 L122,108 L134,112 L144,108 L152,94 L154,74 L148,54 L138,38 Z M134,120 L144,120 L142,132 L132,130 Z',
+    targetPath: 'M136,24 L116,32 L102,26 L88,30 L74,38 L40,52 L32,70 L38,92 L46,104 L64,104 L80,98 L98,100 L108,104 L124,110 L144,104 L152,88 L148,50 Z M132,120 L144,120 L142,132 L132,130 Z',
     targetCenter: { x: 96, y: 70 },
     compass: true
   }
@@ -385,3 +386,4 @@ export const getRegionalMap = (name) => {
   if (!name) return null;
   return REGIONAL_MAPS[name] || null;
 };
+

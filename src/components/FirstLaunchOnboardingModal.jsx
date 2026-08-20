@@ -44,23 +44,30 @@ export const GRADE_CURRICULUM_DETAILS = {
     world: 'Hemispheres & country shapes',
     summary: 'Decimal arithmetic, fractions & country shapes'
   },
-  'Pre-Algebra / Middle School': {
-    math: 'Multi-digit math & long division',
-    words: 'Sentence structure & parts of speech',
-    world: 'Global geography & obscure capitals',
-    summary: 'Pre-algebra foundations, grammar & global geography'
-  },
   'Grade 7–8': {
-    math: 'Fractions, % & PEMDAS operations',
-    words: 'Complex grammar & word roots',
-    world: 'Global geography & world summit',
-    summary: 'Order of operations, verbal reasoning & global summits'
+    math: 'Multi-digit arithmetic, fractions & PEMDAS',
+    words: 'Complex grammar, parts of speech & word roots',
+    world: 'Global geography, capitals & waterways',
+    summary: 'Multi-step arithmetic, verbal reasoning & global geography'
+  },
+  'High School & Beyond': {
+    math: 'Linear equations, negatives & powers',
+    words: 'Advanced verbal & language mastery',
+    world: 'Peak world geography mastery',
+    summary: 'Advanced equations, verbal mastery & global geography'
+  },
+  // Backwards compatibility aliases
+  'Pre-Algebra / Middle School': {
+    math: 'Multi-digit arithmetic, fractions & PEMDAS',
+    words: 'Complex grammar, parts of speech & word roots',
+    world: 'Global geography, capitals & waterways',
+    summary: 'Multi-step arithmetic, verbal reasoning & global geography'
   },
   'Algebra & Beyond': {
     math: 'Linear equations, negatives & powers',
     words: 'Advanced verbal & language mastery',
     world: 'Peak world geography mastery',
-    summary: 'Summit pre-algebra, language & peak global geography'
+    summary: 'Advanced equations, verbal mastery & global geography'
   },
 };
 

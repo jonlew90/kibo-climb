@@ -18,13 +18,18 @@ export const GRADE_STARTING_RATINGS = {
   'Grade 1–2':                      1000,  // Tier 1 — sums & differences to 20
   'Grade 3–4':                      1200,  // Tier 2 — multiplication begins
   'Grade 5–6':                      1800,  // Tier 5 — decimals & money
-  'Pre-Algebra / Middle School':    2000,  // Tier 6 — multi-digit & long division
   'Grade 7–8':                      2200,  // Tier 7 — pre-algebra & PEMDAS
-  'Algebra & Beyond':               2400,  // Tier 8 — exponents, square roots, algebra
+  'High School & Beyond':           2400,  // Tier 8 — exponents, square roots, algebra
 };
 
 export function getStartingRatingForGrade(gradeLevel) {
-  return GRADE_STARTING_RATINGS[gradeLevel] ?? 1000;
+  if (GRADE_STARTING_RATINGS[gradeLevel]) {
+    return GRADE_STARTING_RATINGS[gradeLevel];
+  }
+  // Backwards compatibility with legacy math-specific labels
+  if (gradeLevel === 'Pre-Algebra / Middle School' || gradeLevel === 'Pre-Algebra') return 2000;
+  if (gradeLevel === 'Algebra & Beyond' || gradeLevel === 'Algebra+') return 2400;
+  return 1000;
 }
 
 // Maps a live rating back to an approximate grade-level label (used in
