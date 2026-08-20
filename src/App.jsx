@@ -44,6 +44,7 @@ import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import TermsOfServiceScreen from './components/TermsOfServiceScreen';
 import LeaderboardIcon from './components/LeaderboardIcon';
 import LeaderboardScreen from './components/LeaderboardScreen';
+import FeedbackModal from './components/FeedbackModal';
 import { setHapticsEnabled } from './utils/audio';
 
 export default function App() {
@@ -126,6 +127,7 @@ export default function App() {
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
 
   const [unlockedBadges, setUnlockedBadges] = useState(() => {
@@ -972,7 +974,7 @@ export default function App() {
 
   const currentTierMeta = getTierMeta(tier);
 
-  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher;
+  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
 
 
   const closeAllNavModals = (except = null) => {
@@ -1293,6 +1295,7 @@ export default function App() {
           onUpdatePreferences={handleUpdatePreferences}
           renderFooter={renderNavigationFooter}
           onNavigate={handleNavigateTo}
+          onOpenFeedback={() => setShowFeedbackModal(true)}
         />
       )}
 
@@ -1846,6 +1849,12 @@ export default function App() {
           setShowStripeCheckoutModal(false);
           setPendingSparksPurchase(null);
         }}
+      />
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
       />
 
       {/* Account Link Modal */}
