@@ -9,6 +9,7 @@ import {
   TRICKY_CAPITALS
 } from '../data/worldGeography.js';
 import { getTierForRating } from './worldCurriculum.js';
+import { REGIONAL_MAPS } from '../data/worldMaps.js';
 
 /**
  * Utility to shuffle an array immutably
@@ -244,14 +245,16 @@ export const getTierCandidateTemplates = (tier) => {
 
       // 3. State Shapes
       if (state.shapeSvg) {
+        const regionalMap = REGIONAL_MAPS[state.name] || null;
         templates.push({
           key: `state_shape:${state.name}`,
           type: 'state_shape',
-          prompt: `Which US state has this shape?`,
+          prompt: `Which US state is highlighted on this map?`,
           correctAnswer: state.name,
           options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
-          hint: `Observe the borders and coastline carefully.`,
-          shapeSvg: state.shapeSvg,
+          hint: `Observe the surrounding states, bodies of water, and borders carefully.`,
+          shapeSvg: regionalMap?.targetPath || state.shapeSvg,
+          mapData: regionalMap,
           concept: 'US States & Shapes',
           tier: 2
         });
@@ -328,14 +331,16 @@ export const getTierCandidateTemplates = (tier) => {
     // Tier 4: Country Shapes, Hemispheres & Physical Geography
     const countriesWithShapes = COUNTRIES.filter(c => c.shapeSvg);
     for (const country of countriesWithShapes) {
+      const regionalMap = REGIONAL_MAPS[country.name] || null;
       templates.push({
         key: `country_shape:${country.name}`,
         type: 'country_shape',
-        prompt: `Which country has this shape?`,
+        prompt: `Which country is highlighted on this map?`,
         correctAnswer: country.name,
         options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
-        hint: `Look at the geographic borders and coastline carefully.`,
-        shapeSvg: country.shapeSvg,
+        hint: `Look at the surrounding countries, oceans/seas, and coastline carefully.`,
+        shapeSvg: regionalMap?.targetPath || country.shapeSvg,
+        mapData: regionalMap,
         concept: 'Country Shapes & Locations',
         tier: 4
       });
@@ -416,14 +421,16 @@ export const getTierCandidateTemplates = (tier) => {
     // Advanced Shapes from Tier 4
     const shapes = COUNTRIES.filter(c => c.shapeSvg);
     for (const country of shapes) {
+      const regionalMap = REGIONAL_MAPS[country.name] || null;
       templates.push({
         key: `summit_shape:${country.name}`,
         type: 'country_shape',
-        prompt: `Summit Challenge: Identify this country by its outline borders:`,
+        prompt: `Summit Challenge: Identify this highlighted country by its outline borders:`,
         correctAnswer: country.name,
         options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
         hint: `It is located on the continent of ${country.continent}.`,
-        shapeSvg: country.shapeSvg,
+        shapeSvg: regionalMap?.targetPath || country.shapeSvg,
+        mapData: regionalMap,
         concept: 'Global Geography Expert',
         tier: 5
       });
@@ -450,6 +457,7 @@ export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Se
       id: `world_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       type: specificItem.type || 'world',
       prompt: specificItem.prompt,
+      displayString: specificItem.prompt || specificItem.displayString || 'Geography Challenge',
       correctAnswer: specificItem.correctAnswer,
       answer: specificItem.correctAnswer,
       answerString: specificItem.correctAnswer,
@@ -458,6 +466,7 @@ export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Se
       concept: specificItem.concept || 'Geography',
       tier: effectiveTier,
       shapeSvg: specificItem.shapeSvg || null,
+      mapData: specificItem.mapData || null,
       key: normKey,
       isProbe: !!isProbe
     };
@@ -479,6 +488,7 @@ export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Se
     id: `world_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     type: chosen.type,
     prompt: chosen.prompt,
+    displayString: chosen.prompt || 'Geography Challenge',
     correctAnswer: chosen.correctAnswer,
     answer: chosen.correctAnswer,
     answerString: chosen.correctAnswer,
@@ -487,6 +497,7 @@ export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Se
     concept: chosen.concept,
     tier: effectiveTier,
     shapeSvg: chosen.shapeSvg || null,
+    mapData: chosen.mapData || null,
     key: normKey,
     isProbe: !!isProbe
   };
@@ -546,6 +557,7 @@ export function generateProblems(count = 15, targetTier = 1, history = [], seenK
         id: `world_${Date.now()}_${problems.length}_${Math.random().toString(36).substring(2, 7)}`,
         type: item.type,
         prompt: item.prompt,
+        displayString: item.prompt || 'Geography Challenge',
         correctAnswer: item.correctAnswer,
         answer: item.correctAnswer,
         answerString: item.correctAnswer,
@@ -554,6 +566,7 @@ export function generateProblems(count = 15, targetTier = 1, history = [], seenK
         concept: item.concept,
         tier: effectiveTier,
         shapeSvg: item.shapeSvg || null,
+        mapData: item.mapData || null,
         key: normKey,
         isProbe: false
       });
@@ -579,6 +592,7 @@ export function generateProblems(count = 15, targetTier = 1, history = [], seenK
           id: `world_${Date.now()}_sec_${problems.length}_${Math.random().toString(36).substring(2, 7)}`,
           type: item.type,
           prompt: item.prompt,
+          displayString: item.prompt || 'Geography Challenge',
           correctAnswer: item.correctAnswer,
           answer: item.correctAnswer,
           answerString: item.correctAnswer,
@@ -587,6 +601,7 @@ export function generateProblems(count = 15, targetTier = 1, history = [], seenK
           concept: item.concept,
           tier: effectiveTier,
           shapeSvg: item.shapeSvg || null,
+          mapData: item.mapData || null,
           key: normKey,
           isProbe: false
         });
@@ -618,6 +633,7 @@ export function generateProblems(count = 15, targetTier = 1, history = [], seenK
             id: `world_${Date.now()}_tier${t}_${problems.length}_${Math.random().toString(36).substring(2, 7)}`,
             type: item.type,
             prompt: item.prompt,
+            displayString: item.prompt || 'Geography Challenge',
             correctAnswer: item.correctAnswer,
             answer: item.correctAnswer,
             answerString: item.correctAnswer,
@@ -626,6 +642,7 @@ export function generateProblems(count = 15, targetTier = 1, history = [], seenK
             concept: item.concept,
             tier: t,
             shapeSvg: item.shapeSvg || null,
+            mapData: item.mapData || null,
             key: normKey,
             isProbe: false
           });

@@ -104,13 +104,39 @@ export default function Keypad({
       'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-b-4 border-purple-700'
     ];
 
+    const optStrings = choiceOptions.map(o => String(o || ''));
+    const maxOptLen = Math.max(...optStrings.map(s => s.length));
+    const maxOverallWordLen = Math.max(0, ...optStrings.flatMap(s => s.split(/[\s,()/]+/).map(w => w.length)));
+    const isTextChoices = maxOptLen > 3;
+
+    // Use 2x2 grid for text choices, or 4-column row for short operators/single numbers
+    const gridLayoutClass = isTextChoices
+      ? 'grid grid-cols-2 gap-2 sm:gap-2.5'
+      : (choiceOptions.length > 2 ? 'grid grid-cols-2 sm:grid-cols-4 gap-2' : 'flex items-center justify-center gap-3.5');
+
     return (
-      <div className={`w-full max-w-sm mx-auto p-2.5 sm:p-3.5 bg-slate-100/90 rounded-2xl sm:rounded-3xl border-2 border-slate-200 shadow-inner my-1.5 sm:my-4 ${
-        choiceOptions.length > 2 ? 'grid grid-cols-2 sm:grid-cols-4 gap-2' : 'flex items-center justify-center gap-3.5'
-      }`}>
+      <div className={`w-full max-w-sm mx-auto p-2.5 sm:p-3.5 bg-slate-100/90 rounded-2xl sm:rounded-3xl border-2 border-slate-200 shadow-inner my-1.5 sm:my-3 ${gridLayoutClass}`}>
         {choiceOptions.map((opt, idx) => {
           const pruned = isKeyPruned(opt);
           const colorClass = operatorColors[idx % operatorColors.length];
+          const optStr = String(opt || '');
+          const optLength = optStr.length;
+          const words = optStr.split(/[\s,()/]+/);
+          const maxWordLen = Math.max(0, ...words.map(w => w.length));
+
+          // Dynamic typography scaling based on string & word length
+          let fontClass = 'text-2xl sm:text-3xl font-black';
+          if (isTextChoices) {
+            if (optLength >= 24 || maxOptLen >= 25) {
+              fontClass = 'text-[10px] sm:text-[11.5px] leading-tight tracking-tight font-bold';
+            } else if (optLength >= 16 || maxOptLen >= 18 || maxWordLen >= 11 || maxOverallWordLen >= 12) {
+              fontClass = 'text-[11.5px] sm:text-xs md:text-sm leading-tight tracking-tight font-bold';
+            } else if (optLength >= 9 || maxOptLen >= 11 || maxWordLen >= 7) {
+              fontClass = 'text-xs sm:text-sm md:text-base leading-tight font-bold';
+            } else {
+              fontClass = 'text-sm sm:text-base md:text-lg leading-snug font-bold';
+            }
+          }
 
           return (
             <button
@@ -126,13 +152,15 @@ export default function Keypad({
                   handleInputDigit(opt);
                 }
               }}
-              className={`flex-1 py-4 text-2xl sm:text-3xl font-black text-white rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all ${
+              className={`w-full py-2.5 sm:py-3.5 px-2 sm:px-3 text-white rounded-2xl flex items-center justify-center shadow-lg transition-all min-h-[52px] sm:min-h-[58px] ${
                 pruned
                   ? 'opacity-20 pointer-events-none grayscale scale-95 cursor-not-allowed bg-slate-400 border-slate-500'
                   : `active:scale-95 cursor-pointer ${colorClass}`
               }`}
             >
-              {opt}
+              <span className={`w-full max-w-full text-center break-words [overflow-wrap:anywhere] hyphens-auto px-0.5 ${fontClass}`}>
+                {opt}
+              </span>
             </button>
           );
         })}

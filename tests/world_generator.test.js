@@ -16,6 +16,7 @@ import {
   TRICKY_CAPITALS,
   CARDINAL_DIRECTIONS
 } from '../src/data/worldGeography';
+import { REGIONAL_MAPS } from '../src/data/worldMaps';
 import { WORLD_CURRICULUM_TIERS, getTierForRating } from '../src/utils/worldCurriculum';
 
 describe('Kibo World Curriculum & Deduplication Engine', () => {
@@ -144,5 +145,36 @@ describe('Kibo World Curriculum & Deduplication Engine', () => {
 
     const session = generateWorldSession(12, 1000);
     expect(session.length).toBe(12);
+  });
+
+  it('should provide rich regional map contexts with surrounding land, water, and target highlights', () => {
+    // Check REGIONAL_MAPS catalogue
+    const mapNames = Object.keys(REGIONAL_MAPS);
+    expect(mapNames.length).toBeGreaterThanOrEqual(15);
+
+    mapNames.forEach(name => {
+      const map = REGIONAL_MAPS[name];
+      expect(map.viewBox).toBeTruthy();
+      expect(map.targetPath).toBeTruthy();
+      expect(map.targetPath.startsWith('M')).toBe(true);
+      expect(map.targetCenter).toBeDefined();
+      expect(typeof map.targetCenter.x).toBe('number');
+      expect(typeof map.targetCenter.y).toBe('number');
+      expect(Array.isArray(map.waterBodies)).toBe(true);
+      expect(Array.isArray(map.surroundingLand)).toBe(true);
+    });
+
+    // Check that generated shape problems include mapData
+    const tier2Shapes = getTierCandidateTemplates(2).filter(t => t.type === 'state_shape');
+    tier2Shapes.forEach(t => {
+      expect(t.mapData).toBeDefined();
+      expect(t.mapData.targetPath).toBeTruthy();
+    });
+
+    const tier4Shapes = getTierCandidateTemplates(4).filter(t => t.type === 'country_shape');
+    tier4Shapes.forEach(t => {
+      expect(t.mapData).toBeDefined();
+      expect(t.mapData.targetPath).toBeTruthy();
+    });
   });
 });

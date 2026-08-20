@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame } from 'lucide-react';
 import Mascot from './Mascot';
+import WorldMapViewer from './WorldMapViewer';
 
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
@@ -1107,24 +1108,30 @@ export default function WorldSessionView({
 
       {/* MASCOT CONTAINER - Centered between sticky header and question card */}
       <div
-        className="flex-1 flex flex-col items-center justify-center w-full min-h-0 my-auto py-1 sm:py-2 z-10 overflow-visible"
+        className={`flex-1 flex flex-col items-center justify-center w-full min-h-0 my-auto py-0.5 sm:py-1.5 z-10 overflow-visible ${
+          hasStartedClimb ? 'max-h-[14vh] sm:max-h-[20vh] md:max-h-[24vh]' : 'max-h-[26vh] sm:max-h-[35vh]'
+        }`}
         title="Tap Kibo!"
       >
-        <div className="relative flex items-center justify-center overflow-visible p-1.5 sm:p-3 w-full h-full max-h-[35vh] sm:max-h-[46vh] md:max-h-[50vh]">
+        <div className={`relative flex items-center justify-center overflow-visible p-0.5 sm:p-1.5 w-full h-full ${
+          hasStartedClimb ? 'max-h-[14vh] sm:max-h-[20vh] md:max-h-[24vh]' : 'max-h-[26vh] sm:max-h-[35vh]'
+        }`}>
           <Mascot
             mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'}
             state={mascotState}
             equipped={equippedItems}
-            className="h-full w-auto max-h-[35vh] max-w-[35vh] sm:max-h-[46vh] sm:max-w-[46vh] md:max-h-[50vh] md:max-w-[50vh] aspect-square filter drop-shadow-xl object-contain shrink-0"
+            className={`h-full w-auto aspect-square filter drop-shadow-md object-contain shrink-0 ${
+              hasStartedClimb ? 'max-h-[14vh] max-w-[14vh] sm:max-h-[20vh] sm:max-w-[20vh] md:max-h-[24vh] md:max-w-[24vh]' : 'max-h-[26vh] max-w-[26vh] sm:max-h-[35vh] sm:max-w-[35vh]'
+            }`}
           />
         </div>
       </div>
 
       {/* PROBLEM CARD CONTAINER */}
-      <div className="w-full shrink-0 flex flex-col items-center justify-center my-1 space-y-2">
+      <div className="w-full shrink-0 flex flex-col items-center justify-center my-0.5 sm:my-1 space-y-1.5">
         {!hasStartedClimb ? (
           /* PRE-CLIMB START SCREEN HERO CARD */
-          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 sm:p-5 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[42vh]">
+          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 sm:p-5 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[48vh]">
             <div className="space-y-1.5">
               <span className="text-xs sm:text-sm font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
                 {savedClimbState && savedClimbState.sessionQuestionIndex <= 12
@@ -1191,19 +1198,18 @@ export default function WorldSessionView({
                 <Play className="w-7 h-7 fill-current" />
                 <span>{savedClimbState && savedClimbState.sessionQuestionIndex <= 12 ? 'RESUME CLIMB 🏔️' : 'START CLIMB 🏔️'}</span>
               </button>
-
             </div>
           </div>
         ) : (
-          /* ACTIVE ADAPTIVE MATH QUESTION CARD */
+          /* ACTIVE ADAPTIVE WORLD QUESTION CARD */
           (() => {
             const streakCfg = getStreakTierConfig(inSessionStreak);
 
             return (
               <div
-                className={`w-full max-w-sm shrink-0 flex flex-col justify-center bg-white border-4 rounded-3xl p-3 text-center transition-all duration-500 space-y-2 relative max-h-[32vh] ${
+                className={`w-full max-w-md shrink-0 flex flex-col justify-between bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 text-center transition-all duration-300 space-y-1.5 sm:space-y-2 relative shadow-lg ${
                   streakCfg.cardGlow
-                } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''}`}
+                } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : 'border-slate-200'}`}
               >
                 {/* Floating Ambient Sparkles for High Streaks */}
                 {inSessionStreak >= 5 && (
@@ -1214,22 +1220,22 @@ export default function WorldSessionView({
                   </div>
                 )}
 
-                <div className="w-full flex flex-wrap items-center justify-center gap-1.5 py-0.5">
-                  <span className="text-xs font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-purple-200 shrink-0 shadow-2xs">
+                <div className="w-full flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 py-0.5">
+                  <span className="text-xs font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-purple-200 shrink-0 shadow-2xs">
                     🎯 Q #{currentQuestionNum}/12
                   </span>
                   {isNearTierThreshold(competenceRank) && !currentProblem.isProbe && (
-                    <span className="text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
+                    <span className="text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
                       ⚡ TIER GATEKEEPER
                     </span>
                   )}
                   {currentProblem.isProbe && (
-                    <span className="text-xs font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
+                    <span className="text-xs font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
                       🚀 SKILL PROBE (+120)
                     </span>
                   )}
                   <span
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
+                    className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
                   >
                     {streakCfg.label}
                   </span>
@@ -1239,7 +1245,7 @@ export default function WorldSessionView({
                     type="button"
                     onClick={handlePassQuestion}
                     disabled={consecutiveSkips >= 2}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                    className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                       consecutiveSkips >= 2
                         ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                         : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -1253,50 +1259,8 @@ export default function WorldSessionView({
                     {consecutiveSkips >= 2 ? '🔒 Attempt Required' : '🔄 Pass'}
                   </button>
 
-                  {/* LETTER SPYGLASS BUTTON */}
-                  <button
-                    type="button"
-                    onClick={handleUseLetterSpyglass}
-                    style={{ display: 'none' }}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
-                      (consumables?.letterSpyglassCount ?? 0) > 0
-                        ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
-                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
-                    }`}
-                    title={
-                      (consumables?.letterSpyglassCount ?? 0) > 0
-                        ? 'Use Letter Spyglass to reveal & fill 1 missing letter slot!'
-                        : 'Get Letter Spyglass in Kibo\'s Corner'
-                    }
-                  >
-                    🔍 {(consumables?.letterSpyglassCount ?? 0) > 0 ? `Spyglass (${consumables.letterSpyglassCount})` : 'Spyglass'}
-                  </button>
-
-                  {/* LETTER PRUNER BUTTON */}
-                  <button
-                    type="button"
-                    onClick={handleUseLetterPruner}
-                    style={{ display: 'none' }}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
-                      isLetterPrunerActive
-                        ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
-                        : (consumables?.letterPrunerCount ?? 0) > 0
-                        ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
-                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
-                    }`}
-                    title={
-                      isLetterPrunerActive
-                        ? 'Distractors pruned for this word!'
-                        : (consumables?.letterPrunerCount ?? 0) > 0
-                        ? 'Prune unused keyboard keys!'
-                        : 'Get Letter Pruner in Kibo\'s Corner'
-                    }
-                  >
-                    ✂️ {isLetterPrunerActive ? 'Pruned' : (consumables?.letterPrunerCount ?? 0) > 0 ? `Prune (${consumables.letterPrunerCount})` : 'Prune'}
-                  </button>
-
                   {isDoubleSparksActive && (
-                    <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
+                    <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
                       ⚡ 2x Active!
                     </span>
                   )}
@@ -1304,7 +1268,7 @@ export default function WorldSessionView({
                   {/* KIBO SHIELD ACTIVE PILL */}
                   {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
                     <span
-                      className="text-xs font-black uppercase text-sky-950 bg-sky-100 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
+                      className="text-xs font-black uppercase text-sky-950 bg-sky-100 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
                       title="Kibo Shield Active: Your climb & streak are protected!"
                     >
                       🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
@@ -1316,38 +1280,72 @@ export default function WorldSessionView({
               const question = currentProblem.prompt || "Geography Challenge!";
 
               return (
-                <div className="space-y-4 w-full flex flex-col items-center">
-                  <div className="w-full text-center my-2 text-base sm:text-lg leading-tight font-bold text-slate-800">
+                <div className="w-full flex flex-col items-center space-y-1 sm:space-y-1.5">
+                  <div className="w-full text-center my-0.5 sm:my-1 text-sm sm:text-base font-bold text-slate-800 leading-tight">
                      {question}
                   </div>
 
-                  {currentProblem.shapeSvg && (
-                    <div className="w-full flex items-center justify-center my-2 max-h-32">
-                      <svg viewBox="0 0 100 100" className="w-32 h-32 sm:w-40 sm:h-40 drop-shadow-md">
-                        <path d={currentProblem.shapeSvg} fill="#2dd4bf" stroke="#0f766e" strokeWidth="2" />
-                      </svg>
+                  {/* RICH GEOGRAPHIC MAP VISUALIZER */}
+                  {(currentProblem.mapData || currentProblem.shapeSvg) && (
+                    <div className="w-full flex items-center justify-center my-0.5 sm:my-1 h-28 sm:h-32 md:h-36 max-w-[280px] sm:max-w-[340px] mx-auto">
+                      <WorldMapViewer
+                        mapData={currentProblem.mapData}
+                        shapeSvg={currentProblem.shapeSvg}
+                        className="h-full w-full"
+                      />
                     </div>
                   )}
 
-                  {currentProblem.options && (
-                    <div className="grid grid-cols-2 gap-2 w-full mt-4">
-                      {currentProblem.options.map((opt, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            if (inputVal === '') {
-                              setInputVal(opt);
-                              processAnswerEvaluation(opt);
-                            }
-                          }}
-                          className={`btn-3d-teal w-full py-3 text-sm sm:text-base font-bold rounded-xl transition-transform active:scale-95 ${inputVal !== '' && inputVal !== opt ? 'opacity-50 grayscale' : ''}`}
-                          disabled={inputVal !== ''}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {/* 2x2 MULTIPLE CHOICE OPTIONS GRID */}
+                  {currentProblem.options && (() => {
+                    const optStrings = currentProblem.options.map(o => String(o || ''));
+                    const maxOptLen = Math.max(...optStrings.map(s => s.length));
+                    const maxOverallWordLen = Math.max(0, ...optStrings.flatMap(s => s.split(/[\s,()/]+/).map(w => w.length)));
+                    
+                    return (
+                      <div className="grid grid-cols-2 gap-1.5 sm:gap-2 w-full mt-1 sm:mt-1.5 items-stretch">
+                        {currentProblem.options.map((opt, idx) => {
+                          const optStr = String(opt || '');
+                          const optLength = optStr.length;
+                          const words = optStr.split(/[\s,()/]+/);
+                          const maxWordLen = Math.max(0, ...words.map(w => w.length));
+                          
+                          // Dynamic per-option responsive typography tailored for clean fit inside 3D tactile borders
+                          let fontClass = 'text-xs sm:text-sm leading-snug';
+                          if (optLength >= 24 || maxOptLen >= 25) {
+                            fontClass = 'text-[9.5px] sm:text-[10.5px] leading-tight tracking-tight';
+                          } else if (optLength >= 17 || maxOptLen >= 19 || maxWordLen >= 12 || maxOverallWordLen >= 13) {
+                            fontClass = 'text-[10.5px] sm:text-[11.5px] md:text-xs leading-tight tracking-tight';
+                          } else if (optLength >= 10 || maxOptLen >= 12 || maxWordLen >= 8) {
+                            fontClass = 'text-xs sm:text-xs md:text-sm leading-tight';
+                          } else {
+                            fontClass = 'text-xs sm:text-sm leading-snug';
+                          }
+
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                if (inputVal === '') {
+                                  setInputVal(opt);
+                                  processAnswerEvaluation(opt);
+                                }
+                              }}
+                              className={`btn-3d-teal w-full pt-1 pb-2 sm:pt-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 rounded-xl sm:rounded-2xl transition-all active:scale-95 flex items-center justify-center min-h-[46px] sm:min-h-[50px] shadow-sm select-none cursor-pointer ${
+                                inputVal !== '' && inputVal !== opt ? 'opacity-40 grayscale' : ''
+                              }`}
+                              disabled={inputVal !== ''}
+                            >
+                              <span className={`w-full max-w-full text-center font-bold break-words [overflow-wrap:anywhere] hyphens-auto px-0.5 ${fontClass}`}>
+                                {opt}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })()}

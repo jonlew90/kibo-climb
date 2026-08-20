@@ -1538,7 +1538,11 @@ export default function MathSessionView({
                 </div>
 
             {(() => {
-              const rawDisplay = currentProblem.displayString || `${currentProblem.num1} ${currentProblem.operatorSymbol} ${currentProblem.num2}`;
+              const rawDisplay = currentProblem.displayString || currentProblem.prompt || (
+                currentProblem.num1 !== undefined && currentProblem.num2 !== undefined
+                  ? `${currentProblem.num1} ${currentProblem.operatorSymbol || '+'} ${currentProblem.num2}`
+                  : ''
+              ) || 'Solve the problem';
               const hasUnderscoreBlank = rawDisplay.includes('_');
               const cleanDisplay = rawDisplay.replace(/\s*=\s*\?\s*¢?/gi, '').replace(/\s*=\s*\?\s*cents?/gi, '').trim();
               const hasQuestionSuffix = cleanDisplay.endsWith('?') || cleanDisplay.includes('Change?') || cleanDisplay.includes('Leftover?') || cleanDisplay.includes('End time?');
