@@ -389,24 +389,12 @@ export default function LeaderboardScreen({
                     <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
                   )}
                 </div>
-                <span className="text-xs text-slate-500 font-bold mb-2">{top3[1].score} pts</span>
+                <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[1].score + ' pts' : (top3[1].sparks || 0) + ' sparks'}</span>
                 <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                   <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
                 </div>
               </div>
-              <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[1].name}>
-                <span className="font-bold text-xs truncate min-w-0 text-center">
-                  {top3[1].name}
-                </span>
-                {top3[1].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
-                )}
-              </div>
-              <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[1].score + ' pts' : (top3[1].sparks || 0) + ' sparks'}</span>
-              <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-                <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
-              </div>
-            </div>
+            )}
 
             {/* 1st Place */}
             {top3[0] && (
@@ -429,26 +417,13 @@ export default function LeaderboardScreen({
                     <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
                   )}
                 </div>
-                <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{top3[0].score} pts</span>
+                <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{viewMode === 'global' ? top3[0].score + ' pts' : (top3[0].sparks || 0) + ' sparks'}</span>
                 <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
                   <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
                 </div>
               </div>
-              <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[0].name}>
-                <span className="font-black text-sm text-amber-900 truncate min-w-0 text-center">
-                  {top3[0].name}
-                </span>
-                {top3[0].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
-                )}
-              </div>
-              <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{viewMode === 'global' ? top3[0].score + ' pts' : (top3[0].sparks || 0) + ' sparks'}</span>
-              <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
-                <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
-              </div>
-            </div>
+            )}
 
             {/* 3rd Place */}
             {top3[2] && (
@@ -468,24 +443,12 @@ export default function LeaderboardScreen({
                     <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
                   )}
                 </div>
-                <span className="text-xs text-slate-500 font-bold mb-2">{top3[2].score} pts</span>
+                <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[2].score + ' pts' : (top3[2].sparks || 0) + ' sparks'}</span>
                 <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                   <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
                 </div>
               </div>
-              <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[2].name}>
-                <span className="font-bold text-xs truncate min-w-0 text-center">
-                  {top3[2].name}
-                </span>
-                {top3[2].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
-                )}
-              </div>
-              <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[2].score + ' pts' : (top3[2].sparks || 0) + ' sparks'}</span>
-              <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-                <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
