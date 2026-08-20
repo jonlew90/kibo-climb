@@ -1,10 +1,19 @@
-import { CONTINENTS, OCEANS, US_STATES, COUNTRIES } from '../data/worldGeography.js';
+import {
+  CONTINENTS,
+  OCEANS,
+  CARDINAL_DIRECTIONS,
+  GEOGRAPHIC_FOUNDATIONS,
+  US_STATES,
+  COUNTRIES,
+  WORLD_LANDMARKS_AND_WONDERS,
+  TRICKY_CAPITALS
+} from '../data/worldGeography.js';
 import { getTierForRating } from './worldCurriculum.js';
 
 /**
- * Utility to shuffle an array
+ * Utility to shuffle an array immutably
  */
-const shuffleArray = (array) => {
+export const shuffleArray = (array) => {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -14,138 +23,634 @@ const shuffleArray = (array) => {
 };
 
 /**
- * Utility to get random distractors
+ * Normalizes problem keys for deduplication
  */
-const getDistractors = (correctAnswer, sourceArray, count = 3, key = 'name') => {
-  const distractors = sourceArray
-    .filter(item => item[key] !== correctAnswer)
-    .map(item => item[key]);
-  return shuffleArray(distractors).slice(0, count);
+export const getNormalizedProblemKey = (problem) => {
+  if (!problem) return '';
+  if (problem.key) return String(problem.key).toLowerCase().trim();
+  const ans = problem.correctAnswer || problem.answerString || problem.answer || '';
+  const prompt = problem.prompt || '';
+  return `${problem.type || 'world'}:${ans}:${prompt}`.toLowerCase().trim();
 };
 
-export const generateWorldProblem = (rating = 1000, history = []) => {
-  const targetTier = getTierForRating(rating);
+/**
+ * Utility to get unique distractors from a pool
+ */
+const getUniqueDistractors = (correctAnswer, sourcePool, count = 3, keyExtractor = (item) => (typeof item === 'string' ? item : item.name)) => {
+  const uniqueItems = new Set();
+  const pool = shuffleArray(sourcePool);
 
-  let questionType = 1;
-
-  if (targetTier === 1) {
-    questionType = Math.random() > 0.5 ? 'continent_name' : 'ocean_name';
-  } else if (targetTier === 2) {
-    const types = ['state_capital', 'capital_state', 'state_shape'];
-    questionType = types[Math.floor(Math.random() * types.length)];
-  } else if (targetTier === 3) {
-    const types = ['country_capital', 'capital_country'];
-    questionType = types[Math.floor(Math.random() * types.length)];
-  } else if (targetTier >= 4) {
-    const types = ['country_capital', 'capital_country', 'country_shape'];
-    questionType = types[Math.floor(Math.random() * types.length)];
+  for (const item of pool) {
+    const val = keyExtractor(item);
+    if (val && val !== correctAnswer && !uniqueItems.has(val)) {
+      uniqueItems.add(val);
+      if (uniqueItems.size === count) break;
+    }
   }
 
-  let problem = {
-    id: `world_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-    type: questionType,
-    prompt: '',
-    correctAnswer: '',
-    options: [],
-    hint: '',
-    shapeSvg: null
+  return Array.from(uniqueItems);
+};
+
+/**
+ * Generate all possible candidate problem templates for a given tier
+ */
+export const getTierCandidateTemplates = (tier) => {
+  const templates = [];
+
+  if (tier === 1) {
+    // 1. Continent identification
+    for (const c of CONTINENTS) {
+      templates.push({
+        key: `continent_name:${c.name}`,
+        type: 'continent_name',
+        prompt: 'Which of the following is a Continent?',
+        correctAnswer: c.name,
+        options: shuffleArray([c.name, ...getUniqueDistractors(c.name, OCEANS, 3, o => o.fullName || o.name)]),
+        hint: 'Continents are large landmasses on Earth.',
+        concept: 'Continents & Oceans',
+        tier: 1
+      });
+    }
+
+    // 2. Ocean identification
+    for (const o of OCEANS) {
+      const oceanName = o.fullName || `${o.name} Ocean`;
+      templates.push({
+        key: `ocean_name:${o.name}`,
+        type: 'ocean_name',
+        prompt: 'Which of the following is an Ocean?',
+        correctAnswer: oceanName,
+        options: shuffleArray([oceanName, ...getUniqueDistractors(oceanName, CONTINENTS, 3, c => c.name)]),
+        hint: 'Oceans are large bodies of saltwater covering most of Earth.',
+        concept: 'Continents & Oceans',
+        tier: 1
+      });
+    }
+
+    // 3. Cardinal directions
+    for (const d of CARDINAL_DIRECTIONS) {
+      templates.push({
+        key: `cardinal_pos:${d.direction}`,
+        type: 'cardinal_direction',
+        prompt: `On a standard compass map, which direction points toward the ${d.mapPosition}?`,
+        correctAnswer: d.direction,
+        options: shuffleArray(['North', 'South', 'East', 'West']),
+        hint: d.hint,
+        concept: 'Cardinal Directions',
+        tier: 1
+      });
+
+      templates.push({
+        key: `cardinal_opp:${d.direction}`,
+        type: 'cardinal_direction',
+        prompt: `Which direction is directly opposite of ${d.direction}?`,
+        correctAnswer: d.opposite,
+        options: shuffleArray(['North', 'South', 'East', 'West']),
+        hint: `Think about what lies on the opposite side of ${d.direction}.`,
+        concept: 'Cardinal Directions',
+        tier: 1
+      });
+    }
+
+    // 4. Continent & Ocean Counts & Superlatives
+    templates.push({
+      key: 'fact:continent_count',
+      type: 'continent_fact',
+      prompt: 'How many continents are there on Earth?',
+      correctAnswer: '7',
+      options: shuffleArray(['7', '5', '6', '8']),
+      hint: 'Asia, Africa, North America, South America, Antarctica, Europe, and Australia.',
+      concept: 'Continents & Oceans',
+      tier: 1
+    });
+
+    templates.push({
+      key: 'fact:ocean_count',
+      type: 'ocean_fact',
+      prompt: 'How many major oceans are there on Earth?',
+      correctAnswer: '5',
+      options: shuffleArray(['5', '4', '6', '7']),
+      hint: 'Pacific, Atlantic, Indian, Southern, and Arctic.',
+      concept: 'Continents & Oceans',
+      tier: 1
+    });
+
+    templates.push({
+      key: 'fact:largest_continent',
+      type: 'continent_fact',
+      prompt: 'Which is the largest continent on Earth by land area and population?',
+      correctAnswer: 'Asia',
+      options: shuffleArray(['Asia', 'Africa', 'North America', 'Europe']),
+      hint: 'It is home to over 4.5 billion people.',
+      concept: 'Continents & Oceans',
+      tier: 1
+    });
+
+    templates.push({
+      key: 'fact:smallest_continent',
+      type: 'continent_fact',
+      prompt: 'Which is the smallest continent by land area?',
+      correctAnswer: 'Australia',
+      options: shuffleArray(['Australia', 'Europe', 'Antarctica', 'South America']),
+      hint: 'It is also known as an island continent.',
+      concept: 'Continents & Oceans',
+      tier: 1
+    });
+
+    templates.push({
+      key: 'fact:coldest_continent',
+      type: 'continent_fact',
+      prompt: 'Which continent is the coldest and covered almost entirely in ice?',
+      correctAnswer: 'Antarctica',
+      options: shuffleArray(['Antarctica', 'Europe', 'North America', 'Asia']),
+      hint: 'It is located around the South Pole.',
+      concept: 'Continents & Oceans',
+      tier: 1
+    });
+
+    templates.push({
+      key: 'fact:largest_ocean',
+      type: 'ocean_fact',
+      prompt: 'Which is the largest and deepest ocean on Earth?',
+      correctAnswer: 'Pacific Ocean',
+      options: shuffleArray(['Pacific Ocean', 'Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean']),
+      hint: 'It covers over 30% of Earth surface.',
+      concept: 'Continents & Oceans',
+      tier: 1
+    });
+
+    templates.push({
+      key: 'fact:smallest_ocean',
+      type: 'ocean_fact',
+      prompt: 'Which is the smallest and shallowest ocean on Earth?',
+      correctAnswer: 'Arctic Ocean',
+      options: shuffleArray(['Arctic Ocean', 'Indian Ocean', 'Southern Ocean', 'Atlantic Ocean']),
+      hint: 'It surrounds the North Pole.',
+      concept: 'Continents & Oceans',
+      tier: 1
+    });
+
+    templates.push({
+      key: 'fact:equator_def',
+      type: 'geographic_foundation',
+      prompt: 'What is the imaginary line at 0° latitude dividing Earth into Northern and Southern Hemispheres?',
+      correctAnswer: 'Equator',
+      options: shuffleArray(['Equator', 'Prime Meridian', 'Tropic of Cancer', 'Arctic Circle']),
+      hint: 'It runs horizontally around the middle of Earth.',
+      concept: 'Geographic Foundations',
+      tier: 1
+    });
+
+    // 5. Basic Continent of Major Country
+    const basicCountries = COUNTRIES.slice(0, 15);
+    for (const country of basicCountries) {
+      templates.push({
+        key: `country_to_continent:${country.name}`,
+        type: 'country_continent',
+        prompt: `On which continent is ${country.name} located?`,
+        correctAnswer: country.continent,
+        options: shuffleArray([country.continent, ...getUniqueDistractors(country.continent, CONTINENTS, 3, c => c.name)]),
+        hint: `Think about the world region where ${country.name} is situated.`,
+        concept: 'Continents & Oceans',
+        tier: 1
+      });
+    }
+  } else if (tier === 2) {
+    // Tier 2: US States & Shapes
+    for (const state of US_STATES) {
+      // 1. State -> Capital
+      templates.push({
+        key: `state_capital:${state.name}`,
+        type: 'state_capital',
+        prompt: `What is the capital of ${state.name}?`,
+        correctAnswer: state.capital,
+        options: shuffleArray([state.capital, ...getUniqueDistractors(state.capital, US_STATES, 3, s => s.capital)]),
+        hint: `It is the seat of government for ${state.name}.`,
+        concept: 'US States & Shapes',
+        tier: 2
+      });
+
+      // 2. Capital -> State
+      templates.push({
+        key: `capital_state:${state.capital}`,
+        type: 'capital_state',
+        prompt: `${state.capital} is the capital of which US state?`,
+        correctAnswer: state.name,
+        options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
+        hint: `Look for the state governed from ${state.capital}.`,
+        concept: 'US States & Shapes',
+        tier: 2
+      });
+
+      // 3. State Shapes
+      if (state.shapeSvg) {
+        templates.push({
+          key: `state_shape:${state.name}`,
+          type: 'state_shape',
+          prompt: `Which US state has this shape?`,
+          correctAnswer: state.name,
+          options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
+          hint: `Observe the borders and coastline carefully.`,
+          shapeSvg: state.shapeSvg,
+          concept: 'US States & Shapes',
+          tier: 2
+        });
+      }
+
+      // 4. State Trivia / Landmarks if available
+      if (state.trivia) {
+        templates.push({
+          key: `state_trivia:${state.name}`,
+          type: 'state_trivia',
+          prompt: `Which US state is known for: "${state.trivia}"?`,
+          correctAnswer: state.name,
+          options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
+          hint: `It is in the ${state.region} region.`,
+          concept: 'US States & Shapes',
+          tier: 2
+        });
+      }
+    }
+  } else if (tier === 3) {
+    // Tier 3: Major Countries & Capitals & Continents
+    for (const country of COUNTRIES) {
+      // 1. Country -> Capital
+      templates.push({
+        key: `country_capital:${country.name}`,
+        type: 'country_capital',
+        prompt: `What is the capital of ${country.name}?`,
+        correctAnswer: country.capital,
+        options: shuffleArray([country.capital, ...getUniqueDistractors(country.capital, COUNTRIES, 3, c => c.capital)]),
+        hint: `It is the seat of national government for ${country.name}.`,
+        concept: 'Major Countries & Capitals',
+        tier: 3
+      });
+
+      // 2. Capital -> Country
+      templates.push({
+        key: `capital_country:${country.capital}`,
+        type: 'capital_country',
+        prompt: `${country.capital} is the capital city of which country?`,
+        correctAnswer: country.name,
+        options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
+        hint: `This sovereign nation is in ${country.continent}.`,
+        concept: 'Major Countries & Capitals',
+        tier: 3
+      });
+
+      // 3. Country -> Continent
+      templates.push({
+        key: `country_continent:${country.name}`,
+        type: 'country_continent',
+        prompt: `Which continent is ${country.name} located in?`,
+        correctAnswer: country.continent,
+        options: shuffleArray([country.continent, ...getUniqueDistractors(country.continent, CONTINENTS, 3, c => c.name)]),
+        hint: `Think about the world region of ${country.name}.`,
+        concept: 'Major Countries & Capitals',
+        tier: 3
+      });
+
+      // 4. Country landmark if available
+      if (country.landmark) {
+        templates.push({
+          key: `country_landmark:${country.landmark}`,
+          type: 'country_landmark',
+          prompt: `The famous landmark "${country.landmark}" is located in which country?`,
+          correctAnswer: country.name,
+          options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
+          hint: `It is located on the continent of ${country.continent}.`,
+          concept: 'Major Countries & Capitals',
+          tier: 3
+        });
+      }
+    }
+  } else if (tier === 4) {
+    // Tier 4: Country Shapes, Hemispheres & Physical Geography
+    const countriesWithShapes = COUNTRIES.filter(c => c.shapeSvg);
+    for (const country of countriesWithShapes) {
+      templates.push({
+        key: `country_shape:${country.name}`,
+        type: 'country_shape',
+        prompt: `Which country has this shape?`,
+        correctAnswer: country.name,
+        options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
+        hint: `Look at the geographic borders and coastline carefully.`,
+        shapeSvg: country.shapeSvg,
+        concept: 'Country Shapes & Locations',
+        tier: 4
+      });
+    }
+
+    // World landmarks & physical features
+    for (const item of WORLD_LANDMARKS_AND_WONDERS) {
+      templates.push({
+        key: `wonder:${item.name}`,
+        type: 'world_wonder',
+        prompt: `Which geographic wonder is described as: "${item.fact}"?`,
+        correctAnswer: item.name,
+        options: shuffleArray([item.name, ...getUniqueDistractors(item.name, WORLD_LANDMARKS_AND_WONDERS, 3, w => w.name)]),
+        hint: `Located in/near ${item.continent}.`,
+        concept: 'Country Shapes & Locations',
+        tier: 4
+      });
+    }
+
+    // Hemisphere & coordinate questions
+    templates.push({
+      key: 'foundation:prime_meridian',
+      type: 'geographic_foundation',
+      prompt: 'What is the line of 0° longitude that divides Earth into Eastern and Western Hemispheres?',
+      correctAnswer: 'Prime Meridian',
+      options: shuffleArray(['Prime Meridian', 'Equator', 'International Date Line', 'Tropic of Capricorn']),
+      hint: 'It passes through Greenwich, London.',
+      concept: 'Country Shapes & Locations',
+      tier: 4
+    });
+
+    templates.push({
+      key: 'foundation:southern_hemisphere',
+      type: 'geographic_foundation',
+      prompt: 'Which continent lies entirely in the Southern Hemisphere?',
+      correctAnswer: 'Antarctica',
+      options: shuffleArray(['Antarctica', 'Europe', 'North America', 'Asia']),
+      hint: 'It surrounds the South Pole.',
+      concept: 'Country Shapes & Locations',
+      tier: 4
+    });
+  } else if (tier >= 5) {
+    // Tier 5: World Summit (Tricky Capitals, Global Expert & Extreme Geography)
+    for (const tricky of TRICKY_CAPITALS) {
+      const distractors = [tricky.commonConfusion];
+      const otherCapitals = getUniqueDistractors(tricky.capital, COUNTRIES, 2, c => c.capital);
+      for (const oc of otherCapitals) {
+        if (!distractors.includes(oc)) distractors.push(oc);
+      }
+
+      templates.push({
+        key: `tricky_capital:${tricky.country}`,
+        type: 'tricky_capital',
+        prompt: `What is the official capital of ${tricky.country}? (Be careful of common misconceptions!)`,
+        correctAnswer: tricky.capital,
+        options: shuffleArray([tricky.capital, ...distractors.slice(0, 3)]),
+        hint: tricky.reason,
+        concept: 'Global Geography Expert',
+        tier: 5
+      });
+    }
+
+    for (const item of WORLD_LANDMARKS_AND_WONDERS) {
+      if (item.mountainRange) {
+        templates.push({
+          key: `mountain_range:${item.name}`,
+          type: 'extreme_geography',
+          prompt: `${item.name} is located in which famous mountain range?`,
+          correctAnswer: item.mountainRange,
+          options: shuffleArray([item.mountainRange, 'Andes', 'Alps', 'Rocky Mountains']),
+          hint: 'It is the highest mountain range in Asia.',
+          concept: 'Global Geography Expert',
+          tier: 5
+        });
+      }
+    }
+
+    // Advanced Shapes from Tier 4
+    const shapes = COUNTRIES.filter(c => c.shapeSvg);
+    for (const country of shapes) {
+      templates.push({
+        key: `summit_shape:${country.name}`,
+        type: 'country_shape',
+        prompt: `Summit Challenge: Identify this country by its outline borders:`,
+        correctAnswer: country.name,
+        options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
+        hint: `It is located on the continent of ${country.continent}.`,
+        shapeSvg: country.shapeSvg,
+        concept: 'Global Geography Expert',
+        tier: 5
+      });
+    }
+  }
+
+  return templates;
+};
+
+/**
+ * Generates a single world problem for a given tier
+ * @param {number} tier - Curriculum tier (1-5)
+ * @param {boolean} isProbe - Whether this is a probe question
+ * @param {Set|Array} seenKeys - Excluded problem keys
+ * @param {Object} specificItem - Optional specific template
+ */
+export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Set(), specificItem = null) => {
+  const effectiveTier = Math.max(1, Math.min(5, Number(tier) || 1));
+  const seenSet = seenKeys instanceof Set ? seenKeys : new Set(Array.isArray(seenKeys) ? seenKeys.map(k => String(k).toLowerCase()) : []);
+
+  if (specificItem) {
+    const normKey = getNormalizedProblemKey(specificItem);
+    return {
+      id: `world_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      type: specificItem.type || 'world',
+      prompt: specificItem.prompt,
+      correctAnswer: specificItem.correctAnswer,
+      answer: specificItem.correctAnswer,
+      answerString: specificItem.correctAnswer,
+      options: specificItem.options || [specificItem.correctAnswer],
+      hint: specificItem.hint || 'Examine the question carefully.',
+      concept: specificItem.concept || 'Geography',
+      tier: effectiveTier,
+      shapeSvg: specificItem.shapeSvg || null,
+      key: normKey,
+      isProbe: !!isProbe
+    };
+  }
+
+  const templates = getTierCandidateTemplates(effectiveTier);
+  const shuffled = shuffleArray(templates);
+
+  let chosen = shuffled.find(t => !seenSet.has(getNormalizedProblemKey(t)));
+
+  if (!chosen) {
+    // If all seen in this tier, pick random from tier
+    chosen = shuffled[Math.floor(Math.random() * shuffled.length)] || templates[0];
+  }
+
+  const normKey = getNormalizedProblemKey(chosen);
+
+  return {
+    id: `world_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    type: chosen.type,
+    prompt: chosen.prompt,
+    correctAnswer: chosen.correctAnswer,
+    answer: chosen.correctAnswer,
+    answerString: chosen.correctAnswer,
+    options: chosen.options,
+    hint: chosen.hint,
+    concept: chosen.concept,
+    tier: effectiveTier,
+    shapeSvg: chosen.shapeSvg || null,
+    key: normKey,
+    isProbe: !!isProbe
   };
-
-  switch (questionType) {
-    case 'continent_name': {
-      const item = CONTINENTS[Math.floor(Math.random() * CONTINENTS.length)];
-      problem.prompt = `Which of the following is a Continent?`;
-      problem.correctAnswer = item.name;
-      const distractors = getDistractors(item.name, OCEANS, 3, 'name');
-      problem.options = shuffleArray([item.name, ...distractors]);
-      problem.hint = "Continents are the large landmasses on Earth.";
-      break;
-    }
-    case 'ocean_name': {
-      const item = OCEANS[Math.floor(Math.random() * OCEANS.length)];
-      problem.prompt = `Which of the following is an Ocean?`;
-      problem.correctAnswer = item.name;
-      const distractors = getDistractors(item.name, CONTINENTS, 3, 'name');
-      problem.options = shuffleArray([item.name, ...distractors]);
-      problem.hint = "Oceans are the large bodies of water.";
-      break;
-    }
-    case 'state_capital': {
-      const item = US_STATES[Math.floor(Math.random() * US_STATES.length)];
-      problem.prompt = `What is the capital of ${item.name}?`;
-      problem.correctAnswer = item.capital;
-      const distractors = getDistractors(item.capital, US_STATES, 3, 'capital');
-      problem.options = shuffleArray([item.capital, ...distractors]);
-      problem.hint = `It is the seat of government for ${item.name}.`;
-      break;
-    }
-    case 'capital_state': {
-      const item = US_STATES[Math.floor(Math.random() * US_STATES.length)];
-      problem.prompt = `${item.capital} is the capital of which US state?`;
-      problem.correctAnswer = item.name;
-      const distractors = getDistractors(item.name, US_STATES, 3, 'name');
-      problem.options = shuffleArray([item.name, ...distractors]);
-      problem.hint = `This state is in the United States.`;
-      break;
-    }
-    case 'state_shape': {
-      const statesWithShapes = US_STATES.filter(s => s.shapeSvg);
-      const item = statesWithShapes[Math.floor(Math.random() * statesWithShapes.length)];
-      problem.prompt = `Which US state has this shape?`;
-      problem.correctAnswer = item.name;
-      problem.shapeSvg = item.shapeSvg;
-      const distractors = getDistractors(item.name, US_STATES, 3, 'name');
-      problem.options = shuffleArray([item.name, ...distractors]);
-      problem.hint = `Look at the outline borders carefully.`;
-      break;
-    }
-    case 'country_capital': {
-      const item = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
-      problem.prompt = `What is the capital of ${item.name}?`;
-      problem.correctAnswer = item.capital;
-      const distractors = getDistractors(item.capital, COUNTRIES, 3, 'capital');
-      problem.options = shuffleArray([item.capital, ...distractors]);
-      problem.hint = `It is the center of government for ${item.name}.`;
-      break;
-    }
-    case 'capital_country': {
-      const item = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
-      problem.prompt = `${item.capital} is the capital of which country?`;
-      problem.correctAnswer = item.name;
-      const distractors = getDistractors(item.name, COUNTRIES, 3, 'name');
-      problem.options = shuffleArray([item.name, ...distractors]);
-      problem.hint = `It is a country globally recognized.`;
-      break;
-    }
-    case 'country_shape': {
-      const countriesWithShapes = COUNTRIES.filter(c => c.shapeSvg);
-      const item = countriesWithShapes[Math.floor(Math.random() * countriesWithShapes.length)];
-      problem.prompt = `Which country has this shape?`;
-      problem.correctAnswer = item.name;
-      problem.shapeSvg = item.shapeSvg;
-      const distractors = getDistractors(item.name, COUNTRIES, 3, 'name');
-      problem.options = shuffleArray([item.name, ...distractors]);
-      problem.hint = `Look at the outline borders carefully.`;
-      break;
-    }
-    default:
-      // Fallback
-      problem.prompt = `Which is a Continent?`;
-      problem.correctAnswer = 'Asia';
-      problem.options = ['Asia', 'Pacific', 'Atlantic', 'Indian'];
-      problem.hint = 'Largest landmass.';
-      break;
-  }
-
-  return problem;
 };
 
-export const generateWorldSession = (count = 12, currentRating = 1000, history = []) => {
+/**
+ * Legacy compatibility wrapper for generateWorldProblem
+ */
+export const generateWorldProblem = (ratingOrTier = 1000, history = [], seenKeys = new Set()) => {
+  const tier = typeof ratingOrTier === 'number' && ratingOrTier >= 100
+    ? getTierForRating(ratingOrTier)
+    : Math.max(1, Math.min(5, Number(ratingOrTier) || 1));
+
+  return generateTierProblem(tier, false, seenKeys);
+};
+
+/**
+ * Generates an expansive batch of deduplicated problems for a session or climb.
+ * Guarantees zero question repetition in the returned batch and actively deprioritizes recent history.
+ * @param {number} count - Total problems to generate (e.g. 15)
+ * @param {number} targetTier - Active tier (1-5) or rating
+ * @param {Array|Set} history - Recently encountered questions/words to exclude
+ * @param {Set} seenKeys - Keys already in active session
+ */
+export function generateProblems(count = 15, targetTier = 1, history = [], seenKeys = new Set()) {
   const problems = [];
-  for (let i = 0; i < count; i++) {
-    // Basic dynamic rating curve for the session
-    const offsetRating = currentRating + (i * 10);
-    problems.push(generateWorldProblem(offsetRating, history));
+  const effectiveTier = typeof targetTier === 'number' && targetTier >= 100
+    ? getTierForRating(targetTier)
+    : Math.max(1, Math.min(5, Number(targetTier) || 1));
+
+  const sessionSeen = new Set(seenKeys instanceof Set ? Array.from(seenKeys).map(k => String(k).toLowerCase()) : []);
+  const recentHistorySet = new Set(Array.isArray(history) ? history.map(w => String(w).toLowerCase()) : []);
+
+  // Master exclusion set combines active session + recent historical encounters
+  const masterExclude = new Set([...sessionSeen, ...recentHistorySet]);
+
+  const targetTemplates = getTierCandidateTemplates(effectiveTier);
+  const shuffledTarget = shuffleArray(targetTemplates);
+
+  // 1. First pass: Select fresh problems from target tier excluding history & active session
+  for (const item of shuffledTarget) {
+    if (problems.length >= count) break;
+    const normKey = getNormalizedProblemKey(item);
+    const ansKey = (item.correctAnswer || '').toString().toLowerCase();
+
+    if (!masterExclude.has(normKey) && !masterExclude.has(ansKey)) {
+      masterExclude.add(normKey);
+      masterExclude.add(ansKey);
+      sessionSeen.add(normKey);
+      sessionSeen.add(ansKey);
+      if (seenKeys instanceof Set) {
+        seenKeys.add(normKey);
+        seenKeys.add(ansKey);
+      }
+
+      problems.push({
+        id: `world_${Date.now()}_${problems.length}_${Math.random().toString(36).substring(2, 7)}`,
+        type: item.type,
+        prompt: item.prompt,
+        correctAnswer: item.correctAnswer,
+        answer: item.correctAnswer,
+        answerString: item.correctAnswer,
+        options: item.options,
+        hint: item.hint,
+        concept: item.concept,
+        tier: effectiveTier,
+        shapeSvg: item.shapeSvg || null,
+        key: normKey,
+        isProbe: false
+      });
+    }
   }
+
+  // 2. Second pass: If more problems needed, allow target tier items not in active session
+  if (problems.length < count) {
+    for (const item of shuffledTarget) {
+      if (problems.length >= count) break;
+      const normKey = getNormalizedProblemKey(item);
+      const ansKey = (item.correctAnswer || '').toString().toLowerCase();
+
+      if (!sessionSeen.has(normKey) && !sessionSeen.has(ansKey)) {
+        sessionSeen.add(normKey);
+        sessionSeen.add(ansKey);
+        if (seenKeys instanceof Set) {
+          seenKeys.add(normKey);
+          seenKeys.add(ansKey);
+        }
+
+        problems.push({
+          id: `world_${Date.now()}_sec_${problems.length}_${Math.random().toString(36).substring(2, 7)}`,
+          type: item.type,
+          prompt: item.prompt,
+          correctAnswer: item.correctAnswer,
+          answer: item.correctAnswer,
+          answerString: item.correctAnswer,
+          options: item.options,
+          hint: item.hint,
+          concept: item.concept,
+          tier: effectiveTier,
+          shapeSvg: item.shapeSvg || null,
+          key: normKey,
+          isProbe: false
+        });
+      }
+    }
+  }
+
+  // 3. Third pass: Check adjacent/other curriculum tiers not seen in active session
+  if (problems.length < count) {
+    for (let t = 1; t <= 5; t++) {
+      if (problems.length >= count) break;
+      if (t === effectiveTier) continue;
+      const otherTemplates = shuffleArray(getTierCandidateTemplates(t));
+
+      for (const item of otherTemplates) {
+        if (problems.length >= count) break;
+        const normKey = getNormalizedProblemKey(item);
+        const ansKey = (item.correctAnswer || '').toString().toLowerCase();
+
+        if (!sessionSeen.has(normKey) && !sessionSeen.has(ansKey)) {
+          sessionSeen.add(normKey);
+          sessionSeen.add(ansKey);
+          if (seenKeys instanceof Set) {
+            seenKeys.add(normKey);
+            seenKeys.add(ansKey);
+          }
+
+          problems.push({
+            id: `world_${Date.now()}_tier${t}_${problems.length}_${Math.random().toString(36).substring(2, 7)}`,
+            type: item.type,
+            prompt: item.prompt,
+            correctAnswer: item.correctAnswer,
+            answer: item.correctAnswer,
+            answerString: item.correctAnswer,
+            options: item.options,
+            hint: item.hint,
+            concept: item.concept,
+            tier: t,
+            shapeSvg: item.shapeSvg || null,
+            key: normKey,
+            isProbe: false
+          });
+        }
+      }
+    }
+  }
+
+  // 4. Fallback pass: If pool exhausted, generate while updating seen keys
+  while (problems.length < count) {
+    const prob = generateTierProblem(effectiveTier, false, sessionSeen);
+    const normKey = getNormalizedProblemKey(prob);
+    sessionSeen.add(normKey);
+    if (seenKeys instanceof Set) {
+      seenKeys.add(normKey);
+    }
+    problems.push({
+      ...prob,
+      id: `world_${Date.now()}_fallback_${problems.length}_${Math.random().toString(36).substring(2, 7)}`
+    });
+  }
+
   return problems;
-};
+}
+
+// Alias export for consistency across modules
+export const generateWorldSession = generateProblems;
+

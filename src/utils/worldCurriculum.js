@@ -3,76 +3,87 @@ export const WORLD_CURRICULUM_TIERS = [
   {
     tier: 1,
     title: 'Continent Basecamp',
-    subtitle: 'Continents & Oceans',
-    description: 'Learn to identify the 7 continents and 5 major oceans of the world.',
+    subtitle: 'Continents, Oceans & Directions',
+    description: 'Master the 7 continents, 5 major oceans, cardinal directions, and foundational global facts.',
     topics: [
       'Identifying Continents',
-      'Identifying Oceans'
+      'Identifying Oceans',
+      'Cardinal Directions',
+      'Continent & Ocean Superlatives',
+      'Continent Matching'
     ],
     hintText: {
       description: 'The earth has 7 large landmasses called continents and 5 huge bodies of water called oceans!',
-      content: 'Remember: Asia is the largest, and Australia is the smallest continent.',
-      summary: 'Learn the major landmasses and bodies of water.'
+      content: 'Remember: Asia is the largest continent, Australia is the smallest, and the Pacific is the largest ocean.',
+      summary: 'Learn the major landmasses, oceans, and cardinal directions.'
     }
   },
   {
     tier: 2,
     title: 'State Trails',
-    subtitle: 'US States & Shapes',
-    description: 'Master the 50 United States and recognize their unique shapes.',
+    subtitle: 'US States, Capitals & Shapes',
+    description: 'Master all 50 United States, their capital cities, recognizable map shapes, and key landmarks.',
     topics: [
-      'US State Identification',
-      'US State Shapes'
+      'US State Capitals',
+      'Capital to State Matching',
+      'US State Shapes',
+      'US State Nicknames & Landmarks'
     ],
     hintText: {
-      description: 'Look at the shape closely! Some states are very square, while others have squiggly borders from rivers or coastlines.',
-      content: 'Texas is huge and has a panhandle. California is long and hugs the west coast.',
-      summary: 'Identify states by name or shape.'
+      description: 'Look at the shape and region! Some states have straight borders, while others follow coastlines or rivers.',
+      content: 'Texas is the Lone Star State with Austin as its capital. California is the Golden State with Sacramento as its capital.',
+      summary: 'Identify US states by capital, name, shape, or nickname.'
     }
   },
   {
     tier: 3,
     title: 'Country Crossings',
-    subtitle: 'Major Countries & Capitals',
-    description: 'Learn the names and capitals of the most well-known countries around the globe.',
+    subtitle: 'Major Countries, Capitals & Continents',
+    description: 'Learn the names, capitals, and continental locations of over 60 sovereign countries around the world.',
     topics: [
-      'Major Countries',
-      'Major Capitals'
+      'Country Capitals',
+      'Capital to Country Matching',
+      'Country Continents',
+      'Famous International Landmarks'
     ],
     hintText: {
-      description: 'Many famous countries have well-known capitals. Like Paris in France, or Tokyo in Japan!',
-      content: 'A capital city is the center of government for that country.',
-      summary: 'Match major countries with their capital cities.'
+      description: 'Many famous countries have well-known capitals. Like Paris in France, Tokyo in Japan, or Ottawa in Canada!',
+      content: 'A capital city is the official seat of government for that nation.',
+      summary: 'Match sovereign nations with their capital cities and continents.'
     }
   },
   {
     tier: 4,
     title: 'Hemisphere Heights',
-    subtitle: 'Country Shapes & Locations',
-    description: 'Identify countries by their geographic shapes and locations on the map.',
+    subtitle: 'Country Shapes, Hemispheres & Physical Geography',
+    description: 'Identify countries by their unique map outlines, understand global hemispheres, and master major rivers, deserts, and mountain ranges.',
     topics: [
-      'Country Shapes',
-      'Country Locations'
+      'Country Shapes & Borders',
+      'Hemispheres & Latitude/Longitude',
+      'Physical Geography (Mountains, Deserts, Rivers)',
+      'Canals & Major Straits'
     ],
     hintText: {
-      description: 'Look at the borders! Italy looks like a boot. Japan is a string of islands.',
-      content: 'Recognizing shapes helps you build a mental map of the world.',
-      summary: 'Identify countries just by looking at their shape.'
+      description: 'Look at country borders closely! Italy is shaped like a boot, Japan is an archipelago, and Chile is a long coastal ribbon.',
+      content: 'Physical features like the Nile River, Sahara Desert, and Himalayas shape our planet.',
+      summary: 'Identify countries by outline and navigate global physical geography.'
     }
   },
   {
     tier: 5,
     title: 'World Summit',
-    subtitle: 'Global Geography Expert',
-    description: 'Master advanced global geography, lesser-known capitals, and tricky shapes.',
+    subtitle: 'Global Geography Expert & Tricky Capitals',
+    description: 'Master advanced global geography, common capital misconceptions, extreme geographic points, and deep earth wonders.',
     topics: [
-      'Global Geography',
-      'Obscure Capitals'
+      'Tricky Capitals & Common Misconceptions',
+      'Extreme Earth Geography & Deepest Points',
+      'Global Waterways & Strategic Straits',
+      'Advanced Country Shapes & Islands'
     ],
     hintText: {
-      description: 'You are now tackling the hardest geography challenges! Pay close attention to subtle differences in shapes.',
-      content: 'Take your time. Some of these are very tricky!',
-      summary: 'Become a true World Geography Expert.'
+      description: 'You are now tackling expert geography! Beware of common traps—like thinking Sydney is the capital of Australia instead of Canberra!',
+      content: 'Take your time and pay close attention to nuances in capitals and physical landmarks.',
+      summary: 'Demonstrate peak global geography mastery.'
     }
   }
 ];
