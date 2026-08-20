@@ -10,6 +10,8 @@ import {
 } from '../data/worldGeography.js';
 import { getTierForRating } from './worldCurriculum.js';
 import { REGIONAL_MAPS } from '../data/worldMaps.js';
+import { getFlagForCountry } from '../data/worldFlags.js';
+import { getLandmarkVisual, WORLD_LANDMARK_VISUALS } from '../data/worldLandmarks.js';
 
 /**
  * Utility to shuffle an array immutably
@@ -314,6 +316,7 @@ export const getTierCandidateTemplates = (tier) => {
 
       // 4. Country landmark if available
       if (country.landmark) {
+        const landmarkVis = getLandmarkVisual(country.landmark);
         templates.push({
           key: `country_landmark:${country.landmark}`,
           type: 'country_landmark',
@@ -321,7 +324,24 @@ export const getTierCandidateTemplates = (tier) => {
           correctAnswer: country.name,
           options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
           hint: `It is located on the continent of ${country.continent}.`,
+          landmarkData: landmarkVis,
           concept: 'Major Countries & Capitals',
+          tier: 3
+        });
+      }
+
+      // 5. National Flag recognition if available
+      const flag = getFlagForCountry(country.name);
+      if (flag) {
+        templates.push({
+          key: `country_flag:${country.name}`,
+          type: 'country_flag',
+          prompt: `Which country does this national flag belong to?`,
+          correctAnswer: country.name,
+          options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
+          hint: `This sovereign nation is in ${country.continent}.`,
+          flagData: flag,
+          concept: 'National Flags & Symbols',
           tier: 3
         });
       }
@@ -345,8 +365,24 @@ export const getTierCandidateTemplates = (tier) => {
       });
     }
 
+    // Visual Landmark identification questions
+    for (const [landmarkName, vis] of Object.entries(WORLD_LANDMARK_VISUALS)) {
+      templates.push({
+        key: `landmark_visual:${landmarkName}`,
+        type: 'landmark_visual',
+        prompt: `Identify this famous world landmark:`,
+        correctAnswer: landmarkName,
+        options: shuffleArray([landmarkName, ...getUniqueDistractors(landmarkName, Object.keys(WORLD_LANDMARK_VISUALS).map(k => ({ name: k })), 3, w => w.name)]),
+        hint: vis.country ? `Located in ${vis.country}.` : `Located in ${vis.continent || 'the world'}.`,
+        landmarkData: vis,
+        concept: 'Landmarks & Wonders',
+        tier: 4
+      });
+    }
+
     // World landmarks & physical features
     for (const item of WORLD_LANDMARKS_AND_WONDERS) {
+      const landmarkVis = getLandmarkVisual(item.name);
       templates.push({
         key: `wonder:${item.name}`,
         type: 'world_wonder',
@@ -354,6 +390,7 @@ export const getTierCandidateTemplates = (tier) => {
         correctAnswer: item.name,
         options: shuffleArray([item.name, ...getUniqueDistractors(item.name, WORLD_LANDMARKS_AND_WONDERS, 3, w => w.name)]),
         hint: `Located in/near ${item.continent}.`,
+        landmarkData: landmarkVis,
         concept: 'Country Shapes & Locations',
         tier: 4
       });
@@ -466,6 +503,8 @@ export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Se
       tier: effectiveTier,
       shapeSvg: specificItem.shapeSvg || null,
       mapData: specificItem.mapData || null,
+      flagData: specificItem.flagData || null,
+      landmarkData: specificItem.landmarkData || null,
       key: normKey,
       isProbe: !!isProbe
     };
@@ -497,6 +536,8 @@ export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Se
     tier: effectiveTier,
     shapeSvg: chosen.shapeSvg || null,
     mapData: chosen.mapData || null,
+    flagData: chosen.flagData || null,
+    landmarkData: chosen.landmarkData || null,
     key: normKey,
     isProbe: !!isProbe
   };
@@ -518,33 +559,26 @@ export const generateWorldProblem = (ratingOrTier = 1000, history = [], seenKeys
  * Guarantees zero question repetition in the returned batch and actively deprioritizes recent history.
  * @param {number} count - Total problems to generate (e.g. 15)
  * @param {number} targetTier - Active tier (1-5) or rating
- * @param {Array|Set} history - Recently encountered questions/words to exclude
- * @param {Set} seenKeys - Keys already in active session
+ * @param {Array} history - Recently answered problem keys/terms
+ * @param {Set} seenKeys - Active session seen keys
  */
-export function generateProblems(count = 15, targetTier = 1, history = [], seenKeys = new Set()) {
-  const problems = [];
-  const effectiveTier = typeof targetTier === 'number' && targetTier >= 100
-    ? getTierForRating(targetTier)
-    : Math.max(1, Math.min(5, Number(targetTier) || 1));
-
+export const generateWorldSession = (count = 15, targetTier = 1, history = [], seenKeys = new Set()) => {
+  const effectiveTier = Math.max(1, Math.min(5, Number(targetTier) || 1));
+  const recentTerms = new Set((history || []).map(h => (typeof h === 'string' ? h.toLowerCase() : String(h?.key || '').toLowerCase())));
   const sessionSeen = new Set(seenKeys instanceof Set ? Array.from(seenKeys).map(k => String(k).toLowerCase()) : []);
-  const recentHistorySet = new Set(Array.isArray(history) ? history.map(w => String(w).toLowerCase()) : []);
-
-  // Master exclusion set combines active session + recent historical encounters
-  const masterExclude = new Set([...sessionSeen, ...recentHistorySet]);
 
   const targetTemplates = getTierCandidateTemplates(effectiveTier);
   const shuffledTarget = shuffleArray(targetTemplates);
 
-  // 1. First pass: Select fresh problems from target tier excluding history & active session
+  const problems = [];
+
+  // 1. First pass: Target tier items NOT in recent history and NOT in active session
   for (const item of shuffledTarget) {
     if (problems.length >= count) break;
     const normKey = getNormalizedProblemKey(item);
     const ansKey = (item.correctAnswer || '').toString().toLowerCase();
 
-    if (!masterExclude.has(normKey) && !masterExclude.has(ansKey)) {
-      masterExclude.add(normKey);
-      masterExclude.add(ansKey);
+    if (!sessionSeen.has(normKey) && !recentTerms.has(ansKey) && !recentTerms.has(normKey)) {
       sessionSeen.add(normKey);
       sessionSeen.add(ansKey);
       if (seenKeys instanceof Set) {
@@ -566,6 +600,8 @@ export function generateProblems(count = 15, targetTier = 1, history = [], seenK
         tier: effectiveTier,
         shapeSvg: item.shapeSvg || null,
         mapData: item.mapData || null,
+        flagData: item.flagData || null,
+        landmarkData: item.landmarkData || null,
         key: normKey,
         isProbe: false
       });
@@ -601,6 +637,8 @@ export function generateProblems(count = 15, targetTier = 1, history = [], seenK
           tier: effectiveTier,
           shapeSvg: item.shapeSvg || null,
           mapData: item.mapData || null,
+          flagData: item.flagData || null,
+          landmarkData: item.landmarkData || null,
           key: normKey,
           isProbe: false
         });
@@ -642,6 +680,8 @@ export function generateProblems(count = 15, targetTier = 1, history = [], seenK
             tier: t,
             shapeSvg: item.shapeSvg || null,
             mapData: item.mapData || null,
+            flagData: item.flagData || null,
+            landmarkData: item.landmarkData || null,
             key: normKey,
             isProbe: false
           });
@@ -665,8 +705,8 @@ export function generateProblems(count = 15, targetTier = 1, history = [], seenK
   }
 
   return problems;
-}
+};
 
-// Alias export for consistency across modules
-export const generateWorldSession = generateProblems;
+// Export alias for consistency across session components
+export const generateProblems = generateWorldSession;
 

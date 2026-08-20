@@ -2,11 +2,16 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame } from 'lucide-react';
 import Mascot from './Mascot';
 import WorldMapViewer from './WorldMapViewer';
+import WorldMediaViewer from './WorldMediaViewer';
+import { getRegionalMap } from '../data/worldMaps';
+import { getFlagForCountry } from '../data/worldFlags';
+import { getLandmarkVisual } from '../data/worldLandmarks';
 
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
 import { generateWorldSession as generateProblems, generateWorldProblem as generateTierProblem } from '../utils/worldGenerator';
 import { getTierForRating as getTierFromRating, isNearTierThreshold } from '../utils/worldCurriculum';
+import { selectSpyglassSlot } from '../utils/wordsCurriculum';
 
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
@@ -234,9 +239,16 @@ export default function WorldSessionView({
       return;
     }
 
-    // Pick the first remaining blank slot position to turn into a permanent given letter
-    const targetPos = blankSlotIndices[0];
+    // Pick the optimal blank slot position (avoiding letters/slots already revealed by Clue)
     const answerStr = (currentProblem.answerString || currentProblem.answer || '').toString();
+    const targetPos = selectSpyglassSlot({
+      targetStr: answerStr,
+      effectiveWordSlots: wordSlots,
+      isClueActive: showFrustrationCard,
+      blankSlotIndices
+    });
+
+    if (targetPos < 0) return;
     const letterToReveal = answerStr.charAt(targetPos).toUpperCase();
 
     if (onConsumeLetterSpyglass && onConsumeLetterSpyglass()) {
@@ -1309,16 +1321,31 @@ export default function WorldSessionView({
                      {question}
                   </div>
 
-                  {/* RICH GEOGRAPHIC MAP VISUALIZER */}
-                  {(currentProblem.mapData || currentProblem.shapeSvg) && (
-                    <div className="w-full flex items-center justify-center my-0.5 sm:my-1 h-28 sm:h-32 md:h-36 max-w-[280px] sm:max-w-[340px] mx-auto">
-                      <WorldMapViewer
-                        mapData={currentProblem.mapData}
-                        shapeSvg={currentProblem.shapeSvg}
-                        className="h-full w-full"
-                      />
-                    </div>
-                  )}
+                  {/* ZERO-LOAD GEOGRAPHIC / FLAG / LANDMARK VISUALIZER */}
+                  {(() => {
+                    const isMapType = currentProblem.type === 'country_shape' || currentProblem.type === 'us_state_shape';
+                    const isFlagType = currentProblem.type === 'country_flag';
+                    const isLandmarkType = currentProblem.type === 'landmark_visual' || currentProblem.type === 'world_wonder' || currentProblem.type === 'country_landmark';
+
+                    const resolvedMapData = isMapType ? (getRegionalMap(currentProblem.correctAnswer) || currentProblem.mapData) : currentProblem.mapData;
+                    const resolvedShapeSvg = resolvedMapData?.targetPath || currentProblem.shapeSvg;
+                    const resolvedFlagData = currentProblem.flagData || (isFlagType ? getFlagForCountry(currentProblem.correctAnswer) : null);
+                    const resolvedLandmarkData = currentProblem.landmarkData || (isLandmarkType ? getLandmarkVisual(currentProblem.correctAnswer || currentProblem.landmark) : null);
+
+                    if (!resolvedMapData && !resolvedShapeSvg && !resolvedFlagData && !resolvedLandmarkData) return null;
+
+                    return (
+                      <div className="w-full flex items-center justify-center my-0.5 sm:my-1 h-28 sm:h-32 md:h-36 max-w-[280px] sm:max-w-[340px] mx-auto">
+                        <WorldMediaViewer
+                          mapData={resolvedMapData}
+                          shapeSvg={resolvedShapeSvg}
+                          flagData={resolvedFlagData}
+                          landmarkData={resolvedLandmarkData}
+                          className="h-full w-full"
+                        />
+                      </div>
+                    );
+                  })()}
 
                   {/* 2x2 MULTIPLE CHOICE OPTIONS GRID */}
                   {currentProblem.options && (() => {

@@ -5,7 +5,7 @@ import Mascot from './Mascot';
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
 import { generateProblems, generateTierProblem } from '../utils/wordsGenerator';
-import { getTierFromRating, isNearTierThreshold } from '../utils/wordsCurriculum';
+import { getTierFromRating, isNearTierThreshold, getClueHintMessage, selectSpyglassSlot } from '../utils/wordsCurriculum';
 import QwertyKeyboard from './QwertyKeyboard';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
@@ -233,9 +233,16 @@ export default function WordsSessionView({
       return;
     }
 
-    // Pick the first remaining blank slot position to turn into a permanent given letter
-    const targetPos = blankSlotIndices[0];
+    // Pick the optimal blank slot position (avoiding letters/slots already revealed by Clue)
     const answerStr = (currentProblem.answerString || currentProblem.answer || '').toString();
+    const targetPos = selectSpyglassSlot({
+      targetStr: answerStr,
+      effectiveWordSlots,
+      isClueActive: showFrustrationCard,
+      blankSlotIndices
+    });
+
+    if (targetPos < 0) return;
     const letterToReveal = answerStr.charAt(targetPos).toUpperCase();
 
     if (onConsumeLetterSpyglass && onConsumeLetterSpyglass()) {
@@ -1590,28 +1597,11 @@ export default function WordsSessionView({
               };
 
               const getWordHintMessage = () => {
-                if (!targetStr) return "Sound out the word and try your best!";
-                const word = targetStr.toUpperCase();
-                const vowels = word.split('').filter(c => 'AEIOU'.includes(c));
-                const uniqueVowels = Array.from(new Set(vowels)).join(', ');
-
-                // Identify starting blends / digraphs
-                const blends = ['STR', 'SPR', 'SPL', 'SCR', 'SH', 'CH', 'TH', 'WH', 'PH', 'BL', 'CL', 'FL', 'GL', 'PL', 'SL', 'BR', 'CR', 'DR', 'FR', 'GR', 'PR', 'TR', 'SK', 'SM', 'SN', 'SP', 'ST', 'SW', 'TW', 'QU'];
-                const matchedBlend = blends.find(b => word.startsWith(b));
-                const startClue = matchedBlend 
-                  ? `Starts with '${matchedBlend}' blend`
-                  : `Starts with '${word[0]}'`;
-
-                const endingClue = word.length > 3 ? `ends with '${word[word.length - 1]}'` : null;
-                const vowelClue = uniqueVowels ? `Vowel${uniqueVowels.includes(',') ? 's' : ''}: ${uniqueVowels}` : null;
-
-                const clues = [
-                  startClue,
-                  vowelClue,
-                  endingClue
-                ].filter(Boolean).join(' • ');
-
-                return `🔤 ${clues} (${word.length} letters)`;
+                return getClueHintMessage({
+                  targetStr,
+                  effectiveWordSlots,
+                  problemHint: currentProblem.hint
+                });
               };
 
               return (

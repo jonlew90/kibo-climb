@@ -364,3 +364,186 @@ export function calculateStars(accuracyPct, durationInSeconds, tierConfig = null
   return 0;
 }
 
+export const COMMON_BLENDS = [
+  'STR', 'SPR', 'SPL', 'SCR', 'SH', 'CH', 'TH', 'WH', 'PH',
+  'BL', 'CL', 'FL', 'GL', 'PL', 'SL', 'BR', 'CR', 'DR', 'FR',
+  'GR', 'PR', 'TR', 'SK', 'SM', 'SN', 'SP', 'ST', 'SW', 'TW', 'QU'
+];
+
+export const INTERNAL_DIGRAPHS = [
+  'STR', 'SPR', 'SPL', 'SCR', 'SH', 'CH', 'TH', 'WH', 'PH',
+  'BL', 'CL', 'FL', 'GL', 'PL', 'SL', 'BR', 'CR', 'DR', 'FR',
+  'GR', 'PR', 'TR', 'SK', 'SM', 'SN', 'SP', 'ST', 'SW', 'TW',
+  'QU', 'NK', 'MP', 'CK', 'NG', 'ND', 'NT', 'LT', 'LK'
+];
+
+/**
+ * Computes non-overlapping clues for a word problem taking into account
+ * already-revealed letter slots (such as those uncovered by Spyglass or given base letters).
+ */
+export function getClueHintMessage({ targetStr = '', effectiveWordSlots = [], problemHint = '' } = {}) {
+  if (!targetStr) return "Sound out the word and try your best!";
+  const word = targetStr.toUpperCase();
+  const slots = effectiveWordSlots.length === word.length
+    ? effectiveWordSlots
+    : word.split('').map(() => '_');
+  
+  const isRevealed = (idx) => slots[idx] && slots[idx] !== '_';
+  const blankIndices = [];
+  for (let i = 0; i < word.length; i++) {
+    if (!isRevealed(i)) blankIndices.push(i);
+  }
+
+  // 1. Starting Clue
+  let startClue = null;
+  const matchedStartBlend = COMMON_BLENDS.find(b => word.startsWith(b));
+  if (matchedStartBlend) {
+    const blendIndices = Array.from({ length: matchedStartBlend.length }, (_, i) => i);
+    const unrevealedCount = blendIndices.filter(i => !isRevealed(i)).length;
+    // Only show starting blend if at least one letter of the blend is still unrevealed
+    if (unrevealedCount > 0) {
+      startClue = `Starts with '${matchedStartBlend}' blend`;
+    }
+  } else {
+    // Only show starting single letter if slot 0 is unrevealed
+    if (!isRevealed(0)) {
+      startClue = `Starts with '${word[0]}'`;
+    }
+  }
+
+  // 2. Ending Clue (only if word length > 3 and last letter is unrevealed)
+  let endingClue = null;
+  const lastIdx = word.length - 1;
+  if (word.length > 3 && !isRevealed(lastIdx)) {
+    endingClue = `ends with '${word[lastIdx]}'`;
+  }
+
+  // 3. Vowel Clue (only list UNREVEALED vowels)
+  let vowelClue = null;
+  const unrevealedVowels = Array.from(
+    new Set(
+      blankIndices
+        .map(i => word[i])
+        .filter(c => 'AEIOU'.includes(c))
+    )
+  );
+  if (unrevealedVowels.length > 0) {
+    vowelClue = `Vowel${unrevealedVowels.length > 1 ? 's' : ''}: ${unrevealedVowels.join(', ')}`;
+  }
+
+  // 4. Middle / Internal Clue: If start is already revealed, find an unrevealed middle blend or consonant
+  let middleClue = null;
+  if (!startClue && blankIndices.length > 0) {
+    const matchedInternal = INTERNAL_DIGRAPHS.find(b => {
+      const pos = word.indexOf(b);
+      if (pos > 0) {
+        const bIndices = Array.from({ length: b.length }, (_, i) => pos + i);
+        return bIndices.some(i => !isRevealed(i));
+      }
+      return false;
+    });
+
+    if (matchedInternal) {
+      middleClue = `Contains '${matchedInternal}'`;
+    } else {
+      const unrevealedConsonants = Array.from(
+        new Set(
+          blankIndices
+            .filter(i => i !== 0 && i !== lastIdx)
+            .map(i => word[i])
+            .filter(c => !'AEIOU'.includes(c))
+        )
+      );
+      if (unrevealedConsonants.length > 0 && !endingClue) {
+        middleClue = `Contains consonant: '${unrevealedConsonants[0]}'`;
+      }
+    }
+  }
+
+  const clues = [
+    startClue,
+    middleClue,
+    vowelClue,
+    endingClue
+  ].filter(Boolean);
+
+  if (clues.length === 0) {
+    if (problemHint) {
+      return `🔤 ${problemHint} (${word.length} letters)`;
+    }
+    if (blankIndices.length > 0) {
+      return `🔤 Missing ${blankIndices.length} letter${blankIndices.length > 1 ? 's' : ''} to solve! (${word.length} letters)`;
+    }
+    return `🔤 Almost there! (${word.length} letters)`;
+  }
+
+  return `🔤 ${clues.join(' • ')} (${word.length} letters)`;
+}
+
+/**
+ * Returns a Set of slot indices that were explicitly hinted/revealed by the Wisdom Clue.
+ */
+export function getClueHintedPositions(targetStr = '', effectiveWordSlots = []) {
+  const word = targetStr.toUpperCase();
+  const slots = effectiveWordSlots.length === word.length
+    ? effectiveWordSlots
+    : word.split('').map(() => '_');
+  const isRevealed = (idx) => slots[idx] && slots[idx] !== '_';
+  const hinted = new Set();
+
+  // Start blend / char
+  const matchedStartBlend = COMMON_BLENDS.find(b => word.startsWith(b));
+  if (matchedStartBlend) {
+    const blendIndices = Array.from({ length: matchedStartBlend.length }, (_, i) => i);
+    if (blendIndices.some(i => !isRevealed(i))) {
+      blendIndices.forEach(i => hinted.add(i));
+    }
+  } else if (word.length > 0 && !isRevealed(0)) {
+    hinted.add(0);
+  }
+
+  // End char
+  const lastIdx = word.length - 1;
+  if (word.length > 3 && !isRevealed(lastIdx)) {
+    hinted.add(lastIdx);
+  }
+
+  // Unrevealed vowels
+  for (let i = 0; i < word.length; i++) {
+    if ('AEIOU'.includes(word[i]) && !isRevealed(i)) {
+      hinted.add(i);
+    }
+  }
+
+  return hinted;
+}
+
+/**
+ * Selects the optimal blank slot index for Spyglass to reveal, ensuring that if
+ * a Wisdom Clue is active, Spyglass will NOT reveal a slot the Clue already hinted.
+ */
+export function selectSpyglassSlot({ targetStr = '', effectiveWordSlots = [], isClueActive = false, blankSlotIndices = [] } = {}) {
+  if (!blankSlotIndices || blankSlotIndices.length === 0) return -1;
+  if (!isClueActive) {
+    return blankSlotIndices[0];
+  }
+
+  const word = targetStr.toUpperCase();
+  const clueHinted = getClueHintedPositions(word, effectiveWordSlots);
+
+  // 1. Pick a blank slot that has NOT been hinted by the Clue
+  const unhintedBlanks = blankSlotIndices.filter(idx => !clueHinted.has(idx));
+  if (unhintedBlanks.length > 0) {
+    return unhintedBlanks[0];
+  }
+
+  // 2. If all remaining blanks were hinted, prioritize internal/vowel slots over exact start/end boundary slots
+  const nonBoundaryBlanks = blankSlotIndices.filter(idx => idx !== 0 && idx !== word.length - 1);
+  if (nonBoundaryBlanks.length > 0) {
+    return nonBoundaryBlanks[0];
+  }
+
+  return blankSlotIndices[0];
+}
+
+
