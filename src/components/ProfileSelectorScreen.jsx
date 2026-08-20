@@ -414,29 +414,36 @@ export default function ProfileSelectorScreen({
   const subjectKeys = Object.keys(SUBJECTS_CONFIG || { math: {}, words: {}, world: {} });
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-between p-4 overflow-y-auto custom-scrollbar animate-fade-in">
-      {/* Background ambient lighting */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
+      {/* Top Header Bar */}
+      <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
+        <div className="flex items-center gap-2 text-slate-800">
+          <span className="text-lg">🏔️</span>
+          <h2 className="text-base sm:text-lg font-black tracking-tight">Select Climber Profile</h2>
+        </div>
 
-      {/* Dismiss button if modal can be closed */}
-      {canClose && onClose && (
-        <button
-          onClick={() => {
-            soundFx.playKeyTap();
-            onClose();
-          }}
-          className="absolute top-3 right-3 z-50 p-2 text-slate-500 hover:text-slate-800 bg-white/50 hover:bg-white/80 rounded-full transition-all border border-slate-200 cursor-pointer"
-        >
-          <X className="w-5 h-5 stroke-[2.5]" />
-        </button>
-      )}
+        {/* Dismiss / Close button if canClose */}
+        {canClose && onClose && (
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              onClose();
+            }}
+            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-300 transition-colors active:scale-95 cursor-pointer flex items-center justify-center"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5 stroke-[2.5]" />
+          </button>
+        )}
+      </header>
 
-      <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center justify-center gap-2 sm:gap-3 p-2 sm:p-4 my-auto">
-
-        {/* Header */}
-        <div className="text-center space-y-0.5 shrink-0">
+      {/* Main Fullscreen Scrollable Content */}
+      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-4">
+        {/* Header Title Card */}
+        <div className="text-center space-y-1 shrink-0 pb-2">
           <span className="text-xs font-black uppercase tracking-widest text-amber-600">
-            🏔️ Kibo Climb • Multi-Subject
+            Kibo Climb • Multi-Subject
           </span>
           <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
             {profiles.length === 1
@@ -450,7 +457,7 @@ export default function ProfileSelectorScreen({
 
         {/* Subject Filter / Lens Tabs (shown when multiple subjects exist) */}
         {subjectKeys.length >= 2 && (
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full px-1 scrollbar-none shrink-0">
+          <div className="flex items-center justify-center gap-1.5 overflow-x-auto pb-1 max-w-full px-1 scrollbar-none shrink-0 mx-auto">
             <button
               type="button"
               onClick={() => { soundFx.playKeyTap(); setSubjectLens('all'); }}
@@ -504,16 +511,18 @@ export default function ProfileSelectorScreen({
         {/* Add Profile — toggle inline panel */}
         {profiles.length < 6 && (
           !showAddPanel ? (
-            <button
-              type="button"
-              onClick={() => { soundFx.playKeyTap(); setShowAddPanel(true); }}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors py-1 group shrink-0 cursor-pointer"
-            >
-              <div className="w-6 h-6 rounded-full border border-slate-400 group-hover:border-slate-600 flex items-center justify-center transition-colors bg-white/60">
-                <Plus className="w-3.5 h-3.5" />
-              </div>
-              <span>Add a climber profile</span>
-            </button>
+            <div className="flex justify-center w-full">
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowAddPanel(true); }}
+                className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors py-1 group shrink-0 cursor-pointer"
+              >
+                <div className="w-6 h-6 rounded-full border border-slate-400 group-hover:border-slate-600 flex items-center justify-center transition-colors bg-white/60">
+                  <Plus className="w-3.5 h-3.5" />
+                </div>
+                <span>Add a climber profile</span>
+              </button>
+            </div>
           ) : (
             <AddProfilePanel
               onCancel={() => setShowAddPanel(false)}
@@ -536,7 +545,7 @@ export default function ProfileSelectorScreen({
             <span className="font-bold text-slate-700">Parent Zone</span>
           )}.
         </p>
-      </div>
+      </main>
     </div>
   );
 }

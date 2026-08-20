@@ -1480,6 +1480,7 @@ export default function App() {
       {/* MANUAL PROFILE SELECTOR */}
       {showManualProfileSwitcher && (
         <ProfileSelectorScreen
+          canClose={true}
           onSelectProfile={(profile, preferredSubject) => {
             if (preferredSubject && (preferredSubject === 'words' || preferredSubject === 'math' || preferredSubject === 'world')) {
               setActiveSubject(preferredSubject);

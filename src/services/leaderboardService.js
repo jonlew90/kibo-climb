@@ -1,6 +1,7 @@
 // src/services/leaderboardService.js
-import { db, auth } from '../config/firebase.js';
+import { db, auth, functions } from '../config/firebase.js';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
 import { 
   collection, 
   doc, 
@@ -20,6 +21,10 @@ class LeaderboardService {
     this.currentUser = null;
     this.isAuthInitialized = false;
     this.initAuth();
+  }
+
+  getCurrentUser() {
+    return this.currentUser || auth.currentUser;
   }
 
   // Ensure anonymous auth session for cloud sync
@@ -114,12 +119,29 @@ class LeaderboardService {
       );
 
       return onSnapshot(q, (snapshot) => {
-        const standings = snapshot.docs
+        const rawDocs = snapshot.docs
           .map(docSnap => ({
             id: docSnap.id,
             ...docSnap.data()
           }))
-          .filter(p => (p.subject || 'math') === (subject || 'math'))
+          .filter(p => (p.subject || 'math') === (subject || 'math'));
+
+        // Deduplicate remote entries: if the same player exists multiple times across sessions, keep highest score
+        const seenKeys = new Set();
+        const deduplicated = [];
+
+        for (const player of rawDocs) {
+          const uniqueKey = player.uid && player.profileId 
+            ? `${player.uid}_${player.profileId}` 
+            : (player.name ? player.name.trim().toLowerCase() : player.id);
+          
+          if (!seenKeys.has(uniqueKey)) {
+            seenKeys.add(uniqueKey);
+            deduplicated.push(player);
+          }
+        }
+
+        const standings = deduplicated
           .slice(0, limitCount)
           .map((player, index) => ({
             ...player,
@@ -136,6 +158,125 @@ class LeaderboardService {
       return () => {};
     }
   }
+
+  // Join or retrieve weekly cohort with Cloud Function + resilient client fallback
+  async joinWeeklyLeague({ profileId = 'default_child', weekStr, subject = 'math' }) {
+    const safeProfileId = profileId || 'default_child';
+    const cacheKey = `kibo_cohort_${weekStr}_${subject}_${safeProfileId}`;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        return { cohortId: cached };
+      }
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+
+    // Attempt to invoke the Cloud Function if available
+    try {
+      const joinFunc = httpsCallable(functions, 'joinWeeklyLeague');
+      const res = await joinFunc({ profileId: safeProfileId, weekStr, subject });
+      if (res?.data?.cohortId) {
+        try { localStorage.setItem(cacheKey, res.data.cohortId); } catch (e) {}
+        return { cohortId: res.data.cohortId };
+      }
+    } catch (err) {
+      // Graceful fallback without crashing or spamming console
+      console.info('LeaderboardService: Cloud Function unavailable, using cohort allocation fallback.');
+    }
+
+    // Resilient fallback cohort bucket
+    const fallbackCohortId = `league_${weekStr}_${subject}_bucket_1`;
+    try {
+      localStorage.setItem(cacheKey, fallbackCohortId);
+    } catch (e) {}
+
+    return { cohortId: fallbackCohortId };
+  }
+
+  // Sync weekly effort stats (sparks and max streak) to Firestore
+  async syncWeeklyScore({ profileId, name, weekStr, cohortId, sparks = 0, maxStreak = 0, equipped = [], subject = 'math' }) {
+    try {
+      let user = this.currentUser || auth.currentUser;
+      if (!user) {
+        try {
+          const userCred = await signInAnonymously(auth);
+          user = userCred.user;
+          this.currentUser = user;
+        } catch (authErr) {
+          return; // Skip silently if offline
+        }
+      }
+
+      if (!user || !user.uid) return;
+
+      const baseUid = user.uid;
+      const safeProfileId = profileId || 'default_child';
+      const safeSubject = subject || 'math';
+      const safeCohortId = cohortId || `league_${weekStr}_${safeSubject}_bucket_1`;
+      const documentId = `${baseUid}_${safeProfileId}_${safeSubject}`;
+      const userRef = doc(db, 'weekly_stats', documentId);
+
+      const payload = {
+        uid: baseUid,
+        profileId: safeProfileId,
+        subject: safeSubject,
+        name: name || 'Kibo Climber',
+        weekStr: weekStr,
+        cohortId: safeCohortId,
+        sparks: Number(sparks) || 0,
+        maxStreak: Number(maxStreak) || 0,
+        equipped: Array.isArray(equipped) ? equipped : [],
+        updatedAt: serverTimestamp()
+      };
+
+      await setDoc(userRef, payload, { merge: true });
+    } catch (error) {
+      if (error?.code === 'permission-denied') {
+        console.warn('LeaderboardService: Weekly sync permission denied. Check Firestore security rules.');
+      } else {
+        console.warn('LeaderboardService: Failed to sync weekly score', error);
+      }
+    }
+  }
+
+  // Subscribe to a specific cohort's weekly standings
+  subscribeToWeeklyLeaderboard(weekStr, cohortId, subject = 'math', limitCount = 30, onUpdate) {
+    try {
+      if (!cohortId) {
+        onUpdate([]);
+        return () => {};
+      }
+
+      const q = query(
+        collection(db, 'weekly_stats')
+      );
+
+      return onSnapshot(q, (snapshot) => {
+        const standings = snapshot.docs
+          .map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }))
+          .filter(p => p.weekStr === weekStr && (!p.cohortId || p.cohortId === cohortId) && (p.subject || 'math') === subject)
+          .sort((a, b) => (b.sparks || 0) - (a.sparks || 0))
+          .slice(0, limitCount)
+          .map((player, index) => ({
+            ...player,
+            rank: index + 1
+          }));
+        onUpdate(standings);
+      }, (error) => {
+        console.warn('LeaderboardService: Firestore weekly subscription fallback', error);
+        onUpdate([]);
+      });
+    } catch (error) {
+      console.warn('LeaderboardService: Firestore weekly subscription error', error);
+      onUpdate([]);
+      return () => {};
+    }
+  }
+
 }
 
 export const leaderboardService = new LeaderboardService();

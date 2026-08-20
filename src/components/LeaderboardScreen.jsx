@@ -5,28 +5,8 @@ import { soundFx } from '../utils/audio';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
+import { getWeekStr } from '../utils/dateUtils';
 import { SUBJECTS_CONFIG } from '../config/subjects';
-
-const MOCK_COMPETITORS_BY_SUBJECT = {
-  math: [
-    { id: 'mock_math_1', name: 'Maya Matrix', score: 1680, subjectsMastered: 8, equipped: ['crown', 'cape'] },
-    { id: 'mock_math_2', name: 'Leo Apex', score: 1490, subjectsMastered: 6, equipped: ['party_hat', 'scarf'] },
-    { id: 'mock_math_3', name: 'Sam Numerator', score: 1380, subjectsMastered: 5, equipped: ['cap', 'boots'] },
-    { id: 'mock_math_4', name: 'Zoe Cipher', score: 1260, subjectsMastered: 4, equipped: ['headband'] },
-    { id: 'mock_math_5', name: 'Lucas Vector', score: 1180, subjectsMastered: 3, equipped: ['astronaut_helmet'] },
-    { id: 'mock_math_6', name: 'Elena Prime', score: 1110, subjectsMastered: 2, equipped: [] },
-    { id: 'mock_math_7', name: 'Oliver Tangent', score: 1040, subjectsMastered: 2, equipped: [] }
-  ],
-  words: [
-    { id: 'mock_words_1', name: 'Emma Lexicon', score: 1620, subjectsMastered: 7, equipped: ['crown', 'cape'] },
-    { id: 'mock_words_2', name: 'Liam Speller', score: 1470, subjectsMastered: 6, equipped: ['party_hat', 'scarf'] },
-    { id: 'mock_words_3', name: 'Sophia Bard', score: 1350, subjectsMastered: 5, equipped: ['cap', 'boots'] },
-    { id: 'mock_words_4', name: 'Noah Syntax', score: 1250, subjectsMastered: 4, equipped: ['headband'] },
-    { id: 'mock_words_5', name: 'Ava Rhyme', score: 1170, subjectsMastered: 3, equipped: ['astronaut_helmet'] },
-    { id: 'mock_words_6', name: 'Ethan Vocab', score: 1100, subjectsMastered: 2, equipped: [] },
-    { id: 'mock_words_7', name: 'Chloe Prose', score: 1030, subjectsMastered: 1, equipped: [] }
-  ]
-};
 
 export default function LeaderboardScreen({
   activeSubject = 'math',
@@ -36,6 +16,10 @@ export default function LeaderboardScreen({
 }) {
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
   const [liveStandings, setLiveStandings] = useState([]);
+  const [viewMode, setViewMode] = useState('global'); // 'global' or 'weekly'
+  const [weeklyStandings, setWeeklyStandings] = useState([]);
+  const [cohortId, setCohortId] = useState(null);
+  const [isLoadingCohort, setIsLoadingCohort] = useState(false);
 
   // Sync selected subject if active subject prop changes
   useEffect(() => {
@@ -46,6 +30,7 @@ export default function LeaderboardScreen({
 
   const activeProfile = storageService.getActiveProfile();
   const username = storageService.getUsername() || activeProfile?.username || activeProfile?.name || 'You';
+  const currentUid = leaderboardService.getCurrentUser?.()?.uid;
 
   // Get user score for selected subject
   const userScore = (selectedSubject === activeSubject && userState?.competenceRank)
@@ -89,6 +74,73 @@ export default function LeaderboardScreen({
     };
   });
 
+
+  useEffect(() => {
+    if (viewMode !== 'weekly') return;
+
+    let isMounted = true;
+    const weekStr = getWeekStr();
+
+    // Attempt to join or fetch cohort via leaderboardService with automatic resilient fallback
+    const joinCohort = async () => {
+      try {
+        setIsLoadingCohort(true);
+        const result = await leaderboardService.joinWeeklyLeague({
+          profileId: activeProfile?.id || 'default_child',
+          weekStr,
+          subject: selectedSubject
+        });
+        if (isMounted && result?.cohortId) {
+          setCohortId(result.cohortId);
+        }
+      } catch (err) {
+        console.warn('LeaderboardScreen: Error joining weekly cohort:', err);
+      } finally {
+        if (isMounted) setIsLoadingCohort(false);
+      }
+    };
+
+    joinCohort();
+
+    return () => { isMounted = false; };
+  }, [viewMode, selectedSubject, activeProfile?.id]);
+
+  useEffect(() => {
+    if (viewMode !== 'weekly' || !cohortId) return;
+
+    const weekStr = getWeekStr();
+
+    // Sync active player's weekly stats
+    accountPlayers.forEach(p => {
+      if (p.isCurrentUser) {
+         const sparks = activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0;
+         const maxStreak = activeProfile?.userData?.weeklyMaxStreak || activeProfile?.userData?.streak || 0;
+         leaderboardService.syncWeeklyScore({
+            profileId: p.id,
+            subject: selectedSubject,
+            name: p.name,
+            weekStr,
+            cohortId,
+            sparks,
+            maxStreak,
+            equipped: p.equipped
+         });
+      }
+    });
+
+    const unsubscribe = leaderboardService.subscribeToWeeklyLeaderboard(weekStr, cohortId, selectedSubject, 30, (remoteData) => {
+      if (remoteData && remoteData.length > 0) {
+        setWeeklyStandings(remoteData);
+      } else {
+        setWeeklyStandings([]);
+      }
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
+  }, [viewMode, cohortId, selectedSubject]);
+
   // Subscribe to Firestore real-time updates and sync all account profiles for selected subject
   useEffect(() => {
     accountPlayers.forEach(p => {
@@ -115,43 +167,101 @@ export default function LeaderboardScreen({
     };
   }, [selectedSubject, userScore, username, activeProfile?.id]);
 
-  const accountNames = new Set(accountPlayers.map(p => p.name));
-  const accountIds = new Set(accountPlayers.map(p => p.id));
-
-  // Combine live data with all account profiles and fallback mock competitors
-  const baseStandings = liveStandings;
-  const filteredRemote = baseStandings.filter(p => 
-    !accountNames.has(p.name) && 
-    !accountIds.has(p.profileId) && 
-    !accountIds.has(p.id)
+  const accountNamesNormalized = new Set(
+    accountPlayers.map(p => (p.name || '').trim().toLowerCase()).filter(Boolean)
+  );
+  const accountProfileIds = new Set(
+    accountPlayers.map(p => p.id).filter(Boolean)
   );
 
-  let mergedList = [...filteredRemote, ...accountPlayers];
+  // Filter remote records to avoid duplicates with local account profiles or the current auth session
+  const filteredRemote = liveStandings.filter(p => {
+    if (currentUid && p.uid === currentUid) return false;
+    if (currentUid && p.id && p.id.startsWith(`${currentUid}_`)) return false;
+    if (p.profileId && accountProfileIds.has(p.profileId)) return false;
+    const normName = (p.name || '').trim().toLowerCase();
+    if (accountNamesNormalized.has(normName)) return false;
+    return true;
+  });
 
-  // If we have fewer than 3 players, supplement with mock competitors for a lively top 3 experience
-  if (mergedList.length < 3) {
-    const mockList = MOCK_COMPETITORS_BY_SUBJECT[selectedSubject] || MOCK_COMPETITORS_BY_SUBJECT.math;
-    const existingNames = new Set(mergedList.map(p => p.name));
-    for (const mock of mockList) {
-      if (!existingNames.has(mock.name)) {
-        mergedList.push({
-          id: mock.id,
-          name: mock.name,
-          score: mock.score,
-          subjectsMastered: mock.subjectsMastered,
-          equipped: mock.equipped,
-          isCurrentUser: false,
-          isAccountProfile: false
-        });
-        if (mergedList.length >= 7) break;
-      }
+  // Combine filtered remote standings with account profiles
+  const mergedList = [...filteredRemote, ...accountPlayers];
+
+  // Deduplicate merged standings so each player / profile appears once with their best score
+  const seenPlayerKeys = new Set();
+  const uniqueStandings = [];
+
+  // Sort descending by score before deduplication
+  mergedList.sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+
+  for (const player of mergedList) {
+    const key = player.isCurrentUser
+      ? '__current_active_user__'
+      : (player.profileId && player.uid ? `${player.uid}_${player.profileId}` : (player.name || '').trim().toLowerCase() || player.id);
+
+    if (!seenPlayerKeys.has(key)) {
+      seenPlayerKeys.add(key);
+      uniqueStandings.push(player);
     }
   }
 
-  const combinedStandings = mergedList.sort((a, b) => b.score - a.score);
+  // Handle Weekly Standings merging with account profiles
+  const accountPlayersWeekly = allAccountProfiles.map(p => {
+    const isCurrent = p.id === activeProfile?.id;
+    const pName = isCurrent ? username : (p.username || p.name || 'Climber');
+    const pSparks = isCurrent
+      ? (activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0)
+      : (p.userData?.weeklySparks || p.userData?.sparks || 0);
+    const pEquipped = isCurrent 
+      ? userEquippedItems 
+      : (p.shopState?.equippedItems || []);
+    const pSubjects = isCurrent
+      ? (userSubjectsMastered || 5)
+      : (p.userData?.subjectsMastered ?? Object.keys(p.userData?.masteredTricks || {}).length ?? 5);
+
+    return {
+      id: p.id,
+      profileId: p.id,
+      isCurrentUser: isCurrent,
+      isAccountProfile: true,
+      name: pName,
+      sparks: Number(pSparks) || 0,
+      score: Number(pSparks) || 0,
+      subjectsMastered: pSubjects,
+      equipped: pEquipped,
+      subject: selectedSubject
+    };
+  });
+
+  const weeklyFilteredRemote = weeklyStandings.filter(p => {
+    if (currentUid && p.uid === currentUid) return false;
+    if (currentUid && p.id && p.id.startsWith(`${currentUid}_`)) return false;
+    if (p.profileId && accountProfileIds.has(p.profileId)) return false;
+    const normName = (p.name || '').trim().toLowerCase();
+    if (accountNamesNormalized.has(normName)) return false;
+    return true;
+  });
+
+  const mergedWeeklyList = [...weeklyFilteredRemote, ...accountPlayersWeekly];
+  mergedWeeklyList.sort((a, b) => (Number(b.sparks) || 0) - (Number(a.sparks) || 0));
+
+  const seenWeeklyKeys = new Set();
+  const uniqueWeeklyStandings = [];
+  for (const player of mergedWeeklyList) {
+    const key = player.isCurrentUser
+      ? '__current_active_user__'
+      : (player.profileId && player.uid ? `${player.uid}_${player.profileId}` : (player.name || '').trim().toLowerCase() || player.id);
+
+    if (!seenWeeklyKeys.has(key)) {
+      seenWeeklyKeys.add(key);
+      uniqueWeeklyStandings.push(player);
+    }
+  }
+
+  const activeStandingsList = viewMode === 'weekly' ? uniqueWeeklyStandings : uniqueStandings;
 
   // Assign ranks
-  const rankedStandings = combinedStandings.map((player, index) => ({
+  const rankedStandings = activeStandingsList.map((player, index) => ({
     ...player,
     rank: index + 1
   }));
@@ -159,10 +269,23 @@ export default function LeaderboardScreen({
   const userRankObj = rankedStandings.find(p => p.isCurrentUser);
   const currentUserRank = userRankObj ? userRankObj.rank : rankedStandings.length;
 
+  const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG.math;
+
+  let pinnedScoreDisplay = userScore;
+  let pinnedScoreLabel = `pts (${subjectConfig.name})`;
+  if (viewMode === 'weekly') {
+    pinnedScoreDisplay = userRankObj ? (userRankObj.sparks || 0) : (activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0);
+    pinnedScoreLabel = 'Sparks Earned';
+  }
+
   let pointsNeeded = 0;
   if (currentUserRank > 1) {
     const playerAbove = rankedStandings[currentUserRank - 2];
-    pointsNeeded = playerAbove ? Math.max(1, playerAbove.score - userScore + 1) : 1;
+    if (viewMode === 'global') {
+      pointsNeeded = playerAbove ? Math.max(1, playerAbove.score - userScore + 1) : 1;
+    } else {
+      pointsNeeded = playerAbove ? Math.max(1, (playerAbove.sparks || playerAbove.score || 0) - pinnedScoreDisplay + 1) : 1;
+    }
   }
 
   // Top standings display
@@ -174,22 +297,64 @@ export default function LeaderboardScreen({
     return getCompetenceRankTier(score, selectedSubject);
   };
 
-  const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG.math;
-
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-slate-50 via-stone-50 to-slate-100 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
 
       {/* HEADER & CONTROLS */}
+
+        {/* VIEW MODE TABS */}
+        <div className="px-4 pt-3 flex items-center gap-2 mb-2">
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('global');
+            }}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 border-2 ${
+              viewMode === 'global'
+                ? 'bg-slate-800 text-white border-slate-900 shadow-sm ring-2 ring-slate-400/30'
+                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+            }`}
+          >
+            <Trophy className="w-4 h-4" />
+            Global Standings
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('weekly');
+            }}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 border-2 ${
+              viewMode === 'weekly'
+                ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm ring-2 ring-emerald-400/30'
+                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+            }`}
+          >
+            <Zap className="w-4 h-4 fill-current" />
+            Weekly League
+          </button>
+        </div>
+
       <div className="bg-white border-b-2 border-slate-200 z-10 shrink-0 shadow-sm relative pb-3">
         <div className="px-4 pt-3 pb-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-slate-800">
-            <Trophy className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
-            <h2 className="text-lg font-black tracking-tight">Global Standings</h2>
+            {viewMode === 'global' ? (
+              <Trophy className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
+            ) : (
+              <Zap className="w-5 h-5 text-emerald-600 fill-emerald-500 stroke-[2.5]" />
+            )}
+            <h2 className="text-lg font-black tracking-tight">
+              {viewMode === 'global' ? 'Global Standings' : 'Weekly League'}
+            </h2>
           </div>
 
           <div className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">
             <Activity className="w-3.5 h-3.5 text-indigo-600" />
-            <span>{subjectConfig.name} Competence</span>
+            <span>
+              {viewMode === 'global' ? `${subjectConfig.name} Competence` : `${subjectConfig.name} Weekly Sparks`}
+            </span>
           </div>
         </div>
 
@@ -235,12 +400,14 @@ export default function LeaderboardScreen({
         </div>
 
         {/* Fairness Banner */}
-        <div className="mx-4 mt-2.5 bg-indigo-50/90 border border-indigo-200 text-indigo-900 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-inner">
-          <Info className="w-4 h-4 text-indigo-500 shrink-0" />
+        <div className={`mx-4 mt-2.5 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-inner border ${viewMode === 'global' ? 'bg-indigo-50/90 border-indigo-200 text-indigo-900' : 'bg-emerald-50/90 border-emerald-200 text-emerald-900'}`}>
+          <Info className={`w-4 h-4 shrink-0 ${viewMode === 'global' ? 'text-indigo-500' : 'text-emerald-500'}`} />
           <p className="leading-tight">
-            {selectedSubject === 'words'
-              ? 'Words competence is dynamically measured based on spelling accuracy, vocabulary fluency, and speed.'
-              : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.'}
+            {viewMode === 'global'
+              ? (selectedSubject === 'words'
+                 ? 'Words competence is dynamically measured based on spelling accuracy, vocabulary fluency, and speed.'
+                 : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.')
+              : (`Compete in this week's cohort by earning Sparks! ${cohortId ? 'Group: ' + cohortId.split('_bucket_')[1] : ''}`)}
           </p>
         </div>
       </div>
@@ -248,82 +415,97 @@ export default function LeaderboardScreen({
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 overflow-y-auto custom-scrollbar relative pb-6">
 
-        {/* HERO PODIUM (Top 3) */}
-        {top3.length >= 3 && (
+        {/* EMPTY STATE IF NO PLAYERS */}
+        {rankedStandings.length === 0 && (
+          <div className="p-8 text-center flex flex-col items-center justify-center min-h-[250px]">
+            <Trophy className="w-12 h-12 text-slate-300 mb-3 stroke-[1.5]" />
+            <p className="text-slate-600 font-bold text-base">No standings recorded yet</p>
+            <p className="text-slate-400 text-xs mt-1">Complete a climb to claim 1st place on the board!</p>
+          </div>
+        )}
+
+        {/* HERO PODIUM (Top 1 to 3) */}
+        {top3.length > 0 && (
           <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
 
             {/* 2nd Place */}
-            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
-                top3[1].isCurrentUser ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40' : 'bg-slate-200 border-slate-300'
-              }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
-                  <Mascot size={56} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} className="w-full h-full" />
+            {top3[1] && (
+              <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+                  top3[1].isCurrentUser ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40' : 'bg-slate-200 border-slate-300'
+                }`}>
+                  <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
+                    <Mascot size={56} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} className="w-full h-full" />
+                  </div>
+                </div>
+                <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[1].name}>
+                  <span className="font-bold text-xs truncate min-w-0 text-center">
+                    {top3[1].name}
+                  </span>
+                  {top3[1].isCurrentUser && (
+                    <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
+                  )}
+                </div>
+                <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[1].score + ' pts' : (top3[1].sparks || 0) + ' sparks'}</span>
+                <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+                  <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
                 </div>
               </div>
-              <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[1].name}>
-                <span className="font-bold text-xs truncate min-w-0 text-center">
-                  {top3[1].name}
-                </span>
-                {top3[1].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
-                )}
-              </div>
-              <span className="text-xs text-slate-500 font-bold mb-2">{top3[1].score} pts</span>
-              <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-                <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
-              </div>
-            </div>
+            )}
 
             {/* 1st Place */}
-            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[145px] sm:max-w-[175px] relative z-20 animate-fade-in-up">
-              <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
-                <Crown className="w-6 h-6 fill-amber-400" />
-              </div>
-              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
-                top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
-              }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-[0.88] sm:scale-95">
-                  <Mascot size={72} mood="excited" equipped={top3[0].equipped} className="w-full h-full" />
+            {top3[0] && (
+              <div className="flex flex-col items-center flex-1 min-w-0 max-w-[145px] sm:max-w-[175px] relative z-20 animate-fade-in-up">
+                <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
+                  <Crown className="w-6 h-6 fill-amber-400" />
+                </div>
+                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+                  top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
+                }`}>
+                  <div className="absolute inset-0 flex items-center justify-center scale-[0.88] sm:scale-95">
+                    <Mascot size={72} mood="excited" equipped={top3[0].equipped} className="w-full h-full" />
+                  </div>
+                </div>
+                <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[0].name}>
+                  <span className="font-black text-sm text-amber-900 truncate min-w-0 text-center">
+                    {top3[0].name}
+                  </span>
+                  {top3[0].isCurrentUser && (
+                    <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
+                  )}
+                </div>
+                <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{viewMode === 'global' ? top3[0].score + ' pts' : (top3[0].sparks || 0) + ' sparks'}</span>
+                <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+                  <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
                 </div>
               </div>
-              <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[0].name}>
-                <span className="font-black text-sm text-amber-900 truncate min-w-0 text-center">
-                  {top3[0].name}
-                </span>
-                {top3[0].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
-                )}
-              </div>
-              <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{top3[0].score} pts</span>
-              <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
-                <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
-              </div>
-            </div>
+            )}
 
             {/* 3rd Place */}
-            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
-                top3[2].isCurrentUser ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40' : 'bg-orange-100 border-orange-300'
-              }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
-                  <Mascot size={56} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} className="w-full h-full" />
+            {top3[2] && (
+              <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+                  top3[2].isCurrentUser ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40' : 'bg-orange-100 border-orange-300'
+                }`}>
+                  <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
+                    <Mascot size={56} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} className="w-full h-full" />
+                  </div>
+                </div>
+                <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[2].name}>
+                  <span className="font-bold text-xs truncate min-w-0 text-center">
+                    {top3[2].name}
+                  </span>
+                  {top3[2].isCurrentUser && (
+                    <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
+                  )}
+                </div>
+                <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[2].score + ' pts' : (top3[2].sparks || 0) + ' sparks'}</span>
+                <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+                  <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
                 </div>
               </div>
-              <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[2].name}>
-                <span className="font-bold text-xs truncate min-w-0 text-center">
-                  {top3[2].name}
-                </span>
-                {top3[2].isCurrentUser && (
-                  <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
-                )}
-              </div>
-              <span className="text-xs text-slate-500 font-bold mb-2">{top3[2].score} pts</span>
-              <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-                <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -370,9 +552,9 @@ export default function LeaderboardScreen({
 
               {/* Score / Rank Badge */}
               <div className="flex flex-col items-end shrink-0">
-                <span className="font-black text-indigo-700 text-sm">{player.score}</span>
+                <span className="font-black text-indigo-700 text-sm">{viewMode === 'global' ? player.score : (player.sparks || 0)}</span>
                 <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
-                  {getRankTitle(player.score)}
+                  {viewMode === 'global' ? getRankTitle(player.score) : 'Sparks'}
                 </span>
               </div>
             </div>
@@ -409,13 +591,13 @@ export default function LeaderboardScreen({
               </div>
               <div className="flex items-center gap-1 mt-0.5">
                 <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                <span className="text-indigo-200 font-bold text-xs">{userScore} pts ({subjectConfig.name})</span>
+                <span className="text-indigo-200 font-bold text-xs">{pinnedScoreDisplay} {pinnedScoreLabel}</span>
               </div>
 
               {/* Contextual progress message */}
               <p className="text-xs text-indigo-300 mt-1 leading-tight font-medium">
                 {currentUserRank > 1
-                  ? `+${pointsNeeded} pts needed to rank up in ${subjectConfig.name}`
+                  ? `+${pointsNeeded} ${viewMode === 'global' ? 'pts' : 'sparks'} needed to rank up in ${subjectConfig.name}`
                   : `You are currently holding 1st place in ${subjectConfig.name}! Keep it up!`}
               </p>
             </div>

@@ -2,8 +2,10 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { Resend } = require("resend");
 const admin = require("firebase-admin");
 
-if (!admin.apps.length) {
-  admin.initializeApp();
+const { getApps, initializeApp } = require("firebase-admin/app");
+
+if (!getApps().length) {
+  initializeApp();
 }
 
 /**
@@ -12,8 +14,7 @@ if (!admin.apps.length) {
  */
 exports.sendParentEmail = onCall(
   {
-    cors: true,
-    invoker: "public"
+    cors: true
   },
   async (request) => {
     const apiKey = process.env.RESEND_API_KEY;
@@ -71,8 +72,7 @@ exports.sendParentEmail = onCall(
  */
 exports.validatePromoCode = onCall(
   {
-    cors: true,
-    invoker: "public"
+    cors: true
   },
   async (request) => {
     const { code } = request.data || {};
@@ -108,6 +108,84 @@ exports.validatePromoCode = onCall(
       if (error instanceof HttpsError) throw error;
       console.error('Error validating promo code:', error);
       throw new HttpsError('internal', 'An error occurred while validating the promo code.');
+    }
+  }
+);
+
+/**
+ * Callable function to assign a user to a weekly cohort.
+ * Cohorts are buckets of up to 30 players.
+ */
+exports.joinWeeklyLeague = onCall(
+  {
+    cors: true
+  },
+  async (request) => {
+    const { profileId, weekStr, subject } = request.data || {};
+    const uid = request.auth ? request.auth.uid : 'anonymous';
+
+    if (!profileId || !weekStr || !subject) {
+      throw new HttpsError('invalid-argument', 'Missing required fields.');
+    }
+
+    const db = admin.firestore();
+    const documentId = `${uid}_${profileId}`;
+    const userStatsRef = db.collection('weekly_stats').doc(documentId);
+
+    try {
+      return await db.runTransaction(async (transaction) => {
+        const userStatsDoc = await transaction.get(userStatsRef);
+        let currentCohortId = null;
+
+        if (userStatsDoc.exists) {
+          const data = userStatsDoc.data();
+          if (data.weekStr === weekStr && data.subject === subject && data.cohortId) {
+            return { cohortId: data.cohortId };
+          }
+        }
+
+        // Need to assign a new cohort
+        const leagueRef = db.collection('weekly_leagues').doc(`${weekStr}_${subject}`);
+        const leagueDoc = await transaction.get(leagueRef);
+
+        let activeBucket = 1;
+        let bucketCount = 0;
+
+        if (leagueDoc.exists) {
+          const data = leagueDoc.data();
+          activeBucket = data.activeBucket || 1;
+          bucketCount = data.bucketCount || 0;
+        }
+
+        if (bucketCount >= 30) {
+          activeBucket += 1;
+          bucketCount = 0;
+        }
+
+        const newCohortId = `league_${weekStr}_${subject}_bucket_${activeBucket}`;
+
+        // Update the league tracker
+        transaction.set(leagueRef, {
+          activeBucket: activeBucket,
+          bucketCount: bucketCount + 1,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        // Update the user's assigned cohort
+        transaction.set(userStatsRef, {
+          uid: uid,
+          profileId: profileId,
+          subject: subject,
+          weekStr: weekStr,
+          cohortId: newCohortId,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        return { cohortId: newCohortId };
+      });
+    } catch (error) {
+      console.error('Error assigning weekly cohort:', error);
+      throw new HttpsError('internal', 'An error occurred while joining the weekly league.');
     }
   }
 );
