@@ -89,5 +89,44 @@ export const SUBJECTS_CONFIG = {
       { id: 'spelling', name: 'Spelling', icon: '📝', subtitle: 'Sight Words', minUnlockRating: 1200, tiers: [2], defaultAcc: 85, defaultSpeed: 3.0 },
       { id: 'grammar', name: 'Grammar', icon: '📚', subtitle: 'Sentence Structure', minUnlockRating: 1400, tiers: [3, 4], defaultAcc: 80, defaultSpeed: 4.0 }
     ]
+  },
+  world: {
+    id: 'world',
+    name: 'World',
+    icon: '🌍',
+    COMPETENCE_RANK_TIERS: [
+      { min: 0, max: 1199, tier: 1, name: 'Local Explorer', location: 'Continent Basecamp' },
+      { min: 1200, max: 1399, tier: 2, name: 'State Navigator', location: 'State Trails' },
+      { min: 1400, max: 1599, tier: 3, name: 'National Guide', location: 'Country Crossings' },
+      { min: 1600, max: 1799, tier: 4, name: 'Continental Traveler', location: 'Hemisphere Heights' },
+      { min: 1800, max: 9999, tier: 5, name: 'Global Globetrotter', location: 'World Summit' }
+    ],
+    getCompetenceDescription: (rating = 1000, totalProblemsSolved = 0) => {
+      if (totalProblemsSolved < 15) return 'Calibrating baseline for World...';
+      const numRating = Number(rating) || 1000;
+      if (numRating < 1200) return 'Identifying 7 continents and 5 oceans.';
+      if (numRating < 1400) return 'Recognizing US states and basic shapes.';
+      if (numRating < 1600) return 'Identifying major countries and their capitals.';
+      if (numRating < 1800) return 'Mastering global geography and country shapes.';
+      return 'Expert knowledge of world geography, capitals, and obscure shapes.';
+    },
+    SKILL_STRANDS: [
+      { tier: 1, id: 'continents_oceans', name: 'Continents & Oceans', ratingBand: { min: 0, max: 1199 }, probeTargetTier: 2 },
+      { tier: 2, id: 'states_shapes', name: 'US States & Shapes', ratingBand: { min: 1200, max: 1399 }, probeTargetTier: 3 },
+      { tier: 3, id: 'countries_capitals_basic', name: 'Major Countries & Capitals', ratingBand: { min: 1400, max: 1599 }, probeTargetTier: 4 },
+      { tier: 4, id: 'countries_shapes', name: 'Country Shapes & Locations', ratingBand: { min: 1600, max: 1799 }, probeTargetTier: 5 },
+      { tier: 5, id: 'global_expert', name: 'Global Geography Expert', ratingBand: { min: 1800, max: 9999 }, probeTargetTier: 5 }
+    ],
+    MASTERY_THRESHOLDS: [
+      { threshold: 1150, skillName: 'Continents & Oceans' },
+      { threshold: 1300, skillName: 'US States' },
+      { threshold: 1450, skillName: 'Countries & Capitals' },
+      { threshold: 1650, skillName: 'Global Shapes' }
+    ],
+    DOMAIN_DEFINITIONS: [
+      { id: 'basics', name: 'Basics', icon: '🗺️', subtitle: 'Continents & Oceans', minUnlockRating: 0, tiers: [1], defaultAcc: 90, defaultSpeed: 2.0 },
+      { id: 'national', name: 'National', icon: '🦅', subtitle: 'US States', minUnlockRating: 1200, tiers: [2], defaultAcc: 85, defaultSpeed: 3.0 },
+      { id: 'global', name: 'Global', icon: '🌎', subtitle: 'Countries & Capitals', minUnlockRating: 1400, tiers: [3, 4, 5], defaultAcc: 80, defaultSpeed: 4.0 }
+    ]
   }
 };

@@ -187,7 +187,20 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         unlocked = cumulativeCorrectStreak >= 100;
         break;
 
+
+      // 7. World Subject Specific
+      case 'world_traveler':
+        if (subjectId === 'world') {
+           unlocked = (userState.totalProblemsSolved || 0) >= 100;
+        }
+        break;
+      case 'world_expert':
+        if (subjectId === 'world') {
+           unlocked = (userState.totalProblemsSolved || 0) >= 500;
+        }
+        break;
       default:
+
         break;
     }
 

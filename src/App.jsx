@@ -8,9 +8,10 @@ import ParentDashboardModal from './components/ParentDashboardModal';
 import StreakSavedModal from './components/StreakSavedModal';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import ProfileSelectorScreen from './components/ProfileSelectorScreen';
-import BadgesModal from './components/BadgesModal';
 import MathSessionView from './components/MathSessionView';
 import WordsSessionView from './components/WordsSessionView';
+import WorldSessionView from './components/WorldSessionView';
+import BadgesModal from './components/BadgesModal';
 import DevControlPanel from './components/DevControlPanel';
 import RollingNumberTicker from './components/RollingNumberTicker';
 import { checkAndPromptLinkAccount } from './utils/linkPromptLogic';
@@ -1128,14 +1129,16 @@ export default function App() {
               className={`flex items-center gap-1.5 font-black text-xs sm:text-sm px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border-2 ${
                 activeSubject === 'words'
                   ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 hover:border-indigo-200'
+                  : activeSubject === 'world'
+                  ? 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 hover:border-teal-200'
                   : 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 hover:border-amber-400'
               }`}
               title="Subject Selector"
             >
               <span className="text-sm sm:text-base leading-none select-none drop-shadow-2xs">
-                {activeSubject === 'words' ? '📚' : '🔢'}
+                {activeSubject === 'words' ? '📚' : activeSubject === 'world' ? '🌍' : '🔢'}
               </span>
-              <span className="tracking-tight font-black">{activeSubject === 'math' ? 'Kibo Math' : 'Kibo Words'}</span>
+              <span className="tracking-tight font-black">{activeSubject === 'math' ? 'Kibo Math' : activeSubject === 'words' ? 'Kibo Words' : 'Kibo World'}</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSubjectSelector ? 'rotate-180' : ''}`} />
             </button>
 
@@ -1171,15 +1174,18 @@ export default function App() {
 
                 <div className="h-px bg-slate-100 w-full" />
 
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 opacity-75 cursor-not-allowed">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-100 to-emerald-200 border border-teal-300 flex items-center justify-center shrink-0 opacity-50 grayscale">
+                                <button
+                  onClick={() => handleSubjectChange('world')}
+                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-100 to-emerald-200 border border-teal-300 flex items-center justify-center shrink-0">
                     <span className="text-lg">🌍</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-400 leading-tight">Kibo World</span>
-                    <span className="text-xs font-bold text-teal-500 uppercase tracking-wider">Coming Soon</span>
+                    <span className="text-sm font-black text-slate-800 leading-tight">Kibo World</span>
+                    <span className={`text-xs font-bold ${activeSubject === 'world' ? 'text-emerald-600' : 'text-slate-400'}`}>{activeSubject === 'world' ? 'Active' : 'Switch'}</span>
                   </div>
-                </div>
+                </button>
 
                 <div className="h-px bg-slate-100 w-full" />
 
@@ -1408,11 +1414,53 @@ export default function App() {
         />
       )}
 
+      {appState === 'adaptive_session' && activeSubject === 'world' && (
+        <WorldSessionView
+          key={activeProfileId + '-world'}
+          profileId={activeProfileId}
+          isPaused={isAppPaused}
+          equippedItems={equippedItems}
+          sparks={sparks}
+          streak={streak}
+          userTier={tier}
+          totalProblemsSolved={totalProblemsSolved}
+          isFTUX={showFirstLaunchOnboardingModal}
+          isDoubleSparksActive={isDoubleSparksActive}
+          consumables={consumables}
+          onToggleDoubleSparksPotion={handleToggleDoubleSparksPotion}
+          onConsumeHintScroll={handleConsumeHintScroll}
+          onConsumeLetterSpyglass={handleConsumeLetterSpyglass}
+          onConsumeLetterPruner={handleConsumeLetterPruner}
+          onConsumeShield={handleConsumeShield}
+          onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
+          onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
+          onRecordDailyPractice={recordDailyPractice}
+          onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
+          onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
+          onUpdateCompetenceRating={(newRating) => {
+            setLiveCompetenceRating(newRating);
+            checkAndPromptLinkAccount(
+              { rating: newRating },
+              setLinkModalMilestone,
+              setShowAccountLinkModal
+            );
+          }}
+          onAwardSparks={(earned) => {
+            const clubMultiplier = isKiboClub ? 1.25 : 1;
+            const finalEarned = Math.round(earned * clubMultiplier);
+            const updated = sparks + finalEarned;
+            setSparks(updated);
+            localStorage.setItem('kibo_math_sparks', updated.toString());
+          }}
+          onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
+        />
+      )}
+
       {/* PROFILE SELECTOR — shown on every load when 2+ profiles exist */}
       {showProfileSelector && (
         <ProfileSelectorScreen
           onSelectProfile={(profile, preferredSubject) => {
-            if (preferredSubject && (preferredSubject === 'words' || preferredSubject === 'math')) {
+            if (preferredSubject && (preferredSubject === 'words' || preferredSubject === 'math' || preferredSubject === 'world')) {
               setActiveSubject(preferredSubject);
               syncAppStateWithStorage(preferredSubject);
             } else {
@@ -1434,7 +1482,7 @@ export default function App() {
         <ProfileSelectorScreen
           canClose={true}
           onSelectProfile={(profile, preferredSubject) => {
-            if (preferredSubject && (preferredSubject === 'words' || preferredSubject === 'math')) {
+            if (preferredSubject && (preferredSubject === 'words' || preferredSubject === 'math' || preferredSubject === 'world')) {
               setActiveSubject(preferredSubject);
               syncAppStateWithStorage(preferredSubject);
             } else {
@@ -1468,7 +1516,7 @@ export default function App() {
           setShowPinGateModal(true);
         }}
         onStartAdaptiveClimb={(startingSubject = 'math') => {
-          if (startingSubject && (startingSubject === 'words' || startingSubject === 'math')) {
+          if (startingSubject && (startingSubject === 'words' || startingSubject === 'math' || startingSubject === 'world')) {
             setActiveSubject(startingSubject);
             syncAppStateWithStorage(startingSubject);
           } else {

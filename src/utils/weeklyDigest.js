@@ -67,7 +67,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
       unstartedSubjects.push({
         subjectId,
         name: config.name || subjectId,
-        icon: config.icon || (subjectId === 'words' ? '📚' : '🔢'),
+        icon: config.icon || (subjectId === 'words' ? '📚' : subjectId === 'world' ? '🌍' : '🔢'),
         description: subjectId === 'words'
           ? 'Build spelling fluency, vocabulary, and phonics climbing through Alphabet Meadow to Syntax Summit.'
           : (subjectId === 'math' ? 'Climb through foundational mental math, multiplication, and algebra.' : 'Explore new learning climbs!'),
@@ -199,7 +199,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
     playedSubjects.push({
       subjectId,
       name: config.name || subjectId,
-      icon: config.icon || (subjectId === 'words' ? '📚' : '🔢'),
+      icon: config.icon || (subjectId === 'words' ? '📚' : subjectId === 'world' ? '🌍' : '🔢'),
       rating,
       rankTitle,
       tier,
@@ -257,7 +257,7 @@ export function formatWeeklyDigestText({ childName, digestData }) {
 
   if (data.subjects.length > 0) {
     data.subjects.forEach((sub) => {
-      const unitLabel = sub.subjectId === 'words' ? 'words' : 'problems';
+      const unitLabel = sub.subjectId === 'words' ? 'words' : sub.subjectId === 'world' ? 'locations' : 'problems';
       text += `========================================\n`;
       text += `${sub.icon} ${sub.name.toUpperCase()} PROGRESS & PLAYED TOPICS\n`;
       text += `• Skill Rating: ${sub.rating} (${sub.rankTitle} · Tier ${sub.tier})\n`;
@@ -314,7 +314,7 @@ export function formatWeeklyDigestHtml({ childName, digestData }) {
 
   const subjectsHtml = data.subjects
     .map((sub) => {
-      const unitLabel = sub.subjectId === 'words' ? 'Words' : 'Problems';
+      const unitLabel = sub.subjectId === 'words' ? 'Words' : sub.subjectId === 'world' ? 'Locations' : 'Problems';
 
       // Build all played topics cards/list
       const playedTopicsHtml = sub.allPlayedTopics && sub.allPlayedTopics.length > 0
