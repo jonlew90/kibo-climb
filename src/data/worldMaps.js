@@ -17,14 +17,13 @@ export const REGIONAL_MAPS = {
   'Alaska': {
     geoType: 'us',
     targetId: '02',
-    center: [-153, 64],
-    scale: 430,
-    targetCenter: [-153, 64],
+    center: [-152.5, 64],
+    scale: 200,
+    targetCenter: [-152.5, 64],
     waterBodies: [
-      { name: 'Arctic Ocean',    lon: -158, lat: 72 },
-      { name: 'Bering Sea',      lon: -174, lat: 58 },
-      { name: 'Gulf of Alaska',  lon: -145, lat: 57 },
-      { name: 'Bering Strait',   lon: -168, lat: 65.5 }
+      { name: 'Arctic Ocean',    lon: -152, lat: 71.5 },
+      { name: 'Bering Sea',      lon: -170, lat: 59 },
+      { name: 'Gulf of Alaska',  lon: -145, lat: 57 }
     ],
     compass: true
   },
@@ -32,11 +31,11 @@ export const REGIONAL_MAPS = {
   'California': {
     geoType: 'us',
     targetId: '06',
-    center: [-119.5, 37.3],
-    scale: 2200,
-    targetCenter: [-119.5, 37.3],
+    center: [-119.5, 37.2],
+    scale: 720,
+    targetCenter: [-119.5, 37],
     waterBodies: [
-      { name: 'Pacific Ocean', lon: -124, lat: 37 }
+      { name: 'Pacific Ocean', lon: -125, lat: 36.5 }
     ],
     compass: true
   },
@@ -44,9 +43,9 @@ export const REGIONAL_MAPS = {
   'Colorado': {
     geoType: 'us',
     targetId: '08',
-    center: [-105.5, 39],
-    scale: 3200,
-    targetCenter: [-105.5, 39],
+    center: [-105.55, 39],
+    scale: 1650,
+    targetCenter: [-105.55, 39],
     waterBodies: [],
     compass: true
   },
@@ -54,12 +53,12 @@ export const REGIONAL_MAPS = {
   'Florida': {
     geoType: 'us',
     targetId: '12',
-    center: [-81.5, 28],
-    scale: 3200,
-    targetCenter: [-81.5, 28],
+    center: [-82.5, 28.5],
+    scale: 1150,
+    targetCenter: [-82, 28],
     waterBodies: [
-      { name: 'Gulf of Mexico',  lon: -87, lat: 27 },
-      { name: 'Atlantic Ocean',  lon: -76, lat: 28 }
+      { name: 'Gulf of Mexico',  lon: -86.5, lat: 26.5 },
+      { name: 'Atlantic Ocean',  lon: -77.5, lat: 28.5 }
     ],
     compass: true
   },
@@ -67,11 +66,11 @@ export const REGIONAL_MAPS = {
   'Hawaii': {
     geoType: 'us',
     targetId: '15',
-    center: [-156.5, 20.5],
-    scale: 3800,
+    center: [-156.5, 20.3],
+    scale: 2300,
     targetCenter: [-156.5, 20.5],
     waterBodies: [
-      { name: 'Pacific Ocean', lon: -165, lat: 24 }
+      { name: 'Pacific Ocean', lon: -159, lat: 22 }
     ],
     compass: true
   },
@@ -79,14 +78,14 @@ export const REGIONAL_MAPS = {
   'Michigan': {
     geoType: 'us',
     targetId: '26',
-    center: [-84.5, 44.5],
-    scale: 3200,
-    targetCenter: [-84.5, 44.5],
+    center: [-85.4, 44.3],
+    scale: 900,
+    targetCenter: [-85, 44.5],
     waterBodies: [
-      { name: 'Lake Superior', lon: -87, lat: 47 },
-      { name: 'Lake Michigan', lon: -87, lat: 43 },
-      { name: 'Lake Huron',    lon: -82, lat: 44 },
-      { name: 'Lake Erie',     lon: -82, lat: 42 }
+      { name: 'Lake Superior', lon: -87,   lat: 47.5 },
+      { name: 'Lake Michigan', lon: -87.5, lat: 43.5 },
+      { name: 'Lake Huron',    lon: -82.5, lat: 44.8 },
+      { name: 'Lake Erie',     lon: -82.5, lat: 41.8 }
     ],
     compass: true
   },
@@ -94,13 +93,13 @@ export const REGIONAL_MAPS = {
   'New York': {
     geoType: 'us',
     targetId: '36',
-    center: [-75.5, 42.9],
-    scale: 3800,
-    targetCenter: [-75.5, 42.9],
+    center: [-75.5, 43],
+    scale: 1350,
+    targetCenter: [-75.5, 43],
     waterBodies: [
-      { name: 'Atlantic Ocean',  lon: -70, lat: 40 },
-      { name: 'Lake Ontario',    lon: -77.5, lat: 43.7 },
-      { name: 'Lake Erie',       lon: -80, lat: 42.5 }
+      { name: 'Atlantic Ocean',  lon: -72,   lat: 40.5 },
+      { name: 'Lake Ontario',    lon: -77.8, lat: 43.8 },
+      { name: 'Lake Erie',       lon: -79.5, lat: 42.4 }
     ],
     compass: true
   },
@@ -108,11 +107,11 @@ export const REGIONAL_MAPS = {
   'Texas': {
     geoType: 'us',
     targetId: '48',
-    center: [-99.5, 31.5],
-    scale: 2100,
+    center: [-99.3, 31.5],
+    scale: 680,
     targetCenter: [-99.5, 31.5],
     waterBodies: [
-      { name: 'Gulf of Mexico', lon: -95, lat: 27 }
+      { name: 'Gulf of Mexico', lon: -94.5, lat: 27 }
     ],
     compass: true
   },
@@ -120,9 +119,9 @@ export const REGIONAL_MAPS = {
   'Wyoming': {
     geoType: 'us',
     targetId: '56',
-    center: [-107.5, 43],
-    scale: 3800,
-    targetCenter: [-107.5, 43],
+    center: [-107.55, 43],
+    scale: 1550,
+    targetCenter: [-107.55, 43],
     waterBodies: [],
     compass: true
   },
@@ -132,14 +131,14 @@ export const REGIONAL_MAPS = {
   'Mexico': {
     geoType: 'world',
     targetId: '484',
-    center: [-102, 24],
-    scale: 1000,
-    targetCenter: [-102, 24],
+    center: [-102.2, 23.9],
+    scale: 430,
+    targetCenter: [-102, 23.5],
     waterBodies: [
-      { name: 'Pacific Ocean',       lon: -112, lat: 18 },
-      { name: 'Gulf of California',  lon: -110, lat: 27 },
-      { name: 'Gulf of Mexico',      lon: -92,  lat: 22 },
-      { name: 'Caribbean Sea',       lon: -84,  lat: 18 }
+      { name: 'Pacific Ocean',       lon: -108, lat: 18 },
+      { name: 'Gulf of California',  lon: -111, lat: 26 },
+      { name: 'Gulf of Mexico',      lon: -92,  lat: 23 },
+      { name: 'Caribbean Sea',       lon: -85,  lat: 19 }
     ],
     compass: true
   },
@@ -147,12 +146,11 @@ export const REGIONAL_MAPS = {
   'Brazil': {
     geoType: 'world',
     targetId: '076',
-    center: [-53, -11],
-    scale: 650,
+    center: [-53.2, -10.7],
+    scale: 210,
     targetCenter: [-53, -11],
     waterBodies: [
-      { name: 'Atlantic Ocean',  lon: -35, lat: -15 },
-      { name: 'Amazon Basin',    lon: -58, lat: -3 }
+      { name: 'Atlantic Ocean',  lon: -35, lat: -12 }
     ],
     compass: true
   },
@@ -160,12 +158,12 @@ export const REGIONAL_MAPS = {
   'Chile': {
     geoType: 'world',
     targetId: '152',
-    center: [-71, -35],
-    scale: 750,
-    targetCenter: [-71, -35],
+    center: [-71.2, -37.3],
+    scale: 170,
+    targetCenter: [-71, -36],
     waterBodies: [
-      { name: 'Pacific Ocean',   lon: -82,  lat: -30 },
-      { name: 'Atlantic Ocean',  lon: -58,  lat: -48 }
+      { name: 'Pacific Ocean',   lon: -78,  lat: -35 },
+      { name: 'Atlantic Ocean',  lon: -62,  lat: -48 }
     ],
     compass: true
   },
@@ -173,14 +171,13 @@ export const REGIONAL_MAPS = {
   'United Kingdom': {
     geoType: 'world',
     targetId: '826',
-    center: [-2, 54],
-    scale: 2800,
-    targetCenter: [-2, 54],
+    center: [-2.8, 53.8],
+    scale: 570,
+    targetCenter: [-2.5, 54],
     waterBodies: [
-      { name: 'Atlantic Ocean',  lon: -12, lat: 55 },
-      { name: 'North Sea',       lon: 4,   lat: 56 },
-      { name: 'Irish Sea',       lon: -5,  lat: 53 },
-      { name: 'English Channel', lon: 0,   lat: 50 }
+      { name: 'Atlantic Ocean',  lon: -9, lat: 56 },
+      { name: 'North Sea',       lon: 3,  lat: 55 },
+      { name: 'English Channel', lon: 0,  lat: 50 }
     ],
     compass: true
   },
@@ -189,12 +186,12 @@ export const REGIONAL_MAPS = {
     geoType: 'world',
     targetId: '250',
     center: [2.5, 46.5],
-    scale: 2800,
-    targetCenter: [2.5, 46.5],
+    scale: 600,
+    targetCenter: [2.5, 46.8],
     waterBodies: [
-      { name: 'Atlantic Ocean',    lon: -5, lat: 46 },
-      { name: 'Mediterranean Sea', lon: 6,  lat: 43 },
-      { name: 'English Channel',   lon: 0,  lat: 50 }
+      { name: 'Atlantic Ocean',    lon: -4.5, lat: 46.5 },
+      { name: 'Mediterranean Sea', lon: 5.5,  lat: 42.5 },
+      { name: 'English Channel',   lon: 0,    lat: 50.2 }
     ],
     compass: true
   },
@@ -202,13 +199,13 @@ export const REGIONAL_MAPS = {
   'Italy': {
     geoType: 'world',
     targetId: '380',
-    center: [12.5, 42.5],
-    scale: 2500,
+    center: [12.3, 42.7],
+    scale: 600,
     targetCenter: [12.5, 42.5],
     waterBodies: [
-      { name: 'Mediterranean Sea', lon: 10,  lat: 38 },
-      { name: 'Adriatic Sea',      lon: 15,  lat: 43 },
-      { name: 'Tyrrhenian Sea',    lon: 10,  lat: 40 }
+      { name: 'Mediterranean Sea', lon: 11, lat: 38.5 },
+      { name: 'Adriatic Sea',      lon: 15, lat: 42.8 },
+      { name: 'Tyrrhenian Sea',    lon: 11, lat: 40.5 }
     ],
     compass: true
   },
@@ -216,13 +213,12 @@ export const REGIONAL_MAPS = {
   'Japan': {
     geoType: 'world',
     targetId: '392',
-    center: [137, 37],
-    scale: 2200,
-    targetCenter: [137, 37],
+    center: [137.7, 37.5],
+    scale: 460,
+    targetCenter: [137.5, 37],
     waterBodies: [
-      { name: 'Sea of Japan',    lon: 130, lat: 40 },
-      { name: 'Pacific Ocean',   lon: 146, lat: 36 },
-      { name: 'Sea of Okhotsk',  lon: 148, lat: 48 }
+      { name: 'Sea of Japan',    lon: 133, lat: 39 },
+      { name: 'Pacific Ocean',   lon: 144, lat: 34 }
     ],
     compass: true
   },
@@ -230,13 +226,13 @@ export const REGIONAL_MAPS = {
   'India': {
     geoType: 'world',
     targetId: '356',
-    center: [79, 22],
-    scale: 1200,
-    targetCenter: [79, 22],
+    center: [79.5, 22.8],
+    scale: 280,
+    targetCenter: [79.5, 22.5],
     waterBodies: [
-      { name: 'Arabian Sea',   lon: 67, lat: 18 },
-      { name: 'Bay of Bengal', lon: 90, lat: 15 },
-      { name: 'Indian Ocean',  lon: 79, lat: 7 }
+      { name: 'Arabian Sea',   lon: 70,   lat: 17 },
+      { name: 'Bay of Bengal', lon: 88,   lat: 16 },
+      { name: 'Indian Ocean',  lon: 79.5, lat: 8 }
     ],
     compass: true
   },
@@ -244,13 +240,12 @@ export const REGIONAL_MAPS = {
   'Egypt': {
     geoType: 'world',
     targetId: '818',
-    center: [30, 26],
-    scale: 2200,
-    targetCenter: [30, 26],
+    center: [29.9, 26.5],
+    scale: 790,
+    targetCenter: [30, 26.5],
     waterBodies: [
-      { name: 'Mediterranean Sea', lon: 28, lat: 33 },
-      { name: 'Red Sea',           lon: 36, lat: 25 },
-      { name: 'Nile River',        lon: 32, lat: 22 }
+      { name: 'Mediterranean Sea', lon: 30, lat: 32.5 },
+      { name: 'Red Sea',           lon: 35, lat: 25.5 }
     ],
     compass: true
   },
@@ -258,12 +253,12 @@ export const REGIONAL_MAPS = {
   'Madagascar': {
     geoType: 'world',
     targetId: '450',
-    center: [46.5, -19.5],
-    scale: 1400,
-    targetCenter: [46.5, -19.5],
+    center: [46.7, -19.3],
+    scale: 590,
+    targetCenter: [47, -19],
     waterBodies: [
-      { name: 'Indian Ocean',         lon: 54, lat: -20 },
-      { name: 'Mozambique Channel',   lon: 42, lat: -20 }
+      { name: 'Indian Ocean',         lon: 52.5, lat: -19 },
+      { name: 'Mozambique Channel',   lon: 41.5, lat: -19 }
     ],
     compass: true
   },
@@ -271,15 +266,15 @@ export const REGIONAL_MAPS = {
   'Australia': {
     geoType: 'world',
     targetId: '036',
-    center: [134, -27],
-    scale: 550,
-    targetCenter: [134, -27],
+    center: [134.3, -25.8],
+    scale: 225,
+    targetCenter: [134, -26],
     waterBodies: [
-      { name: 'Indian Ocean',   lon: 116, lat: -35 },
-      { name: 'Pacific Ocean',  lon: 157, lat: -35 },
-      { name: 'Coral Sea',      lon: 153, lat: -18 },
-      { name: 'Tasman Sea',     lon: 156, lat: -40 },
-      { name: 'Timor Sea',      lon: 128, lat: -12 }
+      { name: 'Indian Ocean',   lon: 116, lat: -32 },
+      { name: 'Pacific Ocean',  lon: 153, lat: -32 },
+      { name: 'Coral Sea',      lon: 150, lat: -17 },
+      { name: 'Tasman Sea',     lon: 153, lat: -42 },
+      { name: 'Timor Sea',      lon: 127, lat: -12 }
     ],
     compass: true
   }
