@@ -1712,7 +1712,7 @@ export default function WorldSessionView({
                       </div>
                       {currentProblem.hint && (
                         <p className="text-xs text-indigo-900 font-medium italic pt-0.5">
-                          💡 {currentProblem.hint}
+                          {currentProblem.type === 'tricky_capital' ? '⚠️ Common misconception: ' : '💡 '}{currentProblem.hint}
                         </p>
                       )}
                     </div>

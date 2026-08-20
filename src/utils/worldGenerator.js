@@ -430,7 +430,7 @@ export const getTierCandidateTemplates = (tier) => {
       templates.push({
         key: `tricky_capital:${tricky.country}`,
         type: 'tricky_capital',
-        prompt: `What is the official capital of ${tricky.country}? (Be careful of common misconceptions!)`,
+        prompt: `What is the official capital of ${tricky.country}?`,
         correctAnswer: tricky.capital,
         options: shuffleArray([tricky.capital, ...distractors.slice(0, 3)]),
         hint: tricky.reason,

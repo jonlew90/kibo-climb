@@ -364,7 +364,7 @@ export const WORLD_LANDMARKS_AND_WONDERS = [
 ];
 
 export const TRICKY_CAPITALS = [
-  { country: 'Australia', capital: 'Canberra', commonConfusion: 'Sydney', reason: 'Sydney is Australia largest city, but Canberra is the capital.' },
+  { country: 'Australia', capital: 'Canberra', commonConfusion: 'Sydney', reason: "Sydney is Australia's largest city, but Canberra is the capital." },
   { country: 'Canada', capital: 'Ottawa', commonConfusion: 'Toronto', reason: 'Toronto and Montreal are larger, but Ottawa is the capital.' },
   { country: 'Brazil', capital: 'Brasília', commonConfusion: 'Rio de Janeiro', reason: 'Rio de Janeiro and São Paulo are famous, but Brasília was built as the capital.' },
   { country: 'Switzerland', capital: 'Bern', commonConfusion: 'Zurich', reason: 'Zurich and Geneva are the biggest cities, but Bern is the federal capital.' },
