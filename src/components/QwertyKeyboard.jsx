@@ -1,5 +1,5 @@
-import React, { useEffect, useCallback } from 'react';
-import { Delete, Send, RotateCcw } from 'lucide-react';
+import React, { useCallback } from 'react';
+import { Delete, RotateCcw } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
 export default function QwertyKeyboard({ onChar, onDelete, onClear, onSubmit, prunedKeys = [] }) {
@@ -31,26 +31,8 @@ export default function QwertyKeyboard({ onChar, onDelete, onClear, onSubmit, pr
     onClear();
   }, [onClear]);
 
-  const handleSubmitClick = useCallback((e) => {
-    e.preventDefault();
-    soundFx.playKeyTap();
-    onSubmit();
-  }, [onSubmit]);
-
   return (
     <div className="w-full flex flex-col gap-1 sm:gap-1.5 p-1 sm:p-2 select-none touch-manipulation pb-safe-nav">
-
-      {/* Action Row */}
-      <div className="flex justify-end gap-2 mb-1 px-1">
-          <button
-            onPointerDown={handleClearClick}
-            className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-black text-xs sm:text-sm shadow-sm active:scale-95 transition-transform"
-          >
-            <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
-            CLEAR
-          </button>
-      </div>
-
       {/* Row 1 */}
       <div className="flex justify-center gap-1 sm:gap-1.5 w-full">
         {row1.map((char) => {
@@ -96,10 +78,12 @@ export default function QwertyKeyboard({ onChar, onDelete, onClear, onSubmit, pr
       {/* Row 3 */}
       <div className="flex justify-center gap-1 sm:gap-1.5 w-full">
         <button
-          onPointerDown={handleSubmitClick}
-          className="w-14 sm:w-16 h-12 sm:h-14 bg-emerald-500 border-b-4 border-emerald-700 rounded-xl shadow-md text-white font-black active:translate-y-1 active:border-b-0 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          onPointerDown={handleClearClick}
+          aria-label="Clear"
+          title="Clear"
+          className="w-14 sm:w-16 h-12 sm:h-14 bg-slate-200 border-2 border-slate-300 rounded-xl shadow-sm text-slate-700 font-black active:bg-slate-300 active:scale-95 transition-all flex items-center justify-center shrink-0 cursor-pointer"
         >
-          <Send className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+          <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
         </button>
 
         {row3.map((char) => {
@@ -122,6 +106,8 @@ export default function QwertyKeyboard({ onChar, onDelete, onClear, onSubmit, pr
 
         <button
           onPointerDown={handleDeleteClick}
+          aria-label="Delete"
+          title="Delete"
           className="w-14 sm:w-16 h-12 sm:h-14 bg-slate-200 border-2 border-slate-300 rounded-xl shadow-sm text-slate-700 font-black active:bg-slate-300 active:scale-95 transition-all flex items-center justify-center shrink-0 cursor-pointer"
         >
           <Delete className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />

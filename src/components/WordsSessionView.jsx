@@ -1354,7 +1354,7 @@ export default function WordsSessionView({
 
             return (
               <div
-                className={`w-full max-w-sm shrink-0 flex flex-col justify-center bg-white border-4 rounded-3xl p-3 text-center transition-all duration-500 space-y-2 relative max-h-[32vh] ${
+                className={`w-full max-w-sm sm:max-w-md shrink-0 flex flex-col justify-center bg-white border-4 rounded-3xl p-2.5 sm:p-3 text-center transition-all duration-500 space-y-1.5 relative ${
                   streakCfg.cardGlow
                 } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : ''}`}
               >
@@ -1367,22 +1367,22 @@ export default function WordsSessionView({
                   </div>
                 )}
 
-                <div className="w-full flex flex-wrap items-center justify-center gap-1.5 py-0.5">
-                  <span className="text-xs font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-purple-200 shrink-0 shadow-2xs">
+                <div className="w-full flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 py-0.5">
+                  <span className="text-[10px] sm:text-xs font-black uppercase text-purple-700 bg-purple-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border border-purple-200 shrink-0 shadow-2xs">
                     🎯 Q #{currentQuestionNum}/12
                   </span>
                   {isNearTierThreshold(competenceRank) && !currentProblem.isProbe && (
-                    <span className="text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
+                    <span className="text-[10px] sm:text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
                       ⚡ TIER GATEKEEPER
                     </span>
                   )}
                   {currentProblem.isProbe && (
-                    <span className="text-xs font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
+                    <span className="text-[10px] sm:text-xs font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
                       🚀 SKILL PROBE (+120)
                     </span>
                   )}
                   <span
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
                   >
                     {streakCfg.label}
                   </span>
@@ -1392,7 +1392,7 @@ export default function WordsSessionView({
                     type="button"
                     onClick={handlePassQuestion}
                     disabled={consecutiveSkips >= 2}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                       consecutiveSkips >= 2
                         ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                         : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -1424,7 +1424,7 @@ export default function WordsSessionView({
                         onOpenWorkshop();
                       }
                     }}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       showFrustrationCard
                         ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                         : shouldPulseHint
@@ -1446,7 +1446,7 @@ export default function WordsSessionView({
                   <button
                     type="button"
                     onClick={handleUseLetterSpyglass}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       (consumables?.letterSpyglassCount ?? 0) > 0
                         ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
                         : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
@@ -1464,7 +1464,7 @@ export default function WordsSessionView({
                   <button
                     type="button"
                     onClick={handleUseLetterPruner}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       isLetterPrunerActive
                         ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
                         : (consumables?.letterPrunerCount ?? 0) > 0
@@ -1483,7 +1483,7 @@ export default function WordsSessionView({
                   </button>
 
                   {isDoubleSparksActive && (
-                    <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
+                    <span className="text-[10px] sm:text-xs font-black uppercase text-amber-950 bg-amber-200 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
                       ⚡ 2x Active!
                     </span>
                   )}
@@ -1491,7 +1491,7 @@ export default function WordsSessionView({
                   {/* KIBO SHIELD ACTIVE PILL */}
                   {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
                     <span
-                      className="text-xs font-black uppercase text-sky-950 bg-sky-100 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
+                      className="text-[10px] sm:text-xs font-black uppercase text-sky-950 bg-sky-100 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
                       title="Kibo Shield Active: Your climb & streak are protected!"
                     >
                       🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
@@ -1503,16 +1503,41 @@ export default function WordsSessionView({
               const displayStr = currentProblem.displayString || '';
               const targetStr = (currentProblem.answerString || currentProblem.answer || '').toString();
 
+              // Dynamic slot sizing based on letter count
+              const wordLen = effectiveWordSlots.length;
+              let slotSizeClass = 'min-w-[2.25rem] sm:min-w-[2.75rem] h-11 sm:h-12 px-1.5 sm:px-2 rounded-xl';
+              let textSizeClass = 'text-xl sm:text-2xl';
+              let pingSizeClass = 'w-2.5 h-0.5';
+              let spyglassBadgeClass = 'w-4 h-4 text-xs -top-1.5 -right-1';
+              let containerGapClass = 'gap-1.5 sm:gap-2';
+
+              if (wordLen >= 13) {
+                slotSizeClass = 'min-w-[1.125rem] sm:min-w-[1.375rem] h-7 sm:h-8 px-0.5 rounded-md';
+                textSizeClass = 'text-[10px] sm:text-xs md:text-sm';
+                pingSizeClass = 'w-1.5 h-0.5';
+                spyglassBadgeClass = 'w-3 h-3 text-[7.5px] -top-1 -right-0.5';
+                containerGapClass = 'gap-0.5';
+              } else if (wordLen >= 9) {
+                slotSizeClass = 'min-w-[1.375rem] sm:min-w-[1.75rem] h-8 sm:h-9 px-0.5 sm:px-1 rounded-md sm:rounded-lg';
+                textSizeClass = 'text-xs sm:text-sm md:text-base';
+                pingSizeClass = 'w-2 h-0.5';
+                spyglassBadgeClass = 'w-3.5 h-3.5 text-[8.5px] -top-1 -right-0.5';
+                containerGapClass = 'gap-0.5 sm:gap-1';
+              } else if (wordLen >= 6) {
+                slotSizeClass = 'min-w-[1.75rem] sm:min-w-[2.25rem] h-9 sm:h-10 px-1 sm:px-1.5 rounded-lg sm:rounded-xl';
+                textSizeClass = 'text-base sm:text-xl';
+                pingSizeClass = 'w-2 h-0.5';
+                spyglassBadgeClass = 'w-3.5 h-3.5 text-[9px] -top-1 -right-1';
+                containerGapClass = 'gap-1 sm:gap-1.5';
+              }
+
               // Helper to interleave the input with the blanks and highlight given letters
               const renderWordDisplay = () => {
-                const displayParts = displayStr.split(' ').filter((c) => c.length > 0);
-                const wordSlots = displayParts.length > 0 ? displayParts : displayStr.split('');
-
                 let inputIndex = 0;
                 const activeBlankOrderIndex = inputVal.length;
 
                 return (
-                  <div className="flex items-center justify-center flex-wrap gap-1.5 sm:gap-2 max-w-full">
+                  <div className={`flex items-center justify-center flex-wrap ${containerGapClass} max-w-full`}>
                     {effectiveWordSlots.map((char, index) => {
                       if (char === '_') {
                         const thisBlankOrder = inputIndex;
@@ -1523,7 +1548,7 @@ export default function WordsSessionView({
                         return (
                           <span
                             key={index}
-                            className={`relative inline-flex items-center justify-center min-w-[2.25rem] sm:min-w-[2.75rem] h-11 sm:h-13 px-1.5 sm:px-2 rounded-xl text-xl sm:text-2xl font-black transition-all duration-150 ${
+                            className={`relative inline-flex items-center justify-center font-black transition-all duration-150 ${slotSizeClass} ${textSizeClass} ${
                               typedChar
                                 ? 'bg-teal-50 text-teal-800 border-2 border-teal-500 shadow-xs'
                                 : isCurrentActiveBlank
@@ -1532,7 +1557,7 @@ export default function WordsSessionView({
                             }`}
                           >
                             {typedChar ? typedChar.toUpperCase() : isCurrentActiveBlank ? (
-                              <span className="w-2.5 h-0.5 bg-teal-400 rounded-full animate-ping" />
+                              <span className={`${pingSizeClass} bg-teal-400 rounded-full animate-ping`} />
                             ) : '\u00A0'}
                           </span>
                         );
@@ -1542,7 +1567,7 @@ export default function WordsSessionView({
                         return (
                           <span
                             key={index}
-                            className={`relative inline-flex items-center justify-center min-w-[2.25rem] sm:min-w-[2.75rem] h-11 sm:h-13 px-1.5 sm:px-2 rounded-xl text-xl sm:text-2xl font-black select-none transition-all duration-200 ${
+                            className={`relative inline-flex items-center justify-center font-black select-none transition-all duration-200 ${slotSizeClass} ${textSizeClass} ${
                               isPulsing
                                 ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-400 ring-4 ring-emerald-300/80 scale-110 shadow-md'
                                 : isSpyglassRevealed
@@ -1552,7 +1577,7 @@ export default function WordsSessionView({
                           >
                             {char.toUpperCase()}
                             {isSpyglassRevealed && (
-                              <span className="absolute -top-1.5 -right-1 text-xs bg-amber-400 text-amber-950 rounded-full w-4 h-4 flex items-center justify-center shadow-xs font-bold ring-1 ring-white">
+                              <span className={`absolute bg-amber-400 text-amber-950 rounded-full flex items-center justify-center shadow-xs font-bold ring-1 ring-white ${spyglassBadgeClass}`}>
                                 🔍
                               </span>
                             )}
@@ -1590,21 +1615,21 @@ export default function WordsSessionView({
               };
 
               return (
-                <div className="space-y-1.5 w-full">
-                  <div className="w-full text-center my-2 text-base sm:text-lg leading-tight font-bold text-slate-600">
+                <div className="space-y-1 sm:space-y-1.5 w-full">
+                  <div className="w-full text-center my-0.5 sm:my-1 text-xs sm:text-sm md:text-base leading-tight font-bold text-slate-600">
                      {currentProblem.hint || "Spell the word!"}
                   </div>
-                  <div className="w-full flex items-center justify-center flex-wrap my-2 text-2xl sm:text-3xl font-extrabold uppercase">
+                  <div className="w-full flex items-center justify-center flex-wrap my-1 sm:my-1.5 font-extrabold uppercase">
                      {renderWordDisplay()}
                   </div>
 
                   {/* INTEGRATED KIBO HINT */}
                   {showFrustrationCard && (
-                    <div className="w-full pt-1.5 border-t border-indigo-100 text-xs sm:text-sm font-bold text-indigo-900 bg-indigo-50/90 p-2.5 rounded-2xl animate-pop text-center space-y-0.5 mt-1 shadow-2xs">
-                      <span className="block font-black text-indigo-950 flex items-center justify-center gap-1">
+                    <div className="w-full pt-1 border-t border-indigo-100 text-[11px] sm:text-xs font-bold text-indigo-900 bg-indigo-50/90 p-2 sm:p-2.5 rounded-xl sm:rounded-2xl animate-pop text-center space-y-0.5 mt-1 shadow-2xs">
+                      <span className="block font-black text-indigo-950 flex items-center justify-center gap-1 text-xs">
                         <span>📜</span> Kibo Wisdom Clue:
                       </span>
-                      <span className="font-semibold block text-indigo-800 text-xs sm:text-sm">{getWordHintMessage()}</span>
+                      <span className="font-semibold block text-indigo-800 text-[11px] sm:text-xs">{getWordHintMessage()}</span>
                     </div>
                   )}
                 </div>
