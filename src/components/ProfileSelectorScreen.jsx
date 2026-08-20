@@ -96,7 +96,7 @@ function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' 
   const equipped = profile.shopState?.equippedItems || [];
   const displayName = profile.username || profile.name || 'Kibo Climber';
 
-  const subjectKeys = Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} });
+  const subjectKeys = Object.keys(SUBJECTS_CONFIG || { math: {}, words: {}, world: {} });
 
   // Compute stats across all configured subjects
   let totalSolvedAll = 0;
@@ -280,7 +280,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
     onCancel();
   };
 
-  const selectedCurriculum = GRADE_CURRICULUM_DETAILS[childGrade] || { math: '', words: '', summary: '' };
+    const selectedCurriculum = GRADE_CURRICULUM_DETAILS[childGrade] || { math: '', words: '', world: '', summary: '' };
 
   return (
     <div className="w-full max-w-sm bg-white border-2 border-amber-200/80 shadow-lg rounded-2xl p-4 sm:p-5 space-y-3.5 text-center animate-pop">
@@ -411,7 +411,7 @@ export default function ProfileSelectorScreen({
     handleSelect(newProfile);
   };
 
-  const subjectKeys = Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} });
+  const subjectKeys = Object.keys(SUBJECTS_CONFIG || { math: {}, words: {}, world: {} });
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-between p-4 overflow-y-auto custom-scrollbar animate-fade-in">

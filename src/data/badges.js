@@ -198,7 +198,24 @@ export const BADGES_CATALOG = [
     category: 'precision',
     icon: '👑',
     reqText: '100 Cumulative Correct Answers in a row'
-  }
+  },
+  // SUBJECT SPECIFIC BADGES
+  {
+    id: 'world_traveler',
+    title: 'World Traveler',
+    description: 'Answered 100 World Geography questions correctly!',
+    category: 'records',
+    icon: '🌍',
+    reqText: '100 Correct in World'
+  },
+  {
+    id: 'world_expert',
+    title: 'Globe Trotter',
+    description: 'Answered 500 World Geography questions correctly!',
+    category: 'records',
+    icon: '🗺️',
+    reqText: '500 Correct in World'
+  },
 ];
 
 export function getBadgeById(id) {

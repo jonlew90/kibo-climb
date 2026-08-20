@@ -487,7 +487,7 @@ export default function ParentDashboardModal({
                   const isSelected = selectedSubject === subKey;
                   const subData = getProfileSubjectData(viewingProfileId, subKey);
                   const subRating = subData.adaptiveCompetenceRating || 1000;
-                  const subIcon = subConfig.icon || (subKey === 'words' ? '📖' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🔢')));
+                  const subIcon = subConfig.icon || (subKey === 'words' ? '📖' : subKey === 'world' ? '🌍' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🔢')));
 
                   return (
                     <button
@@ -496,7 +496,7 @@ export default function ParentDashboardModal({
                       onClick={() => handleSelectSubject(subKey)}
                       className={`px-3.5 py-1.5 rounded-full border-2 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
                         isSelected
-                          ? (subKey === 'words' ? 'bg-teal-600 text-white border-teal-700 shadow-sm ring-2 ring-teal-400/30' : 'bg-purple-600 text-white border-purple-700 shadow-sm ring-2 ring-purple-400/30')
+                          ? (subKey === 'words' ? 'bg-teal-600 text-white border-teal-700 shadow-sm ring-2 ring-teal-400/30' : subKey === 'world' ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm ring-2 ring-emerald-400/30' : 'bg-purple-600 text-white border-purple-700 shadow-sm ring-2 ring-purple-400/30')
                           : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-purple-300'
                       }`}
                     >
