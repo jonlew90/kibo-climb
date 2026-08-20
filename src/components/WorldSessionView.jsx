@@ -608,7 +608,8 @@ export default function WorldSessionView({
       problemStartTimeRef.current = performance.now();
     }
 
-    const isCorrect = rawInput === currentProblem.correctAnswer;
+    const normTargetAns = currentProblem.correctAnswer || currentProblem.answerString || currentProblem.answer || '';
+    const isCorrect = rawInput === normTargetAns;
     const latencyMs = performance.now() - problemStartTimeRef.current;
     const timeElapsedSec = latencyMs / 1000;
     const concept = currentProblem.concept || 'Geography';
@@ -739,7 +740,7 @@ export default function WorldSessionView({
     const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
     setBlockRatingGain(nextBlockRatingGain);
 
-    const activeWord = (currentProblem.answerString || currentProblem.answer || '').toString().toLowerCase();
+    const activeWord = (normTargetAns || '').toString().toLowerCase();
     const existingRecent = storageService.getUserData('world').recentWords || [];
     const updatedRecent = activeWord ? [activeWord, ...existingRecent.filter(w => w !== activeWord)].slice(0, 60) : existingRecent;
 

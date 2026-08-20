@@ -32,6 +32,28 @@ const SUBJECT_THEMES = {
     star: 'fill-teal-500 text-teal-500',
     solvedUnit: 'w'
   },
+  world: {
+    id: 'world',
+    name: 'World',
+    icon: '🌍',
+    border: 'border-emerald-300/70',
+    bg: 'bg-emerald-500/10',
+    activeBg: 'bg-emerald-600 text-white',
+    text: 'text-emerald-950',
+    star: 'fill-emerald-500 text-emerald-500',
+    solvedUnit: 'q'
+  },
+  geography: {
+    id: 'geography',
+    name: 'Geography',
+    icon: '🌍',
+    border: 'border-emerald-300/70',
+    bg: 'bg-emerald-500/10',
+    activeBg: 'bg-emerald-600 text-white',
+    text: 'text-emerald-950',
+    star: 'fill-emerald-500 text-emerald-500',
+    solvedUnit: 'q'
+  },
   science: {
     id: 'science',
     name: 'Science',
@@ -53,17 +75,6 @@ const SUBJECT_THEMES = {
     text: 'text-purple-950',
     star: 'fill-purple-500 text-purple-500',
     solvedUnit: 'q'
-  },
-  geography: {
-    id: 'geography',
-    name: 'Geography',
-    icon: '🌍',
-    border: 'border-emerald-300/70',
-    bg: 'bg-emerald-500/10',
-    activeBg: 'bg-emerald-600 text-white',
-    text: 'text-emerald-950',
-    star: 'fill-emerald-500 text-emerald-500',
-    solvedUnit: 'q'
   }
 };
 
@@ -72,7 +83,7 @@ const getSubjectMeta = (subjectKey) => {
   const theme = SUBJECT_THEMES[subjectKey] || {
     id: subjectKey,
     name: config.name || subjectKey,
-    icon: '🌟',
+    icon: config.icon || '🌍',
     border: 'border-indigo-300/70',
     bg: 'bg-indigo-500/10',
     activeBg: 'bg-indigo-600 text-white',
@@ -80,7 +91,7 @@ const getSubjectMeta = (subjectKey) => {
     star: 'fill-indigo-500 text-indigo-500',
     solvedUnit: 'q'
   };
-  return { ...config, ...theme, name: config.name || theme.name };
+  return { ...config, ...theme, icon: config.icon || theme.icon, name: config.name || theme.name };
 };
 
 const formatGradeDisplay = (grade) => {
@@ -451,7 +462,7 @@ export default function ProfileSelectorScreen({
               : "Who's climbing today?"}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium">
-            {profiles.length === 1 ? 'Tap your card to start your daily ascent' : 'Pick your profile to continue your ascent across Math & Words'}
+            {profiles.length === 1 ? 'Tap your card to start your daily ascent' : 'Pick your profile to continue your ascent across Math, Words & World'}
           </p>
         </div>
 

@@ -11,11 +11,11 @@ export const CONTINENTS = [
 ];
 
 export const OCEANS = [
-  { id: 'pacific', name: 'Pacific Ocean' },
-  { id: 'atlantic', name: 'Atlantic Ocean' },
-  { id: 'indian', name: 'Indian Ocean' },
-  { id: 'southern', name: 'Southern Ocean' },
-  { id: 'arctic', name: 'Arctic Ocean' }
+  { id: 'pacific', name: 'Pacific', fullName: 'Pacific Ocean' },
+  { id: 'atlantic', name: 'Atlantic', fullName: 'Atlantic Ocean' },
+  { id: 'indian', name: 'Indian', fullName: 'Indian Ocean' },
+  { id: 'southern', name: 'Southern', fullName: 'Southern Ocean' },
+  { id: 'arctic', name: 'Arctic', fullName: 'Arctic Ocean' }
 ];
 
 export const US_STATES = [

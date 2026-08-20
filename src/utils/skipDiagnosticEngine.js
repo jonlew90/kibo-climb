@@ -368,7 +368,7 @@ export function generateParentInsightCards(skipLogs = [], sprintHistory = [], pr
       id: 'steady-climb',
       type: 'steady',
       title: `Steady ${subjectName} Progress`,
-      icon: subjectId === 'words' ? '📖' : '🔢',
+      icon: cfg?.icon || (subjectId === 'words' ? '📚' : subjectId === 'world' ? '🌍' : '🔢'),
       badge: 'On Track',
       badgeClass: 'bg-indigo-100 text-indigo-900 border-indigo-300',
       description: `${name} is maintaining a balanced pacing through ${subjectName.toLowerCase()} sets with great stamina and no major bottlenecks!`

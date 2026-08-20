@@ -23,37 +23,44 @@ export const GRADE_CURRICULUM_DETAILS = {
   'Kindergarten': {
     math: 'Counting, single-digit + / -',
     words: 'Alphabet & basic phonics',
-    summary: 'Numbers, shapes & foundational letter sounds'
+    world: 'Continents & major oceans',
+    summary: 'Numbers, shapes, letters & continents'
   },
   'Grade 1–2': {
     math: 'Sums & differences to 20, making 10s',
     words: 'Sight words & basic spelling',
-    summary: 'Addition/subtraction fluency & reading roots'
+    world: 'US states & geographic shapes',
+    summary: 'Addition/subtraction fluency, reading roots & US states'
   },
   'Grade 3–4': {
     math: 'Multiplication (0s–9s) & time math',
     words: 'Vocabulary & compound words',
-    summary: 'Multiplication tables & vocabulary building'
+    world: 'Major countries & capital cities',
+    summary: 'Multiplication tables, vocabulary & major capitals'
   },
   'Grade 5–6': {
     math: 'Money decimals, fractions & division',
     words: 'Advanced spelling & prefixes/suffixes',
-    summary: 'Decimal arithmetic, fractions & word mastery'
+    world: 'Hemispheres & country shapes',
+    summary: 'Decimal arithmetic, fractions & country shapes'
   },
   'Pre-Algebra / Middle School': {
     math: 'Multi-digit math & long division',
     words: 'Sentence structure & parts of speech',
-    summary: 'Pre-algebra foundations & grammar mechanics'
+    world: 'Global geography & obscure capitals',
+    summary: 'Pre-algebra foundations, grammar & global geography'
   },
   'Grade 7–8': {
     math: 'Fractions, % & PEMDAS operations',
     words: 'Complex grammar & word roots',
-    summary: 'Order of operations & verbal reasoning'
+    world: 'Global geography & world summit',
+    summary: 'Order of operations, verbal reasoning & global summits'
   },
   'Algebra & Beyond': {
     math: 'Linear equations, negatives & powers',
     words: 'Advanced verbal & language mastery',
-    summary: 'Summit pre-algebra & comprehensive vocabulary'
+    world: 'Peak world geography mastery',
+    summary: 'Summit pre-algebra, language & peak global geography'
   },
 };
 
@@ -262,14 +269,14 @@ export default function FirstLaunchOnboardingModal({
               What grade is<br />{usernameInput || 'the climber'} in?
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xs mx-auto">
-              Calibrates starting difficulty for <strong className="text-amber-300">Math & Words</strong> so challenges feel just right.
+              Calibrates starting difficulty for <strong className="text-amber-300">Math, Words & World</strong> so challenges feel just right.
             </p>
           </div>
 
           {/* Bounded Vertically Scrollable Grade Option Tiles */}
           <div className="w-full max-h-48 sm:max-h-56 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar shrink">
             {GRADE_OPTIONS.map((grade) => {
-              const details = GRADE_CURRICULUM_DETAILS[grade] || { math: '', words: '', summary: '' };
+              const details = GRADE_CURRICULUM_DETAILS[grade] || { math: '', words: '', world: '', summary: '' };
               const isSelected = selectedGrade === grade;
               return (
                 <button
@@ -296,7 +303,7 @@ export default function FirstLaunchOnboardingModal({
                         </span>
                       )}
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 text-xs">
                       <div className="flex items-center gap-1 text-amber-200/90 font-medium truncate">
                         <span className="text-xs shrink-0">🔢</span>
                         <span className="truncate">{details.math}</span>
@@ -304,6 +311,10 @@ export default function FirstLaunchOnboardingModal({
                       <div className="flex items-center gap-1 text-teal-200/90 font-medium truncate">
                         <span className="text-xs shrink-0">📚</span>
                         <span className="truncate">{details.words}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-emerald-200/90 font-medium truncate">
+                        <span className="text-xs shrink-0">🌍</span>
+                        <span className="truncate">{details.world}</span>
                       </div>
                     </div>
                   </div>
@@ -346,7 +357,7 @@ export default function FirstLaunchOnboardingModal({
             Ready, <span className="text-purple-700">{usernameInput || storageService.getUsername()}</span>? 🚀
           </h1>
           <p className="text-xs sm:text-sm md:text-base font-extrabold text-purple-900 max-w-lg mx-auto leading-normal">
-            Bite-Sized Daily Ascents (~3 Mins) — Adaptive Multi-Subject Training (Math, Words & More) That Evolves With Your Mind
+            Bite-Sized Daily Ascents (~3 Mins) — Adaptive Multi-Subject Training (Math, Words, World & More) That Evolves With Your Mind
           </p>
         </div>
 
@@ -358,52 +369,68 @@ export default function FirstLaunchOnboardingModal({
           </div>
 
           {/* Multi-Subject Showcase Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 bg-white/95 border-2 border-amber-200/90 rounded-3xl p-3 sm:p-4 shadow-xl shrink-0 text-left">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 bg-white/95 border-2 border-amber-200/90 rounded-3xl p-3 sm:p-4 shadow-xl shrink-0 text-left">
             {/* Math Subject Card */}
-            <div className="flex sm:flex-col items-start gap-2.5 bg-amber-50/90 border border-amber-200 rounded-2xl p-2.5 sm:p-3 transition-transform hover:scale-[1.02]">
+            <div className="flex flex-col items-start gap-1 sm:gap-2 bg-amber-50/90 border border-amber-200 rounded-2xl p-2 sm:p-2.5 transition-transform hover:scale-[1.02]">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-lg">🔢</span>
-                  <h4 className="text-xs sm:text-sm font-black text-amber-950">Math Ascent</h4>
+                <div className="flex items-center gap-1">
+                  <span className="text-base sm:text-lg">🔢</span>
+                  <h4 className="text-xs sm:text-sm font-black text-amber-950">Math</h4>
                 </div>
-                <span className="text-xs font-black uppercase text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-md">
+                <span className="text-[10px] font-black uppercase text-amber-700 bg-amber-100 px-1 py-0.5 rounded">
                   Active
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-snug">
-                Adaptive addition, multiplication tables, money decimals, fractions & pre-algebra.
+              <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-tight">
+                Addition, multiplication, decimals & fractions.
               </p>
             </div>
 
             {/* Words Subject Card */}
-            <div className="flex sm:flex-col items-start gap-2.5 bg-teal-50/90 border border-teal-200 rounded-2xl p-2.5 sm:p-3 transition-transform hover:scale-[1.02]">
+            <div className="flex flex-col items-start gap-1 sm:gap-2 bg-teal-50/90 border border-teal-200 rounded-2xl p-2 sm:p-2.5 transition-transform hover:scale-[1.02]">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-lg">📚</span>
-                  <h4 className="text-xs sm:text-sm font-black text-teal-950">Words Ascent</h4>
+                <div className="flex items-center gap-1">
+                  <span className="text-base sm:text-lg">📚</span>
+                  <h4 className="text-xs sm:text-sm font-black text-teal-950">Words</h4>
                 </div>
-                <span className="text-xs font-black uppercase text-teal-700 bg-teal-100 px-1.5 py-0.5 rounded-md">
+                <span className="text-[10px] font-black uppercase text-teal-700 bg-teal-100 px-1 py-0.5 rounded">
                   Active
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-snug">
-                Dynamic phonics, sight words, spelling builder, vocabulary & grammar quests.
+              <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-tight">
+                Phonics, sight words, spelling & vocab.
+              </p>
+            </div>
+
+            {/* World Subject Card */}
+            <div className="flex flex-col items-start gap-1 sm:gap-2 bg-emerald-50/90 border border-emerald-200 rounded-2xl p-2 sm:p-2.5 transition-transform hover:scale-[1.02]">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-1">
+                  <span className="text-base sm:text-lg">🌍</span>
+                  <h4 className="text-xs sm:text-sm font-black text-emerald-950">World</h4>
+                </div>
+                <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-1 py-0.5 rounded">
+                  Active
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-tight">
+                Continents, oceans, US states & world capitals.
               </p>
             </div>
 
             {/* Daily Streaks & Shop Card */}
-            <div className="flex sm:flex-col items-start gap-2.5 bg-purple-50/90 border border-purple-200 rounded-2xl p-2.5 sm:p-3 transition-transform hover:scale-[1.02]">
+            <div className="flex flex-col items-start gap-1 sm:gap-2 bg-purple-50/90 border border-purple-200 rounded-2xl p-2 sm:p-2.5 transition-transform hover:scale-[1.02]">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-1.5">
-                  <Flame className="w-4 h-4 text-orange-500 fill-orange-400" />
-                  <h4 className="text-xs sm:text-sm font-black text-purple-950">Streaks & Shop</h4>
+                <div className="flex items-center gap-1">
+                  <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 fill-orange-400" />
+                  <h4 className="text-xs sm:text-sm font-black text-purple-950">Shop</h4>
                 </div>
-                <span className="text-xs font-black uppercase text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded-md">
+                <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-100 px-1 py-0.5 rounded">
                   🐾 Kibo's
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-snug">
-                Solve 12 daily problems to build retention & earn Sparks for outfits and pets!
+              <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-tight">
+                Earn Sparks for outfits and companion pets!
               </p>
             </div>
           </div>
@@ -411,22 +438,30 @@ export default function FirstLaunchOnboardingModal({
 
         {/* Subject Start Actions */}
         <div className="shrink-0 space-y-2 pt-1 pb-2 w-full">
-          <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
+          <div className="grid grid-cols-3 gap-2 max-w-md mx-auto">
             <button
               type="button"
               onClick={() => handleStart('math')}
-              className="w-full py-3 sm:py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-sm sm:text-base rounded-2xl border-b-4 border-orange-700 shadow-md shadow-amber-500/20 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-2.5 sm:py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-xs sm:text-sm md:text-base rounded-2xl border-b-4 border-orange-700 shadow-md shadow-amber-500/20 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1 cursor-pointer"
             >
               <span>🔢</span>
-              <span>Start Math</span>
+              <span className="truncate">Math</span>
             </button>
             <button
               type="button"
               onClick={() => handleStart('words')}
-              className="w-full py-3 sm:py-3.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-black text-sm sm:text-base rounded-2xl border-b-4 border-teal-800 shadow-md shadow-teal-600/20 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-2.5 sm:py-3.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-black text-xs sm:text-sm md:text-base rounded-2xl border-b-4 border-teal-800 shadow-md shadow-teal-600/20 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1 cursor-pointer"
             >
               <span>📚</span>
-              <span>Start Words</span>
+              <span className="truncate">Words</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStart('world')}
+              className="w-full py-2.5 sm:py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs sm:text-sm md:text-base rounded-2xl border-b-4 border-emerald-800 shadow-md shadow-emerald-600/20 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1 cursor-pointer"
+            >
+              <span>🌍</span>
+              <span className="truncate">World</span>
             </button>
           </div>
 
@@ -439,7 +474,7 @@ export default function FirstLaunchOnboardingModal({
           )}
 
           <span className="text-xs sm:text-sm font-extrabold text-slate-500 block text-center">
-            Kibo Climb • Multi-Subject Daily Ascents (~3 Mins) • Math & Words
+            Kibo Climb • Multi-Subject Daily Ascents (~3 Mins) • Math, Words & World
           </span>
         </div>
       </div>

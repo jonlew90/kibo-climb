@@ -397,6 +397,25 @@ export default function LeaderboardScreen({
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             )}
           </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setSelectedSubject('world');
+            }}
+            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
+              selectedSubject === 'world'
+                ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm ring-2 ring-emerald-400/30'
+                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
+            }`}
+          >
+            <span>🌍</span>
+            <span>Kibo World</span>
+            {selectedSubject === 'world' && (
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            )}
+          </button>
         </div>
 
         {/* Fairness Banner */}
@@ -406,6 +425,8 @@ export default function LeaderboardScreen({
             {viewMode === 'global'
               ? (selectedSubject === 'words'
                  ? 'Words competence is dynamically measured based on spelling accuracy, vocabulary fluency, and speed.'
+                 : selectedSubject === 'world'
+                 ? 'World competence is dynamically measured based on geography accuracy, map recall, and speed.'
                  : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.')
               : (`Compete in this week's cohort by earning Sparks! ${cohortId ? 'Group: ' + cohortId.split('_bucket_')[1] : ''}`)}
           </p>

@@ -487,7 +487,7 @@ export default function ParentDashboardModal({
                   const isSelected = selectedSubject === subKey;
                   const subData = getProfileSubjectData(viewingProfileId, subKey);
                   const subRating = subData.adaptiveCompetenceRating || 1000;
-                  const subIcon = subConfig.icon || (subKey === 'words' ? '📖' : subKey === 'world' ? '🌍' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🔢')));
+                  const subIcon = subConfig.icon || (subKey === 'words' ? '📚' : subKey === 'world' ? '🌍' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🔢')));
 
                   return (
                     <button
@@ -502,7 +502,7 @@ export default function ParentDashboardModal({
                     >
                       <span>{subIcon}</span>
                       <span>{subConfig.name || subKey}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : 'bg-purple-800 text-purple-100') : 'bg-slate-200 text-slate-600'}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : subKey === 'world' ? 'bg-emerald-800 text-emerald-100' : 'bg-purple-800 text-purple-100') : 'bg-slate-200 text-slate-600'}`}>
                         {subRating}
                       </span>
                       {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
