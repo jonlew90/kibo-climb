@@ -1,6 +1,7 @@
 // src/services/leaderboardService.js
-import { db, auth } from '../config/firebase.js';
+import { db, auth, functions } from '../config/firebase.js';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
 import { 
   collection, 
   doc, 
@@ -20,6 +21,10 @@ class LeaderboardService {
     this.currentUser = null;
     this.isAuthInitialized = false;
     this.initAuth();
+  }
+
+  getCurrentUser() {
+    return this.currentUser || auth.currentUser;
   }
 
   // Ensure anonymous auth session for cloud sync
@@ -154,16 +159,62 @@ class LeaderboardService {
     }
   }
 
+  // Join or retrieve weekly cohort with Cloud Function + resilient client fallback
+  async joinWeeklyLeague({ profileId = 'default_child', weekStr, subject = 'math' }) {
+    const safeProfileId = profileId || 'default_child';
+    const cacheKey = `kibo_cohort_${weekStr}_${subject}_${safeProfileId}`;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        return { cohortId: cached };
+      }
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+
+    // Attempt to invoke the Cloud Function if available
+    try {
+      const joinFunc = httpsCallable(functions, 'joinWeeklyLeague');
+      const res = await joinFunc({ profileId: safeProfileId, weekStr, subject });
+      if (res?.data?.cohortId) {
+        try { localStorage.setItem(cacheKey, res.data.cohortId); } catch (e) {}
+        return { cohortId: res.data.cohortId };
+      }
+    } catch (err) {
+      // Graceful fallback without crashing or spamming console
+      console.info('LeaderboardService: Cloud Function unavailable, using cohort allocation fallback.');
+    }
+
+    // Resilient fallback cohort bucket
+    const fallbackCohortId = `league_${weekStr}_${subject}_bucket_1`;
+    try {
+      localStorage.setItem(cacheKey, fallbackCohortId);
+    } catch (e) {}
+
+    return { cohortId: fallbackCohortId };
+  }
+
   // Sync weekly effort stats (sparks and max streak) to Firestore
-  async syncWeeklyScore({ profileId, name, weekStr, sparks = 0, maxStreak = 0, equipped = [], subject = 'math' }) {
+  async syncWeeklyScore({ profileId, name, weekStr, cohortId, sparks = 0, maxStreak = 0, equipped = [], subject = 'math' }) {
     try {
       let user = this.currentUser || auth.currentUser;
-      if (!user) return; // Skip silently if offline
+      if (!user) {
+        try {
+          const userCred = await signInAnonymously(auth);
+          user = userCred.user;
+          this.currentUser = user;
+        } catch (authErr) {
+          return; // Skip silently if offline
+        }
+      }
+
+      if (!user || !user.uid) return;
 
       const baseUid = user.uid;
       const safeProfileId = profileId || 'default_child';
       const safeSubject = subject || 'math';
-      const documentId = `${baseUid}_${safeProfileId}`;
+      const safeCohortId = cohortId || `league_${weekStr}_${safeSubject}_bucket_1`;
+      const documentId = `${baseUid}_${safeProfileId}_${safeSubject}`;
       const userRef = doc(db, 'weekly_stats', documentId);
 
       const payload = {
@@ -172,6 +223,7 @@ class LeaderboardService {
         subject: safeSubject,
         name: name || 'Kibo Climber',
         weekStr: weekStr,
+        cohortId: safeCohortId,
         sparks: Number(sparks) || 0,
         maxStreak: Number(maxStreak) || 0,
         equipped: Array.isArray(equipped) ? equipped : [],
@@ -180,7 +232,11 @@ class LeaderboardService {
 
       await setDoc(userRef, payload, { merge: true });
     } catch (error) {
-      console.warn('LeaderboardService: Failed to sync weekly score', error);
+      if (error?.code === 'permission-denied') {
+        console.warn('LeaderboardService: Weekly sync permission denied. Check Firestore security rules.');
+      } else {
+        console.warn('LeaderboardService: Failed to sync weekly score', error);
+      }
     }
   }
 
@@ -192,14 +248,8 @@ class LeaderboardService {
         return () => {};
       }
 
-      // We query by cohortId and weekStr.
-      // NOTE: Because Firestore rules/indexes might not support composite out of the box,
-      // we query by cohortId and sort in memory if needed, but since cohort is small (~30),
-      // we can just fetch the whole cohort. We will order by sparks desc.
       const q = query(
-        collection(db, 'weekly_stats'),
-        // No composite index needed if we just fetch the whole cohort and sort locally
-        // We'll just fetch by collection and filter/sort locally for now since we don't know the indexes
+        collection(db, 'weekly_stats')
       );
 
       return onSnapshot(q, (snapshot) => {
@@ -208,8 +258,8 @@ class LeaderboardService {
             id: docSnap.id,
             ...docSnap.data()
           }))
-          .filter(p => p.weekStr === weekStr && p.cohortId === cohortId && (p.subject || 'math') === subject)
-          .sort((a, b) => b.sparks - a.sparks)
+          .filter(p => p.weekStr === weekStr && (!p.cohortId || p.cohortId === cohortId) && (p.subject || 'math') === subject)
+          .sort((a, b) => (b.sparks || 0) - (a.sparks || 0))
           .slice(0, limitCount)
           .map((player, index) => ({
             ...player,

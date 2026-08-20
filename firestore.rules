@@ -17,6 +17,24 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /weekly_stats/{docId} {
+      // Allow anyone to read weekly stats
+      allow read: if true;
+
+      // Allow authenticated users to write their own weekly stats
+      allow create, update: if request.auth != null && (
+        request.auth.uid == docId ||
+        docId.matches('^' + request.auth.uid + '_.*') ||
+        request.resource.data.uid == request.auth.uid
+      );
+      allow delete: if false;
+    }
+
+    match /weekly_leagues/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
     match /users/{userId} {
       // Allow authenticated users to read/write their own sync profile document
       allow read, write: if request.auth != null && request.auth.uid == userId;

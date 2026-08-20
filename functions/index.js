@@ -12,8 +12,7 @@ if (!admin.apps.length) {
  */
 exports.sendParentEmail = onCall(
   {
-    cors: true,
-    invoker: "public"
+    cors: true
   },
   async (request) => {
     const apiKey = process.env.RESEND_API_KEY;
@@ -71,8 +70,7 @@ exports.sendParentEmail = onCall(
  */
 exports.validatePromoCode = onCall(
   {
-    cors: true,
-    invoker: "public"
+    cors: true
   },
   async (request) => {
     const { code } = request.data || {};
@@ -118,8 +116,7 @@ exports.validatePromoCode = onCall(
  */
 exports.joinWeeklyLeague = onCall(
   {
-    cors: true,
-    invoker: "public"
+    cors: true
   },
   async (request) => {
     const { profileId, weekStr, subject } = request.data || {};
@@ -130,7 +127,7 @@ exports.joinWeeklyLeague = onCall(
     }
 
     const db = admin.firestore();
-    const documentId = \`\${uid}_\${profileId}\`;
+    const documentId = `${uid}_${profileId}`;
     const userStatsRef = db.collection('weekly_stats').doc(documentId);
 
     try {
@@ -146,7 +143,7 @@ exports.joinWeeklyLeague = onCall(
         }
 
         // Need to assign a new cohort
-        const leagueRef = db.collection('weekly_leagues').doc(\`\${weekStr}_\${subject}\`);
+        const leagueRef = db.collection('weekly_leagues').doc(`${weekStr}_${subject}`);
         const leagueDoc = await transaction.get(leagueRef);
 
         let activeBucket = 1;
@@ -163,7 +160,7 @@ exports.joinWeeklyLeague = onCall(
           bucketCount = 0;
         }
 
-        const newCohortId = \`league_\${weekStr}_\${subject}_bucket_\${activeBucket}\`;
+        const newCohortId = `league_${weekStr}_${subject}_bucket_${activeBucket}`;
 
         // Update the league tracker
         transaction.set(leagueRef, {

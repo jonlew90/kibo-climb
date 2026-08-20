@@ -6,8 +6,6 @@ import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
 import { getWeekStr } from '../utils/dateUtils';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '../config/firebase';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 
 export default function LeaderboardScreen({
@@ -32,7 +30,7 @@ export default function LeaderboardScreen({
 
   const activeProfile = storageService.getActiveProfile();
   const username = storageService.getUsername() || activeProfile?.username || activeProfile?.name || 'You';
-  const currentUid = leaderboardService.getCurrentUser()?.uid;
+  const currentUid = leaderboardService.getCurrentUser?.()?.uid;
 
   // Get user score for selected subject
   const userScore = (selectedSubject === activeSubject && userState?.competenceRank)
@@ -83,21 +81,20 @@ export default function LeaderboardScreen({
     let isMounted = true;
     const weekStr = getWeekStr();
 
-    // Attempt to join or fetch cohort
+    // Attempt to join or fetch cohort via leaderboardService with automatic resilient fallback
     const joinCohort = async () => {
       try {
         setIsLoadingCohort(true);
-        const joinWeeklyLeague = httpsCallable(functions, 'joinWeeklyLeague');
-        const result = await joinWeeklyLeague({
+        const result = await leaderboardService.joinWeeklyLeague({
           profileId: activeProfile?.id || 'default_child',
           weekStr,
           subject: selectedSubject
         });
-        if (isMounted && result.data?.cohortId) {
-          setCohortId(result.data.cohortId);
+        if (isMounted && result?.cohortId) {
+          setCohortId(result.cohortId);
         }
       } catch (err) {
-        console.error('Failed to join weekly league:', err);
+        console.warn('LeaderboardScreen: Error joining weekly cohort:', err);
       } finally {
         if (isMounted) setIsLoadingCohort(false);
       }
@@ -123,6 +120,7 @@ export default function LeaderboardScreen({
             subject: selectedSubject,
             name: p.name,
             weekStr,
+            cohortId,
             sparks,
             maxStreak,
             equipped: p.equipped
@@ -207,12 +205,63 @@ export default function LeaderboardScreen({
     }
   }
 
-  const combinedStandings = viewMode === 'global'
-    ? mergedList.sort((a, b) => b.score - a.score)
-    : weeklyStandings; // already sorted by sparks from service
+  // Handle Weekly Standings merging with account profiles
+  const accountPlayersWeekly = allAccountProfiles.map(p => {
+    const isCurrent = p.id === activeProfile?.id;
+    const pName = isCurrent ? username : (p.username || p.name || 'Climber');
+    const pSparks = isCurrent
+      ? (activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0)
+      : (p.userData?.weeklySparks || p.userData?.sparks || 0);
+    const pEquipped = isCurrent 
+      ? userEquippedItems 
+      : (p.shopState?.equippedItems || []);
+    const pSubjects = isCurrent
+      ? (userSubjectsMastered || 5)
+      : (p.userData?.subjectsMastered ?? Object.keys(p.userData?.masteredTricks || {}).length ?? 5);
+
+    return {
+      id: p.id,
+      profileId: p.id,
+      isCurrentUser: isCurrent,
+      isAccountProfile: true,
+      name: pName,
+      sparks: Number(pSparks) || 0,
+      score: Number(pSparks) || 0,
+      subjectsMastered: pSubjects,
+      equipped: pEquipped,
+      subject: selectedSubject
+    };
+  });
+
+  const weeklyFilteredRemote = weeklyStandings.filter(p => {
+    if (currentUid && p.uid === currentUid) return false;
+    if (currentUid && p.id && p.id.startsWith(`${currentUid}_`)) return false;
+    if (p.profileId && accountProfileIds.has(p.profileId)) return false;
+    const normName = (p.name || '').trim().toLowerCase();
+    if (accountNamesNormalized.has(normName)) return false;
+    return true;
+  });
+
+  const mergedWeeklyList = [...weeklyFilteredRemote, ...accountPlayersWeekly];
+  mergedWeeklyList.sort((a, b) => (Number(b.sparks) || 0) - (Number(a.sparks) || 0));
+
+  const seenWeeklyKeys = new Set();
+  const uniqueWeeklyStandings = [];
+  for (const player of mergedWeeklyList) {
+    const key = player.isCurrentUser
+      ? '__current_active_user__'
+      : (player.profileId && player.uid ? `${player.uid}_${player.profileId}` : (player.name || '').trim().toLowerCase() || player.id);
+
+    if (!seenWeeklyKeys.has(key)) {
+      seenWeeklyKeys.add(key);
+      uniqueWeeklyStandings.push(player);
+    }
+  }
+
+  const activeStandingsList = viewMode === 'weekly' ? uniqueWeeklyStandings : uniqueStandings;
 
   // Assign ranks
-  const rankedStandings = uniqueStandings.map((player, index) => ({
+  const rankedStandings = activeStandingsList.map((player, index) => ({
     ...player,
     rank: index + 1
   }));
@@ -220,10 +269,12 @@ export default function LeaderboardScreen({
   const userRankObj = rankedStandings.find(p => p.isCurrentUser);
   const currentUserRank = userRankObj ? userRankObj.rank : rankedStandings.length;
 
+  const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG.math;
+
   let pinnedScoreDisplay = userScore;
   let pinnedScoreLabel = `pts (${subjectConfig.name})`;
   if (viewMode === 'weekly') {
-    pinnedScoreDisplay = userRankObj ? userRankObj.sparks : (activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0);
+    pinnedScoreDisplay = userRankObj ? (userRankObj.sparks || 0) : (activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0);
     pinnedScoreLabel = 'Sparks Earned';
   }
 
@@ -233,7 +284,7 @@ export default function LeaderboardScreen({
     if (viewMode === 'global') {
       pointsNeeded = playerAbove ? Math.max(1, playerAbove.score - userScore + 1) : 1;
     } else {
-      pointsNeeded = playerAbove ? Math.max(1, playerAbove.sparks - pinnedScoreDisplay + 1) : 1;
+      pointsNeeded = playerAbove ? Math.max(1, (playerAbove.sparks || playerAbove.score || 0) - pinnedScoreDisplay + 1) : 1;
     }
   }
 
@@ -245,8 +296,6 @@ export default function LeaderboardScreen({
   const getRankTitle = (score) => {
     return getCompetenceRankTier(score, selectedSubject);
   };
-
-  const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG.math;
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-slate-50 via-stone-50 to-slate-100 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
@@ -291,13 +340,21 @@ export default function LeaderboardScreen({
       <div className="bg-white border-b-2 border-slate-200 z-10 shrink-0 shadow-sm relative pb-3">
         <div className="px-4 pt-3 pb-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-slate-800">
-            <Trophy className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
-            <h2 className="text-lg font-black tracking-tight">Global Standings</h2>
+            {viewMode === 'global' ? (
+              <Trophy className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
+            ) : (
+              <Zap className="w-5 h-5 text-emerald-600 fill-emerald-500 stroke-[2.5]" />
+            )}
+            <h2 className="text-lg font-black tracking-tight">
+              {viewMode === 'global' ? 'Global Standings' : 'Weekly League'}
+            </h2>
           </div>
 
           <div className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">
             <Activity className="w-3.5 h-3.5 text-indigo-600" />
-            <span>{subjectConfig.name} Competence</span>
+            <span>
+              {viewMode === 'global' ? `${subjectConfig.name} Competence` : `${subjectConfig.name} Weekly Sparks`}
+            </span>
           </div>
         </div>
 
