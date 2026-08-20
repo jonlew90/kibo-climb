@@ -753,6 +753,7 @@ export default function WorldSessionView({
     const activeUserData = storageService.getUserData('world');
     const badgeEvalRes = evaluateBadges({
       ...activeUserData,
+      subjectId: 'world',
       inSessionStreak: evalResult.nextInSessionStreak,
       competenceRank: evalResult.nextCompetenceRank,
       blockRatingGain: nextBlockRatingGain,
@@ -768,14 +769,9 @@ export default function WorldSessionView({
     if (isCorrect && badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
       // Priority sorting: pick the highest tier/prestigious badge among all newly unlocked badges
       const priorityOrder = [
-        'rank_tier8', 'master_prealgebra',
-        'rank_tier7', 'master_fractions',
-        'rank_tier6',
-        'rank_tier5', 'master_time_money',
-        'rank_tier4',
-        'rank_tier3', 'master_multiplication',
-        'rank_tier2',
-        'rank_tier1', 'master_addition'
+        'world_summit_master', 'hemisphere_voyager', 'country_diplomat',
+        'state_cartographer', 'continent_navigator',
+        'world_expert', 'world_traveler', 'capital_collector', 'world_novice'
       ];
 
       const highestBadge = badgeEvalRes.newlyUnlocked.slice().sort((a, b) => {

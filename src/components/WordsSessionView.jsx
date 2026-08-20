@@ -772,6 +772,7 @@ export default function WordsSessionView({
     const activeUserData = storageService.getUserData('words');
     const badgeEvalRes = evaluateBadges({
       ...activeUserData,
+      subjectId: 'words',
       inSessionStreak: evalResult.nextInSessionStreak,
       competenceRank: evalResult.nextCompetenceRank,
       blockRatingGain: nextBlockRatingGain,
@@ -787,14 +788,10 @@ export default function WordsSessionView({
     if (isCorrect && badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
       // Priority sorting: pick the highest tier/prestigious badge among all newly unlocked badges
       const priorityOrder = [
-        'rank_tier8', 'master_prealgebra',
-        'rank_tier7', 'master_fractions',
-        'rank_tier6',
-        'rank_tier5', 'master_time_money',
-        'rank_tier4',
-        'rank_tier3', 'master_multiplication',
-        'rank_tier2',
-        'rank_tier1', 'master_addition'
+        'peak_lexicon_master', 'etymology_explorer', 'vocab_voyager',
+        'morphology_master', 'compound_crafter', 'digraph_diver',
+        'blend_builder', 'sight_word_scout',
+        'words_lexicon_master', 'words_scholar', 'words_novice', 'word_speed_demon'
       ];
 
       const highestBadge = badgeEvalRes.newlyUnlocked.slice().sort((a, b) => {

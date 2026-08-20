@@ -1,14 +1,18 @@
-// Trail Badges Database for Kibo Math
+// Trail Badges Database for Kibo Climb (Math, Words, World)
 
 export const BADGE_CATEGORIES = {
   consistency: { label: 'Streak & Consistency', icon: '🔥' },
-  records: { label: 'Personal Records & Mastery', icon: '🏆' },
+  words: { label: 'Kibo Words', icon: '📚' },
+  world: { label: 'Kibo World', icon: '🌍' },
+  precision: { label: 'Precision & Accuracy', icon: '🎯' },
   shop: { label: 'Workshop & Purchases', icon: '🎒' },
-  precision: { label: 'Precision & Accuracy', icon: '🎯' }
+  records: { label: 'Personal Records', icon: '🏆' }
 };
 
 export const BADGES_CATALOG = [
-  // STREAK BADGES
+  // ==========================================
+  // 1. STREAK & CONSISTENCY BADGES
+  // ==========================================
   {
     id: 'streak_3',
     title: '3-Day Spark',
@@ -28,7 +32,7 @@ export const BADGES_CATALOG = [
   {
     id: 'streak_30',
     title: '30-Day Summit Legend',
-    description: '30 days of daily math climbs! Truly a Mount Kibo Legend.',
+    description: '30 days of daily climbs! Truly a Mount Kibo Legend.',
     category: 'consistency',
     icon: '🏔️',
     reqText: 'Reach a 30-Day Daily Streak'
@@ -66,17 +70,237 @@ export const BADGES_CATALOG = [
     reqText: 'Improve accuracy after a tough session'
   },
 
-  // PERSONAL RECORDS BADGE
+  // ==========================================
+  // 2. KIBO WORDS BADGES
+  // ==========================================
   {
-    id: 'personal_record',
-    title: 'Trailblazer Record',
-    description: 'Set a new personal record in speed or accuracy!',
-    category: 'records',
+    id: 'words_novice',
+    title: 'Word Apprentice',
+    description: 'Answered 25 Kibo Words vocabulary questions correctly!',
+    category: 'words',
+    icon: '🔤',
+    reqText: '25 Correct in Words'
+  },
+  {
+    id: 'words_scholar',
+    title: 'Spelling Scholar',
+    description: 'Answered 100 Kibo Words vocabulary questions correctly!',
+    category: 'words',
+    icon: '📖',
+    reqText: '100 Correct in Words'
+  },
+  {
+    id: 'words_lexicon_master',
+    title: 'Master of Lexicon',
+    description: 'Answered 500 Kibo Words vocabulary questions correctly!',
+    category: 'words',
+    icon: '👑',
+    reqText: '500 Correct in Words'
+  },
+  {
+    id: 'sight_word_scout',
+    title: 'Sight Word Scout',
+    description: 'Mastered CVC patterns, short vowel sounds, and foundational sight words!',
+    category: 'words',
+    icon: '🌱',
+    reqText: 'Reach 1200+ Words Rating'
+  },
+  {
+    id: 'blend_builder',
+    title: 'Blend Builder',
+    description: 'Mastered 4-letter words, consonant blends, and magic-e rules!',
+    category: 'words',
+    icon: '🌲',
+    reqText: 'Reach 1400+ Words Rating'
+  },
+  {
+    id: 'digraph_diver',
+    title: 'Digraph Diver',
+    description: 'Conquered 5-letter words, vowel teams, and consonant digraphs!',
+    category: 'words',
+    icon: '🌊',
+    reqText: 'Reach 1600+ Words Rating'
+  },
+  {
+    id: 'compound_crafter',
+    title: 'Compound Crafter',
+    description: 'Unlocked compound word construction and multi-syllable connections!',
+    category: 'words',
+    icon: '🏜️',
+    reqText: 'Reach 1800+ Words Rating'
+  },
+  {
+    id: 'morphology_master',
+    title: 'Morphology Master',
+    description: 'Mastered prefixes, suffixes, and root word transformations!',
+    category: 'words',
+    icon: '🧩',
+    reqText: 'Reach 2000+ Words Rating'
+  },
+  {
+    id: 'vocab_voyager',
+    title: 'Vocab Voyager',
+    description: 'Navigated advanced descriptive and cross-curricular academic words!',
+    category: 'words',
+    icon: '⛰️',
+    reqText: 'Reach 2200+ Words Rating'
+  },
+  {
+    id: 'etymology_explorer',
+    title: 'Etymology Explorer',
+    description: 'Decoded classical Greek and Latin roots and multi-syllabic stems!',
+    category: 'words',
+    icon: '❄️',
+    reqText: 'Reach 2400+ Words Rating'
+  },
+  {
+    id: 'peak_lexicon_master',
+    title: 'Peak Lexicon Legend',
+    description: 'Reached the summit of Mount Word with supreme vocabulary mastery!',
+    category: 'words',
+    icon: '🏔️',
+    reqText: 'Reach 2600+ Words Rating'
+  },
+  {
+    id: 'word_speed_demon',
+    title: 'Rapid Reader',
+    description: 'Completed a 100% accurate Words sprint at lightning-fast recall pace!',
+    category: 'words',
     icon: '⚡',
-    reqText: 'Set a New Personal Record'
+    reqText: 'Fast Perfect Words Climb'
   },
 
-  // WORKSHOP & SHOPPING BADGES
+  // ==========================================
+  // 3. KIBO WORLD BADGES
+  // ==========================================
+  {
+    id: 'world_novice',
+    title: 'Compass Cadet',
+    description: 'Answered 25 World Geography questions correctly!',
+    category: 'world',
+    icon: '🧭',
+    reqText: '25 Correct in World'
+  },
+  {
+    id: 'world_traveler',
+    title: 'World Traveler',
+    description: 'Answered 100 World Geography questions correctly!',
+    category: 'world',
+    icon: '🌍',
+    reqText: '100 Correct in World'
+  },
+  {
+    id: 'world_expert',
+    title: 'Globe Trotter',
+    description: 'Answered 500 World Geography questions correctly!',
+    category: 'world',
+    icon: '🗺️',
+    reqText: '500 Correct in World'
+  },
+  {
+    id: 'continent_navigator',
+    title: 'Continent Conqueror',
+    description: 'Mastered the 7 continents, 5 oceans, and cardinal directions!',
+    category: 'world',
+    icon: '🌊',
+    reqText: 'Reach 1200+ World Rating'
+  },
+  {
+    id: 'state_cartographer',
+    title: '50 States Navigator',
+    description: 'Mastered US state capitals, shapes, regions, and landmarks!',
+    category: 'world',
+    icon: '🦅',
+    reqText: 'Reach 1400+ World Rating'
+  },
+  {
+    id: 'country_diplomat',
+    title: 'Global Diplomat',
+    description: 'Mastered sovereign nations, capital cities, and continental flags!',
+    category: 'world',
+    icon: '🏛️',
+    reqText: 'Reach 1600+ World Rating'
+  },
+  {
+    id: 'hemisphere_voyager',
+    title: 'Hemisphere Pioneer',
+    description: 'Mastered country map outlines, hemispheres, rivers, and mountain ranges!',
+    category: 'world',
+    icon: '🛰️',
+    reqText: 'Reach 1800+ World Rating'
+  },
+  {
+    id: 'world_summit_master',
+    title: 'Master Cartographer',
+    description: 'Reached the peak of Mount Kibo World with expert global knowledge!',
+    category: 'world',
+    icon: '🌐',
+    reqText: 'Reach 2000+ World Rating'
+  },
+  {
+    id: 'capital_collector',
+    title: 'Capital City Prodigy',
+    description: 'Correctly answered 20 capital city challenges across World sessions!',
+    category: 'world',
+    icon: '🏙️',
+    reqText: 'Solve 20 Capital Questions'
+  },
+
+  // ==========================================
+  // 4. PRECISION & ACCURACY BADGES
+  // ==========================================
+  {
+    id: 'perfect_climb_single',
+    title: 'Flawless Ascent',
+    description: 'Completed a climb session with 100% accuracy!',
+    category: 'precision',
+    icon: '🎯',
+    reqText: 'Complete 1 Perfect Climb'
+  },
+  {
+    id: 'perfect_climb_3',
+    title: 'Triple Perfection',
+    description: 'Completed 3 perfect climbs!',
+    category: 'precision',
+    icon: '🏆',
+    reqText: 'Complete 3 Perfect Climbs'
+  },
+  {
+    id: 'perfect_streak_3',
+    title: 'Unbroken Focus',
+    description: 'Completed 3 perfect climbs in a row!',
+    category: 'precision',
+    icon: '🔥',
+    reqText: '3 Perfect Climbs in a row'
+  },
+  {
+    id: 'cumulative_answers_25',
+    title: 'Streak Starter',
+    description: 'Reached 25 cumulative correct answers in a row!',
+    category: 'precision',
+    icon: '⚡',
+    reqText: '25 Cumulative Correct Answers in a row'
+  },
+  {
+    id: 'cumulative_answers_50',
+    title: 'Streak Master',
+    description: 'Reached 50 cumulative correct answers in a row!',
+    category: 'precision',
+    icon: '🌟',
+    reqText: '50 Cumulative Correct Answers in a row'
+  },
+  {
+    id: 'cumulative_answers_100',
+    title: 'Streak Legend',
+    description: 'Reached 100 cumulative correct answers in a row!',
+    category: 'precision',
+    icon: '👑',
+    reqText: '100 Cumulative Correct Answers in a row'
+  },
+
+  // ==========================================
+  // 5. WORKSHOP & SHOPPING BADGES
+  // ==========================================
   {
     id: 'shop_buyer_1',
     title: 'First Haul',
@@ -150,74 +374,20 @@ export const BADGES_CATALOG = [
     reqText: 'Accumulate 1,000 Sparks'
   },
 
-  // ACCURACY & PERFECT CLIMB BADGES
+  // ==========================================
+  // 6. PERSONAL RECORDS BADGES
+  // ==========================================
   {
-    id: 'perfect_climb_single',
-    title: 'Flawless Ascent',
-    description: 'Completed a climb session with 100% accuracy!',
-    category: 'precision',
-    icon: '🎯',
-    reqText: 'Complete 1 Perfect Climb'
-  },
-  {
-    id: 'perfect_climb_3',
-    title: 'Triple Perfection',
-    description: 'Completed 3 perfect climbs!',
-    category: 'precision',
-    icon: '🏆',
-    reqText: 'Complete 3 Perfect Climbs'
-  },
-  {
-    id: 'perfect_streak_3',
-    title: 'Unbroken Focus',
-    description: 'Completed 3 perfect climbs in a row!',
-    category: 'precision',
-    icon: '🔥',
-    reqText: '3 Perfect Climbs in a row'
-  },
-  {
-    id: 'cumulative_answers_25',
-    title: 'Streak Starter',
-    description: 'Reached 25 cumulative correct answers in a row!',
-    category: 'precision',
+    id: 'personal_record',
+    title: 'Trailblazer Record',
+    description: 'Set a new personal record in speed or accuracy!',
+    category: 'records',
     icon: '⚡',
-    reqText: '25 Cumulative Correct Answers in a row'
-  },
-  {
-    id: 'cumulative_answers_50',
-    title: 'Streak Master',
-    description: 'Reached 50 cumulative correct answers in a row!',
-    category: 'precision',
-    icon: '🌟',
-    reqText: '50 Cumulative Correct Answers in a row'
-  },
-  {
-    id: 'cumulative_answers_100',
-    title: 'Streak Legend',
-    description: 'Reached 100 cumulative correct answers in a row!',
-    category: 'precision',
-    icon: '👑',
-    reqText: '100 Cumulative Correct Answers in a row'
-  },
-  // SUBJECT SPECIFIC BADGES
-  {
-    id: 'world_traveler',
-    title: 'World Traveler',
-    description: 'Answered 100 World Geography questions correctly!',
-    category: 'records',
-    icon: '🌍',
-    reqText: '100 Correct in World'
-  },
-  {
-    id: 'world_expert',
-    title: 'Globe Trotter',
-    description: 'Answered 500 World Geography questions correctly!',
-    category: 'records',
-    icon: '🗺️',
-    reqText: '500 Correct in World'
-  },
+    reqText: 'Set a New Personal Record'
+  }
 ];
 
 export function getBadgeById(id) {
   return BADGES_CATALOG.find((b) => b.id === id);
 }
+

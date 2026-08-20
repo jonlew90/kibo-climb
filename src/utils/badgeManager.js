@@ -1,4 +1,4 @@
-// Badge Manager Engine for Kibo Math & Kibo Words
+// Badge Manager Engine for Kibo Math, Kibo Words & Kibo World
 import { BADGES_CATALOG } from '../data/badges';
 import { storageService } from '../services/storageService';
 
@@ -19,8 +19,21 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
     cumulativeCorrectStreak = 0,
     sprintHistory = [],
     personalRecords = {},
-    subjectId = 'math'
+    subjectId = 'math',
+    competenceRank = 1000,
+    adaptiveCompetenceRating = 1000,
+    totalProblemsSolved = 0
   } = userState;
+
+  const currentRating = Math.max(
+    Number(competenceRank) || 0,
+    Number(adaptiveCompetenceRating) || 0,
+    Number(userState.rating) || 0,
+    1000
+  );
+
+  // Subject-specific total problems solved fallback
+  const subjectSolvedCount = Number(totalProblemsSolved) || 0;
 
   // Derive perfect climbs count from all available sources
   const historyPerfectCount = Array.isArray(sprintHistory)
@@ -73,7 +86,9 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
     let unlocked = false;
 
     switch (badge.id) {
-      // 1. Daily Streaks
+      // ==========================================
+      // 1. Daily Streaks & Consistency
+      // ==========================================
       case 'streak_3':
         unlocked = streak >= 3;
         break;
@@ -129,12 +144,153 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         }
         break;
 
-      // 2. Personal Records
+      // ==========================================
+      // 2. Kibo Words Badges
+      // ==========================================
+      case 'words_novice':
+        if (subjectId === 'words') {
+          unlocked = subjectSolvedCount >= 25;
+        }
+        break;
+      case 'words_scholar':
+        if (subjectId === 'words') {
+          unlocked = subjectSolvedCount >= 100;
+        }
+        break;
+      case 'words_lexicon_master':
+        if (subjectId === 'words') {
+          unlocked = subjectSolvedCount >= 500;
+        }
+        break;
+      case 'sight_word_scout':
+        if (subjectId === 'words') {
+          unlocked = currentRating >= 1200;
+        }
+        break;
+      case 'blend_builder':
+        if (subjectId === 'words') {
+          unlocked = currentRating >= 1400;
+        }
+        break;
+      case 'digraph_diver':
+        if (subjectId === 'words') {
+          unlocked = currentRating >= 1600;
+        }
+        break;
+      case 'compound_crafter':
+        if (subjectId === 'words') {
+          unlocked = currentRating >= 1800;
+        }
+        break;
+      case 'morphology_master':
+        if (subjectId === 'words') {
+          unlocked = currentRating >= 2000;
+        }
+        break;
+      case 'vocab_voyager':
+        if (subjectId === 'words') {
+          unlocked = currentRating >= 2200;
+        }
+        break;
+      case 'etymology_explorer':
+        if (subjectId === 'words') {
+          unlocked = currentRating >= 2400;
+        }
+        break;
+      case 'peak_lexicon_master':
+        if (subjectId === 'words') {
+          unlocked = currentRating >= 2600;
+        }
+        break;
+      case 'word_speed_demon': {
+        if (subjectId === 'words') {
+          const isFastSprint = lastSprintResult &&
+            (lastSprintResult.accuracyPct === 100 || (lastSprintResult.correctCount === lastSprintResult.totalQuestions && lastSprintResult.totalQuestions >= 10)) &&
+            (lastSprintResult.totalTimeSec != null && lastSprintResult.totalTimeSec <= 45);
+          const hadFastHistory = Array.isArray(sprintHistory) && sprintHistory.some((s) =>
+            (s.accuracyPct === 100 || (s.correctCount === s.totalQuestions && s.totalQuestions >= 10)) &&
+            s.totalTimeSec != null && s.totalTimeSec <= 45
+          );
+          unlocked = !!isFastSprint || hadFastHistory;
+        }
+        break;
+      }
+
+      // ==========================================
+      // 3. Kibo World Badges
+      // ==========================================
+      case 'world_novice':
+        if (subjectId === 'world') {
+          unlocked = subjectSolvedCount >= 25;
+        }
+        break;
+      case 'world_traveler':
+        if (subjectId === 'world') {
+          unlocked = subjectSolvedCount >= 100;
+        }
+        break;
+      case 'world_expert':
+        if (subjectId === 'world') {
+          unlocked = subjectSolvedCount >= 500;
+        }
+        break;
+      case 'continent_navigator':
+        if (subjectId === 'world') {
+          unlocked = currentRating >= 1200;
+        }
+        break;
+      case 'state_cartographer':
+        if (subjectId === 'world') {
+          unlocked = currentRating >= 1400;
+        }
+        break;
+      case 'country_diplomat':
+        if (subjectId === 'world') {
+          unlocked = currentRating >= 1600;
+        }
+        break;
+      case 'hemisphere_voyager':
+        if (subjectId === 'world') {
+          unlocked = currentRating >= 1800;
+        }
+        break;
+      case 'world_summit_master':
+        if (subjectId === 'world') {
+          unlocked = currentRating >= 2000;
+        }
+        break;
+      case 'capital_collector':
+        if (subjectId === 'world') {
+          // Check if capital questions solved >= 20
+          let capitalCount = 0;
+          if (Array.isArray(sprintHistory)) {
+            for (const s of sprintHistory) {
+              if (Array.isArray(s.answers)) {
+                for (const a of s.answers) {
+                  if (a.isCorrect && (a.type === 'state_capital' || a.type === 'country_capital' || a.type === 'capital_state' || a.type === 'capital_country' || a.concept?.includes('Capitals'))) {
+                    capitalCount++;
+                  }
+                }
+              }
+            }
+          }
+          if (userState.lastProblemType && ['state_capital', 'country_capital', 'capital_state', 'capital_country'].includes(userState.lastProblemType)) {
+            capitalCount++;
+          }
+          unlocked = capitalCount >= 20 || (subjectSolvedCount >= 40); // Generous fallback
+        }
+        break;
+
+      // ==========================================
+      // 4. Personal Records
+      // ==========================================
       case 'personal_record':
         unlocked = hasSpeedOrAccRecord;
         break;
 
-      // 3. Shop Purchases & Rarities
+      // ==========================================
+      // 5. Shop Purchases & Rarities
+      // ==========================================
       case 'shop_buyer_1':
         unlocked = purchasedItemsCount >= 1;
         break;
@@ -154,7 +310,9 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         unlocked = !!hasBoughtGemsWithRealMoney;
         break;
 
-      // 4. Sparks Accumulation
+      // ==========================================
+      // 6. Sparks Accumulation
+      // ==========================================
       case 'sparks_100':
         unlocked = sparks >= 100;
         break;
@@ -165,7 +323,9 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         unlocked = sparks >= 1000;
         break;
 
-      // 5. Perfect Climbs & Consecutives
+      // ==========================================
+      // 7. Perfect Climbs & Consecutives
+      // ==========================================
       case 'perfect_climb_single':
         unlocked = effectivePerfectCount >= 1 || !!currentSprintIsPerfect;
         break;
@@ -176,7 +336,9 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         unlocked = effectiveConsecutivePerfect >= 3;
         break;
 
-      // 6. Cumulative Correct Answers in a Row
+      // ==========================================
+      // 8. Cumulative Correct Answers in a Row
+      // ==========================================
       case 'cumulative_answers_25':
         unlocked = cumulativeCorrectStreak >= 25;
         break;
@@ -187,20 +349,7 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         unlocked = cumulativeCorrectStreak >= 100;
         break;
 
-
-      // 7. World Subject Specific
-      case 'world_traveler':
-        if (subjectId === 'world') {
-           unlocked = (userState.totalProblemsSolved || 0) >= 100;
-        }
-        break;
-      case 'world_expert':
-        if (subjectId === 'world') {
-           unlocked = (userState.totalProblemsSolved || 0) >= 500;
-        }
-        break;
       default:
-
         break;
     }
 
@@ -220,3 +369,4 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
 
   return { newlyUnlocked, updatedUnlocked };
 }
+
