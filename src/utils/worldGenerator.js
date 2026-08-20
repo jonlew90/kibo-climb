@@ -212,7 +212,7 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `On which continent is ${country.name} located?`,
         correctAnswer: country.continent,
         options: shuffleArray([country.continent, ...getUniqueDistractors(country.continent, CONTINENTS, 3, c => c.name)]),
-        hint: country.capital ? `Its capital city is ${country.capital}.` : `Consider the landmass surrounding ${country.name}.`,
+        hint: `Consider the global region where ${country.name} is located.${country.trivia ? ' Hint: ' + country.trivia : ''}`,
         concept: 'Continents & Oceans',
         tier: 1
       });
@@ -227,7 +227,7 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `What is the capital of ${state.name}?`,
         correctAnswer: state.capital,
         options: shuffleArray([state.capital, ...getUniqueDistractors(state.capital, US_STATES, 3, s => s.capital)]),
-        hint: `It is the seat of government for ${state.name}.`,
+        hint: state.nickname ? `Think about the capital of the ${state.nickname}.` : `Consider the primary center of government for this state.`,
         concept: 'US States & Shapes',
         tier: 2
       });
@@ -239,7 +239,7 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `${state.capital} is the capital of which US state?`,
         correctAnswer: state.name,
         options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
-        hint: `Look for the state governed from ${state.capital}.`,
+        hint: `Consider which state has its seat of government here.`,
         concept: 'US States & Shapes',
         tier: 2
       });
@@ -253,7 +253,7 @@ export const getTierCandidateTemplates = (tier) => {
           prompt: `Which US state is highlighted on this map?`,
           correctAnswer: state.name,
           options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
-          hint: `Observe the surrounding states, bodies of water, and borders carefully.`,
+          hint: `Observe the shape and borders carefully.${state.nickname ? ' Hint: It is known as the ' + state.nickname + '.' : ''}`,
           shapeSvg: regionalMap?.targetPath || state.shapeSvg,
           mapData: regionalMap,
           concept: 'US States & Shapes',
@@ -269,7 +269,7 @@ export const getTierCandidateTemplates = (tier) => {
           prompt: `Which US state is known for: "${state.trivia}"?`,
           correctAnswer: state.name,
           options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
-          hint: state.nickname ? `Known as the "${state.nickname}".` : `State capital is ${state.capital}.`,
+          hint: state.nickname ? `Think about the state popular nickname: ${state.nickname}.` : `Think about the state known for this fact.`,
           concept: 'US States & Shapes',
           tier: 2
         });
@@ -285,7 +285,7 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `What is the capital of ${country.name}?`,
         correctAnswer: country.capital,
         options: shuffleArray([country.capital, ...getUniqueDistractors(country.capital, COUNTRIES, 3, c => c.capital)]),
-        hint: country.trivia || `It is the official seat of government and executive center for ${country.name}.`,
+        hint: country.trivia ? `Consider the primary political center. Hint: ${country.trivia}` : `Consider the primary political center of ${country.name}.`,
         concept: 'Major Countries & Capitals',
         tier: 3
       });
@@ -297,7 +297,7 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `${country.capital} is the capital city of which country?`,
         correctAnswer: country.name,
         options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
-        hint: country.landmark ? `This nation is famous for landmarks like the ${country.landmark}.` : `Look for the sovereign country whose government meets in ${country.capital}.`,
+        hint: country.landmark ? `Think about the nation governed from here. Hint: It is famous for the ${country.landmark}.` : `Think about the nation governed from here.`,
         concept: 'Major Countries & Capitals',
         tier: 3
       });
@@ -309,7 +309,7 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `Which continent is ${country.name} located in?`,
         correctAnswer: country.continent,
         options: shuffleArray([country.continent, ...getUniqueDistractors(country.continent, CONTINENTS, 3, c => c.name)]),
-        hint: country.capital ? `The capital city of this country is ${country.capital}.` : `Consider the landmass that encompasses ${country.name}.`,
+        hint: `Think about the global region containing ${country.name}.${country.trivia ? ' Hint: ' + country.trivia : ''}`,
         concept: 'Major Countries & Capitals',
         tier: 3
       });
@@ -323,7 +323,7 @@ export const getTierCandidateTemplates = (tier) => {
           prompt: `The famous landmark "${country.landmark}" is located in which country?`,
           correctAnswer: country.name,
           options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
-          hint: `The capital of this host nation is ${country.capital}.`,
+          hint: `Consider where this famous landmark was built.`,
           landmarkData: landmarkVis,
           concept: 'Major Countries & Capitals',
           tier: 3
@@ -339,7 +339,7 @@ export const getTierCandidateTemplates = (tier) => {
           prompt: `Which country does this national flag belong to?`,
           correctAnswer: country.name,
           options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
-          hint: country.capital ? `Its national capital city is ${country.capital}.` : (country.landmark ? `Famous for the ${country.landmark}.` : `Examine the colors and national emblem.`),
+          hint: country.landmark ? `Examine the colors and national emblem. Hint: Famous for the ${country.landmark}.` : `Examine the colors and national emblem carefully.`,
           flagData: flag,
           concept: 'National Flags & Symbols',
           tier: 3
@@ -357,7 +357,7 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `Which country is highlighted on this map?`,
         correctAnswer: country.name,
         options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
-        hint: country.capital ? `The capital of this country is ${country.capital}.` : `Look at the surrounding borders and coastal profile.`,
+        hint: `Look at the surrounding borders and coastal profile.${country.trivia ? ' Hint: ' + country.trivia : ''}`,
         shapeSvg: regionalMap?.targetPath || country.shapeSvg,
         mapData: regionalMap,
         concept: 'Country Shapes & Locations',
@@ -464,7 +464,7 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `Summit Challenge: Identify this highlighted country by its outline borders:`,
         correctAnswer: country.name,
         options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
-        hint: country.capital ? `Its seat of government is ${country.capital}.` : (country.trivia || `Inspect the coastal perimeter and neighboring territory.`),
+        hint: `Inspect the coastal perimeter and neighboring territory.${country.trivia ? ' Hint: ' + country.trivia : ''}`,
         shapeSvg: regionalMap?.targetPath || country.shapeSvg,
         mapData: regionalMap,
         concept: 'Global Geography Expert',

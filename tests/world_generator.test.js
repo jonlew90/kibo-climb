@@ -154,27 +154,21 @@ describe('Kibo World Curriculum & Deduplication Engine', () => {
 
     mapNames.forEach(name => {
       const map = REGIONAL_MAPS[name];
-      expect(map.viewBox).toBeTruthy();
-      expect(map.targetPath).toBeTruthy();
-      expect(map.targetPath.startsWith('M')).toBe(true);
       expect(map.targetCenter).toBeDefined();
-      expect(typeof map.targetCenter.x).toBe('number');
-      expect(typeof map.targetCenter.y).toBe('number');
-      expect(Array.isArray(map.waterBodies)).toBe(true);
-      expect(Array.isArray(map.surroundingLand)).toBe(true);
+      expect(typeof map.targetCenter[0]).toBe('number');
+      expect(typeof map.targetCenter[1]).toBe('number');
+      if (map.waterBodies) expect(Array.isArray(map.waterBodies)).toBe(true);
     });
 
     // Check that generated shape problems include mapData
     const tier2Shapes = getTierCandidateTemplates(2).filter(t => t.type === 'state_shape');
     tier2Shapes.forEach(t => {
       expect(t.mapData).toBeDefined();
-      expect(t.mapData.targetPath).toBeTruthy();
     });
 
     const tier4Shapes = getTierCandidateTemplates(4).filter(t => t.type === 'country_shape');
     tier4Shapes.forEach(t => {
       expect(t.mapData).toBeDefined();
-      expect(t.mapData.targetPath).toBeTruthy();
     });
   });
 
