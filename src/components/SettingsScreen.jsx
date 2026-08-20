@@ -2,7 +2,7 @@ import React from 'react';
 import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, Mail } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
-export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter, onNavigate }) {
+export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter, onNavigate, onOpenFeedback }) {
   const isMuted = preferences?.isMuted ?? false;
   const isHapticsEnabled = preferences?.isHapticsEnabled ?? true;
 
@@ -116,10 +116,12 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
             </div>
           </a>
 
-          <a
-            href="mailto:hello@kibomath.com?subject=Kibo%20Math%20Feedback"
-            className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl transition-colors active:scale-95"
-            onClick={(e) => { soundFx.playKeyTap(); }}
+          <button
+            className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl transition-colors active:scale-95 w-full text-left"
+            onClick={() => {
+              soundFx.playKeyTap();
+              if (onOpenFeedback) onOpenFeedback();
+            }}
           >
             <div className="flex items-center gap-3">
               <div className="p-1.5 bg-emerald-100 text-emerald-700 rounded-lg border border-emerald-200">
@@ -127,7 +129,7 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
               </div>
               <span className="font-extrabold text-slate-700 text-sm">Send Feedback</span>
             </div>
-          </a>
+          </button>
           </div>
         </div>
       </main>
