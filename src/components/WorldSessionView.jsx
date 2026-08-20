@@ -108,9 +108,21 @@ export default function WorldSessionView({
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
   const [celebrationEvent, setCelebrationEvent] = useState(null);
 
+  const isWorldProblem = (p) => {
+    if (!p) return false;
+    if (p.subject && p.subject !== 'world') return false;
+    if (p.type === 'words' || (p.num1 !== undefined && p.num2 !== undefined && p.type !== 'applied')) return false;
+    return true;
+  };
+
   const [hasStartedClimb, setHasStartedClimb] = useState(false);
   const [savedClimbState, setSavedClimbState] = useState(() => {
-    return storageService.getActiveClimbState(profileId, 'world');
+    const saved = storageService.getActiveClimbState(profileId, 'world');
+    if (saved && saved.problemQueue && (!saved.problemQueue.every(isWorldProblem) || (saved.subject && saved.subject !== 'world'))) {
+      storageService.clearActiveClimbState(profileId, 'world');
+      return null;
+    }
+    return saved;
   });
 
   const blockSeenKeysRef = useRef(new Set());
@@ -119,14 +131,22 @@ export default function WorldSessionView({
   // Sync saved climb state when active profile changes
   useEffect(() => {
     const saved = storageService.getActiveClimbState(profileId, 'world');
-    setSavedClimbState(saved);
+    if (saved && saved.problemQueue && (!saved.problemQueue.every(isWorldProblem) || (saved.subject && saved.subject !== 'world'))) {
+      storageService.clearActiveClimbState(profileId, 'world');
+      setSavedClimbState(null);
+    } else {
+      setSavedClimbState(saved);
+    }
   }, [profileId]);
 
   // Generate adaptive problem queue for active tier based on competence rating
   const [problemQueue, setProblemQueue] = useState(() => {
     const saved = storageService.getActiveClimbState(profileId, 'world');
-    if (saved && saved.problemQueue && saved.problemQueue.length > 0) {
+    if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWorldProblem)) {
       return saved.problemQueue;
+    }
+    if (saved) {
+      storageService.clearActiveClimbState(profileId, 'world');
     }
     const seen = new Set();
     const currentRating = storageService.getUserData('world').adaptiveCompetenceRating || storageService.getUserData('world').competenceRank || 1000;
@@ -277,6 +297,8 @@ export default function WorldSessionView({
     }
 
     const climbState = {
+      subject: 'world',
+      subjectId: 'world',
       version: 1,
       savedAt: Date.now(),
       problemQueue,
@@ -316,10 +338,8 @@ export default function WorldSessionView({
   const handleResumeClimb = () => {
     soundFx.playKeyTap();
     const saved = storageService.getActiveClimbState(profileId, 'world');
-    if (saved) {
-      if (saved.problemQueue && saved.problemQueue.length > 0) {
-        setProblemQueue(saved.problemQueue);
-      }
+    if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWorldProblem)) {
+      setProblemQueue(saved.problemQueue);
       setCurrentIndex(saved.currentIndex || 0);
       setSessionQuestionIndex(saved.sessionQuestionIndex || 1);
       setQuestionsAnswered(saved.questionsAnswered || 0);
@@ -343,6 +363,10 @@ export default function WorldSessionView({
       problemStartTimeRef.current = now - probTime;
       pauseStartRef.current = null;
     } else {
+      if (saved) {
+        storageService.clearActiveClimbState(profileId, 'world');
+        setSavedClimbState(null);
+      }
       blockStartTimeRef.current = performance.now();
       problemStartTimeRef.current = performance.now();
     }

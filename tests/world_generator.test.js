@@ -109,13 +109,13 @@ describe('Kibo World Curriculum & Deduplication Engine', () => {
   });
 
   it('should respect history exclusion during primary pass', () => {
-    const history = ['Asia', 'Pacific Ocean', 'North'];
+    const history = ['Asia', 'Pacific', 'North'];
     const seen = new Set();
     const batch = generateProblems(8, 1, history, seen);
 
     const answers = batch.map(p => p.correctAnswer);
     expect(answers).not.toContain('Asia');
-    expect(answers).not.toContain('Pacific Ocean');
+    expect(answers).not.toContain('Pacific');
     expect(answers).not.toContain('North');
   });
 

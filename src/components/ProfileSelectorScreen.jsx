@@ -408,11 +408,11 @@ export default function ProfileSelectorScreen({
     loadProfiles();
   }, []);
 
-  const handleSelect = (profile) => {
+  const handleSelect = (profile, preferredSubject) => {
     setSelectedId(profile.id);
     storageService.setActiveProfileId(profile.id);
     if (onSelectProfile) {
-      onSelectProfile(profile);
+      onSelectProfile(profile, preferredSubject);
     }
   };
 

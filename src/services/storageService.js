@@ -457,10 +457,11 @@ export const storageService = {
           sprintHistory: currentProfileData.sprintHistory || [],
           skipLogs: currentProfileData.skipLogs || []
         },
-        words: { ...DEFAULT_PROFILE.userData.subjects.words }
+        words: createDefaultSubjectState(1000),
+        world: createDefaultSubjectState(1000)
       };
     } else if (!currentProfileData.subjects[subjectId]) {
-       currentProfileData.subjects[subjectId] = { ...DEFAULT_PROFILE.userData.subjects.words };
+       currentProfileData.subjects[subjectId] = createDefaultSubjectState(1000);
     }
 
     // Extract subject specific fields from the payload (streak and lastSprintDate are profile-global)
@@ -818,10 +819,58 @@ export const storageService = {
     if (profile.userData.subjects && profile.userData.subjects[subjectId] && profile.userData.subjects[subjectId].activeClimb) {
       climb = profile.userData.subjects[subjectId].activeClimb;
     } else if (subjectId === 'math' && profile.userData.activeClimb) {
-      climb = profile.userData.activeClimb; // Fallback
+      // Validate that fallback root climb is actually a math climb
+      if (profile.userData.activeClimb.subject && profile.userData.activeClimb.subject !== 'math') {
+        climb = null;
+      } else {
+        climb = profile.userData.activeClimb;
+      }
     }
 
     if (!climb) return null;
+
+    // Strict subject mismatch check
+    if (climb.subject && climb.subject !== subjectId) {
+      this.clearActiveClimbState(pid, subjectId);
+      return null;
+    }
+
+    // Question content validation to prevent cross-subject pollution
+    if (Array.isArray(climb.problemQueue) && climb.problemQueue.length > 0) {
+      const MATH_TYPES = new Set(['fill_blank', 'missing_operator', 'money', 'fraction', 'decimal', 'applied', 'signed']);
+
+      if (subjectId === 'math') {
+        const hasNonMath = climb.problemQueue.some(p => {
+          if (!p) return true;
+          if (p.subject && p.subject !== 'math') return true;
+          if (p.shapeSvg !== undefined && p.shapeSvg !== null) return true;
+          if (p.mapData !== undefined && p.mapData !== null) return true;
+          if (p.missingLetters !== undefined) return true;
+          const isStandardMath = (p.num1 !== undefined && p.num2 !== undefined) || (p.type && MATH_TYPES.has(p.type));
+          return !isStandardMath;
+        });
+        if (hasNonMath) {
+          this.clearActiveClimbState(pid, subjectId);
+          return null;
+        }
+      } else if (subjectId === 'world') {
+        const hasNonWorld = climb.problemQueue.some(p => 
+          !p || p.subject === 'math' || p.subject === 'words' || p.type === 'words' || p.missingLetters !== undefined || (p.num1 !== undefined && p.num2 !== undefined && p.type !== 'applied')
+        );
+        if (hasNonWorld) {
+          this.clearActiveClimbState(pid, subjectId);
+          return null;
+        }
+      } else if (subjectId === 'words') {
+        const hasNonWords = climb.problemQueue.some(p => 
+          !p || p.subject === 'math' || p.subject === 'world' || p.shapeSvg || p.mapData || (p.num1 !== undefined && p.num2 !== undefined)
+        );
+        if (hasNonWords) {
+          this.clearActiveClimbState(pid, subjectId);
+          return null;
+        }
+      }
+    }
 
     if (climb.sessionQuestionIndex > 12 || (climb.questionsAnswered && climb.questionsAnswered % 12 === 0 && climb.questionsAnswered > 0)) {
       this.clearActiveClimbState(pid, subjectId);
@@ -837,14 +886,21 @@ export const storageService = {
     const currentUserData = state.profiles[pid].userData || {};
 
     if (!currentUserData.subjects) {
-      currentUserData.subjects = { math: {}, words: {} };
+      currentUserData.subjects = { math: {}, words: {}, world: {} };
     }
     if (!currentUserData.subjects[subjectId]) {
        currentUserData.subjects[subjectId] = {};
     }
-    currentUserData.subjects[subjectId].activeClimb = climbState;
+
+    const stateWithSubject = {
+      ...climbState,
+      subject: subjectId,
+      subjectId: subjectId
+    };
+
+    currentUserData.subjects[subjectId].activeClimb = stateWithSubject;
     if (subjectId === 'math') {
-      currentUserData.activeClimb = climbState; // Fallback for math backwards compatibility
+      currentUserData.activeClimb = stateWithSubject; // Fallback for math backwards compatibility
     }
 
     state.profiles[pid].userData = currentUserData;

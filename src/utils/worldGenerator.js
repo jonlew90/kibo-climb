@@ -66,7 +66,7 @@ export const getTierCandidateTemplates = (tier) => {
         type: 'continent_name',
         prompt: 'Which of the following is a Continent?',
         correctAnswer: c.name,
-        options: shuffleArray([c.name, ...getUniqueDistractors(c.name, OCEANS, 3, o => o.fullName || o.name)]),
+        options: shuffleArray([c.name, ...getUniqueDistractors(c.name, OCEANS, 3, o => o.name)]),
         hint: 'Continents are large landmasses on Earth.',
         concept: 'Continents & Oceans',
         tier: 1
@@ -75,13 +75,12 @@ export const getTierCandidateTemplates = (tier) => {
 
     // 2. Ocean identification
     for (const o of OCEANS) {
-      const oceanName = o.fullName || `${o.name} Ocean`;
       templates.push({
         key: `ocean_name:${o.name}`,
         type: 'ocean_name',
         prompt: 'Which of the following is an Ocean?',
-        correctAnswer: oceanName,
-        options: shuffleArray([oceanName, ...getUniqueDistractors(oceanName, CONTINENTS, 3, c => c.name)]),
+        correctAnswer: o.name,
+        options: shuffleArray([o.name, ...getUniqueDistractors(o.name, CONTINENTS, 3, c => c.name)]),
         hint: 'Oceans are large bodies of saltwater covering most of Earth.',
         concept: 'Continents & Oceans',
         tier: 1

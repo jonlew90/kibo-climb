@@ -107,9 +107,21 @@ export default function WordsSessionView({
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
   const [celebrationEvent, setCelebrationEvent] = useState(null);
 
+  const isWordsProblem = (p) => {
+    if (!p) return false;
+    if (p.subject && p.subject !== 'words') return false;
+    if (p.type === 'world' || p.type === 'geography' || (p.num1 !== undefined && p.num2 !== undefined && p.type !== 'words')) return false;
+    return true;
+  };
+
   const [hasStartedClimb, setHasStartedClimb] = useState(false);
   const [savedClimbState, setSavedClimbState] = useState(() => {
-    return storageService.getActiveClimbState(profileId, 'words');
+    const saved = storageService.getActiveClimbState(profileId, 'words');
+    if (saved && saved.problemQueue && (!saved.problemQueue.every(isWordsProblem) || (saved.subject && saved.subject !== 'words'))) {
+      storageService.clearActiveClimbState(profileId, 'words');
+      return null;
+    }
+    return saved;
   });
 
   const blockSeenKeysRef = useRef(new Set());
@@ -118,14 +130,22 @@ export default function WordsSessionView({
   // Sync saved climb state when active profile changes
   useEffect(() => {
     const saved = storageService.getActiveClimbState(profileId, 'words');
-    setSavedClimbState(saved);
+    if (saved && saved.problemQueue && (!saved.problemQueue.every(isWordsProblem) || (saved.subject && saved.subject !== 'words'))) {
+      storageService.clearActiveClimbState(profileId, 'words');
+      setSavedClimbState(null);
+    } else {
+      setSavedClimbState(saved);
+    }
   }, [profileId]);
 
   // Generate adaptive problem queue for active tier based on competence rating
   const [problemQueue, setProblemQueue] = useState(() => {
     const saved = storageService.getActiveClimbState(profileId, 'words');
-    if (saved && saved.problemQueue && saved.problemQueue.length > 0) {
+    if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWordsProblem)) {
       return saved.problemQueue;
+    }
+    if (saved) {
+      storageService.clearActiveClimbState(profileId, 'words');
     }
     const seen = new Set();
     const currentRating = storageService.getUserData('words').adaptiveCompetenceRating || storageService.getUserData('words').competenceRank || 1000;
@@ -276,6 +296,8 @@ export default function WordsSessionView({
     }
 
     const climbState = {
+      subject: 'words',
+      subjectId: 'words',
       version: 1,
       savedAt: Date.now(),
       problemQueue,
@@ -315,10 +337,8 @@ export default function WordsSessionView({
   const handleResumeClimb = () => {
     soundFx.playKeyTap();
     const saved = storageService.getActiveClimbState(profileId, 'words');
-    if (saved) {
-      if (saved.problemQueue && saved.problemQueue.length > 0) {
-        setProblemQueue(saved.problemQueue);
-      }
+    if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWordsProblem)) {
+      setProblemQueue(saved.problemQueue);
       setCurrentIndex(saved.currentIndex || 0);
       setSessionQuestionIndex(saved.sessionQuestionIndex || 1);
       setQuestionsAnswered(saved.questionsAnswered || 0);
@@ -342,6 +362,10 @@ export default function WordsSessionView({
       problemStartTimeRef.current = now - probTime;
       pauseStartRef.current = null;
     } else {
+      if (saved) {
+        storageService.clearActiveClimbState(profileId, 'words');
+        setSavedClimbState(null);
+      }
       blockStartTimeRef.current = performance.now();
       problemStartTimeRef.current = performance.now();
     }

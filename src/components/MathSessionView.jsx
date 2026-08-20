@@ -106,9 +106,24 @@ export default function MathSessionView({
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
   const [celebrationEvent, setCelebrationEvent] = useState(null);
 
+  const isMathProblem = (p) => {
+    if (!p) return false;
+    if (p.subject && p.subject !== 'math') return false;
+    if (p.shapeSvg !== undefined && p.shapeSvg !== null) return false;
+    if (p.mapData !== undefined && p.mapData !== null) return false;
+    if (p.missingLetters !== undefined) return false;
+    const MATH_TYPES = new Set(['fill_blank', 'missing_operator', 'money', 'fraction', 'decimal', 'applied', 'signed']);
+    return (p.num1 !== undefined && p.num2 !== undefined) || (p.type && MATH_TYPES.has(p.type));
+  };
+
   const [hasStartedClimb, setHasStartedClimb] = useState(false);
   const [savedClimbState, setSavedClimbState] = useState(() => {
-    return storageService.getActiveClimbState(profileId);
+    const saved = storageService.getActiveClimbState(profileId, 'math');
+    if (saved && saved.problemQueue && (!saved.problemQueue.every(isMathProblem) || (saved.subject && saved.subject !== 'math'))) {
+      storageService.clearActiveClimbState(profileId, 'math');
+      return null;
+    }
+    return saved;
   });
 
   const blockSeenKeysRef = useRef(new Set());
@@ -116,15 +131,23 @@ export default function MathSessionView({
 
   // Sync saved climb state when active profile changes
   useEffect(() => {
-    const saved = storageService.getActiveClimbState(profileId);
-    setSavedClimbState(saved);
+    const saved = storageService.getActiveClimbState(profileId, 'math');
+    if (saved && saved.problemQueue && (!saved.problemQueue.every(isMathProblem) || (saved.subject && saved.subject !== 'math'))) {
+      storageService.clearActiveClimbState(profileId, 'math');
+      setSavedClimbState(null);
+    } else {
+      setSavedClimbState(saved);
+    }
   }, [profileId]);
 
   // Generate adaptive problem queue for active tier based on competence rating
   const [problemQueue, setProblemQueue] = useState(() => {
-    const saved = storageService.getActiveClimbState(profileId);
-    if (saved && saved.problemQueue && saved.problemQueue.length > 0) {
+    const saved = storageService.getActiveClimbState(profileId, 'math');
+    if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isMathProblem)) {
       return saved.problemQueue;
+    }
+    if (saved) {
+      storageService.clearActiveClimbState(profileId, 'math');
     }
     const seen = new Set();
     const currentRating = storageService.getUserData('math').adaptiveCompetenceRating || storageService.getUserData('math').competenceRank || 1000;
@@ -137,7 +160,7 @@ export default function MathSessionView({
   const [shouldPulseHint, setShouldPulseHint] = useState(false);
 
   const [blockAnswers, setBlockAnswers] = useState(() => {
-    const saved = storageService.getActiveClimbState(profileId);
+    const saved = storageService.getActiveClimbState(profileId, 'math');
     return saved?.blockAnswers || [];
   });
 
@@ -198,6 +221,8 @@ export default function MathSessionView({
     }
 
     const climbState = {
+      subject: 'math',
+      subjectId: 'math',
       version: 1,
       savedAt: Date.now(),
       problemQueue,
@@ -220,7 +245,7 @@ export default function MathSessionView({
       isDoubleSparksActive
     };
 
-    storageService.saveActiveClimbState(climbState, profileId);
+    storageService.saveActiveClimbState(climbState, profileId, 'math');
     setSavedClimbState(climbState);
   };
 
@@ -228,7 +253,7 @@ export default function MathSessionView({
     soundFx.playKeyTap();
     blockStartTimeRef.current = performance.now();
     problemStartTimeRef.current = performance.now();
-    storageService.clearActiveClimbState(profileId);
+    storageService.clearActiveClimbState(profileId, 'math');
     setSavedClimbState(null);
     setBlockAnswers([]);
     setHasStartedClimb(true);
@@ -236,11 +261,9 @@ export default function MathSessionView({
 
   const handleResumeClimb = () => {
     soundFx.playKeyTap();
-    const saved = storageService.getActiveClimbState(profileId);
-    if (saved) {
-      if (saved.problemQueue && saved.problemQueue.length > 0) {
-        setProblemQueue(saved.problemQueue);
-      }
+    const saved = storageService.getActiveClimbState(profileId, 'math');
+    if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isMathProblem)) {
+      setProblemQueue(saved.problemQueue);
       setCurrentIndex(saved.currentIndex || 0);
       setSessionQuestionIndex(saved.sessionQuestionIndex || 1);
       setQuestionsAnswered(saved.questionsAnswered || 0);
@@ -264,6 +287,10 @@ export default function MathSessionView({
       problemStartTimeRef.current = now - probTime;
       pauseStartRef.current = null;
     } else {
+      if (saved) {
+        storageService.clearActiveClimbState(profileId, 'math');
+        setSavedClimbState(null);
+      }
       blockStartTimeRef.current = performance.now();
       problemStartTimeRef.current = performance.now();
     }
@@ -823,7 +850,7 @@ export default function MathSessionView({
       setMascotState('break');
       setShowBreakOverlay(true);
 
-      storageService.clearActiveClimbState(profileId);
+      storageService.clearActiveClimbState(profileId, 'math');
       setSavedClimbState(null);
 
       const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
@@ -1169,7 +1196,7 @@ export default function MathSessionView({
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
           if (onResetDoubleSparks) onResetDoubleSparks();
-          storageService.clearActiveClimbState(profileId);
+          storageService.clearActiveClimbState(profileId, 'math');
           setSavedClimbState(null);
           setQuestionsAnswered(0);
           setSessionQuestionIndex(1);
@@ -1195,7 +1222,7 @@ export default function MathSessionView({
         onResumeClimb={() => {
           setShowBreakOverlay(false);
           if (onResetDoubleSparks) onResetDoubleSparks();
-          storageService.clearActiveClimbState(profileId);
+          storageService.clearActiveClimbState(profileId, 'math');
           setSavedClimbState(null);
           setQuestionsAnswered(0);
           setSessionQuestionIndex(1);
