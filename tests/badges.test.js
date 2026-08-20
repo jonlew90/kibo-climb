@@ -170,6 +170,33 @@ describe('Badges System & Expansion Tests', () => {
 
       expect(res.updatedUnlocked).toContain('capital_collector');
     });
+
+    it('unlocks capital_collector badge via capitalQuestionsSolved counter', () => {
+      const res = evaluateBadges({
+        subjectId: 'world',
+        capitalQuestionsSolved: 20,
+        unlockedBadges: []
+      });
+
+      expect(res.updatedUnlocked).toContain('capital_collector');
+    });
+
+    it('does NOT unlock capital_collector with only 1 capital question or 40 general questions', () => {
+      const resOnly1 = evaluateBadges({
+        subjectId: 'world',
+        capitalQuestionsSolved: 1,
+        unlockedBadges: []
+      });
+      expect(resOnly1.updatedUnlocked).not.toContain('capital_collector');
+
+      const res40General = evaluateBadges({
+        subjectId: 'world',
+        totalProblemsSolved: 40,
+        capitalQuestionsSolved: 1,
+        unlockedBadges: []
+      });
+      expect(res40General.updatedUnlocked).not.toContain('capital_collector');
+    });
   });
 
   describe('Streak, Precision, and Shop Badges Evaluation', () => {

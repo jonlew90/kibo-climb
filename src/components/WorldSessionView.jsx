@@ -112,6 +112,7 @@ export default function WorldSessionView({
   const [showBreakOverlay, setShowBreakOverlay] = useState(false);
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
   const [celebrationEvent, setCelebrationEvent] = useState(null);
+  const [incorrectReviewData, setIncorrectReviewData] = useState(null);
 
   const isWorldProblem = (p) => {
     if (!p) return false;
@@ -728,6 +729,192 @@ export default function WorldSessionView({
         type: 'success',
         text: toastMsg
       }, 1100);
+
+      const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
+      setBlockRatingGain(nextBlockRatingGain);
+
+      const activeWord = (normTargetAns || '').toString().toLowerCase();
+      const existingRecent = storageService.getUserData('world').recentWords || [];
+      const updatedRecent = activeWord ? [activeWord, ...existingRecent.filter(w => w !== activeWord)].slice(0, 60) : existingRecent;
+
+      const isCapitalQuestion = ['state_capital', 'country_capital', 'capital_state', 'capital_country', 'tricky_capital'].includes(currentProblem.type) ||
+        currentProblem.concept?.includes('Capitals');
+      const prevCapitalSolved = Number(storageService.getUserData('world').capitalQuestionsSolved) || 0;
+      const nextCapitalSolved = isCapitalQuestion ? prevCapitalSolved + 1 : prevCapitalSolved;
+
+      storageService.saveUserData({
+        adaptiveCompetenceRating: evalResult.nextCompetenceRank,
+        competenceRank: evalResult.nextCompetenceRank,
+        recentWords: updatedRecent,
+        ...(isCapitalQuestion ? { capitalQuestionsSolved: nextCapitalSolved } : {})
+      }, 'world');
+
+      const activeUserData = storageService.getUserData('world');
+      const badgeEvalRes = evaluateBadges({
+        ...activeUserData,
+        subjectId: 'world',
+        inSessionStreak: evalResult.nextInSessionStreak,
+        competenceRank: evalResult.nextCompetenceRank,
+        blockRatingGain: nextBlockRatingGain,
+        lastProblemType: currentProblem.type,
+        lastProblemTier: currentProblem.tier || getTierFromRating(evalResult.nextCompetenceRank),
+        capitalQuestionsSolved: nextCapitalSolved
+      });
+
+      if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
+        onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
+      }
+
+      // --- CELEBRATION REWARDS (ONLY FOR NEW BADGE UNLOCKS TO PREVENT POPUP FATIGUE) ---
+      if (badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
+        const priorityOrder = [
+          'world_summit_master', 'hemisphere_voyager', 'country_diplomat',
+          'state_cartographer', 'continent_navigator',
+          'world_expert', 'world_traveler', 'capital_collector', 'world_novice'
+        ];
+
+        const highestBadge = badgeEvalRes.newlyUnlocked.slice().sort((a, b) => {
+          const idxA = priorityOrder.indexOf(a.id);
+          const idxB = priorityOrder.indexOf(b.id);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return 0;
+        })[0] || badgeEvalRes.newlyUnlocked[badgeEvalRes.newlyUnlocked.length - 1];
+
+        const bonusSparks = 25;
+        if (onAwardSparks) onAwardSparks(bonusSparks);
+        setSessionSparksEarned((prev) => prev + bonusSparks);
+        setBlockSparksEarned((prev) => prev + bonusSparks);
+        soundFx.playVictory();
+        setCelebrationEvent({
+          type: 'badge',
+          title: '🏆 NEW BADGE UNLOCKED!',
+          icon: highestBadge.icon || '🏅',
+          name: highestBadge.title || highestBadge.name,
+          description: highestBadge.description,
+          bonusSparks: bonusSparks
+        });
+      }
+
+      const existingMastery = activeUserData.recentSkillMastery || [];
+      const updatedMastery = checkSkillMasteryEvents(competenceRank, evalResult.nextCompetenceRank, existingMastery);
+      if (updatedMastery.length !== existingMastery.length) {
+        storageService.saveUserData({ recentSkillMastery: updatedMastery }, 'world');
+      }
+
+      const nextQuestionsAnswered = questionsAnswered + 1;
+      setQuestionsAnswered(nextQuestionsAnswered);
+      setSessionQuestionIndex((prev) => prev + 1);
+      if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(true);
+      setInputVal('');
+
+      // Trigger Kibo Break Overlay every 12 problems solved & record personal bests
+      if (nextQuestionsAnswered > 0 && nextQuestionsAnswered % 12 === 0) {
+        KiboAudioManager.playBreakSFX();
+        setMascotState('break');
+        setShowBreakOverlay(true);
+
+        storageService.clearActiveClimbState(profileId, 'world');
+        setSavedClimbState(null);
+
+        const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
+        const finalBlockCorrect = Math.min(12, blockCorrectCount + 1);
+        const finalBlockSparks = blockSparksEarned + blockEarned;
+        const isPerfectBlock = finalBlockCorrect === 12;
+
+        // RECORD COMPLETED CLIMB BLOCK INTO SPRINT HISTORY FOR ACCURATE PRACTICE TIME TRACKING
+        const newSessionRecord = {
+          id: `session-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          date: new Date().toISOString().split('T')[0],
+          tier: getTierFromRating(evalResult.nextCompetenceRank),
+          totalTimeSec: blockTimeSec,
+          correctCount: finalBlockCorrect,
+          totalQuestions: 12,
+          sparksEarned: finalBlockSparks,
+          accuracyPct: Math.round((finalBlockCorrect / 12) * 100),
+          ratingGain: nextBlockRatingGain,
+          answers: nextBlockAnswers
+        };
+
+        const existingHistory = activeUserData.sprintHistory || [];
+        const updatedHistory = [newSessionRecord, ...existingHistory];
+
+        setCompletedBlockStats({
+          correctCount: finalBlockCorrect,
+          sparksEarned: finalBlockSparks,
+          blockRatingGain: nextBlockRatingGain,
+          shieldsUsed: blockShieldsUsed
+        });
+
+        // Immediately reset block counters to 0 for the next 12-question block
+        setBlockCorrectCount(0);
+        setBlockSparksEarned(0);
+        setBlockRatingGain(0);
+        setBlockShieldsUsed(0);
+        setBlockAnswers([]);
+
+        const currentRecords = activeUserData.personalRecords || {};
+        const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
+        const updatedRecords = {
+          ...currentRecords,
+          fastest12QuestionsTime: isNewSpeedRecord ? blockTimeSec : currentRecords.fastest12QuestionsTime,
+          mostPerfectSessions: isPerfectBlock
+            ? (currentRecords.mostPerfectSessions || 0) + 1
+            : (currentRecords.mostPerfectSessions || 0)
+        };
+
+        storageService.saveUserData({
+          sprintHistory: updatedHistory,
+          personalRecords: updatedRecords
+        }, 'world');
+        if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
+        if (onRecordDailyPractice) onRecordDailyPractice();
+
+        // Immediately evaluate and claim any newly met badges at block completion (e.g. Flawless Ascent, Trailblazer Record, 3rd Perfect Run)
+        const postBlockUserData = storageService.getUserData('world');
+        const blockBadgeEval = evaluateBadges({
+          ...postBlockUserData,
+          inSessionStreak: evalResult.nextInSessionStreak,
+          competenceRank: evalResult.nextCompetenceRank,
+          blockRatingGain: nextBlockRatingGain,
+          isNewSpeedRecord,
+          hasSetPersonalRecord: isNewSpeedRecord || isPerfectBlock,
+          subjectId: 'world'
+        }, newSessionRecord);
+
+        if (blockBadgeEval?.updatedUnlocked && onUnlockedBadgesChange) {
+          onUnlockedBadgesChange(blockBadgeEval.updatedUnlocked);
+        }
+
+        if (blockBadgeEval?.newlyUnlocked && blockBadgeEval.newlyUnlocked.length > 0) {
+          const highestBadge = blockBadgeEval.newlyUnlocked[0];
+          const bonusSparks = 25;
+          if (onAwardSparks) onAwardSparks(bonusSparks);
+          setSessionSparksEarned((prev) => prev + bonusSparks);
+          setBlockSparksEarned((prev) => prev + bonusSparks);
+          soundFx.playVictory();
+          setCelebrationEvent({
+            type: 'badge',
+            title: '🏆 NEW BADGE UNLOCKED!',
+            icon: highestBadge.icon || '🏅',
+            name: highestBadge.title || highestBadge.name,
+            description: highestBadge.description,
+            bonusSparks: bonusSparks
+          });
+        }
+      }
+
+      const nextIdx = currentIndex + 1;
+      replenishQueueIfNeeded(nextIdx);
+      setAcknowledgedGivenIndices(new Set());
+      setCurrentIndex(nextIdx);
+
+      if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+      bannerTimerRef.current = setTimeout(() => {
+        setFeedbackBanner(null);
+      }, 3500);
     } else {
       let isShieldAbsorbed = false;
       const ownedShields = (consumables?.shieldCount || 0) + (consumables?.streakSaverCount || 0);
@@ -772,83 +959,72 @@ export default function WorldSessionView({
       if (evalResult.triggerFrustrationCircuit) {
         setShowFrustrationCard(true);
       }
-    }
 
-    const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
-    setBlockRatingGain(nextBlockRatingGain);
+      const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
+      setBlockRatingGain(nextBlockRatingGain);
 
-    const activeWord = (normTargetAns || '').toString().toLowerCase();
-    const existingRecent = storageService.getUserData('world').recentWords || [];
-    const updatedRecent = activeWord ? [activeWord, ...existingRecent.filter(w => w !== activeWord)].slice(0, 60) : existingRecent;
+      const activeWord = (normTargetAns || '').toString().toLowerCase();
+      const existingRecent = storageService.getUserData('world').recentWords || [];
+      const updatedRecent = activeWord ? [activeWord, ...existingRecent.filter(w => w !== activeWord)].slice(0, 60) : existingRecent;
 
-    storageService.saveUserData({
-      adaptiveCompetenceRating: evalResult.nextCompetenceRank,
-      competenceRank: evalResult.nextCompetenceRank,
-      recentWords: updatedRecent
-    }, 'world');
+      storageService.saveUserData({
+        adaptiveCompetenceRating: evalResult.nextCompetenceRank,
+        competenceRank: evalResult.nextCompetenceRank,
+        recentWords: updatedRecent
+      }, 'world');
 
-    const activeUserData = storageService.getUserData('world');
-    const badgeEvalRes = evaluateBadges({
-      ...activeUserData,
-      subjectId: 'world',
-      inSessionStreak: evalResult.nextInSessionStreak,
-      competenceRank: evalResult.nextCompetenceRank,
-      blockRatingGain: nextBlockRatingGain,
-      lastProblemType: currentProblem.type,
-      lastProblemTier: currentProblem.tier || getTierFromRating(evalResult.nextCompetenceRank)
-    });
+      const activeUserData = storageService.getUserData('world');
+      const badgeEvalRes = evaluateBadges({
+        ...activeUserData,
+        subjectId: 'world',
+        inSessionStreak: evalResult.nextInSessionStreak,
+        competenceRank: evalResult.nextCompetenceRank,
+        blockRatingGain: nextBlockRatingGain,
+        lastProblemType: currentProblem.type,
+        lastProblemTier: currentProblem.tier || getTierFromRating(evalResult.nextCompetenceRank)
+      });
 
-    if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
-      onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
-    }
+      if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
+        onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
+      }
 
-    // --- CELEBRATION REWARDS (ONLY FOR NEW BADGE UNLOCKS TO PREVENT POPUP FATIGUE) ---
-    if (isCorrect && badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
-      // Priority sorting: pick the highest tier/prestigious badge among all newly unlocked badges
-      const priorityOrder = [
-        'world_summit_master', 'hemisphere_voyager', 'country_diplomat',
-        'state_cartographer', 'continent_navigator',
-        'world_expert', 'world_traveler', 'capital_collector', 'world_novice'
-      ];
+      const existingMastery = activeUserData.recentSkillMastery || [];
+      const updatedMastery = checkSkillMasteryEvents(competenceRank, evalResult.nextCompetenceRank, existingMastery);
+      if (updatedMastery.length !== existingMastery.length) {
+        storageService.saveUserData({ recentSkillMastery: updatedMastery }, 'world');
+      }
 
-      const highestBadge = badgeEvalRes.newlyUnlocked.slice().sort((a, b) => {
-        const idxA = priorityOrder.indexOf(a.id);
-        const idxB = priorityOrder.indexOf(b.id);
-        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-        if (idxA !== -1) return -1;
-        if (idxB !== -1) return 1;
-        return 0;
-      })[0] || badgeEvalRes.newlyUnlocked[badgeEvalRes.newlyUnlocked.length - 1];
+      const isBlockComplete = (questionsAnswered + 1) % 12 === 0;
 
-      const bonusSparks = 25;
-      if (onAwardSparks) onAwardSparks(bonusSparks);
-      setSessionSparksEarned((prev) => prev + bonusSparks);
-      setBlockSparksEarned((prev) => prev + bonusSparks);
-      soundFx.playVictory();
-      setCelebrationEvent({
-        type: 'badge',
-        title: '🏆 NEW BADGE UNLOCKED!',
-        icon: highestBadge.icon || '🏅',
-        name: highestBadge.title || highestBadge.name,
-        description: highestBadge.description,
-        bonusSparks: bonusSparks
+      // Allow the user to see and review the correct answer before moving on
+      setIncorrectReviewData({
+        problem: currentProblem,
+        userAnswer: userAnsString,
+        correctAnswer: normTargetAns || currentProblem.correctAnswer || currentProblem.answer || '',
+        isProbe: !!currentProblem.isProbe,
+        evalResult,
+        nextQuestionsAnswered: questionsAnswered + 1,
+        nextBlockAnswers,
+        nextBlockRatingGain,
+        isShieldAbsorbed,
+        isBlockComplete
       });
     }
+  };
 
-    const existingMastery = activeUserData.recentSkillMastery || [];
-    const updatedMastery = checkSkillMasteryEvents(competenceRank, evalResult.nextCompetenceRank, existingMastery);
-    if (updatedMastery.length !== existingMastery.length) {
-      storageService.saveUserData({ recentSkillMastery: updatedMastery }, 'world');
-    }
-
-    const nextQuestionsAnswered = questionsAnswered + 1;
-    setQuestionsAnswered(nextQuestionsAnswered);
-    setSessionQuestionIndex((prev) => prev + 1);
-    if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(isCorrect);
+  const handleContinueAfterIncorrect = () => {
+    if (!incorrectReviewData) return;
+    soundFx.playKeyTap();
+    const data = incorrectReviewData;
+    setIncorrectReviewData(null);
     setInputVal('');
 
-    // Trigger Kibo Break Overlay every 12 problems solved & record personal bests
-    if (nextQuestionsAnswered > 0 && nextQuestionsAnswered % 12 === 0) {
+    const nextQuestionsAnswered = data.nextQuestionsAnswered;
+    setQuestionsAnswered(nextQuestionsAnswered);
+    setSessionQuestionIndex((prev) => prev + 1);
+    if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(false);
+
+    if (data.isBlockComplete) {
       KiboAudioManager.playBreakSFX();
       setMascotState('break');
       setShowBreakOverlay(true);
@@ -857,32 +1033,32 @@ export default function WorldSessionView({
       setSavedClimbState(null);
 
       const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
-      const finalBlockCorrect = Math.min(12, isCorrect ? blockCorrectCount + 1 : blockCorrectCount);
-      const finalBlockSparks = blockSparksEarned + blockEarned;
-      const isPerfectBlock = finalBlockCorrect === 12;
+      const finalBlockCorrect = blockCorrectCount;
+      const finalBlockSparks = blockSparksEarned;
+      const isPerfectBlock = false;
 
-      // RECORD COMPLETED CLIMB BLOCK INTO SPRINT HISTORY FOR ACCURATE PRACTICE TIME TRACKING
       const newSessionRecord = {
         id: `session-${Date.now()}`,
         timestamp: new Date().toISOString(),
         date: new Date().toISOString().split('T')[0],
-        tier: getTierFromRating(evalResult.nextCompetenceRank),
+        tier: getTierFromRating(data.evalResult.nextCompetenceRank),
         totalTimeSec: blockTimeSec,
         correctCount: finalBlockCorrect,
         totalQuestions: 12,
         sparksEarned: finalBlockSparks,
         accuracyPct: Math.round((finalBlockCorrect / 12) * 100),
-        ratingGain: nextBlockRatingGain,
-        answers: nextBlockAnswers
+        ratingGain: data.nextBlockRatingGain,
+        answers: data.nextBlockAnswers
       };
 
+      const activeUserData = storageService.getUserData('world');
       const existingHistory = activeUserData.sprintHistory || [];
       const updatedHistory = [newSessionRecord, ...existingHistory];
 
       setCompletedBlockStats({
         correctCount: finalBlockCorrect,
         sparksEarned: finalBlockSparks,
-        blockRatingGain: nextBlockRatingGain,
+        blockRatingGain: data.nextBlockRatingGain,
         shieldsUsed: blockShieldsUsed
       });
 
@@ -894,13 +1070,8 @@ export default function WorldSessionView({
       setBlockAnswers([]);
 
       const currentRecords = activeUserData.personalRecords || {};
-      const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
       const updatedRecords = {
-        ...currentRecords,
-        fastest12QuestionsTime: isNewSpeedRecord ? blockTimeSec : currentRecords.fastest12QuestionsTime,
-        mostPerfectSessions: isPerfectBlock
-          ? (currentRecords.mostPerfectSessions || 0) + 1
-          : (currentRecords.mostPerfectSessions || 0)
+        ...currentRecords
       };
 
       storageService.saveUserData({
@@ -910,57 +1081,33 @@ export default function WorldSessionView({
       if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
       if (onRecordDailyPractice) onRecordDailyPractice();
 
-      // Immediately evaluate and claim any newly met badges at block completion (e.g. Flawless Ascent, Trailblazer Record, 3rd Perfect Run)
       const postBlockUserData = storageService.getUserData('world');
       const blockBadgeEval = evaluateBadges({
         ...postBlockUserData,
-        inSessionStreak: evalResult.nextInSessionStreak,
-        competenceRank: evalResult.nextCompetenceRank,
-        blockRatingGain: nextBlockRatingGain,
-        isNewSpeedRecord,
-        hasSetPersonalRecord: isNewSpeedRecord || isPerfectBlock,
+        inSessionStreak: data.evalResult.nextInSessionStreak,
+        competenceRank: data.evalResult.nextCompetenceRank,
+        blockRatingGain: data.nextBlockRatingGain,
+        isNewSpeedRecord: false,
+        hasSetPersonalRecord: false,
         subjectId: 'world'
       }, newSessionRecord);
 
       if (blockBadgeEval?.updatedUnlocked && onUnlockedBadgesChange) {
         onUnlockedBadgesChange(blockBadgeEval.updatedUnlocked);
       }
-
-      if (blockBadgeEval?.newlyUnlocked && blockBadgeEval.newlyUnlocked.length > 0) {
-        const highestBadge = blockBadgeEval.newlyUnlocked[0];
-        const bonusSparks = 25;
-        if (onAwardSparks) onAwardSparks(bonusSparks);
-        setSessionSparksEarned((prev) => prev + bonusSparks);
-        setBlockSparksEarned((prev) => prev + bonusSparks);
-        soundFx.playVictory();
-        setCelebrationEvent({
-          type: 'badge',
-          title: '🏆 NEW BADGE UNLOCKED!',
-          icon: highestBadge.icon || '🏅',
-          name: highestBadge.title || highestBadge.name,
-          description: highestBadge.description,
-          bonusSparks: bonusSparks
-        });
-      }
+    } else {
+      const nextIdx = currentIndex + 1;
+      replenishQueueIfNeeded(nextIdx);
+      setAcknowledgedGivenIndices(new Set());
+      setCurrentIndex(nextIdx);
+      problemStartTimeRef.current = performance.now();
     }
-
-    const nextIdx = currentIndex + 1;
-    replenishQueueIfNeeded(nextIdx);
-    setAcknowledgedGivenIndices(new Set());
-    setCurrentIndex(nextIdx);
 
     if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
     bannerTimerRef.current = setTimeout(() => {
       setFeedbackBanner(null);
     }, 3500);
   };
-
-
-
-
-
-
-
 
   const handleSubmit = () => {
     if (!inputVal) return;
@@ -989,6 +1136,14 @@ export default function WorldSessionView({
         return;
       }
 
+      if (incorrectReviewData) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleContinueAfterIncorrect();
+        }
+        return;
+      }
+
       if (e.key === 'Enter') {
         e.preventDefault();
         if (inputVal) {
@@ -999,7 +1154,7 @@ export default function WorldSessionView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [inputVal, currentProblem, competenceRank, hasStartedClimb]);
+  }, [inputVal, currentProblem, competenceRank, hasStartedClimb, incorrectReviewData]);
 
   const lastBannerTypeRef = useRef('success');
   const lastBannerTextRef = useRef('');
@@ -1276,24 +1431,32 @@ export default function WorldSessionView({
                     {streakCfg.label}
                   </span>
 
-                  {/* NON-PUNITIVE PASS / TRY ANOTHER BUTTON */}
-                  <button
-                    type="button"
-                    onClick={handlePassQuestion}
-                    disabled={consecutiveSkips >= 2}
-                    className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
-                      consecutiveSkips >= 2
-                        ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
-                        : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
-                    }`}
-                    title={
-                      consecutiveSkips >= 2
-                        ? 'Cap of 2 consecutive skips reached. Give this question a try!'
-                        : 'Try another problem'
-                    }
-                  >
-                    {consecutiveSkips >= 2 ? '🔒 Attempt Required' : '🔄 Pass'}
-                  </button>
+                  {incorrectReviewData ? (
+                    <span className="text-xs font-black uppercase text-rose-800 bg-rose-100 px-3 py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1">
+                      ❌ Reviewing Solution
+                    </span>
+                  ) : (
+                    <>
+                      {/* NON-PUNITIVE PASS / TRY ANOTHER BUTTON */}
+                      <button
+                        type="button"
+                        onClick={handlePassQuestion}
+                        disabled={consecutiveSkips >= 2}
+                        className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                          consecutiveSkips >= 2
+                            ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
+                            : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
+                        }`}
+                        title={
+                          consecutiveSkips >= 2
+                            ? 'Cap of 2 consecutive skips reached. Give this question a try!'
+                            : 'Try another problem'
+                        }
+                      >
+                        {consecutiveSkips >= 2 ? '🔒 Attempt Required' : '🔄 Pass'}
+                      </button>
+                    </>
+                  )}
 
                   {isDoubleSparksActive && (
                     <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
@@ -1373,23 +1536,37 @@ export default function WorldSessionView({
                             fontClass = 'text-xs sm:text-sm leading-snug';
                           }
 
+                          const isUserChoice = incorrectReviewData && (optStr.toLowerCase() === String(incorrectReviewData.userAnswer || '').toLowerCase());
+                          const isCorrectAnswer = incorrectReviewData && (optStr.toLowerCase() === String(incorrectReviewData.correctAnswer || '').toLowerCase());
+
+                          let buttonStyle = 'btn-3d-teal';
+                          if (incorrectReviewData) {
+                            if (isCorrectAnswer) {
+                              buttonStyle = 'bg-emerald-500 hover:bg-emerald-500 border-b-4 border-emerald-700 text-white ring-4 ring-emerald-300/80 scale-[1.02] shadow-md animate-pulse';
+                            } else if (isUserChoice) {
+                              buttonStyle = 'bg-rose-500 border-b-4 border-rose-700 text-white opacity-90 shadow-sm';
+                            } else {
+                              buttonStyle = 'opacity-30 grayscale cursor-default';
+                            }
+                          } else if (inputVal !== '' && inputVal !== opt) {
+                            buttonStyle += ' opacity-40 grayscale';
+                          }
+
                           return (
                             <button
                               key={idx}
                               type="button"
                               onClick={() => {
-                                if (inputVal === '') {
+                                if (inputVal === '' && !incorrectReviewData) {
                                   setInputVal(opt);
                                   processAnswerEvaluation(opt);
                                 }
                               }}
-                              className={`btn-3d-teal w-full pt-1 pb-2 sm:pt-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 rounded-xl sm:rounded-2xl transition-all active:scale-95 flex items-center justify-center min-h-[46px] sm:min-h-[50px] shadow-sm select-none cursor-pointer ${
-                                inputVal !== '' && inputVal !== opt ? 'opacity-40 grayscale' : ''
-                              }`}
-                              disabled={inputVal !== ''}
+                              className={`${buttonStyle} w-full pt-1 pb-2 sm:pt-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 rounded-xl sm:rounded-2xl transition-all active:scale-95 flex items-center justify-center min-h-[46px] sm:min-h-[50px] shadow-sm select-none cursor-pointer`}
+                              disabled={inputVal !== '' || !!incorrectReviewData}
                             >
-                              <span className={`w-full max-w-full text-center font-bold break-words [overflow-wrap:anywhere] hyphens-auto px-0.5 ${fontClass}`}>
-                                {opt}
+                              <span className={`w-full max-w-full text-center font-bold break-words [overflow-wrap:anywhere] hyphens-auto px-0.5 ${fontClass} ${isUserChoice && !isCorrectAnswer ? 'line-through' : ''}`}>
+                                {isCorrectAnswer ? `✓ ${opt}` : isUserChoice ? `✕ ${opt}` : opt}
                               </span>
                             </button>
                           );
@@ -1397,6 +1574,25 @@ export default function WorldSessionView({
                       </div>
                     );
                   })()}
+
+                  {/* INCORRECT ANSWER REVIEW BANNER */}
+                  {incorrectReviewData && (
+                    <div className="w-full bg-rose-50 border-2 border-rose-200 rounded-2xl p-2 sm:p-2.5 text-center space-y-1 animate-pop mt-1">
+                      <div className="flex items-center justify-center gap-2 flex-wrap text-xs sm:text-sm font-bold">
+                        <span className="text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full border border-rose-200 text-xs">
+                          ✕ Your answer: <span className="line-through font-extrabold">{incorrectReviewData.userAnswer || '—'}</span>
+                        </span>
+                        <span className="text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300 font-extrabold text-xs flex items-center gap-1">
+                          ✓ Correct: {incorrectReviewData.correctAnswer}
+                        </span>
+                      </div>
+                      {currentProblem.hint && (
+                        <p className="text-xs text-indigo-900 font-medium italic pt-0.5">
+                          💡 {currentProblem.hint}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -1405,6 +1601,23 @@ export default function WorldSessionView({
         })()
         )}
       </div>
+
+      {/* NEXT QUESTION / FINISH CLIMB CTA BUTTON */}
+      {hasStartedClimb && incorrectReviewData && (
+        <div className="w-full max-w-md shrink-0 animate-pop mt-1 sm:mt-2 space-y-1.5">
+          <button
+            type="button"
+            autoFocus
+            onClick={handleContinueAfterIncorrect}
+            className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-lg sm:text-xl py-3 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer select-none"
+          >
+            <span>{incorrectReviewData.isBlockComplete ? 'Finish Climb 🏔️' : 'Next Question ➔'}</span>
+          </button>
+          <p className="text-[11px] font-bold text-slate-400 text-center uppercase tracking-wider">
+            Press Enter or Space ↵
+          </p>
+        </div>
+      )}
 
       </div>
     </div>

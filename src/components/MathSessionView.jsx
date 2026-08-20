@@ -105,6 +105,7 @@ export default function MathSessionView({
   const [showBreakOverlay, setShowBreakOverlay] = useState(false);
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
   const [celebrationEvent, setCelebrationEvent] = useState(null);
+  const [incorrectReviewData, setIncorrectReviewData] = useState(null);
 
   const isMathProblem = (p) => {
     if (!p) return false;
@@ -726,6 +727,183 @@ export default function MathSessionView({
         type: 'success',
         text: toastMsg
       }, 1100);
+
+      const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
+      setBlockRatingGain(nextBlockRatingGain);
+
+      storageService.saveUserData({
+        adaptiveCompetenceRating: evalResult.nextCompetenceRank,
+        competenceRank: evalResult.nextCompetenceRank
+      });
+
+      const activeUserData = storageService.getUserData('math');
+      const badgeEvalRes = evaluateBadges({
+        ...activeUserData,
+        inSessionStreak: evalResult.nextInSessionStreak,
+        competenceRank: evalResult.nextCompetenceRank,
+        blockRatingGain: nextBlockRatingGain,
+        lastProblemType: currentProblem.type,
+        lastProblemTier: currentProblem.tier || getTierFromRating(evalResult.nextCompetenceRank)
+      });
+
+      if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
+        onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
+      }
+
+      // --- CELEBRATION REWARDS (ONLY FOR NEW BADGE UNLOCKS TO PREVENT POPUP FATIGUE) ---
+      if (badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
+        const priorityOrder = [
+          'rank_tier8', 'master_prealgebra',
+          'rank_tier7', 'master_fractions',
+          'rank_tier6',
+          'rank_tier5', 'master_time_money',
+          'rank_tier4',
+          'rank_tier3', 'master_multiplication',
+          'rank_tier2',
+          'rank_tier1', 'master_addition'
+        ];
+
+        const highestBadge = badgeEvalRes.newlyUnlocked.slice().sort((a, b) => {
+          const idxA = priorityOrder.indexOf(a.id);
+          const idxB = priorityOrder.indexOf(b.id);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return 0;
+        })[0] || badgeEvalRes.newlyUnlocked[badgeEvalRes.newlyUnlocked.length - 1];
+
+        const bonusSparks = 25;
+        if (onAwardSparks) onAwardSparks(bonusSparks);
+        setSessionSparksEarned((prev) => prev + bonusSparks);
+        setBlockSparksEarned((prev) => prev + bonusSparks);
+        soundFx.playVictory();
+        setCelebrationEvent({
+          type: 'badge',
+          title: '🏆 NEW BADGE UNLOCKED!',
+          icon: highestBadge.icon || '🏅',
+          name: highestBadge.title || highestBadge.name,
+          description: highestBadge.description,
+          bonusSparks: bonusSparks
+        });
+      }
+
+      const existingMastery = activeUserData.recentSkillMastery || [];
+      const updatedMastery = checkSkillMasteryEvents(competenceRank, evalResult.nextCompetenceRank, existingMastery);
+      if (updatedMastery.length !== existingMastery.length) {
+        storageService.saveUserData({ recentSkillMastery: updatedMastery });
+      }
+
+      const nextQuestionsAnswered = questionsAnswered + 1;
+      setQuestionsAnswered(nextQuestionsAnswered);
+      setSessionQuestionIndex((prev) => prev + 1);
+      if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(true);
+      setInputVal('');
+
+      // Trigger Kibo Break Overlay every 12 problems solved & record personal bests
+      if (nextQuestionsAnswered > 0 && nextQuestionsAnswered % 12 === 0) {
+        KiboAudioManager.playBreakSFX();
+        setMascotState('break');
+        setShowBreakOverlay(true);
+
+        storageService.clearActiveClimbState(profileId, 'math');
+        setSavedClimbState(null);
+
+        const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
+        const finalBlockCorrect = Math.min(12, blockCorrectCount + 1);
+        const finalBlockSparks = blockSparksEarned + blockEarned;
+        const isPerfectBlock = finalBlockCorrect === 12;
+
+        // RECORD COMPLETED CLIMB BLOCK INTO SPRINT HISTORY FOR ACCURATE PRACTICE TIME TRACKING
+        const newSessionRecord = {
+          id: `session-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          date: new Date().toISOString().split('T')[0],
+          tier: getTierFromRating(evalResult.nextCompetenceRank),
+          totalTimeSec: blockTimeSec,
+          correctCount: finalBlockCorrect,
+          totalQuestions: 12,
+          sparksEarned: finalBlockSparks,
+          accuracyPct: Math.round((finalBlockCorrect / 12) * 100),
+          ratingGain: nextBlockRatingGain,
+          answers: nextBlockAnswers
+        };
+
+        const existingHistory = activeUserData.sprintHistory || [];
+        const updatedHistory = [newSessionRecord, ...existingHistory];
+
+        setCompletedBlockStats({
+          correctCount: finalBlockCorrect,
+          sparksEarned: finalBlockSparks,
+          blockRatingGain: nextBlockRatingGain,
+          shieldsUsed: blockShieldsUsed
+        });
+
+        // Immediately reset block counters to 0 for the next 12-question block
+        setBlockCorrectCount(0);
+        setBlockSparksEarned(0);
+        setBlockRatingGain(0);
+        setBlockShieldsUsed(0);
+        setBlockAnswers([]);
+
+        const currentRecords = activeUserData.personalRecords || {};
+        const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
+        const updatedRecords = {
+          ...currentRecords,
+          fastest12QuestionsTime: isNewSpeedRecord ? blockTimeSec : currentRecords.fastest12QuestionsTime,
+          mostPerfectSessions: isPerfectBlock
+            ? (currentRecords.mostPerfectSessions || 0) + 1
+            : (currentRecords.mostPerfectSessions || 0)
+        };
+
+        storageService.saveUserData({
+          sprintHistory: updatedHistory,
+          personalRecords: updatedRecords
+        });
+        if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
+        if (onRecordDailyPractice) onRecordDailyPractice();
+
+        // Immediately evaluate and claim any newly met badges at block completion (e.g. Flawless Ascent, Trailblazer Record, 3rd Perfect Run)
+        const postBlockUserData = storageService.getUserData('math');
+        const blockBadgeEval = evaluateBadges({
+          ...postBlockUserData,
+          inSessionStreak: evalResult.nextInSessionStreak,
+          competenceRank: evalResult.nextCompetenceRank,
+          blockRatingGain: nextBlockRatingGain,
+          isNewSpeedRecord,
+          hasSetPersonalRecord: isNewSpeedRecord || isPerfectBlock,
+          subjectId: 'math'
+        }, newSessionRecord);
+
+        if (blockBadgeEval?.updatedUnlocked && onUnlockedBadgesChange) {
+          onUnlockedBadgesChange(blockBadgeEval.updatedUnlocked);
+        }
+
+        if (blockBadgeEval?.newlyUnlocked && blockBadgeEval.newlyUnlocked.length > 0) {
+          const highestBadge = blockBadgeEval.newlyUnlocked[0];
+          const bonusSparks = 25;
+          if (onAwardSparks) onAwardSparks(bonusSparks);
+          setSessionSparksEarned((prev) => prev + bonusSparks);
+          setBlockSparksEarned((prev) => prev + bonusSparks);
+          soundFx.playVictory();
+          setCelebrationEvent({
+            type: 'badge',
+            title: '🏆 NEW BADGE UNLOCKED!',
+            icon: highestBadge.icon || '🏅',
+            name: highestBadge.title || highestBadge.name,
+            description: highestBadge.description,
+            bonusSparks: bonusSparks
+          });
+        }
+      }
+
+      const nextIdx = currentIndex + 1;
+      replenishQueueIfNeeded(nextIdx);
+      setCurrentIndex(nextIdx);
+
+      if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+      bannerTimerRef.current = setTimeout(() => {
+        setFeedbackBanner(null);
+      }, 3500);
     } else {
       let isShieldAbsorbed = false;
       const ownedShields = (consumables?.shieldCount || 0) + (consumables?.streakSaverCount || 0);
@@ -770,82 +948,66 @@ export default function MathSessionView({
       if (evalResult.triggerFrustrationCircuit) {
         setShowFrustrationCard(true);
       }
-    }
 
-    const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
-    setBlockRatingGain(nextBlockRatingGain);
+      const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
+      setBlockRatingGain(nextBlockRatingGain);
 
-    storageService.saveUserData({
-      adaptiveCompetenceRating: evalResult.nextCompetenceRank,
-      competenceRank: evalResult.nextCompetenceRank
-    });
+      storageService.saveUserData({
+        adaptiveCompetenceRating: evalResult.nextCompetenceRank,
+        competenceRank: evalResult.nextCompetenceRank
+      });
 
-    const activeUserData = storageService.getUserData('math');
-    const badgeEvalRes = evaluateBadges({
-      ...activeUserData,
-      inSessionStreak: evalResult.nextInSessionStreak,
-      competenceRank: evalResult.nextCompetenceRank,
-      blockRatingGain: nextBlockRatingGain,
-      lastProblemType: currentProblem.type,
-      lastProblemTier: currentProblem.tier || getTierFromRating(evalResult.nextCompetenceRank)
-    });
+      const activeUserData = storageService.getUserData('math');
+      const badgeEvalRes = evaluateBadges({
+        ...activeUserData,
+        inSessionStreak: evalResult.nextInSessionStreak,
+        competenceRank: evalResult.nextCompetenceRank,
+        blockRatingGain: nextBlockRatingGain,
+        lastProblemType: currentProblem.type,
+        lastProblemTier: currentProblem.tier || getTierFromRating(evalResult.nextCompetenceRank)
+      });
 
-    if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
-      onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
-    }
+      if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
+        onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
+      }
 
-    // --- CELEBRATION REWARDS (ONLY FOR NEW BADGE UNLOCKS TO PREVENT POPUP FATIGUE) ---
-    if (isCorrect && badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
-      // Priority sorting: pick the highest tier/prestigious badge among all newly unlocked badges
-      const priorityOrder = [
-        'rank_tier8', 'master_prealgebra',
-        'rank_tier7', 'master_fractions',
-        'rank_tier6',
-        'rank_tier5', 'master_time_money',
-        'rank_tier4',
-        'rank_tier3', 'master_multiplication',
-        'rank_tier2',
-        'rank_tier1', 'master_addition'
-      ];
+      const existingMastery = activeUserData.recentSkillMastery || [];
+      const updatedMastery = checkSkillMasteryEvents(competenceRank, evalResult.nextCompetenceRank, existingMastery);
+      if (updatedMastery.length !== existingMastery.length) {
+        storageService.saveUserData({ recentSkillMastery: updatedMastery });
+      }
 
-      const highestBadge = badgeEvalRes.newlyUnlocked.slice().sort((a, b) => {
-        const idxA = priorityOrder.indexOf(a.id);
-        const idxB = priorityOrder.indexOf(b.id);
-        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-        if (idxA !== -1) return -1;
-        if (idxB !== -1) return 1;
-        return 0;
-      })[0] || badgeEvalRes.newlyUnlocked[badgeEvalRes.newlyUnlocked.length - 1];
+      const isBlockComplete = (questionsAnswered + 1) % 12 === 0;
 
-      const bonusSparks = 25;
-      if (onAwardSparks) onAwardSparks(bonusSparks);
-      setSessionSparksEarned((prev) => prev + bonusSparks);
-      setBlockSparksEarned((prev) => prev + bonusSparks);
-      soundFx.playVictory();
-      setCelebrationEvent({
-        type: 'badge',
-        title: '🏆 NEW BADGE UNLOCKED!',
-        icon: highestBadge.icon || '🏅',
-        name: highestBadge.title || highestBadge.name,
-        description: highestBadge.description,
-        bonusSparks: bonusSparks
+      // Allow the user to see and review the correct answer before moving on
+      setIncorrectReviewData({
+        problem: currentProblem,
+        userAnswer: userAnsString,
+        correctAnswer: normTargetAns || currentProblem.answerString || currentProblem.answer?.toString(),
+        isProbe: !!currentProblem.isProbe,
+        evalResult,
+        nextQuestionsAnswered: questionsAnswered + 1,
+        nextBlockAnswers,
+        nextBlockRatingGain,
+        isShieldAbsorbed,
+        isBlockComplete
       });
     }
+  };
 
-    const existingMastery = activeUserData.recentSkillMastery || [];
-    const updatedMastery = checkSkillMasteryEvents(competenceRank, evalResult.nextCompetenceRank, existingMastery);
-    if (updatedMastery.length !== existingMastery.length) {
-      storageService.saveUserData({ recentSkillMastery: updatedMastery });
-    }
-
-    const nextQuestionsAnswered = questionsAnswered + 1;
-    setQuestionsAnswered(nextQuestionsAnswered);
-    setSessionQuestionIndex((prev) => prev + 1);
-    if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(isCorrect);
+  const handleContinueAfterIncorrect = () => {
+    if (!incorrectReviewData) return;
+    soundFx.playKeyTap();
+    const data = incorrectReviewData;
+    setIncorrectReviewData(null);
     setInputVal('');
 
-    // Trigger Kibo Break Overlay every 12 problems solved & record personal bests
-    if (nextQuestionsAnswered > 0 && nextQuestionsAnswered % 12 === 0) {
+    const nextQuestionsAnswered = data.nextQuestionsAnswered;
+    setQuestionsAnswered(nextQuestionsAnswered);
+    setSessionQuestionIndex((prev) => prev + 1);
+    if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(false);
+
+    if (data.isBlockComplete) {
       KiboAudioManager.playBreakSFX();
       setMascotState('break');
       setShowBreakOverlay(true);
@@ -854,32 +1016,32 @@ export default function MathSessionView({
       setSavedClimbState(null);
 
       const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
-      const finalBlockCorrect = Math.min(12, isCorrect ? blockCorrectCount + 1 : blockCorrectCount);
-      const finalBlockSparks = blockSparksEarned + blockEarned;
-      const isPerfectBlock = finalBlockCorrect === 12;
+      const finalBlockCorrect = blockCorrectCount;
+      const finalBlockSparks = blockSparksEarned;
+      const isPerfectBlock = false;
 
-      // RECORD COMPLETED CLIMB BLOCK INTO SPRINT HISTORY FOR ACCURATE PRACTICE TIME TRACKING
       const newSessionRecord = {
         id: `session-${Date.now()}`,
         timestamp: new Date().toISOString(),
         date: new Date().toISOString().split('T')[0],
-        tier: getTierFromRating(evalResult.nextCompetenceRank),
+        tier: getTierFromRating(data.evalResult.nextCompetenceRank),
         totalTimeSec: blockTimeSec,
         correctCount: finalBlockCorrect,
         totalQuestions: 12,
         sparksEarned: finalBlockSparks,
         accuracyPct: Math.round((finalBlockCorrect / 12) * 100),
-        ratingGain: nextBlockRatingGain,
-        answers: nextBlockAnswers
+        ratingGain: data.nextBlockRatingGain,
+        answers: data.nextBlockAnswers
       };
 
+      const activeUserData = storageService.getUserData('math');
       const existingHistory = activeUserData.sprintHistory || [];
       const updatedHistory = [newSessionRecord, ...existingHistory];
 
       setCompletedBlockStats({
         correctCount: finalBlockCorrect,
         sparksEarned: finalBlockSparks,
-        blockRatingGain: nextBlockRatingGain,
+        blockRatingGain: data.nextBlockRatingGain,
         shieldsUsed: blockShieldsUsed
       });
 
@@ -891,13 +1053,8 @@ export default function MathSessionView({
       setBlockAnswers([]);
 
       const currentRecords = activeUserData.personalRecords || {};
-      const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
       const updatedRecords = {
-        ...currentRecords,
-        fastest12QuestionsTime: isNewSpeedRecord ? blockTimeSec : currentRecords.fastest12QuestionsTime,
-        mostPerfectSessions: isPerfectBlock
-          ? (currentRecords.mostPerfectSessions || 0) + 1
-          : (currentRecords.mostPerfectSessions || 0)
+        ...currentRecords
       };
 
       storageService.saveUserData({
@@ -907,43 +1064,26 @@ export default function MathSessionView({
       if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
       if (onRecordDailyPractice) onRecordDailyPractice();
 
-      // Immediately evaluate and claim any newly met badges at block completion (e.g. Flawless Ascent, Trailblazer Record, 3rd Perfect Run)
       const postBlockUserData = storageService.getUserData('math');
       const blockBadgeEval = evaluateBadges({
         ...postBlockUserData,
-        inSessionStreak: evalResult.nextInSessionStreak,
-        competenceRank: evalResult.nextCompetenceRank,
-        blockRatingGain: nextBlockRatingGain,
-        isNewSpeedRecord,
-        hasSetPersonalRecord: isNewSpeedRecord || isPerfectBlock,
+        inSessionStreak: data.evalResult.nextInSessionStreak,
+        competenceRank: data.evalResult.nextCompetenceRank,
+        blockRatingGain: data.nextBlockRatingGain,
+        isNewSpeedRecord: false,
+        hasSetPersonalRecord: false,
         subjectId: 'math'
       }, newSessionRecord);
 
       if (blockBadgeEval?.updatedUnlocked && onUnlockedBadgesChange) {
         onUnlockedBadgesChange(blockBadgeEval.updatedUnlocked);
       }
-
-      if (blockBadgeEval?.newlyUnlocked && blockBadgeEval.newlyUnlocked.length > 0) {
-        const highestBadge = blockBadgeEval.newlyUnlocked[0];
-        const bonusSparks = 25;
-        if (onAwardSparks) onAwardSparks(bonusSparks);
-        setSessionSparksEarned((prev) => prev + bonusSparks);
-        setBlockSparksEarned((prev) => prev + bonusSparks);
-        soundFx.playVictory();
-        setCelebrationEvent({
-          type: 'badge',
-          title: '🏆 NEW BADGE UNLOCKED!',
-          icon: highestBadge.icon || '🏅',
-          name: highestBadge.title || highestBadge.name,
-          description: highestBadge.description,
-          bonusSparks: bonusSparks
-        });
-      }
+    } else {
+      const nextIdx = currentIndex + 1;
+      replenishQueueIfNeeded(nextIdx);
+      setCurrentIndex(nextIdx);
+      problemStartTimeRef.current = performance.now();
     }
-
-    const nextIdx = currentIndex + 1;
-    replenishQueueIfNeeded(nextIdx);
-    setCurrentIndex(nextIdx);
 
     if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
     bannerTimerRef.current = setTimeout(() => {
@@ -952,6 +1092,7 @@ export default function MathSessionView({
   };
 
   const handleDigitInput = (val) => {
+    if (incorrectReviewData) return;
     if (problemStartTimeRef.current === 0) {
       problemStartTimeRef.current = performance.now();
     }
@@ -1135,6 +1276,14 @@ export default function MathSessionView({
         return;
       }
 
+      if (incorrectReviewData) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleContinueAfterIncorrect();
+        }
+        return;
+      }
+
       if (e.key === 'Backspace' || e.key === 'Delete') {
         e.preventDefault();
         handleDeleteDigit();
@@ -1170,7 +1319,7 @@ export default function MathSessionView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [inputVal, currentProblem, competenceRank, hasStartedClimb, isOperatorQuestion]);
+  }, [inputVal, currentProblem, competenceRank, hasStartedClimb, isOperatorQuestion, incorrectReviewData]);
 
   const lastBannerTypeRef = useRef('success');
   const lastBannerTextRef = useRef('');
@@ -1452,100 +1601,108 @@ export default function MathSessionView({
                     {streakCfg.label}
                   </span>
 
-                  {/* NON-PUNITIVE PASS / TRY ANOTHER BUTTON */}
-                  <button
-                    type="button"
-                    onClick={handlePassQuestion}
-                    disabled={consecutiveSkips >= 2}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
-                      consecutiveSkips >= 2
-                        ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
-                        : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
-                    }`}
-                    title={
-                      consecutiveSkips >= 2
-                        ? 'Cap of 2 consecutive skips reached. Give this question a try!'
-                        : 'Try another problem'
-                    }
-                  >
-                    {consecutiveSkips >= 2 ? '🔒 Attempt Required' : '🔄 Pass'}
-                  </button>
+                  {incorrectReviewData ? (
+                    <span className="text-xs font-black uppercase text-rose-800 bg-rose-100 px-3 py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1">
+                      ❌ Reviewing Solution
+                    </span>
+                  ) : (
+                    <>
+                      {/* NON-PUNITIVE PASS / TRY ANOTHER BUTTON */}
+                      <button
+                        type="button"
+                        onClick={handlePassQuestion}
+                        disabled={consecutiveSkips >= 2}
+                        className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                          consecutiveSkips >= 2
+                            ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
+                            : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
+                        }`}
+                        title={
+                          consecutiveSkips >= 2
+                            ? 'Cap of 2 consecutive skips reached. Give this question a try!'
+                            : 'Try another problem'
+                        }
+                      >
+                        {consecutiveSkips >= 2 ? '🔒 Attempt Required' : '🔄 Pass'}
+                      </button>
 
-                  {/* MANUAL WISDOM HINT BUTTON */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShouldPulseHint(false);
-                      if (showFrustrationCard) return;
-                      const owned = consumables?.hintScrollCount ?? 0;
-                      if (owned > 0 && onConsumeHintScroll) {
-                        onConsumeHintScroll();
-                        setShowFrustrationCard(true);
-                        triggerToastBanner({
-                          type: 'success',
-                          text: 'Kibo Wisdom Hint Unlocked! 💡'
-                        }, 1200);
-                      } else if (onOpenWorkshop) {
-                        onOpenWorkshop();
-                      }
-                    }}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
-                      showFrustrationCard
-                        ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
-                        : shouldPulseHint
-                        ? 'bg-amber-300 text-amber-950 border-amber-500 animate-pulse ring-4 ring-amber-400/80 shadow-md scale-105'
-                        : (consumables?.hintScrollCount ?? 0) > 0
-                        ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
-                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
-                    }`}
-                    title={
-                      (consumables?.hintScrollCount ?? 0) > 0
-                        ? 'Use Wisdom Scroll to reveal a hint!'
-                        : 'Get Hint Scrolls in Kibo\'s Corner'
-                    }
-                  >
-                    💡 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
-                  </button>
+                      {/* MANUAL WISDOM HINT BUTTON */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShouldPulseHint(false);
+                          if (showFrustrationCard) return;
+                          const owned = consumables?.hintScrollCount ?? 0;
+                          if (owned > 0 && onConsumeHintScroll) {
+                            onConsumeHintScroll();
+                            setShowFrustrationCard(true);
+                            triggerToastBanner({
+                              type: 'success',
+                              text: 'Kibo Wisdom Hint Unlocked! 💡'
+                            }, 1200);
+                          } else if (onOpenWorkshop) {
+                            onOpenWorkshop();
+                          }
+                        }}
+                        className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                          showFrustrationCard
+                            ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
+                            : shouldPulseHint
+                            ? 'bg-amber-300 text-amber-950 border-amber-500 animate-pulse ring-4 ring-amber-400/80 shadow-md scale-105'
+                            : (consumables?.hintScrollCount ?? 0) > 0
+                            ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                        }`}
+                        title={
+                          (consumables?.hintScrollCount ?? 0) > 0
+                            ? 'Use Wisdom Scroll to reveal a hint!'
+                            : 'Get Hint Scrolls in Kibo\'s Corner'
+                        }
+                      >
+                        💡 {showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
+                      </button>
 
-                  {/* CLIMBER SPYGLASS BUTTON */}
-                  <button
-                    type="button"
-                    onClick={handleUseLetterSpyglass}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
-                      (consumables?.letterSpyglassCount ?? 0) > 0
-                        ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
-                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
-                    }`}
-                    title={
-                      (consumables?.letterSpyglassCount ?? 0) > 0
-                        ? 'Use Spyglass to reveal & fill 1 missing blank slot or answer!'
-                        : 'Get Spyglasses in Kibo\'s Corner'
-                    }
-                  >
-                    🔍 {(consumables?.letterSpyglassCount ?? 0) > 0 ? `Spyglass (${consumables.letterSpyglassCount})` : 'Spyglass'}
-                  </button>
+                      {/* CLIMBER SPYGLASS BUTTON */}
+                      <button
+                        type="button"
+                        onClick={handleUseLetterSpyglass}
+                        className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                          (consumables?.letterSpyglassCount ?? 0) > 0
+                            ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                        }`}
+                        title={
+                          (consumables?.letterSpyglassCount ?? 0) > 0
+                            ? 'Use Spyglass to reveal & fill 1 missing blank slot or answer!'
+                            : 'Get Spyglasses in Kibo\'s Corner'
+                        }
+                      >
+                        🔍 {(consumables?.letterSpyglassCount ?? 0) > 0 ? `Spyglass (${consumables.letterSpyglassCount})` : 'Spyglass'}
+                      </button>
 
-                  {/* CLIMBER PRUNER BUTTON */}
-                  <button
-                    type="button"
-                    onClick={handleUseLetterPruner}
-                    className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
-                      isLetterPrunerActive
-                        ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
-                        : (consumables?.letterPrunerCount ?? 0) > 0
-                        ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
-                        : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
-                    }`}
-                    title={
-                      isLetterPrunerActive
-                        ? 'Distractors pruned for this problem!'
-                        : (consumables?.letterPrunerCount ?? 0) > 0
-                        ? 'Prune distractor options / keys!'
-                        : 'Get Pruners in Kibo\'s Corner'
-                    }
-                  >
-                    ✂️ {isLetterPrunerActive ? 'Pruned' : (consumables?.letterPrunerCount ?? 0) > 0 ? `Prune (${consumables.letterPrunerCount})` : 'Prune'}
-                  </button>
+                      {/* CLIMBER PRUNER BUTTON */}
+                      <button
+                        type="button"
+                        onClick={handleUseLetterPruner}
+                        className={`text-xs font-black uppercase px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                          isLetterPrunerActive
+                            ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
+                            : (consumables?.letterPrunerCount ?? 0) > 0
+                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                        }`}
+                        title={
+                          isLetterPrunerActive
+                            ? 'Distractors pruned for this problem!'
+                            : (consumables?.letterPrunerCount ?? 0) > 0
+                            ? 'Prune distractor options / keys!'
+                            : 'Get Pruners in Kibo\'s Corner'
+                        }
+                      >
+                        ✂️ {isLetterPrunerActive ? 'Pruned' : (consumables?.letterPrunerCount ?? 0) > 0 ? `Prune (${consumables.letterPrunerCount})` : 'Prune'}
+                      </button>
+                    </>
+                  )}
 
                   {isDoubleSparksActive && (
                     <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
@@ -1586,8 +1743,12 @@ export default function MathSessionView({
                         return (
                           <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap w-full">
                             {parts[0] && <span className="text-center leading-tight">{parts[0]}</span>}
-                            <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-3xl sm:text-4xl shadow-inner shrink-0 animate-pop">
-                              {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
+                            <span className={`inline-block min-w-[60px] px-3 py-0.5 rounded-2xl font-black text-3xl sm:text-4xl shadow-inner shrink-0 ${
+                              incorrectReviewData
+                                ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-400 ring-2 ring-emerald-300 animate-pop'
+                                : 'bg-amber-50 border-2 border-amber-300 text-kibo-teal animate-pop'
+                            }`}>
+                              {incorrectReviewData ? incorrectReviewData.correctAnswer : (inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>)}
                             </span>
                             {parts[1] && <span className="text-center leading-tight">{parts[1]}</span>}
                           </div>
@@ -1599,15 +1760,38 @@ export default function MathSessionView({
                         {!hasQuestionSuffix && <span className="text-slate-400 font-bold">=</span>}
 
                         {/* Answer Display */}
-                        <span className="inline-block min-w-[60px] px-3 py-0.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-kibo-teal font-black text-3xl sm:text-4xl shadow-inner shrink-0">
-                          {inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>}
+                        <span className={`inline-block min-w-[60px] px-3 py-0.5 rounded-2xl font-black text-3xl sm:text-4xl shadow-inner shrink-0 ${
+                          incorrectReviewData
+                            ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-400 ring-2 ring-emerald-300 animate-pop'
+                            : 'bg-amber-50 border-2 border-amber-300 text-kibo-teal'
+                        }`}>
+                          {incorrectReviewData ? incorrectReviewData.correctAnswer : (inputVal ? inputVal : <span className="text-slate-300 animate-pulse font-normal">?</span>)}
                         </span>
                       </>
                     )}
                   </div>
 
+                  {/* INCORRECT ANSWER REVIEW BANNER */}
+                  {incorrectReviewData && (
+                    <div className="w-full bg-rose-50 border-2 border-rose-200 rounded-2xl p-2 sm:p-2.5 text-center space-y-1 animate-pop">
+                      <div className="flex items-center justify-center gap-2 flex-wrap text-xs sm:text-sm font-bold">
+                        <span className="text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full border border-rose-200">
+                          ✕ Your answer: <span className="line-through font-extrabold">{incorrectReviewData.userAnswer || '—'}</span>
+                        </span>
+                        <span className="text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300 font-extrabold flex items-center gap-1">
+                          ✓ Correct: {incorrectReviewData.correctAnswer}
+                        </span>
+                      </div>
+                      {currentProblem.hint && (
+                        <p className="text-xs text-indigo-900 font-medium italic pt-0.5">
+                          💡 {currentProblem.hint}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {/* INTEGRATED KIBO HINT */}
-                  {showFrustrationCard && (
+                  {!incorrectReviewData && showFrustrationCard && (
                     <div className="w-full pt-1.5 border-t border-indigo-100 text-xs sm:text-sm font-bold text-indigo-900 bg-indigo-50/90 p-2.5 rounded-2xl animate-pop text-center space-y-0.5 mt-1">
                       <span className="block font-black text-indigo-950">💪 Kibo Wisdom Hint:</span>
                       <span className="italic block text-indigo-800">{currentProblem.hint || "Take your time! Break the problem into simple steps."}</span>
@@ -1622,24 +1806,40 @@ export default function MathSessionView({
         )}
       </div>
 
-      {/* NUMERIC KEYPAD (AUTO-DETECTING & TYPE AWARE) */}
+      {/* NUMERIC KEYPAD OR INCORRECT ANSWER REVIEW ACTION */}
       {hasStartedClimb && (
         <div className="w-full max-w-sm shrink-0 animate-pop mt-0.5 sm:mt-2 max-h-[35vh]">
-          <Keypad
-            onDigit={handleDigitInput}
-            onDelete={handleDeleteDigit}
-            onClear={handleClearInput}
-            onSubmit={(val) => {
-              const answerToSubmit = typeof val === 'string' && val.trim() ? val : inputVal;
-              processAnswerEvaluation(answerToSubmit);
-            }}
-            problemType={currentProblem.type || (isMoneyQuestion ? 'money' : isTimeQuestion ? 'time' : '')}
-            answerString={currentProblem.answerString || currentProblem.answer?.toString()}
-            displayString={currentProblem.displayString}
-            operatorSymbol={currentProblem.operatorSymbol}
-            options={currentProblem.options}
-            prunedKeys={prunedKeys}
-          />
+          {incorrectReviewData ? (
+            <div className="space-y-2 py-2">
+              <button
+                type="button"
+                autoFocus
+                onClick={handleContinueAfterIncorrect}
+                className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-lg sm:text-xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer select-none"
+              >
+                <span>{incorrectReviewData.isBlockComplete ? 'Finish Climb 🏔️' : 'Next Question ➔'}</span>
+              </button>
+              <p className="text-[11px] font-bold text-slate-400 text-center uppercase tracking-wider">
+                Press Enter or Space ↵
+              </p>
+            </div>
+          ) : (
+            <Keypad
+              onDigit={handleDigitInput}
+              onDelete={handleDeleteDigit}
+              onClear={handleClearInput}
+              onSubmit={(val) => {
+                const answerToSubmit = typeof val === 'string' && val.trim() ? val : inputVal;
+                processAnswerEvaluation(answerToSubmit);
+              }}
+              problemType={currentProblem.type || (isMoneyQuestion ? 'money' : isTimeQuestion ? 'time' : '')}
+              answerString={currentProblem.answerString || currentProblem.answer?.toString()}
+              displayString={currentProblem.displayString}
+              operatorSymbol={currentProblem.operatorSymbol}
+              options={currentProblem.options}
+              prunedKeys={prunedKeys}
+            />
+          )}
         </div>
       )}
       </div>

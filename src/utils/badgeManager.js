@@ -262,22 +262,28 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
       case 'capital_collector':
         if (subjectId === 'world') {
           // Check if capital questions solved >= 20
-          let capitalCount = 0;
+          let capitalCount = Number(userState.capitalQuestionsSolved) || 0;
           if (Array.isArray(sprintHistory)) {
+            let sprintCapitals = 0;
             for (const s of sprintHistory) {
               if (Array.isArray(s.answers)) {
                 for (const a of s.answers) {
-                  if (a.isCorrect && (a.type === 'state_capital' || a.type === 'country_capital' || a.type === 'capital_state' || a.type === 'capital_country' || a.concept?.includes('Capitals'))) {
-                    capitalCount++;
+                  if (a.isCorrect && (
+                    a.type === 'state_capital' || 
+                    a.type === 'country_capital' || 
+                    a.type === 'capital_state' || 
+                    a.type === 'capital_country' || 
+                    a.type === 'tricky_capital' || 
+                    a.concept?.includes('Capitals')
+                  )) {
+                    sprintCapitals++;
                   }
                 }
               }
             }
+            capitalCount = Math.max(capitalCount, sprintCapitals);
           }
-          if (userState.lastProblemType && ['state_capital', 'country_capital', 'capital_state', 'capital_country'].includes(userState.lastProblemType)) {
-            capitalCount++;
-          }
-          unlocked = capitalCount >= 20 || (subjectSolvedCount >= 40); // Generous fallback
+          unlocked = capitalCount >= 20;
         }
         break;
 
