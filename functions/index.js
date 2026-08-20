@@ -2,8 +2,10 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { Resend } = require("resend");
 const admin = require("firebase-admin");
 
-if (!admin.apps.length) {
-  admin.initializeApp();
+const { getApps, initializeApp } = require("firebase-admin/app");
+
+if (!getApps().length) {
+  initializeApp();
 }
 
 /**
