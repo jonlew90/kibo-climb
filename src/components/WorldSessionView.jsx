@@ -9,7 +9,7 @@ import { getLandmarkVisual } from '../data/worldLandmarks';
 
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
-import { generateWorldSession as generateProblems, generateWorldProblem as generateTierProblem } from '../utils/worldGenerator';
+import { generateWorldSession as generateProblems, generateWorldProblem as generateTierProblem, shuffleArray } from '../utils/worldGenerator';
 import { getTierForRating as getTierFromRating, isNearTierThreshold } from '../utils/worldCurriculum';
 import { selectSpyglassSlot } from '../utils/wordsCurriculum';
 
@@ -22,7 +22,13 @@ import KiboBreakOverlay from './KiboBreakOverlay';
 import { KiboAudioManager } from '../utils/KiboAudioManager';
 import { evaluateBadges } from '../utils/badgeManager';
 import { storageService } from '../services/storageService';
-import { getConceptForProblem } from '../utils/skipDiagnosticEngine';
+import {
+  CONTINENTS,
+  OCEANS,
+  US_STATES,
+  COUNTRIES,
+  WORLD_LANDMARKS_AND_WONDERS
+} from '../data/worldGeography';
 
 function getStreakTierConfig(streak) {
   if (streak >= 15) {
@@ -73,7 +79,7 @@ export default function WorldSessionView({
   consumables = {},
   onToggleDoubleSparksPotion,
   onConsumeHintScroll,
-  onConsumeLetterSpyglass,
+  onConsumeExplorerCompass,
   onConsumeLetterPruner,
   onConsumeShield,
   onResetDoubleSparks
@@ -191,87 +197,96 @@ export default function WorldSessionView({
   const problemStartTimeRef = useRef(0);
   const pauseStartRef = useRef(null);
 
-  // Kibo Words Specialized Power-Up States
+  // Kibo World Specialized Power-Up States
   const [isLetterPrunerActive, setIsLetterPrunerActive] = useState(false);
-  const [spyglassRevealedSlots, setSpyglassRevealedSlots] = useState({});
+  const [prunedOptions, setPrunedOptions] = useState(new Set());
+  const [showHintCard, setShowHintCard] = useState(false);
+  const [isCompassActive, setIsCompassActive] = useState(false);
 
-  // Reset per-word power-up state on question transition
+  // Reset per-question power-up state on question transition
   useEffect(() => {
     setIsLetterPrunerActive(false);
-    setSpyglassRevealedSlots({});
+    setPrunedOptions(new Set());
+    setShowHintCard(false);
+    setIsCompassActive(false);
+    setShouldPulseHint(false);
   }, [currentIndex]);
 
-  // Compute base slots and effective slots (including permanent spyglass-revealed letters)
-  const wordSlots = useMemo(() => {
-    const displayStr = currentProblem.displayString || '';
-    const displayParts = displayStr.split(' ').filter((c) => c.length > 0);
-    const baseSlots = displayParts.length > 0 ? displayParts : displayStr.split('');
-    return baseSlots.map((char, idx) => (char === '_' && spyglassRevealedSlots[idx] ? spyglassRevealedSlots[idx] : char));
-  }, [currentProblem.displayString, spyglassRevealedSlots]);
+  const compassClue = useMemo(() => {
+    if (!isCompassActive || !currentProblem) return null;
+    const ans = String(currentProblem.correctAnswer || currentProblem.answer || '').trim();
+    
+    // Check if country
+    const matchedCountry = COUNTRIES.find(c => c.name.toLowerCase() === ans.toLowerCase() || c.capital.toLowerCase() === ans.toLowerCase());
+    if (matchedCountry) {
+      return `🧭 Located on the continent of ${matchedCountry.continent}.`;
+    }
 
-  const blankSlotIndices = useMemo(() => {
-    const indices = [];
-    wordSlots.forEach((slot, idx) => {
-      if (slot === '_') indices.push(idx);
-    });
-    return indices;
-  }, [wordSlots]);
+    // Check if US state
+    const matchedState = US_STATES.find(s => s.name.toLowerCase() === ans.toLowerCase() || s.capital.toLowerCase() === ans.toLowerCase());
+    if (matchedState) {
+      return `🧭 Located in the ${matchedState.region} region of the United States.`;
+    }
 
-  // Compute pruned keys when Letter Pruner power-up is active
-  const prunedKeys = useMemo(() => {
-    if (!isLetterPrunerActive || !targetStr) return [];
-    const targetLetters = new Set(targetStr.toUpperCase().replace(/[^A-Z]/g, '').split(''));
-    const allAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-    return allAlphabet.filter((char) => !targetLetters.has(char));
-  }, [isLetterPrunerActive, targetStr]);
+    // Check if continent
+    const matchedContinent = CONTINENTS.find(c => c.name.toLowerCase() === ans.toLowerCase());
+    if (matchedContinent) {
+      return `🧭 Hemisphere orientation: ${matchedContinent.hemispheres.join(' & ')} Hemisphere${matchedContinent.hemispheres.length > 1 ? 's' : ''}.`;
+    }
 
-  const handleUseLetterSpyglass = () => {
-    const owned = consumables?.letterSpyglassCount ?? 0;
+    // Check if ocean
+    const matchedOcean = OCEANS.find(o => o.name.toLowerCase() === ans.toLowerCase() || o.fullName.toLowerCase() === ans.toLowerCase());
+    if (matchedOcean) {
+      return `🧭 Key geographic feature: ${matchedOcean.notableFeature}.`;
+    }
+
+    // Check if landmark
+    const matchedWonder = WORLD_LANDMARKS_AND_WONDERS.find(w => w.name.toLowerCase() === ans.toLowerCase());
+    if (matchedWonder) {
+      return `🧭 Located in/near ${matchedWonder.continent || 'the world'}.`;
+    }
+
+    // Fallback: concept or continent/regional context
+    if (currentProblem.concept) {
+      return `🧭 Geographic Domain: ${currentProblem.concept}.`;
+    }
+
+    return '🧭 Geographic Compass active!';
+  }, [isCompassActive, currentProblem]);
+
+  const handleUseHintScroll = () => {
+    setShouldPulseHint(false);
+    if (showHintCard || showFrustrationCard) return;
+    const owned = consumables?.hintScrollCount ?? 0;
+    if (owned > 0 && onConsumeHintScroll) {
+      if (onConsumeHintScroll()) {
+        setShowHintCard(true);
+        soundFx.playSparkCollect();
+        triggerToastBanner({
+          type: 'success',
+          text: 'Kibo Explorer Hint Unlocked! 💡'
+        }, 1400);
+      }
+    } else if (onOpenWorkshop) {
+      onOpenWorkshop();
+    }
+  };
+
+  const handleUseExplorerCompass = () => {
+    if (isCompassActive) return;
+    const owned = consumables?.explorerCompassCount ?? 0;
     if (owned <= 0) {
       if (onOpenWorkshop) onOpenWorkshop();
       return;
     }
 
-    if (blankSlotIndices.length === 0) {
-      triggerToastBanner({
-        type: 'info',
-        text: 'All letters already revealed! Tap Submit (➤).'
-      }, 1500);
-      return;
-    }
-
-    // Pick the optimal blank slot position (avoiding letters/slots already revealed by Clue)
-    const answerStr = (currentProblem.answerString || currentProblem.answer || '').toString();
-    const targetPos = selectSpyglassSlot({
-      targetStr: answerStr,
-      effectiveWordSlots: wordSlots,
-      isClueActive: showFrustrationCard,
-      blankSlotIndices
-    });
-
-    if (targetPos < 0) return;
-    const letterToReveal = answerStr.charAt(targetPos).toUpperCase();
-
-    if (onConsumeLetterSpyglass && onConsumeLetterSpyglass()) {
-      setSpyglassRevealedSlots((prev) => ({
-        ...prev,
-        [targetPos]: letterToReveal
-      }));
-      // Reset or adjust typed input so it only fills the remaining blank slots
-      setInputVal('');
-      setAcknowledgedGivenIndices(new Set());
-
+    if (onConsumeExplorerCompass && onConsumeExplorerCompass()) {
+      setIsCompassActive(true);
+      soundFx.playSparkCollect();
       triggerToastBanner({
         type: 'success',
-        text: `Permanent Letter Revealed: "${letterToReveal}"! 🔍`
+        text: "🧭 Explorer's Compass Activated!"
       }, 1500);
-
-      // If this was the last remaining blank, celebrate and auto-evaluate!
-      if (blankSlotIndices.length === 1) {
-        setTimeout(() => {
-          processAnswerEvaluation('');
-        }, 350);
-      }
     }
   };
 
@@ -283,11 +298,32 @@ export default function WorldSessionView({
       return;
     }
 
+    if (!currentProblem.options || currentProblem.options.length <= 2) {
+      triggerToastBanner({
+        type: 'info',
+        text: 'Only 2 options remaining!'
+      }, 1500);
+      return;
+    }
+
+    const normCorrect = String(currentProblem.correctAnswer || currentProblem.answer || '').trim().toLowerCase();
+    const distractors = currentProblem.options.filter(
+      opt => String(opt).trim().toLowerCase() !== normCorrect
+    );
+
+    if (distractors.length === 0) return;
+
+    // Prune up to 2 distractors (50:50)
+    const shuffledDistractors = shuffleArray(distractors);
+    const toPrune = shuffledDistractors.slice(0, Math.min(2, distractors.length));
+
     if (onConsumeLetterPruner && onConsumeLetterPruner()) {
       setIsLetterPrunerActive(true);
+      setPrunedOptions(new Set(toPrune.map(opt => String(opt))));
+      soundFx.playSparkCollect();
       triggerToastBanner({
         type: 'success',
-        text: 'Distractor Keys Pruned! ✂️'
+        text: '50:50 Distractors Pruned! ✂️'
       }, 1500);
     }
   };
@@ -1455,6 +1491,72 @@ export default function WorldSessionView({
                       >
                         {consecutiveSkips >= 2 ? '🔒 Attempt Required' : '🔄 Pass'}
                       </button>
+
+                      {/* MANUAL WISDOM HINT SCROLL BUTTON */}
+                      <button
+                        type="button"
+                        onClick={handleUseHintScroll}
+                        className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                          showHintCard || showFrustrationCard
+                            ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
+                            : shouldPulseHint
+                            ? 'bg-amber-300 text-amber-950 border-amber-500 animate-pulse ring-4 ring-amber-400/80 shadow-md scale-105'
+                            : (consumables?.hintScrollCount ?? 0) > 0
+                            ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                        }`}
+                        title={
+                          (consumables?.hintScrollCount ?? 0) > 0
+                            ? 'Use Wisdom Scroll to reveal a geography clue!'
+                            : "Get Hint Scrolls in Kibo's Corner"
+                        }
+                      >
+                        💡 {showHintCard || showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
+                      </button>
+
+                      {/* EXPLORER'S COMPASS BUTTON (Kibo World Bespoke Item) */}
+                      <button
+                        type="button"
+                        onClick={handleUseExplorerCompass}
+                        className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                          isCompassActive
+                            ? 'bg-amber-200 text-amber-950 border-amber-400'
+                            : (consumables?.explorerCompassCount ?? 0) > 0
+                            ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                        }`}
+                        title={
+                          isCompassActive
+                            ? 'Compass orientation clue active!'
+                            : (consumables?.explorerCompassCount ?? 0) > 0
+                            ? "Use Explorer's Compass to reveal regional orientation!"
+                            : "Get Explorer's Compasses in Kibo's Corner"
+                        }
+                      >
+                        🧭 {isCompassActive ? 'Compass Active' : (consumables?.explorerCompassCount ?? 0) > 0 ? `Compass (${consumables.explorerCompassCount})` : 'Compass'}
+                      </button>
+
+                      {/* 50:50 DISTRACTOR PRUNER BUTTON */}
+                      <button
+                        type="button"
+                        onClick={handleUseLetterPruner}
+                        className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                          isLetterPrunerActive
+                            ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
+                            : (consumables?.letterPrunerCount ?? 0) > 0
+                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                        }`}
+                        title={
+                          isLetterPrunerActive
+                            ? '50:50 Distractors pruned for this problem!'
+                            : (consumables?.letterPrunerCount ?? 0) > 0
+                            ? 'Prune 2 wrong choices (50:50)!'
+                            : "Get Pruners in Kibo's Corner"
+                        }
+                      >
+                        ✂️ {isLetterPrunerActive ? '50:50 Active' : (consumables?.letterPrunerCount ?? 0) > 0 ? `50:50 (${consumables.letterPrunerCount})` : '50:50'}
+                      </button>
                     </>
                   )}
 
@@ -1510,6 +1612,25 @@ export default function WorldSessionView({
                     );
                   })()}
 
+                  {/* ACTIVE HINT BANNER */}
+                  {(showHintCard || showFrustrationCard) && currentProblem.hint && !incorrectReviewData && (
+                    <div className="w-full bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-2 sm:p-2.5 text-center space-y-1 animate-pop my-1">
+                      <p className="text-xs sm:text-sm text-indigo-950 font-bold flex items-center justify-center gap-1.5">
+                        <span>💡</span>
+                        <span>{currentProblem.hint}</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* EXPLORER COMPASS CLUE BANNER */}
+                  {isCompassActive && compassClue && !incorrectReviewData && (
+                    <div className="w-full bg-amber-50 border-2 border-amber-300 rounded-2xl p-2 sm:p-2.5 text-center space-y-0.5 animate-pop my-1">
+                      <p className="text-xs sm:text-sm text-amber-950 font-black flex items-center justify-center gap-1.5">
+                        <span>{compassClue}</span>
+                      </p>
+                    </div>
+                  )}
+
                   {/* 2x2 MULTIPLE CHOICE OPTIONS GRID */}
                   {currentProblem.options && (() => {
                     const optStrings = currentProblem.options.map(o => String(o || ''));
@@ -1538,6 +1659,7 @@ export default function WorldSessionView({
 
                           const isUserChoice = incorrectReviewData && (optStr.toLowerCase() === String(incorrectReviewData.userAnswer || '').toLowerCase());
                           const isCorrectAnswer = incorrectReviewData && (optStr.toLowerCase() === String(incorrectReviewData.correctAnswer || '').toLowerCase());
+                          const isPruned = prunedOptions.has(optStr);
 
                           let buttonStyle = 'btn-3d-teal';
                           if (incorrectReviewData) {
@@ -1548,6 +1670,8 @@ export default function WorldSessionView({
                             } else {
                               buttonStyle = 'opacity-30 grayscale cursor-default';
                             }
+                          } else if (isPruned) {
+                            buttonStyle = 'bg-slate-100 text-slate-400 border-slate-200 opacity-30 grayscale cursor-not-allowed line-through';
                           } else if (inputVal !== '' && inputVal !== opt) {
                             buttonStyle += ' opacity-40 grayscale';
                           }
@@ -1557,13 +1681,13 @@ export default function WorldSessionView({
                               key={idx}
                               type="button"
                               onClick={() => {
-                                if (inputVal === '' && !incorrectReviewData) {
+                                if (inputVal === '' && !incorrectReviewData && !isPruned) {
                                   setInputVal(opt);
                                   processAnswerEvaluation(opt);
                                 }
                               }}
                               className={`${buttonStyle} w-full pt-1 pb-2 sm:pt-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 rounded-xl sm:rounded-2xl transition-all active:scale-95 flex items-center justify-center min-h-[46px] sm:min-h-[50px] shadow-sm select-none cursor-pointer`}
-                              disabled={inputVal !== '' || !!incorrectReviewData}
+                              disabled={inputVal !== '' || !!incorrectReviewData || isPruned}
                             >
                               <span className={`w-full max-w-full text-center font-bold break-words [overflow-wrap:anywhere] hyphens-auto px-0.5 ${fontClass} ${isUserChoice && !isCorrectAnswer ? 'line-through' : ''}`}>
                                 {isCorrectAnswer ? `✓ ${opt}` : isUserChoice ? `✕ ${opt}` : opt}

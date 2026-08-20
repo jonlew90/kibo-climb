@@ -645,6 +645,20 @@ export default function WorkshopModal({
                         </span>
                       )}
 
+                      {/* Subject Compatibility Tag */}
+                      {item.subjectLabel && (
+                        <span className={`text-xs font-black uppercase px-2 py-0.5 rounded-full border shadow-2xs ${
+                          item.id === 'explorer_compass'
+                            ? 'text-teal-950 bg-teal-100 border-teal-300'
+                            : item.id === 'letter_spyglass'
+                            ? 'text-sky-950 bg-sky-100 border-sky-300'
+                            : 'text-purple-950 bg-purple-100 border-purple-300'
+                        }`}>
+                          {item.id === 'explorer_compass' ? '🌍 ' : item.id === 'letter_spyglass' ? '📐 ' : '🌐 '}
+                          {item.subjectLabel}
+                        </span>
+                      )}
+
                       {/* Rotation / Expiration Countdown Pill */}
                       {!isUnlocked && availability.status === 'active' && availability.daysRemaining !== null && (
                         <span className="text-xs font-black uppercase text-orange-950 bg-orange-200/90 border border-orange-400 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-2xs">
@@ -684,6 +698,8 @@ export default function WorkshopModal({
                             ? `🎒 OWNED: ${consumables?.hintScrollCount ?? 0}`
                             : item.id === 'letter_spyglass'
                             ? `🎒 OWNED: ${consumables?.letterSpyglassCount ?? 0}`
+                            : item.id === 'explorer_compass'
+                            ? `🎒 OWNED: ${consumables?.explorerCompassCount ?? 0}`
                             : item.id === 'letter_pruner'
                             ? `🎒 OWNED: ${consumables?.letterPrunerCount ?? 0}`
                             : `🎒 OWNED: ${consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0}`}

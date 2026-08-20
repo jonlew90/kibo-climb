@@ -409,7 +409,8 @@ export default function App() {
       doubleSparksPotionCount: saved?.doubleSparksPotionCount ?? saved?.doubleCoinPotionCount ?? 0,
       hintScrollCount: saved?.hintScrollCount ?? 2,
       letterSpyglassCount: saved?.letterSpyglassCount ?? 2,
-      letterPrunerCount: saved?.letterPrunerCount ?? 2
+      letterPrunerCount: saved?.letterPrunerCount ?? 2,
+      explorerCompassCount: saved?.explorerCompassCount ?? 2
     };
   });
 
@@ -546,6 +547,7 @@ export default function App() {
     let nextHintScrollCount = consumables.hintScrollCount || 0;
     let nextLetterSpyglassCount = consumables.letterSpyglassCount || 0;
     let nextLetterPrunerCount = consumables.letterPrunerCount || 0;
+    let nextExplorerCompassCount = consumables.explorerCompassCount || 0;
 
     if (item.id === 'kibo_shield') {
       nextShieldCount += 1;
@@ -557,6 +559,8 @@ export default function App() {
       nextHintScrollCount += 1;
     } else if (item.id === 'letter_spyglass') {
       nextLetterSpyglassCount += 1;
+    } else if (item.id === 'explorer_compass') {
+      nextExplorerCompassCount += 1;
     } else if (item.id === 'letter_pruner') {
       nextLetterPrunerCount += 1;
     }
@@ -568,7 +572,8 @@ export default function App() {
       doubleCoinPotionCount: nextPotionCount,
       hintScrollCount: nextHintScrollCount,
       letterSpyglassCount: nextLetterSpyglassCount,
-      letterPrunerCount: nextLetterPrunerCount
+      letterPrunerCount: nextLetterPrunerCount,
+      explorerCompassCount: nextExplorerCompassCount
     };
 
     setSparks(newSparks);
@@ -634,6 +639,19 @@ export default function App() {
     const nextConsumables = {
       ...consumables,
       letterSpyglassCount: owned - 1
+    };
+    setConsumables(nextConsumables);
+    storageService.saveUserData({ consumables: nextConsumables });
+    return true;
+  };
+
+  const handleConsumeExplorerCompass = () => {
+    const owned = consumables.explorerCompassCount ?? 0;
+    if (owned <= 0) return false;
+    soundFx.playSparkCollect();
+    const nextConsumables = {
+      ...consumables,
+      explorerCompassCount: owned - 1
     };
     setConsumables(nextConsumables);
     storageService.saveUserData({ consumables: nextConsumables });
@@ -1432,7 +1450,7 @@ export default function App() {
           consumables={consumables}
           onToggleDoubleSparksPotion={handleToggleDoubleSparksPotion}
           onConsumeHintScroll={handleConsumeHintScroll}
-          onConsumeLetterSpyglass={handleConsumeLetterSpyglass}
+          onConsumeExplorerCompass={handleConsumeExplorerCompass}
           onConsumeLetterPruner={handleConsumeLetterPruner}
           onConsumeShield={handleConsumeShield}
           onResetDoubleSparks={() => setIsDoubleSparksActive(false)}

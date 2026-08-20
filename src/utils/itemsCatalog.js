@@ -45,7 +45,9 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '🧪',
     badgeTag: '2x Profit!',
-    description: 'Costs 12 Sparks. Doubles all Sparks earned in your next climb session!'
+    supportedSubjects: ['math', 'words', 'world'],
+    subjectLabel: 'All Subjects',
+    description: 'Costs 12 Sparks. Doubles all Sparks earned in your next climb session! (Works in all subjects)'
   },
   {
     id: 'hint_scroll',
@@ -56,7 +58,9 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '📜',
     badgeTag: 'Phonics & Clues',
-    description: 'Costs 8 Sparks. Instantly reveals a helpful phonics, word structure, or conceptual clue from Kibo to guide your thinking!'
+    supportedSubjects: ['math', 'words', 'world'],
+    subjectLabel: 'All Subjects',
+    description: 'Costs 8 Sparks. Instantly reveals a helpful conceptual clue, phonics clue, or geography hint from Kibo! (Works in all subjects)'
   },
   {
     id: 'letter_spyglass',
@@ -67,7 +71,22 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '🔍',
     badgeTag: 'Auto-Reveal Blank',
-    description: 'Costs 15 Sparks. Instantly uncovers and fills 1 missing blank slot or digit directly into your climb challenge!'
+    supportedSubjects: ['math', 'words'],
+    subjectLabel: 'Math & Words Only',
+    description: 'Costs 15 Sparks. Instantly uncovers and fills 1 missing blank slot or digit directly into your climb challenge! (For Kibo Math & Words)'
+  },
+  {
+    id: 'explorer_compass',
+    name: "Explorer's Compass",
+    category: 'powerups',
+    cost: 15,
+    rarity: 'rare',
+    isConsumable: true,
+    icon: '🧭',
+    badgeTag: 'Regional Clue',
+    supportedSubjects: ['world'],
+    subjectLabel: 'Kibo World Only',
+    description: 'Costs 15 Sparks. Pinpoints geographic orientation, revealing continent, regional, cardinal, or hemisphere context! (For Kibo World)'
   },
   {
     id: 'letter_pruner',
@@ -77,8 +96,10 @@ export const WORKSHOP_ITEMS = [
     rarity: 'rare',
     isConsumable: true,
     icon: '✂️',
-    badgeTag: 'Prune Distractors',
-    description: 'Costs 15 Sparks. Eliminates distractor choices and non-solution keys for the current problem!'
+    badgeTag: '50:50 & Prune Keys',
+    supportedSubjects: ['math', 'words', 'world'],
+    subjectLabel: 'All Subjects',
+    description: 'Costs 15 Sparks. Eliminates 2 distractor choices (50:50 in World) or non-solution keys (in Math & Words)! (Works in all subjects)'
   },
   {
     id: 'kibo_shield',
@@ -88,7 +109,9 @@ export const WORKSHOP_ITEMS = [
     rarity: 'epic',
     isConsumable: true,
     icon: '🛡️',
-    description: 'Costs 50 Sparks. Absorbs 1 incorrect answer to protect your in-session answer streak and multipliers (does not alter accuracy %).'
+    supportedSubjects: ['math', 'words', 'world'],
+    subjectLabel: 'All Subjects',
+    description: 'Costs 50 Sparks. Absorbs 1 incorrect answer to protect your in-session answer streak and multipliers (does not alter accuracy %). (Works in all subjects)'
   },
   {
     id: 'streak_saver',
@@ -98,7 +121,9 @@ export const WORKSHOP_ITEMS = [
     rarity: 'legendary',
     isConsumable: true,
     icon: '🔥',
-    description: 'Costs 100 Sparks. Protects 1 missed calendar day of climbing from resetting your daily streak.'
+    supportedSubjects: ['math', 'words', 'world'],
+    subjectLabel: 'All Subjects',
+    description: 'Costs 100 Sparks. Protects 1 missed calendar day of climbing from resetting your daily streak. (Works in all subjects)'
   },
 
   // HEADWEAR (Slot: headwear)

@@ -177,4 +177,50 @@ describe('Kibo World Curriculum & Deduplication Engine', () => {
       expect(t.mapData.targetPath).toBeTruthy();
     });
   });
+
+  it('should ensure all candidate templates have hints and valid 4-option multiple choice answers', () => {
+    for (let tier = 1; tier <= 5; tier++) {
+      const templates = getTierCandidateTemplates(tier);
+      templates.forEach(t => {
+        expect(t.prompt).toBeTruthy();
+        expect(t.correctAnswer).toBeTruthy();
+        expect(t.hint).toBeTruthy();
+        expect(t.options.length).toBe(4);
+        expect(t.options).toContain(t.correctAnswer);
+
+        // Verify 50:50 pruning logic
+        const distractors = t.options.filter(o => o !== t.correctAnswer);
+        expect(distractors.length).toBe(3);
+        const pruned = distractors.slice(0, 2);
+        const remaining = t.options.filter(o => !pruned.includes(o));
+        expect(remaining).toContain(t.correctAnswer);
+        expect(remaining.length).toBe(2);
+      });
+    }
+  });
+
+  it('should verify power-up catalog includes Explorer Compass and clear subject labeling', async () => {
+    const { WORKSHOP_ITEMS } = await import('../src/utils/itemsCatalog.js');
+    const powerups = WORKSHOP_ITEMS.filter(i => i.category === 'powerups');
+    
+    // Check Explorer's Compass
+    const compass = powerups.find(i => i.id === 'explorer_compass');
+    expect(compass).toBeDefined();
+    expect(compass.name).toBe("Explorer's Compass");
+    expect(compass.supportedSubjects).toEqual(['world']);
+    expect(compass.subjectLabel).toBe('Kibo World Only');
+
+    // Check Spyglass
+    const spyglass = powerups.find(i => i.id === 'letter_spyglass');
+    expect(spyglass).toBeDefined();
+    expect(spyglass.supportedSubjects).toEqual(['math', 'words']);
+    expect(spyglass.subjectLabel).toBe('Math & Words Only');
+
+    // Check all powerups have subjectLabel and supportedSubjects
+    powerups.forEach(p => {
+      expect(p.supportedSubjects).toBeDefined();
+      expect(p.subjectLabel).toBeDefined();
+      expect(p.isConsumable).toBe(true);
+    });
+  });
 });

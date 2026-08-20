@@ -204,6 +204,37 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
+        {itemId === 'explorer_compass' && (
+          <g>
+            {/* Compass Outer Brass Ring & Loop */}
+            <circle cx="50" cy="18" r="8" fill="none" stroke="#D97706" strokeWidth="4" />
+            <circle cx="50" cy="54" r="34" fill="#FEF3C7" stroke="#B45309" strokeWidth="6" />
+            <circle cx="50" cy="54" r="30" fill="#0F172A" stroke="#F59E0B" strokeWidth="2.5" />
+            
+            {/* Cardinal Tick Marks */}
+            <line x1="50" y1="26" x2="50" y2="32" stroke="#F8FAFC" strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="50" y1="76" x2="50" y2="82" stroke="#F8FAFC" strokeWidth="2" strokeLinecap="round" />
+            <line x1="22" y1="54" x2="28" y2="54" stroke="#F8FAFC" strokeWidth="2" strokeLinecap="round" />
+            <line x1="72" y1="54" x2="78" y2="54" stroke="#F8FAFC" strokeWidth="2" strokeLinecap="round" />
+            
+            {/* Cardinal Letters */}
+            <text x="50" y="38" textAnchor="middle" fontSize="9" fontWeight="900" fill="#EF4444">N</text>
+            <text x="50" y="74" textAnchor="middle" fontSize="7" fontWeight="900" fill="#94A3B8">S</text>
+            <text x="70" y="57" textAnchor="middle" fontSize="7" fontWeight="900" fill="#94A3B8">E</text>
+            <text x="30" y="57" textAnchor="middle" fontSize="7" fontWeight="900" fill="#94A3B8">W</text>
+
+            {/* Compass Needle */}
+            <polygon points="50,26 44,54 50,50" fill="#EF4444" stroke="#B91C1C" strokeWidth="0.8" />
+            <polygon points="50,26 56,54 50,50" fill="#F87171" stroke="#B91C1C" strokeWidth="0.8" />
+            <polygon points="50,82 44,54 50,58" fill="#64748B" stroke="#334155" strokeWidth="0.8" />
+            <polygon points="50,82 56,54 50,58" fill="#94A3B8" stroke="#334155" strokeWidth="0.8" />
+
+            {/* Center Pivot Gem */}
+            <circle cx="50" cy="54" r="4.5" fill="#F59E0B" stroke="#78350F" strokeWidth="1.5" />
+            <circle cx="50" cy="54" r="2" fill="#FEF08A" />
+          </g>
+        )}
+
         {itemId === 'letter_pruner' && (
           <g>
             {/* Pruner handles */}
