@@ -5,6 +5,9 @@ import { soundFx } from '../utils/audio';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
+import { getWeekStr } from '../utils/dateUtils';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../config/firebase';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 
 const MOCK_COMPETITORS_BY_SUBJECT = {
@@ -36,6 +39,10 @@ export default function LeaderboardScreen({
 }) {
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
   const [liveStandings, setLiveStandings] = useState([]);
+  const [viewMode, setViewMode] = useState('global'); // 'global' or 'weekly'
+  const [weeklyStandings, setWeeklyStandings] = useState([]);
+  const [cohortId, setCohortId] = useState(null);
+  const [isLoadingCohort, setIsLoadingCohort] = useState(false);
 
   // Sync selected subject if active subject prop changes
   useEffect(() => {
@@ -88,6 +95,73 @@ export default function LeaderboardScreen({
       subject: selectedSubject
     };
   });
+
+
+  useEffect(() => {
+    if (viewMode !== 'weekly') return;
+
+    let isMounted = true;
+    const weekStr = getWeekStr();
+
+    // Attempt to join or fetch cohort
+    const joinCohort = async () => {
+      try {
+        setIsLoadingCohort(true);
+        const joinWeeklyLeague = httpsCallable(functions, 'joinWeeklyLeague');
+        const result = await joinWeeklyLeague({
+          profileId: activeProfile?.id || 'default_child',
+          weekStr,
+          subject: selectedSubject
+        });
+        if (isMounted && result.data?.cohortId) {
+          setCohortId(result.data.cohortId);
+        }
+      } catch (err) {
+        console.error('Failed to join weekly league:', err);
+      } finally {
+        if (isMounted) setIsLoadingCohort(false);
+      }
+    };
+
+    joinCohort();
+
+    return () => { isMounted = false; };
+  }, [viewMode, selectedSubject, activeProfile?.id]);
+
+  useEffect(() => {
+    if (viewMode !== 'weekly' || !cohortId) return;
+
+    const weekStr = getWeekStr();
+
+    // Sync active player's weekly stats
+    accountPlayers.forEach(p => {
+      if (p.isCurrentUser) {
+         const sparks = activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0;
+         const maxStreak = activeProfile?.userData?.weeklyMaxStreak || activeProfile?.userData?.streak || 0;
+         leaderboardService.syncWeeklyScore({
+            profileId: p.id,
+            subject: selectedSubject,
+            name: p.name,
+            weekStr,
+            sparks,
+            maxStreak,
+            equipped: p.equipped
+         });
+      }
+    });
+
+    const unsubscribe = leaderboardService.subscribeToWeeklyLeaderboard(weekStr, cohortId, selectedSubject, 30, (remoteData) => {
+      if (remoteData && remoteData.length > 0) {
+        setWeeklyStandings(remoteData);
+      } else {
+        setWeeklyStandings([]);
+      }
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
+  }, [viewMode, cohortId, selectedSubject]);
 
   // Subscribe to Firestore real-time updates and sync all account profiles for selected subject
   useEffect(() => {
@@ -148,7 +222,9 @@ export default function LeaderboardScreen({
     }
   }
 
-  const combinedStandings = mergedList.sort((a, b) => b.score - a.score);
+  const combinedStandings = viewMode === 'global'
+    ? mergedList.sort((a, b) => b.score - a.score)
+    : weeklyStandings; // already sorted by sparks from service
 
   // Assign ranks
   const rankedStandings = combinedStandings.map((player, index) => ({
@@ -159,10 +235,21 @@ export default function LeaderboardScreen({
   const userRankObj = rankedStandings.find(p => p.isCurrentUser);
   const currentUserRank = userRankObj ? userRankObj.rank : rankedStandings.length;
 
+  let pinnedScoreDisplay = userScore;
+  let pinnedScoreLabel = `pts (${subjectConfig.name})`;
+  if (viewMode === 'weekly') {
+    pinnedScoreDisplay = userRankObj ? userRankObj.sparks : (activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0);
+    pinnedScoreLabel = 'Sparks Earned';
+  }
+
   let pointsNeeded = 0;
   if (currentUserRank > 1) {
     const playerAbove = rankedStandings[currentUserRank - 2];
-    pointsNeeded = playerAbove ? Math.max(1, playerAbove.score - userScore + 1) : 1;
+    if (viewMode === 'global') {
+      pointsNeeded = playerAbove ? Math.max(1, playerAbove.score - userScore + 1) : 1;
+    } else {
+      pointsNeeded = playerAbove ? Math.max(1, playerAbove.sparks - pinnedScoreDisplay + 1) : 1;
+    }
   }
 
   // Top standings display
@@ -180,6 +267,42 @@ export default function LeaderboardScreen({
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-slate-50 via-stone-50 to-slate-100 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
 
       {/* HEADER & CONTROLS */}
+
+        {/* VIEW MODE TABS */}
+        <div className="px-4 pt-3 flex items-center gap-2 mb-2">
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('global');
+            }}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 border-2 ${
+              viewMode === 'global'
+                ? 'bg-slate-800 text-white border-slate-900 shadow-sm ring-2 ring-slate-400/30'
+                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+            }`}
+          >
+            <Trophy className="w-4 h-4" />
+            Global Standings
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('weekly');
+            }}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 border-2 ${
+              viewMode === 'weekly'
+                ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm ring-2 ring-emerald-400/30'
+                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+            }`}
+          >
+            <Zap className="w-4 h-4 fill-current" />
+            Weekly League
+          </button>
+        </div>
+
       <div className="bg-white border-b-2 border-slate-200 z-10 shrink-0 shadow-sm relative pb-3">
         <div className="px-4 pt-3 pb-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-slate-800">
@@ -235,12 +358,14 @@ export default function LeaderboardScreen({
         </div>
 
         {/* Fairness Banner */}
-        <div className="mx-4 mt-2.5 bg-indigo-50/90 border border-indigo-200 text-indigo-900 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-inner">
-          <Info className="w-4 h-4 text-indigo-500 shrink-0" />
+        <div className={`mx-4 mt-2.5 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-inner border ${viewMode === 'global' ? 'bg-indigo-50/90 border-indigo-200 text-indigo-900' : 'bg-emerald-50/90 border-emerald-200 text-emerald-900'}`}>
+          <Info className={`w-4 h-4 shrink-0 ${viewMode === 'global' ? 'text-indigo-500' : 'text-emerald-500'}`} />
           <p className="leading-tight">
-            {selectedSubject === 'words'
-              ? 'Words competence is dynamically measured based on spelling accuracy, vocabulary fluency, and speed.'
-              : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.'}
+            {viewMode === 'global'
+              ? (selectedSubject === 'words'
+                 ? 'Words competence is dynamically measured based on spelling accuracy, vocabulary fluency, and speed.'
+                 : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.')
+              : (`Compete in this week's cohort by earning Sparks! ${cohortId ? 'Group: ' + cohortId.split('_bucket_')[1] : ''}`)}
           </p>
         </div>
       </div>
@@ -269,7 +394,7 @@ export default function LeaderboardScreen({
                   <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
                 )}
               </div>
-              <span className="text-xs text-slate-500 font-bold mb-2">{top3[1].score} pts</span>
+              <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[1].score + ' pts' : (top3[1].sparks || 0) + ' sparks'}</span>
               <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                 <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
               </div>
@@ -295,7 +420,7 @@ export default function LeaderboardScreen({
                   <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
                 )}
               </div>
-              <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{top3[0].score} pts</span>
+              <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{viewMode === 'global' ? top3[0].score + ' pts' : (top3[0].sparks || 0) + ' sparks'}</span>
               <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
                 <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
@@ -319,7 +444,7 @@ export default function LeaderboardScreen({
                   <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
                 )}
               </div>
-              <span className="text-xs text-slate-500 font-bold mb-2">{top3[2].score} pts</span>
+              <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[2].score + ' pts' : (top3[2].sparks || 0) + ' sparks'}</span>
               <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                 <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
               </div>
@@ -370,9 +495,9 @@ export default function LeaderboardScreen({
 
               {/* Score / Rank Badge */}
               <div className="flex flex-col items-end shrink-0">
-                <span className="font-black text-indigo-700 text-sm">{player.score}</span>
+                <span className="font-black text-indigo-700 text-sm">{viewMode === 'global' ? player.score : (player.sparks || 0)}</span>
                 <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
-                  {getRankTitle(player.score)}
+                  {viewMode === 'global' ? getRankTitle(player.score) : 'Sparks'}
                 </span>
               </div>
             </div>
@@ -409,13 +534,13 @@ export default function LeaderboardScreen({
               </div>
               <div className="flex items-center gap-1 mt-0.5">
                 <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                <span className="text-indigo-200 font-bold text-xs">{userScore} pts ({subjectConfig.name})</span>
+                <span className="text-indigo-200 font-bold text-xs">{pinnedScoreDisplay} {pinnedScoreLabel}</span>
               </div>
 
               {/* Contextual progress message */}
               <p className="text-xs text-indigo-300 mt-1 leading-tight font-medium">
                 {currentUserRank > 1
-                  ? `+${pointsNeeded} pts needed to rank up in ${subjectConfig.name}`
+                  ? `+${pointsNeeded} ${viewMode === 'global' ? 'pts' : 'sparks'} needed to rank up in ${subjectConfig.name}`
                   : `You are currently holding 1st place in ${subjectConfig.name}! Keep it up!`}
               </p>
             </div>

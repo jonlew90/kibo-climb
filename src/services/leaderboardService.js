@@ -136,6 +136,80 @@ class LeaderboardService {
       return () => {};
     }
   }
+
+  // Sync weekly effort stats (sparks and max streak) to Firestore
+  async syncWeeklyScore({ profileId, name, weekStr, sparks = 0, maxStreak = 0, equipped = [], subject = 'math' }) {
+    try {
+      let user = this.currentUser || auth.currentUser;
+      if (!user) return; // Skip silently if offline
+
+      const baseUid = user.uid;
+      const safeProfileId = profileId || 'default_child';
+      const safeSubject = subject || 'math';
+      const documentId = `${baseUid}_${safeProfileId}`;
+      const userRef = doc(db, 'weekly_stats', documentId);
+
+      const payload = {
+        uid: baseUid,
+        profileId: safeProfileId,
+        subject: safeSubject,
+        name: name || 'Kibo Climber',
+        weekStr: weekStr,
+        sparks: Number(sparks) || 0,
+        maxStreak: Number(maxStreak) || 0,
+        equipped: Array.isArray(equipped) ? equipped : [],
+        updatedAt: serverTimestamp()
+      };
+
+      await setDoc(userRef, payload, { merge: true });
+    } catch (error) {
+      console.warn('LeaderboardService: Failed to sync weekly score', error);
+    }
+  }
+
+  // Subscribe to a specific cohort's weekly standings
+  subscribeToWeeklyLeaderboard(weekStr, cohortId, subject = 'math', limitCount = 30, onUpdate) {
+    try {
+      if (!cohortId) {
+        onUpdate([]);
+        return () => {};
+      }
+
+      // We query by cohortId and weekStr.
+      // NOTE: Because Firestore rules/indexes might not support composite out of the box,
+      // we query by cohortId and sort in memory if needed, but since cohort is small (~30),
+      // we can just fetch the whole cohort. We will order by sparks desc.
+      const q = query(
+        collection(db, 'weekly_stats'),
+        // No composite index needed if we just fetch the whole cohort and sort locally
+        // We'll just fetch by collection and filter/sort locally for now since we don't know the indexes
+      );
+
+      return onSnapshot(q, (snapshot) => {
+        const standings = snapshot.docs
+          .map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }))
+          .filter(p => p.weekStr === weekStr && p.cohortId === cohortId && (p.subject || 'math') === subject)
+          .sort((a, b) => b.sparks - a.sparks)
+          .slice(0, limitCount)
+          .map((player, index) => ({
+            ...player,
+            rank: index + 1
+          }));
+        onUpdate(standings);
+      }, (error) => {
+        console.warn('LeaderboardService: Firestore weekly subscription fallback', error);
+        onUpdate([]);
+      });
+    } catch (error) {
+      console.warn('LeaderboardService: Firestore weekly subscription error', error);
+      onUpdate([]);
+      return () => {};
+    }
+  }
+
 }
 
 export const leaderboardService = new LeaderboardService();
