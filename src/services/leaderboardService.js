@@ -114,12 +114,29 @@ class LeaderboardService {
       );
 
       return onSnapshot(q, (snapshot) => {
-        const standings = snapshot.docs
+        const rawDocs = snapshot.docs
           .map(docSnap => ({
             id: docSnap.id,
             ...docSnap.data()
           }))
-          .filter(p => (p.subject || 'math') === (subject || 'math'))
+          .filter(p => (p.subject || 'math') === (subject || 'math'));
+
+        // Deduplicate remote entries: if the same player exists multiple times across sessions, keep highest score
+        const seenKeys = new Set();
+        const deduplicated = [];
+
+        for (const player of rawDocs) {
+          const uniqueKey = player.uid && player.profileId 
+            ? `${player.uid}_${player.profileId}` 
+            : (player.name ? player.name.trim().toLowerCase() : player.id);
+          
+          if (!seenKeys.has(uniqueKey)) {
+            seenKeys.add(uniqueKey);
+            deduplicated.push(player);
+          }
+        }
+
+        const standings = deduplicated
           .slice(0, limitCount)
           .map((player, index) => ({
             ...player,

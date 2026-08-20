@@ -10,27 +10,6 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '../config/firebase';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 
-const MOCK_COMPETITORS_BY_SUBJECT = {
-  math: [
-    { id: 'mock_math_1', name: 'Maya Matrix', score: 1680, subjectsMastered: 8, equipped: ['crown', 'cape'] },
-    { id: 'mock_math_2', name: 'Leo Apex', score: 1490, subjectsMastered: 6, equipped: ['party_hat', 'scarf'] },
-    { id: 'mock_math_3', name: 'Sam Numerator', score: 1380, subjectsMastered: 5, equipped: ['cap', 'boots'] },
-    { id: 'mock_math_4', name: 'Zoe Cipher', score: 1260, subjectsMastered: 4, equipped: ['headband'] },
-    { id: 'mock_math_5', name: 'Lucas Vector', score: 1180, subjectsMastered: 3, equipped: ['astronaut_helmet'] },
-    { id: 'mock_math_6', name: 'Elena Prime', score: 1110, subjectsMastered: 2, equipped: [] },
-    { id: 'mock_math_7', name: 'Oliver Tangent', score: 1040, subjectsMastered: 2, equipped: [] }
-  ],
-  words: [
-    { id: 'mock_words_1', name: 'Emma Lexicon', score: 1620, subjectsMastered: 7, equipped: ['crown', 'cape'] },
-    { id: 'mock_words_2', name: 'Liam Speller', score: 1470, subjectsMastered: 6, equipped: ['party_hat', 'scarf'] },
-    { id: 'mock_words_3', name: 'Sophia Bard', score: 1350, subjectsMastered: 5, equipped: ['cap', 'boots'] },
-    { id: 'mock_words_4', name: 'Noah Syntax', score: 1250, subjectsMastered: 4, equipped: ['headband'] },
-    { id: 'mock_words_5', name: 'Ava Rhyme', score: 1170, subjectsMastered: 3, equipped: ['astronaut_helmet'] },
-    { id: 'mock_words_6', name: 'Ethan Vocab', score: 1100, subjectsMastered: 2, equipped: [] },
-    { id: 'mock_words_7', name: 'Chloe Prose', score: 1030, subjectsMastered: 1, equipped: [] }
-  ]
-};
-
 export default function LeaderboardScreen({
   activeSubject = 'math',
   userState,
@@ -53,6 +32,7 @@ export default function LeaderboardScreen({
 
   const activeProfile = storageService.getActiveProfile();
   const username = storageService.getUsername() || activeProfile?.username || activeProfile?.name || 'You';
+  const currentUid = leaderboardService.getCurrentUser()?.uid;
 
   // Get user score for selected subject
   const userScore = (selectedSubject === activeSubject && userState?.competenceRank)
@@ -189,36 +169,41 @@ export default function LeaderboardScreen({
     };
   }, [selectedSubject, userScore, username, activeProfile?.id]);
 
-  const accountNames = new Set(accountPlayers.map(p => p.name));
-  const accountIds = new Set(accountPlayers.map(p => p.id));
-
-  // Combine live data with all account profiles and fallback mock competitors
-  const baseStandings = liveStandings;
-  const filteredRemote = baseStandings.filter(p => 
-    !accountNames.has(p.name) && 
-    !accountIds.has(p.profileId) && 
-    !accountIds.has(p.id)
+  const accountNamesNormalized = new Set(
+    accountPlayers.map(p => (p.name || '').trim().toLowerCase()).filter(Boolean)
+  );
+  const accountProfileIds = new Set(
+    accountPlayers.map(p => p.id).filter(Boolean)
   );
 
-  let mergedList = [...filteredRemote, ...accountPlayers];
+  // Filter remote records to avoid duplicates with local account profiles or the current auth session
+  const filteredRemote = liveStandings.filter(p => {
+    if (currentUid && p.uid === currentUid) return false;
+    if (currentUid && p.id && p.id.startsWith(`${currentUid}_`)) return false;
+    if (p.profileId && accountProfileIds.has(p.profileId)) return false;
+    const normName = (p.name || '').trim().toLowerCase();
+    if (accountNamesNormalized.has(normName)) return false;
+    return true;
+  });
 
-  // If we have fewer than 3 players, supplement with mock competitors for a lively top 3 experience
-  if (mergedList.length < 3) {
-    const mockList = MOCK_COMPETITORS_BY_SUBJECT[selectedSubject] || MOCK_COMPETITORS_BY_SUBJECT.math;
-    const existingNames = new Set(mergedList.map(p => p.name));
-    for (const mock of mockList) {
-      if (!existingNames.has(mock.name)) {
-        mergedList.push({
-          id: mock.id,
-          name: mock.name,
-          score: mock.score,
-          subjectsMastered: mock.subjectsMastered,
-          equipped: mock.equipped,
-          isCurrentUser: false,
-          isAccountProfile: false
-        });
-        if (mergedList.length >= 7) break;
-      }
+  // Combine filtered remote standings with account profiles
+  const mergedList = [...filteredRemote, ...accountPlayers];
+
+  // Deduplicate merged standings so each player / profile appears once with their best score
+  const seenPlayerKeys = new Set();
+  const uniqueStandings = [];
+
+  // Sort descending by score before deduplication
+  mergedList.sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+
+  for (const player of mergedList) {
+    const key = player.isCurrentUser
+      ? '__current_active_user__'
+      : (player.profileId && player.uid ? `${player.uid}_${player.profileId}` : (player.name || '').trim().toLowerCase() || player.id);
+
+    if (!seenPlayerKeys.has(key)) {
+      seenPlayerKeys.add(key);
+      uniqueStandings.push(player);
     }
   }
 
@@ -227,7 +212,7 @@ export default function LeaderboardScreen({
     : weeklyStandings; // already sorted by sparks from service
 
   // Assign ranks
-  const rankedStandings = combinedStandings.map((player, index) => ({
+  const rankedStandings = uniqueStandings.map((player, index) => ({
     ...player,
     rank: index + 1
   }));
@@ -373,17 +358,40 @@ export default function LeaderboardScreen({
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 overflow-y-auto custom-scrollbar relative pb-6">
 
-        {/* HERO PODIUM (Top 3) */}
-        {top3.length >= 3 && (
+        {/* EMPTY STATE IF NO PLAYERS */}
+        {rankedStandings.length === 0 && (
+          <div className="p-8 text-center flex flex-col items-center justify-center min-h-[250px]">
+            <Trophy className="w-12 h-12 text-slate-300 mb-3 stroke-[1.5]" />
+            <p className="text-slate-600 font-bold text-base">No standings recorded yet</p>
+            <p className="text-slate-400 text-xs mt-1">Complete a climb to claim 1st place on the board!</p>
+          </div>
+        )}
+
+        {/* HERO PODIUM (Top 1 to 3) */}
+        {top3.length > 0 && (
           <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
 
             {/* 2nd Place */}
-            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
-                top3[1].isCurrentUser ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40' : 'bg-slate-200 border-slate-300'
-              }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
-                  <Mascot size={56} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} className="w-full h-full" />
+            {top3[1] && (
+              <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+                  top3[1].isCurrentUser ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40' : 'bg-slate-200 border-slate-300'
+                }`}>
+                  <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
+                    <Mascot size={56} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} className="w-full h-full" />
+                  </div>
+                </div>
+                <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[1].name}>
+                  <span className="font-bold text-xs truncate min-w-0 text-center">
+                    {top3[1].name}
+                  </span>
+                  {top3[1].isCurrentUser && (
+                    <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
+                  )}
+                </div>
+                <span className="text-xs text-slate-500 font-bold mb-2">{top3[1].score} pts</span>
+                <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+                  <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
                 </div>
               </div>
               <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[1].name}>
@@ -401,15 +409,30 @@ export default function LeaderboardScreen({
             </div>
 
             {/* 1st Place */}
-            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[145px] sm:max-w-[175px] relative z-20 animate-fade-in-up">
-              <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
-                <Crown className="w-6 h-6 fill-amber-400" />
-              </div>
-              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
-                top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
-              }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-[0.88] sm:scale-95">
-                  <Mascot size={72} mood="excited" equipped={top3[0].equipped} className="w-full h-full" />
+            {top3[0] && (
+              <div className="flex flex-col items-center flex-1 min-w-0 max-w-[145px] sm:max-w-[175px] relative z-20 animate-fade-in-up">
+                <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
+                  <Crown className="w-6 h-6 fill-amber-400" />
+                </div>
+                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+                  top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
+                }`}>
+                  <div className="absolute inset-0 flex items-center justify-center scale-[0.88] sm:scale-95">
+                    <Mascot size={72} mood="excited" equipped={top3[0].equipped} className="w-full h-full" />
+                  </div>
+                </div>
+                <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[0].name}>
+                  <span className="font-black text-sm text-amber-900 truncate min-w-0 text-center">
+                    {top3[0].name}
+                  </span>
+                  {top3[0].isCurrentUser && (
+                    <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
+                  )}
+                </div>
+                <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{top3[0].score} pts</span>
+                <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+                  <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
                 </div>
               </div>
               <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[0].name}>
@@ -428,12 +451,26 @@ export default function LeaderboardScreen({
             </div>
 
             {/* 3rd Place */}
-            <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
-                top3[2].isCurrentUser ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40' : 'bg-orange-100 border-orange-300'
-              }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
-                  <Mascot size={56} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} className="w-full h-full" />
+            {top3[2] && (
+              <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+                  top3[2].isCurrentUser ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40' : 'bg-orange-100 border-orange-300'
+                }`}>
+                  <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
+                    <Mascot size={56} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} className="w-full h-full" />
+                  </div>
+                </div>
+                <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[2].name}>
+                  <span className="font-bold text-xs truncate min-w-0 text-center">
+                    {top3[2].name}
+                  </span>
+                  {top3[2].isCurrentUser && (
+                    <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
+                  )}
+                </div>
+                <span className="text-xs text-slate-500 font-bold mb-2">{top3[2].score} pts</span>
+                <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+                  <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
                 </div>
               </div>
               <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[2].name}>
