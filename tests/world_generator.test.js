@@ -223,4 +223,21 @@ describe('Kibo World Curriculum & Deduplication Engine', () => {
       expect(p.isConsumable).toBe(true);
     });
   });
+
+  it('should ensure question hints do not duplicate compass orientation clues', () => {
+    for (let tier = 1; tier <= 5; tier++) {
+      const templates = getTierCandidateTemplates(tier);
+      templates.forEach(t => {
+        // Country templates should not have hints purely repeating "This sovereign nation is in <Continent>"
+        if (t.type === 'capital_country' || t.type === 'country_flag' || t.type === 'country_landmark') {
+          expect(t.hint).not.toMatch(/^This sovereign nation is in/);
+          expect(t.hint).not.toMatch(/^It is located on the continent of/);
+        }
+        // State templates should not have hints purely repeating "It is in the <Region> region"
+        if (t.type === 'state_trivia') {
+          expect(t.hint).not.toMatch(/^It is in the .* region\.$/);
+        }
+      });
+    }
+  });
 });

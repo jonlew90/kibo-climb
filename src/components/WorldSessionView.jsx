@@ -25,6 +25,7 @@ import { storageService } from '../services/storageService';
 import {
   CONTINENTS,
   OCEANS,
+  CARDINAL_DIRECTIONS,
   US_STATES,
   COUNTRIES,
   WORLD_LANDMARKS_AND_WONDERS
@@ -216,13 +217,19 @@ export default function WorldSessionView({
     if (!isCompassActive || !currentProblem) return null;
     const ans = String(currentProblem.correctAnswer || currentProblem.answer || '').trim();
     
-    // Check if country
+    // Check if cardinal direction
+    const matchedDir = CARDINAL_DIRECTIONS.find(d => d.direction.toLowerCase() === ans.toLowerCase());
+    if (matchedDir) {
+      return `🧭 Compass orientation: Points toward the ${matchedDir.mapPosition} of a standard orientation map.`;
+    }
+
+    // Check if country (either answer is country name or capital)
     const matchedCountry = COUNTRIES.find(c => c.name.toLowerCase() === ans.toLowerCase() || c.capital.toLowerCase() === ans.toLowerCase());
     if (matchedCountry) {
       return `🧭 Located on the continent of ${matchedCountry.continent}.`;
     }
 
-    // Check if US state
+    // Check if US state (either answer is state name or capital)
     const matchedState = US_STATES.find(s => s.name.toLowerCase() === ans.toLowerCase() || s.capital.toLowerCase() === ans.toLowerCase());
     if (matchedState) {
       return `🧭 Located in the ${matchedState.region} region of the United States.`;
@@ -237,13 +244,13 @@ export default function WorldSessionView({
     // Check if ocean
     const matchedOcean = OCEANS.find(o => o.name.toLowerCase() === ans.toLowerCase() || o.fullName.toLowerCase() === ans.toLowerCase());
     if (matchedOcean) {
-      return `🧭 Key geographic feature: ${matchedOcean.notableFeature}.`;
+      return `🧭 Global Waterway: Bordered by ${matchedOcean.notableFeature.split(',').pop()?.trim() || 'major world continents'}.`;
     }
 
     // Check if landmark
     const matchedWonder = WORLD_LANDMARKS_AND_WONDERS.find(w => w.name.toLowerCase() === ans.toLowerCase());
     if (matchedWonder) {
-      return `🧭 Located in/near ${matchedWonder.continent || 'the world'}.`;
+      return `🧭 Geographic Location: Situated in ${matchedWonder.continent || 'the world'}.`;
     }
 
     // Fallback: concept or continent/regional context

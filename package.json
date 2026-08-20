@@ -12,10 +12,12 @@
     "@capacitor/cli": "^8.4.2",
     "@capacitor/core": "^8.4.2",
     "@stripe/stripe-js": "^9.13.0",
+    "d3-geo": "^3.1.1",
     "firebase": "^12.17.1",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-simple-maps": "^3.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
