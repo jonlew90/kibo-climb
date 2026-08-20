@@ -461,7 +461,7 @@ export default function ParentDashboardModal({
                         <span className="bg-amber-200/80 text-amber-900 text-xs font-extrabold px-2 py-0.5 rounded-full">All Subjects</span>
                       </div>
                       <p className="text-xs text-slate-600 font-bold mt-0.5">
-                        {childName} has practiced for <strong className="text-amber-950 font-black">{pluralize(profileStreak, 'Day')}</strong> in a row across Math & Words.
+                        {childName} has practiced for <strong className="text-amber-950 font-black">{pluralize(profileStreak, 'Day')}</strong> in a row across Math, Words & World.
                       </p>
                     </div>
                   </div>
