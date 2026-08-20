@@ -1,3 +1,7 @@
+
+import React from 'react';
+export default function MathSessionView(props) {
+  return <div>Math Session</div>;
 import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame } from 'lucide-react';
 import Mascot from './Mascot';

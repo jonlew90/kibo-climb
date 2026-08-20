@@ -116,3 +116,23 @@ export const calculateStreakFromHistory = (sprintHistory = [], practiceDays = [1
 
   return streakCount;
 };
+
+/**
+ * Returns the ISO week string (e.g., "2023-W42") based on UTC time.
+ * Weeks start on Monday at 00:00 UTC.
+ */
+export const getWeekStr = () => {
+  const now = new Date();
+  // Copy date so don't modify original
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  // Set to nearest Thursday: current date + 4 - current day number
+  // Make Sunday's day number 7
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  // Get first day of year
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  // Calculate full weeks to nearest Thursday
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+  // Return string of year and week number
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+};

@@ -1,6 +1,7 @@
 // Unified Storage Service Adapter for Kibo Math
 // Multi-Profile Storage Engine (profiles[activeProfileId])
 import { getStartingRatingForGrade } from '../utils/mathCurriculum.js';
+import { getWeekStr } from '../utils/dateUtils.js';
 import { leaderboardService } from './leaderboardService.js';
 import { SUBJECTS_CONFIG } from '../config/subjects.js';
 
@@ -415,6 +416,31 @@ export const storageService = {
     }
 
     const currentProfileData = state.profiles[activeId].userData || {};
+
+    const currentWeekStr = getWeekStr();
+
+    // Check if we entered a new week, if so reset weeklySparks and weeklyMaxStreak
+    if (currentProfileData.lastWeekStr !== currentWeekStr) {
+      currentProfileData.lastWeekStr = currentWeekStr;
+      currentProfileData.weeklySparks = 0;
+      currentProfileData.weeklyMaxStreak = 0;
+    }
+
+    // Calculate sparks difference if sparks are being updated
+    if (userData.sparks !== undefined) {
+      const diff = userData.sparks - (currentProfileData.sparks || 0);
+      if (diff > 0) {
+        currentProfileData.weeklySparks = (currentProfileData.weeklySparks || 0) + diff;
+      }
+    }
+
+    // Calculate max streak if streak is updated
+    if (userData.streak !== undefined) {
+      if (userData.streak > (currentProfileData.weeklyMaxStreak || 0)) {
+        currentProfileData.weeklyMaxStreak = userData.streak;
+      }
+    }
+
 
     // Migrate missing subjects structure if needed
     if (!currentProfileData.subjects) {
