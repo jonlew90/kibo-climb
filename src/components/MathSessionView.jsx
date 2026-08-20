@@ -140,7 +140,6 @@ export default function MathSessionView({
     const saved = storageService.getActiveClimbState(profileId);
     return saved?.blockAnswers || [];
   });
-  const [shouldPulseHint, setShouldPulseHint] = useState(false);
 
   // Power-up States for Math Climbs
   const [isLetterPrunerActive, setIsLetterPrunerActive] = useState(false);
@@ -166,7 +165,6 @@ export default function MathSessionView({
     (currentProblem.options && currentProblem.options.some((opt) => ['+', '-', '−', '×', '*', '÷', '/'].includes(opt))) ||
     ['+', '-', '−', '×', '*', '÷', '/'].includes(String(currentProblem.answerString || currentProblem.answer || '').trim())
   );
-  const targetStr = String(currentProblem.answerString || currentProblem.answer || '');
 
   // Compute pruned keys when Climber Pruner is active
   const prunedKeys = React.useMemo(() => {
