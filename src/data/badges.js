@@ -2,6 +2,7 @@
 
 export const BADGE_CATEGORIES = {
   consistency: { label: 'Streak & Consistency', icon: '🔥' },
+  math: { label: 'Kibo Math', icon: '🧮' },
   words: { label: 'Kibo Words', icon: '📚' },
   world: { label: 'Kibo World', icon: '🌍' },
   precision: { label: 'Precision & Accuracy', icon: '🎯' },
@@ -102,7 +103,107 @@ export const BADGES_CATALOG = [
   },
 
   // ==========================================
-  // 2. KIBO WORDS BADGES
+  // 2. KIBO MATH BADGES
+  // ==========================================
+  {
+    id: 'math_novice',
+    title: 'Math Apprentice',
+    description: 'Answered 25 Kibo Math questions correctly!',
+    category: 'math',
+    icon: '🔢',
+    reqText: '25 Correct in Math'
+  },
+  {
+    id: 'math_scholar',
+    title: 'Math Scholar',
+    description: 'Answered 100 Kibo Math questions correctly!',
+    category: 'math',
+    icon: '🧮',
+    reqText: '100 Correct in Math'
+  },
+  {
+    id: 'math_master',
+    title: 'Master of Numbers',
+    description: 'Answered 500 Kibo Math questions correctly!',
+    category: 'math',
+    icon: '👑',
+    reqText: '500 Correct in Math'
+  },
+  {
+    id: 'addition_apprentice',
+    title: 'Addition Apprentice',
+    description: 'Mastered basic addition and number bonds!',
+    category: 'math',
+    icon: '➕',
+    reqText: 'Reach 1200+ Math Rating'
+  },
+  {
+    id: 'subtraction_scout',
+    title: 'Subtraction Scout',
+    description: 'Mastered subtraction and taking away!',
+    category: 'math',
+    icon: '➖',
+    reqText: 'Reach 1400+ Math Rating'
+  },
+  {
+    id: 'multiplication_master',
+    title: 'Multiplication Master',
+    description: 'Conquered times tables and repeated addition!',
+    category: 'math',
+    icon: '✖️',
+    reqText: 'Reach 1600+ Math Rating'
+  },
+  {
+    id: 'division_diver',
+    title: 'Division Diver',
+    description: 'Unlocked division and sharing equally!',
+    category: 'math',
+    icon: '➗',
+    reqText: 'Reach 1800+ Math Rating'
+  },
+  {
+    id: 'fraction_finder',
+    title: 'Fraction Finder',
+    description: 'Mastered fractions, decimals, and parts of a whole!',
+    category: 'math',
+    icon: '🍕',
+    reqText: 'Reach 2000+ Math Rating'
+  },
+  {
+    id: 'geometry_genius',
+    title: 'Geometry Genius',
+    description: 'Navigated shapes, angles, and spatial reasoning!',
+    category: 'math',
+    icon: '📐',
+    reqText: 'Reach 2200+ Math Rating'
+  },
+  {
+    id: 'algebra_ace',
+    title: 'Algebra Ace',
+    description: 'Decoded variables, equations, and algebraic expressions!',
+    category: 'math',
+    icon: '🔠',
+    reqText: 'Reach 2400+ Math Rating'
+  },
+  {
+    id: 'peak_math_legend',
+    title: 'Peak Math Legend',
+    description: 'Reached the summit of Mount Math with supreme numerical mastery!',
+    category: 'math',
+    icon: '🏔️',
+    reqText: 'Reach 2600+ Math Rating'
+  },
+  {
+    id: 'math_speed_demon',
+    title: 'Human Calculator',
+    description: 'Completed a 100% accurate Math sprint at lightning-fast recall pace!',
+    category: 'math',
+    icon: '⚡',
+    reqText: 'Fast Perfect Math Climb'
+  },
+
+  // ==========================================
+  // 3. KIBO WORDS BADGES
   // ==========================================
   {
     id: 'words_novice',
