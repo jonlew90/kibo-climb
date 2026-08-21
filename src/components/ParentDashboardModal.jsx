@@ -1101,7 +1101,7 @@ export default function ParentDashboardModal({
                       <p className="text-xs text-purple-900 font-medium bg-purple-50/80 p-2.5 rounded-lg border border-purple-200 leading-snug">
                         📅 <strong>Schedule:</strong> Sent every <strong>Sunday at 6:00 PM</strong>.<br />
                         👤 <strong>Sent Per Profile:</strong> Each child profile receives a dedicated report with the <strong>🐾 Kibo mascot</strong> in the subject line.<br />
-                        📚 <strong>All Played Topics Included:</strong> Full list of all topics tackled across Math, Words, and active subjects with mastery status, accuracy, and links back to the game.
+                        📚 <strong>All Played Topics Included:</strong> Full list of all topics tackled across Math, Words, World, and active subjects with mastery status, accuracy, and links back to the game.
                       </p>
 
                       <div className="flex items-center gap-2 flex-wrap pt-0.5">
