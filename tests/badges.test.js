@@ -18,7 +18,6 @@ describe('Badges System & Expansion Tests', () => {
       expect(BADGE_CATEGORIES.world).toBeDefined();
       expect(BADGE_CATEGORIES.precision).toBeDefined();
       expect(BADGE_CATEGORIES.shop).toBeDefined();
-      expect(BADGE_CATEGORIES.records).toBeDefined();
 
       Object.entries(BADGE_CATEGORIES).forEach(([catKey, catVal]) => {
         expect(catVal.label).toBeTruthy();

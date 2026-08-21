@@ -72,14 +72,6 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
     maxConsecutivePerfect
   );
 
-  // Check if personal record has been set
-  const hasSpeedOrAccRecord =
-    !!hasSetPersonalRecord ||
-    !!isNewSpeedRecord ||
-    (personalRecords?.fastest12QuestionsTime != null && personalRecords.fastest12QuestionsTime > 0) ||
-    (personalRecords?.mostPerfectSessions != null && personalRecords.mostPerfectSessions > 0) ||
-    effectivePerfectCount > 0;
-
   BADGES_CATALOG.forEach((badge) => {
     if (currentUnlocked.has(badge.id)) return;
 
@@ -285,13 +277,6 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
           }
           unlocked = capitalCount >= 20;
         }
-        break;
-
-      // ==========================================
-      // 4. Personal Records
-      // ==========================================
-      case 'personal_record':
-        unlocked = hasSpeedOrAccRecord;
         break;
 
       // ==========================================

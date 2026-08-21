@@ -5,8 +5,7 @@ export const BADGE_CATEGORIES = {
   words: { label: 'Kibo Words', icon: '📚' },
   world: { label: 'Kibo World', icon: '🌍' },
   precision: { label: 'Precision & Accuracy', icon: '🎯' },
-  shop: { label: 'Workshop & Purchases', icon: '🎒' },
-  records: { label: 'Personal Records', icon: '🏆' }
+  shop: { label: 'Workshop & Purchases', icon: '🎒' }
 };
 
 export const BADGES_CATALOG = [
@@ -372,18 +371,6 @@ export const BADGES_CATALOG = [
     category: 'shop',
     icon: '💰',
     reqText: 'Accumulate 1,000 Sparks'
-  },
-
-  // ==========================================
-  // 6. PERSONAL RECORDS BADGES
-  // ==========================================
-  {
-    id: 'personal_record',
-    title: 'Trailblazer Record',
-    description: 'Set a new personal record in speed or accuracy!',
-    category: 'records',
-    icon: '⚡',
-    reqText: 'Set a New Personal Record'
   }
 ];
 
