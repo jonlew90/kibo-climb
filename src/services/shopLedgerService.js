@@ -3,6 +3,7 @@
 
 import { storageService } from './storageService.js';
 import { antiCheatService } from './antiCheatService.js';
+import { getItemById, getItemSalePrice } from '../utils/itemsCatalog.js';
 
 export const shopLedgerService = {
   /**
@@ -60,16 +61,24 @@ export const shopLedgerService = {
   /**
    * Executes an item purchase in Kibo's Corner with authoritative balance ledgering.
    * @param {string} itemId - The ID of the item being purchased
-   * @param {number} sparksPrice - Price of the item in Sparks
+   * @param {number} sparksPrice - Expected price from UI (for logging/comparison, not authoritative)
    * @returns {Object} { success: boolean, newSparks: number, unlockedItems: Array, reason?: string }
    */
   purchaseItem(itemId, sparksPrice) {
     const userData = storageService.getUserData('math');
     const shopState = storageService.getShopState();
     const currentSparks = userData.sparks || 0;
-    const price = Number(sparksPrice) || 0;
+
+    // 0. Authoritative price calculation
+    const item = getItemById(itemId);
+    if (!item) {
+       return { success: false, reason: 'Invalid item ID', newSparks: currentSparks, unlockedItems: shopState.unlockedItems || [] };
+    }
+    const saleInfo = getItemSalePrice(item, new Date());
+    const authoritativePrice = saleInfo.isSale ? saleInfo.salePrice : (item.cost || 0);
 
     // 1. Anti-Cheat & Balance Validation
+    const price = authoritativePrice;
     const validation = antiCheatService.validateSparksTransaction(currentSparks, price);
     if (!validation.valid) {
       return {

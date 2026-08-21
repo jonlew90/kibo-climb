@@ -1,0 +1,27 @@
+<<<<<<< SEARCH
+  // Pick 2 distinct daily items
+  const pickedDaily = new Set();
+  while (pickedDaily.size < 2 && pickedDaily.size < eligibleItems.length) {
+    const idx = Math.floor(randDaily() * eligibleItems.length);
+    const item = eligibleItems[idx];
+    if (!salesMap.has(item.id)) {
+      pickedDaily.add(idx);
+    }
+  }
+=======
+  // Pick 2 distinct daily items
+  const pickedDaily = new Set();
+  const availableDailyIndices = [];
+  for (let i = 0; i < eligibleItems.length; i++) {
+    if (!salesMap.has(eligibleItems[i].id)) {
+      availableDailyIndices.push(i);
+    }
+  }
+
+  while (pickedDaily.size < 2 && availableDailyIndices.length > 0) {
+    const arrIdx = Math.floor(randDaily() * availableDailyIndices.length);
+    const originalIdx = availableDailyIndices[arrIdx];
+    pickedDaily.add(originalIdx);
+    availableDailyIndices.splice(arrIdx, 1);
+  }
+>>>>>>> REPLACE
