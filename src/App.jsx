@@ -45,6 +45,7 @@ import TermsOfServiceScreen from './components/TermsOfServiceScreen';
 import LeaderboardIcon from './components/LeaderboardIcon';
 import LeaderboardScreen from './components/LeaderboardScreen';
 import FeedbackModal from './components/FeedbackModal';
+import SubjectWallpaper from './components/SubjectWallpaper';
 import { setHapticsEnabled } from './utils/audio';
 
 export default function App() {
@@ -1134,6 +1135,8 @@ export default function App() {
 
   return (
     <div className="app-viewport-root w-full h-full relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col">
+      {/* Subject Background Wallpaper */}
+      <SubjectWallpaper activeSubject={activeSubject} />
       {/* Sticky Top HUD Header Bar */}
       <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between shadow-xs shrink-0 gap-1.5">
         {/* Brand Logo & Stats */}
