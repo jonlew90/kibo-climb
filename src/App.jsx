@@ -1090,7 +1090,7 @@ export default function App() {
 
   const currentTierMeta = getTierMeta(tier);
 
-  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
+  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
 
 
   const closeAllNavModals = (except = null) => {
@@ -1387,6 +1387,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => {
+                soundFx.playKeyTap();
                 const currentUser = authService.getAuthState();
                 if (!currentUser || currentUser.isAnonymous || !currentUser.uid) {
                   // User is anonymous, prompt them to link
@@ -2022,6 +2023,12 @@ export default function App() {
       <FeedbackModal
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
+      />
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
       />
 
       {/* Account Link Modal */}
