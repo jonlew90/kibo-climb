@@ -56,6 +56,9 @@ import { setHapticsEnabled } from './utils/audio';
 export default function App() {
   // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms' | 'leaderboard'
   const [activeSubject, setActiveSubject] = useState('math');
+  const [activeProfileId, setActiveProfileId] = useState(() => {
+    return storageService.getActiveProfileId();
+  });
 
   const [appState, setAppState] = useState(() => {
     const path = window.location.pathname;
@@ -268,10 +271,6 @@ export default function App() {
   // Persistent Tier Mastery Percent (0, 25, 50, 75, 100)
   const [tierMasteryPercent, setTierMasteryPercent] = useState(() => {
     return storageService.getUserData(activeSubject).tierMasteryPercent || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
-  });
-
-  const [activeProfileId, setActiveProfileId] = useState(() => {
-    return storageService.getActiveProfileId();
   });
 
   const [liveCompetenceRating, setLiveCompetenceRating] = useState(() => {

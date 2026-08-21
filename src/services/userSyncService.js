@@ -116,7 +116,7 @@ class UserSyncService {
     } catch (e) {
       console.error('Failed to process referral linking', e);
     }
-  },
+  }
 
   syncProfileToCloud(profileId) {
     if (this.isSyncingFromCloud) return;
