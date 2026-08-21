@@ -154,22 +154,38 @@ describe('Kibo World Curriculum & Deduplication Engine', () => {
 
     mapNames.forEach(name => {
       const map = REGIONAL_MAPS[name];
-      expect(map.targetCenter).toBeDefined();
+      expect(map.geoType).toBeTruthy();
+      expect(map.targetId).toBeTruthy();
+      expect(Array.isArray(map.center)).toBe(true);
+      expect(typeof map.scale).toBe('number');
+      expect(Array.isArray(map.targetCenter)).toBe(true);
       expect(typeof map.targetCenter[0]).toBe('number');
       expect(typeof map.targetCenter[1]).toBe('number');
       if (map.waterBodies) expect(Array.isArray(map.waterBodies)).toBe(true);
     });
 
-    // Check that generated shape problems include mapData
+    // Check that generated shape problems include mapData or shapeSvg
     const tier2Shapes = getTierCandidateTemplates(2).filter(t => t.type === 'state_shape');
     tier2Shapes.forEach(t => {
-      expect(t.mapData).toBeDefined();
+      expect(t.shapeSvg || t.mapData).toBeDefined();
     });
 
     const tier4Shapes = getTierCandidateTemplates(4).filter(t => t.type === 'country_shape');
     tier4Shapes.forEach(t => {
-      expect(t.mapData).toBeDefined();
+      expect(t.shapeSvg || t.mapData).toBeDefined();
     });
+  });
+
+  it('should have at least 100 unique candidate questions in every single tier and over 1,000 total questions', () => {
+    let totalUnique = new Set();
+    for (let tier = 1; tier <= 5; tier++) {
+      const templates = getTierCandidateTemplates(tier);
+      expect(templates.length).toBeGreaterThanOrEqual(100);
+      const uniqueKeys = new Set(templates.map(getNormalizedProblemKey));
+      expect(uniqueKeys.size).toBeGreaterThanOrEqual(100);
+      templates.forEach(t => totalUnique.add(getNormalizedProblemKey(t)));
+    }
+    expect(totalUnique.size).toBeGreaterThanOrEqual(1000);
   });
 
   it('should ensure all candidate templates have hints and valid 4-option multiple choice answers', () => {

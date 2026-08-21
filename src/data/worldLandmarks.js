@@ -267,6 +267,113 @@ export const WORLD_LANDMARK_VISUALS = {
 <rect x="25" y="52" width="50" height="4" fill="#78350f"/>
 <rect x="20" y="58" width="60" height="4" fill="#92400e"/>
 <rect x="15" y="64" width="70" height="5" fill="#78350f"/>`
+  },
+
+  'Great Wall of China': {
+    name: 'Great Wall of China',
+    country: 'China',
+    category: 'Ancient Wonder',
+    badge: '🏯 Historic Fortress Wall',
+    viewBox: '0 0 100 80',
+    svg: `<defs>
+  <linearGradient id="chinaSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#fef08a"/></linearGradient>
+</defs>
+<rect width="100" height="80" fill="url(#chinaSky)"/>
+<!-- Mountain Ridge -->
+<polygon points="0,50 30,30 65,42 100,28 100,80 0,80" fill="#15803d"/>
+<!-- Wall Structure winding across hills -->
+<path d="M0,54 Q25,36 50,44 T100,32" stroke="#78350f" stroke-width="6" fill="none"/>
+<path d="M0,53 Q25,35 50,43 T100,31" stroke="#d97706" stroke-width="4" fill="none"/>
+<!-- Watchtower -->
+<rect x="44" y="32" width="14" height="16" fill="#92400e" stroke="#451a03" stroke-width="1"/>
+<polygon points="42,32 51,24 60,32" fill="#78350f"/>`
+  },
+
+  'Mount Fuji': {
+    name: 'Mount Fuji',
+    country: 'Japan',
+    category: 'Volcanic Peak',
+    badge: '🌋 Sacred Volcano',
+    viewBox: '0 0 100 80',
+    svg: `<defs>
+  <linearGradient id="fujiSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#fde047"/></linearGradient>
+</defs>
+<rect width="100" height="80" fill="url(#fujiSky)"/>
+<circle cx="50" cy="35" r="22" fill="#ef4444" opacity="0.3"/>
+<!-- Volcano cone -->
+<polygon points="50,22 10,75 90,75" fill="#1e293b"/>
+<!-- Snow cap -->
+<polygon points="50,22 34,42 42,46 50,38 58,46 66,42" fill="#ffffff"/>
+<rect y="70" width="100" height="10" fill="#065f46"/>`
+  },
+
+  'Parthenon': {
+    name: 'Parthenon',
+    country: 'Greece',
+    city: 'Athens',
+    category: 'Ancient Wonder',
+    badge: '🏛️ Acropolis Temple',
+    viewBox: '0 0 100 80',
+    svg: `<defs>
+  <linearGradient id="athensSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#bae6fd"/></linearGradient>
+</defs>
+<rect width="100" height="80" fill="url(#athensSky)"/>
+<rect y="64" width="100" height="16" fill="#a16207"/>
+<!-- Pediment & Roof -->
+<polygon points="50,22 15,34 85,34" fill="#fef08a" stroke="#78350f" stroke-width="1.2"/>
+<!-- Entablature -->
+<rect x="18" y="34" width="64" height="6" fill="#fde047" stroke="#78350f" stroke-width="1"/>
+<!-- Columns -->
+<g fill="#fef08a" stroke="#78350f" stroke-width="0.8">
+  <rect x="20" y="40" width="5" height="24"/>
+  <rect x="29" y="40" width="5" height="24"/>
+  <rect x="38" y="40" width="5" height="24"/>
+  <rect x="47" y="40" width="5" height="24"/>
+  <rect x="56" y="40" width="5" height="24"/>
+  <rect x="65" y="40" width="5" height="24"/>
+  <rect x="74" y="40" width="5" height="24"/>
+</g>`
+  },
+
+  'Burj Khalifa': {
+    name: 'Burj Khalifa',
+    country: 'United Arab Emirates',
+    city: 'Dubai',
+    category: 'Skyscraper',
+    badge: '🏙️ Tallest Building on Earth',
+    viewBox: '0 0 100 80',
+    svg: `<defs>
+  <linearGradient id="dubaiSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e1b4b"/><stop offset="100%" stop-color="#0284c7"/></linearGradient>
+</defs>
+<rect width="100" height="80" fill="url(#dubaiSky)"/>
+<rect y="72" width="100" height="8" fill="#d97706"/>
+<!-- Burj Khalifa stepped spire -->
+<polygon points="50,6 48,20 52,20" fill="#f8fafc"/>
+<polygon points="50,18 46,36 54,36" fill="#cbd5e1"/>
+<polygon points="50,34 44,52 56,52" fill="#94a3b8"/>
+<polygon points="50,50 41,72 59,72" fill="#64748b"/>
+<line x1="50" y1="2" x2="50" y2="72" stroke="#ffffff" stroke-width="0.8"/>`
+  },
+
+  'Golden Gate Bridge': {
+    name: 'Golden Gate Bridge',
+    country: 'United States',
+    city: 'San Francisco',
+    category: 'Bridge / Engineering',
+    badge: '🌉 Pacific Strait Bridge',
+    viewBox: '0 0 100 80',
+    svg: `<defs>
+  <linearGradient id="sfSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#fed7aa"/></linearGradient>
+</defs>
+<rect width="100" height="80" fill="url(#sfSky)"/>
+<rect y="58" width="100" height="22" fill="#0369a1"/>
+<!-- Suspension Cables -->
+<path d="M0,28 Q28,52 50,52 Q72,52 100,28" stroke="#dc2626" stroke-width="1.8" fill="none"/>
+<!-- Bridge Deck -->
+<rect y="50" width="100" height="4" fill="#ef4444" stroke="#991b1b" stroke-width="0.6"/>
+<!-- Towers -->
+<rect x="25" y="16" width="6" height="42" fill="#dc2626"/>
+<rect x="69" y="16" width="6" height="42" fill="#dc2626"/>`
   }
 };
 

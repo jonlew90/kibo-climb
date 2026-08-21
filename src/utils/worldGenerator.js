@@ -3,14 +3,18 @@ import {
   OCEANS,
   CARDINAL_DIRECTIONS,
   GEOGRAPHIC_FOUNDATIONS,
+  MAJOR_SEAS_AND_WATERBODIES,
   US_STATES,
   COUNTRIES,
   WORLD_LANDMARKS_AND_WONDERS,
-  TRICKY_CAPITALS
+  TRICKY_CAPITALS,
+  EXTREME_GEOGRAPHY,
+  GEOPOLITICAL_ANOMALIES,
+  GLOBAL_STRAITS
 } from '../data/worldGeography.js';
 import { getTierForRating } from './worldCurriculum.js';
 import { REGIONAL_MAPS } from '../data/worldMaps.js';
-import { getFlagForCountry } from '../data/worldFlags.js';
+import { getFlagForCountry, COUNTRY_FLAGS } from '../data/worldFlags.js';
 import { getLandmarkVisual, WORLD_LANDMARK_VISUALS } from '../data/worldLandmarks.js';
 
 /**
@@ -45,9 +49,23 @@ const getUniqueDistractors = (correctAnswer, sourcePool, count = 3, keyExtractor
 
   for (const item of pool) {
     const val = keyExtractor(item);
-    if (val && val !== correctAnswer && !uniqueItems.has(val)) {
+    if (val && String(val).trim().toLowerCase() !== String(correctAnswer).trim().toLowerCase() && !uniqueItems.has(val)) {
       uniqueItems.add(val);
       if (uniqueItems.size === count) break;
+    }
+  }
+
+  // If pool didn't have enough, fill from default fallbacks
+  const fallbacks = [
+    'Asia', 'Europe', 'Africa', 'North America', 'South America', 'Australia', 'Antarctica',
+    'Pacific Ocean', 'Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean', 'Southern Ocean',
+    'Canada', 'Brazil', 'France', 'Japan', 'Egypt', 'Australia', 'Germany', 'India',
+    'London', 'Paris', 'Tokyo', 'Rome', 'Berlin', 'Ottawa', 'Canberra', 'Cairo'
+  ];
+  for (const fb of fallbacks) {
+    if (uniqueItems.size >= count) break;
+    if (fb.toLowerCase() !== String(correctAnswer).toLowerCase() && !uniqueItems.has(fb)) {
+      uniqueItems.add(fb);
     }
   }
 
@@ -69,7 +87,7 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: 'Which of the following is a Continent?',
         correctAnswer: c.name,
         options: shuffleArray([c.name, ...getUniqueDistractors(c.name, OCEANS, 3, o => o.name)]),
-        hint: 'Continents are large landmasses on Earth.',
+        hint: 'Continents are the seven large landmasses on Earth.',
         concept: 'Continents & Oceans',
         tier: 1
       });
@@ -83,20 +101,20 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: 'Which of the following is an Ocean?',
         correctAnswer: o.name,
         options: shuffleArray([o.name, ...getUniqueDistractors(o.name, CONTINENTS, 3, c => c.name)]),
-        hint: 'Oceans are large bodies of saltwater covering most of Earth.',
+        hint: 'Oceans are massive bodies of saltwater covering most of Earth.',
         concept: 'Continents & Oceans',
         tier: 1
       });
     }
 
-    // 3. Cardinal directions
+    // 3. Cardinal & Intermediate directions
     for (const d of CARDINAL_DIRECTIONS) {
       templates.push({
         key: `cardinal_pos:${d.direction}`,
         type: 'cardinal_direction',
         prompt: `On a standard compass map, which direction points toward the ${d.mapPosition}?`,
         correctAnswer: d.direction,
-        options: shuffleArray(['North', 'South', 'East', 'West']),
+        options: shuffleArray([d.direction, ...getUniqueDistractors(d.direction, CARDINAL_DIRECTIONS, 3, dir => dir.direction)]),
         hint: d.hint,
         concept: 'Cardinal Directions',
         tier: 1
@@ -107,14 +125,14 @@ export const getTierCandidateTemplates = (tier) => {
         type: 'cardinal_direction',
         prompt: `Which direction is directly opposite of ${d.direction}?`,
         correctAnswer: d.opposite,
-        options: shuffleArray(['North', 'South', 'East', 'West']),
-        hint: `Think about what lies on the opposite side of ${d.direction}.`,
+        options: shuffleArray([d.opposite, ...getUniqueDistractors(d.opposite, CARDINAL_DIRECTIONS, 3, dir => dir.direction)]),
+        hint: `Think about what lies directly across from ${d.direction} on a compass rose.`,
         concept: 'Cardinal Directions',
         tier: 1
       });
     }
 
-    // 4. Continent & Ocean Counts & Superlatives
+    // 4. Continent & Ocean Superlatives and Foundational Facts
     templates.push({
       key: 'fact:continent_count',
       type: 'continent_fact',
@@ -171,6 +189,17 @@ export const getTierCandidateTemplates = (tier) => {
     });
 
     templates.push({
+      key: 'fact:second_largest_continent',
+      type: 'continent_fact',
+      prompt: 'Which is the second largest continent by land area, home to the Sahara Desert?',
+      correctAnswer: 'Africa',
+      options: shuffleArray(['Africa', 'Asia', 'North America', 'South America']),
+      hint: 'It is bordered by the Mediterranean Sea to the north and Atlantic to the west.',
+      concept: 'Continents & Oceans',
+      tier: 1
+    });
+
+    templates.push({
       key: 'fact:largest_ocean',
       type: 'ocean_fact',
       prompt: 'Which is the largest and deepest ocean on Earth?',
@@ -193,21 +222,86 @@ export const getTierCandidateTemplates = (tier) => {
     });
 
     templates.push({
-      key: 'fact:equator_def',
-      type: 'geographic_foundation',
-      prompt: 'What is the imaginary line at 0° latitude dividing Earth into Northern and Southern Hemispheres?',
-      correctAnswer: 'Equator',
-      options: shuffleArray(['Equator', 'Prime Meridian', 'Tropic of Cancer', 'Arctic Circle']),
-      hint: 'It runs horizontally around the middle of Earth.',
-      concept: 'Geographic Foundations',
+      key: 'fact:warmest_ocean',
+      type: 'ocean_fact',
+      prompt: 'Which is the third largest ocean and warmest ocean on Earth?',
+      correctAnswer: 'Indian Ocean',
+      options: shuffleArray(['Indian Ocean', 'Atlantic Ocean', 'Pacific Ocean', 'Southern Ocean']),
+      hint: 'It is bounded by Asia to the north, Africa to the west, and Australia to the east.',
+      concept: 'Continents & Oceans',
       tier: 1
     });
 
-    // 5. Basic Continent of Major Country
-    const basicCountries = COUNTRIES.slice(0, 15);
-    for (const country of basicCountries) {
+    templates.push({
+      key: 'fact:encircling_antarctica',
+      type: 'ocean_fact',
+      prompt: 'Which ocean completely encircles the continent of Antarctica?',
+      correctAnswer: 'Southern Ocean',
+      options: shuffleArray(['Southern Ocean', 'Arctic Ocean', 'Indian Ocean', 'Atlantic Ocean']),
+      hint: 'It is the fourth largest ocean, surrounding the South Pole region.',
+      concept: 'Continents & Oceans',
+      tier: 1
+    });
+
+    templates.push({
+      key: 'fact:atlantic_separation',
+      type: 'ocean_fact',
+      prompt: 'Which ocean separates the Americas from Europe and Africa?',
+      correctAnswer: 'Atlantic Ocean',
+      options: shuffleArray(['Atlantic Ocean', 'Pacific Ocean', 'Indian Ocean', 'Arctic Ocean']),
+      hint: 'It is the second largest ocean in the world.',
+      concept: 'Continents & Oceans',
+      tier: 1
+    });
+
+    // Continent Peak Superlatives
+    for (const c of CONTINENTS) {
+      if (c.highestPoint) {
+        templates.push({
+          key: `continent_highest:${c.name}`,
+          type: 'continent_superlative',
+          prompt: `Which continent is home to the highest peak "${c.highestPoint}"?`,
+          correctAnswer: c.name,
+          options: shuffleArray([c.name, ...getUniqueDistractors(c.name, CONTINENTS, 3, con => con.name)]),
+          hint: `It is the highest summit on the continent of ${c.name}.`,
+          concept: 'Continents & Oceans',
+          tier: 1
+        });
+      }
+    }
+
+    // 5. Geographic Foundations (Hemispheres, Equator, Prime Meridian, Tropics)
+    for (const f of GEOGRAPHIC_FOUNDATIONS) {
       templates.push({
-        key: `country_to_continent:${country.name}`,
+        key: `geo_foundation:${f.concept}`,
+        type: 'geographic_foundation',
+        prompt: `What is defined as: "${f.description}"?`,
+        correctAnswer: f.concept,
+        options: shuffleArray([f.concept, ...getUniqueDistractors(f.concept, GEOGRAPHIC_FOUNDATIONS, 3, gf => gf.concept)]),
+        hint: `Think about global coordinate lines, hemispheres, and planetary divisions.`,
+        concept: 'Geographic Foundations',
+        tier: 1
+      });
+    }
+
+    // 6. Major Seas & Water Bodies
+    for (const sea of MAJOR_SEAS_AND_WATERBODIES) {
+      templates.push({
+        key: `sea_location:${sea.name}`,
+        type: 'sea_waterbody',
+        prompt: `Which major sea or body of water is located: "${sea.location}"?`,
+        correctAnswer: sea.name,
+        options: shuffleArray([sea.name, ...getUniqueDistractors(sea.name, MAJOR_SEAS_AND_WATERBODIES, 3, s => s.name)]),
+        hint: sea.fact,
+        concept: 'Continents & Oceans',
+        tier: 1
+      });
+    }
+
+    // 7. Comprehensive Country to Continent Matching (all sovereign countries)
+    for (const country of COUNTRIES) {
+      templates.push({
+        key: `country_to_continent_t1:${country.name}`,
         type: 'country_continent',
         prompt: `On which continent is ${country.name} located?`,
         correctAnswer: country.continent,
@@ -218,7 +312,9 @@ export const getTierCandidateTemplates = (tier) => {
       });
     }
   } else if (tier === 2) {
-    // Tier 2: US States & Shapes
+    // Tier 2: US States, Capitals, Nicknames, Regions & Shapes
+    const regions = ['South', 'West', 'Midwest', 'Northeast'];
+
     for (const state of US_STATES) {
       // 1. State -> Capital
       templates.push({
@@ -244,7 +340,49 @@ export const getTierCandidateTemplates = (tier) => {
         tier: 2
       });
 
-      // 3. State Shapes
+      // 3. State -> Nickname
+      if (state.nickname) {
+        templates.push({
+          key: `state_nickname:${state.name}`,
+          type: 'state_nickname',
+          prompt: `Which US state is known as the "${state.nickname}"?`,
+          correctAnswer: state.name,
+          options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
+          hint: `Its capital city is ${state.capital}.`,
+          concept: 'US States & Shapes',
+          tier: 2
+        });
+      }
+
+      // 4. State Trivia / Facts
+      if (state.trivia) {
+        templates.push({
+          key: `state_trivia:${state.name}`,
+          type: 'state_trivia',
+          prompt: `Which US state is known for: "${state.trivia}"?`,
+          correctAnswer: state.name,
+          options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
+          hint: state.nickname ? `Nicknamed the "${state.nickname}".` : `State capital is ${state.capital}.`,
+          concept: 'US States & Shapes',
+          tier: 2
+        });
+      }
+
+      // 5. State Geographic Region
+      if (state.region) {
+        templates.push({
+          key: `state_region:${state.name}`,
+          type: 'state_region',
+          prompt: `In which US geographic region is ${state.name} located?`,
+          correctAnswer: state.region,
+          options: shuffleArray(regions),
+          hint: `Consider its location on the United States map.`,
+          concept: 'US States & Shapes',
+          tier: 2
+        });
+      }
+
+      // 6. State Shapes
       if (state.shapeSvg) {
         const regionalMap = REGIONAL_MAPS[state.name] || null;
         templates.push({
@@ -253,30 +391,16 @@ export const getTierCandidateTemplates = (tier) => {
           prompt: `Which US state is highlighted on this map?`,
           correctAnswer: state.name,
           options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
-          hint: `Observe the shape and borders carefully.${state.nickname ? ' Hint: It is known as the ' + state.nickname + '.' : ''}`,
-          shapeSvg: regionalMap?.targetPath || state.shapeSvg,
+          hint: `Observe the surrounding states, bodies of water, and borders carefully.${state.nickname ? ' Hint: It is known as the ' + state.nickname + '.' : ''}`,
+          shapeSvg: state.shapeSvg,
           mapData: regionalMap,
-          concept: 'US States & Shapes',
-          tier: 2
-        });
-      }
-
-      // 4. State Trivia / Landmarks if available
-      if (state.trivia) {
-        templates.push({
-          key: `state_trivia:${state.name}`,
-          type: 'state_trivia',
-          prompt: `Which US state is known for: "${state.trivia}"?`,
-          correctAnswer: state.name,
-          options: shuffleArray([state.name, ...getUniqueDistractors(state.name, US_STATES, 3, s => s.name)]),
-          hint: state.nickname ? `Think about the state popular nickname: ${state.nickname}.` : `Think about the state known for this fact.`,
           concept: 'US States & Shapes',
           tier: 2
         });
       }
     }
   } else if (tier === 3) {
-    // Tier 3: Major Countries & Capitals & Continents
+    // Tier 3: Major Sovereign Countries, Capitals, Continents, Landmarks & Flags
     for (const country of COUNTRIES) {
       // 1. Country -> Capital
       templates.push({
@@ -314,7 +438,7 @@ export const getTierCandidateTemplates = (tier) => {
         tier: 3
       });
 
-      // 4. Country landmark if available
+      // 4. Country landmark
       if (country.landmark) {
         const landmarkVis = getLandmarkVisual(country.landmark);
         templates.push({
@@ -330,7 +454,7 @@ export const getTierCandidateTemplates = (tier) => {
         });
       }
 
-      // 5. National Flag recognition if available
+      // 5. National Flag recognition
       const flag = getFlagForCountry(country.name);
       if (flag) {
         templates.push({
@@ -345,9 +469,23 @@ export const getTierCandidateTemplates = (tier) => {
           tier: 3
         });
       }
+
+      // 6. Country Trivia
+      if (country.trivia) {
+        templates.push({
+          key: `country_trivia:${country.name}`,
+          type: 'country_trivia',
+          prompt: `Which country is described by: "${country.trivia}"?`,
+          correctAnswer: country.name,
+          options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
+          hint: `Its capital city is ${country.capital}.`,
+          concept: 'Major Countries & Capitals',
+          tier: 3
+        });
+      }
     }
   } else if (tier === 4) {
-    // Tier 4: Country Shapes, Hemispheres & Physical Geography
+    // Tier 4: Country Shapes, Hemispheres, Physical Geography & Waterways
     const countriesWithShapes = COUNTRIES.filter(c => c.shapeSvg);
     for (const country of countriesWithShapes) {
       const regionalMap = REGIONAL_MAPS[country.name] || null;
@@ -357,8 +495,8 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `Which country is highlighted on this map?`,
         correctAnswer: country.name,
         options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
-        hint: `Look at the surrounding borders and coastal profile.${country.trivia ? ' Hint: ' + country.trivia : ''}`,
-        shapeSvg: regionalMap?.targetPath || country.shapeSvg,
+        hint: country.capital ? `The capital of this country is ${country.capital}.` : (country.trivia ? `Look at the surrounding borders and coastal profile. Hint: ${country.trivia}` : `Look at the surrounding borders and coastal profile.`),
+        shapeSvg: country.shapeSvg,
         mapData: regionalMap,
         concept: 'Country Shapes & Locations',
         tier: 4
@@ -373,24 +511,77 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `Identify this famous world landmark:`,
         correctAnswer: landmarkName,
         options: shuffleArray([landmarkName, ...getUniqueDistractors(landmarkName, Object.keys(WORLD_LANDMARK_VISUALS).map(k => ({ name: k })), 3, w => w.name)]),
-        hint: vis.badge ? `${vis.badge} built in ${vis.city || 'historic times'}.` : (vis.category ? `An iconic example of world ${vis.category.toLowerCase()}.` : 'Observe the architectural structure.'),
+        hint: vis.badge ? `${vis.badge} built in ${vis.city || vis.country || 'historic times'}.` : (vis.category ? `An iconic example of world ${vis.category.toLowerCase()}.` : 'Observe the architectural structure.'),
         landmarkData: vis,
         concept: 'Landmarks & Wonders',
         tier: 4
       });
     }
 
-    // World landmarks & physical features
+    // World physical landmarks & natural wonders
     for (const item of WORLD_LANDMARKS_AND_WONDERS) {
       const landmarkVis = getLandmarkVisual(item.name);
       templates.push({
-        key: `wonder:${item.name}`,
+        key: `wonder_fact:${item.name}`,
         type: 'world_wonder',
         prompt: `Which geographic wonder is described as: "${item.fact}"?`,
         correctAnswer: item.name,
         options: shuffleArray([item.name, ...getUniqueDistractors(item.name, WORLD_LANDMARKS_AND_WONDERS, 3, w => w.name)]),
         hint: item.mountainRange ? `Part of the ${item.mountainRange} range.` : (item.type ? `It is a world-renowned natural ${item.type.replace('_', ' ')}.` : 'Examine the record-setting characteristics described.'),
         landmarkData: landmarkVis,
+        concept: 'Country Shapes & Locations',
+        tier: 4
+      });
+
+      if (item.country) {
+        templates.push({
+          key: `wonder_country:${item.name}`,
+          type: 'world_wonder',
+          prompt: `The world wonder "${item.name}" is located in which country or territory?`,
+          correctAnswer: item.country,
+          options: shuffleArray([item.country, ...getUniqueDistractors(item.country, COUNTRIES, 3, c => c.name)]),
+          hint: item.fact,
+          concept: 'Country Shapes & Locations',
+          tier: 4
+        });
+      }
+
+      if (item.mountainRange) {
+        templates.push({
+          key: `mountain_range_t4:${item.name}`,
+          type: 'mountain_range',
+          prompt: `The mountain peak "${item.name}" is part of which mountain range?`,
+          correctAnswer: item.mountainRange,
+          options: shuffleArray([item.mountainRange, ...getUniqueDistractors(item.mountainRange, ['Himalayas', 'Andes', 'Alps', 'Rocky Mountains', 'Karakoram', 'Alaska Range'], 3)]),
+          hint: item.fact,
+          concept: 'Country Shapes & Locations',
+          tier: 4
+        });
+      }
+
+      if (item.continent && (item.type === 'river' || item.type === 'desert' || item.type === 'lake' || item.type === 'waterfall')) {
+        templates.push({
+          key: `wonder_continent_t4:${item.name}`,
+          type: 'physical_geography',
+          prompt: `On which continent is the famous ${item.type} "${item.name}" located?`,
+          correctAnswer: item.continent,
+          options: shuffleArray([item.continent, ...getUniqueDistractors(item.continent, CONTINENTS, 3, c => c.name)]),
+          hint: item.fact,
+          concept: 'Country Shapes & Locations',
+          tier: 4
+        });
+      }
+    }
+
+    // Major Seas & Marginal Water Bodies in Tier 4
+    for (const sea of MAJOR_SEAS_AND_WATERBODIES) {
+      templates.push({
+        key: `sea_ocean_t4:${sea.name}`,
+        type: 'sea_ocean',
+        prompt: `The ${sea.name} is connected to or considered part of which major ocean?`,
+        correctAnswer: sea.ocean,
+        options: shuffleArray([sea.ocean, ...getUniqueDistractors(sea.ocean, OCEANS, 3, o => o.fullName)]),
+        hint: sea.fact,
         concept: 'Country Shapes & Locations',
         tier: 4
       });
@@ -403,28 +594,74 @@ export const getTierCandidateTemplates = (tier) => {
       prompt: 'What is the line of 0° longitude that divides Earth into Eastern and Western Hemispheres?',
       correctAnswer: 'Prime Meridian',
       options: shuffleArray(['Prime Meridian', 'Equator', 'International Date Line', 'Tropic of Capricorn']),
-      hint: 'It is the starting line for world time zones (UTC/GMT) and passes through the Royal Observatory.',
+      hint: 'It is the starting line for world time zones (UTC/GMT) and passes through Greenwich, England.',
       concept: 'Country Shapes & Locations',
       tier: 4
     });
 
     templates.push({
-      key: 'foundation:southern_hemisphere',
+      key: 'foundation:tropic_cancer',
       type: 'geographic_foundation',
-      prompt: 'Which continent lies entirely in the Southern Hemisphere?',
-      correctAnswer: 'Antarctica',
-      options: shuffleArray(['Antarctica', 'Europe', 'North America', 'Asia']),
-      hint: 'It is the coldest and windiest continent, covered by a permanent ice sheet.',
+      prompt: 'What is the parallel of latitude at roughly 23.5° North marking the northern boundary of the tropics?',
+      correctAnswer: 'Tropic of Cancer',
+      options: shuffleArray(['Tropic of Cancer', 'Tropic of Capricorn', 'Equator', 'Arctic Circle']),
+      hint: 'The sun is directly overhead here during the Northern Hemisphere summer solstice.',
+      concept: 'Country Shapes & Locations',
+      tier: 4
+    });
+
+    templates.push({
+      key: 'foundation:tropic_capricorn',
+      type: 'geographic_foundation',
+      prompt: 'What is the parallel of latitude at roughly 23.5° South marking the southern boundary of the tropics?',
+      correctAnswer: 'Tropic of Capricorn',
+      options: shuffleArray(['Tropic of Capricorn', 'Tropic of Cancer', 'Equator', 'Antarctic Circle']),
+      hint: 'The sun is directly overhead here during the Southern Hemisphere summer solstice.',
+      concept: 'Country Shapes & Locations',
+      tier: 4
+    });
+
+    templates.push({
+      key: 'foundation:intl_date_line',
+      type: 'geographic_foundation',
+      prompt: 'What line roughly along 180° longitude marks where the calendar day transitions forward or backward?',
+      correctAnswer: 'International Date Line',
+      options: shuffleArray(['International Date Line', 'Prime Meridian', 'Equator', 'Arctic Circle']),
+      hint: 'Crossing it westward adds a day; crossing it eastward subtracts a day.',
+      concept: 'Country Shapes & Locations',
+      tier: 4
+    });
+
+    templates.push({
+      key: 'foundation:arctic_circle',
+      type: 'geographic_foundation',
+      prompt: 'What parallel of latitude at approximately 66.5° North marks the boundary of the northern polar region?',
+      correctAnswer: 'Arctic Circle',
+      options: shuffleArray(['Arctic Circle', 'Antarctic Circle', 'Tropic of Cancer', 'Prime Meridian']),
+      hint: 'North of this line, the sun remains above the horizon for 24 hours during the summer solstice.',
+      concept: 'Country Shapes & Locations',
+      tier: 4
+    });
+
+    templates.push({
+      key: 'foundation:antarctic_circle',
+      type: 'geographic_foundation',
+      prompt: 'What parallel of latitude at approximately 66.5° South marks the boundary of the southern polar region?',
+      correctAnswer: 'Antarctic Circle',
+      options: shuffleArray(['Antarctic Circle', 'Arctic Circle', 'Tropic of Capricorn', 'Equator']),
+      hint: 'South of this line is the icy Antarctic polar zone.',
       concept: 'Country Shapes & Locations',
       tier: 4
     });
   } else if (tier >= 5) {
-    // Tier 5: World Summit (Tricky Capitals, Global Expert & Extreme Geography)
+    // Tier 5: World Summit (Tricky Capitals, Global Expert, Extreme Geography, Straits & Enclaves)
+
+    // 1. Tricky Capitals (direct and reverse)
     for (const tricky of TRICKY_CAPITALS) {
       const distractors = [tricky.commonConfusion];
       const otherCapitals = getUniqueDistractors(tricky.capital, COUNTRIES, 2, c => c.capital);
       for (const oc of otherCapitals) {
-        if (!distractors.includes(oc)) distractors.push(oc);
+        if (!distractors.includes(oc) && oc !== tricky.capital) distractors.push(oc);
       }
 
       templates.push({
@@ -437,24 +674,73 @@ export const getTierCandidateTemplates = (tier) => {
         concept: 'Global Geography Expert',
         tier: 5
       });
+
+      templates.push({
+        key: `reverse_tricky_capital:${tricky.capital}`,
+        type: 'reverse_tricky_capital',
+        prompt: `${tricky.capital} is the official capital city of which country?`,
+        correctAnswer: tricky.country,
+        options: shuffleArray([tricky.country, ...getUniqueDistractors(tricky.country, COUNTRIES, 3, c => c.name)]),
+        hint: tricky.reason,
+        concept: 'Global Geography Expert',
+        tier: 5
+      });
     }
 
-    for (const item of WORLD_LANDMARKS_AND_WONDERS) {
-      if (item.mountainRange) {
-        templates.push({
-          key: `mountain_range:${item.name}`,
-          type: 'extreme_geography',
-          prompt: `${item.name} is located in which famous mountain range?`,
-          correctAnswer: item.mountainRange,
-          options: shuffleArray([item.mountainRange, 'Andes', 'Alps', 'Rocky Mountains']),
-          hint: `It features the highest elevation peaks on Earth.`,
-          concept: 'Global Geography Expert',
-          tier: 5
-        });
-      }
+    // 2. Extreme Earth Geography & Superlatives
+    for (const ext of EXTREME_GEOGRAPHY) {
+      templates.push({
+        key: `extreme_geo:${ext.record}`,
+        type: 'extreme_geography',
+        prompt: `Which geographic location holds the record for: "${ext.record}"?`,
+        correctAnswer: ext.answer,
+        options: shuffleArray([ext.answer, ...getUniqueDistractors(ext.answer, EXTREME_GEOGRAPHY, 3, eg => eg.answer)]),
+        hint: ext.details,
+        concept: 'Global Geography Expert',
+        tier: 5
+      });
     }
 
-    // Advanced Shapes from Tier 4
+    // 3. Geopolitical Anomalies & Enclaves
+    for (const anomaly of GEOPOLITICAL_ANOMALIES) {
+      templates.push({
+        key: `anomaly:${anomaly.name}`,
+        type: 'geopolitical_anomaly',
+        prompt: `Which country or territory is described by: "${anomaly.fact}"?`,
+        correctAnswer: anomaly.name,
+        options: shuffleArray([anomaly.name, ...getUniqueDistractors(anomaly.name, COUNTRIES, 3, c => c.name)]),
+        hint: `Think about geopolitical borders, enclaves, and transcontinental boundaries.`,
+        concept: 'Global Geography Expert',
+        tier: 5
+      });
+    }
+
+    // 4. Strategic Global Straits & Passages
+    for (const strait of GLOBAL_STRAITS) {
+      templates.push({
+        key: `strait_connects:${strait.name}`,
+        type: 'global_strait',
+        prompt: `Which strategic strait connects the ${strait.connects}?`,
+        correctAnswer: strait.name,
+        options: shuffleArray([strait.name, ...getUniqueDistractors(strait.name, GLOBAL_STRAITS, 3, s => s.name)]),
+        hint: `It separates ${strait.separates}. ${strait.fact}`,
+        concept: 'Global Geography Expert',
+        tier: 5
+      });
+
+      templates.push({
+        key: `strait_separates:${strait.name}`,
+        type: 'global_strait',
+        prompt: `Which strategic waterway separates ${strait.separates}?`,
+        correctAnswer: strait.name,
+        options: shuffleArray([strait.name, ...getUniqueDistractors(strait.name, GLOBAL_STRAITS, 3, s => s.name)]),
+        hint: `It connects ${strait.connects}.`,
+        concept: 'Global Geography Expert',
+        tier: 5
+      });
+    }
+
+    // 5. Summit Challenge Country Shapes
     const shapes = COUNTRIES.filter(c => c.shapeSvg);
     for (const country of shapes) {
       const regionalMap = REGIONAL_MAPS[country.name] || null;
@@ -464,8 +750,8 @@ export const getTierCandidateTemplates = (tier) => {
         prompt: `Summit Challenge: Identify this highlighted country by its outline borders:`,
         correctAnswer: country.name,
         options: shuffleArray([country.name, ...getUniqueDistractors(country.name, COUNTRIES, 3, c => c.name)]),
-        hint: `Inspect the coastal perimeter and neighboring territory.${country.trivia ? ' Hint: ' + country.trivia : ''}`,
-        shapeSvg: regionalMap?.targetPath || country.shapeSvg,
+        hint: country.capital ? `Its seat of government is ${country.capital}.` : (country.trivia ? `Inspect the coastal perimeter and neighboring territory. Hint: ${country.trivia}` : `Inspect the coastal perimeter and neighboring territory.`),
+        shapeSvg: country.shapeSvg,
         mapData: regionalMap,
         concept: 'Global Geography Expert',
         tier: 5

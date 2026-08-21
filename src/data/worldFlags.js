@@ -235,6 +235,179 @@ export const COUNTRY_FLAGS = {
     svg: `<rect width="20" height="30" fill="#169b62"/>
 <rect x="20" width="20" height="30" fill="#ffffff"/>
 <rect x="40" width="20" height="30" fill="#ff883e"/>`
+  },
+
+  'Netherlands': {
+    country: 'Netherlands',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="60" height="13.33" fill="#ae1c28"/>
+<rect y="13.33" width="60" height="13.33" fill="#ffffff"/>
+<rect y="26.66" width="60" height="13.34" fill="#21468b"/>`
+  },
+
+  'Portugal': {
+    country: 'Portugal',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="24" height="40" fill="#046a38"/>
+<rect x="24" width="36" height="40" fill="#da291c"/>
+<circle cx="24" cy="20" r="7" fill="#ffcd00" stroke="#000" stroke-width="0.5"/>
+<rect x="21" y="17" width="6" height="6" fill="#ffffff" stroke="#da291c" stroke-width="0.5"/>`
+  },
+
+  'Jamaica': {
+    country: 'Jamaica',
+    viewBox: '0 0 60 30',
+    svg: `<rect width="60" height="30" fill="#000000"/>
+<polygon points="0,0 30,15 0,30" fill="#007749"/>
+<polygon points="60,0 30,15 60,30" fill="#007749"/>
+<path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffb81c" stroke-width="5"/>`
+  },
+
+  'Poland': {
+    country: 'Poland',
+    viewBox: '0 0 60 37.5',
+    svg: `<rect width="60" height="18.75" fill="#ffffff"/>
+<rect y="18.75" width="60" height="18.75" fill="#dc143c"/>`
+  },
+
+  'Ukraine': {
+    country: 'Ukraine',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="60" height="20" fill="#0057b7"/>
+<rect y="20" width="60" height="20" fill="#ffd700"/>`
+  },
+
+  'Turkey': {
+    country: 'Turkey',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="60" height="40" fill="#e30a17"/>
+<circle cx="24" cy="20" r="10" fill="#ffffff"/>
+<circle cx="26.5" cy="20" r="8" fill="#e30a17"/>
+<text x="35" y="22" fill="#ffffff" font-size="9" text-anchor="middle" transform="rotate(-15 35 22)">★</text>`
+  },
+
+  'Israel': {
+    country: 'Israel',
+    viewBox: '0 0 55 40',
+    svg: `<rect width="55" height="40" fill="#ffffff"/>
+<rect y="5" width="55" height="5" fill="#0038b8"/>
+<rect y="30" width="55" height="5" fill="#0038b8"/>
+<g stroke="#0038b8" stroke-width="1.2" fill="none" transform="translate(27.5, 20)">
+  <polygon points="0,-8 6.9,4 -6.9,4"/>
+  <polygon points="0,8 6.9,-4 -6.9,-4"/>
+</g>`
+  },
+
+  'Saudi Arabia': {
+    country: 'Saudi Arabia',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="60" height="40" fill="#006c35"/>
+<rect x="18" y="16" width="24" height="4" fill="#ffffff" rx="1"/>
+<line x1="16" y1="25" x2="44" y2="25" stroke="#ffffff" stroke-width="1.8"/>`
+  },
+
+  'Thailand': {
+    country: 'Thailand',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="60" height="6.66" fill="#a51931"/>
+<rect y="6.66" width="60" height="6.66" fill="#f4f5f8"/>
+<rect y="13.33" width="60" height="13.34" fill="#2d2a4a"/>
+<rect y="26.67" width="60" height="6.66" fill="#f4f5f8"/>
+<rect y="33.33" width="60" height="6.67" fill="#a51931"/>`
+  },
+
+  'Vietnam': {
+    country: 'Vietnam',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="60" height="40" fill="#da251d"/>
+<text x="30" y="24" fill="#ffff00" font-size="22" text-anchor="middle" dominant-baseline="central">★</text>`
+  },
+
+  'Philippines': {
+    country: 'Philippines',
+    viewBox: '0 0 60 30',
+    svg: `<rect width="60" height="15" fill="#0038a8"/>
+<rect y="15" width="60" height="15" fill="#ce1126"/>
+<polygon points="0,0 26,15 0,30" fill="#ffffff"/>
+<circle cx="9" cy="15" r="3.2" fill="#fcd116"/>`
+  },
+
+  'New Zealand': {
+    country: 'New Zealand',
+    viewBox: '0 0 60 30',
+    svg: `<rect width="60" height="30" fill="#00247d"/>
+<g transform="scale(0.5)">
+  <rect width="60" height="30" fill="#012169"/>
+  <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" stroke-width="6"/>
+  <path d="M0,0 L60,30 M60,0 L0,30" stroke="#c8102e" stroke-width="2"/>
+  <path d="M30,0 v30 M0,15 h60" stroke="#ffffff" stroke-width="10"/>
+  <path d="M30,0 v30 M0,15 h60" stroke="#c8102e" stroke-width="6"/>
+</g>
+<text x="45" y="8" fill="#cc142b" stroke="#ffffff" stroke-width="0.3" font-size="4" text-anchor="middle">★</text>
+<text x="52" y="13" fill="#cc142b" stroke="#ffffff" stroke-width="0.3" font-size="4" text-anchor="middle">★</text>
+<text x="45" y="22" fill="#cc142b" stroke="#ffffff" stroke-width="0.3" font-size="4.5" text-anchor="middle">★</text>
+<text x="39" y="16" fill="#cc142b" stroke="#ffffff" stroke-width="0.3" font-size="3.5" text-anchor="middle">★</text>`
+  },
+
+  'Finland': {
+    country: 'Finland',
+    viewBox: '0 0 60 36.6',
+    svg: `<rect width="60" height="36.6" fill="#ffffff"/>
+<path d="M20,0 v36.6 M0,18.3 h60" stroke="#003580" stroke-width="8"/>`
+  },
+
+  'Denmark': {
+    country: 'Denmark',
+    viewBox: '0 0 56 40',
+    svg: `<rect width="56" height="40" fill="#c60c30"/>
+<path d="M20,0 v40 M0,20 h56" stroke="#ffffff" stroke-width="6"/>`
+  },
+
+  'Austria': {
+    country: 'Austria',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="60" height="13.33" fill="#ed2939"/>
+<rect y="13.33" width="60" height="13.33" fill="#ffffff"/>
+<rect y="26.66" width="60" height="13.34" fill="#ed2939"/>`
+  },
+
+  'Belgium': {
+    country: 'Belgium',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="20" height="40" fill="#000000"/>
+<rect x="20" width="20" height="40" fill="#ffd90c"/>
+<rect x="40" width="20" height="40" fill="#ed2939"/>`
+  },
+
+  'Peru': {
+    country: 'Peru',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="20" height="40" fill="#d91023"/>
+<rect x="20" width="20" height="40" fill="#ffffff"/>
+<rect x="40" width="20" height="40" fill="#d91023"/>`
+  },
+
+  'Colombia': {
+    country: 'Colombia',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="60" height="20" fill="#fcd116"/>
+<rect y="20" width="60" height="10" fill="#003893"/>
+<rect y="30" width="60" height="10" fill="#ce1126"/>`
+  },
+
+  'Nigeria': {
+    country: 'Nigeria',
+    viewBox: '0 0 60 30',
+    svg: `<rect width="20" height="30" fill="#008751"/>
+<rect x="20" width="20" height="30" fill="#ffffff"/>
+<rect x="40" width="20" height="30" fill="#008751"/>`
+  },
+
+  'Morocco': {
+    country: 'Morocco',
+    viewBox: '0 0 60 40',
+    svg: `<rect width="60" height="40" fill="#c1272d"/>
+<text x="30" y="24" fill="none" stroke="#006233" stroke-width="1.2" font-size="16" text-anchor="middle" dominant-baseline="central">★</text>`
   }
 };
 
