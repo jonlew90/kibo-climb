@@ -948,7 +948,7 @@ export default function WorkshopModal({
                   <span>Looking for Promo Codes?</span>
                 </div>
                 <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Promo codes are announced during special math challenges, seasonal events, and community milestones!
+                  Promo codes are announced during special learning challenges, seasonal events, and community milestones!
                 </p>
               </div>
             </div>
