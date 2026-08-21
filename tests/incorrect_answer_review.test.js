@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { evaluateAdaptiveAttempt } from '../src/utils/adaptiveEngine';
+import { evaluateAdaptiveAttempt } from '../src/utils/AdaptiveEngine';
 import { evaluateBadges } from '../src/utils/badgeManager';
 
 describe('Incorrect Answer Review Behavior & Scoring Integrity', () => {

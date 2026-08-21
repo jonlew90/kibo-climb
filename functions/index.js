@@ -189,3 +189,34 @@ exports.joinWeeklyLeague = onCall(
     }
   }
 );
+
+/**
+ * Callable function to process a referral when a user links their account.
+ * Creates a pending reward for the referrer.
+ */
+exports.processReferralLinking = onCall(
+  { cors: true },
+  async (request) => {
+    const { referrerId, newUserId } = request.data || {};
+    if (!referrerId || !newUserId) {
+      throw new HttpsError('invalid-argument', 'Missing referrer or new user ID.');
+    }
+    if (referrerId === newUserId) {
+       throw new HttpsError('invalid-argument', 'Cannot refer yourself.');
+    }
+
+    try {
+      const rewardRef = admin.firestore().collection('users').doc(referrerId).collection('pendingRewards').doc(newUserId);
+      await rewardRef.set({
+        referredUserId: newUserId,
+        status: 'pending',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        type: 'referral_bonus'
+      });
+      return { success: true };
+    } catch (error) {
+      console.error('Error processing referral:', error);
+      throw new HttpsError('internal', 'Failed to process referral.', error);
+    }
+  }
+);
