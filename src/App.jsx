@@ -170,6 +170,7 @@ export default function App() {
 
   // Manual Profile Switcher State
   const [showManualProfileSwitcher, setShowManualProfileSwitcher] = useState(false);
+  const [profileSwitcherOrigin, setProfileSwitcherOrigin] = useState(null);
 
   // Consecutive problem miss tracking for Micro-Hints
   const [consecutiveProblemMisses, setConsecutiveProblemMisses] = useState(0);
@@ -1161,6 +1162,12 @@ export default function App() {
         type="button"
         onClick={() => {
           soundFx.playKeyTap();
+          setProfileSwitcherOrigin({
+            appState,
+            showBadgesModal,
+            isWorkshopOpen,
+            showParentDashboard
+          });
           closeAllNavModals('profile');
           setShowManualProfileSwitcher(true);
         }}
@@ -1631,7 +1638,22 @@ export default function App() {
             setShowManualProfileSwitcher(false);
             setAppState('adaptive_session');
           }}
-          onClose={() => setShowManualProfileSwitcher(false)}
+          onClose={() => {
+            setShowManualProfileSwitcher(false);
+            if (profileSwitcherOrigin) {
+              if (profileSwitcherOrigin.showBadgesModal) {
+                setShowBadgesModal(true);
+              } else if (profileSwitcherOrigin.isWorkshopOpen) {
+                setIsWorkshopOpen(true);
+              } else if (profileSwitcherOrigin.showParentDashboard) {
+                setShowParentDashboard(true);
+              }
+              if (profileSwitcherOrigin.appState) {
+                setAppState(profileSwitcherOrigin.appState);
+              }
+            }
+            setProfileSwitcherOrigin(null);
+          }}
           onOpenParentZone={() => {
             setPinGateSource('manual_profile_switcher');
             setShowPinGateModal(true);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles } from 'lucide-react';
+import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
@@ -20,6 +20,7 @@ export default function LeaderboardScreen({
   const [weeklyStandings, setWeeklyStandings] = useState([]);
   const [cohortId, setCohortId] = useState(null);
   const [isLoadingCohort, setIsLoadingCohort] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   // Sync selected subject if active subject prop changes
   useEffect(() => {
@@ -348,6 +349,18 @@ export default function LeaderboardScreen({
             <h2 className="text-lg font-black tracking-tight">
               {viewMode === 'global' ? 'Global Standings' : 'Weekly League'}
             </h2>
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowInfoModal(true);
+              }}
+              className="p-1 rounded-full text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center"
+              title="How standings work"
+              aria-label="How standings work"
+            >
+              <Info className="w-4 h-4" />
+            </button>
           </div>
 
           <div className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">
@@ -416,20 +429,6 @@ export default function LeaderboardScreen({
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             )}
           </button>
-        </div>
-
-        {/* Fairness Banner */}
-        <div className={`mx-4 mt-2.5 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-inner border ${viewMode === 'global' ? 'bg-indigo-50/90 border-indigo-200 text-indigo-900' : 'bg-emerald-50/90 border-emerald-200 text-emerald-900'}`}>
-          <Info className={`w-4 h-4 shrink-0 ${viewMode === 'global' ? 'text-indigo-500' : 'text-emerald-500'}`} />
-          <p className="leading-tight">
-            {viewMode === 'global'
-              ? (selectedSubject === 'words'
-                 ? 'Words competence is dynamically measured based on spelling accuracy, vocabulary fluency, and speed.'
-                 : selectedSubject === 'world'
-                 ? 'World competence is dynamically measured based on geography accuracy, map recall, and speed.'
-                 : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.')
-              : (`Compete in this week's cohort by earning Sparks! ${cohortId ? 'Group: ' + cohortId.split('_bucket_')[1] : ''}`)}
-          </p>
         </div>
       </div>
 
@@ -628,6 +627,85 @@ export default function LeaderboardScreen({
 
       {/* STICKY BOTTOM NAVIGATION FOOTER */}
       {renderFooter ? renderFooter() : null}
+
+      {/* INFO MODAL */}
+      {showInfoModal && (
+        <div
+          onClick={() => setShowInfoModal(false)}
+          className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fade-in cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-white border-4 border-indigo-500 rounded-3xl p-6 shadow-2xl space-y-4 relative overflow-hidden animate-pop flex flex-col cursor-default"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowInfoModal(false);
+              }}
+              aria-label="Close"
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                viewMode === 'global' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'
+              }`}>
+                {viewMode === 'global' ? (
+                  <Trophy className="w-6 h-6 stroke-[2.5]" />
+                ) : (
+                  <Zap className="w-6 h-6 fill-current stroke-[2.5]" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1 pr-6">
+                <h3 className="text-lg font-black text-slate-900 leading-tight">
+                  {viewMode === 'global' ? `${subjectConfig.name} Competence` : 'Weekly League'}
+                </h3>
+                <p className="text-xs font-semibold text-slate-500">
+                  {viewMode === 'global' ? 'How Global Standings Work' : 'How Weekly League Works'}
+                </p>
+              </div>
+            </div>
+
+            <div className={`rounded-2xl p-4 border text-xs sm:text-sm font-medium leading-relaxed ${
+              viewMode === 'global' ? 'bg-indigo-50/80 border-indigo-200 text-indigo-950' : 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
+            }`}>
+              <div className="flex items-start gap-2.5">
+                <Info className={`w-4 h-4 shrink-0 mt-0.5 ${viewMode === 'global' ? 'text-indigo-600' : 'text-emerald-600'}`} />
+                <p>
+                  {viewMode === 'global'
+                    ? (selectedSubject === 'words'
+                       ? 'Words competence is dynamically measured based on spelling accuracy, vocabulary fluency, and speed.'
+                       : selectedSubject === 'world'
+                       ? 'World competence is dynamically measured based on geography accuracy, map recall, and speed.'
+                       : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.')
+                    : (`Compete in this week's cohort by earning Sparks! ${cohortId ? 'Group: ' + cohortId.split('_bucket_')[1] : ''}`)}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 font-medium text-center px-1">
+              {viewMode === 'global'
+                ? '💡 Keep climbing and answering accurately to raise your rank tier!'
+                : '💡 Sparks reset every week at midnight Sunday UTC. Climb every day to stay on top!'}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowInfoModal(false);
+              }}
+              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-2xl font-black text-sm shadow-md transition-all flex items-center justify-center cursor-pointer"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
