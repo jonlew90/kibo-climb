@@ -1,0 +1,134 @@
+<<<<<<< SEARCH
+export function getAvailableSeasonalEvents(currentDate = new Date()) {
+  return SEASONAL_EVENTS.filter((event) => {
+    if (event.id === 'all_active') return true;
+    return isSeasonalEventAvailableOrUpcoming(event, currentDate);
+  });
+}
+=======
+export function getAvailableSeasonalEvents(currentDate = new Date()) {
+  return SEASONAL_EVENTS.filter((event) => {
+    if (event.id === 'all_active') return true;
+    return isSeasonalEventAvailableOrUpcoming(event, currentDate);
+  });
+}
+
+/**
+ * Seeded random number generator (Mulberry32)
+ * Ensures daily/weekly randomness is consistent for all users.
+ */
+function seededRandom(seed) {
+  return function() {
+    var t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
+
+/**
+ * Helper to compute ISO week number for seeding
+ */
+function getWeekNumber(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+}
+
+/**
+ * Generates the active sales for the current date.
+ * Weekly items get 1 item. Daily items get 2 items.
+ * Discounts are mapped to 15, 20, or 25%.
+ * Returns a Map of itemId -> discountPercent.
+ */
+export function getActiveSales(currentDate = new Date()) {
+  const d = currentDate instanceof Date ? currentDate : new Date(currentDate);
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  const week = getWeekNumber(d);
+
+  const salesMap = new Map();
+  const eligibleItems = WORKSHOP_ITEMS.filter(i => !i.isPremium && i.category !== 'seasonal' && i.category !== 'promo' && i.cost > 0);
+
+  if (eligibleItems.length === 0) return salesMap;
+
+  const discounts = [15, 20, 25];
+
+  // WEEKLY SALE SEED: YYYY-WW
+  const weeklySeedStr = `${year}-${week}`;
+  let hashWeekly = 0;
+  for (let i = 0; i < weeklySeedStr.length; i++) hashWeekly = Math.imul(31, hashWeekly) + weeklySeedStr.charCodeAt(i) | 0;
+  const randWeekly = seededRandom(hashWeekly);
+
+  const weeklyItemIndex = Math.floor(randWeekly() * eligibleItems.length);
+  const weeklyDiscount = discounts[Math.floor(randWeekly() * discounts.length)];
+  salesMap.set(eligibleItems[weeklyItemIndex].id, { type: 'weekly', percent: weeklyDiscount });
+
+  // DAILY SALE SEED: YYYY-MM-DD
+  const dailySeedStr = `${year}-${month}-${day}`;
+  let hashDaily = 0;
+  for (let i = 0; i < dailySeedStr.length; i++) hashDaily = Math.imul(31, hashDaily) + dailySeedStr.charCodeAt(i) | 0;
+  const randDaily = seededRandom(hashDaily);
+
+  // Pick 2 distinct daily items
+  const pickedDaily = new Set();
+  while (pickedDaily.size < 2 && pickedDaily.size < eligibleItems.length) {
+    const idx = Math.floor(randDaily() * eligibleItems.length);
+    const item = eligibleItems[idx];
+    if (!salesMap.has(item.id)) {
+      pickedDaily.add(idx);
+    }
+  }
+
+  for (const idx of pickedDaily) {
+    const dailyDiscount = discounts[Math.floor(randDaily() * discounts.length)];
+    salesMap.set(eligibleItems[idx].id, { type: 'daily', percent: dailyDiscount });
+  }
+
+  return salesMap;
+}
+
+/**
+ * Returns the final computed sale price and details for an item.
+ * Evaluates holiday (25% off all), weekly, and daily sales, picking the best discount.
+ */
+export function getItemSalePrice(item, currentDate = new Date()) {
+  const baseCost = item?.cost || 0;
+  if (!item || item.isPremium || baseCost <= 0) {
+    return { isSale: false, originalPrice: baseCost, salePrice: baseCost };
+  }
+
+  // 1. Check for active holiday season
+  const activeEvents = getAvailableSeasonalEvents(currentDate);
+  const isHolidayActive = activeEvents.length > 1; // 'all_active' is always at index 0
+
+  let bestDiscount = isHolidayActive ? 25 : 0;
+  let saleType = isHolidayActive ? 'holiday' : null;
+
+  // 2. Check daily/weekly sales
+  const salesMap = getActiveSales(currentDate);
+  if (salesMap.has(item.id)) {
+    const saleInfo = salesMap.get(item.id);
+    if (saleInfo.percent > bestDiscount) {
+      bestDiscount = saleInfo.percent;
+      saleType = saleInfo.type;
+    }
+  }
+
+  if (bestDiscount > 0) {
+    const discountAmount = Math.floor(baseCost * (bestDiscount / 100));
+    const salePrice = Math.max(1, baseCost - discountAmount); // Ensure it costs at least 1 spark
+    return {
+      isSale: true,
+      originalPrice: baseCost,
+      salePrice: salePrice,
+      discountPercent: bestDiscount,
+      saleType: saleType
+    };
+  }
+
+  return { isSale: false, originalPrice: baseCost, salePrice: baseCost };
+}
+>>>>>>> REPLACE

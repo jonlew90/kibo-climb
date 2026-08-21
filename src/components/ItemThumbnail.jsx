@@ -1,7 +1,7 @@
 import React from 'react';
 import { WORKSHOP_ITEMS } from '../utils/itemsCatalog';
 
-export default function ItemThumbnail({ itemId, rarity = 'common', className = "w-12 h-12" }) {
+export default function ItemThumbnail({ itemId, rarity = 'common', className = "w-12 h-12", saleDiscount = 0 }) {
   const containerClasses = {
     common: 'bg-gradient-to-br from-slate-100 to-slate-200 border-slate-300 text-slate-700',
     rare: 'bg-gradient-to-br from-sky-100 via-teal-100 to-teal-200 border-teal-300 text-teal-800',
@@ -1704,6 +1704,16 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
             {/* Sparkle Glints */}
             <polygon points="22,26 23,29 26,30 23,31 22,34 21,31 18,30 21,29" fill="#FEF08A" />
             <polygon points="78,26 79,29 82,30 79,31 78,34 77,31 74,30 77,29" fill="#FEF08A" />
+          </g>
+        )}
+
+        {/* SALE BADGE OVERLAY */}
+        {saleDiscount > 0 && (
+          <g transform="translate(68, -4) rotate(15)">
+            <rect x="0" y="0" width="36" height="18" rx="4" fill="#EF4444" stroke="#7F1D1D" strokeWidth="1.5" />
+            <text x="18" y="12" textAnchor="middle" fontSize="10" fontWeight="900" fill="#FFFFFF" letterSpacing="0.5">
+              -{saleDiscount}%
+            </text>
           </g>
         )}
 

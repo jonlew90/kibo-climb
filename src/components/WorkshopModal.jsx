@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft, User, Ticket, Gift, Clock, AlertCircle } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
-import { ITEM_CATEGORIES, WORKSHOP_ITEMS, SPARKS_PACKAGES, RARITY_TIERS, SEASONAL_EVENTS, getAvailableSeasonalEvents, isSeasonalEventAvailableOrUpcoming, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus, isItemVisibleInShop } from '../utils/itemsCatalog';
+import { ITEM_CATEGORIES, WORKSHOP_ITEMS, SPARKS_PACKAGES, RARITY_TIERS, SEASONAL_EVENTS, getAvailableSeasonalEvents, isSeasonalEventAvailableOrUpcoming, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus, isItemVisibleInShop, getItemSalePrice } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
@@ -395,6 +395,15 @@ export default function WorkshopModal({
           </div>
         </div>
 
+        {/* Holiday Sale Banner */}
+        {getAvailableSeasonalEvents(currentDate).length > 1 && (
+          <div className="bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-center shadow-inner relative z-10">
+            <p className="text-white font-black text-xs sm:text-sm tracking-wide">
+              🎄 HOLIDAY SALE! 25% OFF ALL ITEMS 🎄
+            </p>
+          </div>
+        )}
+
         {/* Category Selector Tabs */}
         <div className="space-y-1">
           <div className="relative flex items-center">
@@ -611,8 +620,11 @@ export default function WorkshopModal({
               const isRealMoney = !!item.realMoneyPrice;
               if (isRealMoney && !allowRealMoneyPurchases) return null;
 
-              const canAfford = isRealMoney ? true : sparks >= item.cost;
-              const shortfall = isRealMoney ? 0 : item.cost - sparks;
+              const saleInfo = getItemSalePrice(item, currentDate);
+              const activeCost = saleInfo.isSale ? saleInfo.salePrice : item.cost;
+
+              const canAfford = isRealMoney ? true : sparks >= activeCost;
+              const shortfall = isRealMoney ? 0 : activeCost - sparks;
               const rarityInfo = RARITY_TIERS[item.rarity] || RARITY_TIERS.common;
 
               const isJustPurchased = recentlyPurchasedId === item.id;
@@ -622,7 +634,7 @@ export default function WorkshopModal({
               const sellPrice = item.cost ? Math.floor(item.cost * 0.5) : 0;
               let canSell = false;
 
-              if (item.cost && !isRealMoney) {
+              if (activeCost && !isRealMoney) {
                 if (isConsumable) {
                   if (item.id === 'kibo_shield' && (consumables?.shieldCount || 0) > 0) canSell = true;
                   if (item.id === 'streak_saver' && (consumables?.streakSaverCount || 0) > 0) canSell = true;
@@ -663,13 +675,19 @@ export default function WorkshopModal({
                   )}
 
                   {/* SVG Item Thumbnail Graphic */}
-                  <ItemThumbnail itemId={item.id} rarity={item.rarity} className="w-12 h-12 shrink-0" />
+                  <ItemThumbnail itemId={item.id} rarity={item.rarity} className="w-12 h-12 shrink-0" saleDiscount={!isUnlocked && saleInfo.isSale ? saleInfo.discountPercent : 0} />
 
                   {/* Item Details */}
                   <div className="space-y-1 text-left flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{item.name}</h4>
                       
+                      {!isUnlocked && saleInfo.isSale && (
+                        <span className="text-[10px] font-black uppercase text-white bg-rose-500 px-1.5 py-0.5 rounded-sm border-b border-rose-700 shadow-sm shadow-rose-200">
+                          SALE
+                        </span>
+                      )}
+
                       {item.badgeTag && (
                         <span className="text-xs font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 animate-pulse shadow-xs">
                           🚀 {item.badgeTag}
@@ -775,7 +793,14 @@ export default function WorkshopModal({
 
                   {/* Buy / Sell / Equip Action Buttons */}
                   <div className="shrink-0 flex flex-col gap-1 items-end" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                      {!isUnlocked && saleInfo.isSale && (
+                        <div className="flex flex-col items-end justify-center mr-1">
+                           <span className="text-[10px] font-bold text-slate-400 line-through decoration-slate-400">
+                             {item.cost} ⚡
+                           </span>
+                        </div>
+                      )}
                       {canSell && (
                         <button
                           type="button"
@@ -804,7 +829,7 @@ export default function WorkshopModal({
                             className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5"
                           >
                             <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                            Buy for {item.cost} ⚡
+                            Buy for {activeCost} ⚡
                           </button>
                         ) : (
                           <button
@@ -864,7 +889,7 @@ export default function WorkshopModal({
                           className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                         >
                           <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                          Buy for {item.cost} ⚡
+                          Buy for {activeCost} ⚡
                         </button>
                       ) : (
                         <button
