@@ -160,7 +160,79 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         break;
 
       // ==========================================
-      // 2. Kibo Words Badges
+      // 2. Kibo Math Badges
+      // ==========================================
+      case 'math_novice':
+        if (subjectId === 'math') {
+          unlocked = subjectSolvedCount >= 25;
+        }
+        break;
+      case 'math_scholar':
+        if (subjectId === 'math') {
+          unlocked = subjectSolvedCount >= 100;
+        }
+        break;
+      case 'math_master':
+        if (subjectId === 'math') {
+          unlocked = subjectSolvedCount >= 500;
+        }
+        break;
+      case 'addition_apprentice':
+        if (subjectId === 'math') {
+          unlocked = currentRating >= 1200;
+        }
+        break;
+      case 'subtraction_scout':
+        if (subjectId === 'math') {
+          unlocked = currentRating >= 1400;
+        }
+        break;
+      case 'multiplication_master':
+        if (subjectId === 'math') {
+          unlocked = currentRating >= 1600;
+        }
+        break;
+      case 'division_diver':
+        if (subjectId === 'math') {
+          unlocked = currentRating >= 1800;
+        }
+        break;
+      case 'fraction_finder':
+        if (subjectId === 'math') {
+          unlocked = currentRating >= 2000;
+        }
+        break;
+      case 'geometry_genius':
+        if (subjectId === 'math') {
+          unlocked = currentRating >= 2200;
+        }
+        break;
+      case 'algebra_ace':
+        if (subjectId === 'math') {
+          unlocked = currentRating >= 2400;
+        }
+        break;
+      case 'peak_math_legend':
+        if (subjectId === 'math') {
+          unlocked = currentRating >= 2600;
+        }
+        break;
+      case 'math_speed_demon': {
+        if (subjectId === 'math') {
+          const isFastSprint = lastSprintResult &&
+            (lastSprintResult.accuracyPct === 100 || (lastSprintResult.correctCount === lastSprintResult.totalQuestions && lastSprintResult.totalQuestions >= 10)) &&
+            (lastSprintResult.totalTimeSec != null && lastSprintResult.totalTimeSec <= 45);
+          const hadFastHistory = Array.isArray(sprintHistory) && sprintHistory.some((s) =>
+            (s.accuracyPct === 100 || (s.correctCount === s.totalQuestions && s.totalQuestions >= 10)) &&
+            s.totalTimeSec != null && s.totalTimeSec <= 45
+          );
+          unlocked = !!isFastSprint || hadFastHistory;
+        }
+        break;
+      }
+
+      // ==========================================
+      // 3. Kibo Words Badges
       // ==========================================
       case 'words_novice':
         if (subjectId === 'words') {
