@@ -189,3 +189,174 @@ exports.joinWeeklyLeague = onCall(
     }
   }
 );
+
+/**
+ * Callable function to claim a username.
+ * Ensures the username is unique and saves it to the 'usernames' collection.
+ */
+exports.claimUsername = onCall(
+  {
+    cors: true
+  },
+  async (request) => {
+    const { username, profileId, oldUsername } = request.data || {};
+    const uid = request.auth ? request.auth.uid : 'anonymous';
+
+    if (!username || typeof username !== 'string' || !profileId) {
+      throw new HttpsError('invalid-argument', 'Missing required fields.');
+    }
+
+    const cleanUsername = username.trim();
+    if (cleanUsername.length < 3 || cleanUsername.length > 20) {
+      throw new HttpsError('invalid-argument', 'Username must be between 3 and 20 characters.');
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(cleanUsername)) {
+      throw new HttpsError('invalid-argument', 'Username can only contain letters, numbers, and underscores.');
+    }
+
+    const lowerUsername = cleanUsername.toLowerCase();
+    const db = admin.firestore();
+
+    try {
+      return await db.runTransaction(async (transaction) => {
+        // Check if the username is already taken
+        const usernameRef = db.collection('usernames').doc(lowerUsername);
+        const usernameDoc = await transaction.get(usernameRef);
+
+        if (usernameDoc.exists) {
+          const data = usernameDoc.data();
+          // If the caller already owns this username, just return success
+          if (data.uid === uid && data.profileId === profileId) {
+             return { success: true, username: cleanUsername };
+          }
+          throw new HttpsError('already-exists', 'This username is already taken.');
+        }
+
+        // If replacing an old username, release the old one
+        if (oldUsername && typeof oldUsername === 'string') {
+           const oldLower = oldUsername.trim().toLowerCase();
+           if (oldLower !== lowerUsername) {
+             const oldRef = db.collection('usernames').doc(oldLower);
+             const oldDoc = await transaction.get(oldRef);
+             if (oldDoc.exists && oldDoc.data().uid === uid && oldDoc.data().profileId === profileId) {
+                 transaction.delete(oldRef);
+             }
+           }
+        }
+
+        // Claim the new username
+        transaction.set(usernameRef, {
+          uid: uid,
+          profileId: profileId,
+          originalUsername: cleanUsername,
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        return { success: true, username: cleanUsername };
+      });
+    } catch (error) {
+      console.error('Error claiming username:', error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError('internal', 'An error occurred while claiming the username.');
+    }
+  }
+);
+
+/**
+ * Callable function to search for usernames.
+ */
+exports.searchUsername = onCall(
+  {
+    cors: true
+  },
+  async (request) => {
+    const { query } = request.data || {};
+    const uid = request.auth ? request.auth.uid : 'anonymous';
+
+    if (!query || typeof query !== 'string' || query.trim().length < 3) {
+       return { results: [] };
+    }
+
+    const lowerQuery = query.trim().toLowerCase();
+    const db = admin.firestore();
+
+    try {
+       // Search for usernames that start with the query using >= and <
+       // 'z' + 1 to get the upper bound
+       const endQuery = lowerQuery + '\uf8ff';
+
+       const usernamesRef = db.collection('usernames');
+       const snapshot = await usernamesRef
+           .where(admin.firestore.FieldPath.documentId(), '>=', lowerQuery)
+           .where(admin.firestore.FieldPath.documentId(), '<=', endQuery)
+           .limit(10)
+           .get();
+
+       const results = [];
+       snapshot.forEach(doc => {
+           const data = doc.data();
+           // Don't return the searcher's own profile
+           if (data.uid !== uid) {
+               results.push({
+                   username: data.originalUsername,
+                   id: `${data.uid}_${data.profileId}`
+               });
+           }
+       });
+
+       return { results };
+
+    } catch (error) {
+       console.error('Error searching usernames:', error);
+       throw new HttpsError('internal', 'An error occurred while searching for usernames.');
+    }
+  }
+);
+
+/**
+ * Callable function to get scores for an array of friend IDs.
+ */
+exports.getFriendScores = onCall(
+  {
+    cors: true
+  },
+  async (request) => {
+    const { friendIds, subject } = request.data || {};
+
+    if (!Array.isArray(friendIds) || friendIds.length === 0) {
+       return { friends: [] };
+    }
+
+    // Firestore 'in' queries are limited to 30 items, we limit to 25 anyway
+    const safeSubject = subject || 'math';
+    const db = admin.firestore();
+
+    try {
+      // friendIds are composite IDs (uid_profileId)
+      // We need to fetch from leaderboard appending _subject
+      const docIds = friendIds.map(id => `${id}_${safeSubject}`);
+
+      const leaderboardRef = db.collection('leaderboard');
+
+      // Batch get max 25 documents
+      const docsToFetch = docIds.slice(0, 25).map(id => leaderboardRef.doc(id));
+      const snapshot = await db.getAll(...docsToFetch);
+
+      const friends = [];
+      snapshot.forEach(doc => {
+         if (doc.exists) {
+            friends.push({
+               id: doc.id,
+               ...doc.data()
+            });
+         }
+      });
+
+      return { friends };
+
+    } catch (error) {
+       console.error('Error fetching friend scores:', error);
+       throw new HttpsError('internal', 'An error occurred while fetching friend scores.');
+    }
+  }
+);

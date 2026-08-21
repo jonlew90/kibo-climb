@@ -167,6 +167,52 @@ export default function LeaderboardScreen({
     };
   }, [selectedSubject, userScore, username, activeProfile?.id]);
 
+  // Fetch Friends Data
+  useEffect(() => {
+    if (viewMode === 'friends') {
+      let isMounted = true;
+      const fetchFriends = async () => {
+        setIsLoadingFriends(true);
+        const myFriends = storageService.getFriends();
+        if (myFriends.length > 0) {
+           const scores = await leaderboardService.getFriendScores(myFriends, selectedSubject);
+
+           if (!isMounted) return;
+
+           // Include self in friends leaderboard
+           scores.push({
+             id: `${currentUid}_${activeProfile?.id}`,
+             uid: currentUid,
+             profileId: activeProfile?.id,
+             name: storageService.getUsername() || activeProfile?.username || activeProfile?.name || 'You',
+             score: userScore,
+             subjectsMastered: userMastery,
+             equipped: equippedItems,
+             isCurrentUser: true
+           });
+
+           // Sort by score
+           const sorted = scores.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+           setFriendsStandings(sorted);
+        } else {
+           if (!isMounted) return;
+           setFriendsStandings([{
+             id: 'self',
+             name: storageService.getUsername() || activeProfile?.username || activeProfile?.name || 'You',
+             score: userScore,
+             subjectsMastered: userMastery,
+             equipped: equippedItems,
+             isCurrentUser: true
+           }]);
+        }
+        setIsLoadingFriends(false);
+      };
+      fetchFriends();
+      return () => { isMounted = false; };
+    }
+  }, [viewMode, selectedSubject, currentUid, activeProfile?.id, userScore, userMastery, equippedItems]);
+
   const accountNamesNormalized = new Set(
     accountPlayers.map(p => (p.name || '').trim().toLowerCase()).filter(Boolean)
   );

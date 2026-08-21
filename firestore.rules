@@ -49,5 +49,12 @@ service cloud.firestore {
       // Disallow reading, updating, or deleting feedback from client SDK
       allow read, update, delete: if false;
     }
+
+    match /usernames/{username} {
+      // Allow anyone to read usernames to check availability or for profile info
+      allow read: if request.auth != null;
+      // Writes are strictly controlled via Cloud Functions
+      allow write: if false;
+    }
   }
 }

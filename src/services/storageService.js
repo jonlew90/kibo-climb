@@ -37,6 +37,7 @@ const DEFAULT_PROFILE = {
   practiceDays: [1, 2, 3, 4, 5],
   dailyReminderEnabled: true,
   reminderTime: '17:00',
+  friends: [],           // array of friend profile composite IDs (max 25)
   userData: {
     adaptiveCompetenceRating: 1000,
     subjectRatings: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, k) => { acc[k] = 1000; return acc; }, {}),
@@ -225,6 +226,7 @@ export const storageService = {
       id,
       name: safeName,
       username: safeName,
+        friends: [],
       gradeLevel,
       userData: {
         ...DEFAULT_PROFILE.userData,

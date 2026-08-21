@@ -6,6 +6,7 @@ import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { SUBJECTS_CONFIG } from '../config/subjects';
+import { leaderboardService } from '../services/leaderboardService';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 
@@ -86,6 +87,7 @@ export default function FirstLaunchOnboardingModal({
   const [usernameInput, setUsernameInput] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [usernameConfirmed, setUsernameConfirmed] = useState(false);
+  const [isClaimingUsername, setIsClaimingUsername] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState('');
   const [selectedStartingSubject, setSelectedStartingSubject] = useState('math');
   const inputRef = useRef(null);
@@ -130,18 +132,35 @@ export default function FirstLaunchOnboardingModal({
 
   if (!isOpen) return null;
 
-  const handleUsernameSubmit = (e) => {
+  const handleUsernameSubmit = async (e) => {
     e.preventDefault();
+    if (isClaimingUsername) return;
+
     const error = validateUsername(usernameInput);
     if (error) { setUsernameError(error); return; }
+
     const cleaned = usernameInput.trim();
-    // Don't save yet — wait until grade is also chosen
-    soundFx.playVictory();
-    setUsernameConfirmed(true);
-    setTimeout(() => {
-      setUsernameConfirmed(false);
-      setStep(2);
-    }, 600);
+    setIsClaimingUsername(true);
+
+    try {
+      const activeProfile = storageService.getActiveProfile();
+      const oldUsername = activeProfile?.username;
+
+      await leaderboardService.claimUsername(cleaned, activeProfile.id, oldUsername);
+
+      // Don't save yet — wait until grade is also chosen
+      soundFx.playVictory();
+      setUsernameConfirmed(true);
+      setTimeout(() => {
+        setUsernameConfirmed(false);
+        setStep(2);
+      }, 800);
+    } catch (err) {
+      const msg = err?.message || 'Failed to claim username. Please try another.';
+      setUsernameError(msg.includes('already taken') ? 'This username is already taken. Please pick another!' : msg);
+    } finally {
+      setIsClaimingUsername(false);
+    }
   };
 
   const handleGradeSelect = (grade) => {
@@ -231,8 +250,15 @@ export default function FirstLaunchOnboardingModal({
               3–20 characters · Letters, numbers, and underscores only
             </p>
             <button type="submit"
-              className="w-full h-13 sm:h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 cursor-pointer">
-              {usernameConfirmed ? (
+              disabled={isClaimingUsername}
+              className={`w-full h-13 sm:h-14 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 ${
+                isClaimingUsername
+                  ? 'bg-slate-400 border-slate-500 cursor-not-allowed opacity-80'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 border-orange-700 cursor-pointer'
+              }`}>
+              {isClaimingUsername ? (
+                <>Checking...</>
+              ) : usernameConfirmed ? (
                 <><CheckCircle2 className="w-5 h-5 stroke-[2.5]" /> Confirmed!</>
               ) : (
                 <>Next <ArrowRight className="w-5 h-5 stroke-[2.5]" /></>

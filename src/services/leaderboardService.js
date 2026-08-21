@@ -240,6 +240,42 @@ class LeaderboardService {
     }
   }
 
+  // Claim a unique username
+  async claimUsername(username, profileId, oldUsername) {
+    try {
+      const claimFunc = httpsCallable(functions, 'claimUsername');
+      const res = await claimFunc({ username, profileId, oldUsername });
+      return res.data;
+    } catch (error) {
+      console.warn('LeaderboardService: Failed to claim username', error);
+      throw error;
+    }
+  }
+
+  // Search for usernames
+  async searchUsername(query) {
+    try {
+      const searchFunc = httpsCallable(functions, 'searchUsername');
+      const res = await searchFunc({ query });
+      return res.data?.results || [];
+    } catch (error) {
+      console.warn('LeaderboardService: Failed to search usernames', error);
+      return [];
+    }
+  }
+
+  // Get scores for a list of friend composite IDs
+  async getFriendScores(friendIds, subject = 'math') {
+    try {
+      const getScoresFunc = httpsCallable(functions, 'getFriendScores');
+      const res = await getScoresFunc({ friendIds, subject });
+      return res.data?.friends || [];
+    } catch (error) {
+      console.warn('LeaderboardService: Failed to get friend scores', error);
+      return [];
+    }
+  }
+
   // Subscribe to a specific cohort's weekly standings
   subscribeToWeeklyLeaderboard(weekStr, cohortId, subject = 'math', limitCount = 30, onUpdate) {
     try {
