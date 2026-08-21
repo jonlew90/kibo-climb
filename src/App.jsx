@@ -50,6 +50,7 @@ import TermsOfServiceScreen from './components/TermsOfServiceScreen';
 import LeaderboardIcon from './components/LeaderboardIcon';
 import LeaderboardScreen from './components/LeaderboardScreen';
 import FeedbackModal from './components/FeedbackModal';
+import AddFriendModal from './components/AddFriendModal';
 import SubjectWallpaper from './components/SubjectWallpaper';
 import { setHapticsEnabled } from './utils/audio';
 
@@ -140,6 +141,8 @@ export default function App() {
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showDailyStreakIncreasedModal, setShowDailyStreakIncreasedModal] = useState(false);
   const [showBadgesModal, setShowBadgesModal] = useState(false);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [friendsCount, setFriendsCount] = useState(() => storageService.getFriends(activeProfileId).length);
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
@@ -525,6 +528,8 @@ export default function App() {
     setEquippedItems(sData.equippedItems ?? []);
     setUnlockedItems(sData.unlockedItems ?? ['cap']);
     setHasVisitedParentZone(uData.hasVisitedParentZone || false);
+
+    setFriendsCount(storageService.getFriends(storageService.getActiveProfileId()).length);
 
     // Sync Audio & Haptics preferences
     const prefs = {
@@ -1386,6 +1391,25 @@ export default function App() {
           </button>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* Friends Button: Sky / Cyan */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowFriendsModal(true);
+              }}
+              className="flex items-center gap-1 bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 text-white border-2 border-sky-300 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer relative"
+              title={`Friends (${friendsCount})`}
+            >
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              <span className="hidden sm:inline">Friends</span>
+              {friendsCount > 0 && (
+                <span className="inline-flex items-center justify-center bg-white text-sky-700 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-2xs leading-tight">
+                  {friendsCount}
+                </span>
+              )}
+            </button>
+
             {/* Share Button: Indigo */}
             <button
               type="button"
@@ -2020,6 +2044,16 @@ export default function App() {
       <FeedbackModal
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
+      />
+
+      {/* Friends Modal */}
+      <AddFriendModal
+        isOpen={showFriendsModal}
+        onClose={() => setShowFriendsModal(false)}
+        activeSubject={activeSubject}
+        onFriendAdded={() => {
+          setFriendsCount(storageService.getFriends(activeProfileId).length);
+        }}
       />
 
       {/* Share Modal */}
