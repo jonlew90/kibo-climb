@@ -886,9 +886,12 @@ export default function WorkshopModal({
 
       {/* PROMO CODE REDEMPTION MODAL DIALOG */}
       {showPromoModal && (
-        <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+        <div
+          onClick={() => setShowPromoModal(false)}
+          className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
+        >
           <div
-            className="bg-white rounded-3xl border-3 border-amber-300 p-5 sm:p-6 w-full max-w-md shadow-2xl space-y-4 animate-scale-in relative text-slate-800"
+            className="bg-white rounded-3xl border-3 border-amber-300 p-5 sm:p-6 w-full max-w-md shadow-2xl space-y-4 animate-scale-in relative text-slate-800 cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -1014,9 +1017,12 @@ export default function WorkshopModal({
 
       {/* ITEM SELL CONFIRMATION MODAL */}
       {itemToSell && (
-        <div className="fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+        <div
+          onClick={() => setItemToSell(null)}
+          className="fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
+        >
           <div
-            className="bg-white rounded-3xl border-3 border-amber-300 p-5 sm:p-6 w-full max-w-sm shadow-2xl space-y-4 animate-scale-in text-center relative"
+            className="bg-white rounded-3xl border-3 border-amber-300 p-5 sm:p-6 w-full max-w-sm shadow-2xl space-y-4 animate-scale-in text-center relative cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-16 h-16 mx-auto bg-rose-100 rounded-full flex items-center justify-center border-4 border-rose-200">

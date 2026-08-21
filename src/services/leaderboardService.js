@@ -7,7 +7,9 @@ import {
   doc, 
   setDoc, 
   getDoc, 
+  getDocs,
   query, 
+  where,
   orderBy, 
   limit, 
   onSnapshot, 
@@ -283,34 +285,179 @@ class LeaderboardService {
       return { success: false, error: 'Please enter a username.' };
     }
 
+    const trimmed = username.trim();
+    const normalized = trimmed.toLowerCase();
+
     try {
       const claimFn = httpsCallable(functions, 'claimUsername');
-      const res = await claimFn({ username: username.trim(), profileId });
-      return { success: true, username: res.data?.username || username.trim() };
+      const res = await claimFn({ username: trimmed, profileId });
+      return { success: true, username: res.data?.username || trimmed };
     } catch (error) {
       // If error is already-exists, surface human-readable message
       if (error?.code === 'functions/already-exists' || error?.message?.includes('already taken')) {
         return { success: false, error: 'This username is already taken. Please choose another one.' };
       }
-      // If offline / local fallback in dev mode, proceed gracefully
-      console.warn('LeaderboardService: claimUsername network fallback', error);
-      return { success: true, username: username.trim(), isOfflineFallback: true };
+      
+      console.warn('LeaderboardService: claimUsername network fallback to direct Firestore', error);
+      
+      try {
+        let user = this.getCurrentUser();
+        if (!user) {
+          try {
+            const userCred = await signInAnonymously(auth);
+            user = userCred.user;
+            this.currentUser = user;
+          } catch (authErr) {}
+        }
+
+        if (user && user.uid) {
+          const usernameRef = doc(db, 'usernames', normalized);
+          const existingSnap = await getDoc(usernameRef);
+          if (existingSnap.exists()) {
+            const data = existingSnap.data();
+            if (data.uid && data.uid !== user.uid) {
+              return { success: false, error: 'This username is already taken. Please choose another one.' };
+            }
+          }
+          await setDoc(usernameRef, {
+            username: trimmed,
+            normalized,
+            uid: user.uid,
+            profileId: profileId || 'default_child',
+            claimedAt: serverTimestamp()
+          }, { merge: true });
+        }
+      } catch (firestoreErr) {
+        console.warn('LeaderboardService: direct Firestore claim error', firestoreErr);
+      }
+
+      return { success: true, username: trimmed, isOfflineFallback: true };
     }
   }
 
-  async searchUsername(query) {
-    if (!query || typeof query !== 'string' || query.trim().length < 2) {
+  async searchUsername(queryStr) {
+    if (!queryStr || typeof queryStr !== 'string' || queryStr.trim().length < 2) {
       return { results: [] };
     }
 
+    const trimmed = queryStr.trim();
+    const normalized = trimmed.toLowerCase();
+    const localMatches = [];
+
+    // Check local profiles so profiles under the same account / device are always discoverable
+    try {
+      const rawProfilesData = localStorage.getItem('kibo_profiles_data');
+      if (rawProfilesData) {
+        const parsed = JSON.parse(rawProfilesData);
+        const profilesMap = parsed.profiles || {};
+        for (const pId of Object.keys(profilesMap)) {
+          const p = profilesMap[pId];
+          const pName = (p.username || p.name || '').trim();
+          if (pName && pName.toLowerCase().includes(normalized)) {
+            const uData = p.userData || {};
+            const currentSubRating = uData.adaptiveCompetenceRating || 1000;
+            localMatches.push({
+              id: `${this.getCurrentUser()?.uid || 'local'}_${p.id}`,
+              uid: this.getCurrentUser()?.uid || 'local',
+              profileId: p.id,
+              username: p.username || p.name,
+              name: p.name || p.username,
+              score: currentSubRating,
+              equipped: p.shopState?.equippedItems || [],
+              subjectsMastered: 5
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('LeaderboardService: Local profile search check', e);
+    }
+
+    let remoteResults = [];
+
+    // Attempt Cloud Function
+    let cloudFunctionSucceeded = false;
     try {
       const searchFn = httpsCallable(functions, 'searchUsername');
-      const res = await searchFn({ query: query.trim() });
-      return { results: res.data?.results || [] };
+      const res = await searchFn({ query: trimmed });
+      if (res?.data?.results) {
+        remoteResults = res.data.results;
+        cloudFunctionSucceeded = true;
+      }
     } catch (error) {
-      console.warn('LeaderboardService: searchUsername fallback', error);
-      return { results: [] };
+      // Cloud function failed (CORS / offline) - fall back to direct Firestore query
     }
+
+    if (!cloudFunctionSucceeded) {
+      try {
+        let user = this.getCurrentUser();
+        if (!user) {
+          try {
+            const userCred = await signInAnonymously(auth);
+            user = userCred.user;
+            this.currentUser = user;
+          } catch (authErr) {}
+        }
+
+        const q = query(
+          collection(db, 'usernames'),
+          where('normalized', '>=', normalized),
+          where('normalized', '<=', normalized + '\uf8ff'),
+          limit(10)
+        );
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          for (const docSnap of snapshot.docs) {
+            const uData = docSnap.data();
+            const friendUid = uData.uid;
+            const friendProfileId = uData.profileId || 'default_child';
+            const friendDocId = `${friendUid}_${friendProfileId}_math`;
+
+            let score = 1000;
+            let equipped = [];
+            let subjectsMastered = 5;
+
+            try {
+              const lbDoc = await getDoc(doc(db, LEADERBOARD_COLLECTION, friendDocId));
+              if (lbDoc.exists()) {
+                const lbData = lbDoc.data();
+                score = lbData.score || 1000;
+                equipped = lbData.equipped || [];
+                subjectsMastered = lbData.subjectsMastered || 5;
+              }
+            } catch (e) {}
+
+            remoteResults.push({
+              id: `${friendUid}_${friendProfileId}`,
+              uid: friendUid,
+              profileId: friendProfileId,
+              username: uData.username || docSnap.id,
+              name: uData.username || docSnap.id,
+              score,
+              equipped,
+              subjectsMastered
+            });
+          }
+        }
+      } catch (firestoreErr) {
+        console.warn('LeaderboardService: direct Firestore search fallback error', firestoreErr);
+      }
+    }
+
+    // Merge and deduplicate results
+    const combined = [...localMatches, ...remoteResults];
+    const seen = new Set();
+    const results = [];
+
+    for (const item of combined) {
+      const key = (item.username || item.name || '').trim().toLowerCase();
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        results.push(item);
+      }
+    }
+
+    return { results };
   }
 
   async fetchFriendScores(subject = 'math', friendIds = []) {
@@ -321,9 +468,42 @@ class LeaderboardService {
     try {
       const getScoresFn = httpsCallable(functions, 'getFriendScores');
       const res = await getScoresFn({ subject, friendIds });
-      return { standings: res.data?.standings || [] };
+      if (res?.data?.standings && res.data.standings.length > 0) {
+        return { standings: res.data.standings };
+      }
     } catch (error) {
       console.warn('LeaderboardService: fetchFriendScores fallback', error);
+    }
+
+    // Direct Firestore fallback
+    try {
+      const safeFriendIds = friendIds.slice(0, 25);
+      const standings = [];
+      for (const fId of safeFriendIds) {
+        const parts = fId.split('_');
+        let docId = `${fId}_${subject}`;
+        if (parts.length === 1) {
+          docId = `${fId}_default_child_${subject}`;
+        }
+        try {
+          const lbDoc = await getDoc(doc(db, LEADERBOARD_COLLECTION, docId));
+          if (lbDoc.exists()) {
+            const data = lbDoc.data();
+            standings.push({
+              id: fId,
+              uid: data.uid || parts[0],
+              profileId: data.profileId || parts[1] || 'default_child',
+              name: data.name || 'Climber Friend',
+              score: Number(data.score) || 1000,
+              equipped: data.equipped || [],
+              subjectsMastered: data.subjectsMastered || 5,
+              subject
+            });
+          }
+        } catch (e) {}
+      }
+      return { standings };
+    } catch (err) {
       return { standings: [] };
     }
   }

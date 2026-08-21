@@ -41,8 +41,14 @@ export default function ReferralRewardModal({ rewardData, onClose, activeSubject
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative animate-scale-in border-4 border-indigo-300 flex flex-col items-center text-center">
+    <div
+      onClick={!claiming && onClose ? onClose : undefined}
+      className={`fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in ${!claiming && onClose ? 'cursor-pointer' : ''}`}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative animate-scale-in border-4 border-indigo-300 flex flex-col items-center text-center cursor-default"
+      >
         <div className="w-24 h-24 mb-4">
            <Mascot emotion="excited" activeItems={['holiday_santa_hat']} size={120} />
         </div>

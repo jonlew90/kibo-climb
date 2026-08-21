@@ -73,8 +73,14 @@ export default function ShareModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative animate-scale-in border-4 border-indigo-200">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative animate-scale-in border-4 border-indigo-200 cursor-default"
+      >
         <button 
           onClick={() => {
             soundFx.playKeyTap();

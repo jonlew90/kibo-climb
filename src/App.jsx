@@ -1825,8 +1825,14 @@ export default function App() {
 
       {/* PARENT SPEED INFO MODAL (ℹ️) */}
       {showSpeedInfoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
-          <div className="w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-5 text-left shadow-2xl space-y-3 relative">
+        <div
+          onClick={() => setShowSpeedInfoModal(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-white border-4 border-slate-200 rounded-3xl p-5 text-left shadow-2xl space-y-3 relative cursor-default"
+          >
             <button
               onClick={() => setShowSpeedInfoModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"
@@ -1872,8 +1878,14 @@ export default function App() {
 
       {/* Tier Level-Up Celebration Modal */}
       {showLevelUpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
-          <div className="w-full max-w-sm bg-white border-4 border-purple-400 rounded-3xl p-6 text-center shadow-2xl space-y-4">
+        <div
+          onClick={() => setShowLevelUpModal(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-white border-4 border-purple-400 rounded-3xl p-6 text-center shadow-2xl space-y-4 cursor-default"
+          >
             <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto border-2 border-purple-300 animate-bounce">
               <Award className="w-10 h-10 stroke-[2.5]" />
             </div>

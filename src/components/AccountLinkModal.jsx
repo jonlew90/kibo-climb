@@ -78,8 +78,14 @@ export default function AccountLinkModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-md bg-white border-4 border-indigo-500 rounded-3xl p-6 shadow-2xl space-y-5 text-center relative overflow-hidden max-h-[85vh] overflow-y-auto animate-pop">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-fade-in cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md bg-white border-4 border-indigo-500 rounded-3xl p-6 shadow-2xl space-y-5 text-center relative overflow-hidden max-h-[85vh] overflow-y-auto animate-pop cursor-default"
+      >
         
         {/* Close Button */}
         <button
