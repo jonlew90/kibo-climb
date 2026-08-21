@@ -59,6 +59,27 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /friend_requests/{requestId} {
+      // Allow sender and receiver to read requests
+      allow read: if request.auth != null && (
+        resource == null ||
+        resource.data.senderUid == request.auth.uid ||
+        resource.data.receiverUid == request.auth.uid
+      );
+      // Allow sender to create a request
+      allow create: if request.auth != null && request.resource.data.senderUid == request.auth.uid;
+      // Allow receiver to update status (accept/decline) or sender to cancel
+      allow update: if request.auth != null && (
+        resource.data.receiverUid == request.auth.uid ||
+        resource.data.senderUid == request.auth.uid
+      );
+      // Allow sender to cancel or receiver to remove
+      allow delete: if request.auth != null && (
+        resource.data.senderUid == request.auth.uid ||
+        resource.data.receiverUid == request.auth.uid
+      );
+    }
+
     match /feedback/{feedbackId} {
       // Allow creation of feedback entries
       allow create: if request.resource.data.message is string

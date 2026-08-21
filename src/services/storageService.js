@@ -96,7 +96,8 @@ const DEFAULT_PROFILE = {
     unlockedItems: [],
     redeemedPromoCodes: []
   },
-  friends: []
+  friends: [],
+  friendRequests: []
 };
 
 const DEFAULT_PROFILES_STATE = {
@@ -1000,6 +1001,173 @@ export const storageService = {
     const profile = this.getProfileById(pid);
     if (!profile || !Array.isArray(profile.friends)) return [];
     return profile.friends.slice(0, 25);
+  },
+
+  getFriendRequests(profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const profile = this.getProfileById(pid);
+    if (!profile || !Array.isArray(profile.friendRequests)) return [];
+    return profile.friendRequests;
+  },
+
+  sendFriendRequest(targetUserData, profileId = null) {
+    if (!targetUserData) return this.getFriendRequests(profileId);
+    const pid = profileId || this.getActiveProfileId();
+    const state = safeGetProfilesState();
+    if (!state.profiles[pid]) return [];
+
+    if (!Array.isArray(state.profiles[pid].friendRequests)) {
+      state.profiles[pid].friendRequests = [];
+    }
+
+    const currentRequests = state.profiles[pid].friendRequests;
+    const targetId = targetUserData.id || targetUserData.uid || targetUserData.username;
+    const normalizedUsername = (targetUserData.username || targetUserData.name || '').trim().toLowerCase();
+    const normalizedTargetId = (targetId || '').trim().toLowerCase();
+
+    // Check if already friends
+    if (this.isFriend(targetId, pid) || (normalizedUsername && this.isFriend(normalizedUsername, pid))) {
+      throw new Error('You are already friends with this climber!');
+    }
+
+    // Check if request already sent or exists
+    const exists = currentRequests.some(r => {
+      const rId = (r.receiverId || r.receiverUid || r.targetId || '').trim().toLowerCase();
+      const rUser = (r.receiverUsername || r.username || r.name || '').trim().toLowerCase();
+      return (normalizedTargetId && rId === normalizedTargetId) ||
+             (normalizedUsername && rUser === normalizedUsername);
+    });
+
+    if (exists) {
+      throw new Error('Friend request already sent.');
+    }
+
+    const activeProfile = state.profiles[pid];
+    const newRequest = {
+      id: `req_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      type: 'sent', // 'sent' | 'received'
+      targetId: targetId,
+      receiverUid: targetUserData.uid || (targetId.includes('_') ? targetId.split('_')[0] : targetId),
+      receiverProfileId: targetUserData.profileId || (targetId.includes('_') ? targetId.split('_')[1] : 'default_child'),
+      receiverUsername: targetUserData.username || targetUserData.name || 'Climber Friend',
+      name: targetUserData.name || targetUserData.username || 'Climber Friend',
+      score: Number(targetUserData.score) || 1000,
+      equipped: Array.isArray(targetUserData.equipped) ? targetUserData.equipped : [],
+      subjectsMastered: Number(targetUserData.subjectsMastered) || 5,
+      createdAt: new Date().toISOString()
+    };
+
+    currentRequests.push(newRequest);
+    safeSaveProfilesState(state);
+    return currentRequests;
+  },
+
+  receiveFriendRequest(incomingData, profileId = null) {
+    if (!incomingData) return this.getFriendRequests(profileId);
+    const pid = profileId || this.getActiveProfileId();
+    const state = safeGetProfilesState();
+    if (!state.profiles[pid]) return [];
+
+    if (!Array.isArray(state.profiles[pid].friendRequests)) {
+      state.profiles[pid].friendRequests = [];
+    }
+
+    const currentRequests = state.profiles[pid].friendRequests;
+    const senderId = incomingData.senderId || incomingData.senderUid || incomingData.id || incomingData.uid;
+    const senderUsername = incomingData.senderUsername || incomingData.username || incomingData.name;
+    const normalizedUsername = (senderUsername || '').trim().toLowerCase();
+
+    // Check if already friends
+    if (this.isFriend(senderId, pid) || (normalizedUsername && this.isFriend(normalizedUsername, pid))) {
+      return currentRequests;
+    }
+
+    const exists = currentRequests.some(r => {
+      const rId = (r.senderId || r.senderUid || r.targetId || '').trim().toLowerCase();
+      const rUser = (r.senderUsername || r.username || r.name || '').trim().toLowerCase();
+      return (senderId && rId === senderId.toLowerCase()) ||
+             (normalizedUsername && rUser === normalizedUsername);
+    });
+
+    if (!exists) {
+      currentRequests.push({
+        id: incomingData.id || `req_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        type: 'received',
+        senderId: senderId,
+        senderUid: incomingData.senderUid || incomingData.uid,
+        senderProfileId: incomingData.senderProfileId || incomingData.profileId || 'default_child',
+        senderUsername: senderUsername || 'Climber Friend',
+        name: senderUsername || 'Climber Friend',
+        score: Number(incomingData.score) || 1000,
+        equipped: Array.isArray(incomingData.equipped) ? incomingData.equipped : [],
+        subjectsMastered: Number(incomingData.subjectsMastered) || 5,
+        createdAt: incomingData.createdAt || new Date().toISOString()
+      });
+      safeSaveProfilesState(state);
+    }
+    return currentRequests;
+  },
+
+  acceptFriendRequest(requestId, profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const state = safeGetProfilesState();
+    if (!state.profiles[pid]) return { friends: [], requests: [] };
+
+    if (!Array.isArray(state.profiles[pid].friendRequests)) {
+      state.profiles[pid].friendRequests = [];
+    }
+
+    const reqIndex = state.profiles[pid].friendRequests.findIndex(r => r.id === requestId);
+    if (reqIndex === -1) {
+      return { friends: this.getFriends(pid), requests: this.getFriendRequests(pid) };
+    }
+
+    const req = state.profiles[pid].friendRequests[reqIndex];
+    state.profiles[pid].friendRequests.splice(reqIndex, 1);
+    safeSaveProfilesState(state);
+
+    // Add friend
+    const friendData = {
+      id: req.senderId || req.targetId || req.receiverUid,
+      uid: req.senderUid || req.receiverUid,
+      profileId: req.senderProfileId || req.receiverProfileId || 'default_child',
+      username: req.senderUsername || req.receiverUsername || req.name,
+      name: req.name || req.senderUsername || req.receiverUsername,
+      score: req.score || 1000,
+      equipped: req.equipped || [],
+      subjectsMastered: req.subjectsMastered || 5
+    };
+
+    const updatedFriends = this.addFriend(friendData, pid);
+    return {
+      friends: updatedFriends,
+      requests: this.getFriendRequests(pid)
+    };
+  },
+
+  declineFriendRequest(requestId, profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const state = safeGetProfilesState();
+    if (!state.profiles[pid] || !Array.isArray(state.profiles[pid].friendRequests)) return [];
+
+    state.profiles[pid].friendRequests = state.profiles[pid].friendRequests.filter(r => r.id !== requestId);
+    safeSaveProfilesState(state);
+    return state.profiles[pid].friendRequests;
+  },
+
+  cancelFriendRequest(requestId, profileId = null) {
+    return this.declineFriendRequest(requestId, profileId);
+  },
+
+  hasPendingRequestWith(targetIdOrUsername, profileId = null) {
+    if (!targetIdOrUsername) return false;
+    const requests = this.getFriendRequests(profileId);
+    const target = targetIdOrUsername.trim().toLowerCase();
+    return requests.some(r => {
+      const rId = (r.targetId || r.receiverUid || r.senderId || r.senderUid || '').trim().toLowerCase();
+      const rUser = (r.receiverUsername || r.senderUsername || r.name || '').trim().toLowerCase();
+      return rId === target || rUser === target;
+    });
   },
 
   addFriend(friendData, profileId = null) {

@@ -8,6 +8,7 @@ import {
   setDoc, 
   getDoc, 
   getDocs,
+  deleteDoc,
   query, 
   where,
   orderBy, 
@@ -505,6 +506,108 @@ class LeaderboardService {
       return { standings };
     } catch (err) {
       return { standings: [] };
+    }
+  }
+
+  // ─── Cloud Friend Request Sync (Mutual Ask & Accept) ──────────────────────
+  async sendCloudFriendRequest(receiverUser, senderProfile) {
+    try {
+      let user = this.getCurrentUser();
+      if (!user) {
+        try {
+          const userCred = await signInAnonymously(auth);
+          user = userCred.user;
+          this.currentUser = user;
+        } catch (e) {}
+      }
+
+      if (!user) return false;
+
+      const senderUid = user.uid;
+      const senderProfileId = senderProfile?.id || 'default_child';
+      const senderUsername = senderProfile?.username || 'Climber Friend';
+      const receiverUid = receiverUser.uid;
+      const receiverProfileId = receiverUser.profileId || 'default_child';
+
+      const requestId = `${senderUid}_${receiverUid}_${Date.now()}`;
+      await setDoc(doc(db, 'friend_requests', requestId), {
+        id: requestId,
+        senderUid,
+        senderProfileId,
+        senderUsername,
+        senderScore: senderProfile?.score || 1000,
+        senderEquipped: senderProfile?.equipped || [],
+        senderSubjectsMastered: senderProfile?.subjectsMastered || 5,
+        receiverUid,
+        receiverProfileId,
+        receiverUsername: receiverUser.username || receiverUser.name,
+        status: 'pending',
+        createdAt: serverTimestamp()
+      });
+      return true;
+    } catch (err) {
+      console.warn('LeaderboardService: sendCloudFriendRequest error', err);
+      return false;
+    }
+  }
+
+  async fetchCloudFriendRequests() {
+    try {
+      const user = this.getCurrentUser();
+      if (!user) return { received: [], sent: [] };
+
+      const receivedQuery = query(
+        collection(db, 'friend_requests'),
+        where('receiverUid', '==', user.uid),
+        where('status', '==', 'pending'),
+        limit(25)
+      );
+
+      const sentQuery = query(
+        collection(db, 'friend_requests'),
+        where('senderUid', '==', user.uid),
+        where('status', '==', 'pending'),
+        limit(25)
+      );
+
+      const [receivedSnap, sentSnap] = await Promise.all([
+        getDocs(receivedQuery).catch(() => ({ empty: true, docs: [] })),
+        getDocs(sentQuery).catch(() => ({ empty: true, docs: [] }))
+      ]);
+
+      const received = [];
+      if (!receivedSnap.empty) {
+        receivedSnap.docs.forEach(docSnap => {
+          received.push({ ...docSnap.data(), id: docSnap.id });
+        });
+      }
+
+      const sent = [];
+      if (!sentSnap.empty) {
+        sentSnap.docs.forEach(docSnap => {
+          sent.push({ ...docSnap.data(), id: docSnap.id });
+        });
+      }
+
+      return { received, sent };
+    } catch (err) {
+      console.warn('LeaderboardService: fetchCloudFriendRequests error', err);
+      return { received: [], sent: [] };
+    }
+  }
+
+  async respondToCloudFriendRequest(requestId, action = 'accept') {
+    try {
+      const reqRef = doc(db, 'friend_requests', requestId);
+      if (action === 'accept') {
+        await setDoc(reqRef, { status: 'accepted', respondedAt: serverTimestamp() }, { merge: true });
+      } else {
+        await deleteDoc(reqRef);
+      }
+      return true;
+    } catch (err) {
+      console.warn('LeaderboardService: respondToCloudFriendRequest error', err);
+      return false;
     }
   }
 }

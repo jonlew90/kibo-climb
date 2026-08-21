@@ -466,7 +466,7 @@ export default function LeaderboardScreen({
                 className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-black rounded-lg shadow-sm flex items-center gap-1 cursor-pointer transition-all"
               >
                 <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>+ Add Friend</span>
+                <span>Manage Friends</span>
               </button>
             )}
 
