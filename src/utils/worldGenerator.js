@@ -799,14 +799,38 @@ export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Se
   const templates = getTierCandidateTemplates(effectiveTier);
   const shuffled = shuffleArray(templates);
 
-  let chosen = shuffled.find(t => !seenSet.has(getNormalizedProblemKey(t)));
+  let chosen = shuffled.find(t => {
+    const normKey = getNormalizedProblemKey(t);
+    const ansKey = (t.correctAnswer || '').toString().toLowerCase();
+    return !seenSet.has(normKey) && !seenSet.has(ansKey);
+  });
 
   if (!chosen) {
-    // If all seen in this tier, pick random from tier
+    // If all questions in this tier have been seen, check all other curriculum tiers
+    for (let t = 1; t <= 5; t++) {
+      if (t === effectiveTier) continue;
+      const otherTemplates = shuffleArray(getTierCandidateTemplates(t));
+      chosen = otherTemplates.find(item => {
+        const normKey = getNormalizedProblemKey(item);
+        const ansKey = (item.correctAnswer || '').toString().toLowerCase();
+        return !seenSet.has(normKey) && !seenSet.has(ansKey);
+      });
+      if (chosen) break;
+    }
+  }
+
+  if (!chosen) {
+    // If entire catalog of 1,000+ questions was seen, pick random from active tier
     chosen = shuffled[Math.floor(Math.random() * shuffled.length)] || templates[0];
   }
 
   const normKey = getNormalizedProblemKey(chosen);
+  const ansKey = (chosen.correctAnswer || '').toString().toLowerCase();
+
+  if (seenKeys instanceof Set) {
+    seenKeys.add(normKey);
+    if (ansKey) seenKeys.add(ansKey);
+  }
 
   return {
     id: `world_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -819,7 +843,7 @@ export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Se
     options: chosen.options,
     hint: chosen.hint,
     concept: chosen.concept,
-    tier: effectiveTier,
+    tier: chosen.tier || effectiveTier,
     shapeSvg: chosen.shapeSvg || null,
     mapData: chosen.mapData || null,
     flagData: chosen.flagData || null,

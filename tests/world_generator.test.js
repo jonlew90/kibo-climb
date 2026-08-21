@@ -250,4 +250,44 @@ describe('Kibo World Curriculum & Deduplication Engine', () => {
       });
     }
   });
+
+  it('should guarantee zero duplicate questions across extended continuous climb generations', () => {
+    const seen = new Set();
+    const allProblems = [];
+
+    // Simulate initial 15-question climb generation
+    const initialBatch = generateProblems(15, 1, [], seen);
+    allProblems.push(...initialBatch);
+
+    // Simulate 10 subsequent replenishments
+    for (let i = 0; i < 10; i++) {
+      const tier = (i % 5) + 1;
+      const nextBatch = generateProblems(6, tier, [], seen);
+      allProblems.push(...nextBatch);
+    }
+
+    expect(allProblems.length).toBe(15 + 60);
+    const keys = allProblems.map(getNormalizedProblemKey);
+    const uniqueKeys = new Set(keys);
+    expect(uniqueKeys.size).toBe(allProblems.length);
+  });
+
+  it('should search all other tiers without repeats when a single tier is exhausted in generateTierProblem', () => {
+    const seen = new Set();
+    const tier1Templates = getTierCandidateTemplates(1);
+
+    // Mark every template in tier 1 as seen
+    tier1Templates.forEach(t => {
+      seen.add(getNormalizedProblemKey(t));
+      seen.add((t.correctAnswer || '').toLowerCase());
+    });
+
+    // Calling generateTierProblem for tier 1 should draw from other tiers (2-5) without repeating any seen question
+    for (let i = 0; i < 50; i++) {
+      const problem = generateTierProblem(1, false, seen);
+      const key = getNormalizedProblemKey(problem);
+      expect(tier1Templates.map(getNormalizedProblemKey)).not.toContain(key);
+      expect(problem.tier).toBeGreaterThanOrEqual(2);
+    }
+  });
 });

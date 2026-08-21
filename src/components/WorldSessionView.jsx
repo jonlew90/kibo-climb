@@ -9,7 +9,7 @@ import { getLandmarkVisual } from '../data/worldLandmarks';
 
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
-import { generateWorldSession as generateProblems, generateWorldProblem as generateTierProblem, shuffleArray } from '../utils/worldGenerator';
+import { generateWorldSession as generateProblems, generateWorldProblem as generateTierProblem, getNormalizedProblemKey, shuffleArray } from '../utils/worldGenerator';
 import { getTierForRating as getTierFromRating, isNearTierThreshold } from '../utils/worldCurriculum';
 import { selectSpyglassSlot } from '../utils/wordsCurriculum';
 
@@ -156,6 +156,14 @@ export default function WorldSessionView({
   const [problemQueue, setProblemQueue] = useState(() => {
     const saved = storageService.getActiveClimbState(profileId, 'world');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWorldProblem)) {
+      const seen = new Set();
+      saved.problemQueue.forEach(p => {
+        const normKey = getNormalizedProblemKey(p);
+        const ansKey = (p.correctAnswer || p.answerString || p.answer || '').toString().toLowerCase();
+        if (normKey) seen.add(normKey);
+        if (ansKey) seen.add(ansKey);
+      });
+      blockSeenKeysRef.current = seen;
       return saved.problemQueue;
     }
     if (saved) {
@@ -396,6 +404,14 @@ export default function WorldSessionView({
     const saved = storageService.getActiveClimbState(profileId, 'world');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWorldProblem)) {
       setProblemQueue(saved.problemQueue);
+      const seen = new Set();
+      saved.problemQueue.forEach(p => {
+        const normKey = getNormalizedProblemKey(p);
+        const ansKey = (p.correctAnswer || p.answerString || p.answer || '').toString().toLowerCase();
+        if (normKey) seen.add(normKey);
+        if (ansKey) seen.add(ansKey);
+      });
+      blockSeenKeysRef.current = seen;
       setCurrentIndex(saved.currentIndex || 0);
       setSessionQuestionIndex(saved.sessionQuestionIndex || 1);
       setQuestionsAnswered(saved.questionsAnswered || 0);
@@ -751,8 +767,12 @@ export default function WorldSessionView({
         const probeExclude = new Set([...blockSeenKeysRef.current, ...recentWords]);
         const probeData = generateTierProblem(probeTier, false, probeExclude);
         const probeWord = (probeData.answerString || probeData.answer || '').toString().toLowerCase();
+        const probeKey = getNormalizedProblemKey(probeData);
         if (probeWord) {
           blockSeenKeysRef.current.add(probeWord);
+        }
+        if (probeKey) {
+          blockSeenKeysRef.current.add(probeKey);
         }
         const probeProblem = {
           ...probeData,
