@@ -4,10 +4,31 @@ import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
+import { leaderboardService } from '../services/leaderboardService';
 import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { SUBJECTS_CONFIG } from '../config/subjects';
+import { Dices, ShieldCheck } from 'lucide-react';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
+
+export const SAFE_ADJECTIVES = [
+  'Swift', 'Brave', 'Cosmic', 'Solar', 'Clever', 'Super', 'Bright', 'Epic',
+  'Mighty', 'Happy', 'Starry', 'Golden', 'Sparky', 'Hyper', 'Nova', 'Sunny',
+  'Cool', 'Lucky', 'Speedy', 'Wise', 'Alpine', 'Turbo', 'Quick', 'Cheer'
+];
+
+export const SAFE_NOUNS = [
+  'Otter', 'Falcon', 'Panda', 'Tiger', 'Fox', 'Koala', 'Eagle', 'Dolphin',
+  'Badger', 'Lynx', 'Dragon', 'Penguin', 'Cheetah', 'Rabbit', 'Wolf', 'Hawk',
+  'Owl', 'Bear', 'Climber', 'Star', 'Runner', 'Pioneer', 'Ranger', 'Comet'
+];
+
+export function generateSafeUsername() {
+  const adj = SAFE_ADJECTIVES[Math.floor(Math.random() * SAFE_ADJECTIVES.length)];
+  const noun = SAFE_NOUNS[Math.floor(Math.random() * SAFE_NOUNS.length)];
+  const num = Math.floor(Math.random() * 90) + 10;
+  return `${adj}${noun}${num}`;
+}
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 
@@ -86,6 +107,7 @@ export default function FirstLaunchOnboardingModal({
   const [usernameInput, setUsernameInput] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [usernameConfirmed, setUsernameConfirmed] = useState(false);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState('');
   const [selectedStartingSubject, setSelectedStartingSubject] = useState('math');
   const inputRef = useRef(null);
@@ -130,18 +152,46 @@ export default function FirstLaunchOnboardingModal({
 
   if (!isOpen) return null;
 
-  const handleUsernameSubmit = (e) => {
+  const handleGenerateSafeName = () => {
+    soundFx.playKeyTap();
+    const safeName = generateSafeUsername();
+    setUsernameInput(safeName);
+    setUsernameError('');
+  };
+
+  const handleUsernameSubmit = async (e) => {
     e.preventDefault();
     const error = validateUsername(usernameInput);
     if (error) { setUsernameError(error); return; }
     const cleaned = usernameInput.trim();
-    // Don't save yet — wait until grade is also chosen
-    soundFx.playVictory();
-    setUsernameConfirmed(true);
-    setTimeout(() => {
-      setUsernameConfirmed(false);
-      setStep(2);
-    }, 600);
+    
+    setIsCheckingUsername(true);
+    setUsernameError('');
+
+    try {
+      const res = await leaderboardService.claimUsername(cleaned, storageService.getActiveProfileId());
+      if (!res.success) {
+        setUsernameError(res.error || 'This username is already taken. Please choose another one.');
+        setIsCheckingUsername(false);
+        return;
+      }
+      soundFx.playVictory();
+      setUsernameConfirmed(true);
+      setTimeout(() => {
+        setUsernameConfirmed(false);
+        setIsCheckingUsername(false);
+        setStep(2);
+      }, 500);
+    } catch (err) {
+      console.warn('Username claim error', err);
+      soundFx.playVictory();
+      setUsernameConfirmed(true);
+      setTimeout(() => {
+        setUsernameConfirmed(false);
+        setIsCheckingUsername(false);
+        setStep(2);
+      }, 500);
+    }
   };
 
   const handleGradeSelect = (grade) => {
@@ -199,7 +249,7 @@ export default function FirstLaunchOnboardingModal({
               What should we<br />call you, Climber?
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
-              Pick your climber tag for <strong className="text-amber-400">Math, Words & World</strong> leaderboards.
+              Pick your climber tag for <strong className="text-amber-400">Math, Words & World</strong> leaderboards & friends.
             </p>
           </div>
 
@@ -211,11 +261,12 @@ export default function FirstLaunchOnboardingModal({
                 type="text"
                 value={usernameInput}
                 onChange={(e) => { setUsernameInput(e.target.value); setUsernameError(''); }}
-                placeholder="e.g. StarClimber42"
+                placeholder="e.g. CosmicOtter42"
                 maxLength={20}
                 autoComplete="off"
                 autoCapitalize="none"
                 spellCheck={false}
+                disabled={isCheckingUsername}
                 className={`w-full pl-10 pr-4 py-3.5 bg-white/10 border-2 rounded-2xl text-white font-extrabold text-base placeholder:text-slate-500 focus:outline-none transition-all ${
                   usernameError ? 'border-rose-500 bg-rose-500/10'
                   : usernameConfirmed ? 'border-emerald-400 bg-emerald-500/10'
@@ -226,13 +277,32 @@ export default function FirstLaunchOnboardingModal({
                 <CheckCircle2 className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400 stroke-[2.5]" />
               )}
             </div>
+
+            {/* Quick Safe Name Generator Button */}
+            <button
+              type="button"
+              onClick={handleGenerateSafeName}
+              className="w-full py-2 px-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 rounded-xl text-purple-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
+            >
+              <Dices className="w-4 h-4 text-amber-300" />
+              <span>🎲 Generate Kid-Safe Tag</span>
+            </button>
+
             {usernameError && <p className="text-xs font-bold text-rose-400 text-left px-1">{usernameError}</p>}
-            <p className="text-xs text-slate-400 font-medium text-left px-1">
-              3–20 characters · Letters, numbers, and underscores only
-            </p>
+            
+            <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 font-medium">
+              <span>3–20 characters · No spaces</span>
+              <span className="flex items-center gap-1 text-emerald-400">
+                <ShieldCheck className="w-3.5 h-3.5" /> Kid Safe
+              </span>
+            </div>
+
             <button type="submit"
-              className="w-full h-13 sm:h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 cursor-pointer">
-              {usernameConfirmed ? (
+              disabled={isCheckingUsername}
+              className="w-full h-13 sm:h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+              {isCheckingUsername ? (
+                <span className="animate-pulse">Checking availability...</span>
+              ) : usernameConfirmed ? (
                 <><CheckCircle2 className="w-5 h-5 stroke-[2.5]" /> Confirmed!</>
               ) : (
                 <>Next <ArrowRight className="w-5 h-5 stroke-[2.5]" /></>

@@ -102,41 +102,20 @@ const formatGradeDisplay = (grade) => {
   return grade;
 };
 
-function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' }) {
+function ProfileCard({ profile, onSelect, isSelected }) {
   const userData = profile.userData || {};
   const streak = userData.streak ?? 0;
+  const sparks = userData.sparks ?? 0;
   const equipped = profile.shopState?.equippedItems || [];
   const displayName = profile.username || profile.name || 'Kibo Climber';
-
-  const subjectKeys = Object.keys(SUBJECTS_CONFIG || { math: {}, words: {}, world: {} });
-
-  // Compute stats across all configured subjects
-  let totalSolvedAll = 0;
-  const subjectStats = subjectKeys.map((key) => {
-    const subData = userData.subjects?.[key] || (key === 'math' ? userData : {}) || {};
-    const rating = subData.adaptiveCompetenceRating || (key === 'math' ? userData.adaptiveCompetenceRating : null) || 1000;
-    const solved = subData.totalProblemsSolved ?? (key === 'math' ? (userData.totalProblemsSolved ?? 0) : 0);
-    const tier = subData.tier ?? (key === 'math' ? (userData.tier ?? 1) : 1);
-    totalSolvedAll += solved;
-    const meta = getSubjectMeta(key);
-    return {
-      key,
-      meta,
-      rating,
-      solved,
-      tier
-    };
-  });
-
-  const isFiltered = activeSubjectLens !== 'all' && SUBJECTS_CONFIG[activeSubjectLens];
-  const focusedSubject = isFiltered ? subjectStats.find((s) => s.key === activeSubjectLens) || subjectStats[0] : null;
-  const displayStreak = userData.streak ?? 0;
+  const lastSubjectKey = profile.lastActiveSubject || 'math';
+  const lastSubjectMeta = getSubjectMeta(lastSubjectKey);
 
   return (
     <button
       type="button"
-      onClick={() => onSelect(profile, activeSubjectLens !== 'all' ? activeSubjectLens : undefined)}
-      className={`group relative flex flex-col items-center gap-2 p-3 sm:p-3.5 rounded-2xl border-2 transition-all duration-200 cursor-pointer text-center w-full
+      onClick={() => onSelect(profile)}
+      className={`group relative flex flex-col items-center gap-2 p-3.5 sm:p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer text-center w-full
         ${isSelected
           ? 'border-amber-400 bg-amber-50/90 scale-[1.02] shadow-md shadow-amber-500/20'
           : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 hover:scale-[1.01] shadow-xs'
@@ -153,111 +132,49 @@ function ProfileCard({ profile, onSelect, isSelected, activeSubjectLens = 'all' 
       )}
 
       {/* Mascot Avatar */}
-      <div className="relative p-0.5 overflow-visible">
+      <div className="relative p-0.5 overflow-visible my-1">
         <div className={`absolute inset-0 rounded-full blur-lg transition-all duration-300 ${isSelected ? 'bg-amber-400/30' : 'bg-purple-500/10 group-hover:bg-purple-500/20'}`} />
         <Mascot
           mood="happy"
           state="idle"
           equipped={equipped}
           disableInteractive={true}
-          className="w-12 h-12 sm:w-14 sm:h-14 aspect-square relative z-10 drop-shadow-md"
+          className="w-14 h-14 sm:w-16 sm:h-16 aspect-square relative z-10 drop-shadow-md"
         />
       </div>
 
-      {/* Profile Name & Grade & Streak */}
-      <div className="space-y-0.5 text-center w-full">
-        <h3 className="text-xs sm:text-sm font-black text-slate-800 tracking-tight leading-tight truncate max-w-[140px] mx-auto">
+      {/* Profile Name & Grade */}
+      <div className="space-y-1 text-center w-full">
+        <h3 className="text-sm sm:text-base font-black text-slate-800 tracking-tight leading-tight truncate max-w-[160px] mx-auto">
           {displayName}
         </h3>
-        <div className="flex items-center justify-center gap-1 w-full max-w-full flex-nowrap overflow-hidden">
-          {profile.gradeLevel && (
-            <span
-              title={profile.gradeLevel}
-              className="text-xs font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md leading-tight truncate shrink min-w-0"
-            >
-              {formatGradeDisplay(profile.gradeLevel)}
-            </span>
-          )}
-          <span className="inline-flex items-center gap-0.5 text-xs font-black text-amber-600 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded-md shrink-0 whitespace-nowrap">
-            <Flame className="w-2.5 h-2.5 fill-amber-500 text-amber-500 shrink-0" />{displayStreak}d
+        {profile.gradeLevel && (
+          <span
+            title={profile.gradeLevel}
+            className="inline-block text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md leading-tight"
+          >
+            {formatGradeDisplay(profile.gradeLevel)}
           </span>
-          <span className="inline-flex items-center gap-0.5 text-xs font-black text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-md shrink-0 whitespace-nowrap">
-            <Zap className="w-2.5 h-2.5 fill-emerald-500 text-emerald-500 shrink-0" />{totalSolvedAll}
-          </span>
-        </div>
+        )}
       </div>
 
-      {/* Multi-Subject Stats Section */}
-      {isFiltered && focusedSubject ? (
-        // Spotlight Lens View for single subject
-        <div className="w-full pt-1">
-          <div className={`flex flex-col ${focusedSubject.meta.bg} border ${focusedSubject.meta.border} rounded-xl p-2 text-left transition-colors`}>
-            <div className="flex items-center justify-between gap-1 mb-0.5">
-              <span className={`text-xs font-black ${focusedSubject.meta.text} flex items-center gap-0.5`}>
-                <span>{focusedSubject.meta.icon}</span> {focusedSubject.meta.name}
-              </span>
-              <span className="text-xs font-extrabold text-slate-600">
-                {focusedSubject.solved} {focusedSubject.meta.solvedUnit}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-xs font-black text-slate-800">
-              <span className="flex items-center gap-0.5">
-                <Star className={`w-2.5 h-2.5 ${focusedSubject.meta.star} shrink-0`} />
-                {focusedSubject.rating}
-              </span>
-              <span className="text-xs font-bold text-slate-500">
-                Tier {focusedSubject.tier}
-              </span>
-            </div>
-          </div>
-        </div>
-      ) : subjectStats.length <= 2 ? (
-        // Side-by-side 2-column layout when 1-2 subjects
-        <div className="grid grid-cols-2 gap-1.5 w-full pt-1">
-          {subjectStats.map(({ key, meta, rating, solved }) => (
-            <div
-              key={key}
-              className={`flex flex-col ${meta.bg} border ${meta.border} rounded-xl p-1.5 text-left transition-colors`}
-            >
-              <div className="flex items-center justify-between gap-1 mb-0.5">
-                <span className={`text-xs font-black ${meta.text} flex items-center gap-0.5 truncate`}>
-                  <span>{meta.icon}</span> {meta.name}
-                </span>
-                <span className="text-xs font-extrabold text-slate-600 shrink-0">
-                  {solved}{meta.solvedUnit}
-                </span>
-              </div>
-              <div className="flex items-center gap-0.5 text-xs font-black text-slate-800">
-                <Star className={`w-2.5 h-2.5 ${meta.star} shrink-0`} />
-                <span>{rating}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        // Adaptive Compact Grid for 3+ subjects
-        <div className="w-full pt-1">
-          <div className="grid grid-cols-2 gap-1 w-full max-h-24 overflow-y-auto custom-scrollbar p-0.5">
-            {subjectStats.map(({ key, meta, rating }) => (
-              <div
-                key={key}
-                className={`flex items-center justify-between px-2 py-1 rounded-lg border ${meta.border} ${meta.bg} text-xs font-black ${meta.text}`}
-              >
-                <div className="flex items-center gap-1 truncate">
-                  <span>{meta.icon}</span>
-                  <span className="truncate">{meta.name}</span>
-                </div>
-                <div className="flex items-center gap-0.5 shrink-0 text-slate-700">
-                  <Star className={`w-2 h-2 ${meta.star}`} />
-                  <span>{rating}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Badges / Stats: Streak, Sparks, & Last Active Subject */}
+      <div className="flex items-center justify-center gap-1.5 flex-wrap pt-1 w-full">
+        <span className="inline-flex items-center gap-1 text-xs font-black text-amber-700 bg-amber-50 border border-amber-200/70 px-2 py-0.5 rounded-lg shadow-2xs">
+          <Flame className="w-3 h-3 fill-amber-500 text-amber-500 shrink-0" />
+          {streak}d
+        </span>
+        <span className="inline-flex items-center gap-1 text-xs font-black text-amber-700 bg-amber-50/70 border border-amber-200/70 px-2 py-0.5 rounded-lg shadow-2xs">
+          <Zap className="w-3 h-3 fill-amber-500 text-amber-500 shrink-0" />
+          {sparks}
+        </span>
+        <span className={`inline-flex items-center gap-1 text-xs font-black ${lastSubjectMeta.text} ${lastSubjectMeta.bg} border ${lastSubjectMeta.border} px-2 py-0.5 rounded-lg shadow-2xs`}>
+          <span>{lastSubjectMeta.icon}</span>
+          <span>{lastSubjectMeta.name}</span>
+        </span>
+      </div>
 
-      <ChevronRight className={`absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 transition-all duration-200 ${isSelected ? 'text-amber-500 opacity-100' : 'text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-slate-600'}`} />
+      <ChevronRight className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-all duration-200 ${isSelected ? 'text-amber-500 opacity-100' : 'text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-slate-600'}`} />
     </button>
   );
 }
@@ -397,13 +314,11 @@ export default function ProfileSelectorScreen({
   onSelectProfile,
   onOpenParentZone,
   canClose = false,
-  onClose,
-  initialSubjectLens = 'all'
+  onClose
 }) {
   const [profiles, setProfiles] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [showAddPanel, setShowAddPanel] = useState(false);
-  const [subjectLens, setSubjectLens] = useState(initialSubjectLens);
 
   const loadProfiles = () => {
     const list = storageService.getAllProfiles();
@@ -416,11 +331,11 @@ export default function ProfileSelectorScreen({
     loadProfiles();
   }, []);
 
-  const handleSelect = (profile, preferredSubject) => {
+  const handleSelect = (profile) => {
     setSelectedId(profile.id);
     storageService.setActiveProfileId(profile.id);
     if (onSelectProfile) {
-      onSelectProfile(profile, preferredSubject);
+      onSelectProfile(profile);
     }
   };
 
@@ -429,8 +344,6 @@ export default function ProfileSelectorScreen({
     loadProfiles();
     handleSelect(newProfile);
   };
-
-  const subjectKeys = Object.keys(SUBJECTS_CONFIG || { math: {}, words: {}, world: {} });
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
@@ -458,12 +371,12 @@ export default function ProfileSelectorScreen({
       </header>
 
       {/* Main Fullscreen Content */}
-      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-3xl mx-auto px-4 py-2 sm:py-3 flex flex-col justify-between items-center gap-2 sm:gap-3">
-        {/* Top Section: Header Title & Tabs */}
-        <div className="w-full flex flex-col items-center space-y-1 sm:space-y-2 shrink-0">
+      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-3xl mx-auto px-4 py-3 sm:py-4 flex flex-col justify-between items-center gap-3 sm:gap-4">
+        {/* Top Section: Header Title */}
+        <div className="w-full flex flex-col items-center space-y-1 shrink-0">
           <div className="text-center space-y-0.5">
             <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-amber-600">
-              Kibo Climb • Multi-Subject
+              Kibo Climb
             </span>
             <h1 className="text-lg sm:text-2xl font-black text-slate-800 tracking-tight leading-tight">
               {profiles.length === 1
@@ -471,53 +384,17 @@ export default function ProfileSelectorScreen({
                 : "Who's climbing today?"}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 font-medium">
-              {profiles.length === 1 ? 'Tap your card to start your daily ascent' : 'Pick your profile to continue your ascent across Math, Words & World'}
+              {profiles.length === 1 ? 'Tap your card to continue your ascent' : 'Pick your profile to jump right back into your ascent'}
             </p>
           </div>
-
-          {/* Subject Filter / Lens Tabs (shown when multiple subjects exist) */}
-          {subjectKeys.length >= 2 && !showAddPanel && (
-            <div className="flex items-center justify-center gap-1.5 overflow-x-auto pb-0.5 max-w-full px-1 scrollbar-none shrink-0 mx-auto">
-              <button
-                type="button"
-                onClick={() => { soundFx.playKeyTap(); setSubjectLens('all'); }}
-                className={`px-2.5 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
-                  subjectLens === 'all'
-                    ? 'bg-slate-800 text-white shadow-xs'
-                    : 'bg-white/80 text-slate-600 hover:bg-white border border-slate-200'
-                }`}
-              >
-                🌟 All Subjects
-              </button>
-              {subjectKeys.map((key) => {
-                const meta = getSubjectMeta(key);
-                const isCurrent = subjectLens === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => { soundFx.playKeyTap(); setSubjectLens(key); }}
-                    className={`px-2.5 py-1 rounded-full text-xs font-black transition-all flex items-center gap-1 shrink-0 cursor-pointer ${
-                      isCurrent
-                        ? `${meta.activeBg} shadow-xs`
-                        : 'bg-white/80 text-slate-600 hover:bg-white border border-slate-200'
-                    }`}
-                  >
-                    <span>{meta.icon}</span>
-                    <span>{meta.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         {/* Middle Section: Profiles Grid OR Add Profile Panel */}
         <div className="w-full flex-1 flex flex-col justify-center items-center my-auto min-h-0">
           {!showAddPanel ? (
-            <div className="w-full flex flex-col items-center gap-2 sm:gap-3">
+            <div className="w-full flex flex-col items-center gap-3 sm:gap-4">
               {/* Profile grid */}
-              <div className={`w-full grid gap-2 sm:gap-3 ${
+              <div className={`w-full grid gap-3 sm:gap-4 ${
                 profiles.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' :
                 profiles.length === 2 ? 'grid-cols-2 max-w-md mx-auto' :
                 'grid-cols-2 sm:grid-cols-3 max-w-2xl mx-auto'
@@ -528,7 +405,6 @@ export default function ProfileSelectorScreen({
                     profile={profile}
                     onSelect={handleSelect}
                     isSelected={selectedId === profile.id}
-                    activeSubjectLens={subjectLens}
                   />
                 ))}
               </div>

@@ -55,9 +55,11 @@ import { setHapticsEnabled } from './utils/audio';
 
 export default function App() {
   // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms' | 'leaderboard'
-  const [activeSubject, setActiveSubject] = useState('math');
   const [activeProfileId, setActiveProfileId] = useState(() => {
     return storageService.getActiveProfileId();
+  });
+  const [activeSubject, setActiveSubject] = useState(() => {
+    return storageService.getLastActiveSubject();
   });
 
   const [appState, setAppState] = useState(() => {
@@ -539,6 +541,7 @@ export default function App() {
 
   const handleSubjectChange = (newSubject) => {
     soundFx.playKeyTap();
+    storageService.setLastActiveSubject(newSubject);
     setActiveSubject(newSubject);
     setAppState('adaptive_session');
     setShowSubjectSelector(false);
@@ -1607,13 +1610,11 @@ export default function App() {
       {/* PROFILE SELECTOR — shown on every load when 2+ profiles exist */}
       {showProfileSelector && (
         <ProfileSelectorScreen
-          onSelectProfile={(profile, preferredSubject) => {
-            if (preferredSubject && (preferredSubject === 'words' || preferredSubject === 'math' || preferredSubject === 'world')) {
-              setActiveSubject(preferredSubject);
-              syncAppStateWithStorage(preferredSubject);
-            } else {
-              syncAppStateWithStorage();
-            }
+          onSelectProfile={(profile) => {
+            const targetSubject = profile?.lastActiveSubject || storageService.getLastActiveSubject(profile?.id) || 'math';
+            storageService.setLastActiveSubject(targetSubject, profile?.id);
+            setActiveSubject(targetSubject);
+            syncAppStateWithStorage(targetSubject);
             setShowProfileSelector(false);
             setAppState('adaptive_session');
           }}
@@ -1629,13 +1630,11 @@ export default function App() {
       {showManualProfileSwitcher && (
         <ProfileSelectorScreen
           canClose={true}
-          onSelectProfile={(profile, preferredSubject) => {
-            if (preferredSubject && (preferredSubject === 'words' || preferredSubject === 'math' || preferredSubject === 'world')) {
-              setActiveSubject(preferredSubject);
-              syncAppStateWithStorage(preferredSubject);
-            } else {
-              syncAppStateWithStorage();
-            }
+          onSelectProfile={(profile) => {
+            const targetSubject = profile?.lastActiveSubject || storageService.getLastActiveSubject(profile?.id) || 'math';
+            storageService.setLastActiveSubject(targetSubject, profile?.id);
+            setActiveSubject(targetSubject);
+            syncAppStateWithStorage(targetSubject);
             setShowManualProfileSwitcher(false);
             setAppState('adaptive_session');
           }}
@@ -1679,12 +1678,10 @@ export default function App() {
           setShowPinGateModal(true);
         }}
         onStartAdaptiveClimb={(startingSubject = 'math') => {
-          if (startingSubject && (startingSubject === 'words' || startingSubject === 'math' || startingSubject === 'world')) {
-            setActiveSubject(startingSubject);
-            syncAppStateWithStorage(startingSubject);
-          } else {
-            syncAppStateWithStorage();
-          }
+          const validSubject = (startingSubject === 'words' || startingSubject === 'math' || startingSubject === 'world') ? startingSubject : 'math';
+          storageService.setLastActiveSubject(validSubject);
+          setActiveSubject(validSubject);
+          syncAppStateWithStorage(validSubject);
           setShowFirstLaunchOnboardingModal(false);
           setAppState('adaptive_session');
         }}

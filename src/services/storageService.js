@@ -37,6 +37,7 @@ const DEFAULT_PROFILE = {
   practiceDays: [1, 2, 3, 4, 5],
   dailyReminderEnabled: true,
   reminderTime: '17:00',
+  lastActiveSubject: 'math',
   userData: {
     adaptiveCompetenceRating: 1000,
     subjectRatings: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, k) => { acc[k] = 1000; return acc; }, {}),
@@ -94,7 +95,8 @@ const DEFAULT_PROFILE = {
     equippedItems: [],
     unlockedItems: [],
     redeemedPromoCodes: []
-  }
+  },
+  friends: []
 };
 
 const DEFAULT_PROFILES_STATE = {
@@ -121,13 +123,13 @@ const DEFAULT_PARENT_SETTINGS = {
 function safeGetProfilesState() {
   try {
     const item = localStorage.getItem(KEYS.PROFILES);
-    if (!item) return DEFAULT_PROFILES_STATE;
+    if (!item) return JSON.parse(JSON.stringify(DEFAULT_PROFILES_STATE));
     const parsed = JSON.parse(item);
-    if (!parsed.profiles || !parsed.activeProfileId) return DEFAULT_PROFILES_STATE;
+    if (!parsed.profiles || !parsed.activeProfileId) return JSON.parse(JSON.stringify(DEFAULT_PROFILES_STATE));
     return parsed;
   } catch (e) {
     console.error('StorageService: error reading profiles state', e);
-    return DEFAULT_PROFILES_STATE;
+    return JSON.parse(JSON.stringify(DEFAULT_PROFILES_STATE));
   }
 }
 
@@ -164,6 +166,7 @@ export const storageService = {
     return {
       dailyReminderEnabled: prof.dailyReminderEnabled !== undefined ? prof.dailyReminderEnabled : true,
       reminderTime: prof.reminderTime || '17:00',
+      lastActiveSubject: prof.lastActiveSubject || 'math',
       ...prof
     };
   },
@@ -173,8 +176,23 @@ export const storageService = {
     return {
       dailyReminderEnabled: prof.dailyReminderEnabled !== undefined ? prof.dailyReminderEnabled : true,
       reminderTime: prof.reminderTime || '17:00',
+      lastActiveSubject: prof.lastActiveSubject || 'math',
       ...prof
     };
+  },
+  getLastActiveSubject(profileId = null) {
+    const state = safeGetProfilesState();
+    const targetId = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    const prof = state.profiles[targetId];
+    return prof?.lastActiveSubject || 'math';
+  },
+  setLastActiveSubject(subject, profileId = null) {
+    const state = safeGetProfilesState();
+    const targetId = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (state.profiles[targetId]) {
+      state.profiles[targetId].lastActiveSubject = subject;
+      safeSaveProfilesState(state);
+    }
   },
   isAccountGloballyLinked() {
     const state = safeGetProfilesState();
@@ -974,6 +992,90 @@ export const storageService = {
 
   getCurrentDate() {
     return this.getSimulatedDate() || new Date();
+  },
+
+  // ─── Friend Management (Max 25 friends per profile) ───────────────────────
+  getFriends(profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const profile = this.getProfileById(pid);
+    if (!profile || !Array.isArray(profile.friends)) return [];
+    return profile.friends.slice(0, 25);
+  },
+
+  addFriend(friendData, profileId = null) {
+    if (!friendData) return this.getFriends(profileId);
+    const pid = profileId || this.getActiveProfileId();
+    const state = safeGetProfilesState();
+    if (!state.profiles[pid]) return [];
+
+    if (!Array.isArray(state.profiles[pid].friends)) {
+      state.profiles[pid].friends = [];
+    }
+
+    const currentFriends = state.profiles[pid].friends;
+    const friendId = friendData.id || friendData.uid || friendData.username;
+    const normalizedUsername = (friendData.username || friendData.name || '').trim().toLowerCase();
+    const normalizedFriendId = (friendId || '').trim().toLowerCase();
+
+    // Prevent duplicate entries
+    const exists = currentFriends.some(f => {
+      const fId = (f.id || f.uid || '').trim().toLowerCase();
+      const fUser = (f.username || f.name || '').trim().toLowerCase();
+      return (normalizedFriendId && fId === normalizedFriendId) || 
+             (normalizedUsername && fUser === normalizedUsername);
+    });
+
+    if (!exists) {
+      if (currentFriends.length >= 25) {
+        throw new Error('Maximum friend limit reached (25 friends max).');
+      }
+
+      const newFriend = {
+        id: friendId,
+        uid: friendData.uid || (friendId.includes('_') ? friendId.split('_')[0] : friendId),
+        profileId: friendData.profileId || (friendId.includes('_') ? friendId.split('_')[1] : 'default_child'),
+        username: friendData.username || friendData.name || 'Climber Friend',
+        name: friendData.name || friendData.username || 'Climber Friend',
+        score: Number(friendData.score) || 1000,
+        equipped: Array.isArray(friendData.equipped) ? friendData.equipped : [],
+        subjectsMastered: Number(friendData.subjectsMastered) || 5,
+        addedAt: new Date().toISOString()
+      };
+
+      currentFriends.push(newFriend);
+      safeSaveProfilesState(state);
+    }
+
+    return state.profiles[pid].friends;
+  },
+
+  removeFriend(friendIdOrUsername, profileId = null) {
+    if (!friendIdOrUsername) return this.getFriends(profileId);
+    const pid = profileId || this.getActiveProfileId();
+    const state = safeGetProfilesState();
+    if (!state.profiles[pid] || !Array.isArray(state.profiles[pid].friends)) return [];
+
+    const target = friendIdOrUsername.trim().toLowerCase();
+    state.profiles[pid].friends = state.profiles[pid].friends.filter(f => {
+      const fId = (f.id || f.uid || '').trim().toLowerCase();
+      const fUser = (f.username || f.name || '').trim().toLowerCase();
+      return fId !== target && fUser !== target;
+    });
+
+    safeSaveProfilesState(state);
+    return state.profiles[pid].friends;
+  },
+
+  isFriend(friendIdOrUsername, profileId = null) {
+    if (!friendIdOrUsername) return false;
+    const friends = this.getFriends(profileId);
+    const target = friendIdOrUsername.trim().toLowerCase();
+    return friends.some(f => {
+      const fId = (f.id || f.uid || '').trim().toLowerCase();
+      const fUser = (f.username || f.name || '').trim().toLowerCase();
+      return fId === target || fUser === target;
+    });
   }
 };
+
 

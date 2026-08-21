@@ -277,6 +277,56 @@ class LeaderboardService {
     }
   }
 
+  // ─── Friend System & Username Management ──────────────────────────────────
+  async claimUsername(username, profileId = 'default_child') {
+    if (!username || typeof username !== 'string') {
+      return { success: false, error: 'Please enter a username.' };
+    }
+
+    try {
+      const claimFn = httpsCallable(functions, 'claimUsername');
+      const res = await claimFn({ username: username.trim(), profileId });
+      return { success: true, username: res.data?.username || username.trim() };
+    } catch (error) {
+      // If error is already-exists, surface human-readable message
+      if (error?.code === 'functions/already-exists' || error?.message?.includes('already taken')) {
+        return { success: false, error: 'This username is already taken. Please choose another one.' };
+      }
+      // If offline / local fallback in dev mode, proceed gracefully
+      console.warn('LeaderboardService: claimUsername network fallback', error);
+      return { success: true, username: username.trim(), isOfflineFallback: true };
+    }
+  }
+
+  async searchUsername(query) {
+    if (!query || typeof query !== 'string' || query.trim().length < 2) {
+      return { results: [] };
+    }
+
+    try {
+      const searchFn = httpsCallable(functions, 'searchUsername');
+      const res = await searchFn({ query: query.trim() });
+      return { results: res.data?.results || [] };
+    } catch (error) {
+      console.warn('LeaderboardService: searchUsername fallback', error);
+      return { results: [] };
+    }
+  }
+
+  async fetchFriendScores(subject = 'math', friendIds = []) {
+    if (!Array.isArray(friendIds) || friendIds.length === 0) {
+      return { standings: [] };
+    }
+
+    try {
+      const getScoresFn = httpsCallable(functions, 'getFriendScores');
+      const res = await getScoresFn({ subject, friendIds });
+      return { standings: res.data?.standings || [] };
+    } catch (error) {
+      console.warn('LeaderboardService: fetchFriendScores fallback', error);
+      return { standings: [] };
+    }
+  }
 }
 
 export const leaderboardService = new LeaderboardService();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X } from 'lucide-react';
+import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X, Users, UserPlus } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
@@ -7,6 +7,7 @@ import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
 import { getWeekStr } from '../utils/dateUtils';
 import { SUBJECTS_CONFIG } from '../config/subjects';
+import AddFriendModal from './AddFriendModal';
 
 export default function LeaderboardScreen({
   activeSubject = 'math',
@@ -16,8 +17,12 @@ export default function LeaderboardScreen({
 }) {
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
   const [liveStandings, setLiveStandings] = useState([]);
-  const [viewMode, setViewMode] = useState('global'); // 'global' or 'weekly'
+  const [viewMode, setViewMode] = useState('global'); // 'global' | 'weekly' | 'friends'
   const [weeklyStandings, setWeeklyStandings] = useState([]);
+  const [friendsStandings, setFriendsStandings] = useState([]);
+  const [friendsList, setFriendsList] = useState(() => storageService.getFriends());
+  const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [cohortId, setCohortId] = useState(null);
   const [isLoadingCohort, setIsLoadingCohort] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -74,6 +79,47 @@ export default function LeaderboardScreen({
       subject: selectedSubject
     };
   });
+
+  const refreshFriendsStandings = async () => {
+    const stored = storageService.getFriends();
+    setFriendsList(stored);
+    if (stored.length === 0) {
+      setFriendsStandings([]);
+      return;
+    }
+
+    setIsLoadingFriends(true);
+    const friendIds = stored.map(f => f.id || f.uid || f.username).filter(Boolean);
+    try {
+      const res = await leaderboardService.fetchFriendScores(selectedSubject, friendIds);
+      if (res?.standings && res.standings.length > 0) {
+        const merged = stored.map(f => {
+          const remote = res.standings.find(r => r.id === f.id || r.name === f.username || r.uid === f.uid);
+          return {
+            ...f,
+            score: remote ? (Number(remote.score) || 1000) : (Number(f.score) || 1000),
+            equipped: (remote && remote.equipped?.length) ? remote.equipped : (f.equipped || []),
+            subjectsMastered: remote ? (remote.subjectsMastered || 5) : (f.subjectsMastered || 5),
+            isFriend: true
+          };
+        });
+        setFriendsStandings(merged);
+      } else {
+        setFriendsStandings(stored.map(f => ({ ...f, isFriend: true })));
+      }
+    } catch (err) {
+      setFriendsStandings(stored.map(f => ({ ...f, isFriend: true })));
+    } finally {
+      setIsLoadingFriends(false);
+    }
+  };
+
+  useEffect(() => {
+    if (viewMode === 'friends') {
+      refreshFriendsStandings();
+    }
+  }, [viewMode, selectedSubject]);
+
 
 
   useEffect(() => {
@@ -259,7 +305,28 @@ export default function LeaderboardScreen({
     }
   }
 
-  const activeStandingsList = viewMode === 'weekly' ? uniqueWeeklyStandings : uniqueStandings;
+  // Handle Friends Standings merging with account profiles
+  const mergedFriendsList = [...friendsStandings, ...accountPlayers];
+  mergedFriendsList.sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+
+  const seenFriendsKeys = new Set();
+  const uniqueFriendsStandings = [];
+  for (const player of mergedFriendsList) {
+    const key = player.isCurrentUser
+      ? '__current_active_user__'
+      : (player.profileId && player.uid ? `${player.uid}_${player.profileId}` : (player.name || player.username || '').trim().toLowerCase() || player.id);
+
+    if (!seenFriendsKeys.has(key)) {
+      seenFriendsKeys.add(key);
+      uniqueFriendsStandings.push(player);
+    }
+  }
+
+  const activeStandingsList = viewMode === 'weekly' 
+    ? uniqueWeeklyStandings 
+    : viewMode === 'friends' 
+    ? uniqueFriendsStandings 
+    : uniqueStandings;
 
   // Assign ranks
   const rankedStandings = activeStandingsList.map((player, index) => ({
@@ -282,7 +349,7 @@ export default function LeaderboardScreen({
   let pointsNeeded = 0;
   if (currentUserRank > 1) {
     const playerAbove = rankedStandings[currentUserRank - 2];
-    if (viewMode === 'global') {
+    if (viewMode === 'global' || viewMode === 'friends') {
       pointsNeeded = playerAbove ? Math.max(1, playerAbove.score - userScore + 1) : 1;
     } else {
       pointsNeeded = playerAbove ? Math.max(1, (playerAbove.sparks || playerAbove.score || 0) - pinnedScoreDisplay + 1) : 1;
@@ -304,21 +371,21 @@ export default function LeaderboardScreen({
       {/* HEADER & CONTROLS */}
 
         {/* VIEW MODE TABS */}
-        <div className="px-4 pt-3 flex items-center gap-2 mb-2">
+        <div className="px-4 pt-3 flex items-center gap-1.5 sm:gap-2 mb-2">
           <button
             type="button"
             onClick={() => {
               soundFx.playKeyTap();
               setViewMode('global');
             }}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 border-2 ${
+            className={`flex-1 py-2 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer ${
               viewMode === 'global'
                 ? 'bg-slate-800 text-white border-slate-900 shadow-sm ring-2 ring-slate-400/30'
                 : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
             }`}
           >
-            <Trophy className="w-4 h-4" />
-            Global Standings
+            <Trophy className="w-4 h-4 shrink-0" />
+            <span>Global</span>
           </button>
 
           <button
@@ -327,14 +394,37 @@ export default function LeaderboardScreen({
               soundFx.playKeyTap();
               setViewMode('weekly');
             }}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 border-2 ${
+            className={`flex-1 py-2 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer ${
               viewMode === 'weekly'
                 ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm ring-2 ring-emerald-400/30'
                 : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
             }`}
           >
-            <Zap className="w-4 h-4 fill-current" />
-            Weekly League
+            <Zap className="w-4 h-4 fill-current shrink-0" />
+            <span>Weekly</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('friends');
+            }}
+            className={`flex-1 py-2 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer relative ${
+              viewMode === 'friends'
+                ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm ring-2 ring-indigo-400/30'
+                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+            }`}
+          >
+            <Users className="w-4 h-4 shrink-0" />
+            <span>Friends</span>
+            {friendsList.length > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ml-0.5 ${
+                viewMode === 'friends' ? 'bg-indigo-400 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'
+              }`}>
+                {friendsList.length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -343,11 +433,13 @@ export default function LeaderboardScreen({
           <div className="flex items-center gap-2 text-slate-800">
             {viewMode === 'global' ? (
               <Trophy className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
-            ) : (
+            ) : viewMode === 'weekly' ? (
               <Zap className="w-5 h-5 text-emerald-600 fill-emerald-500 stroke-[2.5]" />
+            ) : (
+              <Users className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
             )}
             <h2 className="text-lg font-black tracking-tight">
-              {viewMode === 'global' ? 'Global Standings' : 'Weekly League'}
+              {viewMode === 'global' ? 'Global Standings' : viewMode === 'weekly' ? 'Weekly League' : 'Friends & Classmates'}
             </h2>
             <button
               type="button"
@@ -363,13 +455,30 @@ export default function LeaderboardScreen({
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">
-            <Activity className="w-3.5 h-3.5 text-indigo-600" />
-            <span>
-              {viewMode === 'global' ? `${subjectConfig.name} Competence` : `${subjectConfig.name} Weekly Sparks`}
-            </span>
+          <div className="flex items-center gap-2">
+            {viewMode === 'friends' && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setShowAddFriendModal(true);
+                }}
+                className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-black rounded-lg shadow-sm flex items-center gap-1 cursor-pointer transition-all"
+              >
+                <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>+ Add Friend</span>
+              </button>
+            )}
+
+            <div className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">
+              <Activity className="w-3.5 h-3.5 text-indigo-600" />
+              <span>
+                {viewMode === 'weekly' ? `${subjectConfig.name} Weekly Sparks` : `${subjectConfig.name} Competence`}
+              </span>
+            </div>
           </div>
         </div>
+
 
         {/* SUBJECT SELECTION TABS */}
         <div className="px-4 pt-1 flex items-center gap-2">
@@ -434,6 +543,34 @@ export default function LeaderboardScreen({
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 overflow-y-auto custom-scrollbar relative pb-6">
+
+        {/* FRIENDS EMPTY PROMPT BANNER */}
+        {viewMode === 'friends' && friendsList.length === 0 && (
+          <div className="mx-4 mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0 border border-indigo-200 text-indigo-600">
+                <Users className="w-6 h-6 stroke-[2.5]" />
+              </div>
+              <div>
+                <h4 className="text-sm font-black text-slate-800">Add Friends & Classmates</h4>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Connect by climber tag to compare practice progress and equipped cosmetics!
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowAddFriendModal(true);
+              }}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-black rounded-xl shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
+            >
+              <UserPlus className="w-4 h-4 stroke-[2.5]" />
+              <span>+ Add Friend</span>
+            </button>
+          </div>
+        )}
 
         {/* EMPTY STATE IF NO PLAYERS */}
         {rankedStandings.length === 0 && (
@@ -652,29 +789,31 @@ export default function LeaderboardScreen({
 
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
-                viewMode === 'global' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'
+                viewMode === 'global' ? 'bg-indigo-100 text-indigo-600' : viewMode === 'weekly' ? 'bg-emerald-100 text-emerald-600' : 'bg-purple-100 text-purple-600'
               }`}>
                 {viewMode === 'global' ? (
                   <Trophy className="w-6 h-6 stroke-[2.5]" />
-                ) : (
+                ) : viewMode === 'weekly' ? (
                   <Zap className="w-6 h-6 fill-current stroke-[2.5]" />
+                ) : (
+                  <Users className="w-6 h-6 stroke-[2.5]" />
                 )}
               </div>
               <div className="min-w-0 flex-1 pr-6">
                 <h3 className="text-lg font-black text-slate-900 leading-tight">
-                  {viewMode === 'global' ? `${subjectConfig.name} Competence` : 'Weekly League'}
+                  {viewMode === 'global' ? `${subjectConfig.name} Competence` : viewMode === 'weekly' ? 'Weekly League' : 'Friends Standings'}
                 </h3>
                 <p className="text-xs font-semibold text-slate-500">
-                  {viewMode === 'global' ? 'How Global Standings Work' : 'How Weekly League Works'}
+                  {viewMode === 'global' ? 'How Global Standings Work' : viewMode === 'weekly' ? 'How Weekly League Works' : 'How Friends Standings Work'}
                 </p>
               </div>
             </div>
 
             <div className={`rounded-2xl p-4 border text-xs sm:text-sm font-medium leading-relaxed ${
-              viewMode === 'global' ? 'bg-indigo-50/80 border-indigo-200 text-indigo-950' : 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
+              viewMode === 'global' ? 'bg-indigo-50/80 border-indigo-200 text-indigo-950' : viewMode === 'weekly' ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950' : 'bg-purple-50/80 border-purple-200 text-purple-950'
             }`}>
               <div className="flex items-start gap-2.5">
-                <Info className={`w-4 h-4 shrink-0 mt-0.5 ${viewMode === 'global' ? 'text-indigo-600' : 'text-emerald-600'}`} />
+                <Info className={`w-4 h-4 shrink-0 mt-0.5 ${viewMode === 'global' ? 'text-indigo-600' : viewMode === 'weekly' ? 'text-emerald-600' : 'text-purple-600'}`} />
                 <p>
                   {viewMode === 'global'
                     ? (selectedSubject === 'words'
@@ -682,7 +821,9 @@ export default function LeaderboardScreen({
                        : selectedSubject === 'world'
                        ? 'World competence is dynamically measured based on geography accuracy, map recall, and speed.'
                        : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.')
-                    : (`Compete in this week's cohort by earning Sparks! ${cohortId ? 'Group: ' + cohortId.split('_bucket_')[1] : ''}`)}
+                    : viewMode === 'weekly'
+                    ? (`Compete in this week's cohort by earning Sparks! ${cohortId ? 'Group: ' + cohortId.split('_bucket_')[1] : ''}`)
+                    : (`Compare your ${subjectConfig.name} competence ratings and cosmetics directly against your added friends and classmates!`)}
                 </p>
               </div>
             </div>
@@ -690,7 +831,9 @@ export default function LeaderboardScreen({
             <p className="text-xs text-slate-500 font-medium text-center px-1">
               {viewMode === 'global'
                 ? '💡 Keep climbing and answering accurately to raise your rank tier!'
-                : '💡 Sparks reset every week at midnight Sunday UTC. Climb every day to stay on top!'}
+                : viewMode === 'weekly'
+                ? '💡 Sparks reset every week at midnight Sunday UTC. Climb every day to stay on top!'
+                : '💡 Add up to 25 friends using their unique climber tags to follow each other\'s climb!'}
             </p>
 
             <button
@@ -706,6 +849,14 @@ export default function LeaderboardScreen({
           </div>
         </div>
       )}
+
+      {/* ADD FRIEND MODAL */}
+      <AddFriendModal
+        isOpen={showAddFriendModal}
+        onClose={() => setShowAddFriendModal(false)}
+        activeSubject={selectedSubject}
+        onFriendAdded={refreshFriendsStandings}
+      />
 
     </div>
   );

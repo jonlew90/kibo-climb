@@ -220,3 +220,180 @@ exports.processReferralLinking = onCall(
     }
   }
 );
+
+/**
+ * Callable function to claim and reserve a unique username.
+ */
+exports.claimUsername = onCall(
+  { cors: true },
+  async (request) => {
+    const { username, profileId } = request.data || {};
+    const uid = request.auth ? request.auth.uid : 'anonymous';
+
+    if (!username || typeof username !== 'string') {
+      throw new HttpsError('invalid-argument', 'Please provide a valid username.');
+    }
+
+    const trimmed = username.trim();
+    if (trimmed.length < 3 || trimmed.length > 20 || !/^[a-zA-Z0-9_]+$/.test(trimmed)) {
+      throw new HttpsError('invalid-argument', 'Username must be 3-20 alphanumeric characters or underscores.');
+    }
+
+    const normalized = trimmed.toLowerCase();
+    const db = admin.firestore();
+    const usernameRef = db.collection('usernames').doc(normalized);
+
+    try {
+      return await db.runTransaction(async (transaction) => {
+        const docSnap = await transaction.get(usernameRef);
+        if (docSnap.exists) {
+          const data = docSnap.data();
+          // If owned by same UID and profile, allow re-claiming
+          if (data.uid && data.uid !== uid) {
+            throw new HttpsError('already-exists', 'This username is already taken. Please choose another one.');
+          }
+        }
+
+        transaction.set(usernameRef, {
+          username: trimmed,
+          normalized,
+          uid,
+          profileId: profileId || 'default_child',
+          claimedAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        return { success: true, username: trimmed };
+      });
+    } catch (error) {
+      if (error instanceof HttpsError) throw error;
+      console.error('Error claiming username:', error);
+      throw new HttpsError('internal', 'Failed to claim username.', error);
+    }
+  }
+);
+
+/**
+ * Callable function to search for climbers by username.
+ */
+exports.searchUsername = onCall(
+  { cors: true },
+  async (request) => {
+    const { query } = request.data || {};
+    if (!query || typeof query !== 'string') {
+      throw new HttpsError('invalid-argument', 'Please enter a search query.');
+    }
+
+    const normalized = query.trim().toLowerCase();
+    if (normalized.length < 2) {
+      return { results: [] };
+    }
+
+    const db = admin.firestore();
+    try {
+      // Query usernames starting with the query string
+      const snapshot = await db.collection('usernames')
+        .where('normalized', '>=', normalized)
+        .where('normalized', '<=', normalized + '\uf8ff')
+        .limit(10)
+        .get();
+
+      if (snapshot.empty) {
+        return { results: [] };
+      }
+
+      const results = [];
+      for (const docSnap of snapshot.docs) {
+        const uData = docSnap.data();
+        const friendUid = uData.uid;
+        const friendProfileId = uData.profileId || 'default_child';
+        const friendDocId = `${friendUid}_${friendProfileId}_math`;
+
+        let score = 1000;
+        let equipped = [];
+        let subjectsMastered = 5;
+
+        // Fetch their leaderboard document for extra stats if available
+        try {
+          const lbDoc = await db.collection('leaderboard').doc(friendDocId).get();
+          if (lbDoc.exists) {
+            const lbData = lbDoc.data();
+            score = lbData.score || 1000;
+            equipped = lbData.equipped || [];
+            subjectsMastered = lbData.subjectsMastered || 5;
+          }
+        } catch (e) {
+          // Fallback gracefully
+        }
+
+        results.push({
+          id: `${friendUid}_${friendProfileId}`,
+          uid: friendUid,
+          profileId: friendProfileId,
+          username: uData.username || docSnap.id,
+          name: uData.username || docSnap.id,
+          score,
+          equipped,
+          subjectsMastered
+        });
+      }
+
+      return { results };
+    } catch (error) {
+      console.error('Error searching username:', error);
+      throw new HttpsError('internal', 'Search failed.', error);
+    }
+  }
+);
+
+/**
+ * Callable function to retrieve score details for a list of friends.
+ */
+exports.getFriendScores = onCall(
+  { cors: true },
+  async (request) => {
+    const { friendIds, subject = 'math' } = request.data || {};
+    if (!Array.isArray(friendIds) || friendIds.length === 0) {
+      return { standings: [] };
+    }
+
+    const safeFriendIds = friendIds.slice(0, 25);
+    const db = admin.firestore();
+    const standings = [];
+
+    try {
+      for (const fId of safeFriendIds) {
+        // ID is expected in the format uid_profileId or just raw ID
+        const parts = fId.split('_');
+        let docId = `${fId}_${subject}`;
+        if (parts.length === 1) {
+          docId = `${fId}_default_child_${subject}`;
+        }
+
+        try {
+          const lbDoc = await db.collection('leaderboard').doc(docId).get();
+          if (lbDoc.exists) {
+            const data = lbDoc.data();
+            standings.push({
+              id: fId,
+              uid: data.uid || parts[0],
+              profileId: data.profileId || parts[1] || 'default_child',
+              name: data.name || 'Climber Friend',
+              score: Number(data.score) || 1000,
+              equipped: data.equipped || [],
+              subjectsMastered: data.subjectsMastered || 5,
+              subject
+            });
+          }
+        } catch (e) {
+          console.warn('Could not fetch leaderboard doc for friend:', fId);
+        }
+      }
+
+      return { standings };
+    } catch (error) {
+      console.error('Error fetching friend scores:', error);
+      throw new HttpsError('internal', 'Could not load friend scores.', error);
+    }
+  }
+);
+
