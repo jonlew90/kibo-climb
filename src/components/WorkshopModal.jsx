@@ -42,6 +42,7 @@ export default function WorkshopModal({
   equippedItems = [],
   onBuyItem,
   onBuyConsumable,
+  onSellItem,
   onToggleEquip,
   onRedeemPromoCode,
   allowRealMoneyPurchases,
@@ -64,6 +65,9 @@ export default function WorkshopModal({
   const [seasonalEventFilter, setSeasonalEventFilter] = useState('all_active');
   const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
   const [recentlyPurchasedId, setRecentlyPurchasedId] = useState(null);
+
+  // Sell Confirmation Modal State
+  const [itemToSell, setItemToSell] = useState(null);
 
   // Promo Code Modal State
   const [showPromoModal, setShowPromoModal] = useState(false);
@@ -261,6 +265,14 @@ export default function WorkshopModal({
     } else {
       setPreviewSlots((prev) => ({ ...prev, [slot]: previewId }));
     }
+  };
+
+  const handleSellConfirm = () => {
+    if (itemToSell && onSellItem) {
+      soundFx.playKeyTap();
+      onSellItem(itemToSell);
+    }
+    setItemToSell(null);
   };
 
   const handleBuyClick = (item) => {
@@ -606,6 +618,25 @@ export default function WorkshopModal({
               const isJustPurchased = recentlyPurchasedId === item.id;
               const availability = getItemAvailabilityStatus(item, currentDate);
 
+              // Calculate sell availability and price
+              const sellPrice = item.cost ? Math.floor(item.cost * 0.5) : 0;
+              let canSell = false;
+
+              if (item.cost && !isRealMoney) {
+                if (isConsumable) {
+                  if (item.id === 'kibo_shield' && (consumables?.shieldCount || 0) > 0) canSell = true;
+                  if (item.id === 'streak_saver' && (consumables?.streakSaverCount || 0) > 0) canSell = true;
+                  if (item.id === 'double_sparks_potion' && (consumables?.doubleSparksPotionCount || 0) > 0) canSell = true;
+                  if (item.id === 'double_coin_potion' && (consumables?.doubleCoinPotionCount || 0) > 0) canSell = true;
+                  if (item.id === 'hint_scroll' && (consumables?.hintScrollCount || 0) > 0) canSell = true;
+                  if (item.id === 'letter_spyglass' && (consumables?.letterSpyglassCount || 0) > 0) canSell = true;
+                  if (item.id === 'letter_pruner' && (consumables?.letterPrunerCount || 0) > 0) canSell = true;
+                  if (item.id === 'explorer_compass' && (consumables?.explorerCompassCount || 0) > 0) canSell = true;
+                } else if (isUnlocked) {
+                  canSell = true;
+                }
+              }
+
               return (
                 <div
                   key={item.id}
@@ -742,22 +773,95 @@ export default function WorkshopModal({
                     </div>
                   </div>
 
-                  {/* Buy / Equip Action Buttons */}
-                  <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-                    {isConsumable ? (
-                      isShieldFull ? (
+                  {/* Buy / Sell / Equip Action Buttons */}
+                  <div className="shrink-0 flex flex-col gap-1 items-end" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-2">
+                      {canSell && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            setItemToSell(item);
+                          }}
+                          className="bg-rose-100 hover:bg-rose-200 text-rose-700 border-2 border-rose-300 px-3.5 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5"
+                        >
+                          Sell ({sellPrice} ⚡)
+                        </button>
+                      )}
+                      {isConsumable ? (
+                        isShieldFull ? (
+                          <button
+                            type="button"
+                            disabled
+                            className="bg-slate-200 text-slate-500 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
+                          >
+                            Full ({shieldOwned}/2)
+                          </button>
+                        ) : canAfford ? (
+                          <button
+                            type="button"
+                            onClick={() => handleBuyClick(item)}
+                            className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5"
+                          >
+                            <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                            Buy for {item.cost} ⚡
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled
+                            className="bg-slate-100 text-rose-600 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
+                          >
+                            Need {shortfall} ⚡ More
+                          </button>
+                        )
+                      ) : isUnlocked ? (
+                        <button
+                          type="button"
+                          onClick={() => handleBuyClick(item)}
+                          className={`px-3.5 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 ${
+                            isEquippedInApp
+                              ? 'btn-3d-orange'
+                              : 'bg-teal-100 hover:bg-teal-200 text-teal-900 border-2 border-teal-300'
+                          }`}
+                        >
+                          {isEquippedInApp ? (
+                            <>
+                              <Check className="w-4 h-4 stroke-[3]" /> Equipped
+                            </>
+                          ) : (
+                            'Equip'
+                          )}
+                        </button>
+                      ) : availability.isUpcoming ? (
                         <button
                           type="button"
                           disabled
-                          className="bg-slate-200 text-slate-500 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
+                          className="bg-slate-100 text-slate-400 border-2 border-slate-200 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed flex items-center gap-1"
                         >
-                          Full ({shieldOwned}/2)
+                          <Lock className="w-3.5 h-3.5" /> Coming Soon
+                        </button>
+                      ) : item.promoCodeRequired ? (
+                        <button
+                          type="button"
+                          onClick={() => openPromoDialogWithCode()}
+                          className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold shadow-sm"
+                        >
+                          <Ticket className="w-3.5 h-3.5" /> Redeem Code
+                        </button>
+                      ) : isRealMoney ? (
+                         <button
+                          type="button"
+                          onClick={() => handleBuyClick(item)}
+                          className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                        >
+                          Buy for {item.realMoneyPrice}
                         </button>
                       ) : canAfford ? (
                         <button
                           type="button"
                           onClick={() => handleBuyClick(item)}
-                          className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5"
+                          className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                         >
                           <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
                           Buy for {item.cost} ⚡
@@ -766,71 +870,12 @@ export default function WorkshopModal({
                         <button
                           type="button"
                           disabled
-                          className="bg-slate-100 text-rose-600 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
+                          className="bg-slate-100 text-slate-400 border-2 border-slate-200 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
                         >
                           Need {shortfall} ⚡ More
                         </button>
-                      )
-                    ) : isUnlocked ? (
-                      <button
-                        type="button"
-                        onClick={() => handleBuyClick(item)}
-                        className={`px-3.5 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 ${
-                          isEquippedInApp
-                            ? 'btn-3d-orange'
-                            : 'bg-teal-100 hover:bg-teal-200 text-teal-900 border-2 border-teal-300'
-                        }`}
-                      >
-                        {isEquippedInApp ? (
-                          <>
-                            <Check className="w-4 h-4 stroke-[3]" /> Equipped
-                          </>
-                        ) : (
-                          'Equip'
-                        )}
-                      </button>
-                    ) : availability.isUpcoming ? (
-                      <button
-                        type="button"
-                        disabled
-                        className="bg-slate-100 text-slate-400 border-2 border-slate-200 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed flex items-center gap-1"
-                      >
-                        <Lock className="w-3.5 h-3.5" /> Coming Soon
-                      </button>
-                    ) : item.promoCodeRequired ? (
-                      <button
-                        type="button"
-                        onClick={() => openPromoDialogWithCode()}
-                        className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold shadow-sm"
-                      >
-                        <Ticket className="w-3.5 h-3.5" /> Redeem Code
-                      </button>
-                    ) : isRealMoney ? (
-                       <button
-                        type="button"
-                        onClick={() => handleBuyClick(item)}
-                        className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
-                      >
-                        Buy for {item.realMoneyPrice}
-                      </button>
-                    ) : canAfford ? (
-                      <button
-                        type="button"
-                        onClick={() => handleBuyClick(item)}
-                        className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
-                      >
-                        <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                        Buy for {item.cost} ⚡
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled
-                        className="bg-slate-100 text-slate-400 border-2 border-slate-200 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
-                      >
-                        Need {shortfall} ⚡ More
-                      </button>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -961,6 +1006,52 @@ export default function WorkshopModal({
                 className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl transition-all"
               >
                 Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ITEM SELL CONFIRMATION MODAL */}
+      {itemToSell && (
+        <div className="fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div
+            className="bg-white rounded-3xl border-3 border-amber-300 p-5 sm:p-6 w-full max-w-sm shadow-2xl space-y-4 animate-scale-in text-center relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-16 h-16 mx-auto bg-rose-100 rounded-full flex items-center justify-center border-4 border-rose-200">
+              <Zap className="w-8 h-8 text-rose-500 fill-rose-500" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-lg font-black text-slate-800">Sell Item</h3>
+              <p className="text-sm font-bold text-slate-500 leading-tight">
+                Are you sure you want to sell <span className="text-slate-700">{itemToSell.name}</span> for <span className="text-amber-600">{Math.floor(itemToSell.cost * 0.5)} ⚡</span>?
+              </p>
+              {!itemToSell.isConsumable && (
+                <p className="text-xs text-rose-500 font-bold mt-2">
+                  You will have to buy it again at full price if you want it back!
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setItemToSell(null);
+                }}
+                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-sm rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSellConfirm}
+                className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-black text-sm rounded-xl transition-all shadow-md active:scale-95"
+              >
+                Confirm Sell
               </button>
             </div>
           </div>
