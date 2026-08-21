@@ -969,6 +969,69 @@ export default function App() {
     soundFx.playVictory();
   };
 
+  const handleSellItem = (itemInput) => {
+    const item = typeof itemInput === 'string' ? getItemById(itemInput) : itemInput;
+    if (!item) return;
+
+    if (item.isConsumable) {
+      // Handle consumable sell
+      const sellPrice = Math.floor(item.cost * 0.5);
+      const newSparks = sparks + sellPrice;
+
+      let nextConsumables = { ...consumables };
+      if (item.id === 'kibo_shield' && nextConsumables.shieldCount > 0) {
+        nextConsumables.shieldCount -= 1;
+      } else if (item.id === 'streak_saver' && nextConsumables.streakSaverCount > 0) {
+        nextConsumables.streakSaverCount -= 1;
+      } else if (item.id === 'double_sparks_potion' && nextConsumables.doubleSparksPotionCount > 0) {
+        nextConsumables.doubleSparksPotionCount -= 1;
+      } else if (item.id === 'double_coin_potion' && nextConsumables.doubleCoinPotionCount > 0) {
+        nextConsumables.doubleCoinPotionCount -= 1;
+      } else if (item.id === 'hint_scroll' && nextConsumables.hintScrollCount > 0) {
+        nextConsumables.hintScrollCount -= 1;
+      } else if (item.id === 'letter_spyglass' && nextConsumables.letterSpyglassCount > 0) {
+        nextConsumables.letterSpyglassCount -= 1;
+      } else if (item.id === 'letter_pruner' && nextConsumables.letterPrunerCount > 0) {
+        nextConsumables.letterPrunerCount -= 1;
+      } else if (item.id === 'explorer_compass' && nextConsumables.explorerCompassCount > 0) {
+        nextConsumables.explorerCompassCount -= 1;
+      } else {
+        return; // Nothing to sell
+      }
+
+      setConsumables(nextConsumables);
+      setSparks(newSparks);
+
+      storageService.saveUserData({
+        sparks: newSparks,
+        streakShields: nextConsumables.shieldCount,
+        streakSaverCount: nextConsumables.streakSaverCount,
+        hintScrollCount: nextConsumables.hintScrollCount,
+        doubleSparksPotionCount: nextConsumables.doubleSparksPotionCount,
+        doubleCoinPotionCount: nextConsumables.doubleCoinPotionCount,
+        letterSpyglassCount: nextConsumables.letterSpyglassCount,
+        letterPrunerCount: nextConsumables.letterPrunerCount,
+        explorerCompassCount: nextConsumables.explorerCompassCount
+      });
+
+      soundFx.playKeyTap();
+
+    } else {
+      // Handle non-consumable sell using shopLedgerService
+      const res = shopLedgerService.sellItem(item.id, item.cost);
+      if (!res.success) {
+        console.warn('Sell rejected by ledger:', res.reason);
+        return;
+      }
+
+      setSparks(res.newSparks);
+      setUnlockedItems(res.unlockedItems);
+      setEquippedItems(res.equippedItems);
+
+      soundFx.playKeyTap();
+    }
+  };
+
   const handleToggleEquip = (itemId) => {
     const targetItem = getItemById(itemId);
     let updatedEquipped;
@@ -1813,6 +1876,7 @@ export default function App() {
         equippedItems={equippedItems}
         onBuyItem={handleBuyItem}
         onBuyConsumable={handleBuyConsumable}
+        onSellItem={handleSellItem}
         onToggleEquip={handleToggleEquip}
         onRedeemPromoCode={handleRedeemPromoCode}
         allowRealMoneyPurchases={notifPrefs.allowRealMoneyPurchases}

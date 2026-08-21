@@ -6,6 +6,58 @@ import { antiCheatService } from './antiCheatService.js';
 
 export const shopLedgerService = {
   /**
+   * Executes an item sale in Kibo's Corner, returning 50% of the original Sparks price.
+   * @param {string} itemId - The ID of the item being sold
+   * @param {number} sparksPrice - Original price of the item in Sparks
+   * @returns {Object} { success: boolean, newSparks: number, unlockedItems: Array, reason?: string }
+   */
+  sellItem(itemId, sparksPrice) {
+    const userData = storageService.getUserData('math');
+    const shopState = storageService.getShopState();
+    const currentSparks = userData.sparks || 0;
+    const originalPrice = Number(sparksPrice) || 0;
+    const sellPrice = Math.floor(originalPrice * 0.5);
+
+    const unlocked = Array.isArray(shopState.unlockedItems) ? [...shopState.unlockedItems] : [];
+    if (!unlocked.includes(itemId)) {
+      return {
+        success: false,
+        reason: 'Item is not owned',
+        newSparks: currentSparks,
+        unlockedItems: unlocked
+      };
+    }
+
+    // Remove from unlocked items
+    const updatedUnlocked = unlocked.filter(id => id !== itemId);
+
+    // Remove from equipped items if equipped
+    const equipped = Array.isArray(shopState.equippedItems) ? [...shopState.equippedItems] : [];
+    const updatedEquipped = equipped.filter(id => id !== itemId);
+
+    const newSparks = currentSparks + sellPrice;
+
+    // Save updated state
+    storageService.saveUserData({ sparks: newSparks });
+    storageService.saveShopState(updatedEquipped, updatedUnlocked);
+
+    this.recordTransactionLedger({
+      type: 'SHOP_SELL',
+      itemId,
+      sparksEarned: sellPrice,
+      previousBalance: currentSparks,
+      newBalance: newSparks
+    });
+
+    return {
+      success: true,
+      newSparks,
+      unlockedItems: updatedUnlocked,
+      equippedItems: updatedEquipped
+    };
+  },
+
+  /**
    * Executes an item purchase in Kibo's Corner with authoritative balance ledgering.
    * @param {string} itemId - The ID of the item being purchased
    * @param {number} sparksPrice - Price of the item in Sparks
