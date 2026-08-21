@@ -6,6 +6,7 @@ import WorkshopModal from './components/WorkshopModal';
 import PinGateModal from './components/PinGateModal';
 import ParentDashboardModal from './components/ParentDashboardModal';
 import StreakSavedModal from './components/StreakSavedModal';
+import DailyStreakIncreasedModal from './components/DailyStreakIncreasedModal';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import ProfileSelectorScreen from './components/ProfileSelectorScreen';
 import MathSessionView from './components/MathSessionView';
@@ -126,6 +127,7 @@ export default function App() {
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStripeCheckoutModal, setShowStripeCheckoutModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
+  const [showDailyStreakIncreasedModal, setShowDailyStreakIncreasedModal] = useState(false);
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -353,6 +355,10 @@ export default function App() {
       } else {
         nextStreak = 1;
       }
+    }
+
+    if (nextStreak > currentStreak && lastDateStr !== todayStr) {
+      setShowDailyStreakIncreasedModal(true);
     }
 
     setStreak(nextStreak);
@@ -993,7 +999,7 @@ export default function App() {
 
   const currentTierMeta = getTierMeta(tier);
 
-  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
+  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || showBadgesModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
 
 
   const closeAllNavModals = (except = null) => {
@@ -1557,6 +1563,13 @@ export default function App() {
         onClose={() => setShowStreakSavedModal(false)}
         streak={streak}
         remainingShields={streakShields}
+      />
+
+      {/* DAILY STREAK INCREASED MODAL */}
+      <DailyStreakIncreasedModal
+        isOpen={showDailyStreakIncreasedModal}
+        onClose={() => setShowDailyStreakIncreasedModal(false)}
+        streak={streak}
       />
 
       {/* PARENT PIN GATE MODAL */}
