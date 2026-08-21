@@ -192,7 +192,7 @@ export default function FirstLaunchOnboardingModal({
                 🏔️ Kibo Climb
               </span>
               <span className="text-xs font-black uppercase tracking-widest text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                🔢 Math + 📚 Words + 🌍 World
+                🔢 Math, 📚 Words & 🌍 World
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
