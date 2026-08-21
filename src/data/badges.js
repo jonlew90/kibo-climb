@@ -68,6 +68,38 @@ export const BADGES_CATALOG = [
     icon: '💪',
     reqText: 'Improve accuracy after a tough session'
   },
+  {
+    id: 'multi_subject_2',
+    title: 'Dual Scholar',
+    description: 'Completed a climb in 2 different subjects!',
+    category: 'consistency',
+    icon: '🎓',
+    reqText: 'Play 2 different subjects'
+  },
+  {
+    id: 'multi_subject_3',
+    title: 'Renaissance Explorer',
+    description: 'Completed a climb in 3 different subjects!',
+    category: 'consistency',
+    icon: '🌟',
+    reqText: 'Play 3 different subjects'
+  },
+  {
+    id: 'multi_subject_4',
+    title: 'Polymath Prodigy',
+    description: 'Completed a climb in 4 different subjects!',
+    category: 'consistency',
+    icon: '🔥',
+    reqText: 'Play 4 different subjects'
+  },
+  {
+    id: 'multi_subject_5',
+    title: 'Universal Genius',
+    description: 'Completed a climb in 5 different subjects!',
+    category: 'consistency',
+    icon: '🌌',
+    reqText: 'Play 5 different subjects'
+  },
 
   // ==========================================
   // 2. KIBO WORDS BADGES

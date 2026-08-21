@@ -35,6 +35,17 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
   // Subject-specific total problems solved fallback
   const subjectSolvedCount = Number(totalProblemsSolved) || 0;
 
+  // Calculate globally completed subjects (at least 1 full climb)
+  let playedSubjectsCount = 0;
+  const globalProfile = storageService.getActiveProfile();
+  if (globalProfile?.userData?.subjects) {
+    const subjectsMap = globalProfile.userData.subjects;
+    playedSubjectsCount = Object.keys(subjectsMap).filter((key) => {
+      const subData = subjectsMap[key];
+      return (subData.sprintHistory && subData.sprintHistory.length >= 1) || (subData.totalProblemsSolved && subData.totalProblemsSolved > 0);
+    }).length;
+  }
+
   // Derive perfect climbs count from all available sources
   const historyPerfectCount = Array.isArray(sprintHistory)
     ? sprintHistory.filter(
@@ -134,6 +145,18 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
             unlocked = true;
           }
         }
+        break;
+      case 'multi_subject_2':
+        unlocked = playedSubjectsCount >= 2;
+        break;
+      case 'multi_subject_3':
+        unlocked = playedSubjectsCount >= 3;
+        break;
+      case 'multi_subject_4':
+        unlocked = playedSubjectsCount >= 4;
+        break;
+      case 'multi_subject_5':
+        unlocked = playedSubjectsCount >= 5;
         break;
 
       // ==========================================
