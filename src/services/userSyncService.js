@@ -96,12 +96,39 @@ class UserSyncService {
   /**
    * Debounced push of local profiles & user data to Cloud Firestore.
    */
+
+  async processPendingReferrals() {
+    const authState = auth.currentUser;
+    if (!authState || authState.isAnonymous) return;
+
+    const referredBy = localStorage.getItem('kibo_referred_by');
+    if (!referredBy) return;
+
+    try {
+      const { getFunctions, httpsCallable } = await import('firebase/functions');
+      const { app } = await import('../config/firebase');
+      const functions = getFunctions(app);
+      const processReferral = httpsCallable(functions, 'processReferralLinking');
+
+      await processReferral({ referrerId: referredBy, newUserId: authState.uid });
+      localStorage.removeItem('kibo_referred_by');
+      console.log('Referral processed successfully');
+    } catch (e) {
+      console.error('Failed to process referral linking', e);
+    }
+  },
+
   syncProfileToCloud(profileId) {
     if (this.isSyncingFromCloud) return;
 
     const currentUser = auth.currentUser;
     const uid = currentUser ? currentUser.uid : storageService.getUserData('math')?.cloudUid;
     if (!uid) return;
+
+    // Check if we should process a pending referral (only if not anonymous)
+    if (currentUser && !currentUser.isAnonymous) {
+      this.processPendingReferrals();
+    }
 
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);

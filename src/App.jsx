@@ -42,6 +42,10 @@ import MockCheckoutModal from './components/MockCheckoutModal';
 import StripeCheckoutModal from './components/StripeCheckoutModal';
 import SettingsScreen from './components/SettingsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
+import ShareModal from './components/ShareModal';
+import ReferralRewardModal from './components/ReferralRewardModal';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from './config/firebase';
 import TermsOfServiceScreen from './components/TermsOfServiceScreen';
 import LeaderboardIcon from './components/LeaderboardIcon';
 import LeaderboardScreen from './components/LeaderboardScreen';
@@ -109,6 +113,8 @@ export default function App() {
   const [pinGateSource, setPinGateSource] = useState(null);
   const [showParentDashboard, setShowParentDashboard] = useState(false);
   const [showSubjectSelector, setShowSubjectSelector] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [pendingReward, setPendingReward] = useState(null);
   const subjectSelectorRef = useRef(null);
 
   useEffect(() => {
@@ -212,6 +218,28 @@ export default function App() {
   const [practiceDays, setPracticeDays] = useState(() => {
     return storageService.getProfilePracticeDays();
   });
+
+  // Check for pending referral rewards on load
+  useEffect(() => {
+    const checkForRewards = async () => {
+      const currentUser = authService.getAuthState();
+      if (!currentUser || currentUser.isAnonymous || !currentUser.uid) return;
+
+      try {
+        const rewardsRef = collection(db, 'users', currentUser.uid, 'pendingRewards');
+        const q = query(rewardsRef, where('status', '==', 'pending'));
+        const snap = await getDocs(q);
+
+        if (!snap.empty) {
+          const firstReward = snap.docs[0];
+          setPendingReward({ id: firstReward.id, ...firstReward.data() });
+        }
+      } catch (e) {
+        console.warn("Could not fetch rewards:", e);
+      }
+    };
+    checkForRewards();
+  }, [activeProfileId]);
 
   // Persistent Daily Streak
   const [streak, setStreak] = useState(() => {
@@ -1286,6 +1314,26 @@ export default function App() {
           </button>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* Share Button: Indigo */}
+            <button
+              type="button"
+              onClick={() => {
+                const currentUser = authService.getAuthState();
+                if (!currentUser || currentUser.isAnonymous || !currentUser.uid) {
+                  // User is anonymous, prompt them to link
+                  setShowAccountLinkModal(true);
+                  setLinkModalMilestone("Link to Share & Earn");
+                } else {
+                  // User is registered, they can share
+                  setShowShareModal(true);
+                }
+              }}
+              className="flex items-center gap-1 bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 text-white border-2 border-indigo-400 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
+              title="Share & Earn Rewards"
+            >
+              <span className="text-sm">🤝</span>
+              <span className="hidden sm:inline">Share</span>
+            </button>
             {/* 4. Competence Rank Button: Royal Purple / Violet */}
             {(() => {
               const rankTitle = getCompetenceRankTier(liveCompetenceRating, activeSubject);
