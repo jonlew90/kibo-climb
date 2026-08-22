@@ -1207,13 +1207,49 @@ export const storageService = {
         score: Number(friendData.score) || 1000,
         equipped: Array.isArray(friendData.equipped) ? friendData.equipped : [],
         subjectsMastered: Number(friendData.subjectsMastered) || 5,
-        addedAt: new Date().toISOString()
+        addedAt: new Date().toISOString(),
+        isDisplayedOnMain: false
       };
 
       currentFriends.push(newFriend);
       safeSaveProfilesState(state);
     }
 
+    return state.profiles[pid].friends;
+  },
+
+  toggleFriendDisplayOnMain(friendIdOrUsername, profileId = null) {
+    if (!friendIdOrUsername) return this.getFriends(profileId);
+    const pid = profileId || this.getActiveProfileId();
+    const state = safeGetProfilesState();
+    if (!state.profiles[pid] || !Array.isArray(state.profiles[pid].friends)) return [];
+
+    const target = friendIdOrUsername.trim().toLowerCase();
+
+    // Find the friend
+    const friendIndex = state.profiles[pid].friends.findIndex(f => {
+      const fId = (f.id || f.uid || '').trim().toLowerCase();
+      const fUser = (f.username || f.name || '').trim().toLowerCase();
+      return fId === target || fUser === target;
+    });
+
+    if (friendIndex === -1) return state.profiles[pid].friends;
+
+    const friend = state.profiles[pid].friends[friendIndex];
+
+    if (friend.isDisplayedOnMain) {
+      // Toggle off
+      friend.isDisplayedOnMain = false;
+    } else {
+      // Toggle on - check if we already have 2
+      const currentlyDisplayed = state.profiles[pid].friends.filter(f => f.isDisplayedOnMain).length;
+      if (currentlyDisplayed >= 2) {
+        throw new Error('You can only display up to 2 friends on the main page.');
+      }
+      friend.isDisplayedOnMain = true;
+    }
+
+    safeSaveProfilesState(state);
     return state.profiles[pid].friends;
   },
 

@@ -163,6 +163,17 @@ export default function AddFriendModal({
     }
   };
 
+  const handleToggleDisplay = (friend) => {
+    soundFx.playKeyTap();
+    try {
+      const updated = storageService.toggleFriendDisplayOnMain(friend.id || friend.username);
+      setFriendsList([...updated]);
+      onFriendAdded(); // this just triggers re-renders where necessary
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const handleRemoveFriend = (friendIdOrUsername) => {
     soundFx.playKeyTap();
     const updated = storageService.removeFriend(friendIdOrUsername);
@@ -508,14 +519,28 @@ export default function AddFriendModal({
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFriend(friend.id || friend.username)}
-                        title="Remove Friend"
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer shrink-0"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleDisplay(friend)}
+                          title={friend.isDisplayedOnMain ? "Remove from Main Page" : "Show on Main Page"}
+                          className={`p-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center ${
+                            friend.isDisplayedOnMain
+                              ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
+                              : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50'
+                          }`}
+                        >
+                          <Sparkles className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFriend(friend.id || friend.username)}
+                          title="Remove Friend"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

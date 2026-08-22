@@ -112,6 +112,47 @@ export default function WorldSessionView({
   // Character Animation & Audio State
   const [mascotState, setMascotState] = useState('idle');
 
+  // Friends on Main
+  const displayedFriends = storageService.getFriends(profileId).filter(f => f.isDisplayedOnMain).slice(0, 2);
+  const [friend1State, setFriend1State] = useState('idle');
+  const [friend2State, setFriend2State] = useState('idle');
+  const [friend1Tooltip, setFriend1Tooltip] = useState(false);
+  const [friend2Tooltip, setFriend2Tooltip] = useState(false);
+
+  // Manage timeouts to avoid memory leaks
+  const friend1TimeoutRef = useRef(null);
+  const friend1TooltipTimeoutRef = useRef(null);
+  const friend2TimeoutRef = useRef(null);
+  const friend2TooltipTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (friend1TimeoutRef.current) clearTimeout(friend1TimeoutRef.current);
+      if (friend1TooltipTimeoutRef.current) clearTimeout(friend1TooltipTimeoutRef.current);
+      if (friend2TimeoutRef.current) clearTimeout(friend2TimeoutRef.current);
+      if (friend2TooltipTimeoutRef.current) clearTimeout(friend2TooltipTimeoutRef.current);
+    };
+  }, []);
+
+  const handleFriendClick = (friendIndex) => {
+    soundFx.playKeyTap();
+    if (friendIndex === 0) {
+      if (friend1TimeoutRef.current) clearTimeout(friend1TimeoutRef.current);
+      if (friend1TooltipTimeoutRef.current) clearTimeout(friend1TooltipTimeoutRef.current);
+      setFriend1State('streak');
+      setFriend1Tooltip(true);
+      friend1TimeoutRef.current = setTimeout(() => setFriend1State('idle'), 700);
+      friend1TooltipTimeoutRef.current = setTimeout(() => setFriend1Tooltip(false), 2000);
+    } else {
+      if (friend2TimeoutRef.current) clearTimeout(friend2TimeoutRef.current);
+      if (friend2TooltipTimeoutRef.current) clearTimeout(friend2TooltipTimeoutRef.current);
+      setFriend2State('streak');
+      setFriend2Tooltip(true);
+      friend2TimeoutRef.current = setTimeout(() => setFriend2State('idle'), 700);
+      friend2TooltipTimeoutRef.current = setTimeout(() => setFriend2Tooltip(false), 2000);
+    }
+  };
+
   // In-session Streaks & Overlays
   const [inSessionStreak, setInSessionStreak] = useState(0);
   const [inSessionIncorrectStreak, setInSessionIncorrectStreak] = useState(0);
