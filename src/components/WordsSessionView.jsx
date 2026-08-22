@@ -99,6 +99,47 @@ export default function WordsSessionView({
   // Character Animation & Audio State
   const [mascotState, setMascotState] = useState('idle');
 
+  // Friends on Main
+  const displayedFriends = storageService.getFriends(profileId).filter(f => f.isDisplayedOnMain).slice(0, 2);
+  const [friend1State, setFriend1State] = useState('idle');
+  const [friend2State, setFriend2State] = useState('idle');
+  const [friend1Tooltip, setFriend1Tooltip] = useState(false);
+  const [friend2Tooltip, setFriend2Tooltip] = useState(false);
+
+  // Manage timeouts to avoid memory leaks
+  const friend1TimeoutRef = useRef(null);
+  const friend1TooltipTimeoutRef = useRef(null);
+  const friend2TimeoutRef = useRef(null);
+  const friend2TooltipTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (friend1TimeoutRef.current) clearTimeout(friend1TimeoutRef.current);
+      if (friend1TooltipTimeoutRef.current) clearTimeout(friend1TooltipTimeoutRef.current);
+      if (friend2TimeoutRef.current) clearTimeout(friend2TimeoutRef.current);
+      if (friend2TooltipTimeoutRef.current) clearTimeout(friend2TooltipTimeoutRef.current);
+    };
+  }, []);
+
+  const handleFriendClick = (friendIndex) => {
+    soundFx.playKeyTap();
+    if (friendIndex === 0) {
+      if (friend1TimeoutRef.current) clearTimeout(friend1TimeoutRef.current);
+      if (friend1TooltipTimeoutRef.current) clearTimeout(friend1TooltipTimeoutRef.current);
+      setFriend1State('streak');
+      setFriend1Tooltip(true);
+      friend1TimeoutRef.current = setTimeout(() => setFriend1State('idle'), 700);
+      friend1TooltipTimeoutRef.current = setTimeout(() => setFriend1Tooltip(false), 2000);
+    } else {
+      if (friend2TimeoutRef.current) clearTimeout(friend2TimeoutRef.current);
+      if (friend2TooltipTimeoutRef.current) clearTimeout(friend2TooltipTimeoutRef.current);
+      setFriend2State('streak');
+      setFriend2Tooltip(true);
+      friend2TimeoutRef.current = setTimeout(() => setFriend2State('idle'), 700);
+      friend2TooltipTimeoutRef.current = setTimeout(() => setFriend2Tooltip(false), 2000);
+    }
+  };
+
   // In-session Streaks & Overlays
   const [inSessionStreak, setInSessionStreak] = useState(0);
   const [inSessionIncorrectStreak, setInSessionIncorrectStreak] = useState(0);
@@ -1424,10 +1465,36 @@ export default function WordsSessionView({
 
       {/* MASCOT CONTAINER - Centered between sticky header and question card */}
       <div
-        className="flex-1 flex flex-col items-center justify-center w-full min-h-0 my-auto py-1 sm:py-2 z-10 overflow-visible"
-        title="Tap Kibo!"
+        className="flex-1 flex flex-row items-center justify-center w-full min-h-0 my-auto py-1 sm:py-2 z-10 overflow-visible gap-2 sm:gap-4 md:gap-8"
       >
-        <div className="relative flex items-center justify-center overflow-visible p-1.5 sm:p-3 w-full h-full max-h-[35vh] sm:max-h-[46vh] md:max-h-[50vh]">
+        {/* Left Friend */}
+        {displayedFriends[0] ? (
+          <div
+            className="relative flex items-center justify-center overflow-visible w-1/4 h-3/4 max-h-[25vh] sm:max-h-[30vh] md:max-h-[35vh] cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+            onClick={() => handleFriendClick(0)}
+            title={`Tap ${displayedFriends[0].username}!`}
+          >
+            {friend1Tooltip && (
+              <div className="absolute -top-8 bg-white text-slate-800 text-[10px] sm:text-xs font-black px-2 py-1 rounded-xl shadow-lg border-2 border-slate-200 z-50 whitespace-nowrap animate-bounce">
+                Hi, I'm {displayedFriends[0].username}!
+              </div>
+            )}
+            <Mascot
+              mood="happy"
+              state={friend1State}
+              equipped={displayedFriends[0].equipped || []}
+              className="h-full w-auto max-h-[25vh] max-w-[25vh] sm:max-h-[30vh] sm:max-w-[30vh] md:max-h-[35vh] md:max-w-[35vh] aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90 scale-x-[-1]"
+            />
+          </div>
+        ) : (
+          <div className="w-1/4 shrink-0" />
+        )}
+
+        {/* Main Mascot */}
+        <div
+          className="relative flex items-center justify-center overflow-visible p-1.5 sm:p-3 w-1/2 h-full max-h-[35vh] sm:max-h-[46vh] md:max-h-[50vh]"
+          title="Tap Kibo!"
+        >
           <Mascot
             mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'}
             state={mascotState}
@@ -1435,6 +1502,29 @@ export default function WordsSessionView({
             className="h-full w-auto max-h-[35vh] max-w-[35vh] sm:max-h-[46vh] sm:max-w-[46vh] md:max-h-[50vh] md:max-w-[50vh] aspect-square filter drop-shadow-xl object-contain shrink-0"
           />
         </div>
+
+        {/* Right Friend */}
+        {displayedFriends[1] ? (
+          <div
+            className="relative flex items-center justify-center overflow-visible w-1/4 h-3/4 max-h-[25vh] sm:max-h-[30vh] md:max-h-[35vh] cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+            onClick={() => handleFriendClick(1)}
+            title={`Tap ${displayedFriends[1].username}!`}
+          >
+            {friend2Tooltip && (
+              <div className="absolute -top-8 bg-white text-slate-800 text-[10px] sm:text-xs font-black px-2 py-1 rounded-xl shadow-lg border-2 border-slate-200 z-50 whitespace-nowrap animate-bounce">
+                Hi, I'm {displayedFriends[1].username}!
+              </div>
+            )}
+            <Mascot
+              mood="happy"
+              state={friend2State}
+              equipped={displayedFriends[1].equipped || []}
+              className="h-full w-auto max-h-[25vh] max-w-[25vh] sm:max-h-[30vh] sm:max-w-[30vh] md:max-h-[35vh] md:max-w-[35vh] aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90"
+            />
+          </div>
+        ) : (
+          <div className="w-1/4 shrink-0" />
+        )}
       </div>
 
       {/* PROBLEM CARD CONTAINER */}
