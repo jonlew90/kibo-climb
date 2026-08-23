@@ -121,6 +121,14 @@ export const calculateStreakFromHistory = (sprintHistory = [], practiceDays = [1
  * Returns the ISO week string (e.g., "2023-W42") based on UTC time.
  * Weeks start on Monday at 00:00 UTC.
  */
+/**
+ * Returns the number of days in a given month and year.
+ * month is 0-indexed (0 = January, 11 = December).
+ */
+export const getDaysInMonth = (year, month) => {
+  return new Date(year, month + 1, 0).getDate();
+};
+
 export const getWeekStr = () => {
   const now = new Date();
   // Copy date so don't modify original

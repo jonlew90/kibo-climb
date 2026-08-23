@@ -1,6 +1,7 @@
 // Badge Manager Engine for Kibo Math, Kibo Words & Kibo World
 import { BADGES_CATALOG } from '../data/badges';
 import { storageService } from '../services/storageService';
+import { getDaysInMonth, CUTOFF_HOUR, getLogicalDate } from './dateUtils';
 
 export function evaluateBadges(userState = {}, lastSprintResult = null) {
   const currentUnlocked = new Set(userState.unlockedBadges || []);
@@ -83,6 +84,53 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
     maxConsecutivePerfect
   );
 
+
+  // Combine all subjects' sprint history to evaluate perfect month badges globally
+  const allSubjects = globalProfile?.userData?.subjects || {};
+  let combinedGlobalHistory = [...(Array.isArray(sprintHistory) ? sprintHistory : [])];
+  Object.values(allSubjects).forEach((sub) => {
+    if (Array.isArray(sub?.sprintHistory)) {
+      combinedGlobalHistory.push(...sub.sprintHistory);
+    }
+  });
+
+  // Calculate unique active days per month
+  const monthlyActiveDays = {};
+  combinedGlobalHistory.forEach((item) => {
+    if (!item) return;
+    let logicalDateStr;
+    if (item.date) {
+      logicalDateStr = item.date; // assuming item.date is already 'YYYY-MM-DD'
+    } else if (item.timestamp) {
+      const logicalDate = getLogicalDate(new Date(item.timestamp), CUTOFF_HOUR);
+      logicalDateStr = `${logicalDate.getFullYear()}-${String(logicalDate.getMonth() + 1).padStart(2, '0')}-${String(logicalDate.getDate()).padStart(2, '0')}`;
+    }
+    if (logicalDateStr) {
+      const [y, m, d] = logicalDateStr.split('-');
+      const monthKey = `${y}-${m}`;
+      if (!monthlyActiveDays[monthKey]) {
+        monthlyActiveDays[monthKey] = new Set();
+      }
+      monthlyActiveDays[monthKey].add(d);
+    }
+  });
+
+  const checkPerfectMonth = (monthIndex) => {
+    // Check across all years in history for this specific month (0-11)
+    for (const [monthKey, daysSet] of Object.entries(monthlyActiveDays)) {
+      const [y, m] = monthKey.split('-');
+      const yearInt = parseInt(y, 10);
+      const monthInt = parseInt(m, 10) - 1; // 0-indexed
+      if (monthInt === monthIndex) {
+        const totalDays = getDaysInMonth(yearInt, monthInt);
+        if (daysSet.size >= totalDays) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
   BADGES_CATALOG.forEach((badge) => {
     if (currentUnlocked.has(badge.id)) return;
 
@@ -115,6 +163,20 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
           }
         }
         break;
+
+      case 'perfect_month_0': unlocked = checkPerfectMonth(0); break;
+      case 'perfect_month_1': unlocked = checkPerfectMonth(1); break;
+      case 'perfect_month_2': unlocked = checkPerfectMonth(2); break;
+      case 'perfect_month_3': unlocked = checkPerfectMonth(3); break;
+      case 'perfect_month_4': unlocked = checkPerfectMonth(4); break;
+      case 'perfect_month_5': unlocked = checkPerfectMonth(5); break;
+      case 'perfect_month_6': unlocked = checkPerfectMonth(6); break;
+      case 'perfect_month_7': unlocked = checkPerfectMonth(7); break;
+      case 'perfect_month_8': unlocked = checkPerfectMonth(8); break;
+      case 'perfect_month_9': unlocked = checkPerfectMonth(9); break;
+      case 'perfect_month_10': unlocked = checkPerfectMonth(10); break;
+      case 'perfect_month_11': unlocked = checkPerfectMonth(11); break;
+
       case 'early_bird': {
         const targetRecord = lastSprintResult || (sprintHistory && sprintHistory.length > 0 ? sprintHistory[0] : null);
         const isoString = targetRecord?.timestamp || (typeof targetRecord?.date === 'string' && targetRecord.date.includes('T') ? targetRecord.date : null);
