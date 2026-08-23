@@ -122,6 +122,7 @@ export default function App() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [pendingReward, setPendingReward] = useState(null);
   const subjectSelectorRef = useRef(null);
+  const settingsMenuRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -130,11 +131,21 @@ export default function App() {
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
+
+    function handleClickOutsideSettings(event) {
+      if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target)) {
+        setShowSettingsMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutsideSettings);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutsideSettings);
     };
   }, []);
 
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStripeCheckoutModal, setShowStripeCheckoutModal] = useState(false);
@@ -1105,6 +1116,7 @@ export default function App() {
     if (except !== 'workshop') setIsWorkshopOpen(false);
     if (except !== 'badges') setShowBadgesModal(false);
     if (except !== 'profile') setShowManualProfileSwitcher(false);
+    if (except !== 'settingsMenu') setShowSettingsMenu(false);
     if (except !== 'parents') {
       setShowPinGateModal(false);
       setShowParentDashboard(false);
@@ -1165,30 +1177,7 @@ export default function App() {
         <span className="text-xs font-black tracking-wide">Badges</span>
       </button>
 
-      {/* 3. Switch Profile Button: Ocean Cyan / Sky Blue */}
-      <button
-        type="button"
-        onClick={() => {
-          soundFx.playKeyTap();
-          setProfileSwitcherOrigin({
-            appState,
-            showBadgesModal,
-            isWorkshopOpen,
-            showParentDashboard
-          });
-          closeAllNavModals('profile');
-          setShowManualProfileSwitcher(true);
-        }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-sky-100 via-cyan-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-cyan-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-          showManualProfileSwitcher ? 'ring-2 ring-sky-500 scale-105 font-bold' : ''
-        }`}
-        title="Switch Player Profile"
-      >
-        <Users className="w-5 h-5 text-sky-700 stroke-[2.5]" />
-        <span className="text-xs font-black tracking-wide">Switch</span>
-      </button>
-
-      {/* 4. Leaderboard Button: Sapphire Blue */}
+      {/* 3. Leaderboard Button: Sapphire Blue */}
       <button
         type="button"
         onClick={() => {
@@ -1206,41 +1195,97 @@ export default function App() {
         <span className="text-xs font-black tracking-wide">Rank</span>
       </button>
 
-      {/* 5. Parents Button: Royal Purple */}
-      <button
-        type="button"
-        onClick={() => {
-          soundFx.playKeyTap();
-          closeAllNavModals('parents');
-          setPinGateSource(null);
-          setShowPinGateModal(true);
-        }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-          showPinGateModal || showParentDashboard ? 'ring-2 ring-purple-500 scale-105 font-bold' : ''
-        }`}
-        title="Parent Dashboard & Settings"
-      >
-        <Lock className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-        <span className="text-xs font-black tracking-wide">Parents</span>
-      </button>
+      {/* 4. Settings Dropdown Menu Wrapper */}
+      <div className="relative" ref={settingsMenuRef}>
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playKeyTap();
+            if (!showSettingsMenu) {
+              closeAllNavModals('settingsMenu');
+            }
+            setShowSettingsMenu(!showSettingsMenu);
+          }}
+          className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+            !isWorkshopOpen && !showBadgesModal && !showSettingsMenu && appState === 'settings' ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
+          } ${showSettingsMenu ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''}`}
+          aria-label="Settings Menu"
+          title="Settings Menu"
+        >
+          <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+          <span className="text-xs font-black tracking-wide">Settings</span>
+        </button>
 
-      {/* 6. Settings Button: Slate Gray */}
-      <button
-        type="button"
-        onClick={() => {
-          soundFx.playKeyTap();
-          closeAllNavModals();
-          setAppState('settings');
-        }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-          !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'settings' ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
-        }`}
-        aria-label="Settings"
-        title="Settings"
-      >
-        <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
-        <span className="text-xs font-black tracking-wide">Settings</span>
-      </button>
+        {showSettingsMenu && (
+          <div className="absolute bottom-full right-0 mb-3 w-48 bg-white border-2 border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden flex flex-col origin-bottom-right animate-in fade-in slide-in-from-bottom-2">
+
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setProfileSwitcherOrigin({
+                  appState,
+                  showBadgesModal,
+                  isWorkshopOpen,
+                  showParentDashboard
+                });
+                setShowSettingsMenu(false);
+                closeAllNavModals('profile');
+                setShowManualProfileSwitcher(true);
+              }}
+              className="flex items-center gap-2 px-3 py-3 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-100 to-sky-200 border border-sky-300 flex items-center justify-center shrink-0">
+                <Users className="w-4 h-4 text-sky-700 stroke-[2.5]" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-black text-slate-800 leading-tight">Switch Profile</span>
+              </div>
+            </button>
+
+            <div className="h-px bg-slate-100 w-full" />
+
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowSettingsMenu(false);
+                closeAllNavModals('parents');
+                setPinGateSource(null);
+                setShowPinGateModal(true);
+              }}
+              className="flex items-center gap-2 px-3 py-3 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 border border-purple-300 flex items-center justify-center shrink-0">
+                <Lock className="w-4 h-4 text-purple-700 stroke-[2.5]" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-black text-slate-800 leading-tight">Parent Zone</span>
+              </div>
+            </button>
+
+            <div className="h-px bg-slate-100 w-full" />
+
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowSettingsMenu(false);
+                closeAllNavModals();
+                setAppState('settings');
+              }}
+              className="flex items-center gap-2 px-3 py-3 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 flex items-center justify-center shrink-0">
+                <Settings className="w-4 h-4 text-slate-700 stroke-[2.5]" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-black text-slate-800 leading-tight">Settings</span>
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
     </footer>
   );
 
