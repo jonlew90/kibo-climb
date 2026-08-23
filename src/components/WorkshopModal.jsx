@@ -24,11 +24,16 @@ export function sortShopItems(items, userSparks, unlockedItems = [], equippedIte
       return aAvail.isUpcoming ? 1 : -1;
     }
 
-    const aCanAfford = userSparks >= a.cost;
-    const bCanAfford = userSparks >= b.cost;
+    const aSale = getItemSalePrice(a, currentDate);
+    const aCost = aSale.isSale ? aSale.salePrice : a.cost;
+    const bSale = getItemSalePrice(b, currentDate);
+    const bCost = bSale.isSale ? bSale.salePrice : b.cost;
+
+    const aCanAfford = userSparks >= aCost;
+    const bCanAfford = userSparks >= bCost;
     if (aCanAfford !== bCanAfford) return aCanAfford ? -1 : 1;
 
-    return a.cost - b.cost;
+    return aCost - bCost;
   });
 }
 
@@ -299,7 +304,10 @@ export default function WorkshopModal({
       return;
     }
 
-    if (sparks >= item.cost) {
+    const saleInfo = getItemSalePrice(item, currentDate);
+    const effectiveCost = saleInfo.isSale ? saleInfo.salePrice : item.cost;
+
+    if (sparks >= effectiveCost) {
       soundFx.playVictory();
       onBuyItem(item);
       setRecentlyPurchasedId(item.id);
@@ -794,13 +802,6 @@ export default function WorkshopModal({
                   {/* Buy / Sell / Equip Action Buttons */}
                   <div className="shrink-0 flex flex-col gap-1 items-end" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-2 items-center">
-                      {!isUnlocked && saleInfo.isSale && (
-                        <div className="flex flex-col items-end justify-center mr-1">
-                           <span className="text-[10px] font-bold text-slate-400 line-through decoration-slate-400">
-                             {item.cost} ⚡
-                           </span>
-                        </div>
-                      )}
                       {canSell && (
                         <button
                           type="button"
@@ -826,10 +827,14 @@ export default function WorkshopModal({
                           <button
                             type="button"
                             onClick={() => handleBuyClick(item)}
-                            className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5"
+                            className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                           >
                             <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                            Buy for {activeCost} ⚡
+                            Buy for {saleInfo.isSale && (
+                              <span className="line-through opacity-75 font-semibold mr-0.5">
+                                {item.cost}
+                              </span>
+                            )}{activeCost} ⚡
                           </button>
                         ) : (
                           <button
@@ -889,7 +894,11 @@ export default function WorkshopModal({
                           className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                         >
                           <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                          Buy for {activeCost} ⚡
+                          Buy for {saleInfo.isSale && (
+                            <span className="line-through opacity-75 font-semibold mr-0.5">
+                              {item.cost}
+                            </span>
+                          )}{activeCost} ⚡
                         </button>
                       ) : (
                         <button
