@@ -702,6 +702,54 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
+        {/* --- BORDERS --- */}
+        {itemId === 'border_wood' && (
+          <g>
+            <rect x="10" y="10" width="80" height="80" rx="16" fill="none" stroke="url(#thumbWoodGrad)" strokeWidth="6" />
+          </g>
+        )}
+
+        {itemId === 'border_stone' && (
+          <g>
+            <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="#64748B" strokeWidth="8" />
+          </g>
+        )}
+
+        {itemId === 'border_silver' && (
+          <g>
+            <rect x="10" y="10" width="80" height="80" rx="20" fill="none" stroke="#CBD5E1" strokeWidth="5" />
+            <rect x="13" y="13" width="74" height="74" rx="18" fill="none" stroke="#F1F5F9" strokeWidth="1" opacity="0.8" />
+          </g>
+        )}
+
+        {itemId === 'border_gold' && (
+          <g>
+            <rect x="8" y="8" width="84" height="84" rx="24" fill="none" stroke="url(#thumbGoldGrad)" strokeWidth="7" />
+            <rect x="8" y="8" width="84" height="84" rx="24" fill="none" stroke="#FEF08A" strokeWidth="2" opacity="0.6" />
+          </g>
+        )}
+
+        {itemId === 'border_diamond' && (
+          <g>
+            <rect x="8" y="8" width="84" height="84" rx="24" fill="none" stroke="#22D3EE" strokeWidth="9" />
+            <rect x="8" y="8" width="84" height="84" rx="24" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeDasharray="5 7" opacity="0.9" />
+          </g>
+        )}
+
+        {itemId === 'border_fire' && (
+          <g>
+            <rect x="6" y="6" width="88" height="88" rx="44" fill="none" stroke="#F97316" strokeWidth="12" opacity="0.9" />
+          </g>
+        )}
+
+        {itemId === 'border_neon' && (
+          <g>
+            <rect x="10" y="10" width="80" height="80" rx="12" fill="none" stroke="#A855F7" strokeWidth="4" />
+            <rect x="10" y="10" width="80" height="80" rx="12" fill="none" stroke="#D8B4FE" strokeWidth="1" opacity="0.8" />
+            <rect x="7" y="7" width="86" height="86" rx="15" fill="none" stroke="#38BDF8" strokeWidth="2" />
+          </g>
+        )}
+
         {/* ================================================================= */}
         {/* RECURRING SEASONAL & HOLIDAY THUMBNAILS                           */}
         {/* ================================================================= */}
@@ -1340,6 +1388,17 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
             <circle cx="70" cy="42" r="5" fill="#3B82F6" stroke="#1D4ED8" strokeWidth="1" />
             <circle cx="34" cy="71" r="5" fill="#22C55E" stroke="#15803D" strokeWidth="1" />
             <circle cx="64" cy="72" r="5" fill="#EC4899" stroke="#BE185D" strokeWidth="1" />
+          </g>
+        )}
+
+        {itemId === 'holiday_wreath_border' && (
+          <g>
+            <rect x="8" y="8" width="84" height="84" rx="42" fill="none" stroke="#15803D" strokeWidth="8" />
+            <rect x="8" y="8" width="84" height="84" rx="42" fill="none" stroke="#22C55E" strokeWidth="3" strokeDasharray="6 4" />
+            <circle cx="50" cy="8" r="6" fill="#EF4444" />
+            <circle cx="8" cy="50" r="6" fill="#EF4444" />
+            <circle cx="92" cy="50" r="6" fill="#EF4444" />
+            <circle cx="50" cy="92" r="6" fill="#EF4444" />
           </g>
         )}
 

@@ -16,6 +16,16 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasCrystalCaveBg = isEquipped('bg_crystal_cave');
   const hasGoldenPalaceBg = isEquipped('bg_golden_palace');
 
+  // Borders
+  const hasWoodBorder = isEquipped('border_wood');
+  const hasStoneBorder = isEquipped('border_stone');
+  const hasSilverBorder = isEquipped('border_silver');
+  const hasGoldBorder = isEquipped('border_gold');
+  const hasDiamondBorder = isEquipped('border_diamond');
+  const hasFireBorder = isEquipped('border_fire');
+  const hasNeonBorder = isEquipped('border_neon');
+  const hasHolidayWreathBorder = isEquipped('holiday_wreath_border');
+
   // Skins
   const hasGoldenSkin = isEquipped('golden_skin');
   const hasSnowWhiteSkin = isEquipped('snow_white_skin');
@@ -404,6 +414,98 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           ⚡
         </div>
       ))}
+
+      {/* BORDERS SVG LAYER (Rendered Behind Mascot to act as frame) */}
+      <svg
+        viewBox="-40 -40 280 280"
+        className="absolute inset-0 w-full h-full z-0 drop-shadow-lg overflow-visible pointer-events-none"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient id="borderWoodGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#78350F" />
+            <stop offset="50%" stopColor="#B45309" />
+            <stop offset="100%" stopColor="#451A03" />
+          </linearGradient>
+          <linearGradient id="borderStoneGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#94A3B8" />
+            <stop offset="50%" stopColor="#64748B" />
+            <stop offset="100%" stopColor="#475569" />
+          </linearGradient>
+          <linearGradient id="borderSilverGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#F8FAFC" />
+            <stop offset="50%" stopColor="#CBD5E1" />
+            <stop offset="100%" stopColor="#94A3B8" />
+          </linearGradient>
+          <linearGradient id="borderGoldGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FEF08A" />
+            <stop offset="50%" stopColor="#F59E0B" />
+            <stop offset="100%" stopColor="#B45309" />
+          </linearGradient>
+          <linearGradient id="borderDiamondGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#A5F3FC" />
+            <stop offset="50%" stopColor="#22D3EE" />
+            <stop offset="100%" stopColor="#0891B2" />
+          </linearGradient>
+          <radialGradient id="borderFireGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="60%" stopColor="#FACC15" stopOpacity="0" />
+            <stop offset="85%" stopColor="#F97316" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#DC2626" />
+          </radialGradient>
+        </defs>
+
+        {hasWoodBorder && (
+          <rect x="-10" y="-10" width="220" height="220" rx="32" fill="none" stroke="url(#borderWoodGrad)" strokeWidth="12" />
+        )}
+        {hasStoneBorder && (
+          <rect x="-10" y="-10" width="220" height="220" rx="16" fill="none" stroke="url(#borderStoneGrad)" strokeWidth="16" />
+        )}
+        {hasSilverBorder && (
+          <g>
+            <rect x="-10" y="-10" width="220" height="220" rx="40" fill="none" stroke="url(#borderSilverGrad)" strokeWidth="10" />
+            <rect x="-4" y="-4" width="208" height="208" rx="36" fill="none" stroke="#F1F5F9" strokeWidth="2" opacity="0.8" />
+          </g>
+        )}
+        {hasGoldBorder && (
+          <g>
+            <rect x="-15" y="-15" width="230" height="230" rx="48" fill="none" stroke="url(#borderGoldGrad)" strokeWidth="14" />
+            <rect x="-15" y="-15" width="230" height="230" rx="48" fill="none" stroke="#FEF08A" strokeWidth="4" opacity="0.6" />
+          </g>
+        )}
+        {hasDiamondBorder && (
+          <g>
+            <rect x="-15" y="-15" width="230" height="230" rx="48" fill="none" stroke="url(#borderDiamondGrad)" strokeWidth="18" />
+            <rect x="-15" y="-15" width="230" height="230" rx="48" fill="none" stroke="#FFFFFF" strokeWidth="6" strokeDasharray="10 15" opacity="0.9" />
+          </g>
+        )}
+        {hasFireBorder && (
+          <g className="animate-pulse">
+            <rect x="-20" y="-20" width="240" height="240" rx="120" fill="none" stroke="url(#borderFireGrad)" strokeWidth="24" opacity="0.9" />
+          </g>
+        )}
+        {hasNeonBorder && (
+          <g>
+            <rect x="-10" y="-10" width="220" height="220" rx="24" fill="none" stroke="#A855F7" strokeWidth="8" />
+            <rect x="-10" y="-10" width="220" height="220" rx="24" fill="none" stroke="#D8B4FE" strokeWidth="2" opacity="0.8" className="animate-pulse" />
+            <rect x="-15" y="-15" width="230" height="230" rx="30" fill="none" stroke="#38BDF8" strokeWidth="4" />
+          </g>
+        )}
+        {hasHolidayWreathBorder && (
+          <g>
+            <rect x="-20" y="-20" width="240" height="240" rx="120" fill="none" stroke="#064E3B" strokeWidth="24" />
+            <rect x="-20" y="-20" width="240" height="240" rx="120" fill="none" stroke="#059669" strokeWidth="8" strokeDasharray="20 15" />
+            <circle cx="100" cy="-20" r="15" fill="#DC2626" />
+            <circle cx="-20" cy="100" r="15" fill="#DC2626" />
+            <circle cx="220" cy="100" r="15" fill="#DC2626" />
+            <circle cx="100" cy="220" r="15" fill="#DC2626" />
+            <path d="M 85 -20 Q 100 -40 115 -20" stroke="#FBBF24" strokeWidth="4" fill="none" />
+            <path d="M -20 85 Q -40 100 -20 115" stroke="#FBBF24" strokeWidth="4" fill="none" />
+            <path d="M 220 85 Q 240 100 220 115" stroke="#FBBF24" strokeWidth="4" fill="none" />
+            <path d="M 85 220 Q 100 240 115 220" stroke="#FBBF24" strokeWidth="4" fill="none" />
+          </g>
+        )}
+      </svg>
 
       {/* MAIN 3D MASCOT SVG WITH INTEGRATED BACKGROUND & PET LAYERS */}
       <svg

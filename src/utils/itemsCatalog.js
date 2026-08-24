@@ -9,6 +9,7 @@ export const ITEM_CATEGORIES = [
   { id: 'fx', label: 'Visual FX' },
   { id: 'skins', label: 'Kibo Skins' },
   { id: 'background', label: 'Backgrounds' },
+  { id: 'borders', label: 'Profile Borders' },
   { id: 'seasonal', label: 'Seasonal' },
   { id: 'promo', label: 'Promo Exclusives' },
   { id: 'get_sparks', label: 'Get Sparks' },
@@ -515,6 +516,65 @@ export const WORKSHOP_ITEMS = [
     rarity: 'legendary',
     requiredRank: 1650,
     description: 'Royal golden palace floating in the clouds!'
+  },
+
+  // PROFILE BORDERS (Category: borders)
+  {
+    id: 'border_wood',
+    name: 'Classic Wood Frame',
+    category: 'borders',
+    cost: 20,
+    rarity: 'common',
+    description: 'A classic, sturdy wooden border for your profile.'
+  },
+  {
+    id: 'border_stone',
+    name: 'Granite Stone Border',
+    category: 'borders',
+    cost: 40,
+    rarity: 'common',
+    description: 'A solid granite stone border, strong as the mountains.'
+  },
+  {
+    id: 'border_silver',
+    name: 'Shimmering Silver',
+    category: 'borders',
+    cost: 120,
+    rarity: 'rare',
+    description: 'A polished, shimmering silver border.'
+  },
+  {
+    id: 'border_gold',
+    name: 'Radiant Gold Frame',
+    category: 'borders',
+    cost: 350,
+    rarity: 'epic',
+    description: 'A beautifully crafted, radiant gold border.'
+  },
+  {
+    id: 'border_diamond',
+    name: 'Diamond Encrusted',
+    category: 'borders',
+    cost: 800,
+    rarity: 'legendary',
+    requiredRank: 1200,
+    description: 'A dazzling border encrusted with sparkling diamonds.'
+  },
+  {
+    id: 'border_fire',
+    name: 'Blazing Fire Ring',
+    category: 'borders',
+    cost: 450,
+    rarity: 'epic',
+    description: 'An animated border made of blazing, eternal fire.'
+  },
+  {
+    id: 'border_neon',
+    name: 'Neon Cyber Glow',
+    category: 'borders',
+    cost: 500,
+    rarity: 'epic',
+    description: 'A bright, pulsing neon cyber border.'
   },
 
   // =========================================================================
@@ -1193,6 +1253,19 @@ export const WORKSHOP_ITEMS = [
     seasonType: 'holiday',
     recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 1, endDay: 3, previewDays: 14 },
     description: 'Glowing multi-colored festive holiday fairy lights twinkling around Kibo! (Holiday Exclusive)'
+  },
+  {
+    id: 'holiday_wreath_border',
+    name: 'Festive Wreath Frame',
+    category: 'seasonal',
+    slot: 'borders',
+    cost: 250,
+    rarity: 'epic',
+    seasonId: 'holiday_season',
+    seasonName: 'Holiday Wonderland',
+    seasonType: 'holiday',
+    recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 1, endDay: 3, previewDays: 14 },
+    description: 'A beautiful evergreen wreath border with red bows and holly! (Holiday Exclusive)'
   },
 
   // PROMO EXCLUSIVES (Category: promo)
