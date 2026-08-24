@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Settings, Trophy, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown } from 'lucide-react';
+import { Flame, Settings, Trophy, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star } from 'lucide-react';
 import Mascot from './components/Mascot';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
@@ -1265,7 +1265,7 @@ export default function App() {
         title="Leaderboard"
       >
         <div className="relative">
-          <LeaderboardIcon className="w-5 h-5 text-indigo-700" isActive={!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard'} />
+          <Trophy className={`w-5 h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
           {pendingFriendRequestsCount > 0 && (
             <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
               {pendingFriendRequestsCount}
@@ -1568,7 +1568,7 @@ export default function App() {
                     value={liveCompetenceRating}
                     profileId={activeProfileId}
                     subjectId={activeSubject}
-                    icon={<Trophy className="w-4 h-4 text-purple-700 stroke-[2.5]" />}
+                    icon={<Star className="w-4 h-4 text-purple-700 fill-purple-300 stroke-[2]" />}
                   />
                 </button>
               );
