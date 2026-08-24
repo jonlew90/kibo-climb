@@ -1046,7 +1046,7 @@ export const storageService = {
 
     // Check if request already sent or exists
     const exists = currentRequests.some(r => {
-      const rId = (r.receiverId || r.receiverUid || r.targetId || '').trim().toLowerCase();
+      const rId = (r.receiverId || r.receiverUid || r.targetId || r.receiverProfileId || '').trim().toLowerCase();
       const rUser = (r.receiverUsername || r.username || r.name || '').trim().toLowerCase();
       return (normalizedTargetId && rId === normalizedTargetId) ||
              (normalizedUsername && rUser === normalizedUsername);
@@ -1057,12 +1057,33 @@ export const storageService = {
     }
 
     const activeProfile = state.profiles[pid];
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+    // Identify if target is a local profile in profiles state
+    let localTargetProfileId = null;
+    if (targetUserData.profileId && state.profiles[targetUserData.profileId] && targetUserData.profileId !== pid) {
+      localTargetProfileId = targetUserData.profileId;
+    } else {
+      // Find by matching username or id among other local profiles
+      for (const [otherPid, otherProf] of Object.entries(state.profiles)) {
+        if (otherPid === pid) continue;
+        const otherUsername = (otherProf.username || otherProf.name || '').trim().toLowerCase();
+        if (otherPid === targetId || (normalizedUsername && otherUsername === normalizedUsername)) {
+          localTargetProfileId = otherPid;
+          break;
+        }
+      }
+    }
+
+    const resolvedReceiverProfileId = localTargetProfileId || targetUserData.profileId || (targetId.includes('_') ? targetId.split('_')[1] : 'default_child');
+    const resolvedReceiverUid = targetUserData.uid || (targetId.includes('_') ? targetId.split('_')[0] : (activeProfile.userData?.cloudUid || 'local'));
+
     const newRequest = {
-      id: `req_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      id: requestId,
       type: 'sent', // 'sent' | 'received'
       targetId: targetId,
-      receiverUid: targetUserData.uid || (targetId.includes('_') ? targetId.split('_')[0] : targetId),
-      receiverProfileId: targetUserData.profileId || (targetId.includes('_') ? targetId.split('_')[1] : 'default_child'),
+      receiverUid: resolvedReceiverUid,
+      receiverProfileId: resolvedReceiverProfileId,
       receiverUsername: targetUserData.username || targetUserData.name || 'Climber Friend',
       name: targetUserData.name || targetUserData.username || 'Climber Friend',
       score: Number(targetUserData.score) || 1000,
@@ -1072,6 +1093,32 @@ export const storageService = {
     };
 
     currentRequests.push(newRequest);
+
+    // If target profile is a local profile on this same device / account, deliver incoming request immediately!
+    if (localTargetProfileId && state.profiles[localTargetProfileId]) {
+      if (!Array.isArray(state.profiles[localTargetProfileId].friendRequests)) {
+        state.profiles[localTargetProfileId].friendRequests = [];
+      }
+      
+      const senderRating = activeProfile.userData?.adaptiveCompetenceRating || activeProfile.userData?.competenceRank || 1000;
+      const senderEquipped = activeProfile.shopState?.equippedItems || [];
+      const senderTricks = Object.keys(activeProfile.userData?.masteredTricks || {}).length || 5;
+
+      state.profiles[localTargetProfileId].friendRequests.push({
+        id: requestId,
+        type: 'received',
+        senderId: `${activeProfile.userData?.cloudUid || 'local'}_${pid}`,
+        senderUid: activeProfile.userData?.cloudUid || 'local',
+        senderProfileId: pid,
+        senderUsername: activeProfile.username || activeProfile.name || 'Climber Friend',
+        name: activeProfile.username || activeProfile.name || 'Climber Friend',
+        score: senderRating,
+        equipped: senderEquipped,
+        subjectsMastered: senderTricks,
+        createdAt: new Date().toISOString()
+      });
+    }
+
     safeSaveProfilesState(state);
     return currentRequests;
   },
@@ -1097,9 +1144,10 @@ export const storageService = {
     }
 
     const exists = currentRequests.some(r => {
-      const rId = (r.senderId || r.senderUid || r.targetId || '').trim().toLowerCase();
+      const rId = (r.senderId || r.senderUid || r.targetId || r.id || '').trim().toLowerCase();
       const rUser = (r.senderUsername || r.username || r.name || '').trim().toLowerCase();
-      return (senderId && rId === senderId.toLowerCase()) ||
+      return (incomingData.id && r.id === incomingData.id) ||
+             (senderId && rId === senderId.toLowerCase()) ||
              (normalizedUsername && rUser === normalizedUsername);
     });
 
@@ -1138,9 +1186,10 @@ export const storageService = {
 
     const req = state.profiles[pid].friendRequests[reqIndex];
     state.profiles[pid].friendRequests.splice(reqIndex, 1);
-    safeSaveProfilesState(state);
 
-    // Add friend
+    const activeProfile = state.profiles[pid];
+
+    // Add sender as friend for the active profile
     const friendData = {
       id: req.senderId || req.targetId || req.receiverUid,
       uid: req.senderUid || req.receiverUid,
@@ -1152,9 +1201,76 @@ export const storageService = {
       subjectsMastered: req.subjectsMastered || 5
     };
 
-    const updatedFriends = this.addFriend(friendData, pid);
+    if (!Array.isArray(activeProfile.friends)) {
+      activeProfile.friends = [];
+    }
+    const currentFriends = activeProfile.friends;
+    const friendId = friendData.id || friendData.uid || friendData.username;
+    const normalizedUsername = (friendData.username || friendData.name || '').trim().toLowerCase();
+    const normalizedFriendId = (friendId || '').trim().toLowerCase();
+
+    const exists = currentFriends.some(f => {
+      const fId = (f.id || f.uid || '').trim().toLowerCase();
+      const fUser = (f.username || f.name || '').trim().toLowerCase();
+      return (normalizedFriendId && fId === normalizedFriendId) || 
+             (normalizedUsername && fUser === normalizedUsername);
+    });
+
+    if (!exists && currentFriends.length < 25) {
+      currentFriends.push({
+        id: friendId,
+        uid: friendData.uid || (friendId.includes('_') ? friendId.split('_')[0] : friendId),
+        profileId: friendData.profileId || (friendId.includes('_') ? friendId.split('_')[1] : 'default_child'),
+        username: friendData.username || friendData.name || 'Climber Friend',
+        name: friendData.name || friendData.username || 'Climber Friend',
+        score: Number(friendData.score) || 1000,
+        equipped: Array.isArray(friendData.equipped) ? friendData.equipped : [],
+        subjectsMastered: Number(friendData.subjectsMastered) || 5,
+        addedAt: new Date().toISOString(),
+        isDisplayedOnMain: false
+      });
+    }
+
+    // Check if the sender is another local profile in profiles state -> update sender too!
+    const senderLocalPid = req.senderProfileId;
+    if (senderLocalPid && state.profiles[senderLocalPid] && senderLocalPid !== pid) {
+      const senderProfile = state.profiles[senderLocalPid];
+      // Remove the matching sent/received request from sender profile
+      if (Array.isArray(senderProfile.friendRequests)) {
+        senderProfile.friendRequests = senderProfile.friendRequests.filter(r => r.id !== requestId);
+      }
+      // Add active profile to sender's friend list
+      if (!Array.isArray(senderProfile.friends)) {
+        senderProfile.friends = [];
+      }
+      const senderFriends = senderProfile.friends;
+      const receiverNormalized = (activeProfile.username || activeProfile.name || '').trim().toLowerCase();
+      const receiverExists = senderFriends.some(f => {
+        const fId = (f.id || f.uid || f.profileId || '').trim().toLowerCase();
+        const fUser = (f.username || f.name || '').trim().toLowerCase();
+        return fId === pid.toLowerCase() || (receiverNormalized && fUser === receiverNormalized);
+      });
+
+      if (!receiverExists && senderFriends.length < 25) {
+        senderFriends.push({
+          id: `${activeProfile.userData?.cloudUid || 'local'}_${pid}`,
+          uid: activeProfile.userData?.cloudUid || 'local',
+          profileId: pid,
+          username: activeProfile.username || activeProfile.name || 'Climber Friend',
+          name: activeProfile.username || activeProfile.name || 'Climber Friend',
+          score: Number(activeProfile.userData?.adaptiveCompetenceRating || 1000),
+          equipped: Array.isArray(activeProfile.shopState?.equippedItems) ? activeProfile.shopState.equippedItems : [],
+          subjectsMastered: Object.keys(activeProfile.userData?.masteredTricks || {}).length || 5,
+          addedAt: new Date().toISOString(),
+          isDisplayedOnMain: false
+        });
+      }
+    }
+
+    safeSaveProfilesState(state);
+
     return {
-      friends: updatedFriends,
+      friends: this.getFriends(pid),
       requests: this.getFriendRequests(pid)
     };
   },
@@ -1162,9 +1278,20 @@ export const storageService = {
   declineFriendRequest(requestId, profileId = null) {
     const pid = profileId || this.getActiveProfileId();
     const state = safeGetProfilesState();
-    if (!state.profiles[pid] || !Array.isArray(state.profiles[pid].friendRequests)) return [];
+    if (!state.profiles[pid]) return [];
 
-    state.profiles[pid].friendRequests = state.profiles[pid].friendRequests.filter(r => r.id !== requestId);
+    // Remove from the current profile
+    if (Array.isArray(state.profiles[pid].friendRequests)) {
+      state.profiles[pid].friendRequests = state.profiles[pid].friendRequests.filter(r => r.id !== requestId);
+    }
+
+    // Also remove from any other local profile that holds this request ID
+    Object.keys(state.profiles).forEach(otherPid => {
+      if (otherPid !== pid && Array.isArray(state.profiles[otherPid].friendRequests)) {
+        state.profiles[otherPid].friendRequests = state.profiles[otherPid].friendRequests.filter(r => r.id !== requestId);
+      }
+    });
+
     safeSaveProfilesState(state);
     return state.profiles[pid].friendRequests;
   },
@@ -1178,8 +1305,8 @@ export const storageService = {
     const requests = this.getFriendRequests(profileId);
     const target = targetIdOrUsername.trim().toLowerCase();
     return requests.some(r => {
-      const rId = (r.targetId || r.receiverUid || r.senderId || r.senderUid || '').trim().toLowerCase();
-      const rUser = (r.receiverUsername || r.senderUsername || r.name || '').trim().toLowerCase();
+      const rId = (r.targetId || r.receiverUid || r.senderId || r.senderUid || r.receiverProfileId || r.senderProfileId || '').trim().toLowerCase();
+      const rUser = (r.receiverUsername || r.senderUsername || r.name || r.username || '').trim().toLowerCase();
       return rId === target || rUser === target;
     });
   },
@@ -1274,11 +1401,33 @@ export const storageService = {
     if (!state.profiles[pid] || !Array.isArray(state.profiles[pid].friends)) return [];
 
     const target = friendIdOrUsername.trim().toLowerCase();
+    
+    // Find if target is a local profile in state.profiles
+    let removedFriendLocalPid = null;
+    const removedFriend = state.profiles[pid].friends.find(f => {
+      const fId = (f.id || f.uid || f.profileId || '').trim().toLowerCase();
+      const fUser = (f.username || f.name || '').trim().toLowerCase();
+      return fId === target || fUser === target;
+    });
+    if (removedFriend) {
+      removedFriendLocalPid = removedFriend.profileId;
+    }
+
     state.profiles[pid].friends = state.profiles[pid].friends.filter(f => {
-      const fId = (f.id || f.uid || '').trim().toLowerCase();
+      const fId = (f.id || f.uid || f.profileId || '').trim().toLowerCase();
       const fUser = (f.username || f.name || '').trim().toLowerCase();
       return fId !== target && fUser !== target;
     });
+
+    // If removed friend was a local profile, also remove current profile from that local profile
+    if (removedFriendLocalPid && state.profiles[removedFriendLocalPid] && Array.isArray(state.profiles[removedFriendLocalPid].friends)) {
+      const currentUsername = (state.profiles[pid].username || state.profiles[pid].name || '').trim().toLowerCase();
+      state.profiles[removedFriendLocalPid].friends = state.profiles[removedFriendLocalPid].friends.filter(f => {
+        const fId = (f.id || f.uid || f.profileId || '').trim().toLowerCase();
+        const fUser = (f.username || f.name || '').trim().toLowerCase();
+        return fId !== pid.toLowerCase() && (!currentUsername || fUser !== currentUsername);
+      });
+    }
 
     safeSaveProfilesState(state);
     return state.profiles[pid].friends;
@@ -1289,7 +1438,7 @@ export const storageService = {
     const friends = this.getFriends(profileId);
     const target = friendIdOrUsername.trim().toLowerCase();
     return friends.some(f => {
-      const fId = (f.id || f.uid || '').trim().toLowerCase();
+      const fId = (f.id || f.uid || f.profileId || '').trim().toLowerCase();
       const fUser = (f.username || f.name || '').trim().toLowerCase();
       return fId === target || fUser === target;
     });

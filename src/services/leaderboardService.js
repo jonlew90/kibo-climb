@@ -551,10 +551,10 @@ class LeaderboardService {
     }
   }
 
-  async fetchCloudFriendRequests() {
+  async fetchCloudFriendRequests(profileId = null) {
     try {
       const user = this.getCurrentUser();
-      if (!user) return { received: [], sent: [] };
+      if (!user) return { received: [], sent: [], acceptedSent: [] };
 
       const receivedQuery = query(
         collection(db, 'friend_requests'),
@@ -570,9 +570,17 @@ class LeaderboardService {
         limit(25)
       );
 
-      const [receivedSnap, sentSnap] = await Promise.all([
+      const acceptedSentQuery = query(
+        collection(db, 'friend_requests'),
+        where('senderUid', '==', user.uid),
+        where('status', '==', 'accepted'),
+        limit(25)
+      );
+
+      const [receivedSnap, sentSnap, acceptedSentSnap] = await Promise.all([
         getDocs(receivedQuery).catch(() => ({ empty: true, docs: [] })),
-        getDocs(sentQuery).catch(() => ({ empty: true, docs: [] }))
+        getDocs(sentQuery).catch(() => ({ empty: true, docs: [] })),
+        getDocs(acceptedSentQuery).catch(() => ({ empty: true, docs: [] }))
       ]);
 
       const received = [];
@@ -589,10 +597,17 @@ class LeaderboardService {
         });
       }
 
-      return { received, sent };
+      const acceptedSent = [];
+      if (!acceptedSentSnap.empty) {
+        acceptedSentSnap.docs.forEach(docSnap => {
+          acceptedSent.push({ ...docSnap.data(), id: docSnap.id });
+        });
+      }
+
+      return { received, sent, acceptedSent };
     } catch (err) {
       console.warn('LeaderboardService: fetchCloudFriendRequests error', err);
-      return { received: [], sent: [] };
+      return { received: [], sent: [], acceptedSent: [] };
     }
   }
 

@@ -21,6 +21,9 @@ export default function LeaderboardScreen({
   const [weeklyStandings, setWeeklyStandings] = useState([]);
   const [friendsStandings, setFriendsStandings] = useState([]);
   const [friendsList, setFriendsList] = useState(() => storageService.getFriends());
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(() => 
+    storageService.getFriendRequests().filter(r => r.type === 'received').length
+  );
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [cohortId, setCohortId] = useState(null);
@@ -83,6 +86,7 @@ export default function LeaderboardScreen({
   const refreshFriendsStandings = async () => {
     const stored = storageService.getFriends();
     setFriendsList(stored);
+    setPendingRequestsCount(storageService.getFriendRequests().filter(r => r.type === 'received').length);
     if (stored.length === 0) {
       setFriendsStandings([]);
       return;
@@ -463,10 +467,15 @@ export default function LeaderboardScreen({
                   soundFx.playKeyTap();
                   setShowAddFriendModal(true);
                 }}
-                className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-black rounded-lg shadow-sm flex items-center gap-1 cursor-pointer transition-all"
+                className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-black rounded-lg shadow-sm flex items-center gap-1 cursor-pointer transition-all relative"
               >
                 <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Manage Friends</span>
+                {pendingRequestsCount > 0 && (
+                  <span className="min-w-[1rem] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-black ml-0.5 animate-pulse">
+                    {pendingRequestsCount}
+                  </span>
+                )}
               </button>
             )}
 

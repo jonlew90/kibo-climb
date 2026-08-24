@@ -41,21 +41,44 @@ export default function AddFriendModal({
       setActionErrorMsg('');
 
       // Fetch any cloud requests in background
-      leaderboardService.fetchCloudFriendRequests().then(({ received }) => {
+      leaderboardService.fetchCloudFriendRequests(activeProfile?.id).then(({ received, acceptedSent }) => {
+        let changed = false;
         if (Array.isArray(received) && received.length > 0) {
           received.forEach(req => {
+            const targetProfileId = req.receiverProfileId || activeProfile?.id;
             storageService.receiveFriendRequest({
               id: req.id,
-              senderId: req.senderUid,
+              senderId: `${req.senderUid}_${req.senderProfileId || 'default_child'}`,
               senderUid: req.senderUid,
-              senderProfileId: req.senderProfileId,
+              senderProfileId: req.senderProfileId || 'default_child',
               senderUsername: req.senderUsername,
+              name: req.senderUsername,
               score: req.senderScore,
               equipped: req.senderEquipped,
               subjectsMastered: req.senderSubjectsMastered,
               createdAt: req.createdAt
-            });
+            }, targetProfileId);
+            changed = true;
           });
+        }
+
+        if (Array.isArray(acceptedSent) && acceptedSent.length > 0) {
+          acceptedSent.forEach(req => {
+            const senderProfileId = req.senderProfileId || activeProfile?.id;
+            storageService.addFriend({
+              id: `${req.receiverUid}_${req.receiverProfileId || 'default_child'}`,
+              uid: req.receiverUid,
+              profileId: req.receiverProfileId || 'default_child',
+              username: req.receiverUsername,
+              name: req.receiverUsername,
+              score: 1000
+            }, senderProfileId);
+            storageService.declineFriendRequest(req.id, senderProfileId);
+            changed = true;
+          });
+        }
+
+        if (changed) {
           refreshData();
         }
       }).catch(() => {});

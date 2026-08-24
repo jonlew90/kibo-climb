@@ -156,6 +156,9 @@ export default function App() {
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsCount, setFriendsCount] = useState(() => storageService.getFriends(activeProfileId).length);
+  const [pendingFriendRequestsCount, setPendingFriendRequestsCount] = useState(() => 
+    storageService.getFriendRequests(activeProfileId).filter(r => r.type === 'received').length
+  );
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
@@ -572,7 +575,9 @@ export default function App() {
     setUnlockedItems(sData.unlockedItems ?? ['cap']);
     setHasVisitedParentZone(uData.hasVisitedParentZone || false);
 
-    setFriendsCount(storageService.getFriends(storageService.getActiveProfileId()).length);
+    const currentPid = storageService.getActiveProfileId();
+    setFriendsCount(storageService.getFriends(currentPid).length);
+    setPendingFriendRequestsCount(storageService.getFriendRequests(currentPid).filter(r => r.type === 'received').length);
 
     // Sync Audio & Haptics preferences
     const prefs = {
@@ -598,6 +603,33 @@ export default function App() {
 
   useEffect(() => {
     syncAppStateWithStorage(activeSubject);
+
+    // Check for incoming cloud friend requests in background
+    const currentPid = activeProfileId || storageService.getActiveProfileId();
+    leaderboardService.fetchCloudFriendRequests(currentPid).then(({ received }) => {
+      if (Array.isArray(received) && received.length > 0) {
+        let changed = false;
+        received.forEach(req => {
+          const targetPid = req.receiverProfileId || currentPid;
+          storageService.receiveFriendRequest({
+            id: req.id,
+            senderId: `${req.senderUid}_${req.senderProfileId || 'default_child'}`,
+            senderUid: req.senderUid,
+            senderProfileId: req.senderProfileId || 'default_child',
+            senderUsername: req.senderUsername,
+            name: req.senderUsername,
+            score: req.senderScore,
+            equipped: req.senderEquipped,
+            subjectsMastered: req.senderSubjectsMastered,
+            createdAt: req.createdAt
+          }, targetPid);
+          changed = true;
+        });
+        if (changed) {
+          setPendingFriendRequestsCount(storageService.getFriendRequests(currentPid).filter(r => r.type === 'received').length);
+        }
+      }
+    }).catch(() => {});
   }, [activeSubject, activeProfileId]);
 
   // Initialize Auth (including OAuth redirect resolution) & Offline Background Sync Queue on Launch
@@ -1225,13 +1257,20 @@ export default function App() {
           closeAllNavModals();
           setAppState('leaderboard');
         }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] relative ${
           !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'ring-2 ring-indigo-500 scale-105 font-bold' : ''
         }`}
         aria-label="Leaderboard"
         title="Leaderboard"
       >
-        <LeaderboardIcon className="w-5 h-5 text-indigo-700" isActive={!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard'} />
+        <div className="relative">
+          <LeaderboardIcon className="w-5 h-5 text-indigo-700" isActive={!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard'} />
+          {pendingFriendRequestsCount > 0 && (
+            <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
+              {pendingFriendRequestsCount}
+            </span>
+          )}
+        </div>
         <span className="text-xs font-black tracking-wide">Rank</span>
       </button>
 
@@ -1469,13 +1508,23 @@ export default function App() {
                 setShowFriendsModal(true);
               }}
               className="flex items-center gap-1 bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 text-white border-2 border-sky-300 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer relative"
-              title={`Friends (${friendsCount})`}
+              title={`Friends (${friendsCount})${pendingFriendRequestsCount > 0 ? ` • ${pendingFriendRequestsCount} pending request${pendingFriendRequestsCount > 1 ? 's' : ''}` : ''}`}
             >
-              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              <div className="relative flex items-center justify-center">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              </div>
               <span className="hidden sm:inline">Friends</span>
               {friendsCount > 0 && (
                 <span className="inline-flex items-center justify-center bg-white text-sky-700 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-2xs leading-tight">
                   {friendsCount}
+                </span>
+              )}
+              {pendingFriendRequestsCount > 0 && (
+                <span 
+                  className="absolute -top-1.5 -right-1.5 min-w-[1.125rem] h-4.5 px-1 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-md flex items-center justify-center animate-bounce leading-none"
+                  title={`${pendingFriendRequestsCount} new friend request${pendingFriendRequestsCount > 1 ? 's' : ''}!`}
+                >
+                  {pendingFriendRequestsCount}
                 </span>
               )}
             </button>
@@ -2145,10 +2194,17 @@ export default function App() {
       {/* Friends Modal */}
       <AddFriendModal
         isOpen={showFriendsModal}
-        onClose={() => setShowFriendsModal(false)}
+        onClose={() => {
+          setShowFriendsModal(false);
+          const currentPid = storageService.getActiveProfileId();
+          setFriendsCount(storageService.getFriends(currentPid).length);
+          setPendingFriendRequestsCount(storageService.getFriendRequests(currentPid).filter(r => r.type === 'received').length);
+        }}
         activeSubject={activeSubject}
         onFriendAdded={() => {
-          setFriendsCount(storageService.getFriends(activeProfileId).length);
+          const currentPid = storageService.getActiveProfileId();
+          setFriendsCount(storageService.getFriends(currentPid).length);
+          setPendingFriendRequestsCount(storageService.getFriendRequests(currentPid).filter(r => r.type === 'received').length);
         }}
       />
 

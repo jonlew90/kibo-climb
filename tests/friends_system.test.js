@@ -99,6 +99,135 @@ describe('Friend System & COPPA Safe Username Verification', () => {
     });
   });
 
+  describe('Multi-Profile Friend Request Synchronization', () => {
+    it('delivers incoming friend request to the receiving profile when sent from another profile on the same account', () => {
+      // Setup Profile 1 (CosmicOtter) and Profile 2 (LunarFox)
+      storageService.saveUsername('CosmicOtter');
+      const prof1 = storageService.getActiveProfile();
+
+      const prof2 = storageService.createProfile('LunarFox');
+      storageService.saveUsername('LunarFox');
+
+      // Switch back to Profile 1
+      storageService.setActiveProfileId(prof1.id);
+      expect(storageService.getActiveProfileId()).toBe(prof1.id);
+
+      // Profile 1 sends request to Profile 2
+      storageService.sendFriendRequest({
+        id: prof2.id,
+        profileId: prof2.id,
+        username: 'LunarFox',
+        score: 1100
+      });
+
+      // Verify Profile 1 (sender) has 1 sent request
+      const prof1Requests = storageService.getFriendRequests(prof1.id);
+      expect(prof1Requests.length).toBe(1);
+      expect(prof1Requests[0].type).toBe('sent');
+      expect(prof1Requests[0].receiverUsername).toBe('LunarFox');
+
+      // Verify Profile 2 (receiver) has 1 received request
+      const prof2Requests = storageService.getFriendRequests(prof2.id);
+      expect(prof2Requests.length).toBe(1);
+      expect(prof2Requests[0].type).toBe('received');
+      expect(prof2Requests[0].senderUsername).toBe('CosmicOtter');
+      expect(prof2Requests[0].id).toBe(prof1Requests[0].id);
+
+      // Switch to Profile 2 and accept the request
+      storageService.setActiveProfileId(prof2.id);
+      const acceptRes = storageService.acceptFriendRequest(prof2Requests[0].id, prof2.id);
+      
+      // Both profiles should now be mutual friends and have 0 pending requests
+      expect(storageService.getFriendRequests(prof2.id).length).toBe(0);
+      expect(storageService.getFriendRequests(prof1.id).length).toBe(0);
+
+      const prof2Friends = storageService.getFriends(prof2.id);
+      expect(prof2Friends.length).toBe(1);
+      expect(prof2Friends[0].username).toBe('CosmicOtter');
+
+      const prof1Friends = storageService.getFriends(prof1.id);
+      expect(prof1Friends.length).toBe(1);
+      expect(prof1Friends[0].username).toBe('LunarFox');
+    });
+
+    it('clears requests across profiles when receiver declines request', () => {
+      storageService.saveUsername('PlayerOne');
+      const p1 = storageService.getActiveProfile();
+
+      const p2 = storageService.createProfile('PlayerTwo');
+      storageService.setActiveProfileId(p1.id);
+
+      storageService.sendFriendRequest({
+        id: p2.id,
+        profileId: p2.id,
+        username: 'PlayerTwo',
+        score: 1000
+      });
+
+      const p2Requests = storageService.getFriendRequests(p2.id);
+      expect(p2Requests.length).toBe(1);
+
+      // P2 declines
+      storageService.declineFriendRequest(p2Requests[0].id, p2.id);
+
+      expect(storageService.getFriendRequests(p1.id).length).toBe(0);
+      expect(storageService.getFriendRequests(p2.id).length).toBe(0);
+      expect(storageService.getFriends(p1.id).length).toBe(0);
+      expect(storageService.getFriends(p2.id).length).toBe(0);
+    });
+
+    it('clears requests across profiles when sender cancels request', () => {
+      storageService.saveUsername('PlayerOne');
+      const p1 = storageService.getActiveProfile();
+
+      const p2 = storageService.createProfile('PlayerTwo');
+      storageService.setActiveProfileId(p1.id);
+
+      storageService.sendFriendRequest({
+        id: p2.id,
+        profileId: p2.id,
+        username: 'PlayerTwo',
+        score: 1000
+      });
+
+      const p1Requests = storageService.getFriendRequests(p1.id);
+      expect(p1Requests.length).toBe(1);
+
+      // P1 cancels
+      storageService.cancelFriendRequest(p1Requests[0].id, p1.id);
+
+      expect(storageService.getFriendRequests(p1.id).length).toBe(0);
+      expect(storageService.getFriendRequests(p2.id).length).toBe(0);
+    });
+
+    it('removes mutual friendship from both local profiles when friend is removed', () => {
+      storageService.saveUsername('PlayerOne');
+      const p1 = storageService.getActiveProfile();
+
+      const p2 = storageService.createProfile('PlayerTwo');
+      storageService.setActiveProfileId(p1.id);
+
+      storageService.sendFriendRequest({
+        id: p2.id,
+        profileId: p2.id,
+        username: 'PlayerTwo',
+        score: 1000
+      });
+
+      const p2Requests = storageService.getFriendRequests(p2.id);
+      storageService.acceptFriendRequest(p2Requests[0].id, p2.id);
+
+      expect(storageService.isFriend('PlayerTwo', p1.id)).toBe(true);
+      expect(storageService.isFriend('PlayerOne', p2.id)).toBe(true);
+
+      // P1 removes PlayerTwo
+      storageService.removeFriend('PlayerTwo', p1.id);
+
+      expect(storageService.isFriend('PlayerTwo', p1.id)).toBe(false);
+      expect(storageService.isFriend('PlayerOne', p2.id)).toBe(false);
+    });
+  });
+
   describe('Leaderboard Service Friend Operations', () => {
     it('gracefully handles search queries shorter than 2 chars', async () => {
       const result = await leaderboardService.searchUsername('a');
