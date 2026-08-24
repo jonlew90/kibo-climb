@@ -125,6 +125,7 @@ export default function App() {
   const [pendingReward, setPendingReward] = useState(null);
   const subjectSelectorRef = useRef(null);
   const settingsMenuRef = useRef(null);
+  const settingsRollupRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -135,7 +136,11 @@ export default function App() {
     document.addEventListener("mousedown", handleClickOutside);
 
     function handleClickOutsideSettings(event) {
-      if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target)) {
+      if (
+        settingsMenuRef.current &&
+        !settingsMenuRef.current.contains(event.target) &&
+        (!settingsRollupRef.current || !settingsRollupRef.current.contains(event.target))
+      ) {
         setShowSettingsMenu(false);
       }
     }
@@ -1298,7 +1303,7 @@ export default function App() {
       </div>
 
       {showSettingsMenu && (
-        <div className="absolute bottom-full left-0 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 px-2 py-2 sm:py-3 flex items-center justify-around shadow-lg origin-bottom animate-in fade-in slide-in-from-bottom-2 gap-1 sm:gap-2 z-50">
+        <div ref={settingsRollupRef} className="absolute bottom-full left-0 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 px-2 py-2 sm:py-3 flex items-center justify-around shadow-lg origin-bottom animate-in fade-in slide-in-from-bottom-2 gap-1 sm:gap-2 z-50">
           <button
             type="button"
             onClick={() => {
