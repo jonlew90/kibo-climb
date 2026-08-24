@@ -1311,8 +1311,8 @@ export default function App() {
               title="Climber Profile & Switcher"
               aria-expanded={showProfileDropdown}
             >
-              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-xs font-black shrink-0">
-                👤
+              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/25 border border-white/40 flex items-center justify-center text-[10px] sm:text-xs font-black shrink-0 text-white uppercase shadow-2xs">
+                {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
               </div>
               <span className="max-w-[70px] sm:max-w-[110px] truncate tracking-tight font-black">
                 {activeProfile?.username || activeProfile?.name || 'Climber'}
@@ -1321,24 +1321,21 @@ export default function App() {
             </button>
 
             {showProfileDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="absolute top-full left-0 mt-2 w-60 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-150">
                 {/* Current Active Profile Card */}
                 <div className="p-3 bg-gradient-to-br from-slate-50 to-sky-50/50 border-b border-slate-200">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-lg font-black shadow-xs border border-white shrink-0">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-base font-black shadow-xs border-2 border-white shrink-0">
                       {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
                     </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-sm font-black text-slate-800 truncate leading-tight">
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-sm font-black text-slate-800 truncate leading-tight" title={activeProfile?.username || activeProfile?.name || 'Kibo Climber'}>
                         {activeProfile?.username || activeProfile?.name || 'Kibo Climber'}
                       </span>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-[11px] font-bold text-slate-500 bg-white border border-slate-200 px-1.5 py-0.2 rounded-md">
-                          {activeProfile?.gradeLevel || 'Grade 1–2'}
-                        </span>
-                        <span className="text-[11px] font-black text-amber-600 flex items-center gap-0.5">
-                          <Flame className="w-3 h-3 fill-amber-500 text-amber-500 inline" />
-                          {streak}d
+                        <span className="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200/80 px-1.5 py-0.2 rounded-md flex items-center gap-0.5 shrink-0">
+                          <Star className="w-3 h-3 fill-sky-500 text-sky-500 inline shrink-0" />
+                          {liveCompetenceRating} pts
                         </span>
                       </div>
                     </div>
@@ -1353,7 +1350,10 @@ export default function App() {
                   {allProfiles
                     .filter((p) => p.id !== activeProfileId)
                     .map((profile) => {
-                      const pStreak = profile.userData?.streak ?? 0;
+                      const pRating = profile.userData?.subjects?.[activeSubject]?.competenceRank ||
+                        profile.userData?.competenceRank ||
+                        1000;
+                      const pName = profile.username || profile.name || 'Climber';
                       return (
                         <button
                           key={profile.id}
@@ -1369,26 +1369,22 @@ export default function App() {
                             setShowProfileDropdown(false);
                             setAppState('adaptive_session');
                           }}
-                          className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-slate-100 active:bg-slate-200 transition-colors text-left cursor-pointer group"
+                          className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-slate-100 active:bg-slate-200 transition-colors text-left cursor-pointer group w-full"
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black shrink-0 group-hover:bg-amber-100 group-hover:text-amber-800 transition-colors">
-                              {(profile.username || profile.name || 'C')[0].toUpperCase()}
+                          <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-white flex items-center justify-center text-xs font-black shrink-0 border border-white/60 shadow-2xs group-hover:scale-105 transition-transform">
+                              {pName[0].toUpperCase()}
                             </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-xs font-black text-slate-700 truncate group-hover:text-slate-900">
-                                {profile.username || profile.name}
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span className="text-xs font-black text-slate-700 truncate group-hover:text-slate-900" title={pName}>
+                                {pName}
                               </span>
-                              <span className="text-[10px] text-slate-400 font-bold">
-                                {profile.gradeLevel || 'Grade 1–2'}
+                              <span className="text-[10px] text-slate-500 font-bold flex items-center gap-0.5 shrink-0">
+                                <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500 inline shrink-0" />
+                                {pRating} pts
                               </span>
                             </div>
                           </div>
-                          {pStreak > 0 && (
-                            <span className="text-[10px] font-black text-amber-600 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded-md shrink-0">
-                              🔥 {pStreak}d
-                            </span>
-                          )}
                         </button>
                       );
                     })}
