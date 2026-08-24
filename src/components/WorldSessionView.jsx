@@ -568,7 +568,7 @@ export default function WorldSessionView({
   // Handle Tab Visibility & Navigating Away pausing/resume logic
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden) {
+      if (document.hidden || !document.hasFocus()) {
         if (!pauseStartRef.current) {
           pauseStartRef.current = performance.now();
         }
@@ -592,8 +592,14 @@ export default function WorldSessionView({
       }
     };
 
+    window.addEventListener('blur', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('blur', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [
     isPaused,
     hasStartedClimb,
