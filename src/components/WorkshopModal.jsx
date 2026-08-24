@@ -346,7 +346,7 @@ export default function WorkshopModal({
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
         <div className="flex items-center gap-2 text-slate-800">
-          <ShoppingBag className="w-5 h-5 text-amber-500 stroke-[2.5]" />
+          <ShoppingBag className="w-5 h-5 text-orange-500 stroke-[2.5]" />
           <h2 className="text-base sm:text-lg font-black tracking-tight">Kibo's Corner 🐾</h2>
         </div>
 

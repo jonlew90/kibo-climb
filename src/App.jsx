@@ -1216,20 +1216,20 @@ export default function App() {
         <span className="text-xs font-black tracking-wide">Climb</span>
       </button>
 
-      {/* 1. Shop Button: Warm Orange / Amber */}
+      {/* 1. Shop Button: Warm Orange */}
       <button
         type="button"
         onClick={() => {
           closeAllNavModals('workshop');
           handleOpenWorkshop();
         }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-amber-100 via-orange-50 to-amber-100 text-amber-950 border-2 border-amber-400 rounded-xl hover:from-amber-200 hover:to-orange-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-          isWorkshopOpen ? 'ring-2 ring-amber-500 scale-105 font-bold' : ''
+        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-orange-100 via-orange-50 to-orange-100 text-orange-950 border-2 border-orange-400 rounded-xl hover:from-orange-200 hover:to-orange-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+          isWorkshopOpen ? 'ring-2 ring-orange-500 scale-105 font-bold' : ''
         }`}
         aria-label="Open Kibo's Corner"
         title="Kibo's Workshop & Shop"
       >
-        <ShoppingBag className="w-5 h-5 text-amber-700 stroke-[2.5]" />
+        <ShoppingBag className="w-5 h-5 text-orange-600 stroke-[2.5]" />
         <span className="text-xs font-black tracking-wide">Shop</span>
       </button>
 
@@ -1241,12 +1241,12 @@ export default function App() {
           closeAllNavModals('badges');
           setShowBadgesModal(true);
         }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-yellow-100 via-amber-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-amber-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
           showBadgesModal ? 'ring-2 ring-yellow-500 scale-105 font-bold' : ''
         }`}
         title="View Badges"
       >
-        <Award className="w-5 h-5 text-yellow-700 stroke-[2.5]" />
+        <Award className="w-5 h-5 text-yellow-600 stroke-[2.5]" />
         <span className="text-xs font-black tracking-wide">Badges</span>
       </button>
 
