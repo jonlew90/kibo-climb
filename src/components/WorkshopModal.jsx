@@ -354,7 +354,7 @@ export default function WorkshopModal({
           <button
             type="button"
             onClick={() => openPromoDialogWithCode()}
-            className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-xs rounded-full shadow-xs active:scale-95 transition-all border border-amber-600"
+            className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-b from-orange-400 via-kibo-orange to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white font-black text-xs rounded-full border border-orange-600 active:scale-95 transition-all"
           >
             <Ticket className="w-3.5 h-3.5 stroke-[2.5]" />
             <span className="hidden sm:inline">Redeem</span> Code
@@ -368,8 +368,8 @@ export default function WorkshopModal({
               </span>
             ) : null;
           })()}
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 border-2 border-amber-300 rounded-full text-amber-900 font-black text-xs shadow-xs">
-            <Zap className="w-4 h-4 text-amber-500 fill-amber-400 stroke-[2.5]" />
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 border-2 border-amber-300 rounded-full text-amber-950 font-black text-xs shadow-xs">
+            <Zap className="w-4 h-4 text-amber-900 fill-amber-500 stroke-[2]" />
             <span>{sparks}</span>
           </div>
         </div>
@@ -664,7 +664,7 @@ export default function WorkshopModal({
                     <button
                       type="button"
                       onClick={() => onBuySparksPackage(pack)}
-                      className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                      className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                     >
                       Buy for {pack.price}
                     </button>
@@ -752,8 +752,11 @@ export default function WorkshopModal({
                       <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{item.name}</h4>
                       
                       {!isUnlocked && saleInfo.isSale && (
-                        <span className="text-[10px] font-black uppercase text-white bg-rose-500 px-1.5 py-0.5 rounded-sm border-b border-rose-700 shadow-sm shadow-rose-200">
-                          SALE
+                        <span className="inline-flex items-center gap-1.5 text-xs font-black bg-rose-600 text-white px-2 py-0.5 rounded-full border border-rose-700 shadow-sm">
+                          <span className="bg-rose-800/90 px-1 py-0.2 rounded text-[10px] uppercase tracking-wide">SALE</span>
+                          <span className="line-through decoration-white decoration-2 text-rose-200 font-bold">{item.cost}</span>
+                          <span className="text-white font-black">{activeCost}</span>
+                          <Zap className="w-3 h-3 text-amber-950 fill-amber-300 stroke-[2] shrink-0 inline" />
                         </span>
                       )}
 
@@ -831,8 +834,8 @@ export default function WorkshopModal({
                           🟦 OWNED
                         </span>
                       ) : !canAfford && !isRealMoney && !item.promoCodeRequired && !availability.isUpcoming ? (
-                        <span className="text-xs font-black uppercase text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-                          🔒 Need {shortfall} ⚡ More
+                        <span className="text-xs font-black uppercase text-rose-800 bg-rose-100 px-2 py-0.5 rounded-full border border-rose-300 flex items-center gap-1">
+                          <Lock className="w-3 h-3 text-rose-700" /> Need {shortfall} <Zap className="w-3 h-3 text-amber-950 fill-amber-500 stroke-[2] shrink-0" /> More
                         </span>
                       ) : isRealMoney && !isUnlocked ? (
                          <span className="text-xs font-black uppercase text-purple-900 bg-purple-200 px-2 py-0.5 rounded-full border border-purple-400">
@@ -870,9 +873,9 @@ export default function WorkshopModal({
                             soundFx.playKeyTap();
                             setItemToSell(item);
                           }}
-                          className="bg-rose-100 hover:bg-rose-200 text-rose-700 border-2 border-rose-300 px-3.5 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5"
+                          className="bg-rose-100 hover:bg-rose-200 text-rose-800 border-2 border-rose-300 px-3.5 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1"
                         >
-                          Sell ({sellPrice} ⚡)
+                          Sell ({sellPrice} <Zap className="w-3 h-3 text-amber-950 fill-amber-500 stroke-[2] inline" />)
                         </button>
                       )}
                       {isConsumable ? (
@@ -888,25 +891,25 @@ export default function WorkshopModal({
                           <button
                             type="button"
                             onClick={() => handleBuyClick(item)}
-                            className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                            className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                           >
-                            <Zap className="w-3.5 h-3.5 fill-yellow-300 text-amber-950 stroke-[1.5] drop-shadow-xs shrink-0" />
+                            <Zap className="w-4 h-4 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" />
                             <span>Buy for</span>
                             {saleInfo.isSale && (
-                              <span className="line-through decoration-rose-300 decoration-2 text-amber-100 font-bold text-[11px] drop-shadow-xs select-none">
+                              <span className="bg-black/35 px-1.5 py-0.5 rounded-md text-purple-100 line-through decoration-rose-300 decoration-[2.5px] font-black text-xs mr-0.5 shadow-inner select-none">
                                 {item.cost}
                               </span>
                             )}
-                            <span className="font-black text-white">{activeCost}</span>
-                            <span className="text-yellow-200 font-black drop-shadow-xs">⚡</span>
+                            <span className="font-black text-white text-xs">{activeCost}</span>
+                            <Zap className="w-3.5 h-3.5 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" />
                           </button>
                         ) : (
                           <button
                             type="button"
                             disabled
-                            className="bg-slate-100 text-rose-600 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
+                            className="bg-slate-100 text-rose-700 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed flex items-center gap-1"
                           >
-                            Need {shortfall} ⚡ More
+                            Need {shortfall} <Zap className="w-3.5 h-3.5 text-amber-950 fill-amber-500 stroke-[2] shrink-0" /> More
                           </button>
                         )
                       ) : isUnlocked ? (
@@ -957,23 +960,23 @@ export default function WorkshopModal({
                           onClick={() => handleBuyClick(item)}
                           className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                         >
-                          <Zap className="w-3.5 h-3.5 fill-yellow-300 text-purple-950 stroke-[1.5] drop-shadow-xs shrink-0" />
+                          <Zap className="w-4 h-4 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" />
                           <span>Buy for</span>
                           {saleInfo.isSale && (
-                            <span className="line-through decoration-rose-300 decoration-2 text-purple-200 font-bold text-[11px] drop-shadow-xs select-none">
+                            <span className="bg-black/35 px-1.5 py-0.5 rounded-md text-purple-100 line-through decoration-rose-300 decoration-[2.5px] font-black text-xs mr-0.5 shadow-inner select-none">
                               {item.cost}
                             </span>
                           )}
-                          <span className="font-black text-white">{activeCost}</span>
-                          <span className="text-yellow-300 font-black drop-shadow-xs">⚡</span>
+                          <span className="font-black text-white text-xs">{activeCost}</span>
+                          <Zap className="w-3.5 h-3.5 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" />
                         </button>
                       ) : (
                         <button
                           type="button"
                           disabled
-                          className="bg-slate-100 text-slate-400 border-2 border-slate-200 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed"
+                          className="bg-slate-100 text-slate-600 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed flex items-center gap-1"
                         >
-                          Need {shortfall} ⚡ More
+                          Need {shortfall} <Zap className="w-3.5 h-3.5 text-amber-950 fill-amber-500 stroke-[2] shrink-0" /> More
                         </button>
                       )}
                     </div>
