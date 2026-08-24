@@ -2074,7 +2074,11 @@ export default function App() {
 
           if (pack.isSubscription) {
              setIsKiboClub(true);
-             storageService.saveUserData({ isKiboClub: true });
+             if (pack.isFamilyPlan) {
+               storageService.setFamilyPlanState(true);
+             } else {
+               storageService.saveUserData({ isKiboClub: true });
+             }
           }
 
           setSparks(newSparks);

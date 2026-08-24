@@ -1676,7 +1676,7 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'kibo_club_sub' && (
+        {(itemId === 'kibo_club_sub' || itemId === 'kibo_club_family') && (
           <g>
             {/* Kibo Club VIP Pass - Golden Crown & Permanent Sparks Multiplier Card */}
             <rect x="10" y="16" width="80" height="68" rx="14" fill="url(#thumbPurpleGrad)" stroke="url(#thumbGoldGrad)" strokeWidth="3.5" />

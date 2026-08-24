@@ -530,26 +530,48 @@ export default function WorkshopModal({
             </div>
           )}
 
-          {/* Kibo Club Subscription Banner */}
+          {/* Kibo Club Subscription Banners */}
           {allowRealMoneyPurchases && (
-            <div
-              onClick={() => onBuySparksPackage({ id: 'kibo_club_sub', name: 'Kibo Club Subscription', realMoneyPrice: '$4.99/mo', price: '$4.99/mo', isSubscription: true, description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards!' })}
-              className="mb-4 w-full bg-gradient-to-r from-purple-500 to-indigo-600 border-2 border-purple-400 rounded-2xl p-3 flex flex-row items-center justify-between shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/50 shrink-0">
-                  <Sparkles className="w-6 h-6 text-white animate-pulse" />
+            <div className="flex flex-col gap-3 mb-4">
+              <div
+                onClick={() => onBuySparksPackage({ id: 'kibo_club_sub', name: 'Kibo Club Individual', realMoneyPrice: '$4.99/mo', price: '$4.99/mo', isSubscription: true, isFamilyPlan: false, description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!' })}
+                className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 border-2 border-purple-400 rounded-2xl p-3 flex flex-row items-center justify-between shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/50 shrink-0">
+                    <Sparkles className="w-6 h-6 text-white animate-pulse" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club (Individual)</h3>
+                    <p className="text-xs font-bold text-indigo-100 leading-snug">
+                      1.25x Sparks Forever & More • $4.99/mo
+                    </p>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club!</h3>
-                  <p className="text-xs font-bold text-indigo-100 leading-snug">
-                    1.25x Sparks Forever & More • $4.99/mo
-                  </p>
-                </div>
+                <button className="bg-white text-indigo-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap shrink-0 ml-2">
+                  Join
+                </button>
               </div>
-              <button className="bg-white text-indigo-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap shrink-0 ml-2">
-                Join
-              </button>
+
+              <div
+                onClick={() => onBuySparksPackage({ id: 'kibo_club_family', name: 'Kibo Club Family', realMoneyPrice: '$7.99/mo', price: '$7.99/mo', isSubscription: true, isFamilyPlan: true, description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.' })}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-600 border-2 border-amber-400 rounded-2xl p-3 flex flex-row items-center justify-between shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/50 shrink-0">
+                    <Sparkles className="w-6 h-6 text-white animate-pulse" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club (Family)</h3>
+                    <p className="text-xs font-bold text-orange-100 leading-snug">
+                      Benefits for ALL profiles • $7.99/mo
+                    </p>
+                  </div>
+                </div>
+                <button className="bg-white text-orange-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap shrink-0 ml-2">
+                  Join
+                </button>
+              </div>
             </div>
           )}
 

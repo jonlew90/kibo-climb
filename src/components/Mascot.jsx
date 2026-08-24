@@ -199,7 +199,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   const hasStPatricksRainbow = isEquipped('st_patricks_rainbow_trail');
   const hasJuly4Fireworks = isEquipped('july4_liberty_fireworks');
   const hasHolidayTwinkleLights = isEquipped('holiday_twinkle_lights');
-  const hasKiboClub = isEquipped('kibo_club_sub');
+  const hasKiboClub = isEquipped('kibo_club_sub') || isEquipped('kibo_club_family');
 
   // Headwear
   const hasCap = isEquipped('cap');
