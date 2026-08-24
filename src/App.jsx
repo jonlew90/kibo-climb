@@ -123,14 +123,24 @@ export default function App() {
   const [parentDashboardTab, setParentDashboardTab] = useState('overview');
   const [parentDashboardHighlight, setParentDashboardHighlight] = useState(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showStatsDropdown, setShowStatsDropdown] = useState(false);
+  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [pendingReward, setPendingReward] = useState(null);
   const profileDropdownRef = useRef(null);
+  const statsDropdownRef = useRef(null);
+  const subjectDropdownRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
+      }
+      if (statsDropdownRef.current && !statsDropdownRef.current.contains(event.target)) {
+        setShowStatsDropdown(false);
+      }
+      if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
+        setShowSubjectDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -1457,10 +1467,90 @@ export default function App() {
 
           {/* 3. Right HUD Stats & Shortcuts */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Mobile Rolled Stats Button (< sm) */}
+            <div className="relative sm:hidden" ref={statsDropdownRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setShowStatsDropdown(!showStatsDropdown);
+                }}
+                className="flex items-center gap-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-2 border-amber-300 px-2.5 py-1 rounded-full text-xs font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
+                title="Climber Stats"
+                aria-expanded={showStatsDropdown}
+              >
+                <Trophy className="w-3.5 h-3.5 text-amber-900 fill-amber-300 stroke-[2.5]" />
+                <span className="text-[11px] font-black">{streak}d</span>
+                <ChevronDown className={`w-3.5 h-3.5 text-amber-900 transition-transform duration-200 ${showStatsDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Mobile Stats Roll-down Menu */}
+              {showStatsDropdown && (
+                <div className="absolute top-full right-0 mt-2 w-56 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                  {/* Streak Item */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowStatsDropdown(false);
+                      setShowBadgesModal(true);
+                    }}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Flame className="w-4 h-4 text-rose-500 fill-rose-500 shrink-0" />
+                      <span>Daily Streak</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="font-black">{streak}d</span>
+                      {((consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0) && (
+                        <span className="text-xs">🛡️</span>
+                      )}
+                    </div>
+                  </button>
+
+                  {/* Sparks Item */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowStatsDropdown(false);
+                      handleOpenWorkshop('adaptive_session');
+                    }}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-600 fill-amber-500 stroke-[2.5] shrink-0" />
+                      <span>Sparks</span>
+                    </div>
+                    <span className="font-black">{sparks}</span>
+                  </button>
+
+                  {/* Competence / Rank Item */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowStatsDropdown(false);
+                      setShowBadgesModal(true);
+                    }}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-purple-600 fill-purple-300 stroke-[2] shrink-0" />
+                      <span>Rank ({getCompetenceRankTier(liveCompetenceRating, activeSubject)})</span>
+                    </div>
+                    <span className="font-black">{liveCompetenceRating} pts</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop / Tablet Stats Icons (>= sm) */}
             {/* Streak Badge Button */}
             <button
               type="button"
-              className="flex items-center gap-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 text-white border-2 border-rose-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer"
+              className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 text-white border-2 border-rose-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer"
               title={(consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0 ? "Daily Streak & Shield Active! 🛡️" : `Daily Streak: ${streak} ${streak === 1 ? 'day' : 'days'}`}
               onClick={() => {
                 soundFx.playKeyTap();
@@ -1488,7 +1578,7 @@ export default function App() {
                 soundFx.playKeyTap();
                 handleOpenWorkshop('adaptive_session');
               }}
-              className="flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all relative shrink-0 overflow-visible cursor-pointer"
+              className="hidden sm:flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all relative shrink-0 overflow-visible cursor-pointer"
               title="Open Kibo Workshop"
             >
               <RollingNumberTicker
@@ -1499,14 +1589,37 @@ export default function App() {
               />
             </button>
 
-            {/* Friends Button */}
+            {/* Competence Rank Button */}
+            {(() => {
+              const rankTitle = getCompetenceRankTier(liveCompetenceRating, activeSubject);
+              return (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setShowBadgesModal(true);
+                  }}
+                  className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
+                  title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
+                >
+                  <RollingNumberTicker
+                    value={liveCompetenceRating}
+                    profileId={activeProfileId}
+                    subjectId={activeSubject}
+                    icon={<Star className="w-3.5 h-3.5 text-purple-700 fill-purple-300 stroke-[2]" />}
+                  />
+                </button>
+              );
+            })()}
+
+            {/* Friends Button (Available on all screen sizes) */}
             <button
               type="button"
               onClick={() => {
                 soundFx.playKeyTap();
                 setShowFriendsModal(true);
               }}
-              className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 text-white border-2 border-sky-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer relative"
+              className="flex items-center gap-1 bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 text-white border-2 border-sky-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer relative"
               title={`Friends (${friendsCount})${pendingFriendRequestsCount > 0 ? ` • ${pendingFriendRequestsCount} pending request${pendingFriendRequestsCount > 1 ? 's' : ''}` : ''}`}
             >
               <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
@@ -1524,29 +1637,6 @@ export default function App() {
                 </span>
               )}
             </button>
-
-            {/* Competence Rank Button */}
-            {(() => {
-              const rankTitle = getCompetenceRankTier(liveCompetenceRating, activeSubject);
-              return (
-                <button
-                  type="button"
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    setShowBadgesModal(true);
-                  }}
-                  className="hidden md:flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
-                  title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
-                >
-                  <RollingNumberTicker
-                    value={liveCompetenceRating}
-                    profileId={activeProfileId}
-                    subjectId={activeSubject}
-                    icon={<Star className="w-3.5 h-3.5 text-purple-700 fill-purple-300 stroke-[2]" />}
-                  />
-                </button>
-              );
-            })()}
           </div>
         </div>
       </header>
@@ -1555,7 +1645,101 @@ export default function App() {
       {/* In-Content Subject Selector Bar */}
       {appState === 'adaptive_session' && (
         <div className="w-full mb-2 sm:mb-3 flex items-center justify-between gap-2 px-1 shrink-0">
-          <div className="flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-0.5 w-full sm:w-auto">
+          {/* Mobile Subject Dropdown (< sm) */}
+          <div className="relative sm:hidden w-full" ref={subjectDropdownRef}>
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowSubjectDropdown(!showSubjectDropdown);
+              }}
+              className={`flex items-center justify-between w-full px-3 py-1.5 rounded-xl font-black text-xs transition-all cursor-pointer shadow-2xs border-2 ${
+                activeSubject === 'math'
+                  ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 ring-2 ring-amber-400/50'
+                  : activeSubject === 'words'
+                  ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 ring-2 ring-indigo-400/50'
+                  : 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 ring-2 ring-teal-400/50'
+              }`}
+              title="Switch Subject"
+              aria-expanded={showSubjectDropdown}
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-base leading-none select-none">
+                  {activeSubject === 'math' ? '🔢' : activeSubject === 'words' ? '📚' : '🌍'}
+                </span>
+                <span className="tracking-tight capitalize">{activeSubject}</span>
+              </div>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showSubjectDropdown ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Mobile Subject Roll-down Menu */}
+            {showSubjectDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+                {/* Math Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSubjectChange('math');
+                    setShowSubjectDropdown(false);
+                  }}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
+                    activeSubject === 'math'
+                      ? 'bg-amber-100 border-amber-300 text-amber-950'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🔢</span>
+                    <span>Kibo Math</span>
+                  </div>
+                  {activeSubject === 'math' && <span className="w-2 h-2 rounded-full bg-amber-600" />}
+                </button>
+
+                {/* Words Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSubjectChange('words');
+                    setShowSubjectDropdown(false);
+                  }}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
+                    activeSubject === 'words'
+                      ? 'bg-indigo-100 border-indigo-300 text-indigo-950'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">📚</span>
+                    <span>Kibo Words</span>
+                  </div>
+                  {activeSubject === 'words' && <span className="w-2 h-2 rounded-full bg-indigo-600" />}
+                </button>
+
+                {/* World Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSubjectChange('world');
+                    setShowSubjectDropdown(false);
+                  }}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
+                    activeSubject === 'world'
+                      ? 'bg-teal-100 border-teal-300 text-teal-950'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🌍</span>
+                    <span>Kibo World</span>
+                  </div>
+                  {activeSubject === 'world' && <span className="w-2 h-2 rounded-full bg-teal-600" />}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Subject Bar (>= sm) */}
+          <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-0.5 w-full sm:w-auto">
             {/* Kibo Math */}
             <button
               type="button"
