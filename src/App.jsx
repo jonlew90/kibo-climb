@@ -7,6 +7,7 @@ import PinGateModal from './components/PinGateModal';
 import ParentDashboardModal from './components/ParentDashboardModal';
 import StreakSavedModal from './components/StreakSavedModal';
 import DailyStreakIncreasedModal from './components/DailyStreakIncreasedModal';
+import PerfectMonthProgressModal from './components/PerfectMonthProgressModal';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import ProfileSelectorScreen from './components/ProfileSelectorScreen';
 import MathSessionView from './components/MathSessionView';
@@ -151,6 +152,7 @@ export default function App() {
   const [showStripeCheckoutModal, setShowStripeCheckoutModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showDailyStreakIncreasedModal, setShowDailyStreakIncreasedModal] = useState(false);
+  const [perfectMonthData, setPerfectMonthData] = useState(null);
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsCount, setFriendsCount] = useState(() => storageService.getFriends(activeProfileId).length);
@@ -344,6 +346,7 @@ export default function App() {
   });
 
   const recordDailyPractice = () => {
+
     const todayStr = getTodayStr();
     const uData = storageService.getUserData(activeSubject);
     const lastDateStr = uData.lastSprintDate;
@@ -403,6 +406,35 @@ export default function App() {
 
     if (nextStreak > currentStreak && lastDateStr !== todayStr) {
       setShowDailyStreakIncreasedModal(true);
+    }
+
+    // Also display PerfectMonthProgressModal if it is the first climb of the day
+    if (lastDateStr !== todayStr) {
+      const combinedHistory = getCombinedSprintHistory(uData.sprintHistory || []);
+
+      const monthlyActiveDays = new Set();
+      // Calculate how many distinct days they've played this month
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+
+      combinedHistory.forEach(item => {
+        if (!item) return;
+        let d = null;
+        if (item.date) {
+           d = new Date(item.date + 'T00:00:00'); // simple parse
+        } else if (item.timestamp) {
+           d = new Date(item.timestamp);
+        }
+        if (d && !isNaN(d.getTime())) {
+          if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            monthlyActiveDays.add(d.getDate());
+          }
+        }
+      });
+      // Add today since they just played it
+      monthlyActiveDays.add(new Date().getDate());
+
+      setPerfectMonthData({ daysPlayedThisMonth: monthlyActiveDays.size });
     }
 
     setStreak(nextStreak);
@@ -1109,7 +1141,7 @@ export default function App() {
 
   const currentTierMeta = getTierMeta(tier);
 
-  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
+  const isAppPaused = showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
 
 
   const closeAllNavModals = (except = null) => {
@@ -1766,9 +1798,19 @@ export default function App() {
 
       {/* DAILY STREAK INCREASED MODAL */}
       <DailyStreakIncreasedModal
-        isOpen={showDailyStreakIncreasedModal}
+        isOpen={showDailyStreakIncreasedModal && !perfectMonthData}
         onClose={() => setShowDailyStreakIncreasedModal(false)}
         streak={streak}
+      />
+
+      {/* PERFECT MONTH PROGRESS MODAL */}
+      <PerfectMonthProgressModal
+        isOpen={!!perfectMonthData}
+        onClose={() => {
+          setPerfectMonthData(null);
+          // If the streak modal was queued, let it show after closing this
+        }}
+        daysPlayedThisMonth={perfectMonthData?.daysPlayedThisMonth || 1}
       />
 
       {/* PARENT PIN GATE MODAL */}

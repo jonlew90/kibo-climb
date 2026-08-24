@@ -83,6 +83,7 @@ export default function DevControlPanel({
           >
             <X className="w-5 h-5 stroke-[2.5]" />
           </button>
+<button onClick={() => window.testRecordDailyPractice && window.testRecordDailyPractice()} className="w-full py-1.5 px-3 bg-fuchsia-50 text-fuchsia-700 border-2 border-fuchsia-200 rounded-xl font-bold hover:bg-fuchsia-100">Trigger Daily Practice</button>
         </div>
 
         {/* Success Toast Banner */}
