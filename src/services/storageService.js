@@ -102,6 +102,7 @@ const DEFAULT_PROFILE = {
 
 const DEFAULT_PROFILES_STATE = {
   activeProfileId: DEFAULT_PROFILE_ID,
+  isKiboClubFamily: false,
   profiles: {
     [DEFAULT_PROFILE_ID]: DEFAULT_PROFILE
   }
@@ -366,6 +367,7 @@ export const storageService = {
   getUserData(subjectId = 'math') {
     const active = this.getActiveProfile();
     const data = active.userData || DEFAULT_PROFILE.userData;
+    const globalState = safeGetProfilesState();
 
     // Migrate old math data into subjects if missing
     if (!data.subjects) {
@@ -421,10 +423,22 @@ export const storageService = {
       ...data,
       ...subjectData,
       streak: data.streak ?? 0,
+      isKiboClub: data.isKiboClub || globalState.isKiboClubFamily || false,
       lastSprintDate: data.lastSprintDate ?? null,
       lastSprintTimestamp: data.lastSprintTimestamp ?? null,
       lastSprintTimezone: data.lastSprintTimezone ?? null
     };
+  },
+
+  setFamilyPlanState(isFamilyPlan) {
+    const state = safeGetProfilesState();
+    state.isKiboClubFamily = isFamilyPlan;
+    safeSaveProfilesState(state);
+  },
+
+  getFamilyPlanState() {
+    const state = safeGetProfilesState();
+    return state.isKiboClubFamily || false;
   },
 
   saveUserData(userData, subjectId = 'math') {

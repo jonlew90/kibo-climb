@@ -1250,13 +1250,25 @@ export const WORKSHOP_ITEMS = [
   },
   {
     id: 'kibo_club_sub',
-    name: 'Kibo Club Subscription',
+    name: 'Kibo Club Individual',
     category: 'premium',
     slot: 'fx',
     realMoneyPrice: '$4.99/mo',
     isSubscription: true,
+    isFamilyPlan: false,
     rarity: 'legendary',
-    description: 'Join the Kibo Club! Enjoy a permanent 1.25x Spark Multiplier, a golden username tag, and 100 daily Sparks.'
+    description: 'Join the Kibo Club! Enjoy a permanent 1.25x Spark Multiplier, a golden username tag, and 100 daily Sparks for this profile.'
+  },
+  {
+    id: 'kibo_club_family',
+    name: 'Kibo Club Family',
+    category: 'premium',
+    slot: 'fx',
+    realMoneyPrice: '$7.99/mo',
+    isSubscription: true,
+    isFamilyPlan: true,
+    rarity: 'legendary',
+    description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
   }
 ];
 
@@ -1316,7 +1328,7 @@ export function getItemSlot(item) {
     if (item.id === 'dragon_pet_premium') return 'pets';
     if (item.id === 'galaxy_skin_premium') return 'skins';
     if (item.id === 'starter_bundle') return 'headwear';
-    if (item.id === 'kibo_club_sub') return 'fx';
+    if (item.id === 'kibo_club_sub' || item.id === 'kibo_club_family') return 'fx';
   }
   return item.category;
 }
