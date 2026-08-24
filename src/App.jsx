@@ -120,6 +120,8 @@ export default function App() {
   const [showPinGateModal, setShowPinGateModal] = useState(false);
   const [pinGateSource, setPinGateSource] = useState(null);
   const [showParentDashboard, setShowParentDashboard] = useState(false);
+  const [parentDashboardTab, setParentDashboardTab] = useState('overview');
+  const [parentDashboardHighlight, setParentDashboardHighlight] = useState(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [pendingReward, setPendingReward] = useState(null);
@@ -1407,6 +1409,8 @@ export default function App() {
                     onClick={() => {
                       soundFx.playKeyTap();
                       setShowProfileDropdown(false);
+                      setParentDashboardTab('overview');
+                      setParentDashboardHighlight(null);
                       setPinGateSource('profile_dropdown');
                       setShowPinGateModal(true);
                     }}
@@ -1442,11 +1446,11 @@ export default function App() {
               closeAllNavModals();
               setAppState('adaptive_session');
             }}
-            className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-full hover:bg-slate-100/80 active:scale-95 transition-all cursor-pointer group select-none shrink-0"
+            className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-full hover:bg-slate-100/80 active:scale-95 transition-all cursor-pointer group select-none shrink-0"
             title="Kibo Climb Home"
           >
-            <span className="text-base sm:text-lg group-hover:scale-110 transition-transform leading-none">🏔️</span>
-            <span className="font-black text-xs sm:text-sm tracking-tight text-slate-800 group-hover:text-amber-600 transition-colors uppercase">
+            <img src="/favicon.svg" alt="Kibo Climb Logo" className="w-6 h-6 sm:w-7 sm:h-7 object-contain group-hover:scale-110 transition-transform shrink-0 drop-shadow-xs" />
+            <span className="font-black text-sm sm:text-base tracking-normal text-slate-800 group-hover:text-amber-600 transition-colors uppercase">
               {BRAND_CONFIG.rootBrand}
             </span>
           </button>
@@ -1621,7 +1625,9 @@ export default function App() {
           renderFooter={renderNavigationFooter}
           onNavigate={handleNavigateTo}
           onOpenFeedback={() => setShowFeedbackModal(true)}
-          onOpenParentZone={() => {
+          onOpenParentZone={(targetTab = 'overview') => {
+            setParentDashboardTab(targetTab);
+            setParentDashboardHighlight(null);
             setPinGateSource('settings_screen');
             setShowPinGateModal(true);
           }}
@@ -1803,7 +1809,9 @@ export default function App() {
             setShowProfileSelector(false);
             setAppState('adaptive_session');
           }}
-          onOpenParentZone={() => {
+          onOpenParentZone={(targetTab = 'overview') => {
+            setParentDashboardTab(targetTab);
+            setParentDashboardHighlight(null);
             setShowProfileSelector(false);
             setPinGateSource('profile_selector');
             setShowPinGateModal(true);
@@ -1838,7 +1846,9 @@ export default function App() {
             }
             setProfileSwitcherOrigin(null);
           }}
-          onOpenParentZone={() => {
+          onOpenParentZone={(targetTab = 'overview') => {
+            setParentDashboardTab(targetTab);
+            setParentDashboardHighlight(null);
             setPinGateSource('manual_profile_switcher');
             setShowPinGateModal(true);
           }}
@@ -1854,10 +1864,12 @@ export default function App() {
           storageService.updateProfile(storageService.getActiveProfileId(), { name: username });
           syncAppStateWithStorage();
         }}
-        onOpenParentZone={() => {
+        onOpenParentZone={(targetTab = 'overview') => {
           syncAppStateWithStorage();
           setShowFirstLaunchOnboardingModal(false);
           localStorage.setItem('kibo_math_has_onboarded', 'true');
+          setParentDashboardTab(targetTab);
+          setParentDashboardHighlight(null);
           setPinGateSource('onboarding');
           setShowPinGateModal(true);
         }}
@@ -1954,9 +1966,15 @@ export default function App() {
 
       {/* PARENT DASHBOARD MODAL */}
       <ParentDashboardModal
+        initialTab={parentDashboardTab}
+        highlightSection={parentDashboardHighlight}
         activeSubject={activeSubject}
         isOpen={showParentDashboard}
-        onClose={() => setShowParentDashboard(false)}
+        onClose={() => {
+          setShowParentDashboard(false);
+          setParentDashboardTab('overview');
+          setParentDashboardHighlight(null);
+        }}
         currentPin={parentPin}
         onUpdatePin={handleUpdatePin}
         tier={tier}
@@ -2117,7 +2135,9 @@ export default function App() {
         onToggleEquip={handleToggleEquip}
         onRedeemPromoCode={handleRedeemPromoCode}
         allowRealMoneyPurchases={notifPrefs.allowRealMoneyPurchases}
-        onOpenParentZone={() => {
+        onOpenParentZone={(targetTab = 'verification', highlight = 'real_money_purchases') => {
+          setParentDashboardTab(targetTab);
+          setParentDashboardHighlight(highlight);
           setPinGateSource('shop');
           setShowPinGateModal(true);
         }}

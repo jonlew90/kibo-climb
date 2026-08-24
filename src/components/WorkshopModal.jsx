@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft, User, Ticket, Gift, Clock, AlertCircle } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
-import { ITEM_CATEGORIES, WORKSHOP_ITEMS, SPARKS_PACKAGES, RARITY_TIERS, SEASONAL_EVENTS, getAvailableSeasonalEvents, getActiveHolidayOrSeasonalSaleEvent, isSeasonalEventAvailableOrUpcoming, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus, isItemVisibleInShop, getItemSalePrice } from '../utils/itemsCatalog';
+import { ITEM_CATEGORIES, WORKSHOP_ITEMS, SPARKS_PACKAGES, RARITY_TIERS, RARITY_ORDER, SEASONAL_EVENTS, getAvailableSeasonalEvents, getActiveHolidayOrSeasonalSaleEvent, isSeasonalEventAvailableOrUpcoming, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus, isItemVisibleInShop, getItemSalePrice, calculateSparksPackageSavings, getRealMoneyItemSavings } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
@@ -24,16 +24,30 @@ export function sortShopItems(items, userSparks, unlockedItems = [], equippedIte
       return aAvail.isUpcoming ? 1 : -1;
     }
 
-    const aSale = getItemSalePrice(a, currentDate);
-    const aCost = aSale.isSale ? aSale.salePrice : a.cost;
-    const bSale = getItemSalePrice(b, currentDate);
-    const bCost = bSale.isSale ? bSale.salePrice : b.cost;
+    const aRarity = RARITY_ORDER[a.rarity] || 0;
+    const bRarity = RARITY_ORDER[b.rarity] || 0;
+    if (aRarity !== bRarity) {
+      return aRarity - bRarity;
+    }
 
-    const aCanAfford = userSparks >= aCost;
-    const bCanAfford = userSparks >= bCost;
-    if (aCanAfford !== bCanAfford) return aCanAfford ? -1 : 1;
+    const getPriceVal = (item) => {
+      const sale = getItemSalePrice(item, currentDate);
+      if (sale && sale.isSale) return sale.salePrice;
+      if (typeof item.cost === 'number') return item.cost;
+      if (typeof item.realMoneyPrice === 'string') {
+        const parsed = parseFloat(item.realMoneyPrice.replace(/[^0-9.]/g, ''));
+        if (!isNaN(parsed)) return parsed;
+      }
+      return 0;
+    };
 
-    return aCost - bCost;
+    const aCost = getPriceVal(a);
+    const bCost = getPriceVal(b);
+    if (aCost !== bCost) {
+      return aCost - bCost;
+    }
+
+    return (a.name || '').localeCompare(b.name || '');
   });
 }
 
@@ -470,19 +484,31 @@ export default function WorkshopModal({
               onWheel={handleCategoryWheel}
               className="flex items-center gap-2 p-1 bg-slate-100 rounded-full overflow-x-auto scrollbar-none w-full touch-pan-x"
             >
-              {ITEM_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategorySelect(cat.id)}
-                  className={`py-1.5 px-3 text-xs font-extrabold rounded-full shrink-0 transition-all cursor-pointer ${
-                    activeCategory === cat.id
-                      ? 'bg-white text-slate-900 shadow-sm border border-amber-300 ring-2 ring-amber-400/20'
-                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
+              {ITEM_CATEGORIES.map((cat) => {
+                const isSpecial = cat.id === 'get_sparks' || cat.id === 'premium';
+                const isSelected = activeCategory === cat.id;
+
+                let tabStyle = '';
+                if (isSelected) {
+                  tabStyle = isSpecial
+                    ? 'bg-amber-500 text-white shadow-md border border-amber-600 ring-2 ring-amber-400/40 font-black'
+                    : 'bg-white text-slate-900 shadow-sm border border-amber-300 ring-2 ring-amber-400/20';
+                } else {
+                  tabStyle = isSpecial
+                    ? 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100/80 hover:border-amber-400 font-bold'
+                    : 'border border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-200/60';
+                }
+
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategorySelect(cat.id)}
+                    className={`py-1.5 px-3 text-xs font-extrabold rounded-full shrink-0 transition-all cursor-pointer ${tabStyle}`}
+                  >
+                    {cat.label}
+                  </button>
+                );
+              })}
             </div>
 
             {canScrollRight && (
@@ -580,7 +606,7 @@ export default function WorkshopModal({
                 if (allowRealMoneyPurchases) {
                   onBuySparksPackage({ id: 'kibo_club_sub', name: 'Kibo Club Individual', realMoneyPrice: '$4.99/mo', price: '$4.99/mo', isSubscription: true, isFamilyPlan: false, description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!' });
                 } else if (onOpenParentZone) {
-                  onOpenParentZone();
+                  onOpenParentZone('verification', 'real_money_purchases');
                 }
               }}
               className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 border-2 border-purple-400 rounded-2xl p-3 flex flex-row items-center justify-between shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
@@ -610,7 +636,7 @@ export default function WorkshopModal({
                 if (allowRealMoneyPurchases) {
                   onBuySparksPackage({ id: 'kibo_club_family', name: 'Kibo Club Family', realMoneyPrice: '$7.99/mo', price: '$7.99/mo', isSubscription: true, isFamilyPlan: true, description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.' });
                 } else if (onOpenParentZone) {
-                  onOpenParentZone();
+                  onOpenParentZone('verification', 'real_money_purchases');
                 }
               }}
               className="w-full bg-gradient-to-r from-amber-500 to-orange-600 border-2 border-amber-400 rounded-2xl p-3 flex flex-row items-center justify-between shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
@@ -620,7 +646,12 @@ export default function WorkshopModal({
                   <Sparkles className="w-6 h-6 text-white animate-pulse" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club (Family)</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club (Family)</h3>
+                    <span className="bg-emerald-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-2xs border border-emerald-400">
+                      Save 20%
+                    </span>
+                  </div>
                   <p className="text-xs font-bold text-orange-100 leading-snug">
                     Benefits for ALL profiles • $7.99/mo
                   </p>
@@ -661,41 +692,55 @@ export default function WorkshopModal({
 
           {activeCategory === 'get_sparks' ? (
             <div className="space-y-2.5">
-              {SPARKS_PACKAGES.map((pack) => (
-                <div
-                  key={pack.id}
-                  className="bg-white p-2.5 sm:p-3 rounded-2xl border-2 border-amber-200 shadow-sm hover:border-amber-300 transition-all flex items-center justify-between gap-3"
-                >
-                  <ItemThumbnail itemId={pack.id} rarity={pack.rarity || 'legendary'} className="w-13 h-13 sm:w-14 sm:h-14 shrink-0" />
-                  <div className="space-y-1 text-left flex-1 min-w-0">
-                    <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{pack.name}</h4>
-                    <span className="text-xs font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block">
-                      ⚡ {pack.sparks} Sparks
-                    </span>
-                    <p className="text-xs text-slate-500 font-medium leading-tight">{pack.description}</p>
+              {SPARKS_PACKAGES.map((pack) => {
+                const savings = calculateSparksPackageSavings(pack);
+                const displayPrice = pack.realMoneyPrice || pack.price;
+                return (
+                  <div
+                    key={pack.id}
+                    className="bg-white p-2.5 sm:p-3 rounded-2xl border-2 border-amber-200 shadow-sm hover:border-amber-300 transition-all flex items-center justify-between gap-3"
+                  >
+                    <ItemThumbnail itemId={pack.id} rarity={pack.rarity || 'legendary'} className="w-13 h-13 sm:w-14 sm:h-14 shrink-0" />
+                    <div className="space-y-1 text-left flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{pack.name}</h4>
+                        <span className="text-xs font-black text-purple-900 bg-purple-100 border border-purple-300 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                          💵 {displayPrice}
+                        </span>
+                        {savings !== null && (
+                          <span className="text-xs font-black text-white bg-emerald-600 border border-emerald-700 px-2 py-0.5 rounded-full shadow-2xs inline-flex items-center gap-1">
+                            Save {savings}%
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block">
+                        ⚡ {pack.sparks} Sparks
+                      </span>
+                      <p className="text-xs text-slate-500 font-medium leading-tight">{pack.description}</p>
+                    </div>
+                    <div className="shrink-0">
+                      {allowRealMoneyPurchases ? (
+                        <button
+                          type="button"
+                          onClick={() => onBuySparksPackage(pack)}
+                          className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                        >
+                          Buy for {displayPrice}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => onOpenParentZone && onOpenParentZone('verification', 'real_money_purchases')}
+                          className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 px-3 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold shadow-sm transition-all"
+                        >
+                          <Lock className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
+                          <span>Enable in Parent Zone</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="shrink-0">
-                    {allowRealMoneyPurchases ? (
-                      <button
-                        type="button"
-                        onClick={() => onBuySparksPackage(pack)}
-                        className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
-                      >
-                        Buy for {pack.price}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => onOpenParentZone && onOpenParentZone()}
-                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 px-3 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold shadow-sm transition-all"
-                      >
-                        <Lock className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
-                        <span>Enable in Parent Zone</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : currentCategoryItems.length === 0 ? (
             <div className="py-8 text-center text-slate-500 font-bold space-y-2 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-4">
@@ -840,9 +885,19 @@ export default function WorkshopModal({
                           🟦 OWNED
                         </span>
                       ) : isRealMoney && !isUnlocked ? (
-                         <span className="text-xs font-black uppercase text-purple-900 bg-purple-200 px-2 py-0.5 rounded-full border border-purple-400">
-                          💎 PREMIUM
-                        </span>
+                        <>
+                          <span className="text-xs font-black uppercase text-purple-900 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-300 flex items-center gap-1">
+                            💵 {item.realMoneyPrice}
+                          </span>
+                          {getRealMoneyItemSavings(item) !== null && (
+                            <span className="text-xs font-black text-white bg-emerald-600 border border-emerald-700 px-2 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
+                              Save {getRealMoneyItemSavings(item)}%
+                            </span>
+                          )}
+                          <span className="text-xs font-black uppercase text-purple-900 bg-purple-200 px-2 py-0.5 rounded-full border border-purple-400">
+                            💎 PREMIUM
+                          </span>
+                        </>
                       ) : null}
 
                       {/* ACTIVE PREVIEW STAGE INDICATOR */}
@@ -956,7 +1011,7 @@ export default function WorkshopModal({
                         ) : (
                           <button
                             type="button"
-                            onClick={() => onOpenParentZone && onOpenParentZone()}
+                            onClick={() => onOpenParentZone && onOpenParentZone('verification', 'real_money_purchases')}
                             className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 px-3 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold shadow-sm transition-all"
                           >
                             <Lock className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />

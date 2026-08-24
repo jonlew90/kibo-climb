@@ -59,4 +59,29 @@ describe('itemsCatalog', () => {
     expect(priceInfoPrem.isSale).toBe(false);
     expect(priceInfoPrem.salePrice).toBe(100);
   });
+
+  it('calculateSparksPackageSavings calculates correct percentage savings for bulk packs', () => {
+    const pack1 = itemsCatalog.SPARKS_PACKAGES[0]; // 500 sparks / $1.99 -> base rate
+    const pack2 = itemsCatalog.SPARKS_PACKAGES[1]; // 1200 sparks / $3.99 -> ~16% savings
+    const pack3 = itemsCatalog.SPARKS_PACKAGES[2]; // 3000 sparks / $7.99 -> ~33% savings
+    const pack4 = itemsCatalog.SPARKS_PACKAGES[3]; // 10000 sparks / $19.99 -> ~50% savings
+
+    expect(itemsCatalog.calculateSparksPackageSavings(pack1)).toBeNull();
+    expect(itemsCatalog.calculateSparksPackageSavings(pack2)).toBe(16);
+    expect(itemsCatalog.calculateSparksPackageSavings(pack3)).toBe(33);
+    expect(itemsCatalog.calculateSparksPackageSavings(pack4)).toBe(50);
+    expect(itemsCatalog.calculateSparksPackageSavings(null)).toBeNull();
+  });
+
+  it('getRealMoneyItemSavings returns savings for bundles and family subscriptions', () => {
+    const bundle = itemsCatalog.getItemById('starter_bundle');
+    const familySub = itemsCatalog.getItemById('kibo_club_family');
+    const dragonPet = itemsCatalog.getItemById('dragon_pet_premium');
+
+    expect(itemsCatalog.getRealMoneyItemSavings(bundle)).toBe(18);
+    expect(itemsCatalog.getRealMoneyItemSavings(familySub)).toBe(20);
+    expect(itemsCatalog.getRealMoneyItemSavings(dragonPet)).toBeNull();
+    expect(itemsCatalog.getRealMoneyItemSavings(null)).toBeNull();
+  });
 });
+

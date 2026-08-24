@@ -35,6 +35,39 @@ export const RARITY_TIERS = {
   }
 };
 
+export const RARITY_ORDER = {
+  common: 1,
+  rare: 2,
+  epic: 3,
+  legendary: 4
+};
+
+/**
+ * Compares two items primarily by rarity (Common -> Rare -> Epic -> Legendary)
+ * and secondarily by price (ascending cost or real-money price).
+ */
+export function compareItemsByRarityAndPrice(a, b) {
+  const rarityA = RARITY_ORDER[a?.rarity] || 0;
+  const rarityB = RARITY_ORDER[b?.rarity] || 0;
+  if (rarityA !== rarityB) {
+    return rarityA - rarityB;
+  }
+  const getPrice = (item) => {
+    if (typeof item?.cost === 'number') return item.cost;
+    if (typeof item?.realMoneyPrice === 'string') {
+      const parsed = parseFloat(item.realMoneyPrice.replace(/[^0-9.]/g, ''));
+      if (!isNaN(parsed)) return parsed;
+    }
+    return 0;
+  };
+  const priceA = getPrice(a);
+  const priceB = getPrice(b);
+  if (priceA !== priceB) {
+    return priceA - priceB;
+  }
+  return (a?.name || '').localeCompare(b?.name || '');
+}
+
 export const WORKSHOP_ITEMS = [
   // CONSUMABLE POWER-UPS (Category: powerups)
   {
@@ -46,6 +79,8 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '🧪',
     supportedSubjects: ['math', 'words', 'world'],
+    subjectLabel: 'All Subjects',
+    badgeTag: 'All Subjects',
     description: 'Costs 12 Sparks. Doubles all Sparks earned in your next climb session! (Works in all subjects)'
   },
   {
@@ -57,6 +92,8 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '📜',
     supportedSubjects: ['math', 'words', 'world'],
+    subjectLabel: 'All Subjects',
+    badgeTag: 'All Subjects',
     description: 'Costs 8 Sparks. Instantly reveals a helpful conceptual clue, phonics clue, or geography hint from Kibo! (Works in all subjects)'
   },
   {
@@ -68,6 +105,8 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '🔍',
     supportedSubjects: ['math', 'words'],
+    subjectLabel: 'Math & Words Only',
+    badgeTag: 'Math & Words',
     description: 'Costs 15 Sparks. Instantly uncovers and fills 1 missing blank slot or digit directly into your climb challenge! (For Kibo Math & Words)'
   },
   {
@@ -79,6 +118,8 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '🧭',
     supportedSubjects: ['world'],
+    subjectLabel: 'Kibo World Only',
+    badgeTag: 'World Only',
     description: 'Costs 15 Sparks. Pinpoints geographic orientation, revealing continent, regional, cardinal, or hemisphere context! (For Kibo World)'
   },
   {
@@ -90,6 +131,8 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '✂️',
     supportedSubjects: ['math', 'words', 'world'],
+    subjectLabel: 'All Subjects',
+    badgeTag: 'All Subjects',
     description: 'Costs 15 Sparks. Eliminates 2 distractor choices (50:50 in World) or non-solution keys (in Math & Words)! (Works in all subjects)'
   },
   {
@@ -101,6 +144,8 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '🛡️',
     supportedSubjects: ['math', 'words', 'world'],
+    subjectLabel: 'All Subjects',
+    badgeTag: 'All Subjects',
     description: 'Costs 50 Sparks. Absorbs 1 incorrect answer to protect your in-session answer streak and multipliers (does not alter accuracy %). (Works in all subjects)'
   },
   {
@@ -112,6 +157,8 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '🔥',
     supportedSubjects: ['math', 'words', 'world'],
+    subjectLabel: 'All Subjects',
+    badgeTag: 'All Subjects',
     description: 'Costs 100 Sparks. Protects 1 missed calendar day of climbing from resetting your daily streak. (Works in all subjects)'
   },
 
@@ -1258,16 +1305,6 @@ export const WORKSHOP_ITEMS = [
 
   // PROMO EXCLUSIVES (Category: promo)
   {
-    id: 'golden_ticket',
-    name: 'Golden Ticket',
-    category: 'promo',
-    slot: 'gear',
-    cost: 0,
-    rarity: 'legendary',
-    promoCodeRequired: 'GOLDENKIBO',
-    description: 'A very special golden ticket unlocked with an exclusive promo code!'
-  },
-  {
     id: 'cyber_shades',
     name: 'Cyber Neon Shades',
     category: 'promo',
@@ -1276,6 +1313,16 @@ export const WORKSHOP_ITEMS = [
     rarity: 'rare',
     promoCodeRequired: 'CYBERCLIMB',
     description: 'Futuristic glowing cyber shades unlocked with an exclusive promo code!'
+  },
+  {
+    id: 'golden_ticket',
+    name: 'Golden Ticket',
+    category: 'promo',
+    slot: 'gear',
+    cost: 0,
+    rarity: 'legendary',
+    promoCodeRequired: 'GOLDENKIBO',
+    description: 'A very special golden ticket unlocked with an exclusive promo code!'
   },
 
   // PREMIUM EXCLUSIVES & BUNDLES (Category: premium)
@@ -1371,6 +1418,46 @@ export const SPARKS_PACKAGES = [
     description: 'A colossal hoard vault of 10,000 Sparks to unlock everything on Mount Kibo!'
   }
 ];
+
+export function calculateSparksPackageSavings(pack) {
+  if (!pack || !pack.sparks) return null;
+  const basePack = SPARKS_PACKAGES[0];
+  if (!basePack || pack.id === basePack.id) return null;
+
+  const parsePrice = (p) => parseFloat(String(p).replace(/[^0-9.]/g, ''));
+  const basePrice = parsePrice(basePack.realMoneyPrice || basePack.price);
+  const currentPrice = parsePrice(pack.realMoneyPrice || pack.price);
+
+  if (!basePrice || !currentPrice || !basePack.sparks) return null;
+
+  const baseRatePerSpark = basePrice / basePack.sparks;
+  const standardCost = pack.sparks * baseRatePerSpark;
+
+  if (standardCost <= currentPrice) return null;
+  const percentSavings = Math.round(((standardCost - currentPrice) / standardCost) * 100);
+  return percentSavings > 0 ? percentSavings : null;
+}
+
+export function getRealMoneyItemSavings(item) {
+  if (!item) return null;
+
+  if (item.sparks && (item.realMoneyPrice || item.price)) {
+    const packSavings = calculateSparksPackageSavings(item);
+    if (packSavings) return packSavings;
+  }
+
+  // Starter Bundle: 1000 Sparks ($3.98) + 5 Streak Savers (500 Sparks = $1.99) + Explorer Fedora (25 Sparks = $0.10) => $6.07 value for $4.99
+  if (item.id === 'starter_bundle') {
+    return 18;
+  }
+
+  // Kibo Club Family: $7.99/mo covers all child profiles vs multiple individual subs ($4.99 * 2 = $9.98/mo min)
+  if (item.id === 'kibo_club_family') {
+    return 20;
+  }
+
+  return null;
+}
 
 export function getItemById(id) {
   const found = WORKSHOP_ITEMS.find((item) => item.id === id);
@@ -1613,7 +1700,9 @@ export function getItemsByCategory(category, unlockedItems = [], currentDate = n
     ? WORKSHOP_ITEMS
     : WORKSHOP_ITEMS.filter((item) => item.category === category);
 
-  return items.filter((item) => isItemVisibleInShop(item, unlockedItems, currentDate));
+  return items
+    .filter((item) => isItemVisibleInShop(item, unlockedItems, currentDate))
+    .sort(compareItemsByRarityAndPrice);
 }
 
 /**

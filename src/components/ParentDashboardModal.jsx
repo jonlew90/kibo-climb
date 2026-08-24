@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3 } from 'lucide-react';
 import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
@@ -28,6 +28,8 @@ const DAYS_OF_WEEK = [
 
 export default function ParentDashboardModal({
   activeSubject = 'math',
+  initialTab = 'overview',
+  highlightSection = null,
   isOpen,
   onClose,
   currentPin,
@@ -49,7 +51,7 @@ export default function ParentDashboardModal({
   personalRecords = {},
   onAccountLinked
 }) {
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'schedule' | 'verification'
+  const [activeTab, setActiveTab] = useState(initialTab || 'overview'); // 'overview' | 'schedule' | 'verification'
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
 
   // PIN Change State
@@ -94,6 +96,15 @@ export default function ParentDashboardModal({
   };
 
   const [liveUserData, setLiveUserData] = useState(() => getProfileSubjectData(storageService.getActiveProfileId(), selectedSubject));
+  const realMoneySectionRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen && activeTab === 'verification' && highlightSection === 'real_money_purchases' && realMoneySectionRef.current) {
+      setTimeout(() => {
+        realMoneySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [isOpen, activeTab, highlightSection]);
 
   useEffect(() => {
     setSelectedSubject(activeSubject || 'math');
@@ -110,6 +121,9 @@ export default function ParentDashboardModal({
       setViewingProfileId(activeId);
       setLiveUserData(getProfileSubjectData(activeId, selectedSubject));
       setProfilesList(storageService.getAllProfiles());
+      if (initialTab) {
+        setActiveTab(initialTab);
+      }
     }
   }
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -1303,10 +1317,24 @@ export default function ParentDashboardModal({
             </div>
 
             {/* In-App Purchases & Real-Money Security */}
-            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
-              <div className="flex items-center gap-2 text-purple-700">
-                <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">In-App Purchase Verification</h4>
+            <div
+              ref={realMoneySectionRef}
+              className={`border-2 rounded-2xl p-3.5 space-y-3 text-left transition-all duration-300 ${
+                highlightSection === 'real_money_purchases'
+                  ? 'bg-purple-50/90 border-purple-500 ring-4 ring-purple-400/40 shadow-xl scale-[1.01]'
+                  : 'bg-slate-50 border-slate-200'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-purple-700">
+                  <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
+                  <h4 className="font-extrabold text-sm text-slate-800">In-App Purchase Verification</h4>
+                </div>
+                {highlightSection === 'real_money_purchases' && (
+                  <span className="bg-purple-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse shadow-sm">
+                    Enable Here
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-xl gap-1">
