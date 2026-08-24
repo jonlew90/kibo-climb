@@ -107,15 +107,7 @@ export default function PinGateModal({
     }
   }, [lockoutStatus.isLocked, isAuthenticating, onUnlockSuccess]);
 
-  // Auto-run native auth on open if tab is native
-  useEffect(() => {
-    if (isOpen && !lockoutStatus.isLocked && activeTab === 'native') {
-      const timer = setTimeout(() => {
-        triggerNativeAuth();
-      }, 250);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, lockoutStatus.isLocked, activeTab, triggerNativeAuth]);
+
 
   // Keyboard shortcut listener
   useEffect(() => {
@@ -306,7 +298,7 @@ export default function PinGateModal({
                 }`}
               >
                 <Fingerprint className="w-3.5 h-3.5" />
-                <span>Face ID / Passcode</span>
+                <span>Device Biometrics</span>
               </button>
 
               <button
@@ -319,7 +311,7 @@ export default function PinGateModal({
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Dynamic Challenge</span>
+                <span>Math Challenge</span>
               </button>
             </div>
 
@@ -348,12 +340,12 @@ export default function PinGateModal({
                   </div>
                   <div>
                     <h4 className="font-extrabold text-sm text-slate-800">
-                      {isAuthenticating ? 'Verifying Device Biometrics...' : 'Native Device Authentication'}
+                      {isAuthenticating ? 'Verifying Device Biometrics...' : 'Device Biometrics'}
                     </h4>
                     <p className="text-xs text-slate-500 font-medium mt-1">
                       {isAuthenticating
                         ? 'Follow your device prompt (Face ID, Touch ID, or Passcode)...'
-                        : 'Use Face ID, Touch ID, or your phone\'s screen passcode.'}
+                        : 'Quickly verify with Face ID, Touch ID, or device passcode.'}
                     </p>
                   </div>
                 </div>
@@ -367,19 +359,6 @@ export default function PinGateModal({
                   >
                     <Fingerprint className="w-5 h-5" />
                     <span>{isAuthenticating ? 'Scanning Biometrics...' : 'Authenticate with Device'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      setActiveTab('challenge');
-                      setErrorMsg('');
-                      refreshChallenge();
-                    }}
-                    className="text-xs font-bold text-slate-500 hover:text-purple-600 py-1 transition-colors block mx-auto"
-                  >
-                    Use Math Challenge instead →
                   </button>
                 </div>
               </div>
