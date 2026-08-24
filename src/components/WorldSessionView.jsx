@@ -1415,23 +1415,86 @@ export default function WorldSessionView({
 
       {/* MASCOT CONTAINER - Centered between sticky header and question card */}
       <div
-        className={`flex-1 flex flex-col items-center justify-center w-full min-h-0 my-auto py-0.5 sm:py-1.5 z-10 overflow-visible ${
+        className={`flex-1 flex flex-row items-center justify-center w-full min-h-0 my-auto py-0.5 sm:py-1.5 z-10 overflow-visible px-2 sm:px-4 ${
           hasStartedClimb ? 'max-h-[14vh] sm:max-h-[20vh] md:max-h-[24vh]' : 'max-h-[26vh] sm:max-h-[35vh]'
         }`}
-        title="Tap Kibo!"
       >
-        <div className={`relative flex items-center justify-center overflow-visible p-0.5 sm:p-1.5 w-full h-full ${
-          hasStartedClimb ? 'max-h-[14vh] sm:max-h-[20vh] md:max-h-[24vh]' : 'max-h-[26vh] sm:max-h-[35vh]'
-        }`}>
+        {/* Left Friend */}
+        {displayedFriends[0] ? (
+          <div
+            className={`relative z-0 flex items-center justify-end sm:justify-center overflow-visible flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] h-3/4 cursor-pointer hover:scale-105 active:scale-95 transition-transform shrink-0 ${
+              hasStartedClimb ? 'max-h-[12vh] sm:max-h-[16vh] md:max-h-[20vh]' : 'max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh]'
+            }`}
+            onClick={() => handleFriendClick(0)}
+            title={`Tap ${displayedFriends[0].username}!`}
+          >
+            {friend1Tooltip && (
+              <div className="absolute -top-8 left-0 sm:left-1/2 sm:-translate-x-1/2 bg-white text-slate-800 text-[10px] sm:text-xs font-black px-2 py-1 rounded-xl shadow-lg border-2 border-slate-200 z-50 whitespace-nowrap animate-bounce pointer-events-none">
+                Hi, I'm {displayedFriends[0].username}!
+              </div>
+            )}
+            <Mascot
+              mood="happy"
+              state={friend1State}
+              equipped={displayedFriends[0].equipped || []}
+              className={`h-full w-auto aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90 scale-x-[-1] max-w-full ${
+                hasStartedClimb ? 'max-h-[12vh] sm:max-h-[16vh] md:max-h-[20vh]' : 'max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh]'
+              }`}
+            />
+            <div className="absolute -bottom-2 md:-bottom-4 left-1/2 -translate-x-1/2 bg-white/90 text-slate-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-slate-200 z-10 truncate max-w-full pointer-events-none">
+              {displayedFriends[0].username}
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] shrink-0" />
+        )}
+
+        {/* Main Mascot */}
+        <div
+          className={`relative z-10 flex items-center justify-center overflow-visible p-0.5 sm:p-1.5 w-1/2 max-w-[50%] sm:max-w-[240px] md:max-w-[300px] h-full shrink-0 ${
+            hasStartedClimb ? 'max-h-[14vh] sm:max-h-[20vh] md:max-h-[24vh]' : 'max-h-[26vh] sm:max-h-[35vh]'
+          }`}
+          title="Tap Kibo!"
+        >
           <Mascot
             mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'}
             state={mascotState}
             equipped={equippedItems}
-            className={`h-full w-auto aspect-square filter drop-shadow-md object-contain shrink-0 ${
+            className={`h-full w-auto aspect-square filter drop-shadow-md object-contain shrink-0 max-w-full ${
               hasStartedClimb ? 'max-h-[14vh] max-w-[14vh] sm:max-h-[20vh] sm:max-w-[20vh] md:max-h-[24vh] md:max-w-[24vh]' : 'max-h-[26vh] max-w-[26vh] sm:max-h-[35vh] sm:max-w-[35vh]'
             }`}
           />
         </div>
+
+        {/* Right Friend */}
+        {displayedFriends[1] ? (
+          <div
+            className={`relative z-0 flex items-center justify-start sm:justify-center overflow-visible flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] h-3/4 cursor-pointer hover:scale-105 active:scale-95 transition-transform shrink-0 ${
+              hasStartedClimb ? 'max-h-[12vh] sm:max-h-[16vh] md:max-h-[20vh]' : 'max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh]'
+            }`}
+            onClick={() => handleFriendClick(1)}
+            title={`Tap ${displayedFriends[1].username}!`}
+          >
+            {friend2Tooltip && (
+              <div className="absolute -top-8 right-0 sm:left-1/2 sm:-translate-x-1/2 bg-white text-slate-800 text-[10px] sm:text-xs font-black px-2 py-1 rounded-xl shadow-lg border-2 border-slate-200 z-50 whitespace-nowrap animate-bounce pointer-events-none">
+                Hi, I'm {displayedFriends[1].username}!
+              </div>
+            )}
+            <Mascot
+              mood="happy"
+              state={friend2State}
+              equipped={displayedFriends[1].equipped || []}
+              className={`h-full w-auto aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90 max-w-full ${
+                hasStartedClimb ? 'max-h-[12vh] sm:max-h-[16vh] md:max-h-[20vh]' : 'max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh]'
+              }`}
+            />
+            <div className="absolute -bottom-2 md:-bottom-4 left-1/2 -translate-x-1/2 bg-white/90 text-slate-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-slate-200 z-10 truncate max-w-full pointer-events-none">
+              {displayedFriends[1].username}
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] shrink-0" />
+        )}
       </div>
 
       {/* PROBLEM CARD CONTAINER */}
