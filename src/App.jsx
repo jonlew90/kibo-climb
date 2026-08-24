@@ -1156,11 +1156,19 @@ export default function App() {
   };
 
   const renderNavigationFooter = () => (
-    <footer className="sticky bottom-0 z-40 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 px-2 py-2 sm:py-3 flex items-center justify-around shadow-xs shrink-0 gap-1 sm:gap-2">
-      {/* 0. Climb (Main Session) Button: Emerald / Green */}
-      <button
-        type="button"
-        onClick={() => {
+    <>
+      {showSettingsMenu && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm transition-all"
+          onClick={() => setShowSettingsMenu(false)}
+        />
+      )}
+      <footer className="sticky bottom-0 z-50 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 shadow-xs shrink-0">
+        <div className="w-full px-2 py-2 sm:py-3 flex items-center justify-around gap-1 sm:gap-2">
+          {/* 0. Climb (Main Session) Button: Emerald / Green */}
+          <button
+            type="button"
+            onClick={() => {
           soundFx.playKeyTap();
           closeAllNavModals();
           setAppState('adaptive_session');
@@ -1245,80 +1253,65 @@ export default function App() {
           title="Settings Menu"
         >
           <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
-          <span className="text-xs font-black tracking-wide">Settings</span>
+          <span className="text-xs font-black tracking-wide">Menu</span>
         </button>
+      </div>
 
-        {showSettingsMenu && (
-          <div className="absolute bottom-full right-0 mb-3 w-48 bg-white border-2 border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden flex flex-col origin-bottom-right animate-in fade-in slide-in-from-bottom-2">
+      {showSettingsMenu && (
+        <div className="absolute bottom-full left-0 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 px-2 py-2 sm:py-3 flex items-center justify-around shadow-lg origin-bottom animate-in fade-in slide-in-from-bottom-2 gap-1 sm:gap-2 z-50">
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setProfileSwitcherOrigin({
+                appState,
+                showBadgesModal,
+                isWorkshopOpen,
+                showParentDashboard
+              });
+              setShowSettingsMenu(false);
+              closeAllNavModals('profile');
+              setShowManualProfileSwitcher(true);
+            }}
+            className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-sky-100 via-blue-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
+          >
+            <Users className="w-5 h-5 text-sky-700 stroke-[2.5]" />
+            <span className="text-xs font-black tracking-wide">Profile</span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setProfileSwitcherOrigin({
-                  appState,
-                  showBadgesModal,
-                  isWorkshopOpen,
-                  showParentDashboard
-                });
-                setShowSettingsMenu(false);
-                closeAllNavModals('profile');
-                setShowManualProfileSwitcher(true);
-              }}
-              className="flex items-center gap-2 px-3 py-3 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
-            >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-100 to-sky-200 border border-sky-300 flex items-center justify-center shrink-0">
-                <Users className="w-4 h-4 text-sky-700 stroke-[2.5]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-black text-slate-800 leading-tight">Switch Profile</span>
-              </div>
-            </button>
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setShowSettingsMenu(false);
+              closeAllNavModals('parents');
+              setPinGateSource(null);
+              setShowPinGateModal(true);
+            }}
+            className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
+          >
+            <Lock className="w-5 h-5 text-purple-700 stroke-[2.5]" />
+            <span className="text-xs font-black tracking-wide">Parent</span>
+          </button>
 
-            <div className="h-px bg-slate-100 w-full" />
-
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setShowSettingsMenu(false);
-                closeAllNavModals('parents');
-                setPinGateSource(null);
-                setShowPinGateModal(true);
-              }}
-              className="flex items-center gap-2 px-3 py-3 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
-            >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 border border-purple-300 flex items-center justify-center shrink-0">
-                <Lock className="w-4 h-4 text-purple-700 stroke-[2.5]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-black text-slate-800 leading-tight">Parent Zone</span>
-              </div>
-            </button>
-
-            <div className="h-px bg-slate-100 w-full" />
-
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setShowSettingsMenu(false);
-                closeAllNavModals();
-                setAppState('settings');
-              }}
-              className="flex items-center gap-2 px-3 py-3 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
-            >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 flex items-center justify-center shrink-0">
-                <Settings className="w-4 h-4 text-slate-700 stroke-[2.5]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-black text-slate-800 leading-tight">Settings</span>
-              </div>
-            </button>
-          </div>
-        )}
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setShowSettingsMenu(false);
+              closeAllNavModals();
+              setAppState('settings');
+            }}
+            className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
+          >
+            <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+            <span className="text-xs font-black tracking-wide">Settings</span>
+          </button>
+        </div>
+      )}
       </div>
     </footer>
+    </>
   );
 
   return (
