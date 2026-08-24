@@ -1207,155 +1207,158 @@ export default function App() {
           <button
             type="button"
             onClick={() => {
-          soundFx.playKeyTap();
-          closeAllNavModals();
-          setAppState('adaptive_session');
-        }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-          !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-105 font-bold' : ''
-        }`}
-        aria-label="Return to Main Climb Session"
-        title="Main Mountain Climb"
-      >
-        <Mountain className="w-5 h-5 text-emerald-700 stroke-[2.5]" />
-        <span className="text-xs font-black tracking-wide">Climb</span>
-      </button>
+              soundFx.playKeyTap();
+              closeAllNavModals();
+              setAppState('adaptive_session');
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+              !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && !showSettingsMenu && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-105 font-bold' : ''
+            }`}
+            aria-label="Return to Main Climb Session"
+            title="Main Mountain Climb"
+          >
+            <Mountain className="w-5 h-5 text-emerald-700 stroke-[2.5]" />
+            <span className="text-xs font-black tracking-wide">Climb</span>
+          </button>
 
-      {/* 1. Shop Button: Warm Orange */}
-      <button
-        type="button"
-        onClick={() => {
-          closeAllNavModals('workshop');
-          handleOpenWorkshop();
-        }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-orange-100 via-orange-50 to-orange-100 text-orange-950 border-2 border-orange-400 rounded-xl hover:from-orange-200 hover:to-orange-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-          isWorkshopOpen ? 'ring-2 ring-orange-500 scale-105 font-bold' : ''
-        }`}
-        aria-label="Open Kibo's Corner"
-        title="Kibo's Workshop & Shop"
-      >
-        <ShoppingBag className="w-5 h-5 text-orange-600 stroke-[2.5]" />
-        <span className="text-xs font-black tracking-wide">Shop</span>
-      </button>
+          {/* 1. Shop Button: Warm Orange */}
+          <button
+            type="button"
+            onClick={() => {
+              closeAllNavModals('workshop');
+              handleOpenWorkshop();
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-orange-100 via-orange-50 to-orange-100 text-orange-950 border-2 border-orange-400 rounded-xl hover:from-orange-200 hover:to-orange-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+              isWorkshopOpen && !showSettingsMenu ? 'ring-2 ring-orange-500 scale-105 font-bold' : ''
+            }`}
+            aria-label="Open Kibo's Corner"
+            title="Kibo's Workshop & Shop"
+          >
+            <ShoppingBag className="w-5 h-5 text-orange-600 stroke-[2.5]" />
+            <span className="text-xs font-black tracking-wide">Shop</span>
+          </button>
 
-      {/* 2. Badges Button: Golden Yellow */}
-      <button
-        type="button"
-        onClick={() => {
-          soundFx.playKeyTap();
-          closeAllNavModals('badges');
-          setShowBadgesModal(true);
-        }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-          showBadgesModal ? 'ring-2 ring-yellow-500 scale-105 font-bold' : ''
-        }`}
-        title="View Badges"
-      >
-        <Award className="w-5 h-5 text-yellow-600 stroke-[2.5]" />
-        <span className="text-xs font-black tracking-wide">Badges</span>
-      </button>
+          {/* 2. Badges Button: Golden Yellow */}
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              closeAllNavModals('badges');
+              setShowBadgesModal(true);
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+              showBadgesModal && !showSettingsMenu ? 'ring-2 ring-yellow-500 scale-105 font-bold' : ''
+            }`}
+            title="View Badges"
+          >
+            <Award className="w-5 h-5 text-yellow-600 stroke-[2.5]" />
+            <span className="text-xs font-black tracking-wide">Badges</span>
+          </button>
 
-      {/* 3. Leaderboard Button: Sapphire Blue */}
-      <button
-        type="button"
-        onClick={() => {
-          soundFx.playKeyTap();
-          closeAllNavModals();
-          setAppState('leaderboard');
-        }}
-        className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] relative ${
-          !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'ring-2 ring-indigo-500 scale-105 font-bold' : ''
-        }`}
-        aria-label="Leaderboard"
-        title="Leaderboard"
-      >
-        <div className="relative">
-          <Trophy className={`w-5 h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
-          {pendingFriendRequestsCount > 0 && (
-            <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
-              {pendingFriendRequestsCount}
-            </span>
+          {/* 3. Leaderboard Button: Sapphire Blue */}
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              closeAllNavModals();
+              setAppState('leaderboard');
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] relative ${
+              !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && !showSettingsMenu && appState === 'leaderboard' ? 'ring-2 ring-indigo-500 scale-105 font-bold' : ''
+            }`}
+            aria-label="Leaderboard"
+            title="Leaderboard"
+          >
+            <div className="relative">
+              <Trophy className={`w-5 h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && !showSettingsMenu && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
+              {pendingFriendRequestsCount > 0 && (
+                <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
+                  {pendingFriendRequestsCount}
+                </span>
+              )}
+            </div>
+            <span className="text-xs font-black tracking-wide">Rank</span>
+          </button>
+
+          {/* 4. Settings Dropdown Menu Wrapper */}
+          <div className="relative" ref={settingsMenuRef}>
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowSettingsMenu(!showSettingsMenu);
+              }}
+              className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
+                !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && !showSettingsMenu && (appState === 'settings' || appState === 'privacy' || appState === 'terms') ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
+              } ${showSettingsMenu ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''}`}
+              aria-label="Settings Menu"
+              title="Settings Menu"
+            >
+              <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+              <span className="text-xs font-black tracking-wide">Menu</span>
+            </button>
+          </div>
+
+          {showSettingsMenu && (
+            <div ref={settingsRollupRef} className="absolute bottom-full left-0 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 px-2 py-2 sm:py-3 flex items-center justify-around shadow-lg origin-bottom animate-in fade-in slide-in-from-bottom-2 gap-1 sm:gap-2 z-50">
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setProfileSwitcherOrigin({
+                    appState,
+                    showBadgesModal,
+                    isWorkshopOpen,
+                    showParentDashboard
+                  });
+                  setShowSettingsMenu(false);
+                  closeAllNavModals('profile');
+                  setShowManualProfileSwitcher(true);
+                }}
+                className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-sky-100 via-blue-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
+              >
+                <Users className="w-5 h-5 text-sky-700 stroke-[2.5]" />
+                <span className="text-xs font-black tracking-wide">Profile</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setProfileSwitcherOrigin({
+                    appState,
+                    showBadgesModal,
+                    isWorkshopOpen,
+                    showParentDashboard
+                  });
+                  setShowSettingsMenu(false);
+                  closeAllNavModals('parents');
+                  setPinGateSource('settings_menu');
+                  setShowPinGateModal(true);
+                }}
+                className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
+              >
+                <Lock className="w-5 h-5 text-purple-700 stroke-[2.5]" />
+                <span className="text-xs font-black tracking-wide">Parent</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setShowSettingsMenu(false);
+                  closeAllNavModals();
+                  setAppState('settings');
+                }}
+                className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
+              >
+                <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+                <span className="text-xs font-black tracking-wide">Settings</span>
+              </button>
+            </div>
           )}
         </div>
-        <span className="text-xs font-black tracking-wide">Rank</span>
-      </button>
-
-      {/* 4. Settings Dropdown Menu Wrapper */}
-      <div className="relative" ref={settingsMenuRef}>
-        <button
-          type="button"
-          onClick={() => {
-            soundFx.playKeyTap();
-            if (!showSettingsMenu) {
-              closeAllNavModals('settingsMenu');
-            }
-            setShowSettingsMenu(!showSettingsMenu);
-          }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-            !isWorkshopOpen && !showBadgesModal && !showSettingsMenu && appState === 'settings' ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
-          } ${showSettingsMenu ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''}`}
-          aria-label="Settings Menu"
-          title="Settings Menu"
-        >
-          <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
-          <span className="text-xs font-black tracking-wide">Menu</span>
-        </button>
-      </div>
-
-      {showSettingsMenu && (
-        <div ref={settingsRollupRef} className="absolute bottom-full left-0 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 px-2 py-2 sm:py-3 flex items-center justify-around shadow-lg origin-bottom animate-in fade-in slide-in-from-bottom-2 gap-1 sm:gap-2 z-50">
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setProfileSwitcherOrigin({
-                appState,
-                showBadgesModal,
-                isWorkshopOpen,
-                showParentDashboard
-              });
-              setShowSettingsMenu(false);
-              closeAllNavModals('profile');
-              setShowManualProfileSwitcher(true);
-            }}
-            className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-sky-100 via-blue-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
-          >
-            <Users className="w-5 h-5 text-sky-700 stroke-[2.5]" />
-            <span className="text-xs font-black tracking-wide">Profile</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setShowSettingsMenu(false);
-              closeAllNavModals('parents');
-              setPinGateSource(null);
-              setShowPinGateModal(true);
-            }}
-            className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
-          >
-            <Lock className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-            <span className="text-xs font-black tracking-wide">Parent</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setShowSettingsMenu(false);
-              closeAllNavModals();
-              setAppState('settings');
-            }}
-            className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
-          >
-            <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
-            <span className="text-xs font-black tracking-wide">Settings</span>
-          </button>
-        </div>
-      )}
-      </div>
-    </footer>
+      </footer>
     </>
   );
 
@@ -1796,8 +1799,7 @@ export default function App() {
                 setIsWorkshopOpen(true);
               } else if (profileSwitcherOrigin.showParentDashboard) {
                 setShowParentDashboard(true);
-              }
-              if (profileSwitcherOrigin.appState) {
+              } else if (profileSwitcherOrigin.appState) {
                 setAppState(profileSwitcherOrigin.appState);
               }
             }
@@ -1873,6 +1875,17 @@ export default function App() {
             setShowManualProfileSwitcher(true);
           } else if (pinGateSource === 'onboarding') {
             setShowFirstLaunchOnboardingModal(true);
+          } else if (pinGateSource === 'settings_menu' && profileSwitcherOrigin) {
+            if (profileSwitcherOrigin.showBadgesModal) {
+              setShowBadgesModal(true);
+            } else if (profileSwitcherOrigin.isWorkshopOpen) {
+              setIsWorkshopOpen(true);
+            } else if (profileSwitcherOrigin.showParentDashboard) {
+              setShowParentDashboard(true);
+            } else if (profileSwitcherOrigin.appState) {
+              setAppState(profileSwitcherOrigin.appState);
+            }
+            setProfileSwitcherOrigin(null);
           }
           setPinGateSource(null);
         }}
