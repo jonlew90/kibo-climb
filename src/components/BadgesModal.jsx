@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Award, Lock, Sparkles, ArrowLeft, CheckCircle2, Trophy, Flame, Zap, Target, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Lock, Sparkles, ArrowLeft, CheckCircle2, Trophy, Flame, Zap, Target, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { SUBJECTS_CONFIG } from '../config/subjects';
@@ -81,7 +81,6 @@ export default function BadgesModal({
   const perfectRuns = personalRecords?.mostPerfectSessions || 0;
 
   const recentUnlockedBadges = BADGES_CATALOG.filter((b) => unlockedSet.has(b.id)).slice(-3).reverse();
-  const username = storageService.getUsername() || storageService.getActiveProfile()?.name || '';
 
   const filteredBadges = activeCategory === 'all'
     ? BADGES_CATALOG
@@ -95,18 +94,6 @@ export default function BadgesModal({
           <Trophy className="w-5 h-5 text-amber-500 stroke-[2.5]" />
           <h2 className="text-base sm:text-lg font-black tracking-tight">My Trophies & Records</h2>
         </div>
-
-        <div className="flex items-center gap-2">
-          {username && (
-            <span className="hidden sm:flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
-              <User className="w-3 h-3" />{username}
-            </span>
-          )}
-          <div className="flex items-center gap-1.5 bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1 rounded-full text-xs font-black shadow-xs">
-            <Award className="w-4 h-4 text-amber-700 stroke-[2.5]" />
-            <span>{unlockedCount}/{totalBadges}</span>
-          </div>
-        </div>
       </header>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
@@ -118,8 +105,8 @@ export default function BadgesModal({
               <Sparkles className="w-4 h-4 text-amber-600 fill-amber-300" />
               Trail Badges
             </span>
-            <span className="bg-amber-200 px-3 py-1 rounded-full border border-amber-300">
-              {progressPct}% unlocked
+            <span className="bg-amber-200/80 px-3 py-1 rounded-full border border-amber-300 text-xs font-black text-amber-950">
+              {unlockedCount} / {totalBadges} <span className="opacity-75 font-bold">({progressPct}%)</span>
             </span>
           </div>
 

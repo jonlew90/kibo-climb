@@ -2,7 +2,7 @@
 
 export const BADGE_CATEGORIES = {
   consistency: { label: 'Streak & Consistency', icon: '🔥' },
-  math: { label: 'Kibo Math', icon: '🧮' },
+  math: { label: 'Kibo Math', icon: '🔢' },
   words: { label: 'Kibo Words', icon: '📚' },
   world: { label: 'Kibo World', icon: '🌍' },
   precision: { label: 'Precision & Accuracy', icon: '🎯' },
