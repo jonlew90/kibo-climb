@@ -12,7 +12,7 @@ export default function AddFriendModal({
   activeSubject = 'math',
   onFriendAdded = () => {}
 }) {
-  const [activeTab, setActiveTab] = useState('search'); // 'search' | 'requests' | 'friends'
+  const [activeTab, setActiveTab] = useState('friends'); // 'friends' | 'requests' | 'search'
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
@@ -265,12 +265,12 @@ export default function AddFriendModal({
         <div className="flex bg-slate-100 p-1 rounded-xl mb-3 shrink-0">
           <button
             type="button"
-            onClick={() => { soundFx.playKeyTap(); setActiveTab('search'); }}
+            onClick={() => { soundFx.playKeyTap(); setActiveTab('friends'); }}
             className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
-              activeTab === 'search' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+              activeTab === 'friends' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            Find Friends
+            Friends ({friendsList.length})
           </button>
           <button
             type="button"
@@ -288,12 +288,12 @@ export default function AddFriendModal({
           </button>
           <button
             type="button"
-            onClick={() => { soundFx.playKeyTap(); setActiveTab('friends'); }}
+            onClick={() => { soundFx.playKeyTap(); setActiveTab('search'); }}
             className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
-              activeTab === 'friends' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+              activeTab === 'search' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            Friends ({friendsList.length})
+            Find Friends
           </button>
         </div>
 
