@@ -120,39 +120,23 @@ export default function App() {
   const [showPinGateModal, setShowPinGateModal] = useState(false);
   const [pinGateSource, setPinGateSource] = useState(null);
   const [showParentDashboard, setShowParentDashboard] = useState(false);
-  const [showSubjectSelector, setShowSubjectSelector] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [pendingReward, setPendingReward] = useState(null);
-  const subjectSelectorRef = useRef(null);
-  const settingsMenuRef = useRef(null);
-  const settingsRollupRef = useRef(null);
+  const profileDropdownRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (subjectSelectorRef.current && !subjectSelectorRef.current.contains(event.target)) {
-        setShowSubjectSelector(false);
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
 
-    function handleClickOutsideSettings(event) {
-      if (
-        settingsMenuRef.current &&
-        !settingsMenuRef.current.contains(event.target) &&
-        (!settingsRollupRef.current || !settingsRollupRef.current.contains(event.target))
-      ) {
-        setShowSettingsMenu(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutsideSettings);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("mousedown", handleClickOutsideSettings);
     };
   }, []);
-
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStripeCheckoutModal, setShowStripeCheckoutModal] = useState(false);
@@ -603,7 +587,6 @@ export default function App() {
     storageService.setLastActiveSubject(newSubject);
     setActiveSubject(newSubject);
     setAppState('adaptive_session');
-    setShowSubjectSelector(false);
     syncAppStateWithStorage(newSubject);
   };
 
@@ -1178,15 +1161,17 @@ export default function App() {
   };
 
   const currentTierMeta = getTierMeta(tier);
+  const activeProfile = storageService.getActiveProfile();
+  const allProfiles = storageService.getAllProfiles();
 
-  const isAppPaused = isWorkshopOpen || showSettingsMenu || showSubjectSelector || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
+  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
 
 
   const closeAllNavModals = (except = null) => {
     if (except !== 'workshop') setIsWorkshopOpen(false);
     if (except !== 'badges') setShowBadgesModal(false);
     if (except !== 'profile') setShowManualProfileSwitcher(false);
-    if (except !== 'settingsMenu') setShowSettingsMenu(false);
+    if (except !== 'profileDropdown') setShowProfileDropdown(false);
     if (except !== 'parents') {
       setShowPinGateModal(false);
       setShowParentDashboard(false);
@@ -1194,172 +1179,104 @@ export default function App() {
   };
 
   const renderNavigationFooter = () => (
-    <>
-      {showSettingsMenu && (
-        <div
-          className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm transition-all"
-          onClick={() => setShowSettingsMenu(false)}
-        />
-      )}
-      <footer className="sticky bottom-0 z-50 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 shadow-xs shrink-0">
-        <div className="w-full px-2 py-2 sm:py-3 flex items-center justify-around gap-1 sm:gap-2">
-          {/* 0. Climb (Main Session) Button: Emerald / Green */}
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              closeAllNavModals();
-              setAppState('adaptive_session');
-            }}
-            className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-              !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && !showSettingsMenu && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-105 font-bold' : ''
-            }`}
-            aria-label="Return to Main Climb Session"
-            title="Main Mountain Climb"
-          >
-            <Mountain className="w-5 h-5 text-emerald-700 stroke-[2.5]" />
-            <span className="text-xs font-black tracking-wide">Climb</span>
-          </button>
+    <footer className="sticky bottom-0 z-50 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 shadow-xs shrink-0">
+      <div className="w-full px-2 py-2 sm:py-3 flex items-center justify-around gap-1 sm:gap-2 max-w-4xl mx-auto">
+        {/* 0. Climb (Main Session) Button: Emerald / Green */}
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playKeyTap();
+            closeAllNavModals();
+            setAppState('adaptive_session');
+          }}
+          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
+            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-105 font-bold' : ''
+          }`}
+          aria-label="Return to Main Climb Session"
+          title="Main Mountain Climb"
+        >
+          <Mountain className="w-5 h-5 text-emerald-700 stroke-[2.5]" />
+          <span className="text-xs font-black tracking-wide truncate">Climb</span>
+        </button>
 
-          {/* 1. Shop Button: Warm Orange */}
-          <button
-            type="button"
-            onClick={() => {
-              closeAllNavModals('workshop');
-              handleOpenWorkshop();
-            }}
-            className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-orange-100 via-orange-50 to-orange-100 text-orange-950 border-2 border-orange-400 rounded-xl hover:from-orange-200 hover:to-orange-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-              isWorkshopOpen && !showSettingsMenu ? 'ring-2 ring-orange-500 scale-105 font-bold' : ''
-            }`}
-            aria-label="Open Kibo's Corner"
-            title="Kibo's Workshop & Shop"
-          >
-            <ShoppingBag className="w-5 h-5 text-orange-600 stroke-[2.5]" />
-            <span className="text-xs font-black tracking-wide">Shop</span>
-          </button>
+        {/* 1. Shop Button: Warm Orange */}
+        <button
+          type="button"
+          onClick={() => {
+            closeAllNavModals('workshop');
+            handleOpenWorkshop();
+          }}
+          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-orange-100 via-orange-50 to-orange-100 text-orange-950 border-2 border-orange-400 rounded-xl hover:from-orange-200 hover:to-orange-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
+            isWorkshopOpen ? 'ring-2 ring-orange-500 scale-105 font-bold' : ''
+          }`}
+          aria-label="Open Kibo's Shop"
+          title="Kibo's Workshop & Shop"
+        >
+          <ShoppingBag className="w-5 h-5 text-orange-600 stroke-[2.5]" />
+          <span className="text-xs font-black tracking-wide truncate">Shop</span>
+        </button>
 
-          {/* 2. Badges Button: Golden Yellow */}
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              closeAllNavModals('badges');
-              setShowBadgesModal(true);
-            }}
-            className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-              showBadgesModal && !showSettingsMenu ? 'ring-2 ring-yellow-500 scale-105 font-bold' : ''
-            }`}
-            title="View Badges"
-          >
-            <Award className="w-5 h-5 text-yellow-600 stroke-[2.5]" />
-            <span className="text-xs font-black tracking-wide">Badges</span>
-          </button>
+        {/* 2. Badges Button: Golden Yellow */}
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playKeyTap();
+            closeAllNavModals('badges');
+            setShowBadgesModal(true);
+          }}
+          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
+            showBadgesModal ? 'ring-2 ring-yellow-500 scale-105 font-bold' : ''
+          }`}
+          title="View Badges"
+        >
+          <Award className="w-5 h-5 text-yellow-600 stroke-[2.5]" />
+          <span className="text-xs font-black tracking-wide truncate">Badges</span>
+        </button>
 
-          {/* 3. Leaderboard Button: Sapphire Blue */}
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              closeAllNavModals();
-              setAppState('leaderboard');
-            }}
-            className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] relative ${
-              !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && !showSettingsMenu && appState === 'leaderboard' ? 'ring-2 ring-indigo-500 scale-105 font-bold' : ''
-            }`}
-            aria-label="Leaderboard"
-            title="Leaderboard"
-          >
-            <div className="relative">
-              <Trophy className={`w-5 h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && !showSettingsMenu && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
-              {pendingFriendRequestsCount > 0 && (
-                <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
-                  {pendingFriendRequestsCount}
-                </span>
-              )}
-            </div>
-            <span className="text-xs font-black tracking-wide">Rank</span>
-          </button>
-
-          {/* 4. Settings Dropdown Menu Wrapper */}
-          <div className="relative" ref={settingsMenuRef}>
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setShowSettingsMenu(!showSettingsMenu);
-              }}
-              className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] ${
-                !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && !showSettingsMenu && (appState === 'settings' || appState === 'privacy' || appState === 'terms') ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
-              } ${showSettingsMenu ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''}`}
-              aria-label="Settings Menu"
-              title="Settings Menu"
-            >
-              <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
-              <span className="text-xs font-black tracking-wide">Menu</span>
-            </button>
+        {/* 3. Leaderboard Button: Sapphire Blue */}
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playKeyTap();
+            closeAllNavModals();
+            setAppState('leaderboard');
+          }}
+          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] relative ${
+            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'ring-2 ring-indigo-500 scale-105 font-bold' : ''
+          }`}
+          aria-label="Leaderboard"
+          title="Leaderboard"
+        >
+          <div className="relative">
+            <Trophy className={`w-5 h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
+            {pendingFriendRequestsCount > 0 && (
+              <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
+                {pendingFriendRequestsCount}
+              </span>
+            )}
           </div>
+          <span className="text-xs font-black tracking-wide truncate">Rank</span>
+        </button>
 
-          {showSettingsMenu && (
-            <div ref={settingsRollupRef} className="absolute bottom-full left-0 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 px-2 py-2 sm:py-3 flex items-center justify-around shadow-lg origin-bottom animate-in fade-in slide-in-from-bottom-2 gap-1 sm:gap-2 z-50">
-              <button
-                type="button"
-                onClick={() => {
-                  soundFx.playKeyTap();
-                  setProfileSwitcherOrigin({
-                    appState,
-                    showBadgesModal,
-                    isWorkshopOpen,
-                    showParentDashboard
-                  });
-                  setShowSettingsMenu(false);
-                  closeAllNavModals('profile');
-                  setShowManualProfileSwitcher(true);
-                }}
-                className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-sky-100 via-blue-50 to-sky-100 text-sky-950 border-2 border-sky-400 rounded-xl hover:from-sky-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
-              >
-                <Users className="w-5 h-5 text-sky-700 stroke-[2.5]" />
-                <span className="text-xs font-black tracking-wide">Profile</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  soundFx.playKeyTap();
-                  setProfileSwitcherOrigin({
-                    appState,
-                    showBadgesModal,
-                    isWorkshopOpen,
-                    showParentDashboard
-                  });
-                  setShowSettingsMenu(false);
-                  closeAllNavModals('parents');
-                  setPinGateSource('settings_menu');
-                  setShowPinGateModal(true);
-                }}
-                className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
-              >
-                <Lock className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-                <span className="text-xs font-black tracking-wide">Parent</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  soundFx.playKeyTap();
-                  setShowSettingsMenu(false);
-                  closeAllNavModals();
-                  setAppState('settings');
-                }}
-                className="flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer min-w-[3.75rem] flex-1"
-              >
-                <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
-                <span className="text-xs font-black tracking-wide">Settings</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </footer>
-    </>
+        {/* 4. Settings Button: Slate Gray (Direct 1-Tap) */}
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playKeyTap();
+            closeAllNavModals();
+            setAppState('settings');
+          }}
+          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
+            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && (appState === 'settings' || appState === 'privacy' || appState === 'terms') ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
+          }`}
+          aria-label="Settings"
+          title="Settings"
+        >
+          <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+          <span className="text-xs font-black tracking-wide truncate">Settings</span>
+        </button>
+      </div>
+    </footer>
   );
 
   return (
@@ -1368,161 +1285,227 @@ export default function App() {
       <SubjectWallpaper activeSubject={activeSubject} />
       {/* Sticky Top HUD Header Bar */}
       <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between shadow-xs shrink-0 gap-1.5">
-        {/* Brand Logo & Stats */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0 w-full justify-between">
-          {/* 1. Brand Button: Warm Amber / Orange & Subject Selector */}
-          <div className="relative" ref={subjectSelectorRef}>
+        {/* Brand Logo, User Profile & Stats */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 w-full justify-between max-w-4xl mx-auto">
+          {/* 1. Active Profile Username / Avatar Dropdown (Top Left) */}
+          <div className="relative shrink-0" ref={profileDropdownRef}>
             <button
               type="button"
               onClick={() => {
                 soundFx.playKeyTap();
-                setShowSubjectSelector(!showSubjectSelector);
+                setShowProfileDropdown(!showProfileDropdown);
               }}
-              className={`flex items-center gap-1.5 font-black text-xs sm:text-sm px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer border-2 ${
-                activeSubject === 'words'
-                  ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 hover:border-indigo-200'
-                  : activeSubject === 'world'
-                  ? 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 hover:border-teal-200'
-                  : 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 hover:border-amber-400'
-              }`}
-              title="Subject Selector"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 text-white border-2 border-sky-300 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-2xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer group"
+              title="Climber Profile & Switcher"
+              aria-expanded={showProfileDropdown}
             >
-              <span className="text-sm sm:text-base leading-none select-none drop-shadow-2xs">
-                {activeSubject === 'words' ? '📚' : activeSubject === 'world' ? '🌍' : '🔢'}
+              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-xs font-black shrink-0">
+                👤
+              </div>
+              <span className="max-w-[70px] sm:max-w-[110px] truncate tracking-tight font-black">
+                {activeProfile?.username || activeProfile?.name || 'Climber'}
               </span>
-              <span className="tracking-tight font-black">{activeSubject === 'math' ? 'Kibo Math' : activeSubject === 'words' ? 'Kibo Words' : 'Kibo World'}</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSubjectSelector ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3.5 h-3.5 text-white/80 group-hover:text-white transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''}`} />
             </button>
 
-            {showSubjectSelector && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-white border-2 border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden flex flex-col">
-                <button
-                  onClick={() => handleSubjectChange('math')}
-                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 border border-amber-300 flex items-center justify-center shrink-0">
-                    <span className="text-lg">🔢</span>
+            {showProfileDropdown && (
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-150">
+                {/* Current Active Profile Card */}
+                <div className="p-3 bg-gradient-to-br from-slate-50 to-sky-50/50 border-b border-slate-200">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-lg font-black shadow-xs border border-white shrink-0">
+                      {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-black text-slate-800 truncate leading-tight">
+                        {activeProfile?.username || activeProfile?.name || 'Kibo Climber'}
+                      </span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[11px] font-bold text-slate-500 bg-white border border-slate-200 px-1.5 py-0.2 rounded-md">
+                          {activeProfile?.gradeLevel || 'Grade 1–2'}
+                        </span>
+                        <span className="text-[11px] font-black text-amber-600 flex items-center gap-0.5">
+                          <Flame className="w-3 h-3 fill-amber-500 text-amber-500 inline" />
+                          {streak}d
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-800 leading-tight">Kibo Math</span>
-                    <span className={`text-xs font-bold ${activeSubject === 'math' ? 'text-emerald-600' : 'text-slate-400'}`}>{activeSubject === 'math' ? 'Active' : 'Switch'}</span>
-                  </div>
-                </button>
+                </div>
 
-                <div className="h-px bg-slate-100 w-full" />
+                {/* Switch Profiles List */}
+                <div className="p-2 flex flex-col gap-1 max-h-48 overflow-y-auto">
+                  <div className="px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    Switch Climber
+                  </div>
+                  {allProfiles
+                    .filter((p) => p.id !== activeProfileId)
+                    .map((profile) => {
+                      const pStreak = profile.userData?.streak ?? 0;
+                      return (
+                        <button
+                          key={profile.id}
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            storageService.setActiveProfileId(profile.id);
+                            const targetSubject = profile?.lastActiveSubject || storageService.getLastActiveSubject(profile.id) || 'math';
+                            storageService.setLastActiveSubject(targetSubject, profile.id);
+                            setActiveProfileId(profile.id);
+                            setActiveSubject(targetSubject);
+                            syncAppStateWithStorage(targetSubject);
+                            setShowProfileDropdown(false);
+                            setAppState('adaptive_session');
+                          }}
+                          className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-slate-100 active:bg-slate-200 transition-colors text-left cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black shrink-0 group-hover:bg-amber-100 group-hover:text-amber-800 transition-colors">
+                              {(profile.username || profile.name || 'C')[0].toUpperCase()}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-xs font-black text-slate-700 truncate group-hover:text-slate-900">
+                                {profile.username || profile.name}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-bold">
+                                {profile.gradeLevel || 'Grade 1–2'}
+                              </span>
+                            </div>
+                          </div>
+                          {pStreak > 0 && (
+                            <span className="text-[10px] font-black text-amber-600 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded-md shrink-0">
+                              🔥 {pStreak}d
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
 
-                <button
-                  onClick={() => handleSubjectChange('words')}
-                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 border border-indigo-300 flex items-center justify-center shrink-0">
-                    <span className="text-lg">📚</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-800 leading-tight">Kibo Words</span>
-                    <span className={`text-xs font-bold ${activeSubject === 'words' ? 'text-emerald-600' : 'text-slate-400'}`}>{activeSubject === 'words' ? 'Active' : 'Switch'}</span>
-                  </div>
-                </button>
-
-                <div className="h-px bg-slate-100 w-full" />
-
-                                <button
-                  onClick={() => handleSubjectChange('world')}
-                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left cursor-pointer"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-100 to-emerald-200 border border-teal-300 flex items-center justify-center shrink-0">
-                    <span className="text-lg">🌍</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-800 leading-tight">Kibo World</span>
-                    <span className={`text-xs font-bold ${activeSubject === 'world' ? 'text-emerald-600' : 'text-slate-400'}`}>{activeSubject === 'world' ? 'Active' : 'Switch'}</span>
-                  </div>
-                </button>
-
-                <div className="h-px bg-slate-100 w-full" />
-
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 opacity-75 cursor-not-allowed">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-green-200 border border-emerald-300 flex items-center justify-center shrink-0 opacity-50 grayscale">
-                    <span className="text-lg">💰</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-400 leading-tight">Kibo Money</span>
-                    <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Coming Soon</span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowProfileDropdown(false);
+                      setProfileSwitcherOrigin({ appState });
+                      setShowManualProfileSwitcher(true);
+                    }}
+                    className="flex items-center gap-2 px-2.5 py-2 rounded-xl hover:bg-amber-50 text-amber-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800 shrink-0">
+                      <Users className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </div>
+                    <span>Manage Profiles</span>
+                  </button>
                 </div>
 
                 <div className="h-px bg-slate-100 w-full" />
 
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 opacity-75 cursor-not-allowed">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-100 to-rose-200 border border-pink-300 flex items-center justify-center shrink-0 opacity-50 grayscale">
-                    <span className="text-lg">🎵</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-400 leading-tight">Kibo Music</span>
-                    <span className="text-xs font-bold text-pink-500 uppercase tracking-wider">Coming Soon</span>
-                  </div>
+                {/* Parent Zone & Settings Quick Links */}
+                <div className="p-2 bg-slate-50/50 flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowProfileDropdown(false);
+                      setPinGateSource('profile_dropdown');
+                      setShowPinGateModal(true);
+                    }}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-purple-50 text-purple-800 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                  >
+                    <Lock className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
+                    <span>Parent Zone</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowProfileDropdown(false);
+                      closeAllNavModals();
+                      setAppState('settings');
+                    }}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-slate-200/70 text-slate-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                  >
+                    <Settings className="w-3.5 h-3.5 text-slate-600 stroke-[2.5]" />
+                    <span>Settings</span>
+                  </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* 2. Streak Badge Button: Fiery Red Gradient with White Shield Background Badge */}
-          <button
-            type="button"
-            className="flex items-center gap-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 text-white border-2 border-rose-300 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer"
-            title={(consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0 ? "Daily Streak & Shield Active! 🛡️" : `Daily Streak: ${streak} ${streak === 1 ? 'day' : 'days'}`}
-            onClick={() => {
-              soundFx.playKeyTap();
-              setShowBadgesModal(true);
-            }}
-          >
-            <RollingNumberTicker
-              value={streak}
-              suffix={` ${streak === 1 ? 'day' : 'days'}`}
-              profileId={activeProfileId}
-              subjectId={activeSubject}
-              icon={<Flame className="w-4 h-4 text-amber-300 fill-amber-300 shrink-0" />}
-            />
-            {((consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0) && (
-              <span className="inline-flex items-center justify-center bg-white/95 rounded-full w-4 h-4 text-xs ml-0.5 animate-pulse shadow-2xs border border-rose-200 leading-none shrink-0" title="Kibo Shield Active">
-                🛡️
-              </span>
-            )}
-          </button>
-
-          {/* 3. Sparks Counter Button: Spark Gold / Yellow */}
+          {/* 2. Brand Anchor: Logo + Name (Top Center) */}
           <button
             type="button"
             onClick={() => {
               soundFx.playKeyTap();
-              handleOpenWorkshop('adaptive_session');
+              closeAllNavModals();
+              setAppState('adaptive_session');
             }}
-            className="flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all relative shrink-0 overflow-visible cursor-pointer"
-            title="Open Kibo Workshop"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-full hover:bg-slate-100/80 active:scale-95 transition-all cursor-pointer group select-none shrink-0"
+            title="Kibo Climb Home"
           >
-            <RollingNumberTicker
-              value={sparks}
-              icon={<Zap className="w-4 h-4 text-amber-800 fill-amber-500 stroke-[2.5]" />}
-              profileId={activeProfileId}
-              subjectId={activeSubject}
-            />
+            <span className="text-base sm:text-lg group-hover:scale-110 transition-transform leading-none">🏔️</span>
+            <span className="font-black text-xs sm:text-sm tracking-tight text-slate-800 group-hover:text-amber-600 transition-colors uppercase">
+              {BRAND_CONFIG.rootBrand}
+            </span>
           </button>
 
-          <div className="flex items-center gap-1 sm:gap-2">
-            {/* Friends Button: Sky / Cyan */}
+          {/* 3. Right HUD Stats & Shortcuts */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Streak Badge Button */}
+            <button
+              type="button"
+              className="flex items-center gap-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 text-white border-2 border-rose-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer"
+              title={(consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0 ? "Daily Streak & Shield Active! 🛡️" : `Daily Streak: ${streak} ${streak === 1 ? 'day' : 'days'}`}
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowBadgesModal(true);
+              }}
+            >
+              <RollingNumberTicker
+                value={streak}
+                suffix={` ${streak === 1 ? 'd' : 'd'}`}
+                profileId={activeProfileId}
+                subjectId={activeSubject}
+                icon={<Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 fill-amber-300 shrink-0" />}
+              />
+              {((consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0) && (
+                <span className="inline-flex items-center justify-center bg-white/95 rounded-full w-3.5 h-3.5 text-[10px] ml-0.5 animate-pulse shadow-2xs border border-rose-200 leading-none shrink-0" title="Kibo Shield Active">
+                  🛡️
+                </span>
+              )}
+            </button>
+
+            {/* Sparks Counter Button */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                handleOpenWorkshop('adaptive_session');
+              }}
+              className="flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all relative shrink-0 overflow-visible cursor-pointer"
+              title="Open Kibo Workshop"
+            >
+              <RollingNumberTicker
+                value={sparks}
+                icon={<Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-800 fill-amber-500 stroke-[2.5]" />}
+                profileId={activeProfileId}
+                subjectId={activeSubject}
+              />
+            </button>
+
+            {/* Friends Button */}
             <button
               type="button"
               onClick={() => {
                 soundFx.playKeyTap();
                 setShowFriendsModal(true);
               }}
-              className="flex items-center gap-1 bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 text-white border-2 border-sky-300 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer relative"
+              className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 text-white border-2 border-sky-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer relative"
               title={`Friends (${friendsCount})${pendingFriendRequestsCount > 0 ? ` • ${pendingFriendRequestsCount} pending request${pendingFriendRequestsCount > 1 ? 's' : ''}` : ''}`}
             >
-              <div className="relative flex items-center justify-center">
-                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
-              </div>
-              <span className="hidden sm:inline">Friends</span>
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
               {friendsCount > 0 && (
                 <span className="inline-flex items-center justify-center bg-white text-sky-700 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-2xs leading-tight">
                   {friendsCount}
@@ -1538,28 +1521,7 @@ export default function App() {
               )}
             </button>
 
-            {/* Share Button: Indigo */}
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                const currentUser = authService.getAuthState();
-                if (!currentUser || currentUser.isAnonymous || !currentUser.uid) {
-                  // User is anonymous, prompt them to link
-                  setShowAccountLinkModal(true);
-                  setLinkModalMilestone("Link to Share & Earn");
-                } else {
-                  // User is registered, they can share
-                  setShowShareModal(true);
-                }
-              }}
-              className="flex items-center gap-1 bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 text-white border-2 border-indigo-400 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
-              title="Share & Earn Rewards"
-            >
-              <span className="text-sm">🤝</span>
-              <span className="hidden sm:inline">Share</span>
-            </button>
-            {/* 4. Competence Rank Button: Royal Purple / Violet */}
+            {/* Competence Rank Button */}
             {(() => {
               const rankTitle = getCompetenceRankTier(liveCompetenceRating, activeSubject);
               return (
@@ -1569,14 +1531,14 @@ export default function App() {
                     soundFx.playKeyTap();
                     setShowBadgesModal(true);
                   }}
-                  className="flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
+                  className="hidden md:flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
                   title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
                 >
                   <RollingNumberTicker
                     value={liveCompetenceRating}
                     profileId={activeProfileId}
                     subjectId={activeSubject}
-                    icon={<Star className="w-4 h-4 text-purple-700 fill-purple-300 stroke-[2]" />}
+                    icon={<Star className="w-3.5 h-3.5 text-purple-700 fill-purple-300 stroke-[2]" />}
                   />
                 </button>
               );
@@ -1586,7 +1548,70 @@ export default function App() {
       </header>
       <main className="w-full max-w-4xl mx-auto flex-1 flex flex-col p-1 sm:p-2 relative min-h-0 overflow-y-auto hide-scrollbar">
 
+      {/* In-Content Subject Selector Bar */}
+      {appState === 'adaptive_session' && (
+        <div className="w-full mb-2 sm:mb-3 flex items-center justify-between gap-2 px-1 shrink-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-0.5 w-full sm:w-auto">
+            {/* Kibo Math */}
+            <button
+              type="button"
+              onClick={() => handleSubjectChange('math')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
+                activeSubject === 'math'
+                  ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 ring-2 ring-amber-400/50 scale-105'
+                  : 'bg-white/90 hover:bg-amber-50 text-slate-700 border-slate-200 hover:border-amber-200'
+              }`}
+              title="Switch to Kibo Math"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">🔢</span>
+              <span className="tracking-tight">Math</span>
+              {activeSubject === 'math' && <span className="w-1.5 h-1.5 rounded-full bg-amber-950 animate-pulse" />}
+            </button>
 
+            {/* Kibo Words */}
+            <button
+              type="button"
+              onClick={() => handleSubjectChange('words')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
+                activeSubject === 'words'
+                  ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 ring-2 ring-indigo-400/50 scale-105'
+                  : 'bg-white/90 hover:bg-indigo-50 text-slate-700 border-slate-200 hover:border-indigo-200'
+              }`}
+              title="Switch to Kibo Words"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">📚</span>
+              <span className="tracking-tight">Words</span>
+              {activeSubject === 'words' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+            </button>
+
+            {/* Kibo World */}
+            <button
+              type="button"
+              onClick={() => handleSubjectChange('world')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
+                activeSubject === 'world'
+                  ? 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 ring-2 ring-teal-400/50 scale-105'
+                  : 'bg-white/90 hover:bg-teal-50 text-slate-700 border-slate-200 hover:border-teal-200'
+              }`}
+              title="Switch to Kibo World"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">🌍</span>
+              <span className="tracking-tight">World</span>
+              {activeSubject === 'world' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+            </button>
+
+            {/* Coming Soon Teasers (Money & Music) */}
+            <div className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100/70 border border-slate-200 text-slate-400 text-xs font-bold shrink-0 select-none opacity-60">
+              <span>💰</span>
+              <span>Money</span>
+            </div>
+            <div className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100/70 border border-slate-200 text-slate-400 text-xs font-bold shrink-0 select-none opacity-60">
+              <span>🎵</span>
+              <span>Music</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SETTINGS SCREEN */}
       {appState === 'settings' && (
@@ -1596,6 +1621,14 @@ export default function App() {
           renderFooter={renderNavigationFooter}
           onNavigate={handleNavigateTo}
           onOpenFeedback={() => setShowFeedbackModal(true)}
+          onOpenParentZone={() => {
+            setPinGateSource('settings_screen');
+            setShowPinGateModal(true);
+          }}
+          onSwitchProfile={() => {
+            setProfileSwitcherOrigin({ appState: 'settings' });
+            setShowManualProfileSwitcher(true);
+          }}
         />
       )}
 
