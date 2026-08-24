@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Award, Lock, Sparkles, ArrowLeft, CheckCircle2, Trophy, Flame, Zap, Target, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
+import { SUBJECTS_CONFIG } from '../config/subjects';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 
@@ -111,20 +112,15 @@ export default function BadgesModal({
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
       <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         {/* Compact rating + progress bar */}
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-3xl p-4 space-y-2 shrink-0 text-left">
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-3xl p-4 space-y-3 shrink-0 text-left">
           <div className="flex items-center justify-between text-xs sm:text-sm font-black text-amber-950">
             <span className="flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-amber-600 fill-amber-300" />
               Trail Badges
             </span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
-                {getCompetenceRankTier(userRating, activeSubject)} · {userRating} pts
-              </span>
-              <span className="bg-amber-200 px-3 py-1 rounded-full border border-amber-300">
-                {progressPct}% unlocked
-              </span>
-            </div>
+            <span className="bg-amber-200 px-3 py-1 rounded-full border border-amber-300">
+              {progressPct}% unlocked
+            </span>
           </div>
 
           <div className="w-full bg-amber-200/60 h-3.5 rounded-full overflow-hidden border border-amber-300">
@@ -132,6 +128,34 @@ export default function BadgesModal({
               className="bg-gradient-to-r from-amber-400 to-yellow-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
+          </div>
+
+          {/* Multi-Subject Competence Ranks */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            {Object.keys(SUBJECTS_CONFIG).map((subKey) => {
+              const cfg = SUBJECTS_CONFIG[subKey];
+              const subData = storageService.getUserData(subKey);
+              const subRating = subData.adaptiveCompetenceRating || subData.competenceRank || 1000;
+              const rankName = getCompetenceRankTier(subRating, subKey);
+              const isCurrent = subKey === activeSubject;
+
+              return (
+                <span
+                  key={subKey}
+                  className={`inline-flex items-center gap-1 text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-full border transition-all ${
+                    isCurrent
+                      ? 'bg-indigo-100 text-indigo-950 border-indigo-300 shadow-2xs ring-1 ring-indigo-400/50'
+                      : 'bg-white/80 text-slate-700 border-amber-200/80'
+                  }`}
+                  title={`${cfg.name} Competence Rank: ${subRating} pts (${rankName})`}
+                >
+                  <span>{cfg.icon}</span>
+                  <span className="text-slate-900 font-extrabold">{cfg.name}:</span>
+                  <span className={isCurrent ? 'text-indigo-800' : 'text-slate-600'}>{rankName}</span>
+                  <span className="text-[10px] sm:text-[11px] opacity-75 font-bold">({subRating})</span>
+                </span>
+              );
+            })}
           </div>
         </div>
 
