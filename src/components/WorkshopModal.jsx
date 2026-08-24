@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft, User, Ticket, Gift, Clock, AlertCircle } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
-import { ITEM_CATEGORIES, WORKSHOP_ITEMS, SPARKS_PACKAGES, RARITY_TIERS, SEASONAL_EVENTS, getAvailableSeasonalEvents, isSeasonalEventAvailableOrUpcoming, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus, isItemVisibleInShop, getItemSalePrice } from '../utils/itemsCatalog';
+import { ITEM_CATEGORIES, WORKSHOP_ITEMS, SPARKS_PACKAGES, RARITY_TIERS, SEASONAL_EVENTS, getAvailableSeasonalEvents, getActiveHolidayOrSeasonalSaleEvent, isSeasonalEventAvailableOrUpcoming, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus, isItemVisibleInShop, getItemSalePrice } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
@@ -82,6 +82,7 @@ export default function WorkshopModal({
 
   const categoryScrollRef = useRef(null);
   const seasonalEventScrollRef = useRef(null);
+  const itemsContainerRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
@@ -111,6 +112,9 @@ export default function WorkshopModal({
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
       setPreviewSlots(INITIAL_PREVIEW_SLOTS);
+      if (itemsContainerRef.current) {
+        itemsContainerRef.current.scrollTop = 0;
+      }
       setTimeout(checkScroll, 100);
     }
 
@@ -119,6 +123,13 @@ export default function WorkshopModal({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose, showPromoModal]);
+
+  // Scroll to top of item list whenever category or seasonal filter changes
+  useEffect(() => {
+    if (itemsContainerRef.current) {
+      itemsContainerRef.current.scrollTop = 0;
+    }
+  }, [activeCategory, seasonalEventFilter]);
 
   const handleScrollLeft = () => {
     soundFx.playKeyTap();
@@ -135,7 +146,7 @@ export default function WorkshopModal({
   };
 
   const handleCategoryWheel = (e) => {
-    if (categoryScrollRef.current && (e.deltaY !== 0 || e.deltaX !== 0)) {
+    if (categoryScrollRef.current && (e.deltaX !== 0 || e.shiftKey)) {
       const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
       categoryScrollRef.current.scrollLeft += delta;
       checkScroll();
@@ -363,32 +374,31 @@ export default function WorkshopModal({
           </div>
         </div>
       </header>
-
-      {/* PINNED TOP STAGE & CATEGORY FILTERS */}
-      <div className="w-full max-w-4xl mx-auto p-4 sm:px-6 sm:pt-4 sm:pb-3 shrink-0 space-y-3 bg-slate-50 border-b border-slate-200 shadow-xs z-10">
+      {/* STICKY TOP STAGE, SALE BANNER & CATEGORY FILTERS */}
+      <div className="w-full max-w-4xl mx-auto p-3 sm:px-6 sm:pt-4 sm:pb-3 shrink-0 space-y-2.5 bg-slate-50 border-b border-slate-200 shadow-xs z-10">
         {/* Live Try-On Preview Mascot Stage Header */}
-        <div className="bg-white border-2 border-slate-200 rounded-2xl p-4 sm:p-5 flex items-center justify-center gap-5 sm:gap-8 shadow-sm relative">
-          {/* Locked Fixed Width Mascot Anchor Box */}
-          <div className="w-36 h-36 sm:w-48 sm:h-48 shrink-0 flex items-center justify-center relative p-1 overflow-visible">
-            <Mascot mood="happy" equipped={stageEquippedItems} className="w-32 h-32 sm:w-44 sm:h-44" />
+        <div className="bg-white border-2 border-slate-200 rounded-2xl p-2.5 sm:p-4 flex items-center justify-center gap-3 sm:gap-6 shadow-sm relative">
+          {/* Locked Responsive Mascot Anchor Box */}
+          <div className="w-20 h-20 sm:w-28 sm:h-28 shrink-0 flex items-center justify-center relative p-1 overflow-visible">
+            <Mascot mood="happy" equipped={stageEquippedItems} className="w-18 h-18 sm:w-24 sm:h-24" />
           </div>
 
-          <div className="text-left space-y-2 flex-1 max-w-[240px] shrink-0">
+          <div className="text-left space-y-1 sm:space-y-1.5 flex-1 max-w-[260px] shrink-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               {hasUnownedPreview ? (
-                <span className="bg-purple-600 text-white font-black text-xs uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-sm">
-                  <Sparkles className="w-3 h-3 fill-amber-300 stroke-[2.5]" /> Preview Mode
+                <span className="bg-purple-600 text-white font-black text-[10px] sm:text-xs uppercase px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-sm">
+                  <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-amber-300 stroke-[2.5]" /> Preview Mode
                 </span>
               ) : (
-                <span className="bg-emerald-600 text-white font-black text-xs uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                  <ShieldCheck className="w-3 h-3 stroke-[2.5]" /> Active Look
+                <span className="bg-emerald-600 text-white font-black text-[10px] sm:text-xs uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                  <ShieldCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[2.5]" /> Active Look
                 </span>
               )}
 
               {hasActivePreview && (
                 <button
                   onClick={handleResetPreview}
-                  className="text-xs font-extrabold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition-all border border-slate-200"
+                  className="text-[10px] sm:text-xs font-extrabold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition-all border border-slate-200"
                 >
                   <RotateCcw className="w-2.5 h-2.5" /> Reset
                 </button>
@@ -403,14 +413,39 @@ export default function WorkshopModal({
           </div>
         </div>
 
-        {/* Holiday Sale Banner */}
-        {getAvailableSeasonalEvents(currentDate).length > 1 && (
-          <div className="bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-center shadow-inner relative z-10">
-            <p className="text-white font-black text-xs sm:text-sm tracking-wide">
-              🎄 HOLIDAY SALE! 25% OFF ALL ITEMS 🎄
-            </p>
-          </div>
-        )}
+        {/* Seasonal / Holiday Sale Banner */}
+        {(() => {
+          const activeSaleEvent = getActiveHolidayOrSeasonalSaleEvent(currentDate);
+          if (!activeSaleEvent) return null;
+
+          const isChristmasOrWinter = activeSaleEvent.id === 'holiday_season' || activeSaleEvent.id === 'winter';
+          const isSummer = activeSaleEvent.id === 'summer';
+          const isAutumnOrHalloween = activeSaleEvent.id === 'autumn' || activeSaleEvent.id === 'halloween' || activeSaleEvent.id === 'thanksgiving';
+          const isSpring = activeSaleEvent.id === 'spring' || activeSaleEvent.id === 'earth_day' || activeSaleEvent.id === 'st_patricks';
+
+          const gradientClass = isSummer
+            ? 'from-amber-500 via-orange-500 to-rose-500'
+            : isAutumnOrHalloween
+            ? 'from-amber-600 via-orange-600 to-amber-700'
+            : isSpring
+            ? 'from-emerald-500 via-teal-500 to-cyan-600'
+            : isChristmasOrWinter
+            ? 'from-rose-500 via-red-600 to-rose-700'
+            : 'from-purple-600 via-indigo-600 to-blue-600';
+
+          const eventName = activeSaleEvent.label || 'SEASONAL';
+
+          return (
+            <div className={`bg-gradient-to-r ${gradientClass} px-3 py-1.5 text-center shadow-inner rounded-xl relative z-10 shrink-0 animate-fade-in`}>
+              <p className="text-white font-black text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2">
+                <span>{eventName.toUpperCase()} SALE!</span>
+                <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-xs">
+                  25% OFF ALL ITEMS
+                </span>
+              </p>
+            </div>
+          );
+        })()}
 
         {/* Category Selector Tabs */}
         <div className="space-y-1">
@@ -460,8 +495,12 @@ export default function WorkshopModal({
       </div>
 
       {/* DEDICATED INDEPENDENT ITEM GRID SCROLL CONTAINER */}
-      <main className="flex-1 min-h-0 max-h-[48vh] sm:max-h-[52vh] overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-3 sm:p-5">
-        <div className="space-y-2.5 pb-6">
+      <main
+        ref={itemsContainerRef}
+        style={{ WebkitOverflowScrolling: 'touch' }}
+        className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-3 sm:p-5"
+      >
+        <div className="space-y-2.5 pb-20 sm:pb-12">
 
           {/* Dedicated Promo Redemption Card inside Promo Exclusives category */}
           {activeCategory === 'promo' && (
@@ -851,12 +890,15 @@ export default function WorkshopModal({
                             onClick={() => handleBuyClick(item)}
                             className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                           >
-                            <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                            Buy for {saleInfo.isSale && (
-                              <span className="line-through opacity-75 font-semibold mr-0.5">
+                            <Zap className="w-3.5 h-3.5 fill-yellow-300 text-amber-950 stroke-[1.5] drop-shadow-xs shrink-0" />
+                            <span>Buy for</span>
+                            {saleInfo.isSale && (
+                              <span className="line-through decoration-rose-300 decoration-2 text-amber-100 font-bold text-[11px] drop-shadow-xs select-none">
                                 {item.cost}
                               </span>
-                            )}{activeCost} ⚡
+                            )}
+                            <span className="font-black text-white">{activeCost}</span>
+                            <span className="text-yellow-200 font-black drop-shadow-xs">⚡</span>
                           </button>
                         ) : (
                           <button
@@ -915,12 +957,15 @@ export default function WorkshopModal({
                           onClick={() => handleBuyClick(item)}
                           className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                         >
-                          <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                          Buy for {saleInfo.isSale && (
-                            <span className="line-through opacity-75 font-semibold mr-0.5">
+                          <Zap className="w-3.5 h-3.5 fill-yellow-300 text-purple-950 stroke-[1.5] drop-shadow-xs shrink-0" />
+                          <span>Buy for</span>
+                          {saleInfo.isSale && (
+                            <span className="line-through decoration-rose-300 decoration-2 text-purple-200 font-bold text-[11px] drop-shadow-xs select-none">
                               {item.cost}
                             </span>
-                          )}{activeCost} ⚡
+                          )}
+                          <span className="font-black text-white">{activeCost}</span>
+                          <span className="text-yellow-300 font-black drop-shadow-xs">⚡</span>
                         </button>
                       ) : (
                         <button

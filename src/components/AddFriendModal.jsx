@@ -353,8 +353,10 @@ export default function AddFriendModal({
                           className="bg-white p-2.5 rounded-xl border border-slate-200 flex items-center justify-between gap-3 shadow-sm"
                         >
                           <div className="flex items-center gap-2.5 overflow-hidden">
-                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
-                              <Mascot mood="happy" state="idle" equipped={climber.equipped || []} size={36} />
+                            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden relative shadow-sm">
+                              <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
+                                <Mascot mood="happy" state="idle" equipped={climber.equipped || []} size={40} className="w-full h-full" />
+                              </div>
                             </div>
                             <div className="overflow-hidden">
                               <div className="font-extrabold text-sm text-slate-800 truncate">
@@ -430,8 +432,10 @@ export default function AddFriendModal({
                     {receivedRequests.map((req) => (
                       <div key={req.id} className="bg-indigo-50/50 p-2.5 rounded-xl border border-indigo-200 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 overflow-hidden">
-                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
-                            <Mascot mood="happy" state="idle" equipped={req.equipped || []} size={32} />
+                          <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden relative shadow-sm">
+                            <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
+                              <Mascot mood="happy" state="idle" equipped={req.equipped || []} size={36} className="w-full h-full" />
+                            </div>
                           </div>
                           <div className="overflow-hidden">
                             <div className="font-extrabold text-xs text-slate-800 truncate">
@@ -481,8 +485,10 @@ export default function AddFriendModal({
                     {sentRequests.map((req) => (
                       <div key={req.id} className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 overflow-hidden">
-                          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
-                            <Mascot mood="happy" state="idle" equipped={req.equipped || []} size={28} />
+                          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden relative shadow-sm">
+                            <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
+                              <Mascot mood="happy" state="idle" equipped={req.equipped || []} size={32} className="w-full h-full" />
+                            </div>
                           </div>
                           <div className="overflow-hidden">
                             <div className="font-extrabold text-xs text-slate-800 truncate">
@@ -541,8 +547,10 @@ export default function AddFriendModal({
                       className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between gap-3"
                     >
                       <div className="flex items-center gap-2.5 overflow-hidden">
-                        <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
-                          <Mascot mood="happy" state="idle" equipped={friend.equipped || []} size={32} />
+                        <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden relative shadow-sm">
+                          <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
+                            <Mascot mood="happy" state="idle" equipped={friend.equipped || []} size={40} className="w-full h-full" />
+                          </div>
                         </div>
                         <div className="overflow-hidden">
                           <div className="font-extrabold text-sm text-slate-800 truncate">

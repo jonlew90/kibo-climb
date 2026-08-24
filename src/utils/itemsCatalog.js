@@ -1581,6 +1581,25 @@ export const SEASONAL_EVENTS = [
 ];
 
 /**
+ * Checks whether a seasonal event is currently active (within start and end date).
+ * @param {string|object} eventOrId - The event object or event id
+ * @param {Date|string|number} [currentDate=new Date()]
+ * @returns {boolean}
+ */
+export function isSeasonalEventActive(eventOrId, currentDate = new Date()) {
+  const eventId = typeof eventOrId === 'string' ? eventOrId : eventOrId?.id;
+  if (!eventId || eventId === 'all_active') return true;
+
+  const eventItems = WORKSHOP_ITEMS.filter((item) => item.category === 'seasonal' && item.seasonId === eventId);
+  if (eventItems.length === 0) return false;
+
+  return eventItems.some((item) => {
+    const availability = getItemAvailabilityStatus(item, currentDate);
+    return availability.status === 'active';
+  });
+}
+
+/**
  * Checks whether a seasonal event is currently active or upcoming within its preview window.
  * @param {string|object} eventOrId - The event object or event id
  * @param {Date|string|number} [currentDate=new Date()]
@@ -1610,6 +1629,40 @@ export function getAvailableSeasonalEvents(currentDate = new Date()) {
     if (event.id === 'all_active') return true;
     return isSeasonalEventAvailableOrUpcoming(event, currentDate);
   });
+}
+
+/**
+ * Returns the list of seasonal event filters that are currently actively running (not just upcoming).
+ * @param {Date|string|number} [currentDate=new Date()]
+ * @returns {Array<object>}
+ */
+export function getActiveSeasonalEvents(currentDate = new Date()) {
+  return SEASONAL_EVENTS.filter((event) => {
+    if (event.id === 'all_active') return false;
+    return isSeasonalEventActive(event, currentDate);
+  });
+}
+
+/**
+ * Returns the primary active seasonal/holiday event for store sales & banner styling, if any.
+ * Prioritizes active holidays (shorter special events) over broad quarterly seasons.
+ * @param {Date|string|number} [currentDate=new Date()]
+ * @returns {object|null}
+ */
+export function getActiveHolidayOrSeasonalSaleEvent(currentDate = new Date()) {
+  const activeEvents = getActiveSeasonalEvents(currentDate);
+  if (activeEvents.length === 0) return null;
+
+  // Check if any active event is a specific holiday event (e.g. holiday_season, halloween, 4th of july, etc.)
+  const holidayEvent = activeEvents.find((event) => {
+    const sampleItem = WORKSHOP_ITEMS.find((item) => item.category === 'seasonal' && item.seasonId === event.id);
+    return sampleItem?.seasonType === 'holiday';
+  });
+
+  if (holidayEvent) return holidayEvent;
+
+  // Otherwise return the active general season (e.g., Summer, Autumn, etc.)
+  return activeEvents[0];
 }
 
 /**
@@ -1705,9 +1758,9 @@ export function getItemSalePrice(item, currentDate = new Date()) {
     return { isSale: false, originalPrice: baseCost, salePrice: baseCost };
   }
 
-  // 1. Check for active holiday season
-  const activeEvents = getAvailableSeasonalEvents(currentDate);
-  const isHolidayActive = activeEvents.length > 1; // 'all_active' is always at index 0
+  // 1. Check for active holiday/seasonal event
+  const activeSaleEvent = getActiveHolidayOrSeasonalSaleEvent(currentDate);
+  const isHolidayActive = !!activeSaleEvent;
 
   let bestDiscount = isHolidayActive ? 25 : 0;
   let saleType = isHolidayActive ? 'holiday' : null;
