@@ -63,7 +63,8 @@ export default function WorkshopModal({
     fx: null,
     skins: null,
     effects: null,
-    background: null
+    background: null,
+    borders: null
   };
 
   const [activeCategory, setActiveCategory] = useState('powerups');
@@ -219,7 +220,7 @@ export default function WorkshopModal({
   // Compute active stage items (merges saved equipped items with active preview slots)
   const computeStageEquipped = () => {
     const stageItems = [];
-    const SLOTS = ['headwear', 'gear', 'outfits', 'pets', 'fx', 'skins', 'effects', 'background'];
+    const SLOTS = ['headwear', 'gear', 'outfits', 'pets', 'fx', 'skins', 'effects', 'background', 'borders'];
 
     SLOTS.forEach((slot) => {
       if (previewSlots[slot] !== null && previewSlots[slot] !== undefined) {
