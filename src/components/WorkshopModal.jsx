@@ -52,6 +52,7 @@ export default function WorkshopModal({
   onRedeemPromoCode,
   allowRealMoneyPurchases,
   onBuySparksPackage,
+  onOpenParentZone,
   onRequestAccountLink,
   renderFooter
 }) {
@@ -408,8 +409,10 @@ export default function WorkshopModal({
 
             <p className="text-xs sm:text-sm font-bold text-slate-600 leading-snug">
               {hasUnownedPreview
-                ? 'Tap any item to try it on Kibo! Buy items below to unlock.'
-                : 'Customize Kibo with outfits, gear, pets, and trail effects!'}
+                ? 'Previewing items on Kibo! Buy items below to unlock.'
+                : (activeCategory === 'powerups' || activeCategory === 'get_sparks')
+                ? 'Equip items, booster power-ups, and customize your look!'
+                : '✨ Tap any item below to try it on Kibo!'}
             </p>
           </div>
         </div>
@@ -571,49 +574,67 @@ export default function WorkshopModal({
           )}
 
           {/* Kibo Club Subscription Banners */}
-          {allowRealMoneyPurchases && (
-            <div className="flex flex-col gap-3 mb-4">
-              <div
-                onClick={() => onBuySparksPackage({ id: 'kibo_club_sub', name: 'Kibo Club Individual', realMoneyPrice: '$4.99/mo', price: '$4.99/mo', isSubscription: true, isFamilyPlan: false, description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!' })}
-                className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 border-2 border-purple-400 rounded-2xl p-3 flex flex-row items-center justify-between shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/50 shrink-0">
-                    <Sparkles className="w-6 h-6 text-white animate-pulse" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club (Individual)</h3>
-                    <p className="text-xs font-bold text-indigo-100 leading-snug">
-                      1.25x Sparks Forever & More • $4.99/mo
-                    </p>
-                  </div>
+          <div className="flex flex-col gap-3 mb-4">
+            <div
+              onClick={() => {
+                if (allowRealMoneyPurchases) {
+                  onBuySparksPackage({ id: 'kibo_club_sub', name: 'Kibo Club Individual', realMoneyPrice: '$4.99/mo', price: '$4.99/mo', isSubscription: true, isFamilyPlan: false, description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!' });
+                } else if (onOpenParentZone) {
+                  onOpenParentZone();
+                }
+              }}
+              className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 border-2 border-purple-400 rounded-2xl p-3 flex flex-row items-center justify-between shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/50 shrink-0">
+                  <Sparkles className="w-6 h-6 text-white animate-pulse" />
                 </div>
-                <button className="bg-white text-indigo-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap shrink-0 ml-2">
-                  Join
-                </button>
-              </div>
-
-              <div
-                onClick={() => onBuySparksPackage({ id: 'kibo_club_family', name: 'Kibo Club Family', realMoneyPrice: '$7.99/mo', price: '$7.99/mo', isSubscription: true, isFamilyPlan: true, description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.' })}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-600 border-2 border-amber-400 rounded-2xl p-3 flex flex-row items-center justify-between shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/50 shrink-0">
-                    <Sparkles className="w-6 h-6 text-white animate-pulse" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club (Family)</h3>
-                    <p className="text-xs font-bold text-orange-100 leading-snug">
-                      Benefits for ALL profiles • $7.99/mo
-                    </p>
-                  </div>
+                <div className="text-left">
+                  <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club (Individual)</h3>
+                  <p className="text-xs font-bold text-indigo-100 leading-snug">
+                    1.25x Sparks Forever & More • $4.99/mo
+                  </p>
                 </div>
-                <button className="bg-white text-orange-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap shrink-0 ml-2">
-                  Join
-                </button>
               </div>
+              <button
+                type="button"
+                className="bg-white text-indigo-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap shrink-0 ml-2 flex items-center gap-1"
+              >
+                {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-indigo-900 stroke-[2.5]" />}
+                {allowRealMoneyPurchases ? 'Join' : 'Enable'}
+              </button>
             </div>
-          )}
+
+            <div
+              onClick={() => {
+                if (allowRealMoneyPurchases) {
+                  onBuySparksPackage({ id: 'kibo_club_family', name: 'Kibo Club Family', realMoneyPrice: '$7.99/mo', price: '$7.99/mo', isSubscription: true, isFamilyPlan: true, description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.' });
+                } else if (onOpenParentZone) {
+                  onOpenParentZone();
+                }
+              }}
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-600 border-2 border-amber-400 rounded-2xl p-3 flex flex-row items-center justify-between shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/50 shrink-0">
+                  <Sparkles className="w-6 h-6 text-white animate-pulse" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-sm font-black text-white leading-tight">Join Kibo Club (Family)</h3>
+                  <p className="text-xs font-bold text-orange-100 leading-snug">
+                    Benefits for ALL profiles • $7.99/mo
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="bg-white text-orange-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap shrink-0 ml-2 flex items-center gap-1"
+              >
+                {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-orange-900 stroke-[2.5]" />}
+                {allowRealMoneyPurchases ? 'Join' : 'Enable'}
+              </button>
+            </div>
+          </div>
 
           {/* Promotional Account Link Banner in Shop */}
           {authService.getAuthState().isAnonymous && onRequestAccountLink && (
@@ -638,15 +659,7 @@ export default function WorkshopModal({
             </div>
           )}
 
-          {(activeCategory === 'get_sparks' || activeCategory === 'premium') && !allowRealMoneyPurchases ? (
-            <div className="py-8 text-center text-slate-500 font-bold space-y-3 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-4">
-              <Lock className="w-8 h-8 mx-auto text-slate-400 stroke-[1.5]" />
-              <p className="text-sm font-black text-slate-700">Real-Money Purchases Disabled</p>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                Ask your parent to enable this feature in the <strong>Parent Zone</strong> dashboard.
-              </p>
-            </div>
-          ) : activeCategory === 'get_sparks' ? (
+          {activeCategory === 'get_sparks' ? (
             <div className="space-y-2.5">
               {SPARKS_PACKAGES.map((pack) => (
                 <div
@@ -662,13 +675,24 @@ export default function WorkshopModal({
                     <p className="text-xs text-slate-500 font-medium leading-tight">{pack.description}</p>
                   </div>
                   <div className="shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => onBuySparksPackage(pack)}
-                      className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
-                    >
-                      Buy for {pack.price}
-                    </button>
+                    {allowRealMoneyPurchases ? (
+                      <button
+                        type="button"
+                        onClick={() => onBuySparksPackage(pack)}
+                        className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                      >
+                        Buy for {pack.price}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onOpenParentZone && onOpenParentZone()}
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 px-3 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold shadow-sm transition-all"
+                      >
+                        <Lock className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
+                        <span>Enable in Parent Zone</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -688,7 +712,6 @@ export default function WorkshopModal({
               const isEquippedInApp = equippedItems.includes(item.id);
               const isPreviewedOnStage = stageEquippedItems.includes(item.id) || (item.bundleItems && item.bundleItems.some((id) => stageEquippedItems.includes(id)));
               const isRealMoney = !!item.realMoneyPrice;
-              if (isRealMoney && !allowRealMoneyPurchases) return null;
 
               const saleInfo = getItemSalePrice(item, currentDate);
               const activeCost = saleInfo.isSale ? saleInfo.salePrice : item.cost;
@@ -751,33 +774,15 @@ export default function WorkshopModal({
                   <div className="space-y-1 text-left flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{item.name}</h4>
+
+                      <span className={`text-xs uppercase px-2 py-0.5 rounded-full border ${rarityInfo.badgeClass}`}>
+                        {rarityInfo.label}
+                      </span>
                       
                       {!isUnlocked && saleInfo.isSale && (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-black bg-rose-600 text-white px-2 py-0.5 rounded-full border border-rose-700 shadow-sm">
+                        <span className="inline-flex items-center gap-1 text-xs font-black bg-rose-600 text-white px-2 py-0.5 rounded-full border border-rose-700 shadow-sm">
                           <span className="bg-rose-800/90 px-1 py-0.2 rounded text-[10px] uppercase tracking-wide">SALE</span>
-                          <span className="line-through decoration-white decoration-2 text-rose-200 font-bold">{item.cost}</span>
-                          <span className="text-white font-black">{activeCost}</span>
-                          <Zap className="w-3 h-3 text-amber-950 fill-amber-300 stroke-[2] shrink-0 inline" />
-                        </span>
-                      )}
-
-                      {item.badgeTag && (
-                        <span className="text-xs font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 animate-pulse shadow-xs">
-                          🚀 {item.badgeTag}
-                        </span>
-                      )}
-
-                      {/* Subject Compatibility Tag */}
-                      {item.subjectLabel && (
-                        <span className={`text-xs font-black uppercase px-2 py-0.5 rounded-full border shadow-2xs ${
-                          item.id === 'explorer_compass'
-                            ? 'text-teal-950 bg-teal-100 border-teal-300'
-                            : item.id === 'letter_spyglass'
-                            ? 'text-sky-950 bg-sky-100 border-sky-300'
-                            : 'text-purple-950 bg-purple-100 border-purple-300'
-                        }`}>
-                          {item.id === 'explorer_compass' ? '🌍 ' : item.id === 'letter_spyglass' ? '📐 ' : '🌐 '}
-                          {item.subjectLabel}
+                          <span>-{saleInfo.discountPercent}%</span>
                         </span>
                       )}
 
@@ -785,7 +790,7 @@ export default function WorkshopModal({
                       {!isUnlocked && availability.status === 'active' && availability.daysRemaining !== null && (
                         <span className="text-xs font-black uppercase text-orange-950 bg-orange-200/90 border border-orange-400 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-2xs">
                           <Clock className="w-2.5 h-2.5 text-orange-700" />
-                          Leaves in {availability.daysRemaining}d
+                          {availability.daysRemaining === 0 ? 'Last Day!' : `${availability.daysRemaining}d Left`}
                         </span>
                       )}
 
@@ -834,30 +839,18 @@ export default function WorkshopModal({
                         <span className="text-xs font-black uppercase text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-300">
                           🟦 OWNED
                         </span>
-                      ) : !canAfford && !isRealMoney && !item.promoCodeRequired && !availability.isUpcoming ? (
-                        <span className="text-xs font-black uppercase text-rose-800 bg-rose-100 px-2 py-0.5 rounded-full border border-rose-300 flex items-center gap-1">
-                          <Lock className="w-3 h-3 text-rose-700" /> Need {shortfall} <Zap className="w-3 h-3 text-amber-950 fill-amber-500 stroke-[2] shrink-0" /> More
-                        </span>
                       ) : isRealMoney && !isUnlocked ? (
                          <span className="text-xs font-black uppercase text-purple-900 bg-purple-200 px-2 py-0.5 rounded-full border border-purple-400">
                           💎 PREMIUM
                         </span>
                       ) : null}
 
-                      {/* CLEAR PREVIEW TAP INDICATOR */}
-                      {!isUnlocked && !isConsumable && (
-                        <span className={`text-xs font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all ${
-                          isPreviewedOnStage
-                            ? 'bg-purple-600 text-white border border-purple-700'
-                            : 'bg-purple-100 text-purple-800 border border-purple-300'
-                        }`}>
-                          👁️ {isPreviewedOnStage ? 'Previewing on Stage' : 'Tap to try on'}
+                      {/* ACTIVE PREVIEW STAGE INDICATOR */}
+                      {!isUnlocked && !isConsumable && isPreviewedOnStage && (
+                        <span className="text-xs font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all bg-purple-600 text-white border border-purple-700">
+                          👁️ Previewing on Stage
                         </span>
                       )}
-
-                      <span className={`text-xs uppercase px-2 py-0.5 rounded-full border ${rarityInfo.badgeClass}`}>
-                        {rarityInfo.label}
-                      </span>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-xs text-slate-500 font-medium leading-tight">{item.description}</p>
@@ -874,9 +867,9 @@ export default function WorkshopModal({
                             soundFx.playKeyTap();
                             setItemToSell(item);
                           }}
-                          className="bg-rose-100 hover:bg-rose-200 text-rose-800 border-2 border-rose-300 px-3.5 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1"
+                          className="bg-rose-100 hover:bg-rose-200 text-rose-800 border-2 border-rose-300 px-3.5 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center"
                         >
-                          Sell ({sellPrice} <Zap className="w-3 h-3 text-amber-950 fill-amber-500 stroke-[2] inline" />)
+                          <span className="inline-flex items-center">Sell ({sellPrice}<Zap className="w-3 h-3 text-amber-950 fill-amber-500 stroke-[2]" />)</span>
                         </button>
                       )}
                       {isConsumable ? (
@@ -894,23 +887,27 @@ export default function WorkshopModal({
                             onClick={() => handleBuyClick(item)}
                             className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                           >
-                            <Zap className="w-4 h-4 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" />
                             <span>Buy for</span>
                             {saleInfo.isSale && (
-                              <span className="bg-black/35 px-1.5 py-0.5 rounded-md text-purple-100 line-through decoration-rose-300 decoration-[2.5px] font-black text-xs mr-0.5 shadow-inner select-none">
+                              <span className="bg-black/25 px-1.5 py-0.5 rounded-md text-white/85 line-through decoration-rose-400 decoration-[1.5px] font-bold text-xs mr-0.5 select-none">
                                 {item.cost}
                               </span>
                             )}
-                            <span className="font-black text-white text-xs">{activeCost}</span>
-                            <Zap className="w-3.5 h-3.5 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" />
+                            <span className="font-black text-white text-xs inline-flex items-center">{activeCost}<Zap className="w-3.5 h-3.5 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" /></span>
                           </button>
                         ) : (
                           <button
                             type="button"
-                            disabled
-                            className="bg-slate-100 text-rose-700 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed flex items-center gap-1"
+                            onClick={() => {
+                              soundFx.playKeyTap();
+                              setActiveCategory('get_sparks');
+                            }}
+                            className="bg-amber-50 hover:bg-amber-100 text-amber-900 border-2 border-amber-300 hover:border-amber-400 text-xs px-3 py-2 rounded-xl font-extrabold cursor-pointer flex items-center gap-1 shadow-xs transition-all active:scale-95"
                           >
-                            Need {shortfall} <Zap className="w-3.5 h-3.5 text-amber-950 fill-amber-500 stroke-[2] shrink-0" /> More
+                            <span className="inline-flex items-center gap-1">
+                              Need <span className="inline-flex items-center">{shortfall}<Zap className="w-3.5 h-3.5 text-amber-950 fill-amber-500 stroke-[2] shrink-0" /></span> More
+                            </span>
+                            <span className="text-amber-700 font-black">➔</span>
                           </button>
                         )
                       ) : isUnlocked ? (
@@ -948,36 +945,51 @@ export default function WorkshopModal({
                           <Ticket className="w-3.5 h-3.5" /> Redeem Code
                         </button>
                       ) : isRealMoney ? (
-                         <button
-                          type="button"
-                          onClick={() => handleBuyClick(item)}
-                          className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
-                        >
-                          Buy for {item.realMoneyPrice}
-                        </button>
+                         allowRealMoneyPurchases ? (
+                          <button
+                            type="button"
+                            onClick={() => handleBuyClick(item)}
+                            className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
+                          >
+                            Buy for {item.realMoneyPrice}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => onOpenParentZone && onOpenParentZone()}
+                            className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 px-3 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold shadow-sm transition-all"
+                          >
+                            <Lock className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
+                            <span>Enable in Parent Zone</span>
+                          </button>
+                        )
                       ) : canAfford ? (
                         <button
                           type="button"
                           onClick={() => handleBuyClick(item)}
                           className="btn-3d-purple px-3.5 py-2 text-xs rounded-xl flex items-center gap-1.5 font-extrabold"
                         >
-                          <Zap className="w-4 h-4 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" />
                           <span>Buy for</span>
                           {saleInfo.isSale && (
-                            <span className="bg-black/35 px-1.5 py-0.5 rounded-md text-purple-100 line-through decoration-rose-300 decoration-[2.5px] font-black text-xs mr-0.5 shadow-inner select-none">
+                            <span className="bg-black/25 px-1.5 py-0.5 rounded-md text-white/85 line-through decoration-rose-400 decoration-[1.5px] font-bold text-xs mr-0.5 select-none">
                               {item.cost}
                             </span>
                           )}
-                          <span className="font-black text-white text-xs">{activeCost}</span>
-                          <Zap className="w-3.5 h-3.5 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" />
+                          <span className="font-black text-white text-xs inline-flex items-center">{activeCost}<Zap className="w-3.5 h-3.5 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" /></span>
                         </button>
                       ) : (
                         <button
                           type="button"
-                          disabled
-                          className="bg-slate-100 text-slate-600 border-2 border-slate-300 text-xs px-3 py-2 rounded-xl font-bold cursor-not-allowed flex items-center gap-1"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            setActiveCategory('get_sparks');
+                          }}
+                          className="bg-amber-50 hover:bg-amber-100 text-amber-900 border-2 border-amber-300 hover:border-amber-400 text-xs px-3 py-2 rounded-xl font-extrabold cursor-pointer flex items-center gap-1 shadow-xs transition-all active:scale-95"
                         >
-                          Need {shortfall} <Zap className="w-3.5 h-3.5 text-amber-950 fill-amber-500 stroke-[2] shrink-0" /> More
+                          <span className="inline-flex items-center gap-1">
+                            Need <span className="inline-flex items-center">{shortfall}<Zap className="w-3.5 h-3.5 text-amber-950 fill-amber-500 stroke-[2] shrink-0" /></span> More
+                          </span>
+                          <span className="text-amber-700 font-black">➔</span>
                         </button>
                       )}
                     </div>

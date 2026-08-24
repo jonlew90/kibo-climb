@@ -45,9 +45,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'common',
     isConsumable: true,
     icon: '🧪',
-    badgeTag: '2x Profit!',
     supportedSubjects: ['math', 'words', 'world'],
-    subjectLabel: 'All Subjects',
     description: 'Costs 12 Sparks. Doubles all Sparks earned in your next climb session! (Works in all subjects)'
   },
   {
@@ -58,9 +56,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'common',
     isConsumable: true,
     icon: '📜',
-    badgeTag: 'Phonics & Clues',
     supportedSubjects: ['math', 'words', 'world'],
-    subjectLabel: 'All Subjects',
     description: 'Costs 8 Sparks. Instantly reveals a helpful conceptual clue, phonics clue, or geography hint from Kibo! (Works in all subjects)'
   },
   {
@@ -71,9 +67,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'rare',
     isConsumable: true,
     icon: '🔍',
-    badgeTag: 'Auto-Reveal Blank',
     supportedSubjects: ['math', 'words'],
-    subjectLabel: 'Math & Words Only',
     description: 'Costs 15 Sparks. Instantly uncovers and fills 1 missing blank slot or digit directly into your climb challenge! (For Kibo Math & Words)'
   },
   {
@@ -84,9 +78,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'rare',
     isConsumable: true,
     icon: '🧭',
-    badgeTag: 'Regional Clue',
     supportedSubjects: ['world'],
-    subjectLabel: 'Kibo World Only',
     description: 'Costs 15 Sparks. Pinpoints geographic orientation, revealing continent, regional, cardinal, or hemisphere context! (For Kibo World)'
   },
   {
@@ -97,9 +89,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'rare',
     isConsumable: true,
     icon: '✂️',
-    badgeTag: '50:50 & Prune Keys',
     supportedSubjects: ['math', 'words', 'world'],
-    subjectLabel: 'All Subjects',
     description: 'Costs 15 Sparks. Eliminates 2 distractor choices (50:50 in World) or non-solution keys (in Math & Words)! (Works in all subjects)'
   },
   {
@@ -111,7 +101,6 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '🛡️',
     supportedSubjects: ['math', 'words', 'world'],
-    subjectLabel: 'All Subjects',
     description: 'Costs 50 Sparks. Absorbs 1 incorrect answer to protect your in-session answer streak and multipliers (does not alter accuracy %). (Works in all subjects)'
   },
   {
@@ -123,7 +112,6 @@ export const WORKSHOP_ITEMS = [
     isConsumable: true,
     icon: '🔥',
     supportedSubjects: ['math', 'words', 'world'],
-    subjectLabel: 'All Subjects',
     description: 'Costs 100 Sparks. Protects 1 missed calendar day of climbing from resetting your daily streak. (Works in all subjects)'
   },
 

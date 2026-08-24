@@ -2117,6 +2117,10 @@ export default function App() {
         onToggleEquip={handleToggleEquip}
         onRedeemPromoCode={handleRedeemPromoCode}
         allowRealMoneyPurchases={notifPrefs.allowRealMoneyPurchases}
+        onOpenParentZone={() => {
+          setPinGateSource('shop');
+          setShowPinGateModal(true);
+        }}
         onBuySparksPackage={(pack) => {
           setPendingSparksPurchase(pack);
           setShowPinGateModal(true);
