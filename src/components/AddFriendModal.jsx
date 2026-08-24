@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, UserPlus, UserCheck, Trash2, Users, Sparkles, Copy, CheckCircle2, Clock, Check, ShieldCheck } from 'lucide-react';
+import { X, Search, UserPlus, UserCheck, Trash2, Users, Sparkles, Star, Copy, CheckCircle2, Clock, Check, ShieldCheck } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
@@ -21,6 +21,7 @@ export default function AddFriendModal({
   const [friendRequests, setFriendRequests] = useState([]);
   const [copiedLink, setCopiedLink] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
+  const [actionErrorMsg, setActionErrorMsg] = useState('');
 
   const activeProfile = storageService.getActiveProfile();
   const currentUsername = storageService.getUsername() || activeProfile?.username || 'You';
@@ -37,6 +38,7 @@ export default function AddFriendModal({
       setSearchResults([]);
       setSearchError('');
       setActionSuccessMsg('');
+      setActionErrorMsg('');
 
       // Fetch any cloud requests in background
       leaderboardService.fetchCloudFriendRequests().then(({ received }) => {
@@ -169,8 +171,10 @@ export default function AddFriendModal({
       const updated = storageService.toggleFriendDisplayOnMain(friend.id || friend.username);
       setFriendsList([...updated]);
       onFriendAdded(); // this just triggers re-renders where necessary
+      setActionErrorMsg('');
     } catch (err) {
-      alert(err.message);
+      setActionErrorMsg(err.message);
+      setTimeout(() => setActionErrorMsg(''), 3000);
     }
   };
 
@@ -487,9 +491,17 @@ export default function AddFriendModal({
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-600">
                   Accepted Friends ({friendsList.length}/25)
+                  <span className="ml-2 text-[10px] text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
+                    {friendsList.filter(f => f.isDisplayedOnMain).length}/2 Starred
+                  </span>
                 </h3>
                 <span className="text-[11px] text-slate-400 font-medium">Max 25</span>
               </div>
+              {actionErrorMsg && (
+                <p className="text-xs font-bold text-rose-500 px-1 text-center bg-rose-50 border border-rose-100 rounded-lg py-1.5 mb-2">
+                  {actionErrorMsg}
+                </p>
+              )}
 
               {friendsList.length === 0 ? (
                 <div className="p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl text-center space-y-1">
@@ -523,14 +535,15 @@ export default function AddFriendModal({
                         <button
                           type="button"
                           onClick={() => handleToggleDisplay(friend)}
-                          title={friend.isDisplayedOnMain ? "Remove from Main Page" : "Show on Main Page"}
-                          className={`p-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center ${
+                          title={friend.isDisplayedOnMain ? "Unstar" : "Star to show on Home"}
+                          className={`px-2 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold ${
                             friend.isDisplayedOnMain
-                              ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
-                              : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50'
+                              ? 'text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100'
+                              : 'text-slate-500 bg-slate-100 border border-slate-200 hover:text-amber-600 hover:bg-amber-50'
                           }`}
                         >
-                          <Sparkles className="w-4 h-4" />
+                          <Star className={`w-3.5 h-3.5 ${friend.isDisplayedOnMain ? 'fill-amber-500 text-amber-500' : ''}`} />
+                          {friend.isDisplayedOnMain ? 'Starred' : 'Star (Max 2)'}
                         </button>
                         <button
                           type="button"
