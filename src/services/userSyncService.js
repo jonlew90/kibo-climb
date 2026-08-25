@@ -155,8 +155,16 @@ class UserSyncService {
       const now = Date.now();
 
       allProfiles.forEach((prof) => {
-        profilesMap[prof.id] = {
+        const profCopy = {
           ...prof,
+          userData: prof.userData ? { ...prof.userData } : undefined
+        };
+        if (profCopy.userData && profCopy.userData.email) {
+          delete profCopy.userData.email;
+        }
+
+        profilesMap[prof.id] = {
+          ...profCopy,
           updatedAtMillis: now
         };
       });
