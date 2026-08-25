@@ -18,7 +18,8 @@ import {
   UserPlus,
   ChevronRight,
   Star,
-  Check
+  Check,
+  Scroll
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import { questService } from '../services/questService';
@@ -118,38 +119,30 @@ export default function QuestsScreen({
   const filteredQuests = getFilteredQuests();
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full min-h-0 bg-slate-50 relative overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       {celebrationReward && (
         <ConfettiCanvas />
       )}
 
-      {/* Main Container */}
-      <div className="flex-1 flex flex-col w-full max-w-3xl mx-auto px-3 sm:px-6 py-4 pb-24">
-        
-        {/* Top App Header */}
-        <div className="flex items-center justify-between mb-4">
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              if (onBack) onBack();
-              else if (onNavigate) onNavigate('/', 'adaptive_session');
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-slate-200 hover:border-slate-300 rounded-xl text-slate-700 font-bold text-xs shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
-            <span>Climb</span>
-          </button>
-
-          <div className="flex items-center gap-2">
-            {unclaimedCount > 0 && (
-              <div className="flex items-center gap-1 px-2.5 py-1 bg-amber-500 text-white rounded-full text-xs font-black animate-bounce shadow-2xs">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{unclaimedCount} Ready to Claim!</span>
-              </div>
-            )}
-          </div>
+      {/* STICKY TOP HEADER BAR */}
+      <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
+        <div className="flex items-center gap-2 text-slate-800">
+          <Scroll className="w-5 h-5 text-purple-600 stroke-[2.5]" />
+          <h2 className="text-base sm:text-lg font-black tracking-tight">Mountain Quests</h2>
         </div>
+
+        <div className="flex items-center gap-2">
+          {unclaimedCount > 0 && (
+            <div className="flex items-center gap-1 px-2.5 py-1 bg-amber-500 text-white rounded-full text-xs font-black animate-bounce shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{unclaimedCount} Ready to Claim!</span>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
+      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-5">
 
         {/* Hero Card */}
         <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-violet-700 rounded-3xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden mb-5">
@@ -476,7 +469,7 @@ export default function QuestsScreen({
           })}
         </div>
 
-      </div>
+      </main>
 
       {/* Teammate Selection Drawer/Modal */}
       {showTeammatePicker && (
