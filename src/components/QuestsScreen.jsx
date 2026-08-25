@@ -480,8 +480,14 @@ export default function QuestsScreen({
 
       {/* Teammate Selection Drawer/Modal */}
       {showTeammatePicker && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl border-2 border-slate-200">
+        <div
+          onClick={() => setShowTeammatePicker(null)}
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl border-2 border-slate-200 cursor-default"
+          >
             <h3 className="text-lg font-black text-slate-900 mb-1">
               Choose Teammate
             </h3>
@@ -563,8 +569,14 @@ export default function QuestsScreen({
 
       {/* Celebration Modal */}
       {celebrationReward && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border-2 border-amber-300 text-center animate-scaleIn">
+        <div
+          onClick={() => setCelebrationReward(null)}
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border-2 border-amber-300 text-center animate-scaleIn cursor-default"
+          >
             <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner">
               🎁
             </div>
