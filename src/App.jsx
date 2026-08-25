@@ -834,9 +834,10 @@ export default function App() {
     }
   };
 
-  // Schedule-Aware & Timezone-Resilient Streak Validation on App Startup
-  useEffect(() => {
-    const uData = storageService.getUserData(activeSubject);
+  // Schedule-Aware & Timezone-Resilient Streak Validation per Profile
+  const validateStreakForActiveProfile = (subjectOverride) => {
+    const sub = subjectOverride || activeSubject;
+    const uData = storageService.getUserData(sub);
     const lastDateStr = uData.lastSprintDate;
     const lastTimestamp = uData.lastSprintTimestamp;
     const savedDays = storageService.getProfilePracticeDays() || [1, 2, 3, 4, 5];
@@ -847,7 +848,7 @@ export default function App() {
 
     if (savedStreak > storedStreak) {
       setStreak(savedStreak);
-      storageService.saveUserData({ streak: savedStreak }, activeSubject);
+      storageService.saveUserData({ streak: savedStreak }, sub);
     }
 
     if (!lastDateStr || savedStreak === 0) return;
@@ -878,11 +879,12 @@ export default function App() {
     }
 
     if (missedActiveDays >= 1) {
-      const currentStreakSaverCount = consumables.streakSaverCount || 0;
+      const activeConsumables = storageService.getConsumables();
+      const currentStreakSaverCount = activeConsumables.streakSaverCount || 0;
       if (currentStreakSaverCount > 0 || savedShields > 0) {
         if (currentStreakSaverCount > 0) {
           const nextStreakSavers = Math.max(0, currentStreakSaverCount - 1);
-          const nextConsumables = { ...consumables, streakSaverCount: nextStreakSavers };
+          const nextConsumables = { ...activeConsumables, streakSaverCount: nextStreakSavers };
           setConsumables(nextConsumables);
           storageService.saveUserData({ consumables: nextConsumables });
         } else {
@@ -895,8 +897,15 @@ export default function App() {
       } else {
         setStreak(0);
         localStorage.setItem('kibo_math_streak', '0');
-        storageService.saveUserData({ streak: 0 }, activeSubject);
+        storageService.saveUserData({ streak: 0 }, sub);
       }
+    }
+  };
+
+  useEffect(() => {
+    // Only run on startup if profile selector is NOT shown (e.g. single profile / direct mode)
+    if (!showProfileSelector) {
+      validateStreakForActiveProfile(activeSubject);
     }
   }, []);
 
@@ -1387,6 +1396,7 @@ export default function App() {
                             syncAppStateWithStorage(targetSubject);
                             setShowProfileDropdown(false);
                             setAppState('adaptive_session');
+                            validateStreakForActiveProfile(targetSubject);
                           }}
                           className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-slate-100 active:bg-slate-200 transition-colors text-left cursor-pointer group w-full"
                         >
@@ -2149,6 +2159,7 @@ export default function App() {
             syncAppStateWithStorage(targetSubject);
             setShowProfileSelector(false);
             setAppState('adaptive_session');
+            validateStreakForActiveProfile(targetSubject);
           }}
           onOpenParentZone={(targetTab = 'overview') => {
             setParentDashboardTab(targetTab);
@@ -2171,6 +2182,7 @@ export default function App() {
             syncAppStateWithStorage(targetSubject);
             setShowManualProfileSwitcher(false);
             setAppState('adaptive_session');
+            validateStreakForActiveProfile(targetSubject);
           }}
           onClose={() => {
             setShowManualProfileSwitcher(false);
