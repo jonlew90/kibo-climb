@@ -1236,11 +1236,7 @@ export default function App() {
       if (unseenNews.length > 0) {
         setNewsItems(unseenNews);
         storageService.markNewsAsSeen(unseenNews.map(n => n.id), currentPid);
-        // Add a slight delay to let the app finish rendering before popping up the news
-        const timer = setTimeout(() => {
-          setShowNewsModal(true);
-        }, 1500);
-        return () => clearTimeout(timer);
+        setShowNewsModal(true);
       }
     }
   }, [appState, activeProfileId, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher]);
