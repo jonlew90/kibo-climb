@@ -47,6 +47,8 @@ import SettingsScreen from './components/SettingsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import ShareModal from './components/ShareModal';
 import ReferralRewardModal from './components/ReferralRewardModal';
+import NewsModal from './components/NewsModal';
+import { getNewsItems } from './utils/newsManager';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from './config/firebase';
 import TermsOfServiceScreen from './components/TermsOfServiceScreen';
@@ -180,6 +182,9 @@ export default function App() {
   }, [activeSubject]);
 
   // First-Time User Onboarding Modal State
+  const [showNewsModal, setShowNewsModal] = useState(false);
+  const [newsItems, setNewsItems] = useState([]);
+
   const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
     return !localStorage.getItem('kibo_math_has_onboarded') && !localStorage.getItem('kibo_math_tier');
   });
@@ -1177,12 +1182,36 @@ export default function App() {
   const activeProfile = storageService.getActiveProfile();
   const allProfiles = storageService.getAllProfiles();
 
-  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
+  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal || showNewsModal;
 
+
+
+  // Check for News
+  useEffect(() => {
+    // Only check if we are on the main game screen and not in onboarding
+    if (showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || appState !== 'adaptive_session') return;
+
+    const today = getTodayStr();
+    const lastShown = localStorage.getItem('kibo_news_last_shown');
+
+    if (lastShown !== today) {
+      const activeNews = getNewsItems(new Date());
+      if (activeNews && activeNews.length > 0) {
+        setNewsItems(activeNews);
+        localStorage.setItem('kibo_news_last_shown', today);
+        // Add a slight delay to let the app finish rendering before popping up the news
+        setTimeout(() => {
+          setShowNewsModal(true);
+        }, 1500);
+      }
+    }
+  }, [appState, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher]);
 
   const closeAllNavModals = (except = null) => {
+
     if (except !== 'workshop') setIsWorkshopOpen(false);
     if (except !== 'badges') setShowBadgesModal(false);
+    setShowNewsModal(false);
     if (except !== 'profile') setShowManualProfileSwitcher(false);
     if (except !== 'profileDropdown') setShowProfileDropdown(false);
     if (except !== 'parents') {
@@ -2560,6 +2589,13 @@ export default function App() {
           setShowStripeCheckoutModal(false);
           setPendingSparksPurchase(null);
         }}
+      />
+
+      {/* News Modal */}
+      <NewsModal
+        isOpen={showNewsModal}
+        onClose={() => setShowNewsModal(false)}
+        newsItems={newsItems}
       />
 
       {/* Feedback Modal */}
