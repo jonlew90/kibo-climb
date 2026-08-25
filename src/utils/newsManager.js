@@ -18,6 +18,9 @@ export function getNewsItems(currentDate = new Date()) {
     const now = (currentDate instanceof Date ? currentDate : new Date(currentDate)).getTime();
     const daysSinceStart = Math.floor((now - window.startTime) / (1000 * 60 * 60 * 24));
 
+    const isQuarterly = ['spring', 'summer', 'autumn', 'winter'].includes(event.id);
+    const eventNamePhrase = isQuarterly ? event.label : `The ${event.label} event`;
+
     if (window.status === 'active') {
       if (daysSinceStart <= 2) {
         news.push({
@@ -27,10 +30,11 @@ export function getNewsItems(currentDate = new Date()) {
           window,
           priority: 3,
           title: "New Event Started!",
-          message: `${event.label} has begun! Check out the new seasonal items in the workshop.`,
+          message: `${eventNamePhrase} has begun! Check out the new seasonal items in the workshop.`,
           icon: '🎉'
         });
       } else if (window.daysRemaining <= 3) {
+        const dayWord = window.daysRemaining === 1 ? 'day' : 'days';
         news.push({
           id: `${event.id}_ending_${window.startDate.getFullYear()}`,
           type: 'event_ending',
@@ -38,12 +42,13 @@ export function getNewsItems(currentDate = new Date()) {
           window,
           priority: 2,
           title: "Event Ending Soon!",
-          message: `${event.label} is ending in ${window.daysRemaining} days! Grab the seasonal items before they're gone.`,
+          message: `${eventNamePhrase} is ending in ${window.daysRemaining} ${dayWord}! Grab the seasonal items before they're gone.`,
           icon: '⏳'
         });
       }
     } else if (window.status === 'upcoming') {
       if (window.startsInDays <= 3) {
+        const dayWord = window.startsInDays === 1 ? 'day' : 'days';
         news.push({
           id: `${event.id}_upcoming_${window.startDate.getFullYear()}`,
           type: 'event_upcoming_soon',
@@ -51,7 +56,7 @@ export function getNewsItems(currentDate = new Date()) {
           window,
           priority: 1,
           title: "Upcoming Event!",
-          message: `${event.label} is starting in ${window.startsInDays} days! Get ready for new seasonal items.`,
+          message: `${eventNamePhrase} is starting in ${window.startsInDays} ${dayWord}! Get ready for new seasonal items.`,
           icon: '📅'
         });
       }

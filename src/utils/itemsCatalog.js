@@ -833,7 +833,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'mlk_day',
     seasonName: 'MLK Day of Service',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 1, startDay: 10, endMonth: 1, endDay: 25, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'mlk_day', daysBefore: 9, daysAfter: 6, previewDays: 7 },
     description: 'A peaceful white dove companion carrying a green olive branch! (MLK Day Exclusive)'
   },
   {
@@ -846,7 +846,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'mlk_day',
     seasonName: 'MLK Day of Service',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 1, startDay: 10, endMonth: 1, endDay: 25, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'mlk_day', daysBefore: 9, daysAfter: 6, previewDays: 7 },
     description: 'Commemorative ribbon sash honoring dreams of equality and peace! (MLK Day Exclusive)'
   },
 
@@ -902,7 +902,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'presidents_day',
     seasonName: 'Presidents\' Day',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 2, startDay: 12, endMonth: 2, endDay: 26, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'presidents_day', daysBefore: 4, daysAfter: 10, previewDays: 7 },
     description: 'Distinguished colonial three-cornered hat with a golden cockade! (Presidents\' Day Exclusive)'
   },
   {
@@ -915,7 +915,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'presidents_day',
     seasonName: 'Presidents\' Day',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 2, startDay: 12, endMonth: 2, endDay: 26, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'presidents_day', daysBefore: 4, daysAfter: 10, previewDays: 7 },
     description: 'Polished bronze buckler emblazoned with a proud golden eagle! (Presidents\' Day Exclusive)'
   },
 
@@ -999,7 +999,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'memorial_day',
     seasonName: 'Memorial Day',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 5, startDay: 20, endMonth: 6, endDay: 2, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'memorial_day', daysBefore: 5, daysAfter: 8, previewDays: 7 },
     description: 'A vibrant crimson poppy flower pin honoring courageous climbers! (Memorial Day Exclusive)'
   },
   {
@@ -1012,7 +1012,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'memorial_day',
     seasonName: 'Memorial Day',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 5, startDay: 20, endMonth: 6, endDay: 2, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'memorial_day', daysBefore: 5, daysAfter: 8, previewDays: 7 },
     description: 'A majestic navy and scarlet banner cape with golden stars! (Memorial Day Exclusive)'
   },
 
@@ -1096,7 +1096,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'labor_day',
     seasonName: 'Labor Day',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 8, startDay: 25, endMonth: 9, endDay: 10, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'labor_day', daysBefore: 13, daysAfter: 3, previewDays: 7 },
     description: 'Canary yellow industrial hardhat with safety headlamp for mountain engineers! (Labor Day Exclusive)'
   },
   {
@@ -1109,7 +1109,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'labor_day',
     seasonName: 'Labor Day',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 8, startDay: 25, endMonth: 9, endDay: 10, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'labor_day', daysBefore: 13, daysAfter: 3, previewDays: 7 },
     description: 'Heavy-duty leather belt packed with miniature climbing wrenches and hammers! (Labor Day Exclusive)'
   },
 
@@ -1206,7 +1206,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'thanksgiving',
     seasonName: 'Harvest Feast',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 11, startDay: 12, endMonth: 11, endDay: 30, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'thanksgiving', daysBefore: 14, daysAfter: 4, previewDays: 7 },
     description: 'Fun autumn harvest hat decorated with colorful fan feathers! (Thanksgiving Exclusive)'
   },
   {
@@ -1219,7 +1219,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'thanksgiving',
     seasonName: 'Harvest Feast',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 11, startDay: 12, endMonth: 11, endDay: 30, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'thanksgiving', daysBefore: 14, daysAfter: 4, previewDays: 7 },
     description: 'Woven horn of plenty filled to the brim with pumpkins, apples, and golden corn! (Thanksgiving Exclusive)'
   },
 
@@ -1482,16 +1482,70 @@ export function getItemSlot(item) {
 }
 
 /**
+ * Floating holiday rules for dynamically computing holiday occurrences in any year.
+ */
+export const FLOATING_HOLIDAYS = {
+  mlk_day: { month: 1, weekday: 1, nth: 3, label: 'MLK Day' }, // 3rd Monday in Jan
+  presidents_day: { month: 2, weekday: 1, nth: 3, label: "Presidents' Day" }, // 3rd Monday in Feb
+  memorial_day: { month: 5, weekday: 1, nth: -1, label: 'Memorial Day' }, // Last Monday in May
+  labor_day: { month: 9, weekday: 1, nth: 1, label: 'Labor Day' }, // 1st Monday in Sep
+  thanksgiving: { month: 11, weekday: 4, nth: 4, label: 'Thanksgiving' } // 4th Thursday in Nov
+};
+
+/**
+ * Calculates the day of the month for the nth weekday in a given month and year.
+ * @param {number} year 
+ * @param {number} month 1-12
+ * @param {number} weekday 0 (Sun) - 6 (Sat), where 1 = Mon, 4 = Thu
+ * @param {number} nth 1-4, or -1 for the last occurrence
+ * @returns {number} Day of the month
+ */
+export function getNthWeekdayOfMonth(year, month, weekday, nth) {
+  if (nth === -1) {
+    const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const date = new Date(Date.UTC(year, month - 1, lastDay));
+    const dayOfWeek = date.getUTCDay();
+    const diff = (dayOfWeek - weekday + 7) % 7;
+    return lastDay - diff;
+  }
+  const firstDay = new Date(Date.UTC(year, month - 1, 1));
+  const firstDayOfWeek = firstDay.getUTCDay();
+  const dayOffset = (weekday - firstDayOfWeek + 7) % 7;
+  return 1 + dayOffset + (nth - 1) * 7;
+}
+
+/**
+ * Returns a UTC Date object representing a specific floating holiday in a given year.
+ */
+export function getHolidayDate(year, holidayId) {
+  const rule = FLOATING_HOLIDAYS[holidayId];
+  if (!rule) return null;
+  const day = getNthWeekdayOfMonth(year, rule.month, rule.weekday, rule.nth);
+  return new Date(Date.UTC(year, rule.month - 1, day, 0, 0, 0, 0));
+}
+
+/**
  * Calculates current and upcoming active windows for a recurring item schedule.
- * Handles month/day year boundary rollovers (e.g. Dec 1 -> Feb 28 or Dec 28 -> Jan 6).
+ * Handles month/day year boundary rollovers and dynamic floating holidays across any calendar year.
  */
 export function calculateRecurringWindow(recurringSchedule, currentDate = new Date()) {
   if (!recurringSchedule) return null;
   const now = (currentDate instanceof Date ? currentDate : new Date(currentDate));
   const currentYear = now.getFullYear();
 
-  const { startMonth, startDay, endMonth, endDay, previewDays = 14 } = recurringSchedule;
-  const isSpanningYear = startMonth > endMonth || (startMonth === endMonth && startDay > endDay);
+  const {
+    startMonth,
+    startDay,
+    endMonth,
+    endDay,
+    floatingHoliday,
+    daysBefore = 0,
+    daysAfter = 0,
+    previewDays = 14
+  } = recurringSchedule;
+
+  const isFloating = Boolean(floatingHoliday && FLOATING_HOLIDAYS[floatingHoliday]);
+  const isSpanningYear = !isFloating && (startMonth > endMonth || (startMonth === endMonth && startDay > endDay));
 
   // Candidate years to test: previous year, current year, next year
   const candidateYears = [currentYear - 1, currentYear, currentYear + 1];
@@ -1500,12 +1554,21 @@ export function calculateRecurringWindow(recurringSchedule, currentDate = new Da
   const nowTime = now.getTime();
 
   for (const year of candidateYears) {
-    const startYear = year;
-    const endYear = isSpanningYear ? year + 1 : year;
+    let startDate, endDate;
 
-    const startDate = new Date(Date.UTC(startYear, startMonth - 1, startDay, 0, 0, 0, 0));
-    // Determine last millisecond of end day in UTC
-    const endDate = new Date(Date.UTC(endYear, endMonth - 1, endDay, 23, 59, 59, 999));
+    if (isFloating) {
+      const holidayDate = getHolidayDate(year, floatingHoliday);
+      if (!holidayDate) continue;
+      startDate = new Date(holidayDate.getTime() - (daysBefore * 86400000));
+      endDate = new Date(holidayDate.getTime() + (daysAfter * 86400000) + 86399999);
+    } else {
+      const startYear = year;
+      const endYear = isSpanningYear ? year + 1 : year;
+      startDate = new Date(Date.UTC(startYear, startMonth - 1, startDay, 0, 0, 0, 0));
+      // Determine last millisecond of end day in UTC
+      endDate = new Date(Date.UTC(endYear, endMonth - 1, endDay, 23, 59, 59, 999));
+    }
+
     const previewDate = new Date(startDate.getTime() - (previewDays * 86400000));
 
     const startTime = startDate.getTime();

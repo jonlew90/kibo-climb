@@ -1220,26 +1220,30 @@ export default function App() {
 
 
 
-  // Check for News
+  // Check for News (Scoped per active profile)
   useEffect(() => {
     // Only check if we are on the main game screen and not in onboarding
     if (showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || appState !== 'adaptive_session') return;
 
-    const today = getTodayStr();
-    const lastShown = localStorage.getItem('kibo_news_last_shown');
+    const currentPid = activeProfileId || storageService.getActiveProfileId();
+    if (!currentPid) return;
 
-    if (lastShown !== today) {
-      const activeNews = getNewsItems(new Date());
-      if (activeNews && activeNews.length > 0) {
-        setNewsItems(activeNews);
-        localStorage.setItem('kibo_news_last_shown', today);
+    const activeNews = getNewsItems(new Date());
+    if (activeNews && activeNews.length > 0) {
+      const seenNewsIds = storageService.getSeenNews(currentPid);
+      const unseenNews = activeNews.filter(item => !seenNewsIds.includes(item.id));
+
+      if (unseenNews.length > 0) {
+        setNewsItems(unseenNews);
+        storageService.markNewsAsSeen(unseenNews.map(n => n.id), currentPid);
         // Add a slight delay to let the app finish rendering before popping up the news
-        setTimeout(() => {
+        const timer = setTimeout(() => {
           setShowNewsModal(true);
         }, 1500);
+        return () => clearTimeout(timer);
       }
     }
-  }, [appState, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher]);
+  }, [appState, activeProfileId, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher]);
 
   const closeAllNavModals = (except = null) => {
 

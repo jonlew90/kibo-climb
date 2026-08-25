@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3 } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star } from 'lucide-react';
 import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { BADGES_CATALOG } from '../data/badges';
@@ -14,6 +14,7 @@ import { authService } from '../services/authService';
 import { communicationsService } from '../services/communicationsService';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { generateWeeklyDigestData, formatWeeklyDigestText } from '../utils/weeklyDigest';
+import { requestAppReview } from '../utils/AppReview';
 import AccountLinkModal from './AccountLinkModal';
 
 const DAYS_OF_WEEK = [
@@ -187,6 +188,24 @@ export default function ParentDashboardModal({
   const [dismissedAlerts, setDismissedAlerts] = useState(() => {
     return storageService.getUserData(selectedSubject).dismissedAlerts || [];
   });
+
+  const [ratingPromptDismissed, setRatingPromptDismissed] = useState(false);
+  const [appRatingStatus, setAppRatingStatus] = useState(() => storageService.getAppRatingStatus());
+
+  const handleDismissRatingPrompt = () => {
+    soundFx.playKeyTap();
+    setRatingPromptDismissed(true);
+    storageService.dismissAppRatingPrompt();
+    setAppRatingStatus(storageService.getAppRatingStatus());
+  };
+
+  const handleRequestRating = async () => {
+    soundFx.playVictory();
+    setRatingPromptDismissed(true);
+    storageService.setAppRated(true);
+    setAppRatingStatus(storageService.getAppRatingStatus());
+    await requestAppReview();
+  };
 
   const handleDismissAlert = (alertId) => {
     soundFx.playKeyTap();
@@ -475,6 +494,63 @@ export default function ParentDashboardModal({
                   <div className="text-center shrink-0 bg-white/80 border border-amber-200 px-3 py-1.5 rounded-xl shadow-xs">
                     <span className="text-xl font-black text-amber-600 tracking-tight leading-none block">{profileStreak}</span>
                     <span className="text-xs font-black uppercase text-amber-800 tracking-wider block mt-0.5">{profileStreak === 1 ? 'Day' : 'Days'}</span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* APP RATING PROMPT BANNER (PARENT ZONE EXCLUSIVE - STRICT 60-DAY COOLDOWN) */}
+            {(() => {
+              if (ratingPromptDismissed) return null;
+              if (appRatingStatus?.hasRated) return null;
+
+              const COOLDOWN_60_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
+              if (appRatingStatus?.lastDismissedAt && (Date.now() - appRatingStatus.lastDismissedAt) < COOLDOWN_60_DAYS_MS) {
+                return null;
+              }
+
+              // Trigger condition: Child streak >= 3 OR Fallback (Total solved >= 50 or Completed Climbs >= 3)
+              const currentProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+              const profileStreak = currentProf.userData?.streak ?? 0;
+              const totalSolved = currentProf.userData?.totalProblemsSolved ?? 0;
+              const climbsCount = currentProf.userData?.completedClimbsCount ?? 0;
+
+              const meetsTrigger = profileStreak >= 3 || totalSolved >= 50 || climbsCount >= 3;
+              if (!meetsTrigger) return null;
+
+              return (
+                <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-amber-500/10 border-2 border-purple-300 rounded-2xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-left shadow-xs transition-all animate-fadeIn">
+                  <div className="flex items-start sm:items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-sm shrink-0 mt-0.5 sm:mt-0">
+                      <Star className="w-5 h-5 fill-amber-300 text-amber-300 stroke-[2]" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-purple-950 uppercase tracking-wider">Loving Kibo Climb?</span>
+                        <span className="bg-purple-200/80 text-purple-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Parent Feedback</span>
+                      </div>
+                      <p className="text-xs text-slate-700 font-bold mt-0.5 leading-snug">
+                        Your review helps us keep building wholesome, ad-free learning games for kids.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleDismissRatingPrompt}
+                      className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-black rounded-xl transition-all cursor-pointer active:scale-95"
+                    >
+                      Maybe Later
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRequestRating}
+                      className="btn-3d-purple px-3.5 py-1.5 text-xs rounded-xl font-extrabold flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    >
+                      <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                      <span>Rate App</span>
+                    </button>
                   </div>
                 </div>
               );

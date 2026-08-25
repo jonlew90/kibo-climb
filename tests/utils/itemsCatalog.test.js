@@ -83,5 +83,36 @@ describe('itemsCatalog', () => {
     expect(itemsCatalog.getRealMoneyItemSavings(dragonPet)).toBeNull();
     expect(itemsCatalog.getRealMoneyItemSavings(null)).toBeNull();
   });
+
+  it('getNthWeekdayOfMonth and getHolidayDate dynamically compute floating holidays correctly', () => {
+    // 2026 Labor Day: 1st Monday of September -> Sep 7, 2026
+    const laborDay2026 = itemsCatalog.getHolidayDate(2026, 'labor_day');
+    expect(laborDay2026.getUTCFullYear()).toBe(2026);
+    expect(laborDay2026.getUTCMonth()).toBe(8); // 0-indexed month: 8 is Sep
+    expect(laborDay2026.getUTCDate()).toBe(7);
+
+    // 2026 Memorial Day: Last Monday of May -> May 25, 2026
+    const memorialDay2026 = itemsCatalog.getHolidayDate(2026, 'memorial_day');
+    expect(memorialDay2026.getUTCDate()).toBe(25);
+
+    // 2026 Thanksgiving: 4th Thursday of Nov -> Nov 26, 2026
+    const thanks2026 = itemsCatalog.getHolidayDate(2026, 'thanksgiving');
+    expect(thanks2026.getUTCDate()).toBe(26);
+
+    // 2027 Labor Day: Sep 6, 2027
+    const laborDay2027 = itemsCatalog.getHolidayDate(2027, 'labor_day');
+    expect(laborDay2027.getUTCDate()).toBe(6);
+  });
+
+  it('calculateRecurringWindow accurately calculates floating holiday schedule windows', () => {
+    // Aug 25, 2026 is 13 days before Labor Day 2026 (Sep 7)
+    const aug25 = new Date('2026-08-25T12:00:00Z');
+    const schedule = { floatingHoliday: 'labor_day', daysBefore: 13, daysAfter: 3, previewDays: 7 };
+    const window = itemsCatalog.calculateRecurringWindow(schedule, aug25);
+
+    expect(window.status).toBe('active');
+    expect(window.startDate.toISOString().startsWith('2026-08-25')).toBe(true);
+    expect(window.endDate.toISOString().startsWith('2026-09-10')).toBe(true);
+  });
 });
 

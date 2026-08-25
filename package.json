@@ -11,7 +11,6 @@
   "dependencies": {
     "@capacitor/cli": "^8.4.2",
     "@capacitor/core": "^8.4.2",
-    "@capgo/capacitor-in-app-review": "^8.2.3",
     "@stripe/stripe-js": "^9.13.0",
     "d3-geo": "^3.1.1",
     "firebase": "^12.17.1",

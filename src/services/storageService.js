@@ -11,7 +11,8 @@ const KEYS = {
   PARENT_PIN: 'kibo_parent_pin',
   PRACTICE_DAYS: 'kibo_practice_days',
   GATE_FAILED_ATTEMPTS: 'kibo_parent_gate_failed_attempts',
-  GATE_LOCKOUT_UNTIL: 'kibo_parent_gate_lockout_until'
+  GATE_LOCKOUT_UNTIL: 'kibo_parent_gate_lockout_until',
+  APP_RATING_STATUS: 'kibo_app_rating_status'
 };
 
 const DEFAULT_PROFILE_ID = 'default_child';
@@ -194,6 +195,27 @@ export const storageService = {
     if (state.profiles[targetId]) {
       state.profiles[targetId].lastActiveSubject = subject;
       safeSaveProfilesState(state);
+    }
+  },
+  getSeenNews(profileId = null) {
+    const targetId = profileId || this.getActiveProfileId();
+    try {
+      const raw = localStorage.getItem(`kibo_news_seen_${targetId}`);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  },
+  markNewsAsSeen(newsIds, profileId = null) {
+    const targetId = profileId || this.getActiveProfileId();
+    if (!targetId || !newsIds) return;
+    const ids = Array.isArray(newsIds) ? newsIds : [newsIds];
+    try {
+      const seen = this.getSeenNews(targetId);
+      const updated = Array.from(new Set([...seen, ...ids]));
+      localStorage.setItem(`kibo_news_seen_${targetId}`, JSON.stringify(updated));
+    } catch (e) {
+      console.error('Failed to save seen news', e);
     }
   },
   isAccountGloballyLinked() {
@@ -773,6 +795,42 @@ export const storageService = {
   hasCustomPin() {
     const { pin } = this.getParentSettings();
     return !!(pin && pin !== '1234');
+  },
+
+  // In-App Rating Prompt Status (Max 60-day cooldown)
+  getAppRatingStatus() {
+    try {
+      const raw = localStorage.getItem(KEYS.APP_RATING_STATUS);
+      if (!raw) {
+        return { hasRated: false, lastDismissedAt: null };
+      }
+      return JSON.parse(raw);
+    } catch (e) {
+      return { hasRated: false, lastDismissedAt: null };
+    }
+  },
+  setAppRated(hasRated = true) {
+    try {
+      const current = this.getAppRatingStatus();
+      localStorage.setItem(KEYS.APP_RATING_STATUS, JSON.stringify({
+        ...current,
+        hasRated: Boolean(hasRated),
+        ratedAt: Date.now()
+      }));
+    } catch (e) {
+      console.error('StorageService: error saving app rating status', e);
+    }
+  },
+  dismissAppRatingPrompt() {
+    try {
+      const current = this.getAppRatingStatus();
+      localStorage.setItem(KEYS.APP_RATING_STATUS, JSON.stringify({
+        ...current,
+        lastDismissedAt: Date.now()
+      }));
+    } catch (e) {
+      console.error('StorageService: error dismissing app rating prompt', e);
+    }
   },
 
   // Parental Gate Lockout Rate Limiter Storage Helpers
