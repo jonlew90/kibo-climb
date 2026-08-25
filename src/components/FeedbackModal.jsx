@@ -84,7 +84,6 @@ export default function FeedbackModal({ isOpen, onClose }) {
         message: message.trim(),
         userId: userData?.cloudUid || 'anonymous',
         profileId: userData?.id || 'unknown',
-        email: userData?.email || null,
         deviceInfo,
         status: 'new',
         createdAt: serverTimestamp(),

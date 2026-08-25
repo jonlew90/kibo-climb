@@ -227,17 +227,22 @@ export const storageService = {
     const state = safeGetProfilesState();
     Object.keys(state.profiles).forEach(id => {
       const prof = state.profiles[id];
+      const newUserData = {
+        ...prof.userData,
+        cloudUid: accountInfo.cloudUid !== undefined ? accountInfo.cloudUid : prof.userData?.cloudUid,
+        isAnonymous: accountInfo.isAnonymous !== undefined ? accountInfo.isAnonymous : prof.userData?.isAnonymous,
+        authProvider: accountInfo.authProvider !== undefined ? accountInfo.authProvider : prof.userData?.authProvider,
+        displayName: accountInfo.displayName !== undefined ? accountInfo.displayName : prof.userData?.displayName,
+        accountLinkedAt: accountInfo.accountLinkedAt !== undefined ? accountInfo.accountLinkedAt : prof.userData?.accountLinkedAt
+      };
+
+      if (newUserData.email) {
+        delete newUserData.email;
+      }
+
       state.profiles[id] = {
         ...prof,
-        userData: {
-          ...prof.userData,
-          cloudUid: accountInfo.cloudUid !== undefined ? accountInfo.cloudUid : prof.userData?.cloudUid,
-          isAnonymous: accountInfo.isAnonymous !== undefined ? accountInfo.isAnonymous : prof.userData?.isAnonymous,
-          authProvider: accountInfo.authProvider !== undefined ? accountInfo.authProvider : prof.userData?.authProvider,
-          email: accountInfo.email !== undefined ? accountInfo.email : prof.userData?.email,
-          displayName: accountInfo.displayName !== undefined ? accountInfo.displayName : prof.userData?.displayName,
-          accountLinkedAt: accountInfo.accountLinkedAt !== undefined ? accountInfo.accountLinkedAt : prof.userData?.accountLinkedAt
-        }
+        userData: newUserData
       };
     });
     safeSaveProfilesState(state);
@@ -276,7 +281,6 @@ export const storageService = {
         isAnonymous: isLinked ? false : true,
         cloudUid: isLinked ? activeProf.userData?.cloudUid : undefined,
         authProvider: isLinked ? activeProf.userData?.authProvider : undefined,
-        email: isLinked ? activeProf.userData?.email : undefined,
         accountLinkedAt: isLinked ? activeProf.userData?.accountLinkedAt : undefined,
         subjectRatings: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, subId) => {
           acc[subId] = startingRating;
