@@ -470,6 +470,47 @@ export default function ParentDashboardModal({
         {activeTab === 'overview' && (
           <div className="flex-1 space-y-4 my-1">
 
+            {/* SUBJECT SELECTOR BAR (STICKY AT TOP OF OVERVIEW) */}
+            <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-xs py-1">
+              <div className="bg-white border-2 border-purple-200 rounded-2xl p-2.5 shadow-sm flex items-center justify-between gap-2 flex-wrap text-left">
+                <div className="flex items-center gap-1.5 text-purple-900">
+                  <Layers className="w-4 h-4 stroke-[2.5] text-purple-600" />
+                  <span className="text-xs font-black uppercase tracking-wider">Subject Focus</span>
+                </div>
+
+                {/* Subject Switcher Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none touch-pan-x">
+                  {Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).map((subKey) => {
+                    const subConfig = SUBJECTS_CONFIG[subKey] || {};
+                    const isSelected = selectedSubject === subKey;
+                    const subData = getProfileSubjectData(viewingProfileId, subKey);
+                    const subRating = subData.adaptiveCompetenceRating || 1000;
+                    const subIcon = subConfig.icon || (subKey === 'words' ? '📚' : subKey === 'world' ? '🌍' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🔢')));
+
+                    return (
+                      <button
+                        key={subKey}
+                        type="button"
+                        onClick={() => handleSelectSubject(subKey)}
+                        className={`px-3.5 py-1.5 rounded-full border-2 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
+                          isSelected
+                            ? (subKey === 'words' ? 'bg-teal-600 text-white border-teal-700 shadow-sm ring-2 ring-teal-400/30' : subKey === 'world' ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm ring-2 ring-emerald-400/30' : subKey === 'coding' ? 'bg-rose-600 text-white border-rose-700 shadow-sm ring-2 ring-rose-400/30' : 'bg-purple-600 text-white border-purple-700 shadow-sm ring-2 ring-purple-400/30')
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-purple-300'
+                        }`}
+                      >
+                        <span>{subIcon}</span>
+                        <span>{subConfig.name || subKey}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : subKey === 'world' ? 'bg-emerald-800 text-emerald-100' : subKey === 'coding' ? 'bg-rose-800 text-rose-100' : 'bg-purple-800 text-purple-100') : 'bg-slate-200 text-slate-600'}`}>
+                          {subRating}
+                        </span>
+                        {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
             {/* CHILD GLOBAL HABIT BANNER */}
             {(() => {
               const currentProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
@@ -555,45 +596,6 @@ export default function ParentDashboardModal({
                 </div>
               );
             })()}
-
-            {/* SUBJECT SELECTOR BAR (TOGGLE BETWEEN ALL ACTIVE SUBJECTS PER PROFILE) */}
-            <div className="bg-white border-2 border-purple-200 rounded-2xl p-2.5 shadow-xs flex items-center justify-between gap-2 flex-wrap text-left">
-              <div className="flex items-center gap-1.5 text-purple-900">
-                <Layers className="w-4 h-4 stroke-[2.5] text-purple-600" />
-                <span className="text-xs font-black uppercase tracking-wider">Subject Focus</span>
-              </div>
-
-              {/* Subject Switcher Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none touch-pan-x">
-                {Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).map((subKey) => {
-                  const subConfig = SUBJECTS_CONFIG[subKey] || {};
-                  const isSelected = selectedSubject === subKey;
-                  const subData = getProfileSubjectData(viewingProfileId, subKey);
-                  const subRating = subData.adaptiveCompetenceRating || 1000;
-                  const subIcon = subConfig.icon || (subKey === 'words' ? '📚' : subKey === 'world' ? '🌍' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🔢')));
-
-                  return (
-                    <button
-                      key={subKey}
-                      type="button"
-                      onClick={() => handleSelectSubject(subKey)}
-                      className={`px-3.5 py-1.5 rounded-full border-2 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
-                        isSelected
-                          ? (subKey === 'words' ? 'bg-teal-600 text-white border-teal-700 shadow-sm ring-2 ring-teal-400/30' : subKey === 'world' ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm ring-2 ring-emerald-400/30' : subKey === 'coding' ? 'bg-rose-600 text-white border-rose-700 shadow-sm ring-2 ring-rose-400/30' : 'bg-purple-600 text-white border-purple-700 shadow-sm ring-2 ring-purple-400/30')
-                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-purple-300'
-                      }`}
-                    >
-                      <span>{subIcon}</span>
-                      <span>{subConfig.name || subKey}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : subKey === 'world' ? 'bg-emerald-800 text-emerald-100' : subKey === 'coding' ? 'bg-rose-800 text-rose-100' : 'bg-purple-800 text-purple-100') : 'bg-slate-200 text-slate-600'}`}>
-                        {subRating}
-                      </span>
-                      {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
             {/* STAT SUMMARY & TIMEFRAME FILTER */}
             {(() => {
