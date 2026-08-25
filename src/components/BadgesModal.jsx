@@ -98,6 +98,76 @@ export default function BadgesModal({
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
       <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+        {/* Personal Bests & Mountain Stats Grid */}
+        <div className="bg-white border-2 border-purple-200 rounded-3xl p-4 space-y-3 shrink-0 text-left shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm font-black text-purple-950 flex items-center gap-1.5 uppercase tracking-wider">
+              <Trophy className="w-4 h-4 text-purple-600 stroke-[2.5]" />
+              Personal Bests & Mountain Stats
+            </span>
+            <span className="text-[11px] font-extrabold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+              Active Records
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-center">
+            {/* Best Question Streak */}
+            <div className="bg-orange-50/80 border border-orange-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
+              <div className="flex items-center gap-1 text-orange-900 text-xs font-black uppercase">
+                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" /> Best Streak
+              </div>
+              <span className="text-xl font-black text-orange-600 my-1">
+                {bestStreak > 0 ? `${bestStreak} Qs` : '—'}
+              </span>
+              <span className="text-[10px] font-bold text-orange-800/80">Unbroken correct</span>
+            </div>
+
+            {/* Fastest Flawless Climb */}
+            <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
+              <div className="flex items-center gap-1 text-amber-900 text-xs font-black uppercase">
+                <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400" /> Fastest Flawless
+              </div>
+              <span className="text-xl font-black text-amber-600 my-1">
+                {fastestTime ? `${fastestTime}s` : '—'}
+              </span>
+              <span className="text-[10px] font-bold text-amber-800/80">12/12 perfect run</span>
+            </div>
+
+            {/* Flawless Climbs */}
+            <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
+              <div className="flex items-center gap-1 text-emerald-900 text-xs font-black uppercase">
+                <Target className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" /> Flawless Climbs
+              </div>
+              <span className="text-xl font-black text-emerald-600 my-1">
+                {perfectRuns > 0 ? `${perfectRuns}` : '0'}
+              </span>
+              <span className="text-[10px] font-bold text-emerald-800/80">100% accuracy</span>
+            </div>
+
+            {/* Total Questions Conquered */}
+            <div className="bg-sky-50/80 border border-sky-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
+              <div className="flex items-center gap-1 text-sky-900 text-xs font-black uppercase">
+                <CheckCircle2 className="w-3.5 h-3.5 text-sky-600" /> Questions Solved
+              </div>
+              <span className="text-xl font-black text-sky-700 my-1">
+                {userState.totalProblemsSolved || 0}
+              </span>
+              <span className="text-[10px] font-bold text-sky-800/80">Across mountain</span>
+            </div>
+
+            {/* Summits Reached */}
+            <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs col-span-2 sm:col-span-1">
+              <div className="flex items-center gap-1 text-indigo-900 text-xs font-black uppercase">
+                <span>🏔️</span> Summits Reached
+              </div>
+              <span className="text-xl font-black text-indigo-700 my-1">
+                {userState.sprintHistory?.length || userState.completedClimbsCount || 0}
+              </span>
+              <span className="text-[10px] font-bold text-indigo-800/80">Completed blocks</span>
+            </div>
+          </div>
+        </div>
+
         {/* Compact rating + progress bar */}
         <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-3xl p-4 space-y-3 shrink-0 text-left">
           <div className="flex items-center justify-between text-xs sm:text-sm font-black text-amber-950">
@@ -124,28 +194,22 @@ export default function BadgesModal({
               const subData = storageService.getUserData(subKey);
               const subRating = subData.adaptiveCompetenceRating || subData.competenceRank || 1000;
               const rankName = getCompetenceRankTier(subRating, subKey);
-              const isCurrent = subKey === activeSubject;
 
               return (
                 <span
                   key={subKey}
-                  className={`inline-flex items-center gap-1 text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-full border transition-all ${
-                    isCurrent
-                      ? 'bg-indigo-100 text-indigo-950 border-indigo-300 shadow-2xs ring-1 ring-indigo-400/50'
-                      : 'bg-white/80 text-slate-700 border-amber-200/80'
-                  }`}
+                  className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-full border border-amber-200/90 bg-white/90 text-slate-800 shadow-2xs transition-all"
                   title={`${cfg.name} Competence Rank: ${subRating} pts (${rankName})`}
                 >
                   <span>{cfg.icon}</span>
                   <span className="text-slate-900 font-extrabold">{cfg.name}:</span>
-                  <span className={isCurrent ? 'text-indigo-800' : 'text-slate-600'}>{rankName}</span>
-                  <span className="text-[10px] sm:text-[11px] opacity-75 font-bold">({subRating})</span>
+                  <span className="text-purple-900 font-bold">{rankName}</span>
+                  <span className="text-[10px] sm:text-[11px] text-slate-500 font-bold">({subRating})</span>
                 </span>
               );
             })}
           </div>
         </div>
-
 
         {/* Filter Category Bar */}
         <div className="relative flex items-center shrink-0">

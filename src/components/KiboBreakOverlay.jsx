@@ -13,11 +13,15 @@ export default function KiboBreakOverlay({
   shieldsUsed = 0,
   competenceRating = 1000,
   equippedItems = [],
+  blockTimeSec = null,
+  isNewSpeedRecord = false,
+  isNewStreakRecord = false,
   onOpenWorkshop,
   onResumeClimb
 }) {
   const displayCorrect = Math.min(12, Math.max(0, correctCount));
   const accuracyPct = Math.round((displayCorrect / Math.max(1, totalCount)) * 100);
+  const isPerfectBlock = displayCorrect === totalCount && shieldsUsed === 0;
 
   return (
     <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-hidden select-none animate-pop border-none">
@@ -33,8 +37,32 @@ export default function KiboBreakOverlay({
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight drop-shadow-xs leading-tight">
             Climb Block Complete!
           </h1>
+          {isNewSpeedRecord && (
+            <div className="w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 border-2 border-amber-500 rounded-2xl py-1.5 px-3 shadow-md animate-bounce">
+              <span className="text-xs sm:text-sm font-black text-amber-950 flex items-center justify-center gap-1.5">
+                🏆 NEW PR! Fastest Flawless Climb: {blockTimeSec ? `${blockTimeSec}s` : 'Speed Record'} ⚡
+              </span>
+            </div>
+          )}
+
+          {!isNewSpeedRecord && isNewStreakRecord && (
+            <div className="w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 border-2 border-orange-500 rounded-2xl py-1.5 px-3 shadow-md animate-bounce">
+              <span className="text-xs sm:text-sm font-black text-orange-950 flex items-center justify-center gap-1.5">
+                🔥 NEW PR! Best Question Streak: {streak} Qs in a row! 🌟
+              </span>
+            </div>
+          )}
+
+          {!isNewSpeedRecord && !isNewStreakRecord && isPerfectBlock && (
+            <div className="w-full bg-emerald-100 border border-emerald-300 rounded-xl py-1 px-3 shadow-xs">
+              <span className="text-xs font-black text-emerald-900 flex items-center justify-center gap-1.5">
+                🎯 Flawless 12/12 Climb Ascent! {blockTimeSec ? `(${blockTimeSec}s)` : ''}
+              </span>
+            </div>
+          )}
+
           <p className="text-xs sm:text-sm font-bold text-purple-900">
-            You completed 12 adaptive problems on Mount Kibo!
+            You completed 12 adaptive problems on Mount Kibo! {blockTimeSec && !isPerfectBlock ? `(${blockTimeSec}s)` : ''}
           </p>
 
           {/* Kibo Mascot Image */}

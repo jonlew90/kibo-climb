@@ -887,14 +887,26 @@ export default function WordsSessionView({
           answers: nextBlockAnswers
         };
 
-        const existingHistory = activeUserData.sprintHistory || [];
-        const updatedHistory = [newSessionRecord, ...existingHistory];
+        const currentRecords = activeUserData.personalRecords || {};
+        const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
+        const isNewStreakRecord = evalResult.nextInSessionStreak > (currentRecords.highestCorrectStreak || 0);
+        const updatedRecords = {
+          ...currentRecords,
+          fastest12QuestionsTime: isNewSpeedRecord ? blockTimeSec : currentRecords.fastest12QuestionsTime,
+          highestCorrectStreak: Math.max(currentRecords.highestCorrectStreak || 0, evalResult.nextInSessionStreak),
+          mostPerfectSessions: isPerfectBlock
+            ? (currentRecords.mostPerfectSessions || 0) + 1
+            : (currentRecords.mostPerfectSessions || 0)
+        };
 
         setCompletedBlockStats({
           correctCount: finalBlockCorrect,
           sparksEarned: finalBlockSparks,
           blockRatingGain: nextBlockRatingGain,
-          shieldsUsed: blockShieldsUsed
+          shieldsUsed: blockShieldsUsed,
+          blockTimeSec,
+          isNewSpeedRecord,
+          isNewStreakRecord
         });
 
         // Immediately reset block counters to 0 for the next 12-question block
@@ -903,16 +915,6 @@ export default function WordsSessionView({
         setBlockRatingGain(0);
         setBlockShieldsUsed(0);
         setBlockAnswers([]);
-
-        const currentRecords = activeUserData.personalRecords || {};
-        const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
-        const updatedRecords = {
-          ...currentRecords,
-          fastest12QuestionsTime: isNewSpeedRecord ? blockTimeSec : currentRecords.fastest12QuestionsTime,
-          mostPerfectSessions: isPerfectBlock
-            ? (currentRecords.mostPerfectSessions || 0) + 1
-            : (currentRecords.mostPerfectSessions || 0)
-        };
 
         storageService.saveUserData({
           sprintHistory: updatedHistory,
@@ -1343,6 +1345,9 @@ export default function WordsSessionView({
         shieldsUsed={completedBlockStats.shieldsUsed}
         competenceRating={competenceRank}
         equippedItems={equippedItems}
+        blockTimeSec={completedBlockStats.blockTimeSec}
+        isNewSpeedRecord={completedBlockStats.isNewSpeedRecord}
+        isNewStreakRecord={completedBlockStats.isNewStreakRecord}
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
           if (onResetDoubleSparks) onResetDoubleSparks();

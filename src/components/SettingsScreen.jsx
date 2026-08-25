@@ -1,10 +1,19 @@
 import React from 'react';
-import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, Mail } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, Mail, ArrowLeft } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
-export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter, onNavigate, onOpenFeedback, onOpenParentZone, onSwitchProfile }) {
+export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter, onNavigate, onBack, onOpenFeedback, onOpenParentZone, onSwitchProfile }) {
   const isMuted = preferences?.isMuted ?? false;
   const isHapticsEnabled = preferences?.isHapticsEnabled ?? true;
+
+  const handleBack = () => {
+    soundFx.playKeyTap();
+    if (onBack) {
+      onBack();
+    } else if (onNavigate) {
+      onNavigate('/', 'home');
+    }
+  };
 
   const handleToggleMute = () => {
     soundFx.playKeyTap();
@@ -20,9 +29,20 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
-        <div className="flex items-center gap-2 text-slate-800">
-          <Settings className="w-5 h-5 text-slate-600 stroke-[2.5]" />
-          <h2 className="text-base sm:text-lg font-black tracking-tight">Settings</h2>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-300 transition-colors active:scale-95 cursor-pointer flex items-center justify-center"
+            aria-label="Back"
+            title="Back"
+          >
+            <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+          </button>
+          <div className="flex items-center gap-2 text-slate-800">
+            <Settings className="w-5 h-5 text-slate-600 stroke-[2.5]" />
+            <h2 className="text-base sm:text-lg font-black tracking-tight">Settings</h2>
+          </div>
         </div>
       </header>
 

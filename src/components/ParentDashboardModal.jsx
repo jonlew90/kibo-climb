@@ -303,23 +303,27 @@ export default function ParentDashboardModal({
     <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-purple-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-purple-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
-        <button
-          onClick={() => {
-            soundFx.playKeyTap();
-            onClose();
-          }}
-          className="flex items-center gap-1.5 text-purple-700 hover:text-purple-900 font-extrabold text-sm px-3 py-1.5 bg-purple-50 hover:bg-purple-100 rounded-xl transition-all active:scale-95 border border-purple-200"
-        >
-          <ArrowLeft className="w-4 h-4 stroke-[3]" />
-          <span>Exit Parent Zone</span>
-        </button>
-
-        <div className="flex items-center gap-2 text-slate-800">
-          <ShieldCheck className="w-6 h-6 text-purple-600 stroke-[2.5]" />
-          <div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              soundFx.playKeyTap();
+              onClose();
+            }}
+            className="p-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl border border-purple-200 transition-colors active:scale-95 cursor-pointer flex items-center justify-center"
+            aria-label="Exit Parent Zone"
+            title="Exit Parent Zone"
+          >
+            <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+          </button>
+          <div className="flex items-center gap-2 text-slate-800">
+            <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 stroke-[2.5]" />
             <h2 className="text-base sm:text-lg font-black tracking-tight leading-tight">Parent Dashboard</h2>
           </div>
         </div>
+
+        <span className="text-xs font-black bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full border border-purple-200">
+          🔒 PIN Protected
+        </span>
       </header>
 
       {/* CHILD PROFILE SELECTOR BAR */}
@@ -391,11 +395,6 @@ export default function ParentDashboardModal({
                   <span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-purple-800 text-purple-100' : 'bg-slate-200 text-slate-600'}`}>
                     {displayGrade}
                   </span>
-                  {profileStreak > 0 && (
-                    <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-0.5 ${isActive ? 'bg-amber-400 text-amber-950 font-black' : 'bg-amber-100 text-amber-900'}`}>
-                      🔥 {profileStreak}d
-                    </span>
-                  )}
                   {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
                 </button>
               );
@@ -473,7 +472,7 @@ export default function ParentDashboardModal({
                       </p>
                     </div>
                   </div>
-                  <div className="text-right shrink-0 bg-white/80 border border-amber-200 px-3 py-1.5 rounded-xl shadow-xs">
+                  <div className="text-center shrink-0 bg-white/80 border border-amber-200 px-3 py-1.5 rounded-xl shadow-xs">
                     <span className="text-xl font-black text-amber-600 tracking-tight leading-none block">{profileStreak}</span>
                     <span className="text-xs font-black uppercase text-amber-800 tracking-wider block mt-0.5">{profileStreak === 1 ? 'Day' : 'Days'}</span>
                   </div>

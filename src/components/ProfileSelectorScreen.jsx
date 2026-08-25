@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, ChevronRight, Flame, Star, Zap, CheckCircle2, User, X, Sparkles, BookOpen, GraduationCap } from 'lucide-react';
+import { Plus, ChevronRight, Flame, Star, Zap, CheckCircle2, User, X, Sparkles, BookOpen, GraduationCap, ArrowLeft } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
@@ -349,25 +349,26 @@ export default function ProfileSelectorScreen({
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       {/* Top Header Bar */}
       <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
-        <div className="flex items-center gap-2 text-slate-800">
-          <span className="text-lg">🏔️</span>
-          <h2 className="text-base sm:text-lg font-black tracking-tight">Select Climber Profile</h2>
+        <div className="flex items-center gap-3">
+          {canClose && onClose && (
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                onClose();
+              }}
+              className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-300 transition-colors active:scale-95 cursor-pointer flex items-center justify-center"
+              aria-label="Back"
+              title="Back"
+            >
+              <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          )}
+          <div className="flex items-center gap-2 text-slate-800">
+            <span className="text-lg">🏔️</span>
+            <h2 className="text-base sm:text-lg font-black tracking-tight">Select Climber Profile</h2>
+          </div>
         </div>
-
-        {/* Dismiss / Close button if canClose */}
-        {canClose && onClose && (
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              onClose();
-            }}
-            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-300 transition-colors active:scale-95 cursor-pointer flex items-center justify-center"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5 stroke-[2.5]" />
-          </button>
-        )}
       </header>
 
       {/* Main Fullscreen Content */}
