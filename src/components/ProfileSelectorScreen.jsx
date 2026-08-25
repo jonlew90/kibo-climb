@@ -291,6 +291,13 @@ function AddProfilePanel({ onCancel, onCreated }) {
                 <span className="text-slate-600 truncate">{selectedCurriculum.world}</span>
               </div>
             )}
+            {selectedCurriculum.coding && (
+              <div className="flex items-center gap-1.5 text-purple-900 bg-purple-50/80 border border-purple-200/60 px-2 py-0.5 sm:py-1 rounded-lg">
+                <span className="text-xs">💻</span>
+                <span className="font-bold">Coding:</span>
+                <span className="text-slate-600 truncate">{selectedCurriculum.coding}</span>
+              </div>
+            )}
           </div>
         </div>
 

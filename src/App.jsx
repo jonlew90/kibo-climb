@@ -13,6 +13,7 @@ import ProfileSelectorScreen from './components/ProfileSelectorScreen';
 import MathSessionView from './components/MathSessionView';
 import WordsSessionView from './components/WordsSessionView';
 import WorldSessionView from './components/WorldSessionView';
+import CodingSessionView from './components/CodingSessionView';
 import BadgesModal from './components/BadgesModal';
 import DevControlPanel from './components/DevControlPanel';
 import RollingNumberTicker from './components/RollingNumberTicker';
@@ -1751,6 +1752,16 @@ export default function App() {
                     Coming Soon
                   </span>
                 </div>
+
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black bg-slate-50/80 border border-dashed border-indigo-300 text-slate-700 select-none">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">💻</span>
+                    <span>Kibo Coding</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300 leading-none">
+                    Coming Soon
+                  </span>
+                </div>
               </div>
             )}
           </div>
@@ -1805,7 +1816,7 @@ export default function App() {
               {activeSubject === 'world' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
             </button>
 
-            {/* Coming Soon Teasers (Money & Music) */}
+            {/* Coming Soon Teasers (Money, Music & Coding) */}
             <button
               type="button"
               disabled
@@ -1827,6 +1838,18 @@ export default function App() {
               <span className="text-sm sm:text-base leading-none select-none">🎵</span>
               <span className="tracking-tight">Music</span>
               <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 shadow-2xs leading-none whitespace-nowrap">
+                Coming Soon
+              </span>
+            </button>
+            <button
+              type="button"
+              disabled
+              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-white/90 border-2 border-dashed border-indigo-300 text-slate-700 shadow-2xs shrink-0 select-none cursor-not-allowed"
+              title="Kibo Coding - Coming Soon"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">💻</span>
+              <span className="tracking-tight">Coding</span>
+              <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300 shadow-2xs leading-none whitespace-nowrap">
                 Coming Soon
               </span>
             </button>
@@ -2016,6 +2039,47 @@ export default function App() {
         />
       )}
 
+      {appState === 'adaptive_session' && activeSubject === 'coding' && (
+        <CodingSessionView
+          key={activeProfileId + '-coding'}
+          profileId={activeProfileId}
+          isPaused={isAppPaused}
+          equippedItems={equippedItems}
+          sparks={sparks}
+          streak={streak}
+          userTier={tier}
+          totalProblemsSolved={totalProblemsSolved}
+          isFTUX={showFirstLaunchOnboardingModal}
+          isDoubleSparksActive={isDoubleSparksActive}
+          consumables={consumables}
+          onToggleDoubleSparksPotion={handleToggleDoubleSparksPotion}
+          onConsumeHintScroll={handleConsumeHintScroll}
+          onConsumeExplorerCompass={handleConsumeExplorerCompass}
+          onConsumeShield={handleConsumeShield}
+          onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
+          onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
+          onRecordDailyPractice={recordDailyPractice}
+          onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
+          onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
+          onUpdateCompetenceRating={(newRating) => {
+            setLiveCompetenceRating(newRating);
+            checkAndPromptLinkAccount(
+              { rating: newRating },
+              setLinkModalMilestone,
+              setShowAccountLinkModal
+            );
+          }}
+          onAwardSparks={(earned) => {
+            const clubMultiplier = isKiboClub ? 1.25 : 1;
+            const finalEarned = Math.round(earned * clubMultiplier);
+            const updated = sparks + finalEarned;
+            setSparks(updated);
+            localStorage.setItem('kibo_math_sparks', updated.toString());
+          }}
+          onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
+        />
+      )}
+
       {/* PROFILE SELECTOR — shown on every load when 2+ profiles exist */}
       {showProfileSelector && (
         <ProfileSelectorScreen
@@ -2092,7 +2156,7 @@ export default function App() {
           setShowPinGateModal(true);
         }}
         onStartAdaptiveClimb={(startingSubject = 'math') => {
-          const validSubject = (startingSubject === 'words' || startingSubject === 'math' || startingSubject === 'world') ? startingSubject : 'math';
+          const validSubject = (startingSubject === 'words' || startingSubject === 'math' || startingSubject === 'world' || startingSubject === 'coding') ? startingSubject : 'math';
           storageService.setLastActiveSubject(validSubject);
           setActiveSubject(validSubject);
           syncAppStateWithStorage(validSubject);

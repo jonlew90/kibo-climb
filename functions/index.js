@@ -9,6 +9,24 @@ if (!getApps().length) {
 }
 
 /**
+ * Sanitizes HTML email content to prevent script injection and dangerous tags.
+ */
+function sanitizeEmailHtml(html) {
+  if (typeof html !== "string") return "";
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, "")
+    .replace(/<embed\b[^>]*>/gi, "")
+    .replace(/<base\b[^>]*>/gi, "")
+    .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "")
+    .replace(/\s*on\w+\s*=\s*[^>\s]+/gi, "")
+    .replace(/javascript:/gi, "blocked-javascript:");
+}
+
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+/**
  * Callable function to send parent reports, alerts, and notifications via Resend.
  * Called from client via communicationsService.js.
  */
@@ -17,6 +35,10 @@ exports.sendParentEmail = onCall(
     cors: true
   },
   async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Authentication required to send notifications.");
+    }
+
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       console.error("Missing RESEND_API_KEY in environment/secrets.");
@@ -29,22 +51,34 @@ exports.sendParentEmail = onCall(
     const resend = new Resend(apiKey);
     const { to, subject, htmlBody, textBody } = request.data || {};
 
-    if (!to || !subject || (!htmlBody && !textBody)) {
-      throw new HttpsError(
-        "invalid-argument",
-        "Missing required fields: 'to', 'subject', and email content ('htmlBody' or 'textBody')."
-      );
+    if (!to || typeof to !== "string" || !EMAIL_REGEX.test(to.trim()) || to.length > 254) {
+      throw new HttpsError("invalid-argument", "A valid recipient email address is required.");
     }
+
+    if (!subject || typeof subject !== "string") {
+      throw new HttpsError("invalid-argument", "A valid subject line is required.");
+    }
+
+    // Strip carriage returns and line feeds from subject to prevent SMTP header injection
+    const cleanSubject = subject.replace(/[\r\n]+/g, " ").trim().slice(0, 200);
+    const cleanTo = to.trim();
+
+    if (!htmlBody && !textBody) {
+      throw new HttpsError("invalid-argument", "Email body content is required.");
+    }
+
+    const cleanHtml = htmlBody ? sanitizeEmailHtml(String(htmlBody)).slice(0, 150000) : undefined;
+    const cleanText = textBody ? String(textBody).slice(0, 50000) : undefined;
 
     const senderEmail = process.env.SENDER_EMAIL || "Kibo Climb <onboarding@resend.dev>";
 
     try {
       const response = await resend.emails.send({
         from: senderEmail,
-        to: [to],
-        subject: subject,
-        html: htmlBody,
-        text: textBody,
+        to: [cleanTo],
+        subject: cleanSubject,
+        html: cleanHtml,
+        text: cleanText,
       });
 
       if (response.error) {
@@ -121,11 +155,20 @@ exports.joinWeeklyLeague = onCall(
     cors: true
   },
   async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication required to join leagues.');
+    }
     const { profileId, weekStr, subject } = request.data || {};
-    const uid = request.auth ? request.auth.uid : 'anonymous';
+    const uid = request.auth.uid;
 
-    if (!profileId || !weekStr || !subject) {
-      throw new HttpsError('invalid-argument', 'Missing required fields.');
+    if (!profileId || typeof profileId !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(profileId)) {
+      throw new HttpsError('invalid-argument', 'Invalid profileId.');
+    }
+    if (!weekStr || typeof weekStr !== 'string' || !/^[a-zA-Z0-9_-]{1,32}$/.test(weekStr)) {
+      throw new HttpsError('invalid-argument', 'Invalid week identifier.');
+    }
+    if (!subject || typeof subject !== 'string' || !/^[a-zA-Z0-9_-]{1,32}$/.test(subject)) {
+      throw new HttpsError('invalid-argument', 'Invalid subject identifier.');
     }
 
     const db = admin.firestore();
@@ -197,12 +240,21 @@ exports.joinWeeklyLeague = onCall(
 exports.processReferralLinking = onCall(
   { cors: true },
   async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication required.');
+    }
     const { referrerId, newUserId } = request.data || {};
-    if (!referrerId || !newUserId) {
-      throw new HttpsError('invalid-argument', 'Missing referrer or new user ID.');
+    if (!referrerId || typeof referrerId !== 'string' || !newUserId || typeof newUserId !== 'string') {
+      throw new HttpsError('invalid-argument', 'Missing or invalid referrer or new user ID.');
+    }
+    if (!/^[a-zA-Z0-9_-]{1,128}$/.test(referrerId) || !/^[a-zA-Z0-9_-]{1,128}$/.test(newUserId)) {
+      throw new HttpsError('invalid-argument', 'Invalid user ID format.');
     }
     if (referrerId === newUserId) {
        throw new HttpsError('invalid-argument', 'Cannot refer yourself.');
+    }
+    if (request.auth.uid !== newUserId) {
+       throw new HttpsError('permission-denied', 'You can only register referrals for your own account.');
     }
 
     try {

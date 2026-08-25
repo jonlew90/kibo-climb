@@ -6,6 +6,8 @@ const SubjectWallpaper = ({ activeSubject }) => {
     icons = ['📚', '✏️', '🅰️', '📖'];
   } else if (activeSubject === 'world') {
     icons = ['🌍', '🗺️', '🧭', '🏔️'];
+  } else if (activeSubject === 'coding') {
+    icons = ['💻', '⚙️', '🔀', '⚡'];
   }
 
   // Repeating pattern using a data URL with an SVG containing subject-specific motifs with enhanced visibility

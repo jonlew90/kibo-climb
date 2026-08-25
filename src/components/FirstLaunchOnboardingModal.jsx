@@ -45,50 +45,58 @@ export const GRADE_CURRICULUM_DETAILS = {
     math: 'Counting, single-digit + / -',
     words: 'Alphabet & basic phonics',
     world: 'Continents & major oceans',
-    summary: 'Numbers, shapes, letters & continents'
+    coding: 'Visual patterns & sequence order',
+    summary: 'Numbers, shapes, letters & logic'
   },
   'Grade 1–2': {
     math: 'Sums & differences to 20, making 10s',
     words: 'Sight words & basic spelling',
     world: 'US states & geographic shapes',
-    summary: 'Addition/subtraction fluency, reading roots & US states'
+    coding: 'Step algorithms & repeat patterns',
+    summary: 'Addition/subtraction, reading roots & logic'
   },
   'Grade 3–4': {
     math: 'Multiplication (0s–9s) & time math',
     words: 'Vocabulary & compound words',
     world: 'Major countries & capital cities',
-    summary: 'Multiplication tables, vocabulary & major capitals'
+    coding: 'Grid navigation & boolean logic',
+    summary: 'Multiplication, vocabulary & computational thinking'
   },
   'Grade 5–6': {
     math: 'Money decimals, fractions & division',
     words: 'Advanced spelling & prefixes/suffixes',
     world: 'Hemispheres & country shapes',
-    summary: 'Decimal arithmetic, fractions & country shapes'
+    coding: 'Variables, binary & conditionals',
+    summary: 'Decimal arithmetic, fractions & state tracing'
   },
   'Grade 7–8': {
     math: 'Multi-digit arithmetic, fractions & PEMDAS',
     words: 'Complex grammar, parts of speech & word roots',
     world: 'Global geography, capitals & waterways',
-    summary: 'Multi-step arithmetic, verbal reasoning & global geography'
+    coding: 'Loops, functions & stack data structures',
+    summary: 'Multi-step arithmetic, grammar & functions'
   },
   'High School & Beyond': {
     math: 'Linear equations, negatives & powers',
     words: 'Advanced verbal & language mastery',
     world: 'Peak world geography mastery',
-    summary: 'Advanced equations, verbal mastery & global geography'
+    coding: 'Recursion, algorithms & Big-O complexity',
+    summary: 'Advanced equations, verbal mastery & algorithmic logic'
   },
   // Backwards compatibility aliases
   'Pre-Algebra / Middle School': {
     math: 'Multi-digit arithmetic, fractions & PEMDAS',
     words: 'Complex grammar, parts of speech & word roots',
     world: 'Global geography, capitals & waterways',
-    summary: 'Multi-step arithmetic, verbal reasoning & global geography'
+    coding: 'Loops, functions & stack data structures',
+    summary: 'Multi-step arithmetic, grammar & functions'
   },
   'Algebra & Beyond': {
     math: 'Linear equations, negatives & powers',
     words: 'Advanced verbal & language mastery',
     world: 'Peak world geography mastery',
-    summary: 'Advanced equations, verbal mastery & global geography'
+    coding: 'Recursion, algorithms & Big-O complexity',
+    summary: 'Advanced equations, verbal mastery & algorithmic logic'
   },
 };
 

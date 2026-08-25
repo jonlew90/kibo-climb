@@ -437,6 +437,73 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         break;
 
       // ==========================================
+      // 4. Kibo Coding Badges
+      // ==========================================
+      case 'coding_novice':
+        if (subjectId === 'coding') {
+          unlocked = subjectSolvedCount >= 25;
+        }
+        break;
+      case 'coding_coder':
+        if (subjectId === 'coding') {
+          unlocked = subjectSolvedCount >= 100;
+        }
+        break;
+      case 'coding_master':
+        if (subjectId === 'coding') {
+          unlocked = subjectSolvedCount >= 500;
+        }
+        break;
+      case 'pattern_scout':
+        if (subjectId === 'coding') {
+          unlocked = currentRating >= 1200;
+        }
+        break;
+      case 'grid_navigator':
+        if (subjectId === 'coding') {
+          unlocked = currentRating >= 1400;
+        }
+        break;
+      case 'boolean_ranger':
+        if (subjectId === 'coding') {
+          unlocked = currentRating >= 1600;
+        }
+        break;
+      case 'variable_virtuoso':
+        if (subjectId === 'coding') {
+          unlocked = currentRating >= 1800;
+        }
+        break;
+      case 'debug_detective':
+        if (subjectId === 'coding') {
+          unlocked = currentRating >= 2000;
+        }
+        break;
+      case 'loop_legend':
+        if (subjectId === 'coding') {
+          unlocked = currentRating >= 2200;
+        }
+        break;
+      case 'code_summit_master':
+        if (subjectId === 'coding') {
+          unlocked = currentRating >= 2400;
+        }
+        break;
+      case 'code_speed_demon': {
+        if (subjectId === 'coding') {
+          const isFastSprint = lastSprintResult &&
+            (lastSprintResult.accuracyPct === 100 || (lastSprintResult.correctCount === lastSprintResult.totalQuestions && lastSprintResult.totalQuestions >= 10)) &&
+            (lastSprintResult.totalTimeSec != null && lastSprintResult.totalTimeSec <= 45);
+          const hadFastHistory = Array.isArray(sprintHistory) && sprintHistory.some((s) =>
+            (s.accuracyPct === 100 || (s.correctCount === s.totalQuestions && s.totalQuestions >= 10)) &&
+            s.totalTimeSec != null && s.totalTimeSec <= 45
+          );
+          unlocked = !!isFastSprint || hadFastHistory;
+        }
+        break;
+      }
+
+      // ==========================================
       // 5. Shop Purchases & Rarities
       // ==========================================
       case 'shop_buyer_1':

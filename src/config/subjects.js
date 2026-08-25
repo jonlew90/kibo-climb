@@ -128,5 +128,57 @@ export const SUBJECTS_CONFIG = {
       { id: 'national', name: 'National', icon: '🦅', subtitle: 'US States', minUnlockRating: 1200, tiers: [2], defaultAcc: 85, defaultSpeed: 3.0 },
       { id: 'global', name: 'Global', icon: '🌎', subtitle: 'Countries & Capitals', minUnlockRating: 1400, tiers: [3, 4, 5], defaultAcc: 80, defaultSpeed: 4.0 }
     ]
+  },
+  coding: {
+    id: 'coding',
+    name: 'Coding',
+    icon: '💻',
+    COMPETENCE_RANK_TIERS: [
+      { min: 0, max: 1199, tier: 1, name: 'Pattern Scout', location: 'Logic Glade' },
+      { min: 1200, max: 1399, tier: 2, name: 'Grid Navigator', location: 'Algorithm Forest' },
+      { min: 1400, max: 1599, tier: 3, name: 'Boolean Ranger', location: 'Condition Canyon' },
+      { min: 1600, max: 1799, tier: 4, name: 'Variable Virtuoso', location: 'Bitstream Ridge' },
+      { min: 1800, max: 1999, tier: 5, name: 'Branching Specialist', location: 'Decision Falls' },
+      { min: 2000, max: 2199, tier: 6, name: 'Loop Engineer', location: 'Iteration Pass' },
+      { min: 2200, max: 2399, tier: 7, name: 'Function Architect', location: 'Complexity Peak' },
+      { min: 2400, max: 9999, tier: 8, name: 'Code Summit Legend', location: 'Mount Kibo Core' }
+    ],
+    getCompetenceDescription: (rating = 1000, totalProblemsSolved = 0) => {
+      if (totalProblemsSolved < 15) return 'Calibrating baseline for Coding...';
+      const numRating = Number(rating) || 1000;
+      if (numRating < 1200) return 'Recognizing repeating sequences, symbol patterns, and basic order of steps. (K–Grade 2)';
+      if (numRating < 1400) return 'Executing directional algorithms, grid navigation, and repeat loops. (Grade 3)';
+      if (numRating < 1600) return 'Evaluating Boolean logic (AND, OR, NOT) and conditional true/false expressions. (Grade 3–4)';
+      if (numRating < 1800) return 'Tracking variable state changes, reassignments, and binary conversions. (Grade 4–5)';
+      if (numRating < 2000) return 'Evaluating if/else conditional logic branches and spot-the-bug tracing. (Grade 4–5)';
+      if (numRating < 2200) return 'Mastering loop accumulators, index counters, and nested iteration logic. (Grade 5–6)';
+      if (numRating < 2400) return 'Tracing function calls, parameters, return values, and data structures (stacks/queues). (Grade 6–7)';
+      return 'Summit algorithmic mastery in recursion, time complexity concepts, and pseudocode evaluation. (Grade 7–8+)';
+    },
+    SKILL_STRANDS: [
+      { tier: 1, id: 'patterns_sequences', name: 'Sequences & Repeating Patterns', ratingBand: { min: 0, max: 1199 }, probeTargetTier: 3 },
+      { tier: 2, id: 'grid_navigation', name: 'Grid Navigation & Repeat Loops', ratingBand: { min: 1200, max: 1399 }, probeTargetTier: 4 },
+      { tier: 3, id: 'boolean_logic', name: 'Boolean Logic (AND, OR, NOT)', ratingBand: { min: 1400, max: 1599 }, probeTargetTier: 5 },
+      { tier: 4, id: 'variables_binary', name: 'Variables & Binary Conversions', ratingBand: { min: 1600, max: 1799 }, probeTargetTier: 6 },
+      { tier: 5, id: 'conditionals_branching', name: 'If/Else Branching & Bug Spotting', ratingBand: { min: 1800, max: 1999 }, probeTargetTier: 7 },
+      { tier: 6, id: 'loops_counters', name: 'Iteration Loops & Accumulators', ratingBand: { min: 2000, max: 2199 }, probeTargetTier: 8 },
+      { tier: 7, id: 'functions_returns', name: 'Function Tracing & Stacks/Queues', ratingBand: { min: 2200, max: 2399 }, probeTargetTier: 8 },
+      { tier: 8, id: 'advanced_algorithms', name: 'Recursion & Algorithmic Complexity', ratingBand: { min: 2400, max: 9999 }, probeTargetTier: 8 }
+    ],
+    MASTERY_THRESHOLDS: [
+      { threshold: 1150, skillName: 'Sequences & Patterns' },
+      { threshold: 1300, skillName: 'Grid Algorithms & Loops' },
+      { threshold: 1450, skillName: 'Boolean Logic' },
+      { threshold: 1600, skillName: 'Variables & State' },
+      { threshold: 1750, skillName: 'Conditionals & Debugging' },
+      { threshold: 1950, skillName: 'Iteration & Loops' },
+      { threshold: 2150, skillName: 'Functions & Data Structures' }
+    ],
+    DOMAIN_DEFINITIONS: [
+      { id: 'patterns_nav', name: 'Patterns & Navigation', icon: '🧩', subtitle: 'Sequences, Patterns & Grid Steps', minUnlockRating: 0, tiers: [1, 2], defaultAcc: 90, defaultSpeed: 2.5 },
+      { id: 'booleans_vars', name: 'Logic & Variables', icon: '🔀', subtitle: 'Boolean Gates, Binary & State Tracking', minUnlockRating: 1400, tiers: [3, 4], defaultAcc: 85, defaultSpeed: 3.0 },
+      { id: 'conditionals_loops', name: 'Control Flow & Loops', icon: '🔁', subtitle: 'If/Else Logic, Iteration & Debugging', minUnlockRating: 1800, tiers: [5, 6], defaultAcc: 80, defaultSpeed: 4.0 },
+      { id: 'functions_algo', name: 'Functions & Data Structures', icon: '⚡', subtitle: 'Functions, Stacks & Complexity', minUnlockRating: 2200, tiers: [7, 8], defaultAcc: 75, defaultSpeed: 5.0 }
+    ]
   }
 };

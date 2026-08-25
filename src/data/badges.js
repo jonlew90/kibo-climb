@@ -5,6 +5,7 @@ export const BADGE_CATEGORIES = {
   math: { label: 'Kibo Math', icon: '🔢' },
   words: { label: 'Kibo Words', icon: '📚' },
   world: { label: 'Kibo World', icon: '🌍' },
+  coding: { label: 'Kibo Coding', icon: '💻' },
   precision: { label: 'Precision & Accuracy', icon: '🎯' },
   shop: { label: 'Workshop & Purchases', icon: '🎒' }
 };
@@ -396,7 +397,99 @@ export const BADGES_CATALOG = [
   },
 
   // ==========================================
-  // 4. PRECISION & ACCURACY BADGES
+  // 4. KIBO CODING & LOGIC BADGES
+  // ==========================================
+  {
+    id: 'coding_novice',
+    title: 'Logic Cadet',
+    description: 'Answered 25 Coding & Logic questions correctly!',
+    category: 'coding',
+    icon: '🧩',
+    reqText: '25 Correct in Coding'
+  },
+  {
+    id: 'coding_coder',
+    title: 'Junior Developer',
+    description: 'Answered 100 Coding & Logic questions correctly!',
+    category: 'coding',
+    icon: '💻',
+    reqText: '100 Correct in Coding'
+  },
+  {
+    id: 'coding_master',
+    title: 'Full-Stack Master',
+    description: 'Answered 500 Coding & Logic questions correctly!',
+    category: 'coding',
+    icon: '🚀',
+    reqText: '500 Correct in Coding'
+  },
+  {
+    id: 'pattern_scout',
+    title: 'Pattern Pathfinder',
+    description: 'Mastered repeating sequences, progressions, and step execution!',
+    category: 'coding',
+    icon: '🌱',
+    reqText: 'Reach 1200+ Coding Rating'
+  },
+  {
+    id: 'grid_navigator',
+    title: 'Algorithm Ace',
+    description: 'Mastered grid navigation, 2D coordinates, and repeat loop blocks!',
+    category: 'coding',
+    icon: '🤖',
+    reqText: 'Reach 1400+ Coding Rating'
+  },
+  {
+    id: 'boolean_ranger',
+    title: 'Boolean Boss',
+    description: 'Mastered true/false logic gates (AND, OR, NOT) and comparison tests!',
+    category: 'coding',
+    icon: '🔀',
+    reqText: 'Reach 1600+ Coding Rating'
+  },
+  {
+    id: 'variable_virtuoso',
+    title: 'Variable Virtuoso',
+    description: 'Mastered variable assignment, state mutability, and 4-bit binary math!',
+    category: 'coding',
+    icon: '🔢',
+    reqText: 'Reach 1800+ Coding Rating'
+  },
+  {
+    id: 'debug_detective',
+    title: 'Debug Detective',
+    description: 'Mastered if/else branching pathways and spot-the-bug code analysis!',
+    category: 'coding',
+    icon: '⚡',
+    reqText: 'Reach 2000+ Coding Rating'
+  },
+  {
+    id: 'loop_legend',
+    title: 'Iteration Specialist',
+    description: 'Mastered for-loop accumulators, counters, and while-loop conditions!',
+    category: 'coding',
+    icon: '🔁',
+    reqText: 'Reach 2200+ Coding Rating'
+  },
+  {
+    id: 'code_summit_master',
+    title: 'Code Summit Legend',
+    description: 'Reached the peak of Mount Kibo Coding with master algorithmic fluency!',
+    category: 'coding',
+    icon: '🏔️',
+    reqText: 'Reach 2400+ Coding Rating'
+  },
+  {
+    id: 'code_speed_demon',
+    title: 'Speed Scripter',
+    description: 'Completed a 100% accurate Coding climb at lightning-fast recall pace!',
+    category: 'coding',
+    icon: '⚡',
+    reqText: 'Fast Perfect Coding Climb'
+  },
+
+  // ==========================================
+  // 5. PRECISION & ACCURACY BADGES
   // ==========================================
   {
     id: 'perfect_climb_single',
