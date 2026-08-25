@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Settings, Trophy, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star } from 'lucide-react';
+import { Flame, Settings, Trophy, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll } from 'lucide-react';
 import Mascot from './components/Mascot';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
@@ -27,6 +27,7 @@ import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
 import { pluralize } from './utils/formatters';
 import { storageService } from './services/storageService';
+import { questService } from './services/questService';
 import { getCompetenceRankTier } from './utils/GameEconomyModel';
 import { 
   getTodayStr, 
@@ -52,6 +53,7 @@ import { db } from './config/firebase';
 import TermsOfServiceScreen from './components/TermsOfServiceScreen';
 import LeaderboardIcon from './components/LeaderboardIcon';
 import LeaderboardScreen from './components/LeaderboardScreen';
+import QuestsScreen from './components/QuestsScreen';
 import FeedbackModal from './components/FeedbackModal';
 import AddFriendModal from './components/AddFriendModal';
 import SubjectWallpaper from './components/SubjectWallpaper';
@@ -72,6 +74,7 @@ export default function App() {
     if (path === '/terms' || path === '/terms/') return 'terms';
     if (path === '/settings' || path === '/settings/') return 'settings';
     if (path === '/leaderboard' || path === '/leaderboard/') return 'leaderboard';
+    if (path === '/quests' || path === '/quests/') return 'quests';
     return 'adaptive_session';
   });
 
@@ -86,6 +89,8 @@ export default function App() {
         setAppState('settings');
       } else if (path === '/leaderboard' || path === '/leaderboard/') {
         setAppState('leaderboard');
+      } else if (path === '/quests' || path === '/quests/') {
+        setAppState('quests');
       } else {
         setAppState('adaptive_session');
       }
@@ -479,6 +484,12 @@ export default function App() {
       setSparks((prev) => prev + extraSparks);
       soundFx.playVictory();
     }
+
+    questService.recordProgress(activeProfileId, {
+      subject: activeSubject,
+      isCorrect,
+      streak: nextStreak
+    });
 
     storageService.saveUserData({
       totalProblemsSolved: nextTotal,
@@ -1271,22 +1282,29 @@ export default function App() {
           <span className="text-xs font-black tracking-wide truncate">Rank</span>
         </button>
 
-        {/* 4. Settings Button: Slate Gray (Direct 1-Tap) */}
+        {/* 4. Quests Button: Royal Purple / Violet (Direct 1-Tap) */}
         <button
           type="button"
           onClick={() => {
             soundFx.playKeyTap();
             closeAllNavModals();
-            setAppState('settings');
+            handleNavigateTo('/quests', 'quests');
           }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
-            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && (appState === 'settings' || appState === 'privacy' || appState === 'terms') ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
+          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] relative ${
+            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'quests' ? 'ring-2 ring-purple-500 scale-105 font-bold' : ''
           }`}
-          aria-label="Settings"
-          title="Settings"
+          aria-label="Mountain Quests"
+          title="Mountain Quests"
         >
-          <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
-          <span className="text-xs font-black tracking-wide truncate">Settings</span>
+          <div className="relative">
+            <Scroll className={`w-5 h-5 text-purple-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'quests' ? 'fill-purple-300' : ''}`} />
+            {questService.getUnclaimedCount(activeProfileId) > 0 && (
+              <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-amber-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-bounce leading-none">
+                {questService.getUnclaimedCount(activeProfileId)}
+              </span>
+            )}
+          </div>
+          <span className="text-xs font-black tracking-wide truncate">Quests</span>
         </button>
       </div>
     </footer>
@@ -1925,6 +1943,31 @@ export default function App() {
           }}
           renderFooter={renderNavigationFooter}
           equippedItems={equippedItems}
+        />
+      )}
+
+      {/* QUESTS SCREEN */}
+      {appState === 'quests' && (
+        <QuestsScreen
+          activeSubject={activeSubject}
+          userState={{
+            competenceRank: liveCompetenceRating,
+            adaptiveCompetenceRating: liveCompetenceRating,
+            tier: tier,
+            totalProblemsSolved: totalProblemsSolved,
+            streak: streak,
+            cumulativeCorrectStreak: cumulativeCorrectStreak
+          }}
+          onNavigate={handleNavigateTo}
+          onBack={() => handleNavigateTo('/', 'adaptive_session')}
+          renderFooter={renderNavigationFooter}
+          onAwardSparks={(earned) => {
+            const clubMultiplier = isKiboClub ? 1.25 : 1;
+            const finalEarned = Math.round(earned * clubMultiplier);
+            const updated = sparks + finalEarned;
+            setSparks(updated);
+            storageService.saveUserData({ sparks: updated }, activeSubject);
+          }}
         />
       )}
 
@@ -2636,7 +2679,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && renderNavigationFooter()}
+      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}
     </div>
   );
 }
