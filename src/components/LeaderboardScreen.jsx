@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X, Users, UserPlus } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X, Users, UserPlus, ChevronDown } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
@@ -16,6 +16,8 @@ export default function LeaderboardScreen({
   equippedItems = []
 }) {
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
+  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
+  const subjectDropdownRef = useRef(null);
   const [liveStandings, setLiveStandings] = useState([]);
   const [viewMode, setViewMode] = useState('global'); // 'global' | 'weekly' | 'friends'
   const [weeklyStandings, setWeeklyStandings] = useState([]);
@@ -29,6 +31,18 @@ export default function LeaderboardScreen({
   const [cohortId, setCohortId] = useState(null);
   const [isLoadingCohort, setIsLoadingCohort] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
+        setShowSubjectDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Sync selected subject if active subject prop changes
   useEffect(() => {
@@ -490,82 +504,251 @@ export default function LeaderboardScreen({
 
 
         {/* SUBJECT SELECTION TABS */}
-        <div className="px-4 pt-1 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setSelectedSubject('math');
-            }}
-            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
-              selectedSubject === 'math'
-                ? 'bg-amber-500 text-white border-amber-600 shadow-sm ring-2 ring-amber-400/30'
-                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
-            }`}
-          >
-            <span>🔢</span>
-            <span>Kibo Math</span>
-            {selectedSubject === 'math' && (
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            )}
-          </button>
+        <div className="w-full px-4 pt-1 flex items-center justify-center gap-2 shrink-0">
+          {/* Mobile Subject Dropdown (< sm) */}
+          <div className="relative sm:hidden w-full" ref={subjectDropdownRef}>
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowSubjectDropdown(!showSubjectDropdown);
+              }}
+              className={`flex items-center justify-between w-full px-3 py-1.5 rounded-xl font-black text-xs transition-all cursor-pointer shadow-2xs border-2 ${
+                selectedSubject === 'math'
+                  ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 ring-2 ring-amber-400/50'
+                  : selectedSubject === 'words'
+                  ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 ring-2 ring-indigo-400/50'
+                  : selectedSubject === 'world'
+                  ? 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 ring-2 ring-teal-400/50'
+                  : 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white border-rose-300 ring-2 ring-rose-400/50'
+              }`}
+              title="Switch Subject"
+              aria-expanded={showSubjectDropdown}
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-base leading-none select-none">
+                  {selectedSubject === 'math' ? '🔢' : selectedSubject === 'words' ? '📚' : selectedSubject === 'world' ? '🌍' : '💻'}
+                </span>
+                <span className="tracking-tight capitalize">{selectedSubject}</span>
+              </div>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showSubjectDropdown ? 'rotate-180' : ''}`} />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setSelectedSubject('words');
-            }}
-            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
-              selectedSubject === 'words'
-                ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm ring-2 ring-indigo-400/30'
-                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
-            }`}
-          >
-            <span>📚</span>
-            <span>Kibo Words</span>
-            {selectedSubject === 'words' && (
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            )}
-          </button>
+            {/* Mobile Subject Roll-down Menu */}
+            {showSubjectDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+                {/* Math Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setSelectedSubject('math');
+                    setShowSubjectDropdown(false);
+                  }}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
+                    selectedSubject === 'math'
+                      ? 'bg-amber-100 border-amber-300 text-amber-950'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🔢</span>
+                    <span>Kibo Math</span>
+                  </div>
+                  {selectedSubject === 'math' && <span className="w-2 h-2 rounded-full bg-amber-600" />}
+                </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setSelectedSubject('world');
-            }}
-            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
-              selectedSubject === 'world'
-                ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm ring-2 ring-emerald-400/30'
-                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
-            }`}
-          >
-            <span>🌍</span>
-            <span>Kibo World</span>
-            {selectedSubject === 'world' && (
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            )}
-          </button>
+                {/* Words Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setSelectedSubject('words');
+                    setShowSubjectDropdown(false);
+                  }}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
+                    selectedSubject === 'words'
+                      ? 'bg-indigo-100 border-indigo-300 text-indigo-950'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">📚</span>
+                    <span>Kibo Words</span>
+                  </div>
+                  {selectedSubject === 'words' && <span className="w-2 h-2 rounded-full bg-indigo-600" />}
+                </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setSelectedSubject('coding');
-            }}
-            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
-              selectedSubject === 'coding'
-                ? 'bg-rose-600 text-white border-rose-700 shadow-sm ring-2 ring-rose-400/30'
-                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
-            }`}
-          >
-            <span>💻</span>
-            <span>Kibo Coding</span>
-            {selectedSubject === 'coding' && (
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                {/* World Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setSelectedSubject('world');
+                    setShowSubjectDropdown(false);
+                  }}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
+                    selectedSubject === 'world'
+                      ? 'bg-teal-100 border-teal-300 text-teal-950'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🌍</span>
+                    <span>Kibo World</span>
+                  </div>
+                  {selectedSubject === 'world' && <span className="w-2 h-2 rounded-full bg-teal-600" />}
+                </button>
+
+                {/* Coding Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setSelectedSubject('coding');
+                    setShowSubjectDropdown(false);
+                  }}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
+                    selectedSubject === 'coding'
+                      ? 'bg-rose-100 border-rose-300 text-rose-950'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">💻</span>
+                    <span>Kibo Coding</span>
+                  </div>
+                  {selectedSubject === 'coding' && <span className="w-2 h-2 rounded-full bg-rose-600" />}
+                </button>
+
+                {/* Coming Soon Teasers (Money & Music in Mobile Menu) */}
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black bg-slate-50/80 border border-dashed border-emerald-300 text-slate-700 select-none">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">💰</span>
+                    <span>Kibo Money</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 leading-none">
+                    Coming Soon
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black bg-slate-50/80 border border-dashed border-purple-300 text-slate-700 select-none">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🎵</span>
+                    <span>Kibo Music</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 leading-none">
+                    Coming Soon
+                  </span>
+                </div>
+              </div>
             )}
-          </button>
+          </div>
+
+          {/* Desktop Subject Bar (>= sm) */}
+          <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-1 w-full sm:w-auto">
+            {/* Kibo Math */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setSelectedSubject('math');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
+                selectedSubject === 'math'
+                  ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 ring-2 ring-amber-400/50 scale-105'
+                  : 'bg-white/90 hover:bg-amber-50 text-slate-700 border-slate-200 hover:border-amber-200'
+              }`}
+              title="Switch to Kibo Math"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">🔢</span>
+              <span className="tracking-tight">Math</span>
+              {selectedSubject === 'math' && <span className="w-1.5 h-1.5 rounded-full bg-amber-950 animate-pulse" />}
+            </button>
+
+            {/* Kibo Words */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setSelectedSubject('words');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
+                selectedSubject === 'words'
+                  ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 ring-2 ring-indigo-400/50 scale-105'
+                  : 'bg-white/90 hover:bg-indigo-50 text-slate-700 border-slate-200 hover:border-indigo-200'
+              }`}
+              title="Switch to Kibo Words"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">📚</span>
+              <span className="tracking-tight">Words</span>
+              {selectedSubject === 'words' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+            </button>
+
+            {/* Kibo World */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setSelectedSubject('world');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
+                selectedSubject === 'world'
+                  ? 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 ring-2 ring-teal-400/50 scale-105'
+                  : 'bg-white/90 hover:bg-teal-50 text-slate-700 border-slate-200 hover:border-teal-200'
+              }`}
+              title="Switch to Kibo World"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">🌍</span>
+              <span className="tracking-tight">World</span>
+              {selectedSubject === 'world' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+            </button>
+
+            {/* Kibo Coding */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setSelectedSubject('coding');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
+                selectedSubject === 'coding'
+                  ? 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white border-rose-300 ring-2 ring-rose-400/50 scale-105'
+                  : 'bg-white/90 hover:bg-rose-50 text-slate-700 border-slate-200 hover:border-rose-200'
+              }`}
+              title="Switch to Kibo Coding"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">💻</span>
+              <span className="tracking-tight">Coding</span>
+              {selectedSubject === 'coding' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+            </button>
+
+            {/* Coming Soon Teasers (Money & Music) */}
+            <button
+              type="button"
+              disabled
+              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-white/90 border-2 border-dashed border-emerald-300 text-slate-700 shadow-2xs shrink-0 select-none cursor-not-allowed"
+              title="Kibo Money - Coming Soon"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">💰</span>
+              <span className="tracking-tight">Money</span>
+              <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs leading-none whitespace-nowrap">
+                Coming Soon
+              </span>
+            </button>
+            <button
+              type="button"
+              disabled
+              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-white/90 border-2 border-dashed border-purple-300 text-slate-700 shadow-2xs shrink-0 select-none cursor-not-allowed"
+              title="Kibo Music - Coming Soon"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">🎵</span>
+              <span className="tracking-tight">Music</span>
+              <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 shadow-2xs leading-none whitespace-nowrap">
+                Coming Soon
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
