@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, ChevronRight, Flame, Star, Zap, CheckCircle2, User, X, Sparkles, BookOpen, GraduationCap, ArrowLeft } from 'lucide-react';
+import { Plus, ChevronRight, Flame, Star, Zap, CheckCircle2, User, X, Sparkles, BookOpen, GraduationCap, ArrowLeft, Lock } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
@@ -352,6 +352,14 @@ export default function ProfileSelectorScreen({
     handleSelect(newProfile);
   };
 
+  const hasFamilyPlan = storageService.hasFamilyPlan();
+  const hasSinglePlan = storageService.hasSinglePlan();
+  const maxProfiles = hasFamilyPlan ? 6 : 1;
+  const showAddButton = profiles.length < 6; // Always show button up to 6
+  const isAddLocked = profiles.length >= maxProfiles;
+
+  const [showUpsell, setShowUpsell] = useState(false);
+
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       {/* Top Header Bar */}
@@ -418,15 +426,27 @@ export default function ProfileSelectorScreen({
               </div>
 
               {/* Add Profile button */}
-              {profiles.length < 6 && (
+              {showAddButton && (
                 <div className="flex justify-center w-full pt-1">
                   <button
                     type="button"
-                    onClick={() => { soundFx.playKeyTap(); setShowAddPanel(true); }}
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      if (isAddLocked) {
+                        setShowUpsell(true);
+                      } else {
+                        setShowAddPanel(true);
+                      }
+                    }}
                     className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors py-1 group shrink-0 cursor-pointer"
                   >
-                    <div className="w-6 h-6 rounded-full border border-slate-400 group-hover:border-slate-600 flex items-center justify-center transition-colors bg-white/60">
+                    <div className="w-6 h-6 rounded-full border border-slate-400 group-hover:border-slate-600 flex items-center justify-center transition-colors bg-white/60 relative">
                       <Plus className="w-3.5 h-3.5" />
+                      {isAddLocked && (
+                        <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full p-0.5 border border-white">
+                          <Lock className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      )}
                     </div>
                     <span>Add a climber profile</span>
                   </button>
@@ -461,6 +481,69 @@ export default function ProfileSelectorScreen({
           </p>
         </div>
       </main>
+
+      {/* Upsell Modal */}
+      {showUpsell && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative border-4 border-amber-200" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShowUpsell(false)}
+              className="absolute top-3 right-3 p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full transition-colors z-10 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="bg-gradient-to-br from-amber-400 to-amber-500 p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-10 -mt-10 blur-xl"></div>
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-3 shadow-inner">
+                <Sparkles className="w-8 h-8 text-white fill-white" />
+              </div>
+              <h3 className="text-xl font-black text-white drop-shadow-sm leading-tight">
+                {hasSinglePlan ? 'Upgrade to Family Plan' : 'Unlock Family Plan'}
+              </h3>
+            </div>
+            <div className="p-5 text-center bg-amber-50/50">
+              <p className="text-slate-600 font-bold text-sm mb-4">
+                {hasSinglePlan
+                  ? 'Upgrade to the Family Plan to add up to 6 profiles and share premium benefits with all siblings!'
+                  : 'Get the Kibo Club Family Plan to add multiple profiles and unlock 1.25x Sparks and Golden Tags for everyone!'}
+              </p>
+
+              <div className="bg-white border-2 border-amber-100 rounded-xl p-3 mb-5 text-left shadow-sm">
+                 <ul className="space-y-2 text-xs font-bold text-slate-700">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span>Up to 6 Child Profiles</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span>1.25x Spark Multiplier for all</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span>Exclusive Golden Name Tags</span>
+                    </li>
+                 </ul>
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowUpsell(false);
+                  if (onOpenParentZone) {
+                    onOpenParentZone();
+                  }
+                }}
+                className="w-full py-3 px-4 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white text-sm font-black rounded-xl shadow-md transform transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+              >
+                Go to Parent Zone
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              <p className="text-[10px] text-slate-400 font-bold mt-3">
+                Manage subscriptions in the Kibo Shop via the Parent Zone
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
