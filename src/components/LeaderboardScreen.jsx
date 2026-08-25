@@ -386,94 +386,46 @@ export default function LeaderboardScreen({
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-slate-50 via-stone-50 to-slate-100 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
 
-      {/* HEADER & CONTROLS */}
-
-        {/* VIEW MODE TABS */}
-        <div className="px-4 pt-3 flex items-center gap-1.5 sm:gap-2 mb-2">
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setViewMode('global');
-            }}
-            className={`flex-1 py-2 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer ${
-              viewMode === 'global'
-                ? 'bg-slate-800 text-white border-slate-900 shadow-sm ring-2 ring-slate-400/30'
-                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
-            }`}
-          >
-            <Trophy className="w-4 h-4 shrink-0" />
-            <span>Global</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setViewMode('weekly');
-            }}
-            className={`flex-1 py-2 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer ${
-              viewMode === 'weekly'
-                ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm ring-2 ring-emerald-400/30'
-                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
-            }`}
-          >
-            <Zap className="w-4 h-4 fill-current shrink-0" />
-            <span>Weekly</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setViewMode('friends');
-            }}
-            className={`flex-1 py-2 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer relative ${
-              viewMode === 'friends'
-                ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm ring-2 ring-indigo-400/30'
-                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
-            }`}
-          >
-            <Users className="w-4 h-4 shrink-0" />
-            <span>Friends</span>
-            {friendsList.length > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ml-0.5 ${
-                viewMode === 'friends' ? 'bg-indigo-400 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'
-              }`}>
-                {friendsList.length}
-              </span>
-            )}
-          </button>
-        </div>
-
+      {/* STICKY TOP HEADER & CONTROLS */}
       <div className="bg-white border-b-2 border-slate-200 z-10 shrink-0 shadow-sm relative pb-3">
         <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-slate-800">
-            {viewMode === 'global' ? (
-              <Trophy className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
-            ) : viewMode === 'weekly' ? (
-              <Zap className="w-5 h-5 text-emerald-600 fill-emerald-500 stroke-[2.5]" />
-            ) : (
-              <Users className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
-            )}
-            <h2 className="text-lg font-black tracking-tight">
-              {viewMode === 'global' ? 'Global Standings' : viewMode === 'weekly' ? 'Weekly League' : 'Friends & Classmates'}
-            </h2>
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setShowInfoModal(true);
-              }}
-              className="p-1 rounded-full text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center"
-              title="How standings work"
-              aria-label="How standings work"
-            >
-              <Info className="w-4 h-4" />
-            </button>
+          <div className="flex items-center gap-2.5 text-slate-800 min-w-0">
+            <div className={`p-2 rounded-xl shrink-0 ${
+              viewMode === 'global' ? 'bg-indigo-50 text-indigo-600' : viewMode === 'weekly' ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'
+            }`}>
+              {viewMode === 'global' ? (
+                <Trophy className="w-5 h-5 stroke-[2.5]" />
+              ) : viewMode === 'weekly' ? (
+                <Zap className="w-5 h-5 fill-emerald-500 stroke-[2.5]" />
+              ) : (
+                <Users className="w-5 h-5 stroke-[2.5]" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-black tracking-tight leading-tight">
+                {viewMode === 'global' ? 'Global Standings' : viewMode === 'weekly' ? 'Weekly League' : 'Friends & Classmates'}
+              </h2>
+              <div className="flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-500">
+                <span>
+                  Ranked by {viewMode === 'weekly' ? `${subjectConfig.name} Weekly Sparks` : `${subjectConfig.name} Competence`}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setShowInfoModal(true);
+                  }}
+                  className="p-0.5 rounded-full text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors cursor-pointer inline-flex items-center justify-center"
+                  title="How standings work"
+                  aria-label="How standings work"
+                >
+                  <Info className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {viewMode === 'friends' && (
               <button
                 type="button"
@@ -492,14 +444,65 @@ export default function LeaderboardScreen({
                 )}
               </button>
             )}
-
-            <div className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">
-              <Activity className="w-3.5 h-3.5 text-indigo-600" />
-              <span>
-                {viewMode === 'weekly' ? `${subjectConfig.name} Weekly Sparks` : `${subjectConfig.name} Competence`}
-              </span>
-            </div>
           </div>
+        </div>
+
+        {/* VIEW MODE TABS */}
+        <div className="px-4 py-1.5 flex items-center gap-1.5 sm:gap-2 mb-1">
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('global');
+            }}
+            className={`flex-1 py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer ${
+              viewMode === 'global'
+                ? 'bg-slate-800 text-white border-slate-900 shadow-xs ring-2 ring-slate-400/30'
+                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5 shrink-0" />
+            <span>Global</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('weekly');
+            }}
+            className={`flex-1 py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer ${
+              viewMode === 'weekly'
+                ? 'bg-emerald-500 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-400/30'
+                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 fill-current shrink-0" />
+            <span>Weekly</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('friends');
+            }}
+            className={`flex-1 py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer relative ${
+              viewMode === 'friends'
+                ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs ring-2 ring-indigo-400/30'
+                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5 shrink-0" />
+            <span>Friends</span>
+            {friendsList.length > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ml-0.5 ${
+                viewMode === 'friends' ? 'bg-indigo-400 text-white' : 'bg-slate-200 text-slate-700 border border-slate-300'
+              }`}>
+                {friendsList.length}
+              </span>
+            )}
+          </button>
         </div>
 
 
