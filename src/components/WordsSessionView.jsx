@@ -1597,12 +1597,6 @@ export default function WordsSessionView({
                 }
                 return null;
               })()}
-
-              {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
-                <span className="text-xs sm:text-sm font-black uppercase text-sky-950 bg-sky-100 px-3 py-1 rounded-full border border-sky-300 shadow-2xs flex items-center gap-1">
-                  🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
-                </span>
-              )}
             </div>
 
             {/* START / RESUME CLIMB MAIN CTA BUTTON */}

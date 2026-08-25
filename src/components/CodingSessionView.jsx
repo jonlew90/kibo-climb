@@ -580,53 +580,35 @@ export default function CodingSessionView({
                 </p>
               </div>
 
-              {/* PRE-CLIMB POWERUPS & CONSUMABLES SELECTOR */}
-              <div className="flex flex-wrap items-center justify-center gap-2 py-1">
-                {(() => {
-                  const owned = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
-                  if (isDoubleSparksActive) {
-                    return (
-                      <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 animate-pulse shadow-xs flex items-center gap-1">
-                        ⚡ 2x Sparks Active!
-                      </span>
-                    );
-                  }
-                  if (owned > 0) {
-                    return (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (onToggleDoubleSparksPotion) {
-                            onToggleDoubleSparksPotion();
-                          }
-                        }}
-                        className="text-xs sm:text-sm font-black uppercase px-3 py-1 rounded-full border transition-all active:scale-95 flex items-center gap-1 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
-                      >
-                        ⚡ Activate 2x Potion ({owned})
-                      </button>
-                    );
-                  }
-                  return null;
-                })()}
-
-                {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
-                  <span className="text-xs sm:text-sm font-black uppercase text-sky-950 bg-sky-100 px-3 py-1 rounded-full border border-sky-300 shadow-2xs flex items-center gap-1">
-                    🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
-                  </span>
-                )}
-
-                {(consumables?.hintScrollCount ?? 0) > 0 && (
-                  <span className="text-xs sm:text-sm font-black uppercase text-purple-950 bg-purple-100 px-3 py-1 rounded-full border border-purple-300 shadow-2xs flex items-center gap-1">
-                    📜 Wisdom Scrolls ({consumables.hintScrollCount})
-                  </span>
-                )}
-
-                {(consumables?.explorerCompassCount ?? 0) > 0 && (
-                  <span className="text-xs sm:text-sm font-black uppercase text-teal-950 bg-teal-100 px-3 py-1 rounded-full border border-teal-300 shadow-2xs flex items-center gap-1">
-                    🧭 Compasses ({consumables.explorerCompassCount})
-                  </span>
-                )}
-              </div>
+            {/* PRE-CLIMB POWERUPS & CONSUMABLES SELECTOR */}
+            <div className="flex flex-wrap items-center justify-center gap-2 py-1">
+              {(() => {
+                const owned = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
+                if (isDoubleSparksActive) {
+                  return (
+                    <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 animate-pulse shadow-xs flex items-center gap-1">
+                      ⚡ 2x Sparks Active!
+                    </span>
+                  );
+                }
+                if (owned > 0) {
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onToggleDoubleSparksPotion) {
+                          onToggleDoubleSparksPotion();
+                        }
+                      }}
+                      className="text-xs sm:text-sm font-black uppercase px-3 py-1 rounded-full border transition-all active:scale-95 flex items-center gap-1 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
+                    >
+                      ⚡ Activate 2x Potion ({owned})
+                    </button>
+                  );
+                }
+                return null;
+              })()}
+            </div>
 
               {/* START / RESUME CLIMB MAIN CTA BUTTON */}
               <div className="w-full space-y-1.5">
