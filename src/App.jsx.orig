@@ -28,12 +28,12 @@ import { BRAND_CONFIG } from './config/brand';
 import { pluralize } from './utils/formatters';
 import { storageService } from './services/storageService';
 import { getCompetenceRankTier } from './utils/GameEconomyModel';
-import { 
-  getTodayStr, 
-  getYesterdayStr, 
-  calculateStreakFromHistory, 
-  getCurrentTimezone, 
-  isWithinTravelGracePeriod 
+import {
+  getTodayStr,
+  getYesterdayStr,
+  calculateStreakFromHistory,
+  getCurrentTimezone,
+  isWithinTravelGracePeriod
 } from './utils/dateUtils';
 import { authService } from './services/authService';
 import { syncService } from './services/syncService';
@@ -159,7 +159,7 @@ export default function App() {
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsCount, setFriendsCount] = useState(() => storageService.getFriends(activeProfileId).length);
-  const [pendingFriendRequestsCount, setPendingFriendRequestsCount] = useState(() => 
+  const [pendingFriendRequestsCount, setPendingFriendRequestsCount] = useState(() =>
     storageService.getFriendRequests(activeProfileId).filter(r => r.type === 'received').length
   );
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
@@ -367,8 +367,8 @@ export default function App() {
     if (lastDateStr === todayStr) {
       if (currentStreak !== streak) {
         setStreak(currentStreak);
-        storageService.saveUserData({ 
-          streak: currentStreak, 
+        storageService.saveUserData({
+          streak: currentStreak,
           lastSprintDate: todayStr,
           lastSprintTimestamp: new Date().toISOString(),
           lastSprintTimezone: getCurrentTimezone()
@@ -444,8 +444,8 @@ export default function App() {
     }
 
     setStreak(nextStreak);
-    storageService.saveUserData({ 
-      streak: nextStreak, 
+    storageService.saveUserData({
+      streak: nextStreak,
       lastSprintDate: todayStr,
       lastSprintTimestamp: new Date().toISOString(),
       lastSprintTimezone: getCurrentTimezone()
@@ -467,7 +467,7 @@ export default function App() {
 
     const uData = storageService.getUserData(activeSubject);
     const currentRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
-    
+
     let extraSparks = 0;
     let newBaseline = uData.baselineRating;
     let newlyCalibrated = uData.isCalibrated || false;
@@ -1632,7 +1632,7 @@ export default function App() {
                 </span>
               )}
               {pendingFriendRequestsCount > 0 && (
-                <span 
+                <span
                   className="absolute -top-1.5 -right-1.5 min-w-[1.125rem] h-4.5 px-1 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-md flex items-center justify-center animate-bounce leading-none"
                   title={`${pendingFriendRequestsCount} new friend request${pendingFriendRequestsCount > 1 ? 's' : ''}!`}
                 >
