@@ -105,9 +105,8 @@ class UserSyncService {
     if (!referredBy) return;
 
     try {
-      const { getFunctions, httpsCallable } = await import('firebase/functions');
-      const { app } = await import('../config/firebase');
-      const functions = getFunctions(app);
+      const { functions } = await import('../config/firebase');
+      const { httpsCallable } = await import('firebase/functions');
       const processReferral = httpsCallable(functions, 'processReferralLinking');
 
       await processReferral({ referrerId: referredBy, newUserId: authState.uid });

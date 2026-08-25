@@ -8,7 +8,8 @@ vi.mock('firebase/auth', () => ({
 
 vi.mock('../../src/config/firebase.js', () => ({
   db: {},
-  auth: { currentUser: { uid: 'mock_uid' } }
+  auth: { currentUser: { uid: 'mock_uid' } },
+  functions: {}
 }));
 
 vi.mock('firebase/firestore', () => ({
@@ -20,6 +21,7 @@ vi.mock('firebase/firestore', () => ({
   orderBy: vi.fn(),
   limit: vi.fn(),
   where: vi.fn(),
+  serverTimestamp: vi.fn(),
   getDocs: vi.fn().mockResolvedValue({ docs: [] })
 }));
 
