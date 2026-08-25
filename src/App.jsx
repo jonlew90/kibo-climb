@@ -1730,12 +1730,33 @@ export default function App() {
                   </div>
                   {activeSubject === 'world' && <span className="w-2 h-2 rounded-full bg-teal-600" />}
                 </button>
+
+                {/* Coming Soon Teasers (Money & Music in Mobile Menu) */}
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black bg-slate-50/80 border border-dashed border-emerald-300 text-slate-700 select-none">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">💰</span>
+                    <span>Kibo Money</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 leading-none">
+                    Coming Soon
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black bg-slate-50/80 border border-dashed border-purple-300 text-slate-700 select-none">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🎵</span>
+                    <span>Kibo Music</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 leading-none">
+                    Coming Soon
+                  </span>
+                </div>
               </div>
             )}
           </div>
 
           {/* Desktop Subject Bar (>= sm) */}
-          <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-0.5 w-full sm:w-auto">
+          <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-1 w-full sm:w-auto">
             {/* Kibo Math */}
             <button
               type="button"
@@ -1785,14 +1806,30 @@ export default function App() {
             </button>
 
             {/* Coming Soon Teasers (Money & Music) */}
-            <div className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100/70 border border-slate-200 text-slate-400 text-xs font-bold shrink-0 select-none opacity-60">
-              <span>💰</span>
-              <span>Money</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100/70 border border-slate-200 text-slate-400 text-xs font-bold shrink-0 select-none opacity-60">
-              <span>🎵</span>
-              <span>Music</span>
-            </div>
+            <button
+              type="button"
+              disabled
+              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-white/90 border-2 border-dashed border-emerald-300 text-slate-700 shadow-2xs shrink-0 select-none cursor-not-allowed"
+              title="Kibo Money - Coming Soon"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">💰</span>
+              <span className="tracking-tight">Money</span>
+              <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs leading-none whitespace-nowrap">
+                Coming Soon
+              </span>
+            </button>
+            <button
+              type="button"
+              disabled
+              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-white/90 border-2 border-dashed border-purple-300 text-slate-700 shadow-2xs shrink-0 select-none cursor-not-allowed"
+              title="Kibo Music - Coming Soon"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">🎵</span>
+              <span className="tracking-tight">Music</span>
+              <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 shadow-2xs leading-none whitespace-nowrap">
+                Coming Soon
+              </span>
+            </button>
           </div>
         </div>
       )}
