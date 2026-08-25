@@ -387,22 +387,28 @@ export const storageService = {
 
     const subjectData = data.subjects[subjectId];
 
-    // Auto-migration: scale legacy ratings (<500) by 10x
+    // Auto-migration & validation: ensure valid numeric ratings >= 500
     let modified = false;
-    if (subjectData.adaptiveCompetenceRating && subjectData.adaptiveCompetenceRating < 500) {
-      subjectData.adaptiveCompetenceRating = Math.round(subjectData.adaptiveCompetenceRating * 10);
-      modified = true;
-    } else if (!subjectData.adaptiveCompetenceRating) {
+    const rawAdapt = Number(subjectData.adaptiveCompetenceRating);
+    if (isNaN(rawAdapt) || rawAdapt <= 0) {
       subjectData.adaptiveCompetenceRating = 1000;
       modified = true;
+    } else if (rawAdapt < 500) {
+      subjectData.adaptiveCompetenceRating = Math.round(rawAdapt * 10);
+      modified = true;
+    } else {
+      subjectData.adaptiveCompetenceRating = rawAdapt;
     }
 
-    if (subjectData.competenceRank && subjectData.competenceRank < 500) {
-      subjectData.competenceRank = Math.round(subjectData.competenceRank * 10);
-      modified = true;
-    } else if (!subjectData.competenceRank) {
+    const rawRank = Number(subjectData.competenceRank);
+    if (isNaN(rawRank) || rawRank <= 0) {
       subjectData.competenceRank = 1000;
       modified = true;
+    } else if (rawRank < 500) {
+      subjectData.competenceRank = Math.round(rawRank * 10);
+      modified = true;
+    } else {
+      subjectData.competenceRank = rawRank;
     }
 
     // Preserve any legacy higher streak across subject records into profile streak
@@ -896,9 +902,17 @@ export const storageService = {
         }
       } else if (subjectId === 'words') {
         const hasNonWords = climb.problemQueue.some(p => 
-          !p || p.subject === 'math' || p.subject === 'world' || p.shapeSvg || p.mapData || (p.num1 !== undefined && p.num2 !== undefined)
+          !p || p.subject === 'math' || p.subject === 'world' || p.subject === 'coding' || p.shapeSvg || p.mapData || (p.num1 !== undefined && p.num2 !== undefined)
         );
         if (hasNonWords) {
+          this.clearActiveClimbState(pid, subjectId);
+          return null;
+        }
+      } else if (subjectId === 'coding') {
+        const hasNonCoding = climb.problemQueue.some(p => 
+          !p || p.subject === 'math' || p.subject === 'world' || p.subject === 'words' || p.shapeSvg || p.mapData || (p.num1 !== undefined && p.num2 !== undefined)
+        );
+        if (hasNonCoding) {
           this.clearActiveClimbState(pid, subjectId);
           return null;
         }
@@ -919,7 +933,7 @@ export const storageService = {
     const currentUserData = state.profiles[pid].userData || {};
 
     if (!currentUserData.subjects) {
-      currentUserData.subjects = { math: {}, words: {}, world: {} };
+      currentUserData.subjects = { math: {}, words: {}, world: {}, coding: {} };
     }
     if (!currentUserData.subjects[subjectId]) {
        currentUserData.subjects[subjectId] = {};

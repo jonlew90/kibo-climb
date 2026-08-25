@@ -503,13 +503,13 @@ export default function ParentDashboardModal({
                       onClick={() => handleSelectSubject(subKey)}
                       className={`px-3.5 py-1.5 rounded-full border-2 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
                         isSelected
-                          ? (subKey === 'words' ? 'bg-teal-600 text-white border-teal-700 shadow-sm ring-2 ring-teal-400/30' : subKey === 'world' ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm ring-2 ring-emerald-400/30' : 'bg-purple-600 text-white border-purple-700 shadow-sm ring-2 ring-purple-400/30')
+                          ? (subKey === 'words' ? 'bg-teal-600 text-white border-teal-700 shadow-sm ring-2 ring-teal-400/30' : subKey === 'world' ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm ring-2 ring-emerald-400/30' : subKey === 'coding' ? 'bg-rose-600 text-white border-rose-700 shadow-sm ring-2 ring-rose-400/30' : 'bg-purple-600 text-white border-purple-700 shadow-sm ring-2 ring-purple-400/30')
                           : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-purple-300'
                       }`}
                     >
                       <span>{subIcon}</span>
                       <span>{subConfig.name || subKey}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : subKey === 'world' ? 'bg-emerald-800 text-emerald-100' : 'bg-purple-800 text-purple-100') : 'bg-slate-200 text-slate-600'}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : subKey === 'world' ? 'bg-emerald-800 text-emerald-100' : subKey === 'coding' ? 'bg-rose-800 text-rose-100' : 'bg-purple-800 text-purple-100') : 'bg-slate-200 text-slate-600'}`}>
                         {subRating}
                       </span>
                       {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}

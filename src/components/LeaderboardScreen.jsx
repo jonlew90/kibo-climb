@@ -547,6 +547,25 @@ export default function LeaderboardScreen({
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             )}
           </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setSelectedSubject('coding');
+            }}
+            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
+              selectedSubject === 'coding'
+                ? 'bg-rose-600 text-white border-rose-700 shadow-sm ring-2 ring-rose-400/30'
+                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70 hover:text-slate-800'
+            }`}
+          >
+            <span>💻</span>
+            <span>Kibo Coding</span>
+            {selectedSubject === 'coding' && (
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            )}
+          </button>
         </div>
       </div>
 

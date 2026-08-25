@@ -551,7 +551,7 @@ export default function App() {
     const sub = subjectOverride || activeSubject;
     const uData = storageService.getUserData(sub);
     const sData = storageService.getShopState();
-    const cRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
+    const cRating = Number(uData.adaptiveCompetenceRating) || Number(uData.competenceRank) || 1000;
 
     setActiveProfileId(storageService.getActiveProfileId());
     setLiveCompetenceRating(cRating);
@@ -1655,14 +1655,16 @@ export default function App() {
                   ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 ring-2 ring-amber-400/50'
                   : activeSubject === 'words'
                   ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 ring-2 ring-indigo-400/50'
-                  : 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 ring-2 ring-teal-400/50'
+                  : activeSubject === 'world'
+                  ? 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 ring-2 ring-teal-400/50'
+                  : 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white border-rose-300 ring-2 ring-rose-400/50'
               }`}
               title="Switch Subject"
               aria-expanded={showSubjectDropdown}
             >
               <div className="flex items-center gap-1.5">
                 <span className="text-base leading-none select-none">
-                  {activeSubject === 'math' ? '🔢' : activeSubject === 'words' ? '📚' : '🌍'}
+                  {activeSubject === 'math' ? '🔢' : activeSubject === 'words' ? '📚' : activeSubject === 'world' ? '🌍' : '💻'}
                 </span>
                 <span className="tracking-tight capitalize">{activeSubject}</span>
               </div>
@@ -1732,6 +1734,26 @@ export default function App() {
                   {activeSubject === 'world' && <span className="w-2 h-2 rounded-full bg-teal-600" />}
                 </button>
 
+                {/* Coding Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSubjectChange('coding');
+                    setShowSubjectDropdown(false);
+                  }}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
+                    activeSubject === 'coding'
+                      ? 'bg-rose-100 border-rose-300 text-rose-950'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">💻</span>
+                    <span>Kibo Coding</span>
+                  </div>
+                  {activeSubject === 'coding' && <span className="w-2 h-2 rounded-full bg-rose-600" />}
+                </button>
+
                 {/* Coming Soon Teasers (Money & Music in Mobile Menu) */}
                 <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black bg-slate-50/80 border border-dashed border-emerald-300 text-slate-700 select-none">
                   <div className="flex items-center gap-2">
@@ -1749,16 +1771,6 @@ export default function App() {
                     <span>Kibo Music</span>
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 leading-none">
-                    Coming Soon
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black bg-slate-50/80 border border-dashed border-indigo-300 text-slate-700 select-none">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">💻</span>
-                    <span>Kibo Coding</span>
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300 leading-none">
                     Coming Soon
                   </span>
                 </div>
@@ -1816,7 +1828,23 @@ export default function App() {
               {activeSubject === 'world' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
             </button>
 
-            {/* Coming Soon Teasers (Money, Music & Coding) */}
+            {/* Kibo Coding */}
+            <button
+              type="button"
+              onClick={() => handleSubjectChange('coding')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
+                activeSubject === 'coding'
+                  ? 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white border-rose-300 ring-2 ring-rose-400/50 scale-105'
+                  : 'bg-white/90 hover:bg-rose-50 text-slate-700 border-slate-200 hover:border-rose-200'
+              }`}
+              title="Switch to Kibo Coding"
+            >
+              <span className="text-sm sm:text-base leading-none select-none">💻</span>
+              <span className="tracking-tight">Coding</span>
+              {activeSubject === 'coding' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+            </button>
+
+            {/* Coming Soon Teasers (Money & Music) */}
             <button
               type="button"
               disabled
@@ -1838,18 +1866,6 @@ export default function App() {
               <span className="text-sm sm:text-base leading-none select-none">🎵</span>
               <span className="tracking-tight">Music</span>
               <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 shadow-2xs leading-none whitespace-nowrap">
-                Coming Soon
-              </span>
-            </button>
-            <button
-              type="button"
-              disabled
-              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-white/90 border-2 border-dashed border-indigo-300 text-slate-700 shadow-2xs shrink-0 select-none cursor-not-allowed"
-              title="Kibo Coding - Coming Soon"
-            >
-              <span className="text-sm sm:text-base leading-none select-none">💻</span>
-              <span className="tracking-tight">Coding</span>
-              <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300 shadow-2xs leading-none whitespace-nowrap">
                 Coming Soon
               </span>
             </button>

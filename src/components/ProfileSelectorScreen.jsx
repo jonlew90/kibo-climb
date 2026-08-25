@@ -69,11 +69,11 @@ const SUBJECT_THEMES = {
     id: 'coding',
     name: 'Coding',
     icon: '💻',
-    border: 'border-purple-300/70',
-    bg: 'bg-purple-500/10',
-    activeBg: 'bg-purple-600 text-white',
-    text: 'text-purple-950',
-    star: 'fill-purple-500 text-purple-500',
+    border: 'border-rose-300/70',
+    bg: 'bg-rose-500/10',
+    activeBg: 'bg-rose-600 text-white',
+    text: 'text-rose-950',
+    star: 'fill-rose-500 text-rose-500',
     solvedUnit: 'q'
   }
 };

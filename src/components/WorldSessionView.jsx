@@ -1351,7 +1351,7 @@ export default function WorldSessionView({
 
   return (
     <div className="w-full h-full flex-1 min-h-0 relative overflow-visible animate-pop flex flex-col">
-      <div className="w-full h-full flex flex-col items-center justify-between sm:justify-end pb-1 sm:pb-2 pt-1 px-1.5 sm:px-3 max-w-lg mx-auto relative overflow-visible flex-1 min-h-0">
+      <div className="w-full h-full flex flex-col items-center justify-between sm:justify-end pb-1 sm:pb-2 pt-1 px-1.5 sm:px-3 max-w-4xl mx-auto relative overflow-visible flex-1 min-h-0">
 
       {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
       {celebrationEvent && (
@@ -1420,16 +1420,12 @@ export default function WorldSessionView({
 
       {/* MASCOT CONTAINER - Centered between sticky header and question card */}
       <div
-        className={`flex-1 flex flex-row items-center justify-center w-full min-h-0 my-auto py-0.5 sm:py-1.5 z-10 overflow-visible px-2 sm:px-4 ${
-          hasStartedClimb ? 'max-h-[14vh] sm:max-h-[20vh] md:max-h-[24vh]' : 'max-h-[26vh] sm:max-h-[35vh]'
-        }`}
+        className="flex-1 flex flex-row items-center justify-center w-full min-h-0 my-auto py-1 sm:py-2 z-10 overflow-visible px-2 sm:px-4"
       >
         {/* Left Friend */}
         {displayedFriends[0] ? (
           <div
-            className={`relative z-0 flex items-center justify-end sm:justify-center overflow-visible flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] h-3/4 cursor-pointer hover:scale-105 active:scale-95 transition-transform shrink-0 ${
-              hasStartedClimb ? 'max-h-[12vh] sm:max-h-[16vh] md:max-h-[20vh]' : 'max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh]'
-            }`}
+            className="relative z-0 flex items-center justify-end sm:justify-center overflow-visible flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] h-3/4 max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh] cursor-pointer hover:scale-105 active:scale-95 transition-transform shrink-0"
             onClick={() => handleFriendClick(0)}
             title={`Tap ${displayedFriends[0].username}!`}
           >
@@ -1442,9 +1438,7 @@ export default function WorldSessionView({
               mood="happy"
               state={friend1State}
               equipped={displayedFriends[0].equipped || []}
-              className={`h-full w-auto aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90 scale-x-[-1] max-w-full ${
-                hasStartedClimb ? 'max-h-[12vh] sm:max-h-[16vh] md:max-h-[20vh]' : 'max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh]'
-              }`}
+              className="h-full w-auto max-h-[22vh] max-w-full sm:max-h-[28vh] md:max-h-[32vh] aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90 scale-x-[-1]"
             />
             <div className="absolute -bottom-2 md:-bottom-4 left-1/2 -translate-x-1/2 bg-white/90 text-slate-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-slate-200 z-10 truncate max-w-full pointer-events-none">
               {displayedFriends[0].username}
@@ -1456,27 +1450,21 @@ export default function WorldSessionView({
 
         {/* Main Mascot */}
         <div
-          className={`relative z-10 flex items-center justify-center overflow-visible p-0.5 sm:p-1.5 w-1/2 max-w-[50%] sm:max-w-[240px] md:max-w-[300px] h-full shrink-0 ${
-            hasStartedClimb ? 'max-h-[14vh] sm:max-h-[20vh] md:max-h-[24vh]' : 'max-h-[26vh] sm:max-h-[35vh]'
-          }`}
+          className="relative z-10 flex items-center justify-center overflow-visible p-1 sm:p-2 w-1/2 max-w-[50%] sm:max-w-[240px] md:max-w-[300px] h-full max-h-[32vh] sm:max-h-[44vh] md:max-h-[48vh] shrink-0"
           title="Tap Kibo!"
         >
           <Mascot
             mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'}
             state={mascotState}
             equipped={equippedItems}
-            className={`h-full w-auto aspect-square filter drop-shadow-md object-contain shrink-0 max-w-full ${
-              hasStartedClimb ? 'max-h-[14vh] max-w-[14vh] sm:max-h-[20vh] sm:max-w-[20vh] md:max-h-[24vh] md:max-w-[24vh]' : 'max-h-[26vh] max-w-[26vh] sm:max-h-[35vh] sm:max-w-[35vh]'
-            }`}
+            className="h-full w-auto max-h-[32vh] max-w-full sm:max-h-[44vh] md:max-h-[48vh] aspect-square filter drop-shadow-xl object-contain shrink-0"
           />
         </div>
 
         {/* Right Friend */}
         {displayedFriends[1] ? (
           <div
-            className={`relative z-0 flex items-center justify-start sm:justify-center overflow-visible flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] h-3/4 cursor-pointer hover:scale-105 active:scale-95 transition-transform shrink-0 ${
-              hasStartedClimb ? 'max-h-[12vh] sm:max-h-[16vh] md:max-h-[20vh]' : 'max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh]'
-            }`}
+            className="relative z-0 flex items-center justify-start sm:justify-center overflow-visible flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] h-3/4 max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh] cursor-pointer hover:scale-105 active:scale-95 transition-transform shrink-0"
             onClick={() => handleFriendClick(1)}
             title={`Tap ${displayedFriends[1].username}!`}
           >
@@ -1489,9 +1477,7 @@ export default function WorldSessionView({
               mood="happy"
               state={friend2State}
               equipped={displayedFriends[1].equipped || []}
-              className={`h-full w-auto aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90 max-w-full ${
-                hasStartedClimb ? 'max-h-[12vh] sm:max-h-[16vh] md:max-h-[20vh]' : 'max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh]'
-              }`}
+              className="h-full w-auto max-h-[22vh] max-w-full sm:max-h-[28vh] md:max-h-[32vh] aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90"
             />
             <div className="absolute -bottom-2 md:-bottom-4 left-1/2 -translate-x-1/2 bg-white/90 text-slate-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-slate-200 z-10 truncate max-w-full pointer-events-none">
               {displayedFriends[1].username}
@@ -1503,10 +1489,10 @@ export default function WorldSessionView({
       </div>
 
       {/* PROBLEM CARD CONTAINER */}
-      <div className="w-full shrink-0 flex flex-col items-center justify-center my-0.5 sm:my-1 space-y-1.5">
+      <div className="w-full shrink-0 flex flex-col items-center justify-center my-1 space-y-2">
         {!hasStartedClimb ? (
           /* PRE-CLIMB START SCREEN HERO CARD */
-          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 sm:p-5 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[48vh]">
+          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 sm:p-5 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[42vh]">
             <div className="space-y-1.5">
               <span className="text-xs sm:text-sm font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
                 {savedClimbState && savedClimbState.sessionQuestionIndex <= 12
