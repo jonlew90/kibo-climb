@@ -1029,6 +1029,19 @@ export const storageService = {
     safeSaveProfilesState(state);
   },
 
+  hasFamilyPlan() {
+    const state = safeGetProfilesState();
+    return Object.values(state.profiles).some(prof => {
+      return prof.shopState?.unlockedItems?.includes('kibo_club_family');
+    });
+  },
+
+  hasSinglePlan(profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const prof = this.getProfileById(pid);
+    return !!prof?.shopState?.unlockedItems?.includes('kibo_club_sub');
+  },
+
   getSubjectRating(profileId, subjectId = 'math') {
     const profile = this.getProfileById(profileId);
     if (!profile || !profile.userData) return 1000;
