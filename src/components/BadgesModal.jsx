@@ -161,7 +161,7 @@ export default function BadgesModal({
                 <span>🏔️</span> Summits Reached
               </div>
               <span className="text-xl font-black text-indigo-700 my-1">
-                {userState.sprintHistory?.length || userState.completedClimbsCount || 0}
+                {userState.sprintHistory?.length || userState.completedClimbsCount || storageService.getUserData(activeSubject)?.sprintHistory?.length || 0}
               </span>
               <span className="text-[10px] font-bold text-indigo-800/80">Completed blocks</span>
             </div>

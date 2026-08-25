@@ -938,8 +938,13 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
       const subType = Math.random();
       if (subType < 0.35) {
         // Applied Math: Ratios
-        const r1 = [2, 3, 4][Math.floor(Math.random() * 3)];
-        const r2 = [3, 5, 7][Math.floor(Math.random() * 3)];
+        const r1Pool = [2, 3, 4];
+        const r2Pool = [3, 5, 7];
+        const r1 = r1Pool[Math.floor(Math.random() * r1Pool.length)];
+        let r2;
+        do {
+          r2 = r2Pool[Math.floor(Math.random() * r2Pool.length)];
+        } while (r1 === r2);
         const mult = Math.floor(Math.random() * 4) + 2;
         const given1 = r1 * mult;
         const targetAns = r2 * mult;
