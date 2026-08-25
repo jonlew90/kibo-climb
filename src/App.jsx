@@ -1338,9 +1338,9 @@ export default function App() {
       {/* Subject Background Wallpaper */}
       <SubjectWallpaper activeSubject={activeSubject} />
       {isOffline && (
-        <div className="bg-amber-100 text-amber-900 border-b border-amber-200 px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-bold z-50">
+        <div className="fixed top-0 inset-x-0 z-[2000] bg-amber-400 text-amber-950 border-b border-amber-500/40 px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-bold shadow-md select-none pointer-events-none">
           <WifiOff className="w-3.5 h-3.5 shrink-0" />
-          You are offline. Progress will sync when reconnected.
+          <span>You are offline. Progress will sync when reconnected.</span>
         </div>
       )}
       {/* Sticky Top HUD Header Bar */}
