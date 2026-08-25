@@ -1496,7 +1496,7 @@ export default function WordsSessionView({
               equipped={displayedFriends[0].equipped || []}
               className="h-full w-auto max-h-[22vh] max-w-full sm:max-h-[28vh] md:max-h-[32vh] aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90 scale-x-[-1]"
             />
-            <div className="absolute -bottom-2 md:-bottom-4 left-1/2 -translate-x-1/2 bg-white/90 text-slate-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-slate-200 z-10 truncate max-w-full pointer-events-none">
+            <div className="absolute bottom-0 sm:bottom-1 left-1/2 -translate-x-1/2 bg-white/90 text-slate-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-slate-200 z-10 truncate max-w-full pointer-events-none">
               {displayedFriends[0].username}
             </div>
           </div>
@@ -1535,7 +1535,7 @@ export default function WordsSessionView({
               equipped={displayedFriends[1].equipped || []}
               className="h-full w-auto max-h-[22vh] max-w-full sm:max-h-[28vh] md:max-h-[32vh] aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90"
             />
-            <div className="absolute -bottom-2 md:-bottom-4 left-1/2 -translate-x-1/2 bg-white/90 text-slate-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-slate-200 z-10 truncate max-w-full pointer-events-none">
+            <div className="absolute bottom-0 sm:bottom-1 left-1/2 -translate-x-1/2 bg-white/90 text-slate-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-slate-200 z-10 truncate max-w-full pointer-events-none">
               {displayedFriends[1].username}
             </div>
           </div>
