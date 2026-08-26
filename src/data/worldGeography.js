@@ -270,7 +270,7 @@ export const US_STATES = [
   { name: 'New Jersey', capital: 'Trenton', region: 'Northeast', nickname: 'Garden State', trivia: 'Most densely populated US state, bordered by Atlantic Ocean and Hudson River' },
   { name: 'New Mexico', capital: 'Santa Fe', region: 'West', nickname: 'Land of Enchantment', trivia: 'Santa Fe is the oldest state capital in the United States (founded 1610)' },
   { name: 'New York', capital: 'Albany', region: 'Northeast', nickname: 'Empire State', trivia: 'Home to New York City, Niagara Falls, and the Adirondack Mountains', shapeSvg: 'M78,32 L114,18 L134,18 L136,56 L138,82 L136,96 L132,102 L148,104 L176,106 L152,112 L130,108 L118,92 L52,92 L42,82 L42,70 L72,54 Z' },
-  { name: 'North Carolina', capital: 'Raleigh', region: 'South', nickname: 'Tar Heel State', trivia: 'Site of the Wright brothers first powered airplane flight at Kitty Hawk' },
+  { name: 'North Carolina', capital: 'Raleigh', region: 'South', nickname: 'Tar Heel State', trivia: 'Site of the Wright brothers\' first powered airplane flight at Kitty Hawk' },
   { name: 'North Dakota', capital: 'Bismarck', region: 'Midwest', nickname: 'Peace Garden State', trivia: 'Northern Great Plains state bordering Canada' },
   { name: 'Ohio', capital: 'Columbus', region: 'Midwest', nickname: 'Buckeye State', trivia: 'Known as the Birthplace of Aviation and bordered by Lake Erie' },
   { name: 'Oklahoma', capital: 'Oklahoma City', region: 'South', nickname: 'Sooner State', trivia: 'Features a distinct western panhandle and rich Native American heritage' },
@@ -312,8 +312,8 @@ export const COUNTRIES = [
   { name: 'Peru', capital: 'Lima', continent: 'South America', landmark: 'Machu Picchu', trivia: 'Heart of the Incan Empire, home to Machu Picchu and Lake Titicaca' },
   { name: 'Colombia', capital: 'Bogotá', continent: 'South America', landmark: 'Coffee Cultural Landscape', trivia: 'Only South American nation with coastlines on both the Pacific Ocean and Caribbean Sea' },
   { name: 'Ecuador', capital: 'Quito', continent: 'South America', landmark: 'Galapagos Islands', trivia: 'Named after the Equator; home to the volcanic Galápagos archipelago' },
-  { name: 'Venezuela', capital: 'Caracas', continent: 'South America', landmark: 'Angel Falls', trivia: 'Home to Angel Falls, the world highest uninterrupted waterfall' },
-  { name: 'Bolivia', capital: 'Sucre', continent: 'South America', landmark: 'Salar de Uyuni', trivia: 'Landlocked South American nation home to the world largest salt flat' },
+  { name: 'Venezuela', capital: 'Caracas', continent: 'South America', landmark: 'Angel Falls', trivia: 'Home to Angel Falls, the world\'s highest uninterrupted waterfall' },
+  { name: 'Bolivia', capital: 'Sucre', continent: 'South America', landmark: 'Salar de Uyuni', trivia: 'Landlocked South American nation home to the world\'s largest salt flat' },
   { name: 'Paraguay', capital: 'Asunción', continent: 'South America', landmark: 'Itaipu Dam', trivia: 'Landlocked nation in central South America bordered by Argentina, Brazil, and Bolivia' },
   { name: 'Uruguay', capital: 'Montevideo', continent: 'South America', landmark: 'Punta del Este', trivia: 'Second smallest sovereign nation in South America, located on the Rio de la Plata' },
 
@@ -348,18 +348,18 @@ export const COUNTRIES = [
   { name: 'China', capital: 'Beijing', continent: 'Asia', landmark: 'Great Wall of China', trivia: 'Fourth largest country by area and home to the Yangtze and Yellow rivers' },
   { name: 'India', capital: 'New Delhi', continent: 'Asia', landmark: 'Taj Mahal', trivia: 'South Asian peninsula bounded by Indian Ocean, Arabian Sea, and Bay of Bengal', shapeSvg: 'M68,16 L82,14 L92,22 L102,28 L126,30 L132,28 L138,30 L148,28 L165,26 L168,38 L158,48 L148,46 L142,42 L138,54 L132,68 L122,88 L108,112 L96,126 L88,114 L78,94 L70,74 L54,72 L48,62 L58,56 L52,48 L62,38 Z' },
   { name: 'South Korea', capital: 'Seoul', continent: 'Asia', landmark: 'Gyeongbokgung Palace', trivia: 'East Asian nation on the southern half of the Korean Peninsula' },
-  { name: 'Indonesia', capital: 'Jakarta', continent: 'Asia', landmark: 'Borobudur Temple', trivia: 'World largest archipelago nation with over 17,000 islands spanning the Equator' },
+  { name: 'Indonesia', capital: 'Jakarta', continent: 'Asia', landmark: 'Borobudur Temple', trivia: 'World\'s largest archipelago nation with over 17,000 islands spanning the Equator' },
   { name: 'Saudi Arabia', capital: 'Riyadh', continent: 'Asia', landmark: 'Al-Masjid an-Nabawi', trivia: 'Occupies most of the Arabian Peninsula, bounded by Red Sea and Persian Gulf' },
   { name: 'Thailand', capital: 'Bangkok', continent: 'Asia', landmark: 'Grand Palace', trivia: 'Southeast Asian kingdom renowned for tropical beaches, temples, and Bangkok' },
   { name: 'Vietnam', capital: 'Hanoi', continent: 'Asia', landmark: 'Ha Long Bay', trivia: 'S-shaped country along the eastern coast of the Indochina Peninsula' },
   { name: 'Philippines', capital: 'Manila', continent: 'Asia', landmark: 'Chocolate Hills', trivia: 'Archipelago nation of over 7,000 islands in the western Pacific Ocean' },
   { name: 'Singapore', capital: 'Singapore', continent: 'Asia', landmark: 'Marina Bay Sands', trivia: 'Island city-state located at the southern tip of the Malay Peninsula' },
   { name: 'Pakistan', capital: 'Islamabad', continent: 'Asia', landmark: 'Badshahi Mosque', trivia: 'South Asian nation along the Indus River, home to K2 peak' },
-  { name: 'Bangladesh', capital: 'Dhaka', continent: 'Asia', landmark: 'Sundarbans Mangrove Forest', trivia: 'Home to the world largest river delta (Ganges-Brahmaputra Delta)' },
+  { name: 'Bangladesh', capital: 'Dhaka', continent: 'Asia', landmark: 'Sundarbans Mangrove Forest', trivia: 'Home to the world\'s largest river delta (Ganges-Brahmaputra Delta)' },
   { name: 'United Arab Emirates', capital: 'Abu Dhabi', continent: 'Asia', landmark: 'Burj Khalifa (Dubai)', trivia: 'Federation of seven emirates on the Arabian Peninsula, home to Burj Khalifa' },
   { name: 'Israel', capital: 'Jerusalem', continent: 'Asia', landmark: 'Western Wall', trivia: 'Middle Eastern nation on the Mediterranean Sea and home to the Dead Sea' },
   { name: 'Malaysia', capital: 'Kuala Lumpur', continent: 'Asia', landmark: 'Petronas Twin Towers', trivia: 'Divided into Peninsular Malaysia and East Malaysia on the island of Borneo' },
-  { name: 'Nepal', capital: 'Kathmandu', continent: 'Asia', landmark: 'Mount Everest Base Camp', trivia: 'Landlocked Himalayan nation home to eight of the world ten highest mountain peaks' },
+  { name: 'Nepal', capital: 'Kathmandu', continent: 'Asia', landmark: 'Mount Everest Base Camp', trivia: 'Landlocked Himalayan nation home to eight of the world\'s ten highest mountain peaks' },
   { name: 'Mongolia', capital: 'Ulaanbaatar', continent: 'Asia', landmark: 'Genghis Khan Statue', trivia: 'Second largest landlocked country in the world, home to the Gobi Desert' },
   { name: 'Kazakhstan', capital: 'Astana', continent: 'Asia', landmark: 'Baiterek Tower', trivia: 'The largest landlocked country in the world, spanning Central Asia and Eastern Europe' },
   { name: 'Sri Lanka', capital: 'Sri Jayawardenepura Kotte', continent: 'Asia', landmark: 'Sigiriya Rock Fortress', trivia: 'Tear-drop shaped island nation in the Indian Ocean southeast of India' },
@@ -486,7 +486,7 @@ export const WORLD_LANDMARKS_AND_WONDERS = [
     name: 'Danube River',
     type: 'river',
     continent: 'Europe',
-    fact: 'Europe second longest river, flowing through or bordering 10 countries from Germany to the Black Sea.'
+    fact: 'Europe\'s second longest river, flowing through or bordering 10 countries from Germany to the Black Sea.'
   },
   {
     name: 'Ganges River',
@@ -516,7 +516,7 @@ export const WORLD_LANDMARKS_AND_WONDERS = [
     type: 'waterfall',
     continent: 'Africa',
     country: 'Zambia / Zimbabwe',
-    fact: 'One of the world largest waterfalls, creating the greatest curtain of falling water on Earth on the Zambezi River.'
+    fact: 'One of the world\'s largest waterfalls, creating the greatest curtain of falling water on Earth on the Zambezi River.'
   },
   {
     name: 'Iguazu Falls',
@@ -574,13 +574,13 @@ export const WORLD_LANDMARKS_AND_WONDERS = [
     type: 'lake',
     continent: 'Asia',
     country: 'Russia',
-    fact: 'The deepest and oldest freshwater lake on Earth, holding over 20% of the world unfrozen surface freshwater.'
+    fact: 'The deepest and oldest freshwater lake on Earth, holding over 20% of the world\'s unfrozen surface freshwater.'
   },
   {
     name: 'Caspian Sea',
     type: 'lake',
     continent: 'Europe / Asia',
-    fact: 'The world largest inland body of water by surface area, classified as the world largest lake.'
+    fact: 'The world\'s largest inland body of water by surface area, classified as the world\'s largest lake.'
   },
   {
     name: 'Lake Superior',
@@ -594,7 +594,7 @@ export const WORLD_LANDMARKS_AND_WONDERS = [
     type: 'lake',
     continent: 'Africa',
     country: 'Tanzania / Uganda / Kenya',
-    fact: 'Africa largest lake by surface area and the chief tropical reservoir source for the Nile River.'
+    fact: 'Africa\'s largest lake by surface area and the chief tropical reservoir source for the Nile River.'
   },
   {
     name: 'Dead Sea',
@@ -623,7 +623,7 @@ export const WORLD_LANDMARKS_AND_WONDERS = [
     type: 'coral_reef',
     continent: 'Australia',
     country: 'Australia',
-    fact: 'The world largest living structure and coral reef system, visible from outer space in the Coral Sea.'
+    fact: 'The world\'s largest living structure and coral reef system, visible from outer space in the Coral Sea.'
   },
   {
     name: 'Panama Canal',
@@ -689,7 +689,7 @@ export const EXTREME_GEOGRAPHY = [
     details: 'Reaches 8,848 meters (29,031 feet) in the Himalayas on the border of Nepal and China.'
   },
   {
-    record: 'Deepest point in the world oceans',
+    record: 'Deepest point in the world\'s oceans',
     answer: 'Challenger Deep (Mariana Trench)',
     details: 'Plunges to nearly 11,000 meters (36,000 feet) in the western Pacific Ocean.'
   },
@@ -716,7 +716,7 @@ export const EXTREME_GEOGRAPHY = [
   {
     record: 'Largest freshwater lake by volume and deepest lake',
     answer: 'Lake Baikal',
-    details: 'Located in Siberia, Russia, holding 20% of Earth unfrozen surface freshwater.'
+    details: 'Located in Siberia, Russia, holding 20% of Earth\'s unfrozen surface freshwater.'
   },
   {
     record: 'Largest lake by surface area (inland sea)',
@@ -731,7 +731,7 @@ export const EXTREME_GEOGRAPHY = [
   {
     record: 'Largest landlocked country in the world by land area',
     answer: 'Kazakhstan',
-    details: 'Spans 2.7 million square kilometers in Central Asia without direct access to the world oceans.'
+    details: 'Spans 2.7 million square kilometers in Central Asia without direct access to the world\'s oceans.'
   },
   {
     record: 'Sovereign country with the longest coastline',
@@ -796,7 +796,7 @@ export const GEOPOLITICAL_ANOMALIES = [
     type: 'enclave',
     name: 'San Marino',
     enclosingCountry: 'Italy',
-    fact: 'San Marino is the world oldest continuous republic, completely surrounded by Italy.'
+    fact: 'San Marino is the world\'s oldest continuous republic, completely surrounded by Italy.'
   },
   {
     type: 'enclave',
@@ -859,13 +859,13 @@ export const GLOBAL_STRAITS = [
     name: 'Strait of Hormuz',
     connects: 'Persian Gulf and Gulf of Oman (Arabian Sea)',
     separates: 'Iran and Oman / UAE',
-    fact: 'The world most strategic oil transit chokepoint through which roughly a fifth of global petroleum passes.'
+    fact: 'The world\'s most strategic oil transit chokepoint through which roughly a fifth of global petroleum passes.'
   },
   {
     name: 'Bosphorus Strait',
     connects: 'Black Sea and Sea of Marmara',
     separates: 'European Istanbul and Asian Istanbul (Turkey)',
-    fact: 'The world narrowest strait used for international navigation, dividing the city of Istanbul.'
+    fact: 'The world\'s narrowest strait used for international navigation, dividing the city of Istanbul.'
   },
   {
     name: 'Dardanelles Strait',
