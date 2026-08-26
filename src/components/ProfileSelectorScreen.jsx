@@ -102,7 +102,7 @@ const formatGradeDisplay = (grade) => {
   return grade;
 };
 
-function ProfileCard({ profile, onSelect, isSelected }) {
+function ProfileCard({ profile, onSelect, isSelected, isLocked }) {
   const userData = profile.userData || {};
   const streak = userData.streak ?? 0;
   const sparks = userData.sparks ?? 0;
@@ -116,11 +116,17 @@ function ProfileCard({ profile, onSelect, isSelected }) {
       type="button"
       onClick={() => onSelect(profile)}
       className={`group relative flex flex-col items-center gap-2 p-3.5 sm:p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer text-center w-full
-        ${isSelected
+        ${isLocked ? 'opacity-60 grayscale-[50%] border-slate-300 bg-slate-100/50 cursor-pointer hover:opacity-80' : isSelected
           ? 'border-amber-400 bg-amber-50/90 scale-[1.02] shadow-md shadow-amber-500/20'
           : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 hover:scale-[1.01] shadow-xs'
         }`}
     >
+
+      {isLocked && (
+        <div className="absolute -top-2 -right-2 bg-slate-700 rounded-full p-1.5 border-2 border-white shadow-sm z-10">
+          <Lock className="w-3 h-3 text-white" />
+        </div>
+      )}
       {isSelected && (
         <>
           <div className="absolute inset-0 rounded-2xl ring-2 ring-amber-400/40 ring-offset-2 ring-offset-transparent pointer-events-none" />
@@ -330,7 +336,13 @@ export default function ProfileSelectorScreen({
   const loadProfiles = () => {
     const list = storageService.getAllProfiles();
     setProfiles(list);
-    const active = storageService.getActiveProfile();
+    let active = storageService.getActiveProfile();
+    const isFamPlan = storageService.hasFamilyPlan();
+    const primId = storageService.getPrimaryProfileId() || (list.length > 0 ? list[0].id : null);
+    if (!isFamPlan && list.length > 1 && active && active.id !== primId && !storageService.needsProfileDowngradeSelection()) {
+      storageService.setActiveProfileId(primId);
+      active = storageService.getProfileById(primId);
+    }
     setSelectedId(active?.id || (list.length > 0 ? list[0].id : null));
   };
 
@@ -339,10 +351,30 @@ export default function ProfileSelectorScreen({
   }, []);
 
   const handleSelect = (profile) => {
-    setSelectedId(profile.id);
-    storageService.setActiveProfileId(profile.id);
-    if (onSelectProfile) {
-      onSelectProfile(profile);
+    const isNeedsSelection = storageService.needsProfileDowngradeSelection();
+    if (isNeedsSelection) {
+      // User is making their downgrade selection
+      storageService.setPrimaryProfileId(profile.id);
+      storageService.setNeedsProfileDowngradeSelection(false);
+      setSelectedId(profile.id);
+      storageService.setActiveProfileId(profile.id);
+
+      // Ensure the newly selected profile gets the single sub entitlement if they downgraded to single plan
+      // Wait, is it single plan or free? We can check if they have a single plan in the app
+      if (storageService.hasSinglePlan(profile.id) || storageService.hasSinglePlan()) {
+        // If they have single plan, we should run updateSubscriptionState('kibo_club_sub', profile.id)
+        // to re-assign the entitlements to the chosen profile, and mark it as final resolution
+        storageService.updateSubscriptionState('kibo_club_sub', profile.id, true);
+      }
+
+      // Force reload of UI state to lock others
+      loadProfiles();
+    } else {
+      setSelectedId(profile.id);
+      storageService.setActiveProfileId(profile.id);
+      if (onSelectProfile) {
+        onSelectProfile(profile);
+      }
     }
   };
 
@@ -355,6 +387,8 @@ export default function ProfileSelectorScreen({
   const hasFamilyPlan = storageService.hasFamilyPlan();
   const hasSinglePlan = storageService.hasSinglePlan();
   const maxProfiles = hasFamilyPlan ? 6 : 1;
+  const needsSelection = storageService.needsProfileDowngradeSelection();
+  const primaryId = storageService.getPrimaryProfileId();
   const showAddButton = profiles.length < 6; // Always show button up to 6
   const isAddLocked = profiles.length >= maxProfiles;
 
@@ -395,12 +429,12 @@ export default function ProfileSelectorScreen({
               Kibo Climb
             </span>
             <h1 className="text-lg sm:text-2xl font-black text-slate-800 tracking-tight leading-tight">
-              {profiles.length === 1
+              {needsSelection ? "Select your 1 active profile" : profiles.length === 1
                 ? `Ready to climb, ${profiles[0].username || profiles[0].name}?`
                 : "Who's climbing today?"}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 font-medium">
-              {profiles.length === 1 ? 'Tap your card to continue your ascent' : 'Pick your profile to jump right back into your ascent'}
+              {needsSelection ? 'Your subscription was changed. Choose which profile to keep active. Others will be locked.' : profiles.length === 1 ? 'Tap your card to continue your ascent' : 'Pick your profile to jump right back into your ascent'}
             </p>
           </div>
         </div>
@@ -415,14 +449,18 @@ export default function ProfileSelectorScreen({
                 profiles.length === 2 ? 'grid-cols-2 max-w-md mx-auto' :
                 'grid-cols-2 sm:grid-cols-3 max-w-2xl mx-auto'
               }`}>
-                {profiles.map((profile) => (
+                {profiles.map((profile) => {
+                  const actualPrimaryId = primaryId || profiles[0]?.id;
+                  const isProfileLocked = !needsSelection && maxProfiles === 1 && profile.id !== actualPrimaryId;
+                  return (
                   <ProfileCard
                     key={profile.id}
                     profile={profile}
-                    onSelect={handleSelect}
-                    isSelected={selectedId === profile.id}
+                    onSelect={isProfileLocked ? () => setShowUpsell(true) : handleSelect}
+                    isSelected={selectedId === profile.id && !isProfileLocked}
+                    isLocked={isProfileLocked}
                   />
-                ))}
+                );})}
               </div>
 
               {/* Add Profile button */}

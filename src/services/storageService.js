@@ -1041,9 +1041,92 @@ export const storageService = {
   },
 
   hasSinglePlan(profileId = null) {
-    const pid = profileId || this.getActiveProfileId();
-    const prof = this.getProfileById(pid);
-    return !!prof?.shopState?.unlockedItems?.includes('kibo_club_sub');
+    if (profileId) {
+      const prof = this.getProfileById(profileId);
+      return !!prof?.shopState?.unlockedItems?.includes('kibo_club_sub');
+    }
+    const state = safeGetProfilesState();
+    return Object.values(state.profiles).some(prof => {
+      return prof.shopState?.unlockedItems?.includes('kibo_club_sub');
+    });
+  },
+
+  getPrimaryProfileId() {
+    const state = safeGetProfilesState();
+    return state.primaryProfileId || null;
+  },
+
+  setPrimaryProfileId(profileId) {
+    const state = safeGetProfilesState();
+    state.primaryProfileId = profileId;
+    safeSaveProfilesState(state);
+  },
+
+  needsProfileDowngradeSelection() {
+    const state = safeGetProfilesState();
+    return !!state.needsProfileDowngradeSelection;
+  },
+
+  setNeedsProfileDowngradeSelection(value) {
+    const state = safeGetProfilesState();
+    state.needsProfileDowngradeSelection = value;
+    safeSaveProfilesState(state);
+  },
+
+  updateSubscriptionState(planType, targetProfileId = null, isFinalResolution = false) {
+    const state = safeGetProfilesState();
+    const allProfileIds = Object.keys(state.profiles);
+    let activeProfilesCount = allProfileIds.length;
+
+    // Remove existing premium subs from ALL profiles first
+    allProfileIds.forEach(pid => {
+      const prof = state.profiles[pid];
+      if (prof.shopState) {
+        if (prof.shopState.unlockedItems) {
+          prof.shopState.unlockedItems = prof.shopState.unlockedItems.filter(
+            id => id !== 'kibo_club_family' && id !== 'kibo_club_sub'
+          );
+        }
+        if (prof.shopState.equippedItems) {
+          prof.shopState.equippedItems = prof.shopState.equippedItems.filter(
+            id => id !== 'kibo_club_family' && id !== 'kibo_club_sub'
+          );
+        }
+      }
+    });
+
+    if (planType === 'kibo_club_family') {
+      const pidToUpgrade = targetProfileId || state.activeProfileId || allProfileIds[0];
+      if (pidToUpgrade && state.profiles[pidToUpgrade]) {
+        state.profiles[pidToUpgrade].shopState = state.profiles[pidToUpgrade].shopState || {};
+        state.profiles[pidToUpgrade].shopState.unlockedItems = state.profiles[pidToUpgrade].shopState.unlockedItems || [];
+        state.profiles[pidToUpgrade].shopState.unlockedItems.push('kibo_club_family');
+      }
+      state.needsProfileDowngradeSelection = false;
+    } else if (planType === 'kibo_club_sub') {
+      const pidToUpgrade = targetProfileId || state.activeProfileId || allProfileIds[0];
+      if (pidToUpgrade && state.profiles[pidToUpgrade]) {
+        state.profiles[pidToUpgrade].shopState = state.profiles[pidToUpgrade].shopState || {};
+        state.profiles[pidToUpgrade].shopState.unlockedItems = state.profiles[pidToUpgrade].shopState.unlockedItems || [];
+        state.profiles[pidToUpgrade].shopState.unlockedItems.push('kibo_club_sub');
+        // Preemptively set primary profile id if not set, or update it
+        state.primaryProfileId = pidToUpgrade;
+      }
+      if (activeProfilesCount > 1 && !isFinalResolution) {
+         state.needsProfileDowngradeSelection = true;
+      } else {
+         state.needsProfileDowngradeSelection = false;
+      }
+    } else {
+      // Free / none
+      if (activeProfilesCount > 1 && !isFinalResolution) {
+         state.needsProfileDowngradeSelection = true;
+      } else {
+         state.needsProfileDowngradeSelection = false;
+      }
+    }
+
+    safeSaveProfilesState(state);
   },
 
   getSubjectRating(profileId, subjectId = 'math') {
