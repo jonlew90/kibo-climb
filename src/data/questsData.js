@@ -117,7 +117,7 @@ export const TEAM_2P_QUEST_POOL = [
   {
     id: 't2_duo_sprint',
     title: 'Duo Summit Sprint',
-    description: 'Climb together by solving 40 problems as a 2-person team',
+    description: 'Solve 40 problems combined with your partner (shared team total)',
     icon: 'Users',
     category: 'team2',
     teamSize: 2,
@@ -129,7 +129,7 @@ export const TEAM_2P_QUEST_POOL = [
   {
     id: 't2_math_tandem',
     title: 'Tandem Math Expedition',
-    description: 'Solve 30 Math problems collaboratively with your partner',
+    description: 'Solve 30 Math problems together with your partner (shared team total)',
     icon: 'Calculator',
     category: 'team2',
     teamSize: 2,
@@ -141,7 +141,7 @@ export const TEAM_2P_QUEST_POOL = [
   {
     id: 't2_world_scouts',
     title: 'Twin Flag Scouts',
-    description: 'Identify 25 World flags or landmarks together',
+    description: 'Identify 25 World flags or landmarks together with your partner (shared team total)',
     icon: 'Globe',
     category: 'team2',
     teamSize: 2,
@@ -156,7 +156,7 @@ export const TEAM_3P_QUEST_POOL = [
   {
     id: 't3_trio_traverse',
     title: 'Triple Peak Expedition',
-    description: 'Conquer the mountain range by solving 75 problems as a 3-person team',
+    description: 'Solve 75 problems combined across all 3 squad members (shared team total)',
     icon: 'Users',
     category: 'team3',
     teamSize: 3,
@@ -168,7 +168,7 @@ export const TEAM_3P_QUEST_POOL = [
   {
     id: 't3_all_round_squad',
     title: 'All-Round Ridge Squad',
-    description: 'Complete 60 problems across Math, Words, and World as a trio',
+    description: 'Complete 60 problems combined across Math, Words, and World as a trio (shared team total)',
     icon: 'Compass',
     category: 'team3',
     teamSize: 3,
@@ -180,7 +180,7 @@ export const TEAM_3P_QUEST_POOL = [
   {
     id: 't3_summit_assault',
     title: 'Kibo Summit Assault',
-    description: 'Unite your trio to reach 90 total solved challenges',
+    description: 'Reach 90 problems combined across all 3 squad members (shared team total)',
     icon: 'Mountain',
     category: 'team3',
     teamSize: 3,

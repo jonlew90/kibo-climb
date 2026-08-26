@@ -15,7 +15,9 @@ export default function BadgesModal({
   userState = {},
   renderFooter
 }) {
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState(
+    BADGE_CATEGORIES[activeSubject] ? activeSubject : Object.keys(BADGE_CATEGORIES)[0]
+  );
 
   const categoryScrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -27,6 +29,12 @@ export default function BadgesModal({
     setCanScrollLeft(scrollLeft > 4);
     setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
   };
+
+  useEffect(() => {
+    if (activeSubject && BADGE_CATEGORIES[activeSubject]) {
+      setActiveCategory(activeSubject);
+    }
+  }, [activeSubject]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -82,9 +90,7 @@ export default function BadgesModal({
 
   const recentUnlockedBadges = BADGES_CATALOG.filter((b) => unlockedSet.has(b.id)).slice(-3).reverse();
 
-  const filteredBadges = activeCategory === 'all'
-    ? BADGES_CATALOG
-    : BADGES_CATALOG.filter((b) => b.category === activeCategory);
+  const filteredBadges = BADGES_CATALOG.filter((b) => b.category === activeCategory);
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
@@ -233,20 +239,6 @@ export default function BadgesModal({
             }}
             className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 shrink-0 w-full touch-pan-x"
           >
-            <button
-              onClick={() => {
-                soundFx.playKeyTap();
-                setActiveCategory('all');
-              }}
-              className={`py-1.5 px-3.5 text-xs font-extrabold rounded-full shrink-0 transition-colors cursor-pointer ${
-                activeCategory === 'all'
-                  ? 'bg-amber-500 text-white shadow-md'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              🌟 All Badges ({unlockedCount}/{totalBadges})
-            </button>
-
             {Object.entries(BADGE_CATEGORIES).map(([key, cat]) => {
               const catBadges = BADGES_CATALOG.filter((b) => b.category === key);
               const catUnlocked = catBadges.filter((b) => unlockedSet.has(b.id)).length;

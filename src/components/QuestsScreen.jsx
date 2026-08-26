@@ -19,11 +19,13 @@ import {
   ChevronRight,
   Star,
   Check,
-  Scroll
+  Scroll,
+  Info,
+  X
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import { questService } from '../services/questService';
-import { COMPANION_BUDDIES } from '../data/questsData';
+import { COMPANION_BUDDIES, QUEST_RANKS } from '../data/questsData';
 import { storageService } from '../services/storageService';
 import ConfettiCanvas from './ConfettiCanvas';
 
@@ -38,12 +40,13 @@ export default function QuestsScreen({
   const activeProfile = storageService.getActiveProfile();
   const profileId = activeProfile?.id || 'default_child';
 
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'daily' | 'weekly' | 'team2' | 'team3'
+  const [activeTab, setActiveTab] = useState('daily'); // 'daily' | 'weekly' | 'team2' | 'team3'
   const [questState, setQuestState] = useState(() => questService.getQuests(profileId));
   const [dailyCountdown, setDailyCountdown] = useState(() => questService.getTimeUntilDailyReset());
   const [weeklyCountdown, setWeeklyCountdown] = useState(() => questService.getTimeUntilWeeklyReset());
   const [celebrationReward, setCelebrationReward] = useState(null);
   const [showTeammatePicker, setShowTeammatePicker] = useState(null); // { questId, teamType, slotIndex }
+  const [showLevelInfoModal, setShowLevelInfoModal] = useState(false);
   const [friendsList] = useState(() => storageService.getFriends());
 
   // Update countdown timers periodically
@@ -113,19 +116,18 @@ export default function QuestsScreen({
     const team2 = (questState?.team2 || []).map(q => ({ ...q, type: 'team2' }));
     const team3 = (questState?.team3 || []).map(q => ({ ...q, type: 'team3' }));
 
-    if (activeTab === 'daily') return daily;
     if (activeTab === 'weekly') return weekly;
     if (activeTab === 'team2') return team2;
     if (activeTab === 'team3') return team3;
-    return [...daily, ...weekly, ...team2, ...team3];
+    return daily;
   };
 
   const filteredQuests = getFilteredQuests();
   const allQuestsList = [
-    ...(questState?.daily || []),
-    ...(questState?.weekly || []),
-    ...(questState?.team2 || []),
-    ...(questState?.team3 || [])
+    ...(questState?.daily || []).map(q => ({ ...q, type: 'daily' })),
+    ...(questState?.weekly || []).map(q => ({ ...q, type: 'weekly' })),
+    ...(questState?.team2 || []).map(q => ({ ...q, type: 'team2' })),
+    ...(questState?.team3 || []).map(q => ({ ...q, type: 'team3' }))
   ];
   const unclaimedCount = allQuestsList.filter(q => q.completed && !q.claimed).length;
 
@@ -136,16 +138,10 @@ export default function QuestsScreen({
 
     // 2. If not visible in current tab, look across all quests
     if (!targetQuest) {
-      const allQuests = [
-        ...(questState?.daily || []).map(q => ({ ...q, type: 'daily' })),
-        ...(questState?.weekly || []).map(q => ({ ...q, type: 'weekly' })),
-        ...(questState?.team2 || []).map(q => ({ ...q, type: 'team2' })),
-        ...(questState?.team3 || []).map(q => ({ ...q, type: 'team3' }))
-      ];
-      targetQuest = allQuests.find(q => q.completed && !q.claimed);
+      targetQuest = allQuestsList.find(q => q.completed && !q.claimed);
       if (targetQuest) {
-        // Switch tab to either the quest's category or 'all'
-        setActiveTab(targetQuest.type || 'all');
+        // Switch tab to the target quest's category
+        setActiveTab(targetQuest.type || 'daily');
       }
     }
 
@@ -174,6 +170,18 @@ export default function QuestsScreen({
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setShowLevelInfoModal(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 active:scale-95 text-purple-800 rounded-full text-xs font-black border border-purple-300 shadow-2xs cursor-pointer transition-all"
+            title="View XP required for all levels"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>All Levels XP</span>
+          </button>
           {unclaimedCount > 0 && (
             <button
               type="button"
@@ -207,7 +215,7 @@ export default function QuestsScreen({
                 Mountain Quests
               </h1>
               <p className="text-purple-100 text-xs sm:text-sm mt-1 max-w-md">
-                Complete daily objectives, weekly milestones, and team ascents to gain Elevation XP, level up your Quest Rank, and earn Sparks & Shields!
+                Complete daily objectives, weekly milestones, and team ascents to gain XP, level up your Quest Rank, and earn Sparks & Shields!
               </p>
             </div>
 
@@ -231,7 +239,7 @@ export default function QuestsScreen({
             </div>
           </div>
 
-          {/* Quest Rank & Elevation XP Level Bar */}
+          {/* Quest Rank & XP Level Bar */}
           {(() => {
             const levelInfo = questState?.levelInfo || {
               level: 1,
@@ -257,20 +265,32 @@ export default function QuestsScreen({
                         <span className="font-black text-sm text-white tracking-wide">
                           {levelInfo.title}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            setShowLevelInfoModal(true);
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 hover:bg-white/30 active:scale-95 text-[11px] font-bold text-amber-200 border border-amber-300/40 cursor-pointer transition-all shadow-xs"
+                          title="View all level XP requirements"
+                        >
+                          <Info className="w-3 h-3 text-amber-300" />
+                          <span>All Levels XP</span>
+                        </button>
                       </div>
-                      <span className="text-[11px] text-purple-200 block">
-                        Total Elevation Conquered: <strong className="text-emerald-300 font-black">{levelInfo.currentXp.toLocaleString()}m</strong>
+                      <span className="text-[11px] text-purple-200 block mt-0.5">
+                        Total XP: <strong className="text-emerald-300 font-black">{levelInfo.currentXp.toLocaleString()} XP</strong>
                       </span>
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end">
                     <span className="text-xs font-black text-white block">
                       {levelInfo.isMaxLevel ? (
                         <span className="text-amber-300">MAX RANK REACHED 👑</span>
                       ) : (
                         <span>
-                          {levelInfo.xpIntoLevel} / {levelInfo.xpRequiredForLevel}m XP <span className="text-purple-200 font-normal">({levelInfo.progressPct}%)</span>
+                          {levelInfo.xpIntoLevel} / {levelInfo.xpRequiredForLevel} XP <span className="text-purple-200 font-normal">({levelInfo.progressPct}%)</span>
                         </span>
                       )}
                     </span>
@@ -283,7 +303,14 @@ export default function QuestsScreen({
                 </div>
 
                 {/* Level Progress Bar */}
-                <div className="w-full h-3 bg-black/30 rounded-full overflow-hidden p-0.5 border border-white/20">
+                <div 
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setShowLevelInfoModal(true);
+                  }}
+                  className="w-full h-3 bg-black/30 rounded-full overflow-hidden p-0.5 border border-white/20 cursor-pointer hover:border-amber-300/60 transition-colors"
+                  title="Click to view all level XP requirements"
+                >
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-300 transition-all duration-700 shadow-inner"
                     style={{ width: `${levelInfo.progressPct}%` }}
@@ -297,11 +324,34 @@ export default function QuestsScreen({
         {/* Tab Navigation */}
         <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar pb-2 mb-4">
           {[
-            { id: 'all', label: 'All Quests', icon: Star },
-            { id: 'daily', label: 'Daily Expeditions', icon: Zap, count: questState?.daily?.length },
-            { id: 'weekly', label: 'Weekly Ascents', icon: Mountain, count: questState?.weekly?.length },
-            { id: 'team2', label: '2-Person Tandem', icon: Users, count: questState?.team2?.length },
-            { id: 'team3', label: '3-Person Squad', icon: Compass, count: questState?.team3?.length }
+            {
+              id: 'daily',
+              label: 'Daily Expeditions',
+              icon: Zap,
+              count: questState?.daily?.length,
+              unclaimed: (questState?.daily || []).filter(q => q.completed && !q.claimed).length
+            },
+            {
+              id: 'weekly',
+              label: 'Weekly Ascents',
+              icon: Mountain,
+              count: questState?.weekly?.length,
+              unclaimed: (questState?.weekly || []).filter(q => q.completed && !q.claimed).length
+            },
+            {
+              id: 'team2',
+              label: '2-Person Tandem',
+              icon: Users,
+              count: questState?.team2?.length,
+              unclaimed: (questState?.team2 || []).filter(q => q.completed && !q.claimed).length
+            },
+            {
+              id: 'team3',
+              label: '3-Person Squad',
+              icon: Compass,
+              count: questState?.team3?.length,
+              unclaimed: (questState?.team3 || []).filter(q => q.completed && !q.claimed).length
+            }
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -313,7 +363,7 @@ export default function QuestsScreen({
                   soundFx.playKeyTap();
                   setActiveTab(tab.id);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-black text-xs whitespace-nowrap transition-all cursor-pointer shadow-2xs shrink-0 ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-black text-xs whitespace-nowrap transition-all cursor-pointer shadow-2xs shrink-0 relative ${
                   isActive
                     ? 'bg-purple-600 text-white shadow-purple-200 scale-102'
                     : 'bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200'
@@ -321,6 +371,13 @@ export default function QuestsScreen({
               >
                 <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-300' : 'text-slate-400'}`} />
                 <span>{tab.label}</span>
+                {tab.unclaimed > 0 && (
+                  <span className={`inline-flex items-center justify-center px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                    isActive ? 'bg-amber-400 text-purple-950 animate-pulse' : 'bg-amber-500 text-white'
+                  }`}>
+                    {tab.unclaimed}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -405,9 +462,9 @@ export default function QuestsScreen({
 
                       {/* Team Co-op Breakdown for 2-Person & 3-Person */}
                       {isTeam2 && (
-                        <div className="mt-3 bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-3 text-xs">
-                            <div className="flex items-center gap-1.5">
+                        <div className="mt-3 bg-gradient-to-r from-slate-50 to-indigo-50/40 border border-indigo-100 rounded-2xl p-2.5 flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2.5 text-xs flex-wrap">
+                            <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs">
                               <span className="text-base">🧗</span>
                               <div>
                                 <span className="text-[10px] text-slate-500 font-bold block">You</span>
@@ -415,37 +472,55 @@ export default function QuestsScreen({
                               </div>
                             </div>
 
-                            <span className="text-slate-300 font-bold">+</span>
+                            <span className="text-slate-400 font-bold text-sm">+</span>
 
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-base">{quest.partner?.avatar || '🦁'}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                soundFx.playKeyTap();
+                                setShowTeammatePicker({ questId: quest.id, teamType: 'team2', slotIndex: 0, currentPartner: quest.partner, questTitle: quest.title });
+                              }}
+                              className="flex items-center gap-1.5 bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-400 px-2.5 py-1 rounded-xl transition-all shadow-2xs group cursor-pointer text-left"
+                              title="Click to choose partner"
+                            >
+                              <span className="text-base group-hover:scale-110 transition-transform">
+                                {quest.partner?.avatar || '🦁'}
+                              </span>
                               <div>
-                                <span className="text-[10px] text-slate-500 font-bold block truncate max-w-[80px]">
-                                  {quest.partner?.name || 'Asha'}
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px] text-indigo-900 font-black block truncate max-w-[80px]">
+                                    {quest.partner?.name || 'Asha'}
+                                  </span>
+                                  <span className="text-[9px] text-indigo-500 font-bold group-hover:underline">
+                                    Swap 🔄
+                                  </span>
+                                </div>
+                                <span className="font-black text-slate-800 text-xs">
+                                  {quest.partnerProgress || 0}
                                 </span>
-                                <span className="font-black text-slate-800">{quest.partnerProgress || 0}</span>
                               </div>
-                            </div>
+                            </button>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => {
                               soundFx.playKeyTap();
-                              setShowTeammatePicker({ questId: quest.id, teamType: 'team2', slotIndex: 0 });
+                              setShowTeammatePicker({ questId: quest.id, teamType: 'team2', slotIndex: 0, currentPartner: quest.partner, questTitle: quest.title });
                             }}
-                            className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                            className="flex items-center gap-1 text-[11px] font-black text-indigo-700 hover:text-indigo-950 bg-indigo-100/80 hover:bg-indigo-200 px-2.5 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs hover:scale-102"
                           >
-                            <UserPlus className="w-3 h-3" />
-                            <span>Partner</span>
+                            <UserPlus className="w-3.5 h-3.5" />
+                            <span>Change Partner</span>
                           </button>
                         </div>
                       )}
 
                       {isTeam3 && (
-                        <div className="mt-3 bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-2.5 text-xs flex-wrap">
-                            <div className="flex items-center gap-1">
+                        <div className="mt-3 bg-gradient-to-r from-slate-50 to-indigo-50/40 border border-indigo-100 rounded-2xl p-2.5 flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2 text-xs flex-wrap">
+                            {/* User Slot */}
+                            <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-xl border border-slate-200 shadow-2xs">
                               <span className="text-base">🧗</span>
                               <div>
                                 <span className="text-[9px] text-slate-500 font-bold block">You</span>
@@ -453,51 +528,89 @@ export default function QuestsScreen({
                               </div>
                             </div>
 
-                            <span className="text-slate-300 font-bold">+</span>
+                            <span className="text-slate-400 font-bold text-xs">+</span>
 
-                            <div className="flex items-center gap-1">
-                              <span className="text-base">{quest.partners?.[0]?.avatar || '🦁'}</span>
-                              <div>
-                                <span className="text-[9px] text-slate-500 font-bold block truncate max-w-[65px]">
-                                  {quest.partners?.[0]?.name || 'Asha'}
-                                </span>
-                                <span className="font-black text-slate-800">{quest.partnerProgresses?.[0] || 0}</span>
-                              </div>
-                            </div>
-
-                            <span className="text-slate-300 font-bold">+</span>
-
-                            <div className="flex items-center gap-1">
-                              <span className="text-base">{quest.partners?.[1]?.avatar || '🦅'}</span>
-                              <div>
-                                <span className="text-[9px] text-slate-500 font-bold block truncate max-w-[65px]">
-                                  {quest.partners?.[1]?.name || 'Leo'}
-                                </span>
-                                <span className="font-black text-slate-800">{quest.partnerProgresses?.[1] || 0}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-1">
+                            {/* Partner 1 Slot */}
                             <button
                               type="button"
                               onClick={() => {
                                 soundFx.playKeyTap();
-                                setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 0 });
+                                setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 0, currentPartner: quest.partners?.[0], questTitle: quest.title });
                               }}
-                              className="text-[10px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                              className="flex items-center gap-1.5 bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-400 px-2 py-1 rounded-xl transition-all shadow-2xs group cursor-pointer text-left"
+                              title="Click to change Partner 1"
                             >
-                              P1
+                              <span className="text-base group-hover:scale-110 transition-transform">
+                                {quest.partners?.[0]?.avatar || '🦁'}
+                              </span>
+                              <div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[9px] text-indigo-900 font-black block truncate max-w-[65px]">
+                                    {quest.partners?.[0]?.name || 'Asha'}
+                                  </span>
+                                  <span className="text-[8px] text-indigo-500 font-bold group-hover:underline">
+                                    🔄
+                                  </span>
+                                </div>
+                                <span className="font-black text-slate-800 text-xs">
+                                  {quest.partnerProgresses?.[0] || 0}
+                                </span>
+                              </div>
+                            </button>
+
+                            <span className="text-slate-400 font-bold text-xs">+</span>
+
+                            {/* Partner 2 Slot */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                soundFx.playKeyTap();
+                                setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 1, currentPartner: quest.partners?.[1], questTitle: quest.title });
+                              }}
+                              className="flex items-center gap-1.5 bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-400 px-2 py-1 rounded-xl transition-all shadow-2xs group cursor-pointer text-left"
+                              title="Click to change Partner 2"
+                            >
+                              <span className="text-base group-hover:scale-110 transition-transform">
+                                {quest.partners?.[1]?.avatar || '🦅'}
+                              </span>
+                              <div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[9px] text-indigo-900 font-black block truncate max-w-[65px]">
+                                    {quest.partners?.[1]?.name || 'Leo'}
+                                  </span>
+                                  <span className="text-[8px] text-indigo-500 font-bold group-hover:underline">
+                                    🔄
+                                  </span>
+                                </div>
+                                <span className="font-black text-slate-800 text-xs">
+                                  {quest.partnerProgresses?.[1] || 0}
+                                </span>
+                              </div>
+                            </button>
+                          </div>
+
+                          <div className="flex gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                soundFx.playKeyTap();
+                                setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 0, currentPartner: quest.partners?.[0], questTitle: quest.title });
+                              }}
+                              className="flex items-center gap-1 text-[10px] font-black text-indigo-700 hover:text-indigo-950 bg-indigo-100/80 hover:bg-indigo-200 px-2 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
+                            >
+                              <UserPlus className="w-3 h-3" />
+                              <span>Swap P1</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => {
                                 soundFx.playKeyTap();
-                                setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 1 });
+                                setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 1, currentPartner: quest.partners?.[1], questTitle: quest.title });
                               }}
-                              className="text-[10px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                              className="flex items-center gap-1 text-[10px] font-black text-indigo-700 hover:text-indigo-950 bg-indigo-100/80 hover:bg-indigo-200 px-2 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
                             >
-                              P2
+                              <UserPlus className="w-3 h-3" />
+                              <span>Swap P2</span>
                             </button>
                           </div>
                         </div>
@@ -506,7 +619,15 @@ export default function QuestsScreen({
                       {/* Progress Bar */}
                       <div className="mt-3">
                         <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-1">
-                          <span>Progress</span>
+                          <span className="flex items-center gap-1">
+                            {isTeam2 || isTeam3 ? (
+                              <span className="inline-flex items-center gap-1 text-indigo-700 font-black text-[11px] bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-100">
+                                👥 Combined Team Progress
+                              </span>
+                            ) : (
+                              <span>Progress</span>
+                            )}
+                          </span>
                           <span className="font-black text-slate-800">
                             {quest.progress || 0} / {quest.target} {quest.unit || ''} ({progressPercent}%)
                           </span>
@@ -518,6 +639,8 @@ export default function QuestsScreen({
                                 ? 'bg-emerald-500'
                                 : isCompleted
                                 ? 'bg-gradient-to-r from-amber-400 to-amber-500'
+                                : (isTeam2 || isTeam3)
+                                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500'
                                 : 'bg-gradient-to-r from-purple-500 to-indigo-500'
                             }`}
                             style={{ width: `${progressPercent}%` }}
@@ -540,7 +663,7 @@ export default function QuestsScreen({
                       {quest.reward?.altitude && (
                         <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-900 font-black text-xs shadow-2xs">
                           <Mountain className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>+{quest.reward.altitude}m</span>
+                          <span>+{quest.reward.altitude} XP</span>
                         </div>
                       )}
 
@@ -585,76 +708,120 @@ export default function QuestsScreen({
       {showTeammatePicker && (
         <div
           onClick={() => setShowTeammatePicker(null)}
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer"
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer animate-in fade-in duration-150"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl border-2 border-slate-200 cursor-default"
+            className="bg-white rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl border-2 border-indigo-200 cursor-default animate-scaleIn"
           >
-            <h3 className="text-lg font-black text-slate-900 mb-1">
-              Choose Teammate
-            </h3>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <h3 className="text-lg font-black text-slate-900">
+                Choose Teammate
+              </h3>
+              <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-900 text-[10px] font-black uppercase">
+                {showTeammatePicker.teamType === 'team3'
+                  ? `Slot ${(showTeammatePicker.slotIndex || 0) + 1} of 2`
+                  : 'Partner Slot'}
+              </span>
+            </div>
+
             <p className="text-xs text-slate-600 mb-4">
-              Team up with mountain companions or your friends to climb faster together!
+              Select a companion or friend to climb alongside you in <strong className="text-slate-800">{showTeammatePicker.questTitle || 'Team Quest'}</strong>.
             </p>
 
-            <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
+            <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
               <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
                 Mountain Companions
               </span>
-              {COMPANION_BUDDIES.map((buddy) => (
-                <button
-                  key={buddy.id}
-                  type="button"
-                  onClick={() => handleSelectTeammate(buddy)}
-                  className="flex items-center justify-between p-2.5 rounded-2xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 transition-all text-left cursor-pointer group"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{buddy.avatar}</span>
-                    <div>
-                      <span className="font-black text-sm text-slate-800 block group-hover:text-indigo-950">
-                        {buddy.name}
-                      </span>
-                      <span className="text-[11px] text-slate-500 font-bold">
-                        {buddy.title}
-                      </span>
+              {COMPANION_BUDDIES.map((buddy) => {
+                const isSelected = showTeammatePicker.currentPartner?.id === buddy.id;
+                return (
+                  <button
+                    key={buddy.id}
+                    type="button"
+                    onClick={() => handleSelectTeammate(buddy)}
+                    className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all text-left cursor-pointer group ${
+                      isSelected
+                        ? 'border-indigo-500 bg-indigo-50/80 ring-2 ring-indigo-300'
+                        : 'border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{buddy.avatar}</span>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-black text-sm text-slate-800 block group-hover:text-indigo-950">
+                            {buddy.name}
+                          </span>
+                          {isSelected && (
+                            <span className="px-1.5 py-0.2 rounded bg-indigo-200 text-indigo-900 text-[9px] font-black uppercase">
+                              Current
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-500 font-bold">
+                          {buddy.title}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
-                </button>
-              ))}
+                    {isSelected ? (
+                      <Check className="w-4 h-4 text-indigo-600 stroke-[3]" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
+                    )}
+                  </button>
+                );
+              })}
 
               {friendsList && friendsList.length > 0 && (
                 <>
                   <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider mt-2">
                     Your Friends
                   </span>
-                  {friendsList.map((friend) => (
-                    <button
-                      key={friend.id}
-                      type="button"
-                      onClick={() => handleSelectTeammate({
-                        id: friend.id,
-                        name: friend.username || friend.name || 'Friend',
-                        avatar: '🧗',
-                        title: 'Climbing Friend'
-                      })}
-                      className="flex items-center justify-between p-2.5 rounded-2xl border border-slate-200 hover:border-purple-400 hover:bg-purple-50/50 transition-all text-left cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">🧗</span>
-                        <div>
-                          <span className="font-black text-sm text-slate-800 block group-hover:text-purple-950">
-                            {friend.username || friend.name}
-                          </span>
-                          <span className="text-[11px] text-slate-500 font-bold">
-                            Friend
-                          </span>
+                  {friendsList.map((friend) => {
+                    const isSelected = showTeammatePicker.currentPartner?.id === friend.id;
+                    return (
+                      <button
+                        key={friend.id}
+                        type="button"
+                        onClick={() => handleSelectTeammate({
+                          id: friend.id,
+                          name: friend.username || friend.name || 'Friend',
+                          avatar: '🧗',
+                          title: 'Climbing Friend'
+                        })}
+                        className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all text-left cursor-pointer group ${
+                          isSelected
+                            ? 'border-purple-500 bg-purple-50/80 ring-2 ring-purple-300'
+                            : 'border-slate-200 hover:border-purple-400 hover:bg-purple-50/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">🧗</span>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-black text-sm text-slate-800 block group-hover:text-purple-950">
+                                {friend.username || friend.name}
+                              </span>
+                              {isSelected && (
+                                <span className="px-1.5 py-0.2 rounded bg-purple-200 text-purple-900 text-[9px] font-black uppercase">
+                                  Current
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] text-slate-500 font-bold">
+                              Friend
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600" />
-                    </button>
-                  ))}
+                        {isSelected ? (
+                          <Check className="w-4 h-4 text-purple-600 stroke-[3]" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </>
               )}
             </div>
@@ -666,6 +833,160 @@ export default function QuestsScreen({
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Level XP Roadmap Modal */}
+      {showLevelInfoModal && (
+        <div
+          onClick={() => setShowLevelInfoModal(false)}
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer animate-fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-purple-200 overflow-hidden cursor-default flex flex-col max-h-[85vh] animate-scaleIn"
+          >
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-700 p-4 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                  <Mountain className="w-4 h-4 text-amber-300" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black tracking-tight leading-tight">
+                    Quest Level XP Roadmap
+                  </h3>
+                  <p className="text-[11px] text-purple-200">
+                    XP required for all climbing ranks
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLevelInfoModal(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Current Player Status Banner */}
+            {(() => {
+              const currentLvl = questState?.levelInfo?.level || 1;
+              const currentXp = questState?.levelInfo?.currentXp || 0;
+              return (
+                <div className="bg-purple-50 px-4 py-2.5 border-b border-purple-100 flex items-center justify-between text-xs">
+                  <span className="font-bold text-purple-900">
+                    Your Total XP: <strong className="text-purple-700 font-black">{currentXp.toLocaleString()} XP</strong>
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-purple-200 text-purple-900 font-black text-[10px]">
+                    Current: Lv. {currentLvl}
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Level List */}
+            <div className="p-4 overflow-y-auto space-y-2.5 custom-scrollbar flex-1">
+              {QUEST_RANKS.map((rank) => {
+                const currentXp = questState?.levelInfo?.currentXp || 0;
+                const currentLvl = questState?.levelInfo?.level || 1;
+                const isCurrent = currentLvl === rank.level;
+                const isReached = currentXp >= rank.minXp;
+                const xpNeeded = Math.max(0, rank.minXp - currentXp);
+
+                return (
+                  <div
+                    key={rank.level}
+                    className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                      isCurrent
+                        ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
+                        : isReached
+                        ? 'bg-emerald-50/60 border-emerald-200'
+                        : 'bg-slate-50/70 border-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl drop-shadow-xs">{rank.icon}</span>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`px-1.5 py-0.2 rounded text-[10px] font-black ${
+                              isCurrent
+                                ? 'bg-amber-400 text-amber-950'
+                                : isReached
+                                ? 'bg-emerald-200 text-emerald-900'
+                                : 'bg-slate-200 text-slate-700'
+                            }`}
+                          >
+                            Lv. {rank.level}
+                          </span>
+                          <span className="font-black text-xs text-slate-800">
+                            {rank.title}
+                          </span>
+                          {isCurrent && (
+                            <span className="px-1.5 py-0.2 rounded-full bg-amber-200 text-amber-900 text-[9px] font-black uppercase">
+                              Current
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Rewards tags */}
+                        <div className="flex items-center gap-1 mt-1 flex-wrap">
+                          {rank.reward?.sparks && (
+                            <span className="text-[10px] font-bold text-amber-800 bg-amber-100/80 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                              <Sparkles className="w-2.5 h-2.5 text-amber-600" />
+                              +{rank.reward.sparks} Sparks
+                            </span>
+                          )}
+                          {rank.reward?.shields && (
+                            <span className="text-[10px] font-bold text-indigo-800 bg-indigo-100/80 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                              <Shield className="w-2.5 h-2.5 text-indigo-600" />
+                              +{rank.reward.shields} Shield
+                            </span>
+                          )}
+                          {!rank.reward && (
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              Starting Rank
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* XP Requirement Details */}
+                    <div className="text-right shrink-0">
+                      <div className="font-black text-xs text-slate-800">
+                        {rank.minXp.toLocaleString()} <span className="text-[10px] font-medium text-slate-500">XP</span>
+                      </div>
+                      <div className="text-[10px] font-bold mt-0.5">
+                        {isReached ? (
+                          <span className="text-emerald-600 flex items-center gap-0.5 justify-end">
+                            <Check className="w-3 h-3 stroke-[3]" /> Unlocked
+                          </span>
+                        ) : (
+                          <span className="text-purple-600 font-extrabold">
+                            +{xpNeeded.toLocaleString()} XP needed
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3 bg-slate-50 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowLevelInfoModal(false)}
+                className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl shadow-xs cursor-pointer transition-all active:scale-98"
+              >
+                Got It!
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -707,7 +1028,7 @@ export default function QuestsScreen({
             {celebrationReward.newlyUnlockedBadges?.length > 0 && (
               <div className="mb-4 bg-purple-50 border border-purple-200 rounded-2xl p-2.5">
                 <span className="text-[11px] font-black text-purple-900 block mb-1">
-                  🎖️ New Badge Unlocked!
+                  🎖️ New {celebrationReward.newlyUnlockedBadges.length === 1 ? 'Badge' : 'Badges'} Unlocked!
                 </span>
                 <div className="flex items-center justify-center gap-1.5 flex-wrap">
                   {celebrationReward.newlyUnlockedBadges.map(b => (
@@ -729,7 +1050,7 @@ export default function QuestsScreen({
               {celebrationReward.altitude && (
                 <div className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 font-black text-sm flex items-center gap-1 border border-emerald-300">
                   <Mountain className="w-4 h-4 text-emerald-600" />
-                  <span>+{celebrationReward.altitude}m XP</span>
+                  <span>+{celebrationReward.altitude} XP</span>
                 </div>
               )}
               {celebrationReward.shields && (
