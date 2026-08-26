@@ -386,66 +386,50 @@ export default function LeaderboardScreen({
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-slate-50 via-stone-50 to-slate-100 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
 
-      {/* STICKY TOP HEADER & CONTROLS */}
-      <div className="bg-white border-b-2 border-slate-200 z-10 shrink-0 shadow-sm relative pb-3">
-        <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 text-slate-800 min-w-0">
-            <div className={`p-2 rounded-xl shrink-0 ${
-              viewMode === 'global' ? 'bg-indigo-50 text-indigo-600' : viewMode === 'weekly' ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'
-            }`}>
-              {viewMode === 'global' ? (
-                <Trophy className="w-5 h-5 stroke-[2.5]" />
-              ) : viewMode === 'weekly' ? (
-                <Zap className="w-5 h-5 fill-emerald-500 stroke-[2.5]" />
-              ) : (
-                <Users className="w-5 h-5 stroke-[2.5]" />
-              )}
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-black tracking-tight leading-tight">
-                {viewMode === 'global' ? 'Global Standings' : viewMode === 'weekly' ? 'Weekly League' : 'Friends & Classmates'}
-              </h2>
-              <div className="flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-500">
-                <span>
-                  Ranked by {viewMode === 'weekly' ? `${subjectConfig.name} Weekly Sparks` : `${subjectConfig.name} Competence`}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    setShowInfoModal(true);
-                  }}
-                  className="p-0.5 rounded-full text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors cursor-pointer inline-flex items-center justify-center"
-                  title="How standings work"
-                  aria-label="How standings work"
-                >
-                  <Info className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            {viewMode === 'friends' && (
-              <button
-                type="button"
-                onClick={() => {
-                  soundFx.playKeyTap();
-                  setShowAddFriendModal(true);
-                }}
-                className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-black rounded-lg shadow-sm flex items-center gap-1 cursor-pointer transition-all relative"
-              >
-                <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>Manage Friends</span>
-                {pendingRequestsCount > 0 && (
-                  <span className="min-w-[1rem] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-black ml-0.5 animate-pulse">
-                    {pendingRequestsCount}
-                  </span>
-                )}
-              </button>
-            )}
-          </div>
+      {/* STICKY TOP HEADER BAR */}
+      <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
+        <div className="flex items-center gap-2 text-slate-800 min-w-0">
+          <Crown className="w-5 h-5 text-indigo-600 stroke-[2.5] shrink-0" />
+          <h2 className="text-base sm:text-lg font-black tracking-tight">Global Standings</h2>
         </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setShowInfoModal(true);
+            }}
+            className="flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-full border border-slate-200 active:scale-95 transition-all cursor-pointer"
+            title="How standings work"
+          >
+            <Info className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span className="hidden sm:inline">Info</span>
+          </button>
+
+          {viewMode === 'friends' && (
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowAddFriendModal(true);
+              }}
+              className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-black rounded-full shadow-xs flex items-center gap-1 cursor-pointer transition-all relative border border-indigo-700"
+            >
+              <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Manage Friends</span>
+              {pendingRequestsCount > 0 && (
+                <span className="min-w-[1rem] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-black ml-0.5 animate-pulse">
+                  {pendingRequestsCount}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* CONTROLS BAR (VIEW MODES & SUBJECTS) */}
+      <div className="bg-white/80 backdrop-blur-xs border-b border-slate-200 z-10 shrink-0 px-4 py-2 space-y-2 shadow-2xs">
 
         {/* VIEW MODE TABS */}
         <div className="px-4 py-1.5 flex items-center gap-1.5 sm:gap-2 mb-1">

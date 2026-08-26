@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Settings, Trophy, Zap, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass } from 'lucide-react';
+import { Flame, Settings, Trophy, Crown, Zap, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass } from 'lucide-react';
 import Mascot from './components/Mascot';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
@@ -1293,7 +1293,7 @@ export default function App() {
           <span className="text-xs font-black tracking-wide truncate">Shop</span>
         </button>
 
-        {/* 2. Badges Button: Golden Yellow */}
+        {/* 2. Records Button: Golden Yellow */}
         <button
           type="button"
           onClick={() => {
@@ -1304,10 +1304,10 @@ export default function App() {
           className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
             showBadgesModal ? 'ring-2 ring-yellow-500 scale-105 font-bold' : ''
           }`}
-          title="View Badges"
+          title="View Records"
         >
-          <Award className="w-5 h-5 text-yellow-600 stroke-[2.5]" />
-          <span className="text-xs font-black tracking-wide truncate">Badges</span>
+          <Trophy className="w-5 h-5 text-yellow-600 stroke-[2.5]" />
+          <span className="text-xs font-black tracking-wide truncate">Records</span>
         </button>
 
         {/* 3. Leaderboard Button: Sapphire Blue */}
@@ -1325,7 +1325,7 @@ export default function App() {
           title="Leaderboard"
         >
           <div className="relative">
-            <Trophy className={`w-5 h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
+            <Crown className={`w-5 h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
             {pendingFriendRequestsCount > 0 && (
               <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
                 {pendingFriendRequestsCount}
