@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Lock, Sparkles, ArrowLeft, CheckCircle2, Trophy, Flame, Zap, Target, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Lock, Sparkles, CheckCircle2, Trophy, Flame, Zap, Target, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { SUBJECTS_CONFIG } from '../config/subjects';
