@@ -479,8 +479,7 @@ class LeaderboardService {
     // Direct Firestore fallback
     try {
       const safeFriendIds = friendIds.slice(0, 25);
-      const standings = [];
-      for (const fId of safeFriendIds) {
+      const promises = safeFriendIds.map(async (fId) => {
         const parts = fId.split('_');
         let docId = `${fId}_${subject}`;
         if (parts.length === 1) {
@@ -490,7 +489,7 @@ class LeaderboardService {
           const lbDoc = await getDoc(doc(db, LEADERBOARD_COLLECTION, docId));
           if (lbDoc.exists()) {
             const data = lbDoc.data();
-            standings.push({
+            return {
               id: fId,
               uid: data.uid || parts[0],
               profileId: data.profileId || parts[1] || 'default_child',
@@ -499,10 +498,13 @@ class LeaderboardService {
               equipped: data.equipped || [],
               subjectsMastered: data.subjectsMastered || 5,
               subject
-            });
+            };
           }
         } catch (e) {}
-      }
+        return null;
+      });
+      const results = await Promise.all(promises);
+      const standings = results.filter(Boolean);
       return { standings };
     } catch (err) {
       return { standings: [] };
