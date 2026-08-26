@@ -96,15 +96,20 @@ export const calculateStreakFromHistory = (sprintHistory = [], practiceDays = [1
     }
   }
 
+  const effectivePracticeDays = Array.isArray(practiceDays) && practiceDays.length > 0
+    ? practiceDays
+    : [1, 2, 3, 4, 5];
+
   let streakCount = 0;
-  while (true) {
+  let safetyLimit = 3650; // Safeguard: max 10 years back
+  while (safetyLimit-- > 0) {
     const currentStr = formatDateStr(checkDate);
     if (playedDates.has(currentStr)) {
       streakCount++;
       checkDate.setDate(checkDate.getDate() - 1);
     } else {
       const dayIdx = checkDate.getDay();
-      if (practiceDays.includes(dayIdx)) {
+      if (effectivePracticeDays.includes(dayIdx)) {
         // A scheduled practice day was missed
         break;
       } else {

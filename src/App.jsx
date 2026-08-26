@@ -414,18 +414,21 @@ export default function App() {
       const savedDays = storageService.getProfilePracticeDays() || [1, 2, 3, 4, 5];
       const [y, m, d] = lastDateStr.split('-').map(Number);
       const curr = new Date(y, m - 1, d);
-      curr.setDate(curr.getDate() + 1);
-
       let missedActiveDays = 0;
-      while (true) {
-        const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
-        if (dateStr >= todayStr) break;
 
-        const dayIdx = curr.getDay();
-        if (savedDays.includes(dayIdx)) {
-          missedActiveDays++;
-        }
+      if (!isNaN(curr.getTime())) {
         curr.setDate(curr.getDate() + 1);
+        let safetyLimit = 3650;
+        while (safetyLimit-- > 0) {
+          const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
+          if (dateStr >= todayStr) break;
+
+          const dayIdx = curr.getDay();
+          if (savedDays.includes(dayIdx)) {
+            missedActiveDays++;
+          }
+          curr.setDate(curr.getDate() + 1);
+        }
       }
 
       if (missedActiveDays === 0) {
@@ -884,18 +887,21 @@ export default function App() {
 
     const [y, m, d] = lastDateStr.split('-').map(Number);
     const curr = new Date(y, m - 1, d);
-    curr.setDate(curr.getDate() + 1);
-
     let missedActiveDays = 0;
-    while (true) {
-      const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
-      if (dateStr >= todayStr) break;
 
-      const dayIdx = curr.getDay();
-      if (savedDays.includes(dayIdx)) {
-        missedActiveDays++;
-      }
+    if (!isNaN(curr.getTime())) {
       curr.setDate(curr.getDate() + 1);
+      let safetyLimit = 3650;
+      while (safetyLimit-- > 0) {
+        const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
+        if (dateStr >= todayStr) break;
+
+        const dayIdx = curr.getDay();
+        if (savedDays.includes(dayIdx)) {
+          missedActiveDays++;
+        }
+        curr.setDate(curr.getDate() + 1);
+      }
     }
 
     if (missedActiveDays >= 1) {
