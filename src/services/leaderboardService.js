@@ -122,34 +122,35 @@ class LeaderboardService {
       );
 
       return onSnapshot(q, (snapshot) => {
-        const rawDocs = snapshot.docs
-          .map(docSnap => ({
-            id: docSnap.id,
-            ...docSnap.data()
-          }))
-          .filter(p => (p.subject || 'math') === (subject || 'math'));
-
-        // Deduplicate remote entries: if the same player exists multiple times across sessions, keep highest score
         const seenKeys = new Set();
-        const deduplicated = [];
+        const standings = [];
+        const targetSubject = subject || 'math';
 
-        for (const player of rawDocs) {
-          const uniqueKey = player.uid && player.profileId 
-            ? `${player.uid}_${player.profileId}` 
-            : (player.name ? player.name.trim().toLowerCase() : player.id);
+        // Process sequentially and short-circuit once we reach limitCount
+        // Deduplicate remote entries: if the same player exists multiple times across sessions, keep highest score
+        for (let i = 0; i < snapshot.docs.length; i++) {
+          if (standings.length >= limitCount) break;
+
+          const docSnap = snapshot.docs[i];
+          const data = docSnap.data();
           
+          const pSubject = data.subject || 'math';
+          if (pSubject !== targetSubject) continue;
+
+          const uniqueKey = data.uid && data.profileId
+            ? `${data.uid}_${data.profileId}`
+            : (data.name ? data.name.trim().toLowerCase() : docSnap.id);
+
           if (!seenKeys.has(uniqueKey)) {
             seenKeys.add(uniqueKey);
-            deduplicated.push(player);
+            standings.push({
+              id: docSnap.id,
+              ...data,
+              rank: standings.length + 1
+            });
           }
         }
 
-        const standings = deduplicated
-          .slice(0, limitCount)
-          .map((player, index) => ({
-            ...player,
-            rank: index + 1
-          }));
         onUpdate(standings);
       }, (error) => {
         console.warn('LeaderboardService: Firestore subscription fallback', error);
