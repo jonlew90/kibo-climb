@@ -1,23 +1,63 @@
-name: Deploy to Firebase Hosting on merge
+name: Hourly Deploy to Firebase Hosting
+
 on:
-  push:
-    branches:
-      - main
+  schedule:
+    # Runs at minute 0 past every hour (every 60 minutes)
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - run: npm install
-      - run: npx vitest run
-      - run: npm run build
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Check for new changes
+        id: check_changes
+        run: |
+          LATEST_SHA=$(git rev-parse HEAD)
+          TAG_SHA=$(git rev-parse -q --verify "refs/tags/last-deployed-prod" || echo "")
+
+          if [ "$LATEST_SHA" = "$TAG_SHA" ]; then
+            echo "No new commits on main since last deploy ($TAG_SHA). Skipping."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "New changes found. Latest: $LATEST_SHA, Previous: $TAG_SHA"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install Dependencies
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: npm install
+
+      - name: Run Tests
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: npx vitest run
+
+      - name: Build
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: npm run build
+
       - name: Authenticate to Google Cloud
+        if: steps.check_changes.outputs.has_changes == 'true'
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: projects/171658556844/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
           service_account: github-action-1311198724@kibo-climb.iam.gserviceaccount.com
+
       - name: Deploy to Firebase Hosting
+        if: steps.check_changes.outputs.has_changes == 'true'
         run: npx -y firebase-tools deploy --only hosting --project kibo-climb
+
+      - name: Update last deployed tag
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git tag -f last-deployed-prod HEAD
+          git push -f origin last-deployed-prod
