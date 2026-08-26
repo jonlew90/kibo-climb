@@ -6,14 +6,21 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - run: npm install
       - run: npx vitest run
       - run: npm run build
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/171658556844/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
+          service_account: github-action-1311198724@kibo-climb.iam.gserviceaccount.com
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KIBO_CLIMB }}
           channelId: live
           projectId: kibo-climb
