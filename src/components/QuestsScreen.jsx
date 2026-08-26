@@ -115,8 +115,45 @@ export default function QuestsScreen({
     return [...daily, ...weekly, ...team2, ...team3];
   };
 
-  const unclaimedCount = questService.getUnclaimedCount(profileId);
   const filteredQuests = getFilteredQuests();
+  const allQuestsList = [
+    ...(questState?.daily || []),
+    ...(questState?.weekly || []),
+    ...(questState?.team2 || []),
+    ...(questState?.team3 || [])
+  ];
+  const unclaimedCount = allQuestsList.filter(q => q.completed && !q.claimed).length;
+
+  const scrollToFirstClaimable = () => {
+    soundFx.playKeyTap();
+    // 1. Check if current filtered list has a claimable quest
+    let targetQuest = filteredQuests.find(q => q.completed && !q.claimed);
+
+    // 2. If not visible in current tab, look across all quests
+    if (!targetQuest) {
+      const allQuests = [
+        ...(questState?.daily || []).map(q => ({ ...q, type: 'daily' })),
+        ...(questState?.weekly || []).map(q => ({ ...q, type: 'weekly' })),
+        ...(questState?.team2 || []).map(q => ({ ...q, type: 'team2' })),
+        ...(questState?.team3 || []).map(q => ({ ...q, type: 'team3' }))
+      ];
+      targetQuest = allQuests.find(q => q.completed && !q.claimed);
+      if (targetQuest) {
+        // Switch tab to either the quest's category or 'all'
+        setActiveTab(targetQuest.type || 'all');
+      }
+    }
+
+    if (targetQuest) {
+      // Allow state update/render to complete before scrolling
+      setTimeout(() => {
+        const el = document.getElementById(`quest-card-${targetQuest.id}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
@@ -133,10 +170,15 @@ export default function QuestsScreen({
 
         <div className="flex items-center gap-2">
           {unclaimedCount > 0 && (
-            <div className="flex items-center gap-1 px-2.5 py-1 bg-amber-500 text-white rounded-full text-xs font-black animate-bounce shadow-2xs">
+            <button
+              type="button"
+              onClick={scrollToFirstClaimable}
+              className="flex items-center gap-1 px-2.5 py-1 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-full text-xs font-black animate-bounce shadow-2xs cursor-pointer transition-colors"
+              title="Click to jump to claimable quest"
+            >
               <Sparkles className="w-3.5 h-3.5" />
               <span>{unclaimedCount} Ready to Claim!</span>
-            </div>
+            </button>
           )}
         </div>
       </header>
@@ -230,6 +272,7 @@ export default function QuestsScreen({
             return (
               <div
                 key={quest.id}
+                id={`quest-card-${quest.id}`}
                 className={`bg-white rounded-2xl border-2 p-4 sm:p-5 transition-all shadow-xs relative overflow-hidden ${
                   isClaimed
                     ? 'border-emerald-200 bg-emerald-50/30 opacity-85'
