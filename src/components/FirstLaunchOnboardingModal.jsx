@@ -442,7 +442,7 @@ export default function FirstLaunchOnboardingModal({
             Ready, <span className="text-purple-700">{usernameInput || storageService.getUsername()}</span>? 🚀
           </h1>
           <p className="text-xs sm:text-sm md:text-base font-extrabold text-purple-900 max-w-lg mx-auto leading-normal">
-            Bite-Sized Daily Ascents (~3 Mins) — Adaptive Multi-Subject Training (Math, Words, World & More) That Evolves With Your Mind
+            Bite-Sized Daily Climbs — Adaptive Multi-Subject Training (Math, Words, World & More) That Evolves With Your Mind
           </p>
         </div>
 
@@ -544,7 +544,7 @@ export default function FirstLaunchOnboardingModal({
           )}
 
           <span className="text-xs sm:text-sm font-extrabold text-slate-500 block text-center">
-            Kibo Climb • Multi-Subject Daily Climbs (~3 Mins) • Math, Words & World
+            Kibo Climb • Multi-Subject Daily Climbs • Math, Words & World
           </span>
         </div>
       </div>

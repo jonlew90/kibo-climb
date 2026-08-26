@@ -3,6 +3,14 @@ import { communicationsService } from '../../src/services/communicationsService'
 
 vi.mock('../../src/config/firebase', () => ({
   functions: {},
+  auth: {},
+  db: {},
+}));
+
+vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({})),
+  onAuthStateChanged: vi.fn((auth, cb) => { cb(null); return () => {}; }),
+  signInAnonymously: vi.fn(() => Promise.resolve({ user: { uid: 'mock' } })),
 }));
 
 vi.mock('firebase/functions', () => ({

@@ -10,6 +10,7 @@ import { getGradeLevelFromRating, getTierFromRating, CURRICULUM_TIERS } from './
 import { WORDS_CURRICULUM_TIERS } from './wordsCurriculum.js';
 import { calculateAdaptiveCompetenceProfile, calculateDomainMastery } from './domainStats.js';
 import { calculateConceptBreakdown } from './skipDiagnosticEngine.js';
+import { questService } from '../services/questService.js';
 
 /**
  * Resolves the web app base URL for direct deep-linking in emails.
@@ -37,6 +38,15 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
   const streak = userData.streak ?? 0;
   const sparks = userData.sparks ?? 0;
   const unlockedBadges = userData.unlockedBadges || [];
+
+  const questState = questService.getQuests(profileId);
+  const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️' };
+  const questLevel = questLevelInfo.level || 1;
+  const questTitle = questLevelInfo.title || 'Basecamp Explorer';
+  const questIcon = questLevelInfo.icon || '🏕️';
+  const questTotalXp = questState?.totalXp || 0;
+  const questProgressPct = questLevelInfo.progressPct || 0;
+  const questNextRankTitle = questLevelInfo.nextRankTitle || '';
 
   const subjectKeys = Object.keys(subjectsConfig || { math: {}, words: {} });
 
@@ -224,6 +234,12 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
     childGrade,
     streak,
     sparks,
+    questLevel,
+    questTitle,
+    questIcon,
+    questTotalXp,
+    questProgressPct,
+    questNextRankTitle,
     unlockedBadgesCount: unlockedBadges.length,
     unlockedBadges,
     totalProblemsThisWeek,
@@ -252,6 +268,7 @@ export function formatWeeklyDigestText({ childName, digestData }) {
   text += `Hi there!\n\nHere is ${name}'s personalized learning progress summary for the week:\n\n`;
   text += `🔥 DAILY STREAK: ${data.streak} ${data.streak === 1 ? 'Day' : 'Days'}\n`;
   text += `⚡ Sparks Balance: ${data.sparks} ⚡\n`;
+  text += `🧭 Quest Expedition: Level ${data.questLevel} (${data.questTitle}) · ${data.questTotalXp} XP\n`;
   text += `🏆 Badges Won: ${data.unlockedBadgesCount} total\n`;
   text += `📈 Total Questions Completed This Week: ${data.totalProblemsThisWeek} (${data.totalProblemsAllTime} all-time)\n\n`;
 
@@ -475,22 +492,27 @@ export function formatWeeklyDigestHtml({ childName, digestData }) {
 
           <!-- OVERALL STATS RIBBON -->
           <tr>
-            <td style="background-color: #faf5ff; border-bottom: 2px solid #f3e8ff; padding: 18px 32px;">
+            <td style="background-color: #faf5ff; border-bottom: 2px solid #f3e8ff; padding: 18px 24px;">
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td align="center" style="padding: 0 8px;">
+                  <td align="center" style="padding: 0 6px;">
                     <span style="font-size: 20px;">🔥</span>
-                    <div style="font-size: 17px; font-weight: 900; color: #d97706;">${data.streak} Days</div>
+                    <div style="font-size: 16px; font-weight: 900; color: #d97706;">${data.streak} Days</div>
                     <div style="font-size: 10px; font-weight: 700; color: #78350f; text-transform: uppercase;">Active Streak</div>
                   </td>
-                  <td align="center" style="padding: 0 8px; border-left: 1px solid #e9d5ff; border-right: 1px solid #e9d5ff;">
+                  <td align="center" style="padding: 0 6px; border-left: 1px solid #e9d5ff; border-right: 1px solid #e9d5ff;">
                     <span style="font-size: 20px;">⚡</span>
-                    <div style="font-size: 17px; font-weight: 900; color: #7c3aed;">${data.totalProblemsThisWeek}</div>
+                    <div style="font-size: 16px; font-weight: 900; color: #7c3aed;">${data.totalProblemsThisWeek}</div>
                     <div style="font-size: 10px; font-weight: 700; color: #581c87; text-transform: uppercase;">Weekly Items</div>
                   </td>
-                  <td align="center" style="padding: 0 8px;">
+                  <td align="center" style="padding: 0 6px; border-right: 1px solid #e9d5ff;">
+                    <span style="font-size: 20px;">${data.questIcon || '🧭'}</span>
+                    <div style="font-size: 16px; font-weight: 900; color: #4338ca;">Lvl ${data.questLevel}</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #3730a3; text-transform: uppercase;">${data.questTotalXp} Quest XP</div>
+                  </td>
+                  <td align="center" style="padding: 0 6px;">
                     <span style="font-size: 20px;">🏆</span>
-                    <div style="font-size: 17px; font-weight: 900; color: #0284c7;">${data.unlockedBadgesCount}</div>
+                    <div style="font-size: 16px; font-weight: 900; color: #0284c7;">${data.unlockedBadgesCount}</div>
                     <div style="font-size: 10px; font-weight: 700; color: #0c4a6e; text-transform: uppercase;">Badges Won</div>
                   </td>
                 </tr>
@@ -533,7 +555,7 @@ export function formatWeeklyDigestHtml({ childName, digestData }) {
                 You are receiving this summary because Weekly Digest is enabled for <strong>${name}</strong> in your Kibo Climb Parent Zone.
               </p>
               <p style="margin: 0; color: #94a3b8; font-size: 11px;">
-                © ${new Date().getFullYear()} Kibo Climb. The 3-Minute Daily Ascent to Mastery.
+                © ${new Date().getFullYear()} Kibo Climb. The Daily Climb to Mastery.
               </p>
             </td>
           </tr>

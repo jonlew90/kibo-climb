@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star, Compass } from 'lucide-react';
 import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { BADGES_CATALOG } from '../data/badges';
@@ -12,6 +12,7 @@ import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEc
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
 import { communicationsService } from '../services/communicationsService';
+import { questService } from '../services/questService';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { generateWeeklyDigestData, formatWeeklyDigestText } from '../utils/weeklyDigest';
 import { requestAppReview } from '../utils/AppReview';
@@ -511,30 +512,59 @@ export default function ParentDashboardModal({
               </div>
             </div>
 
-            {/* CHILD GLOBAL HABIT BANNER */}
+            {/* CHILD GLOBAL HABIT & QUEST EXPEDITION BANNERS */}
             {(() => {
               const currentProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
               const profileStreak = currentProf.userData?.streak ?? 0;
               const childName = currentProf.name || 'Your Climber';
+              const questState = questService.getQuests(viewingProfileId);
+              const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️' };
+              const questTotalXp = questState?.totalXp || 0;
+
               return (
-                <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-purple-500/10 border border-amber-200/90 rounded-2xl p-3 flex items-center justify-between gap-3 text-left shadow-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-sm shrink-0">
-                      <Flame className="w-6 h-6 fill-white stroke-[2.5]" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-black text-amber-950 uppercase tracking-wider">Overall Daily Practice Streak</span>
-                        <span className="bg-amber-200/80 text-amber-900 text-xs font-extrabold px-2 py-0.5 rounded-full">All Subjects</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Daily Practice Streak Banner */}
+                  <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-200/90 rounded-2xl p-3 flex items-center justify-between gap-3 text-left shadow-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-sm shrink-0">
+                        <Flame className="w-6 h-6 fill-white stroke-[2.5]" />
                       </div>
-                      <p className="text-xs text-slate-600 font-bold mt-0.5">
-                        {childName} has practiced for <strong className="text-amber-950 font-black">{pluralize(profileStreak, 'Day')}</strong> in a row across Math, Words & World.
-                      </p>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-black text-amber-950 uppercase tracking-wider">Daily Practice Streak</span>
+                          <span className="bg-amber-200/80 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">All Subjects</span>
+                        </div>
+                        <p className="text-xs text-slate-600 font-bold mt-0.5">
+                          {childName} has practiced for <strong className="text-amber-950 font-black">{pluralize(profileStreak, 'Day')}</strong> in a row.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-center shrink-0 bg-white/80 border border-amber-200 px-3 py-1.5 rounded-xl shadow-xs">
+                      <span className="text-xl font-black text-amber-600 tracking-tight leading-none block">{profileStreak}</span>
+                      <span className="text-xs font-black uppercase text-amber-800 tracking-wider block mt-0.5">{profileStreak === 1 ? 'Day' : 'Days'}</span>
                     </div>
                   </div>
-                  <div className="text-center shrink-0 bg-white/80 border border-amber-200 px-3 py-1.5 rounded-xl shadow-xs">
-                    <span className="text-xl font-black text-amber-600 tracking-tight leading-none block">{profileStreak}</span>
-                    <span className="text-xs font-black uppercase text-amber-800 tracking-wider block mt-0.5">{profileStreak === 1 ? 'Day' : 'Days'}</span>
+
+                  {/* Quest Expedition & Level Banner */}
+                  <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/5 border border-indigo-200/90 rounded-2xl p-3 flex items-center justify-between gap-3 text-left shadow-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
+                        <span>{questLevelInfo.icon || '🏕️'}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-black text-indigo-950 uppercase tracking-wider truncate">Quest Rank: {questLevelInfo.title}</span>
+                          <span className="bg-indigo-200/80 text-indigo-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase shrink-0">Expedition</span>
+                        </div>
+                        <p className="text-xs text-slate-600 font-bold mt-0.5 truncate">
+                          {questTotalXp} Quest XP earned across daily & team climbs.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-center shrink-0 bg-white/80 border border-indigo-200 px-3 py-1.5 rounded-xl shadow-xs">
+                      <span className="text-xl font-black text-indigo-600 tracking-tight leading-none block">Lvl {questLevelInfo.level}</span>
+                      <span className="text-xs font-black uppercase text-indigo-800 tracking-wider block mt-0.5">{questTotalXp} XP</span>
+                    </div>
                   </div>
                 </div>
               );
@@ -1282,7 +1312,7 @@ export default function ParentDashboardModal({
                                 <span>🐾 🏔️</span> Summary Preview for {digest.childName} ({digest.childGrade})
                               </span>
                               <span className="text-xs font-bold text-slate-500">
-                                Streak: {digest.streak}d · {digest.totalProblemsThisWeek} items this week
+                                Streak: {digest.streak}d · Quest Lvl {digest.questLevel || 1} ({digest.questTotalXp || 0} XP) · {digest.totalProblemsThisWeek} items this week
                               </span>
                             </div>
 

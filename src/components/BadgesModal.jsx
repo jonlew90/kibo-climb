@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Lock, Sparkles, CheckCircle2, Trophy, Flame, Zap, Target, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Lock, Sparkles, CheckCircle2, Trophy, Flame, Zap, Target, Compass, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
+import { questService } from '../services/questService';
 
 export default function BadgesModal({
   activeSubject = 'math',
@@ -83,6 +84,11 @@ export default function BadgesModal({
   const unlockedCount = unlockedSet.size;
   const progressPct = Math.round((unlockedCount / totalBadges) * 100);
 
+  const activeProfileId = storageService.getActiveProfileId();
+  const questState = questService.getQuests(activeProfileId);
+  const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️' };
+  const questTotalXp = questState?.totalXp || 0;
+
   const userRating = userState.competenceRank || userState.adaptiveCompetenceRating || 1000;
   const bestStreak = personalRecords?.highestCorrectStreak || userState.cumulativeCorrectStreak || 0;
   const fastestTime = personalRecords?.fastest12QuestionsTime || personalRecords?.fastest10QuestionsTime || null;
@@ -116,7 +122,20 @@ export default function BadgesModal({
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-center">
+            {/* Quest Expedition Rank & XP */}
+            <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
+              <div className="flex items-center gap-1 text-indigo-900 text-xs font-black uppercase">
+                <Compass className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5]" /> Quest Rank
+              </div>
+              <span className="text-xl font-black text-indigo-700 my-1">
+                Lvl {questLevelInfo.level}
+              </span>
+              <span className="text-[10px] font-bold text-indigo-800/80 truncate max-w-full" title={`${questLevelInfo.title} (${questTotalXp} XP)`}>
+                {questTotalXp} XP
+              </span>
+            </div>
+
             {/* Best Question Streak */}
             <div className="bg-orange-50/80 border border-orange-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
               <div className="flex items-center gap-1 text-orange-900 text-xs font-black uppercase">
@@ -162,14 +181,14 @@ export default function BadgesModal({
             </div>
 
             {/* Summits Reached */}
-            <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs col-span-2 sm:col-span-1">
-              <div className="flex items-center gap-1 text-indigo-900 text-xs font-black uppercase">
-                <span>🏔️</span> Summits Reached
+            <div className="bg-teal-50/80 border border-teal-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
+              <div className="flex items-center gap-1 text-teal-900 text-xs font-black uppercase">
+                <span>🏔️</span> Summits
               </div>
-              <span className="text-xl font-black text-indigo-700 my-1">
+              <span className="text-xl font-black text-teal-700 my-1">
                 {userState.sprintHistory?.length || userState.completedClimbsCount || storageService.getUserData(activeSubject)?.sprintHistory?.length || 0}
               </span>
-              <span className="text-[10px] font-bold text-indigo-800/80">Completed blocks</span>
+              <span className="text-[10px] font-bold text-teal-800/80">Completed blocks</span>
             </div>
           </div>
         </div>
@@ -193,8 +212,19 @@ export default function BadgesModal({
             />
           </div>
 
-          {/* Multi-Subject Competence Ranks */}
+          {/* Multi-Subject Competence Ranks & Quest Rank */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            {/* Quest Rank Pill */}
+            <span
+              className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-full border border-indigo-200/90 bg-indigo-50/90 text-indigo-900 shadow-2xs transition-all"
+              title={`Quest Expedition: Level ${questLevelInfo.level} (${questLevelInfo.title}) · ${questTotalXp} XP`}
+            >
+              <span>{questLevelInfo.icon || '🏕️'}</span>
+              <span className="text-indigo-950 font-extrabold">Quest Rank:</span>
+              <span className="text-indigo-800 font-bold">{questLevelInfo.title} (Lvl {questLevelInfo.level})</span>
+              <span className="text-[10px] sm:text-[11px] text-indigo-600 font-bold">· {questTotalXp} XP</span>
+            </span>
+
             {Object.keys(SUBJECTS_CONFIG).map((subKey) => {
               const cfg = SUBJECTS_CONFIG[subKey];
               const subData = storageService.getUserData(subKey);

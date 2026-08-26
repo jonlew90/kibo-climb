@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Settings, Trophy, Zap, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff } from 'lucide-react';
+import { Flame, Settings, Trophy, Zap, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass } from 'lucide-react';
 import Mascot from './components/Mascot';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
@@ -1617,6 +1617,29 @@ export default function App() {
                     </div>
                     <span className="font-black">{liveCompetenceRating} pts</span>
                   </button>
+
+                  {/* Quest Rank & Level Item */}
+                  {(() => {
+                    const questState = questService.getQuests(activeProfileId);
+                    const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer' };
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playKeyTap();
+                          setShowStatsDropdown(false);
+                          setAppState('quests');
+                        }}
+                        className="flex items-center justify-between px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Compass className="w-4 h-4 text-indigo-600 shrink-0" />
+                          <span>Quest ({questLevelInfo.title})</span>
+                        </div>
+                        <span className="font-black">Lvl {questLevelInfo.level} · {questState?.totalXp || 0} XP</span>
+                      </button>
+                    );
+                  })()}
                 </div>
               )}
             </div>

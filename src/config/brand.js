@@ -3,7 +3,7 @@
 export const BRAND_CONFIG = {
   rootBrand: "Kibo Climb",
   appName: "Kibo Math",
-  tagline: "The 3-Minute Daily Ascent to Mastery",
+  tagline: "The Daily Climb to Mastery",
   urls: {
     app: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_MATH_APP_URL) || "https://github.com/jonlew90/kibo-climb",
     parent: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_PARENT_PORTAL_URL) || "https://github.com/jonlew90/kibo-climb"

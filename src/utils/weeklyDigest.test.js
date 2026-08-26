@@ -68,6 +68,9 @@ describe('Weekly Digest Generator', () => {
     expect(digest.streak).toBe(5);
     expect(digest.sparks).toBe(120);
     expect(digest.unlockedBadgesCount).toBe(1);
+    expect(digest.questLevel).toBeDefined();
+    expect(digest.questTitle).toBeDefined();
+    expect(typeof digest.questTotalXp).toBe('number');
 
     // totalProblemsThisWeek = Math (12 + 12) + Words (12) = 36
     expect(digest.totalProblemsThisWeek).toBe(36);
