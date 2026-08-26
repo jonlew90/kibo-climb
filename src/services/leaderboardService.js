@@ -408,7 +408,7 @@ class LeaderboardService {
         );
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
-          for (const docSnap of snapshot.docs) {
+          const fetchPromises = snapshot.docs.map(async (docSnap) => {
             const uData = docSnap.data();
             const friendUid = uData.uid;
             const friendProfileId = uData.profileId || 'default_child';
@@ -428,7 +428,7 @@ class LeaderboardService {
               }
             } catch (e) {}
 
-            remoteResults.push({
+            return {
               id: `${friendUid}_${friendProfileId}`,
               uid: friendUid,
               profileId: friendProfileId,
@@ -437,8 +437,11 @@ class LeaderboardService {
               score,
               equipped,
               subjectsMastered
-            });
-          }
+            };
+          });
+
+          const results = await Promise.all(fetchPromises);
+          remoteResults.push(...results);
         }
       } catch (firestoreErr) {
         console.warn('LeaderboardService: direct Firestore search fallback error', firestoreErr);
