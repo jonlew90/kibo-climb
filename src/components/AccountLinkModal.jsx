@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Sparkles, CheckCircle2, Lock, X, ArrowRight, Mail, Zap } from 'lucide-react';
+import { ShieldCheck, Sparkles, CheckCircle2, X, ArrowRight, Mail, Zap } from 'lucide-react';
 import { authService } from '../services/authService';
 import { storageService } from '../services/storageService';
 
