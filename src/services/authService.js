@@ -571,7 +571,7 @@ export const authService = {
       console.error('Error unlinking account:', e);
       return { success: false, reason: e.message };
     }
-  },,
+  },
 
   /**
    * Subscribes to real Firebase Auth state changes to keep local storage in sync.
