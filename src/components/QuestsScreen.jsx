@@ -12,6 +12,7 @@ import {
   Globe,
   Calculator,
   BookOpen,
+  Code,
   ArrowLeft,
   Shield,
   Gift,
@@ -35,6 +36,7 @@ export default function QuestsScreen({
   onNavigate,
   onBack,
   renderFooter,
+  onAwardReward,
   onAwardSparks
 }) {
   const activeProfile = storageService.getActiveProfile();
@@ -64,14 +66,22 @@ export default function QuestsScreen({
     const result = questService.claimReward(profileId, quest.id);
     if (result.success) {
       setQuestState(questService.getQuests(profileId));
+      
+      const totalSparksEarned = (result.reward?.sparks || 0) + (result.leveledUp?.reward?.sparks || 0);
+      const totalShieldsEarned = (result.reward?.shields || 0) + (result.leveledUp?.reward?.shields || 0);
+
       setCelebrationReward({
         ...result.reward,
+        sparks: totalSparksEarned,
+        shields: totalShieldsEarned,
         leveledUp: result.leveledUp,
         newlyUnlockedBadges: result.newlyUnlockedBadges,
         earnedXp: result.earnedXp
       });
-      if (onAwardSparks && result.reward.sparks) {
-        onAwardSparks(result.reward.sparks);
+      if (onAwardReward) {
+        onAwardReward({ sparks: totalSparksEarned, shields: totalShieldsEarned });
+      } else if (onAwardSparks && totalSparksEarned > 0) {
+        onAwardSparks(totalSparksEarned);
       }
     }
   };
@@ -93,6 +103,8 @@ export default function QuestsScreen({
         return <BookOpen className={className} />;
       case 'Globe':
         return <Globe className={className} />;
+      case 'Code':
+        return <Code className={className} />;
       case 'Flame':
         return <Flame className={className} />;
       case 'Mountain':

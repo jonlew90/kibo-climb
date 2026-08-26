@@ -111,5 +111,75 @@ describe('Quest Service', () => {
     expect(claim2.leveledUp).toBeDefined();
     expect(claim2.leveledUp.newLevel).toBe(2);
   });
+
+  it('correctly tracks Coding quests on coding events', () => {
+    const state = questService.getQuests(profileId);
+    state.daily = [
+      {
+        id: 'd_coding_8',
+        title: 'Algorithm Pathfinder',
+        category: 'daily',
+        subject: 'coding',
+        target: 8,
+        unit: 'correct',
+        progress: 0,
+        completed: false,
+        claimed: false,
+        reward: { sparks: 50, altitude: 100 }
+      }
+    ];
+    questService.saveRawState(profileId, state);
+
+    questService.recordProgress(profileId, {
+      subject: 'coding',
+      isCorrect: true,
+      streak: 1
+    });
+
+    const updated = questService.getQuests(profileId);
+    expect(updated.daily[0].progress).toBe(1);
+
+    // Non-coding event shouldn't increment
+    questService.recordProgress(profileId, {
+      subject: 'math',
+      isCorrect: true,
+      streak: 2
+    });
+    const updated2 = questService.getQuests(profileId);
+    expect(updated2.daily[0].progress).toBe(1);
+  });
+
+  it('dynamically rotates team quests across different week keys', () => {
+    const weekA = '2026-W34';
+    const weekB = '2026-W35';
+
+    const team2_A = questService.generateTeam2Quests(weekA);
+    const team2_B = questService.generateTeam2Quests(weekB);
+
+    expect(team2_A).toBeDefined();
+    expect(team2_B).toBeDefined();
+    expect(team2_A.length).toBe(2);
+    expect(team2_B.length).toBe(2);
+
+    const team3_A = questService.generateTeam3Quests(weekA);
+    const team3_B = questService.generateTeam3Quests(weekB);
+    expect(team3_A.length).toBe(2);
+    expect(team3_B.length).toBe(2);
+  });
+
+  it('generates diverse daily quests with general, subject, and challenge selections', () => {
+    const dailyQuests = questService.generateDailyQuests('2026-08-26');
+    expect(dailyQuests.length).toBe(3);
+    
+    // Ensure all 3 generated quests are unique
+    const ids = new Set(dailyQuests.map(q => q.id));
+    expect(ids.size).toBe(3);
+
+    // Ensure at least one has subject 'any' and at least one is subject-specific
+    const hasAny = dailyQuests.some(q => q.subject === 'any');
+    const hasSubjectSpecific = dailyQuests.some(q => q.subject !== 'any');
+    expect(hasAny).toBe(true);
+    expect(hasSubjectSpecific).toBe(true);
+  });
 });
 

@@ -59,20 +59,34 @@ class QuestService {
     }
     const absHash = Math.abs(hash);
 
-    // Pick 3 diverse daily quests from pool
-    const selected = [];
     const pool = [...DAILY_QUEST_POOL];
-    
-    // Always include a generic and 2 subject-focused/streak
-    for (let i = 0; i < 3 && pool.length > 0; i++) {
-      const idx = (absHash + i * 7) % pool.length;
-      const quest = pool.splice(idx, 1)[0];
-      selected.push({
-        ...quest,
-        progress: 0,
-        completed: false,
-        claimed: false
-      });
+    const selected = [];
+
+    // 1. Pick 1 general or streak quest
+    const generalPool = pool.filter(q => q.subject === 'any');
+    if (generalPool.length > 0) {
+      const gIdx = absHash % generalPool.length;
+      const gQuest = generalPool[gIdx];
+      selected.push({ ...gQuest, progress: 0, completed: false, claimed: false });
+      const pIdx = pool.findIndex(q => q.id === gQuest.id);
+      if (pIdx >= 0) pool.splice(pIdx, 1);
+    }
+
+    // 2. Pick 1 subject-specific quest (math, words, world, coding)
+    const subjectPool = pool.filter(q => q.subject !== 'any');
+    if (subjectPool.length > 0) {
+      const sIdx = (absHash + 7) % subjectPool.length;
+      const sQuest = subjectPool[sIdx];
+      selected.push({ ...sQuest, progress: 0, completed: false, claimed: false });
+      const pIdx = pool.findIndex(q => q.id === sQuest.id);
+      if (pIdx >= 0) pool.splice(pIdx, 1);
+    }
+
+    // 3. Pick 1 additional quest from remaining pool
+    if (pool.length > 0) {
+      const rIdx = (absHash + 13) % pool.length;
+      const rQuest = pool.splice(rIdx, 1)[0];
+      selected.push({ ...rQuest, progress: 0, completed: false, claimed: false });
     }
 
     return selected;
@@ -102,9 +116,20 @@ class QuestService {
   }
 
   generateTeam2Quests(weekKey) {
-    return TEAM_2P_QUEST_POOL.slice(0, 2).map((quest, idx) => {
-      const partner = getBuddyById(quest.defaultPartner || COMPANION_BUDDIES[idx % COMPANION_BUDDIES.length].id);
-      return {
+    let hash = 0;
+    for (let i = 0; i < weekKey.length; i++) {
+      hash = (hash << 5) - hash + weekKey.charCodeAt(i);
+      hash |= 0;
+    }
+    const absHash = Math.abs(hash);
+
+    const pool = [...TEAM_2P_QUEST_POOL];
+    const selected = [];
+    for (let i = 0; i < 2 && pool.length > 0; i++) {
+      const idx = (absHash + i * 3) % pool.length;
+      const quest = pool.splice(idx, 1)[0];
+      const partner = getBuddyById(quest.defaultPartner || COMPANION_BUDDIES[i % COMPANION_BUDDIES.length].id);
+      selected.push({
         ...quest,
         partner,
         userProgress: 0,
@@ -112,14 +137,26 @@ class QuestService {
         progress: 0,
         completed: false,
         claimed: false
-      };
-    });
+      });
+    }
+    return selected;
   }
 
   generateTeam3Quests(weekKey) {
-    return TEAM_3P_QUEST_POOL.slice(0, 2).map((quest, idx) => {
+    let hash = 0;
+    for (let i = 0; i < weekKey.length; i++) {
+      hash = (hash << 5) - hash + weekKey.charCodeAt(i);
+      hash |= 0;
+    }
+    const absHash = Math.abs(hash);
+
+    const pool = [...TEAM_3P_QUEST_POOL];
+    const selected = [];
+    for (let i = 0; i < 2 && pool.length > 0; i++) {
+      const idx = (absHash + i * 3) % pool.length;
+      const quest = pool.splice(idx, 1)[0];
       const partners = (quest.defaultPartners || ['buddy_asha', 'buddy_leo']).map(id => getBuddyById(id));
-      return {
+      selected.push({
         ...quest,
         partners,
         userProgress: 0,
@@ -127,8 +164,9 @@ class QuestService {
         progress: 0,
         completed: false,
         claimed: false
-      };
-    });
+      });
+    }
+    return selected;
   }
 
   getQuests(profileId = 'default_child') {

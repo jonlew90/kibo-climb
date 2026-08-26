@@ -2021,10 +2021,27 @@ export default function App() {
           onNavigate={handleNavigateTo}
           onBack={() => handleNavigateTo('/', 'adaptive_session')}
           renderFooter={renderNavigationFooter}
+          onAwardReward={(reward = {}) => {
+            if (reward.sparks) {
+              const clubMultiplier = isKiboClub ? 1.25 : 1;
+              const finalEarned = Math.round(reward.sparks * clubMultiplier);
+              const updated = (sparks || 0) + finalEarned;
+              setSparks(updated);
+              storageService.saveUserData({ sparks: updated }, activeSubject);
+            }
+            if (reward.shields) {
+              const nextConsumables = {
+                ...consumables,
+                shieldCount: (consumables.shieldCount || 0) + reward.shields
+              };
+              setConsumables(nextConsumables);
+              storageService.saveUserData({ consumables: nextConsumables }, activeSubject);
+            }
+          }}
           onAwardSparks={(earned) => {
             const clubMultiplier = isKiboClub ? 1.25 : 1;
             const finalEarned = Math.round(earned * clubMultiplier);
-            const updated = sparks + finalEarned;
+            const updated = (sparks || 0) + finalEarned;
             setSparks(updated);
             storageService.saveUserData({ sparks: updated }, activeSubject);
           }}
