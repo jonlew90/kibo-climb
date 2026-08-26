@@ -614,3 +614,64 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
   return { newlyUnlocked, updatedUnlocked };
 }
 
+/**
+ * Returns an array of badge IDs that correspond to rating-tier milestones
+ * for a given starting rating across all supported subjects.
+ */
+export function getStartingRatingBadges(startingRating = 1000) {
+  const rating = Number(startingRating) || 1000;
+  const unlocked = new Set();
+
+  const subjects = ['math', 'words', 'world', 'coding'];
+  subjects.forEach((subId) => {
+    BADGES_CATALOG.forEach((badge) => {
+      let shouldUnlock = false;
+      switch (badge.id) {
+        // Math Rating Badges
+        case 'addition_apprentice': if (subId === 'math') shouldUnlock = rating >= 1200; break;
+        case 'subtraction_scout': if (subId === 'math') shouldUnlock = rating >= 1400; break;
+        case 'multiplication_master': if (subId === 'math') shouldUnlock = rating >= 1600; break;
+        case 'division_diver': if (subId === 'math') shouldUnlock = rating >= 1800; break;
+        case 'fraction_finder': if (subId === 'math') shouldUnlock = rating >= 2000; break;
+        case 'geometry_genius': if (subId === 'math') shouldUnlock = rating >= 2200; break;
+        case 'algebra_ace': if (subId === 'math') shouldUnlock = rating >= 2400; break;
+        case 'peak_math_legend': if (subId === 'math') shouldUnlock = rating >= 2600; break;
+
+        // Words Rating Badges
+        case 'sight_word_scout': if (subId === 'words') shouldUnlock = rating >= 1200; break;
+        case 'blend_builder': if (subId === 'words') shouldUnlock = rating >= 1400; break;
+        case 'digraph_diver': if (subId === 'words') shouldUnlock = rating >= 1600; break;
+        case 'compound_crafter': if (subId === 'words') shouldUnlock = rating >= 1800; break;
+        case 'morphology_master': if (subId === 'words') shouldUnlock = rating >= 2000; break;
+        case 'vocab_voyager': if (subId === 'words') shouldUnlock = rating >= 2200; break;
+        case 'etymology_explorer': if (subId === 'words') shouldUnlock = rating >= 2400; break;
+        case 'peak_lexicon_master': if (subId === 'words') shouldUnlock = rating >= 2600; break;
+
+        // World Rating Badges
+        case 'continent_navigator': if (subId === 'world') shouldUnlock = rating >= 1200; break;
+        case 'state_cartographer': if (subId === 'world') shouldUnlock = rating >= 1400; break;
+        case 'country_diplomat': if (subId === 'world') shouldUnlock = rating >= 1600; break;
+        case 'hemisphere_voyager': if (subId === 'world') shouldUnlock = rating >= 1800; break;
+        case 'world_summit_master': if (subId === 'world') shouldUnlock = rating >= 2000; break;
+
+        // Coding Rating Badges
+        case 'pattern_scout': if (subId === 'coding') shouldUnlock = rating >= 1200; break;
+        case 'grid_navigator': if (subId === 'coding') shouldUnlock = rating >= 1400; break;
+        case 'boolean_ranger': if (subId === 'coding') shouldUnlock = rating >= 1600; break;
+        case 'variable_virtuoso': if (subId === 'coding') shouldUnlock = rating >= 1800; break;
+        case 'debug_detective': if (subId === 'coding') shouldUnlock = rating >= 2000; break;
+        case 'loop_legend': if (subId === 'coding') shouldUnlock = rating >= 2200; break;
+        case 'code_summit_master': if (subId === 'coding') shouldUnlock = rating >= 2400; break;
+
+        default:
+          break;
+      }
+      if (shouldUnlock) {
+        unlocked.add(badge.id);
+      }
+    });
+  });
+
+  return Array.from(unlocked);
+}
+

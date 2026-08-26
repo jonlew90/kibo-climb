@@ -124,9 +124,10 @@ export default function BadgesModal({
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-center">
             {/* Quest Expedition Rank & XP */}
-            <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
-              <div className="flex items-center gap-1 text-indigo-900 text-xs font-black uppercase">
-                <Compass className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5]" /> Quest Rank
+            <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between items-center shadow-2xs min-w-0">
+              <div className="flex items-center justify-center gap-1 text-indigo-900 text-[10.5px] sm:text-xs font-black uppercase leading-tight text-center">
+                <Compass className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5] shrink-0" />
+                <span>Quest Rank</span>
               </div>
               <span className="text-xl font-black text-indigo-700 my-1">
                 Lvl {questLevelInfo.level}
@@ -137,58 +138,63 @@ export default function BadgesModal({
             </div>
 
             {/* Best Question Streak */}
-            <div className="bg-orange-50/80 border border-orange-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
-              <div className="flex items-center gap-1 text-orange-900 text-xs font-black uppercase">
-                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" /> Best Streak
+            <div className="bg-orange-50/80 border border-orange-200 rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between items-center shadow-2xs min-w-0">
+              <div className="flex items-center justify-center gap-1 text-orange-900 text-[10.5px] sm:text-xs font-black uppercase leading-tight text-center">
+                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400 shrink-0" />
+                <span>Best Streak</span>
               </div>
               <span className="text-xl font-black text-orange-600 my-1">
                 {bestStreak > 0 ? `${bestStreak} Qs` : '—'}
               </span>
-              <span className="text-[10px] font-bold text-orange-800/80">Unbroken correct</span>
+              <span className="text-[10px] font-bold text-orange-800/80 truncate max-w-full">Unbroken correct</span>
             </div>
 
             {/* Fastest Flawless Climb */}
-            <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
-              <div className="flex items-center gap-1 text-amber-900 text-xs font-black uppercase">
-                <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400" /> Fastest Flawless
+            <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between items-center shadow-2xs min-w-0">
+              <div className="flex items-center justify-center gap-1 text-amber-900 text-[10.5px] sm:text-xs font-black uppercase leading-tight text-center">
+                <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0" />
+                <span>Fastest Flawless</span>
               </div>
               <span className="text-xl font-black text-amber-600 my-1">
                 {fastestTime ? `${fastestTime}s` : '—'}
               </span>
-              <span className="text-[10px] font-bold text-amber-800/80">12/12 perfect run</span>
+              <span className="text-[10px] font-bold text-amber-800/80 truncate max-w-full">12/12 perfect run</span>
             </div>
 
             {/* Flawless Climbs */}
-            <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
-              <div className="flex items-center gap-1 text-emerald-900 text-xs font-black uppercase">
-                <Target className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" /> Flawless Climbs
+            <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between items-center shadow-2xs min-w-0">
+              <div className="flex items-center justify-center gap-1 text-emerald-900 text-[10.5px] sm:text-xs font-black uppercase leading-tight text-center">
+                <Target className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5] shrink-0" />
+                <span>Flawless Climbs</span>
               </div>
               <span className="text-xl font-black text-emerald-600 my-1">
                 {perfectRuns > 0 ? `${perfectRuns}` : '0'}
               </span>
-              <span className="text-[10px] font-bold text-emerald-800/80">100% accuracy</span>
+              <span className="text-[10px] font-bold text-emerald-800/80 truncate max-w-full">100% accuracy</span>
             </div>
 
             {/* Total Questions Conquered */}
-            <div className="bg-sky-50/80 border border-sky-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
-              <div className="flex items-center gap-1 text-sky-900 text-xs font-black uppercase">
-                <CheckCircle2 className="w-3.5 h-3.5 text-sky-600" /> Questions Solved
+            <div className="bg-sky-50/80 border border-sky-200 rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between items-center shadow-2xs min-w-0">
+              <div className="flex items-center justify-center gap-1 text-sky-900 text-[10.5px] sm:text-xs font-black uppercase leading-tight text-center">
+                <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                <span>Questions Solved</span>
               </div>
               <span className="text-xl font-black text-sky-700 my-1">
                 {userState.totalProblemsSolved || 0}
               </span>
-              <span className="text-[10px] font-bold text-sky-800/80">Across mountain</span>
+              <span className="text-[10px] font-bold text-sky-800/80 truncate max-w-full">Across mountain</span>
             </div>
 
             {/* Summits Reached */}
-            <div className="bg-teal-50/80 border border-teal-200 rounded-2xl p-2.5 flex flex-col justify-between items-center shadow-2xs">
-              <div className="flex items-center gap-1 text-teal-900 text-xs font-black uppercase">
-                <span>🏔️</span> Summits
+            <div className="bg-teal-50/80 border border-teal-200 rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between items-center shadow-2xs min-w-0">
+              <div className="flex items-center justify-center gap-1 text-teal-900 text-[10.5px] sm:text-xs font-black uppercase leading-tight text-center">
+                <span className="shrink-0">🏔️</span>
+                <span>Summits</span>
               </div>
               <span className="text-xl font-black text-teal-700 my-1">
                 {userState.sprintHistory?.length || userState.completedClimbsCount || storageService.getUserData(activeSubject)?.sprintHistory?.length || 0}
               </span>
-              <span className="text-[10px] font-bold text-teal-800/80">Completed blocks</span>
+              <span className="text-[10px] font-bold text-teal-800/80 truncate max-w-full">Completed blocks</span>
             </div>
           </div>
         </div>

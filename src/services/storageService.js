@@ -1,6 +1,7 @@
 // Unified Storage Service Adapter for Kibo Math
 // Multi-Profile Storage Engine (profiles[activeProfileId])
 import { getStartingRatingForGrade } from '../utils/mathCurriculum.js';
+import { getStartingRatingBadges } from '../utils/badgeManager.js';
 import { getWeekStr } from '../utils/dateUtils.js';
 import { leaderboardService } from './leaderboardService.js';
 import { SUBJECTS_CONFIG } from '../config/subjects.js';
@@ -265,6 +266,7 @@ export const storageService = {
     const safeName = (name || 'New Climber').trim().slice(0, 20);
     const id = `profile_${Date.now()}`;
     const startingRating = getStartingRatingForGrade(gradeLevel);
+    const startingBadges = getStartingRatingBadges(startingRating);
     const isLinked = this.isAccountGloballyLinked();
     const activeProf = this.getActiveProfile();
     const newProfile = {
@@ -278,6 +280,7 @@ export const storageService = {
         adaptiveCompetenceRating: startingRating,
         subjectRatings: { math: startingRating, words: startingRating },
         competenceRank: startingRating,
+        unlockedBadges: startingBadges,
         isAnonymous: isLinked ? false : true,
         cloudUid: isLinked ? activeProf.userData?.cloudUid : undefined,
         authProvider: isLinked ? activeProf.userData?.authProvider : undefined,
@@ -367,7 +370,11 @@ export const storageService = {
     if (gradeLevel) {
       state.profiles[activeId].gradeLevel = gradeLevel;
       const startingRating = getStartingRatingForGrade(gradeLevel);
+      const startingBadges = getStartingRatingBadges(startingRating);
       const prevUserData = state.profiles[activeId].userData || DEFAULT_PROFILE.userData;
+      const existingUnlocked = new Set(prevUserData.unlockedBadges || []);
+      startingBadges.forEach((b) => existingUnlocked.add(b));
+
       const subjectRatings = {};
       const updatedSubjects = { ...(prevUserData.subjects || {}) };
       Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).forEach(subId => {
@@ -383,6 +390,7 @@ export const storageService = {
         adaptiveCompetenceRating: startingRating,
         subjectRatings,
         competenceRank: startingRating,
+        unlockedBadges: Array.from(existingUnlocked),
         subjects: updatedSubjects
       };
     }
