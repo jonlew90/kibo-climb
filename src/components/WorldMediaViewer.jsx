@@ -1,5 +1,4 @@
 import React from 'react';
-import DOMPurify from 'dompurify';
 import WorldMapViewer from './WorldMapViewer';
 
 /**
@@ -26,7 +25,7 @@ export default function WorldMediaViewer({
           <svg
             viewBox={viewBox}
             className="w-full h-full block select-none object-contain"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(svg, { USE_PROFILES: { svg: true } }) }}
+            dangerouslySetInnerHTML={{ __html: svg }}
           />
         </div>
       </div>
@@ -43,7 +42,7 @@ export default function WorldMediaViewer({
           <svg
             viewBox={viewBox}
             className="w-full h-full block select-none"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(svg, { USE_PROFILES: { svg: true } }) }}
+            dangerouslySetInnerHTML={{ __html: svg }}
           />
           {badge && (
             <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-[9px] sm:text-[10px] font-bold text-amber-300 border border-amber-400/40 select-none pointer-events-none">
