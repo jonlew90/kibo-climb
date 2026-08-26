@@ -2284,6 +2284,7 @@ export default function App() {
           setAppState('adaptive_session');
         }}
       />
+      </main>
 
       {/* STREAK SAVED MODAL */}
       <StreakSavedModal
@@ -2444,37 +2445,35 @@ export default function App() {
               <X className="w-5 h-5 stroke-[2.5]" />
             </button>
 
-            <div className="flex items-center gap-2">
-              <Info className="w-6 h-6 text-kibo-teal stroke-[2.5]" />
-              <h3 className="text-xl font-extrabold text-slate-800">How Recall Latency Works</h3>
+            <div className="flex items-center gap-2 text-amber-950 font-black text-lg border-b border-slate-100 pb-2">
+              <Zap className="w-6 h-6 text-amber-500 fill-amber-400" />
+              <span>Speed Factor (⚡)</span>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Kibo Math measures millisecond latency from the instant a problem appears until the user completes their answer.
+            <p className="text-xs text-slate-600 font-medium leading-relaxed">
+              Speed Factor measures your climber's mastery & answering fluency compared to the target benchmark for their current grade/tier:
             </p>
 
-            <div className="space-y-2 text-xs font-semibold">
-              <div className="p-2 bg-amber-50 border border-amber-200 rounded-xl">
-                <span className="font-extrabold text-amber-900">⚡ Instant Recall (&lt;1.5s / &lt;2.2s):</span>
-                <p className="text-amber-800 font-normal">Direct memory retrieval without needing scratchpad calculation.</p>
+            <div className="space-y-1.5 pt-1">
+              <div className="p-2.5 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between text-xs">
+                <span className="font-extrabold text-amber-950">⚡ Lightning Fast</span>
+                <span className="font-black text-amber-600">&lt; 2.5s / prob</span>
               </div>
-
-              <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-xl">
-                <span className="font-extrabold text-yellow-900">🟡 Worked It Out (1.5s–4.0s / 2.2s–4.5s):</span>
-                <p className="text-yellow-800 font-normal">Active calculation in working memory. Fluent and correct!</p>
+              <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
+                <span className="font-extrabold text-emerald-950">🎯 Mastered Pace</span>
+                <span className="font-black text-emerald-600">2.5s - 5.0s</span>
               </div>
-
-              <div className="p-2 bg-blue-50 border border-blue-200 rounded-xl">
-                <span className="font-extrabold text-blue-900">🔵 Focus Area (&gt;4.0s / &gt;4.5s or Incorrect):</span>
-                <p className="text-blue-800 font-normal">Automatically re-queued into future daily sessions to reinforce memory!</p>
+              <div className="p-2.5 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-between text-xs">
+                <span className="font-extrabold text-sky-950">🌱 Building Fluency</span>
+                <span className="font-black text-sky-600">&gt; 5.0s / prob</span>
               </div>
             </div>
 
             <button
               onClick={() => setShowSpeedInfoModal(false)}
-              className="btn-3d-teal w-full py-2.5 text-sm rounded-xl"
+              className="w-full py-2.5 mt-2 bg-slate-900 text-white rounded-2xl font-black text-xs hover:bg-slate-800 transition-colors shadow-md"
             >
-              Got It!
+              Got it!
             </button>
           </div>
         </div>
@@ -2498,27 +2497,25 @@ export default function App() {
               <span className="text-xs uppercase font-black text-purple-600 tracking-wider">Level-Up Unlocked!</span>
               <h3 className="text-2xl font-black text-slate-800">Advance to Tier {tier + 1}?</h3>
               <p className="text-xs text-slate-600 font-medium">
-                {levelUpReason}
+                You have reached rating <strong>{liveCompetenceRating}</strong> in {activeSubject.toUpperCase()}! You're ready for new, exciting challenges!
               </p>
             </div>
 
-            <div className="bg-purple-50 p-3 rounded-2xl border border-purple-200 text-purple-900 font-extrabold text-sm">
-              Unlock Tier {tier + 1}: {getTierMeta(tier + 1).title}
-            </div>
-
-            <div className="space-y-2">
+            <div className="space-y-2 pt-2">
               <button
-                onClick={handleLevelUp}
-                className="btn-3d-purple w-full py-3.5 text-lg rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
+                onClick={() => {
+                  handleSetTierManual(tier + 1);
+                  setShowLevelUpModal(false);
+                }}
+                className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-black text-sm shadow-clay-purple hover:scale-105 active:scale-95 transition-all"
               >
-                Advance to Tier {tier + 1}! 🎉
+                🚀 Level Up to Tier {tier + 1}!
               </button>
-
               <button
                 onClick={() => setShowLevelUpModal(false)}
-                className="w-full py-2 text-slate-500 font-extrabold text-sm hover:text-slate-800"
+                className="w-full py-2 text-xs font-black text-slate-600 hover:text-slate-900 transition-colors"
               >
-                Stay in Tier {tier} for Now
+                Stay on Tier {tier} for now
               </button>
             </div>
           </div>
@@ -2530,6 +2527,7 @@ export default function App() {
         isOpen={isWorkshopOpen}
         onClose={handleCloseWorkshop}
         sparks={sparks}
+        activeSubject={activeSubject}
         streakShields={streakShields}
         consumables={consumables}
         unlockedItems={unlockedItems}
@@ -2743,8 +2741,6 @@ export default function App() {
           setUnlockedItems(sData.unlockedItems || ['cap']);
         }}
       />
-
-      </main>
 
       {/* Bottom Navigation Bar */}
       {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}

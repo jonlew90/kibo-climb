@@ -512,15 +512,15 @@ export default function ProfileSelectorScreen({
                  <ul className="space-y-2 text-xs font-bold text-slate-700">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Up to 6 Child Profiles</span>
+                      <span>Up to 6 child profiles</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>1.25x Spark Multiplier for all</span>
+                      <span>1.25x Spark multiplier for all profiles</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Exclusive Golden Name Tags</span>
+                      <span>Exclusive golden name tags</span>
                     </li>
                  </ul>
               </div>
@@ -538,7 +538,7 @@ export default function ProfileSelectorScreen({
                 <ChevronRight className="w-4 h-4" />
               </button>
               <p className="text-[10px] text-slate-400 font-bold mt-3">
-                Manage subscriptions in the Kibo Shop via the Parent Zone
+                Manage subscriptions in the Kibo Shop via the Parent Zone.
               </p>
             </div>
           </div>
