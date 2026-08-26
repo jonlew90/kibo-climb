@@ -15,6 +15,7 @@ export default function AccountLinkModal({
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [conflictData, setConflictData] = useState(null);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -23,6 +24,7 @@ export default function AccountLinkModal({
       setShowEmailInput(false);
       setSuccessMessage('');
       setErrorMessage('');
+      setConflictData(null);
     }
   }, [isOpen]);
 
@@ -49,6 +51,11 @@ export default function AccountLinkModal({
         return; // Page will redirect to Google/Apple without COOP popups
       }
 
+            if (res.requires_conflict_resolution) {
+        setConflictData({ linkedUser: res.linkedUser });
+        return;
+      }
+
       if (res.success) {
         const earnedSparks = res.earnedSparks ?? storageService.grantAccountLinkSparksReward();
 
@@ -72,6 +79,30 @@ export default function AccountLinkModal({
     } catch (e) {
       console.error('Failed to link account', e);
       setErrorMessage(e.message || 'An unexpected authentication error occurred.');
+    } finally {
+      setLoadingProvider(null);
+    }
+  };
+
+    const handleConflictResolution = async (action) => {
+    setLoadingProvider('resolving');
+    try {
+      const res = await authService.resolveLinkConflict(action, conflictData.linkedUser);
+      if (res.success) {
+        if (res.reload) {
+          window.location.reload();
+        } else {
+          setSuccessMessage('Cloud account synced successfully!');
+          setTimeout(() => {
+            onClose();
+          }, 1500);
+        }
+      } else {
+        setErrorMessage(res.reason || 'Failed to resolve sync conflict.');
+        setConflictData(null);
+      }
+    } catch(e) {
+      setErrorMessage(e.message);
     } finally {
       setLoadingProvider(null);
     }
@@ -126,11 +157,34 @@ export default function AccountLinkModal({
           </div>
         )}
 
-        {/* Success Alert */}
+                {/* Success Alert */}
         {successMessage ? (
           <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-900 font-bold text-xs flex items-center justify-center gap-2 animate-pop">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             <span>{successMessage}</span>
+          </div>
+        ) : conflictData ? (
+          <div className="space-y-4 animate-pop">
+            <div className="bg-amber-100 text-amber-900 p-4 rounded-xl text-sm font-bold shadow-inner">
+              <p>This account is already full (no available profile slots).</p>
+              <p className="mt-2 text-xs font-medium text-amber-800">Do you want to load your existing cloud account to this device (wiping the current climber), or overwrite the cloud with the current climber?</p>
+            </div>
+            <div className="space-y-2">
+               <button
+                  onClick={() => handleConflictResolution('keep_cloud')}
+                  disabled={!!loadingProvider}
+                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black text-sm transition-all"
+               >
+                 {loadingProvider === 'resolving' ? 'Syncing...' : 'Load Existing Cloud Account'}
+               </button>
+               <button
+                  onClick={() => handleConflictResolution('overwrite_cloud')}
+                  disabled={!!loadingProvider}
+                  className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-bold text-xs transition-all"
+               >
+                 Overwrite Cloud with Current Progress
+               </button>
+            </div>
           </div>
         ) : (
           /* Link Options */

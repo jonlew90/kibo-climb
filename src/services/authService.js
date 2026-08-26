@@ -1,7 +1,4 @@
-import { 
-  signInAnonymously, 
-  GoogleAuthProvider, 
-  OAuthProvider, 
+import {
   signInWithPopup, 
   linkWithPopup, 
   signInWithRedirect,
@@ -16,7 +13,8 @@ import {
   linkWithCredential,
   EmailAuthProvider
 } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../config/firebase';
 import { storageService } from './storageService';
 
 const GUEST_ID_KEY = 'kibo_anonymous_guest_id';
@@ -32,6 +30,99 @@ export function getOrCreateGuestId() {
   }
   return guestId;
 }
+
+
+const _handleLinkCollision = async (linkedUser, authProviderName, email, provider) => {
+  const currentData = storageService.getUserData('math');
+  const userDocRef = doc(db, 'users', linkedUser.uid);
+  let requiresConflictResolution = false;
+  let cloudProfiles = {};
+
+  try {
+    const docSnap = await getDoc(userDocRef);
+    if (docSnap.exists()) {
+      const cloudData = docSnap.data();
+      if (cloudData && cloudData.profiles) {
+        cloudProfiles = cloudData.profiles;
+        const profileCount = Object.keys(cloudProfiles).length;
+
+        // We need to check if they have a family plan on the cloud account
+        // Since we can't easily query RevenueCat here without user context,
+        // we'll rely on the storageService's current check (which might be local),
+        // OR we check if they already have > 1 profile. If they have > 1, they have a family plan.
+        const hasFamilyPlan = storageService.hasFamilyPlan();
+        // If the cloud account has 6 profiles, or 1 profile and no family plan -> Conflict
+        if (profileCount >= 6 || (profileCount >= 1 && !hasFamilyPlan && profileCount < 2)) {
+          // Note: profileCount < 2 is to handle the case where they have 2 profiles (so they must have family plan).
+          // But actually, just relying on profileCount >= 6 OR (profileCount === 1 && !hasFamilyPlan) is safer.
+          // Wait, hasFamilyPlan checks local storage, which might not reflect the cloud user yet!
+          // We can check if any profile in cloud has the sub, but that's complex.
+
+          // Better logic:
+          // If cloud has >= 6 profiles -> always full.
+          // If cloud has >= 1 profile -> assume full UNLESS we know they have family plan.
+          // Let's check cloud profiles for sub.
+          let cloudHasFamilyPlan = false;
+          Object.values(cloudProfiles).forEach(p => {
+             if (p.shopState && p.shopState.unlockedItems && p.shopState.unlockedItems.includes('kibo_club_family')) {
+                 cloudHasFamilyPlan = true;
+             }
+          });
+
+          if (profileCount >= 6 || (profileCount >= 1 && !cloudHasFamilyPlan && !hasFamilyPlan)) {
+             requiresConflictResolution = true;
+          }
+        }
+      }
+    }
+  } catch(e) {
+    console.warn('Could not fetch cloud profiles for collision check', e);
+  }
+
+  if (requiresConflictResolution) {
+    return {
+      success: false,
+      requires_conflict_resolution: true,
+      linkedUser,
+      cloudProfiles
+    };
+  }
+
+  // If we can merge (has room), we just proceed normally, the local profile
+  // will be uploaded as a new profile in the next sync cycle because its ID is unique
+  // (unless it's 'default_child', which might overwrite the cloud's 'default_child' if they share the ID).
+
+  // To be safe, if the local profile is 'default_child' and cloud has 'default_child',
+  // we should rename the local one so we don't overwrite.
+  const activeProfileId = storageService.getActiveProfileId();
+  if (cloudProfiles[activeProfileId]) {
+      const newId = 'profile_' + Date.now();
+      const state = JSON.parse(localStorage.getItem('kibo_profiles_data'));
+      state.profiles[newId] = { ...state.profiles[activeProfileId], id: newId };
+      delete state.profiles[activeProfileId];
+      state.activeProfileId = newId;
+      localStorage.setItem('kibo_profiles_data', JSON.stringify(state));
+  }
+
+  const mergedUserData = {
+    ...currentData,
+    cloudUid: linkedUser.uid,
+    isAnonymous: false,
+    authProvider: authProviderName,
+    email: linkedUser.email || email || `${provider}_user@kiboclimb.com`,
+    displayName: linkedUser.displayName || currentData.name || 'Kibo Master',
+    accountLinkedAt: new Date().toISOString()
+  };
+
+  storageService.setGlobalAccountLinkedState(mergedUserData);
+  const earnedSparks = storageService.grantAccountLinkSparksReward();
+
+  return {
+    success: true,
+    user: storageService.getUserData('math'),
+    earnedSparks
+  };
+};
 
 export const authService = {
   /**
@@ -241,6 +332,14 @@ export const authService = {
       }
 
       const currentData = storageService.getUserData('math');
+
+      // If we got here through a credential collision catch, we need to check if we can merge
+      const isCollision = (currentFirebaseUser && currentFirebaseUser.isAnonymous && linkedUser && linkedUser.uid !== currentFirebaseUser.uid);
+
+      if (isCollision) {
+          return await _handleLinkCollision(linkedUser, authProviderName, email, provider);
+      }
+
       const mergedUserData = {
         ...currentData,
         cloudUid: linkedUser ? linkedUser.uid : `uid_${Date.now()}`,
@@ -263,7 +362,7 @@ export const authService = {
         user: storageService.getUserData('math'),
         earnedSparks
       };
-    } catch (error) {
+} catch (error) {
       if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
         return {
           success: false,
@@ -368,6 +467,45 @@ export const authService = {
   /**
    * Returns current auth state and user claims from Firebase Auth & local storage.
    */
+
+  async resolveLinkConflict(action, linkedUser) {
+    try {
+      if (action === 'keep_cloud') {
+        // Wipe local device profiles and let userSyncService pull down cloud profiles
+        localStorage.removeItem('kibo_profiles_data');
+        localStorage.removeItem('kibo_parent_pin');
+
+        // Save minimal state to re-trigger sync
+        storageService.setGlobalAccountLinkedState({
+          cloudUid: linkedUser.uid,
+          isAnonymous: false,
+          authProvider: 'resolved',
+          email: linkedUser.email
+        });
+
+        return { success: true, reload: true };
+      } else if (action === 'overwrite_cloud') {
+        // We push current local state up, overwriting cloud profiles map entirely
+        const userSyncService = (await import('./userSyncService.js')).userSyncService;
+
+        const mergedUserData = {
+            ...storageService.getUserData('math'),
+            cloudUid: linkedUser.uid,
+            isAnonymous: false,
+            authProvider: 'resolved',
+            email: linkedUser.email,
+            accountLinkedAt: new Date().toISOString()
+        };
+        storageService.setGlobalAccountLinkedState(mergedUserData);
+
+        await userSyncService.pushLocalToCloud(linkedUser.uid);
+        return { success: true };
+      }
+    } catch(e) {
+       return { success: false, reason: e.message };
+    }
+  },
+
   getAuthState() {
     const firebaseUser = auth.currentUser;
     const data = storageService.getUserData('math');
@@ -395,30 +533,27 @@ export const authService = {
   /**
    * Unlinks account from provider or signs out from Firebase, reverting to anonymous guest.
    */
-  async unlinkAccount() {
+      async unlinkAccount() {
     try {
       const currentUser = auth.currentUser;
       if (currentUser && !currentUser.isAnonymous) {
-        // Attempt to unlink provider if available, or sign out and create new anonymous account
-        if (currentUser.providerData && currentUser.providerData.length > 0) {
-          const providerId = currentUser.providerData[0].providerId;
-          try {
-            await unlink(currentUser, providerId);
-          } catch (e) {
-            console.warn('Unlink provider failed, signing out:', e);
-            await signOut(auth);
-            await signInAnonymously(auth);
-          }
-        } else {
-          await signOut(auth);
-          await signInAnonymously(auth);
-        }
+        // ALWAYS sign out on unlink so the device returns to a fresh anonymous session
+        await signOut(auth);
       }
 
+      // Ensure we get a brand new anonymous session
+      await signInAnonymously(auth);
       const newFirebaseUser = auth.currentUser;
+      const guestUid = newFirebaseUser ? newFirebaseUser.uid : `guest_${Date.now()}`;
+
+      // Wipe local data so shared devices act as fresh install after unlink
+      localStorage.removeItem('kibo_profiles_data');
+      localStorage.removeItem('kibo_parent_pin');
+      localStorage.removeItem('kibo_parent_notif_prefs');
+      localStorage.removeItem('kibo_practice_days');
 
       const accountData = {
-        cloudUid: newFirebaseUser ? newFirebaseUser.uid : `guest_${Date.now()}`,
+        cloudUid: guestUid,
         isAnonymous: true,
         authProvider: 'anonymous',
         email: null,
@@ -428,6 +563,9 @@ export const authService = {
       };
 
       storageService.setGlobalAccountLinkedState(accountData);
+
+      // Reload page to re-initialize app state cleanly
+      window.location.reload();
       return { success: true };
     } catch (e) {
       console.error('Error unlinking account:', e);
