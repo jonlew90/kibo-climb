@@ -72,6 +72,9 @@ const getUniqueDistractors = (correctAnswer, sourcePool, count = 3, keyExtractor
   return Array.from(uniqueItems);
 };
 
+// Precomputed pool of all country capitals for optimization
+const ALL_COUNTRY_CAPITALS = COUNTRIES.map(c => c.capital).filter(Boolean);
+
 /**
  * Generate all possible candidate problem templates for a given tier
  */
@@ -659,9 +662,10 @@ export const getTierCandidateTemplates = (tier) => {
     // 1. Tricky Capitals (direct and reverse)
     for (const tricky of TRICKY_CAPITALS) {
       const distractors = [tricky.commonConfusion];
-      const otherCapitals = getUniqueDistractors(tricky.capital, COUNTRIES, 2, c => c.capital);
-      for (const oc of otherCapitals) {
-        if (!distractors.includes(oc) && oc !== tricky.capital) distractors.push(oc);
+      const otherCapitals = getUniqueDistractors(tricky.capital, ALL_COUNTRY_CAPITALS, 2);
+      for (let j = 0; j < otherCapitals.length; j++) {
+        const oc = otherCapitals[j];
+        if (oc !== tricky.commonConfusion && oc !== tricky.capital) distractors.push(oc);
       }
 
       templates.push({
