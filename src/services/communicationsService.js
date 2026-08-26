@@ -179,20 +179,17 @@ class CommunicationsService {
       return { success: false, totalSent: 0, error: 'No profiles available to dispatch weekly digests.' };
     }
 
-    const results = [];
-    let successCount = 0;
-
-    for (const profile of profiles) {
+    const digestPromises = profiles.map(async (profile) => {
       const res = await this.sendWeeklyDigest({ email, profile, subjectsConfig, baseUrl });
-      results.push({
+      return {
         profileId: profile.id,
         profileName: profile.name || profile.username || 'Child',
         ...res
-      });
-      if (res.success) {
-        successCount++;
-      }
-    }
+      };
+    });
+
+    const results = await Promise.all(digestPromises);
+    const successCount = results.filter(res => res.success).length;
 
     return {
       success: successCount > 0,
