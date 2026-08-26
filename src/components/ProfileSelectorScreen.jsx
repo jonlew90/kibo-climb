@@ -522,7 +522,10 @@ export default function ProfileSelectorScreen({
 
       {/* Upsell Modal */}
       {showUpsell && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+        <div 
+          onClick={() => setShowUpsell(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in"
+        >
           <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative border-4 border-amber-200" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setShowUpsell(false)}
@@ -576,7 +579,7 @@ export default function ProfileSelectorScreen({
                 <ChevronRight className="w-4 h-4" />
               </button>
               <p className="text-[10px] text-slate-400 font-bold mt-3">
-                Manage subscriptions in the Kibo Shop via the Parent Zone.
+                Manage subscriptions via the Parent Zone.
               </p>
             </div>
           </div>

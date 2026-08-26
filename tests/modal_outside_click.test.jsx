@@ -7,6 +7,29 @@ import MockCheckoutModal from '../src/components/MockCheckoutModal';
 import DailyStreakIncreasedModal from '../src/components/DailyStreakIncreasedModal';
 import StreakSavedModal from '../src/components/StreakSavedModal';
 import PerfectMonthProgressModal from '../src/components/PerfectMonthProgressModal';
+import ProfileSelectorScreen from '../src/components/ProfileSelectorScreen';
+
+vi.mock('../src/services/storageService', () => {
+  const mockStorage = {
+    getProfiles: vi.fn(() => [{ id: 'p1', name: 'Kid 1', avatar: 'fox', grade: 'Grade 1' }]),
+    getAllProfiles: vi.fn(() => [{ id: 'p1', name: 'Kid 1', avatar: 'fox', grade: 'Grade 1' }]),
+    getActiveProfile: vi.fn(() => ({ id: 'p1', name: 'Kid 1', avatar: 'fox', grade: 'Grade 1' })),
+    hasFamilyPlan: vi.fn(() => false),
+    hasSinglePlan: vi.fn(() => false),
+    isItemEquipped: vi.fn(() => false),
+    getCurrentStreak: vi.fn(() => 0),
+    getProfileStreak: vi.fn(() => 0),
+    getStreakShieldsRemaining: vi.fn(() => 0),
+    getPerfectMonthProgress: vi.fn(() => ({ count: 0 })),
+    getProfileCount: vi.fn(() => 1),
+    needsProfileDowngradeSelection: vi.fn(() => false),
+    getPrimaryProfileId: vi.fn(() => 'p1')
+  };
+  return {
+    default: mockStorage,
+    storageService: mockStorage
+  };
+});
 
 // Mock ConfettiCanvas and audio
 vi.mock('../src/components/ConfettiCanvas', () => ({
@@ -198,6 +221,52 @@ describe('Modal Outside Click Behavior', () => {
         backdrop.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       });
       expect(handleClose).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('ProfileSelectorScreen Family Plan Modal', () => {
+    it('closes the unlock family plan modal when clicking on the backdrop', () => {
+      act(() => {
+        root.render(
+          <ProfileSelectorScreen
+            isOpen={true}
+            onClose={vi.fn()}
+            onSelectProfile={vi.fn()}
+            onOpenParentZone={vi.fn()}
+          />
+        );
+      });
+
+      // Find "Add a climber profile" button that triggers upsell
+      const addProfileBtn = Array.from(container.querySelectorAll('button')).find(
+        (b) => b.textContent.includes('Add a climber profile')
+      );
+      expect(addProfileBtn).toBeDefined();
+
+      // Click to open upsell modal
+      act(() => {
+        addProfileBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+
+      // Find backdrop and modal content for upsell modal
+      const backdrop = container.querySelector('.bg-slate-900\\/60');
+      expect(backdrop).not.toBeNull();
+      expect(backdrop.textContent).toContain('Unlock Family Plan');
+
+      const modalContent = backdrop.querySelector('.rounded-3xl');
+      expect(modalContent).not.toBeNull();
+
+      // Clicking inside does not close
+      act(() => {
+        modalContent.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(container.querySelector('.bg-slate-900\\/60')).not.toBeNull();
+
+      // Clicking backdrop closes modal
+      act(() => {
+        backdrop.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(container.querySelector('.bg-slate-900\\/60')).toBeNull();
     });
   });
 });
