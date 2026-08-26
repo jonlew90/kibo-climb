@@ -17,7 +17,5 @@ jobs:
         with:
           workload_identity_provider: projects/171658556844/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
           service_account: github-action-1311198724@kibo-climb.iam.gserviceaccount.com
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          projectId: kibo-climb
+      - name: Deploy preview channel to Firebase Hosting
+        run: npx -y firebase-tools hosting:channel:deploy pr-${{ github.event.number }} --project kibo-climb --expires 7d
