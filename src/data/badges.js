@@ -645,7 +645,7 @@ export const BADGES_CATALOG = [
   },
   {
     id: 'quest_level_5',
-    title: 'Altitude Pioneer',
+    title: 'High-Altitude Pioneer',
     description: 'Reached Quest Level 5 on the mountain progression trail!',
     category: 'quests',
     icon: '⚡',
@@ -653,7 +653,7 @@ export const BADGES_CATALOG = [
   },
   {
     id: 'quest_level_10',
-    title: 'Kibo Summit Legend',
+    title: 'Apex Summit Climber',
     description: 'Reached the maximum Quest Level 10! The summit is yours.',
     category: 'quests',
     icon: '👑',

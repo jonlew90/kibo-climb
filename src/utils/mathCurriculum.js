@@ -250,7 +250,7 @@ export const CURRICULUM_TIERS = [
       'Mental long division estimation',
       'Elapsed time hours & minutes conversions'
     ],
-    associatedBadge: { id: 'clock_master', name: 'Clock Master', icon: '⏰' },
+    associatedBadge: { id: 'division_dynamo', name: 'Division Dynamo', icon: '➗' },
     trailTrick: {
       title: 'The Halving Ladder',
       description: 'Dividing by 4? Cut the number in half twice! For 84 ÷ 4, half of 84 is 42, and half of 42 is 21!',
