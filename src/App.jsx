@@ -38,6 +38,7 @@ import {
 } from './utils/dateUtils';
 import { authService } from './services/authService';
 import { syncService } from './services/syncService';
+import { userSyncService } from './services/userSyncService';
 import { shopLedgerService } from './services/shopLedgerService';
 import { leaderboardService } from './services/leaderboardService';
 import AccountLinkModal from './components/AccountLinkModal';
