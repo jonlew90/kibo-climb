@@ -161,7 +161,7 @@ export default function KiboBreakOverlay({
           </button>
 
           <span className="text-xs sm:text-sm font-bold text-slate-500 block text-center pt-1">
-            Kibo Math by Kibo Climb • Bite-Sized Daily Ascents (~3 Mins)
+            Kibo Math by Kibo Climb • Bite-Sized Daily Climbs (~3 Mins)
           </span>
         </div>
       </div>

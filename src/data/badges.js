@@ -7,7 +7,8 @@ export const BADGE_CATEGORIES = {
   world: { label: 'Kibo World', icon: '🌍' },
   coding: { label: 'Kibo Coding', icon: '💻' },
   precision: { label: 'Precision & Accuracy', icon: '🎯' },
-  shop: { label: 'Workshop & Purchases', icon: '🎒' }
+  shop: { label: 'Workshop & Purchases', icon: '🎒' },
+  quests: { label: 'Mountain Quests & Ascent', icon: '📜' }
 };
 
 export const BADGES_CATALOG = [
@@ -614,10 +615,70 @@ export const BADGES_CATALOG = [
     category: 'shop',
     icon: '💰',
     reqText: 'Accumulate 1,000 Sparks'
+  },
+  // ==========================================
+  // 8. MOUNTAIN QUESTS & ASCENT BADGES
+  // ==========================================
+  {
+    id: 'quest_first_claim',
+    title: 'Quest Initiate',
+    description: 'Completed and claimed your very first Mountain Quest!',
+    category: 'quests',
+    icon: '📜',
+    reqText: 'Claim your 1st Quest reward'
+  },
+  {
+    id: 'quest_elevation_1000',
+    title: 'Kilimanjaro Trailblazer',
+    description: 'Gained 1,000+ meters of Elevation XP conquering quests!',
+    category: 'quests',
+    icon: '🏔️',
+    reqText: 'Gain 1,000m Quest Elevation XP'
+  },
+  {
+    id: 'quest_elevation_5000',
+    title: 'Summit Trail Master',
+    description: 'Conquered 5,000+ meters of Elevation XP on Mount Kibo!',
+    category: 'quests',
+    icon: '⛰️',
+    reqText: 'Gain 5,000m Quest Elevation XP'
+  },
+  {
+    id: 'quest_level_5',
+    title: 'Altitude Pioneer',
+    description: 'Reached Quest Level 5 on the mountain progression trail!',
+    category: 'quests',
+    icon: '⚡',
+    reqText: 'Reach Quest Level 5'
+  },
+  {
+    id: 'quest_level_10',
+    title: 'Kibo Summit Legend',
+    description: 'Reached the maximum Quest Level 10! The summit is yours.',
+    category: 'quests',
+    icon: '👑',
+    reqText: 'Reach Quest Level 10'
+  },
+  {
+    id: 'quest_claims_10',
+    title: 'Veteran Pathfinder',
+    description: 'Successfully completed and claimed 10 total quests!',
+    category: 'quests',
+    icon: '🧭',
+    reqText: 'Claim 10 total Quests'
+  },
+  {
+    id: 'quest_team_first',
+    title: 'Expedition Partner',
+    description: 'Completed and claimed a collaborative Team Quest!',
+    category: 'quests',
+    icon: '🤝',
+    reqText: 'Complete 1 Team Quest'
   }
 ];
 
 export function getBadgeById(id) {
   return BADGES_CATALOG.find((b) => b.id === id);
 }
+
 

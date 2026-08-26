@@ -61,7 +61,12 @@ export default function QuestsScreen({
     const result = questService.claimReward(profileId, quest.id);
     if (result.success) {
       setQuestState(questService.getQuests(profileId));
-      setCelebrationReward(result.reward);
+      setCelebrationReward({
+        ...result.reward,
+        leveledUp: result.leveledUp,
+        newlyUnlockedBadges: result.newlyUnlockedBadges,
+        earnedXp: result.earnedXp
+      });
       if (onAwardSparks && result.reward.sparks) {
         onAwardSparks(result.reward.sparks);
       }
@@ -202,7 +207,7 @@ export default function QuestsScreen({
                 Mountain Quests
               </h1>
               <p className="text-purple-100 text-xs sm:text-sm mt-1 max-w-md">
-                Complete daily objectives, weekly milestones, and team ascents to earn Sparks, altitude, and shields!
+                Complete daily objectives, weekly milestones, and team ascents to gain Elevation XP, level up your Quest Rank, and earn Sparks & Shields!
               </p>
             </div>
 
@@ -225,6 +230,68 @@ export default function QuestsScreen({
               </div>
             </div>
           </div>
+
+          {/* Quest Rank & Elevation XP Level Bar */}
+          {(() => {
+            const levelInfo = questState?.levelInfo || {
+              level: 1,
+              title: 'Basecamp Explorer',
+              icon: '🏕️',
+              currentXp: 0,
+              xpIntoLevel: 0,
+              xpRequiredForLevel: 150,
+              progressPct: 0,
+              isMaxLevel: false
+            };
+
+            return (
+              <div className="relative z-10 mt-5 pt-4 border-t border-white/15">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl drop-shadow-xs">{levelInfo.icon}</span>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-md bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-wider shadow-2xs">
+                          Quest Lv. {levelInfo.level}
+                        </span>
+                        <span className="font-black text-sm text-white tracking-wide">
+                          {levelInfo.title}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-purple-200 block">
+                        Total Elevation Conquered: <strong className="text-emerald-300 font-black">{levelInfo.currentXp.toLocaleString()}m</strong>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-xs font-black text-white block">
+                      {levelInfo.isMaxLevel ? (
+                        <span className="text-amber-300">MAX RANK REACHED 👑</span>
+                      ) : (
+                        <span>
+                          {levelInfo.xpIntoLevel} / {levelInfo.xpRequiredForLevel}m XP <span className="text-purple-200 font-normal">({levelInfo.progressPct}%)</span>
+                        </span>
+                      )}
+                    </span>
+                    {!levelInfo.isMaxLevel && levelInfo.nextRankTitle && (
+                      <span className="text-[10px] text-purple-200">
+                        Next: <span className="font-bold text-white">{levelInfo.nextRankTitle}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Level Progress Bar */}
+                <div className="w-full h-3 bg-black/30 rounded-full overflow-hidden p-0.5 border border-white/20">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-300 transition-all duration-700 shadow-inner"
+                    style={{ width: `${levelInfo.progressPct}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Tab Navigation */}
@@ -614,16 +681,45 @@ export default function QuestsScreen({
             className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border-2 border-amber-300 text-center animate-scaleIn cursor-default"
           >
             <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner">
-              🎁
+              {celebrationReward.leveledUp ? '🎉' : '🎁'}
             </div>
+            
             <h3 className="text-xl font-black text-slate-900 mb-1">
-              Quest Complete!
+              {celebrationReward.leveledUp ? 'Quest Rank Up!' : 'Quest Complete!'}
             </h3>
-            <p className="text-xs text-slate-600 mb-4">
-              Awesome climbing! Your rewards have been added to your inventory.
-            </p>
 
-            <div className="flex items-center justify-center gap-2 mb-5">
+            {celebrationReward.leveledUp ? (
+              <div className="mb-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl p-3 shadow-md">
+                <span className="text-xs font-black uppercase tracking-wider block opacity-90">
+                  New Quest Rank Achieved
+                </span>
+                <span className="text-lg font-black block mt-0.5">
+                  Lv. {celebrationReward.leveledUp.newLevel} {celebrationReward.leveledUp.rank?.title || ''} {celebrationReward.leveledUp.rank?.icon || ''}
+                </span>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-600 mb-4">
+                Awesome climbing! Your rewards have been added to your inventory.
+              </p>
+            )}
+
+            {/* Unlocked Badges announcement if any */}
+            {celebrationReward.newlyUnlockedBadges?.length > 0 && (
+              <div className="mb-4 bg-purple-50 border border-purple-200 rounded-2xl p-2.5">
+                <span className="text-[11px] font-black text-purple-900 block mb-1">
+                  🎖️ New Badge Unlocked!
+                </span>
+                <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                  {celebrationReward.newlyUnlockedBadges.map(b => (
+                    <span key={b.id} className="text-xs font-bold text-purple-800 bg-white border border-purple-200 px-2 py-0.5 rounded-lg shadow-2xs">
+                      {b.icon} {b.title}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-center gap-2 mb-5 flex-wrap">
               {celebrationReward.sparks && (
                 <div className="px-3 py-1.5 rounded-xl bg-amber-100 text-amber-900 font-black text-sm flex items-center gap-1 border border-amber-300">
                   <Sparkles className="w-4 h-4 text-amber-600 fill-amber-500" />
@@ -633,7 +729,13 @@ export default function QuestsScreen({
               {celebrationReward.altitude && (
                 <div className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 font-black text-sm flex items-center gap-1 border border-emerald-300">
                   <Mountain className="w-4 h-4 text-emerald-600" />
-                  <span>+{celebrationReward.altitude}m</span>
+                  <span>+{celebrationReward.altitude}m XP</span>
+                </div>
+              )}
+              {celebrationReward.shields && (
+                <div className="px-3 py-1.5 rounded-xl bg-indigo-100 text-indigo-900 font-black text-sm flex items-center gap-1 border border-indigo-300">
+                  <Shield className="w-4 h-4 text-indigo-600" />
+                  <span>+{celebrationReward.shields} Shield</span>
                 </div>
               )}
             </div>

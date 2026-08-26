@@ -190,3 +190,69 @@ export const TEAM_3P_QUEST_POOL = [
     defaultPartners: ['buddy_leo', 'buddy_tenzing']
   }
 ];
+
+export const QUEST_RANKS = [
+  { level: 1, title: 'Basecamp Explorer', minXp: 0, icon: '🏕️', reward: null },
+  { level: 2, title: 'Trailhead Scout', minXp: 150, icon: '🥾', reward: { sparks: 50 } },
+  { level: 3, title: 'Ridge Runner', minXp: 350, icon: '🌲', reward: { sparks: 75, shields: 1 } },
+  { level: 4, title: 'Alpine Climber', minXp: 650, icon: '🧗', reward: { sparks: 100 } },
+  { level: 5, title: 'Altitude Pioneer', minXp: 1050, icon: '⚡', reward: { sparks: 150, shields: 1 } },
+  { level: 6, title: 'Glacier Voyager', minXp: 1600, icon: '❄️', reward: { sparks: 175 } },
+  { level: 7, title: 'Highland Navigator', minXp: 2300, icon: '🧭', reward: { sparks: 200, shields: 1 } },
+  { level: 8, title: 'Summit Vanguard', minXp: 3200, icon: '🦅', reward: { sparks: 250 } },
+  { level: 9, title: 'Peak Master', minXp: 4300, icon: '👑', reward: { sparks: 300, shields: 2 } },
+  { level: 10, title: 'Kibo Summit Legend', minXp: 5600, icon: '🏔️', reward: { sparks: 500, shields: 3 } }
+];
+
+export function getQuestLevelInfo(totalXp = 0) {
+  const safeXp = Math.max(0, Number(totalXp) || 0);
+  let currentRankIndex = 0;
+
+  for (let i = QUEST_RANKS.length - 1; i >= 0; i--) {
+    if (safeXp >= QUEST_RANKS[i].minXp) {
+      currentRankIndex = i;
+      break;
+    }
+  }
+
+  const currentRank = QUEST_RANKS[currentRankIndex];
+  const nextRank = QUEST_RANKS[currentRankIndex + 1] || null;
+
+  if (!nextRank) {
+    return {
+      level: currentRank.level,
+      title: currentRank.title,
+      icon: currentRank.icon,
+      currentXp: safeXp,
+      levelStartXp: currentRank.minXp,
+      nextLevelXp: currentRank.minXp,
+      xpIntoLevel: 0,
+      xpRequiredForLevel: 0,
+      progressPct: 100,
+      isMaxLevel: true,
+      reward: currentRank.reward
+    };
+  }
+
+  const levelStartXp = currentRank.minXp;
+  const nextLevelXp = nextRank.minXp;
+  const xpRequiredForLevel = nextLevelXp - levelStartXp;
+  const xpIntoLevel = safeXp - levelStartXp;
+  const progressPct = Math.min(100, Math.max(0, Math.round((xpIntoLevel / xpRequiredForLevel) * 100)));
+
+  return {
+    level: currentRank.level,
+    title: currentRank.title,
+    icon: currentRank.icon,
+    currentXp: safeXp,
+    levelStartXp,
+    nextLevelXp,
+    xpIntoLevel,
+    xpRequiredForLevel,
+    progressPct,
+    isMaxLevel: false,
+    nextRankTitle: nextRank.title,
+    nextRankReward: nextRank.reward
+  };
+}
+

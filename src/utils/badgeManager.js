@@ -23,7 +23,11 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
     subjectId = 'math',
     competenceRank = 1000,
     adaptiveCompetenceRating = 1000,
-    totalProblemsSolved = 0
+    totalProblemsSolved = 0,
+    questElevation = 0,
+    questLevel = 1,
+    questClaimsCount = 0,
+    teamQuestsClaimedCount = 0
   } = userState;
 
   const currentRating = Math.max(
@@ -562,6 +566,31 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         break;
       case 'cumulative_answers_100':
         unlocked = cumulativeCorrectStreak >= 100;
+        break;
+
+      // ==========================================
+      // 9. Mountain Quests & Ascent Badges
+      // ==========================================
+      case 'quest_first_claim':
+        unlocked = questClaimsCount >= 1;
+        break;
+      case 'quest_elevation_1000':
+        unlocked = questElevation >= 1000;
+        break;
+      case 'quest_elevation_5000':
+        unlocked = questElevation >= 5000;
+        break;
+      case 'quest_level_5':
+        unlocked = questLevel >= 5;
+        break;
+      case 'quest_level_10':
+        unlocked = questLevel >= 10;
+        break;
+      case 'quest_claims_10':
+        unlocked = questClaimsCount >= 10;
+        break;
+      case 'quest_team_first':
+        unlocked = teamQuestsClaimedCount >= 1;
         break;
 
       default:

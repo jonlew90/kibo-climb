@@ -457,49 +457,34 @@ export default function FirstLaunchOnboardingModal({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 bg-white/95 border-2 border-amber-200/90 rounded-3xl p-3 sm:p-4 shadow-xl shrink-0 text-left">
             {/* Math Subject Card */}
             <div className="flex flex-col items-start gap-1 sm:gap-2 bg-amber-50/90 border border-amber-200 rounded-2xl p-2 sm:p-2.5 transition-transform hover:scale-[1.02]">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-1">
-                  <span className="text-base sm:text-lg">🔢</span>
-                  <h4 className="text-xs sm:text-sm font-black text-amber-950">Math</h4>
-                </div>
-                <span className="text-[10px] font-black uppercase text-amber-700 bg-amber-100 px-1 py-0.5 rounded">
-                  Active
-                </span>
+              <div className="flex items-center gap-1 w-full">
+                <span className="text-base sm:text-lg">🔢</span>
+                <h4 className="text-xs sm:text-sm font-black text-amber-950">Math</h4>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-tight">
-                Addition, multiplication, decimals & fractions.
+                Arithmetic, fractions, algebra, geometry & more.
               </p>
             </div>
 
             {/* Words Subject Card */}
             <div className="flex flex-col items-start gap-1 sm:gap-2 bg-teal-50/90 border border-teal-200 rounded-2xl p-2 sm:p-2.5 transition-transform hover:scale-[1.02]">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-1">
-                  <span className="text-base sm:text-lg">📚</span>
-                  <h4 className="text-xs sm:text-sm font-black text-teal-950">Words</h4>
-                </div>
-                <span className="text-[10px] font-black uppercase text-teal-700 bg-teal-100 px-1 py-0.5 rounded">
-                  Active
-                </span>
+              <div className="flex items-center gap-1 w-full">
+                <span className="text-base sm:text-lg">📚</span>
+                <h4 className="text-xs sm:text-sm font-black text-teal-950">Words</h4>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-tight">
-                Phonics, sight words, spelling & vocab.
+                Phonics, spelling, vocabulary, reading & more.
               </p>
             </div>
 
             {/* World Subject Card */}
             <div className="flex flex-col items-start gap-1 sm:gap-2 bg-emerald-50/90 border border-emerald-200 rounded-2xl p-2 sm:p-2.5 transition-transform hover:scale-[1.02]">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-1">
-                  <span className="text-base sm:text-lg">🌍</span>
-                  <h4 className="text-xs sm:text-sm font-black text-emerald-950">World</h4>
-                </div>
-                <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-1 py-0.5 rounded">
-                  Active
-                </span>
+              <div className="flex items-center gap-1 w-full">
+                <span className="text-base sm:text-lg">🌍</span>
+                <h4 className="text-xs sm:text-sm font-black text-emerald-950">World</h4>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-tight">
-                Continents, oceans, US states & world capitals.
+                Geography, countries, capitals, history & more.
               </p>
             </div>
 
@@ -559,7 +544,7 @@ export default function FirstLaunchOnboardingModal({
           )}
 
           <span className="text-xs sm:text-sm font-extrabold text-slate-500 block text-center">
-            Kibo Climb • Multi-Subject Daily Ascents (~3 Mins) • Math, Words & World
+            Kibo Climb • Multi-Subject Daily Climbs (~3 Mins) • Math, Words & World
           </span>
         </div>
       </div>

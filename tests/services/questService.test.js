@@ -75,4 +75,41 @@ describe('Quest Service', () => {
     const fresh = questService.getQuests(profileId);
     expect(fresh.team2[0].partner.id).toBe(newPartner.id);
   });
+
+  it('tracks Elevation XP and handles leveling up upon claiming quests', () => {
+    const state = questService.getQuests(profileId);
+    expect(state.totalXp).toBe(0);
+    expect(state.levelInfo.level).toBe(1);
+
+    // Complete and claim a quest that gives 80m altitude/XP
+    const q1 = state.daily[0];
+    q1.completed = true;
+    q1.claimed = false;
+    q1.reward = { sparks: 40, altitude: 80 };
+    questService.saveRawState(profileId, state);
+
+    const claim1 = questService.claimReward(profileId, q1.id);
+    expect(claim1.success).toBe(true);
+    expect(claim1.earnedXp).toBe(80);
+    expect(claim1.totalXp).toBe(80);
+    expect(claim1.levelInfo.level).toBe(1);
+    expect(claim1.leveledUp).toBeNull();
+
+    // Complete another quest with 100m altitude to cross Level 2 threshold (150m minXp)
+    const freshState = questService.getQuests(profileId);
+    const q2 = freshState.daily[1];
+    q2.completed = true;
+    q2.claimed = false;
+    q2.reward = { sparks: 50, altitude: 100 };
+    questService.saveRawState(profileId, freshState);
+
+    const claim2 = questService.claimReward(profileId, q2.id);
+
+    expect(claim2.success).toBe(true);
+    expect(claim2.totalXp).toBe(180);
+    expect(claim2.levelInfo.level).toBe(2);
+    expect(claim2.leveledUp).toBeDefined();
+    expect(claim2.leveledUp.newLevel).toBe(2);
+  });
 });
+

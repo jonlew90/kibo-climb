@@ -4,9 +4,12 @@ import {
   WEEKLY_QUEST_POOL,
   TEAM_2P_QUEST_POOL,
   TEAM_3P_QUEST_POOL,
-  COMPANION_BUDDIES
+  COMPANION_BUDDIES,
+  QUEST_RANKS,
+  getQuestLevelInfo
 } from '../data/questsData.js';
 import { getWeekStr } from '../utils/dateUtils.js';
+import { evaluateBadges } from '../utils/badgeManager.js';
 
 const STORAGE_PREFIX = 'kibo_quests_state_';
 
@@ -139,6 +142,9 @@ class QuestService {
       state = {
         dateKey: today,
         weekKey: currentWeek,
+        totalXp: 0,
+        claimsCount: 0,
+        teamClaimsCount: 0,
         daily: this.generateDailyQuests(today),
         weekly: this.generateWeeklyQuests(currentWeek),
         team2: this.generateTeam2Quests(currentWeek),
@@ -146,6 +152,19 @@ class QuestService {
       };
       needsSave = true;
     } else {
+      if (typeof state.totalXp !== 'number') {
+        state.totalXp = 0;
+        needsSave = true;
+      }
+      if (typeof state.claimsCount !== 'number') {
+        state.claimsCount = 0;
+        needsSave = true;
+      }
+      if (typeof state.teamClaimsCount !== 'number') {
+        state.teamClaimsCount = 0;
+        needsSave = true;
+      }
+
       // Check if daily quests need reset
       if (state.dateKey !== today || !state.daily || state.daily.length === 0) {
         state.dateKey = today;
@@ -177,6 +196,7 @@ class QuestService {
       this.saveRawState(profileId, state);
     }
 
+    state.levelInfo = getQuestLevelInfo(state.totalXp || 0);
     return state;
   }
 
@@ -272,25 +292,70 @@ class QuestService {
   claimReward(profileId, questId) {
     const state = this.getQuests(profileId);
     let targetQuest = null;
+    let isTeam = false;
 
-    const findAndClaim = (list) => {
+    const findAndClaim = (list, teamFlag = false) => {
       const q = list.find(item => item.id === questId);
       if (q && q.completed && !q.claimed) {
         q.claimed = true;
         targetQuest = q;
+        isTeam = teamFlag;
         return true;
       }
       return false;
     };
 
-    findAndClaim(state.daily) ||
-    findAndClaim(state.weekly) ||
-    findAndClaim(state.team2) ||
-    findAndClaim(state.team3);
+    findAndClaim(state.daily, false) ||
+    findAndClaim(state.weekly, false) ||
+    findAndClaim(state.team2, true) ||
+    findAndClaim(state.team3, true);
 
     if (targetQuest) {
+      const previousXp = state.totalXp || 0;
+      const previousLevelInfo = getQuestLevelInfo(previousXp);
+      const earnedXp = targetQuest.reward?.altitude || targetQuest.reward?.xp || 0;
+      
+      state.totalXp = previousXp + earnedXp;
+      state.claimsCount = (state.claimsCount || 0) + 1;
+      if (isTeam) {
+        state.teamClaimsCount = (state.teamClaimsCount || 0) + 1;
+      }
+
+      const newLevelInfo = getQuestLevelInfo(state.totalXp);
+      state.levelInfo = newLevelInfo;
+
+      const leveledUp = newLevelInfo.level > previousLevelInfo.level ? {
+        oldLevel: previousLevelInfo.level,
+        newLevel: newLevelInfo.level,
+        rank: QUEST_RANKS.find(r => r.level === newLevelInfo.level) || newLevelInfo,
+        reward: QUEST_RANKS.find(r => r.level === newLevelInfo.level)?.reward || null
+      } : null;
+
       this.saveRawState(profileId, state);
-      return { success: true, reward: targetQuest.reward, quest: targetQuest };
+
+      // Evaluate quest-related badges
+      let badgeResult = { newlyUnlocked: [] };
+      try {
+        badgeResult = evaluateBadges({
+          questElevation: state.totalXp,
+          questLevel: newLevelInfo.level,
+          questClaimsCount: state.claimsCount,
+          teamQuestsClaimedCount: state.teamClaimsCount
+        });
+      } catch (err) {
+        console.warn('Error evaluating quest badges:', err);
+      }
+
+      return {
+        success: true,
+        reward: targetQuest.reward,
+        quest: targetQuest,
+        earnedXp,
+        totalXp: state.totalXp,
+        levelInfo: newLevelInfo,
+        leveledUp,
+        newlyUnlockedBadges: badgeResult.newlyUnlocked || []
+      };
     }
 
     return { success: false };
