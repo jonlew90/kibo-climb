@@ -1773,7 +1773,7 @@ export default function App() {
       {appState === 'adaptive_session' && (
         <div className="w-full mb-2 sm:mb-3 flex items-center justify-center gap-2 px-1 shrink-0">
           {/* Mobile Subject Dropdown (< sm) */}
-          <div className="relative sm:hidden w-full" ref={subjectDropdownRef}>
+          <div className="relative sm:hidden w-48 max-w-[220px]" ref={subjectDropdownRef}>
             <button
               type="button"
               onClick={() => {
