@@ -4,7 +4,7 @@ export const COMPANION_BUDDIES = [
   { id: 'buddy_asha', name: 'Asha', avatar: '🦁', title: 'Mountain Scout', color: 'from-amber-400 to-orange-500' },
   { id: 'buddy_leo', name: 'Leo', avatar: '🦅', title: 'Ridge Runner', color: 'from-sky-400 to-blue-600' },
   { id: 'buddy_maya', name: 'Maya', avatar: '🐆', title: 'Summit Guide', color: 'from-emerald-400 to-teal-600' },
-  { id: 'buddy_tenzing', name: 'Tenzing', avatar: '🏔️', title: 'Ice Veteran', color: 'from-indigo-400 to-purple-600' },
+  { id: 'buddy_tenzing', name: 'Tenzing', avatar: '🐻', title: 'Ice Veteran', color: 'from-indigo-400 to-purple-600' },
   { id: 'buddy_sora', name: 'Sora', avatar: '🦊', title: 'High-Altitude Trailblazer', color: 'from-rose-400 to-pink-600' }
 ];
 
@@ -100,7 +100,7 @@ export const DAILY_QUEST_POOL = [
   {
     id: 'd_speed_10',
     title: 'Rapid Ascent',
-    description: 'Solve 10 problems with strong rhythm and focus',
+    description: 'Solve 10 problems quickly across any subject',
     icon: 'Zap',
     category: 'daily',
     subject: 'any',
@@ -111,7 +111,7 @@ export const DAILY_QUEST_POOL = [
   {
     id: 'd_dual_subject',
     title: 'Cross-Country Climber',
-    description: 'Complete 12 problems across any subject',
+    description: 'Solve 12 problems across multiple subjects',
     icon: 'Compass',
     category: 'daily',
     subject: 'any',
@@ -227,7 +227,7 @@ export const TEAM_2P_QUEST_POOL = [
   {
     id: 't2_duo_sprint',
     title: 'Duo Summit Sprint',
-    description: 'Solve 40 problems combined with your partner (shared team total)',
+    description: 'Solve 40 problems combined with your partner',
     icon: 'Users',
     category: 'team2',
     teamSize: 2,
@@ -239,7 +239,7 @@ export const TEAM_2P_QUEST_POOL = [
   {
     id: 't2_math_tandem',
     title: 'Tandem Math Expedition',
-    description: 'Solve 30 Math problems together with your partner (shared team total)',
+    description: 'Solve 30 Math problems together with your partner',
     icon: 'Calculator',
     category: 'team2',
     teamSize: 2,
@@ -251,7 +251,7 @@ export const TEAM_2P_QUEST_POOL = [
   {
     id: 't2_world_scouts',
     title: 'Twin Flag Scouts',
-    description: 'Identify 30 World flags or landmarks together with your partner (shared team total)',
+    description: 'Identify 30 World flags or landmarks together with your partner',
     icon: 'Globe',
     category: 'team2',
     teamSize: 2,
@@ -263,7 +263,7 @@ export const TEAM_2P_QUEST_POOL = [
   {
     id: 't2_words_collab',
     title: 'Word Climber Duo',
-    description: 'Solve 30 Words problems collaboratively with your partner (shared team total)',
+    description: 'Solve 30 Words problems collaboratively with your partner',
     icon: 'BookOpen',
     category: 'team2',
     teamSize: 2,
@@ -275,7 +275,7 @@ export const TEAM_2P_QUEST_POOL = [
   {
     id: 't2_coding_duo',
     title: 'Binary Ridge Pair',
-    description: 'Solve 30 Coding logic challenges together with your partner (shared team total)',
+    description: 'Solve 30 Coding logic challenges together with your partner',
     icon: 'Code',
     category: 'team2',
     teamSize: 2,
@@ -290,7 +290,7 @@ export const TEAM_3P_QUEST_POOL = [
   {
     id: 't3_all_round_squad',
     title: 'All-Round Ridge Squad',
-    description: 'Complete 60 problems combined across squad members (shared team total)',
+    description: 'Complete 60 problems combined across squad members',
     icon: 'Compass',
     category: 'team3',
     teamSize: 3,
@@ -302,7 +302,7 @@ export const TEAM_3P_QUEST_POOL = [
   {
     id: 't3_trio_traverse',
     title: 'Triple Peak Expedition',
-    description: 'Solve 75 problems combined across all 3 squad members (shared team total)',
+    description: 'Solve 75 problems combined across all 3 squad members',
     icon: 'Users',
     category: 'team3',
     teamSize: 3,
@@ -314,7 +314,7 @@ export const TEAM_3P_QUEST_POOL = [
   {
     id: 't3_summit_assault',
     title: 'Kibo Summit Assault',
-    description: 'Reach 90 problems combined across all 3 squad members (shared team total)',
+    description: 'Reach 90 problems combined across all 3 squad members',
     icon: 'Mountain',
     category: 'team3',
     teamSize: 3,
@@ -326,7 +326,7 @@ export const TEAM_3P_QUEST_POOL = [
   {
     id: 't3_quad_domain',
     title: 'Grand Quad Expedition',
-    description: 'Conquer 80 problems across subjects as a united trio (shared team total)',
+    description: 'Conquer 80 problems across subjects as a united trio',
     icon: 'Award',
     category: 'team3',
     teamSize: 3,
