@@ -39,6 +39,7 @@ import { authService } from './services/authService';
 import { syncService } from './services/syncService';
 import { shopLedgerService } from './services/shopLedgerService';
 import { leaderboardService } from './services/leaderboardService';
+import { analyticsService } from './services/analyticsService';
 import AccountLinkModal from './components/AccountLinkModal';
 import { getNotificationPrefs, scheduleAllProfileReminders } from './utils/notifications';
 import MockCheckoutModal from './components/MockCheckoutModal';
