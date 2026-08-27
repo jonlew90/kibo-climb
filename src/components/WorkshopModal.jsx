@@ -7,6 +7,7 @@ import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
 import { promoCodeService } from '../services/promoCodeService';
+import { analyticsService } from '../services/analyticsService';
 
 export function sortShopItems(items, userSparks, unlockedItems = [], equippedItems = [], currentDate = new Date()) {
   return [...items].sort((a, b) => {
@@ -84,6 +85,12 @@ export default function WorkshopModal({
 
   const [activeCategory, setActiveCategory] = useState('powerups');
   const [seasonalEventFilter, setSeasonalEventFilter] = useState('all_active');
+
+  useEffect(() => {
+    if (isOpen && activeCategory === 'premium') {
+      analyticsService.logSubscriptionUpsellView('Shop');
+    }
+  }, [isOpen, activeCategory]);
   const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
   const [recentlyPurchasedId, setRecentlyPurchasedId] = useState(null);
 

@@ -6,6 +6,7 @@ import { storageService } from '../services/storageService';
 import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { GRADE_CURRICULUM_DETAILS } from './FirstLaunchOnboardingModal';
+import { analyticsService } from '../services/analyticsService';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 
@@ -348,6 +349,7 @@ export default function ProfileSelectorScreen({
 
   useEffect(() => {
     loadProfiles();
+    analyticsService.logScreenView('ProfileSelector');
   }, []);
 
   const handleSelect = (profile) => {
