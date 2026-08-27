@@ -20,11 +20,14 @@ export default function AddFriendModal({
   const [friendsList, setFriendsList] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [confirmDeleteFriendId, setConfirmDeleteFriendId] = useState(null);
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
   const [actionErrorMsg, setActionErrorMsg] = useState('');
 
   const activeProfile = storageService.getActiveProfile();
   const currentUsername = storageService.getUsername() || activeProfile?.username || 'You';
+  const climberCode = storageService.getFriendCode(activeProfile?.id);
 
   const refreshData = () => {
     setFriendsList(storageService.getFriends());
@@ -39,6 +42,7 @@ export default function AddFriendModal({
       setSearchError('');
       setActionSuccessMsg('');
       setActionErrorMsg('');
+      setConfirmDeleteFriendId(null);
 
       // Fetch any cloud requests in background
       leaderboardService.fetchCloudFriendRequests(activeProfile?.id).then(({ received, acceptedSent }) => {
@@ -226,6 +230,19 @@ export default function AddFriendModal({
     }
   };
 
+  const handleCopyCode = async () => {
+    soundFx.playKeyTap();
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(climberCode);
+      }
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+    } catch (err) {
+      console.warn('Copy code error', err);
+    }
+  };
+
   const receivedRequests = friendRequests.filter(r => r.type === 'received');
   const sentRequests = friendRequests.filter(r => r.type === 'sent');
 
@@ -236,7 +253,7 @@ export default function AddFriendModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative animate-scale-in border-4 border-indigo-200 max-h-[90vh] flex flex-col overflow-hidden cursor-default"
+        className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative animate-scale-in border-4 border-indigo-200 max-h-[90vh] flex flex-col overflow-hidden cursor-default"
       >
         
         {/* Close Button */}
@@ -257,8 +274,27 @@ export default function AddFriendModal({
           </div>
           <h2 className="text-xl font-black text-slate-800">Friends & Classmates</h2>
           <div className="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 bg-emerald-50 border border-emerald-200 rounded-full text-[11px] font-bold text-emerald-700">
-            <ShieldCheck className="w-3.5 h-3.5" /> Child-Safe Mutual Connections (No Chat)
+            <ShieldCheck className="w-3.5 h-3.5" /> COPPA Compliant Safe Connect (No Chat)
           </div>
+        </div>
+
+        {/* Your Unique Climber Code Banner */}
+        <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-700 rounded-2xl p-3 text-white shadow-md flex items-center justify-between gap-3 mb-3 shrink-0">
+          <div>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] uppercase font-black tracking-wider text-purple-200 block">Your Climber Code</span>
+              <span className="text-[9px] bg-emerald-400 text-emerald-950 font-black px-1.5 py-0.2 rounded-full">🔒 COPPA Safe</span>
+            </div>
+            <span className="text-lg font-black tracking-wider font-mono text-amber-300">{climberCode}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleCopyCode}
+            className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-black shrink-0 flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95"
+          >
+            {copiedCode ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
+          </button>
         </div>
 
         {/* Tab Selector */}
@@ -314,8 +350,8 @@ export default function AddFriendModal({
                         setSearchQuery(e.target.value);
                         setSearchError('');
                       }}
-                      placeholder="Enter climber tag (e.g. CosmicOtter42)"
-                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-800 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 transition-all"
+                      placeholder="Code (e.g. KIBO-7842) or Username"
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-800 text-xs sm:text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 transition-all"
                     />
                   </div>
                   <button
@@ -326,6 +362,10 @@ export default function AddFriendModal({
                     {isSearching ? <span className="animate-spin text-xs">🌀</span> : 'Search'}
                   </button>
                 </div>
+                <p className="text-[11px] text-slate-500 font-medium px-1 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>To protect kid privacy, search requires an exact Climber Code or exact username.</span>
+                </p>
                 {searchError && (
                   <p className="text-xs font-bold text-rose-500 px-1">{searchError}</p>
                 )}
@@ -576,14 +616,37 @@ export default function AddFriendModal({
                           <Star className={`w-3.5 h-3.5 ${friend.isDisplayedOnMain ? 'fill-amber-500 text-amber-500' : ''}`} />
                           {friend.isDisplayedOnMain ? 'Starred' : 'Star (Max 2)'}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveFriend(friend.id || friend.username)}
-                          title="Remove Friend"
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {confirmDeleteFriendId === (friend.id || friend.username) ? (
+                          <div className="flex items-center gap-1 bg-rose-50 border border-rose-200 px-2 py-1 rounded-lg animate-in fade-in">
+                            <span className="text-[10px] font-black text-rose-700">Remove?</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleRemoveFriend(friend.id || friend.username);
+                                setConfirmDeleteFriendId(null);
+                              }}
+                              className="px-1.5 py-0.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black rounded transition-all cursor-pointer shadow-2xs"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteFriendId(null)}
+                              className="px-1.5 py-0.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-bold rounded transition-all cursor-pointer"
+                            >
+                              No
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteFriendId(friend.id || friend.username)}
+                            title="Remove Friend"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

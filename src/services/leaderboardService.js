@@ -16,6 +16,7 @@ import {
   onSnapshot, 
   serverTimestamp 
 } from 'firebase/firestore';
+import { storageService } from './storageService.js';
 
 const LEADERBOARD_COLLECTION = 'leaderboard';
 
@@ -344,31 +345,29 @@ class LeaderboardService {
 
     const trimmed = queryStr.trim();
     const normalized = trimmed.toLowerCase();
+    const cleanCode = trimmed.toUpperCase();
     const localMatches = [];
 
     // Check local profiles so profiles under the same account / device are always discoverable
     try {
-      const rawProfilesData = localStorage.getItem('kibo_profiles_data');
-      if (rawProfilesData) {
-        const parsed = JSON.parse(rawProfilesData);
-        const profilesMap = parsed.profiles || {};
-        for (const pId of Object.keys(profilesMap)) {
-          const p = profilesMap[pId];
-          const pName = (p.username || p.name || '').trim();
-          if (pName && pName.toLowerCase().includes(normalized)) {
-            const uData = p.userData || {};
-            const currentSubRating = uData.adaptiveCompetenceRating || 1000;
-            localMatches.push({
-              id: `${this.getCurrentUser()?.uid || 'local'}_${p.id}`,
-              uid: this.getCurrentUser()?.uid || 'local',
-              profileId: p.id,
-              username: p.username || p.name,
-              name: p.name || p.username,
-              score: currentSubRating,
-              equipped: p.shopState?.equippedItems || [],
-              subjectsMastered: 5
-            });
-          }
+      const allProfiles = storageService.getAllProfiles ? storageService.getAllProfiles() : [];
+      for (const p of allProfiles) {
+        const pUser = (p.username || p.name || '').trim().toLowerCase();
+        const pCode = (p.friendCode || '').trim().toUpperCase();
+        if (pCode === cleanCode || pUser === normalized) {
+          const uData = p.userData || {};
+          const currentSubRating = uData.adaptiveCompetenceRating || 1000;
+          localMatches.push({
+            id: `${this.getCurrentUser()?.uid || 'local'}_${p.id}`,
+            uid: this.getCurrentUser()?.uid || 'local',
+            profileId: p.id,
+            friendCode: pCode || storageService.getFriendCode(p.id),
+            username: p.username || p.name,
+            name: p.name || p.username,
+            score: currentSubRating,
+            equipped: p.shopState?.equippedItems || [],
+            subjectsMastered: 5
+          });
         }
       }
     } catch (e) {
@@ -377,17 +376,17 @@ class LeaderboardService {
 
     let remoteResults = [];
 
-    // Attempt Cloud Function
+    // Attempt Cloud Function (exact match)
     let cloudFunctionSucceeded = false;
     try {
       const searchFn = httpsCallable(functions, 'searchUsername');
-      const res = await searchFn({ query: trimmed });
+      const res = await searchFn({ query: trimmed, exact: true });
       if (res?.data?.results) {
         remoteResults = res.data.results;
         cloudFunctionSucceeded = true;
       }
     } catch (error) {
-      // Cloud function failed (CORS / offline) - fall back to direct Firestore query
+      // Cloud function failed (CORS / offline) - fall back to direct Firestore exact query
     }
 
     if (!cloudFunctionSucceeded) {
@@ -401,15 +400,46 @@ class LeaderboardService {
           } catch (authErr) {}
         }
 
-        const q = query(
+        // Helper timeout for offline/test environments
+        const withTimeout = (promise, ms = 1200) =>
+          Promise.race([
+            promise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+          ]);
+
+        // COPPA Safe: Exact match only by friendCode OR exact normalized username
+        let docs = [];
+        
+        // 1. Try exact friendCode lookup
+        const codeQuery = query(
           collection(db, 'usernames'),
-          where('normalized', '>=', normalized),
-          where('normalized', '<=', normalized + '\uf8ff'),
-          limit(10)
+          where('friendCode', '==', cleanCode),
+          limit(1)
         );
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          const fetchPromises = snapshot.docs.map(async (docSnap) => {
+        try {
+          const codeSnapshot = await withTimeout(getDocs(codeQuery));
+          if (codeSnapshot && !codeSnapshot.empty) {
+            docs = codeSnapshot.docs;
+          }
+        } catch (e) {}
+
+        if (docs.length === 0) {
+          // 2. Try exact normalized username lookup
+          const userQuery = query(
+            collection(db, 'usernames'),
+            where('normalized', '==', normalized),
+            limit(1)
+          );
+          try {
+            const userSnapshot = await withTimeout(getDocs(userQuery));
+            if (userSnapshot && !userSnapshot.empty) {
+              docs = userSnapshot.docs;
+            }
+          } catch (e) {}
+        }
+
+        if (docs.length > 0) {
+          const fetchPromises = docs.map(async (docSnap) => {
             const uData = docSnap.data();
             const friendUid = uData.uid;
             const friendProfileId = uData.profileId || 'default_child';
@@ -420,7 +450,7 @@ class LeaderboardService {
             let subjectsMastered = 5;
 
             try {
-              const lbDoc = await getDoc(doc(db, LEADERBOARD_COLLECTION, friendDocId));
+              const lbDoc = await withTimeout(getDoc(doc(db, LEADERBOARD_COLLECTION, friendDocId)), 800);
               if (lbDoc.exists()) {
                 const lbData = lbDoc.data();
                 score = lbData.score || 1000;
@@ -433,6 +463,7 @@ class LeaderboardService {
               id: `${friendUid}_${friendProfileId}`,
               uid: friendUid,
               profileId: friendProfileId,
+              friendCode: uData.friendCode || cleanCode,
               username: uData.username || docSnap.id,
               name: uData.username || docSnap.id,
               score,

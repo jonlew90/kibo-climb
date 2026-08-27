@@ -1189,6 +1189,24 @@ export const storageService = {
     return this.getSimulatedDate() || new Date();
   },
 
+  // ─── COPPA-Compliant Climber Friend Code ──────────────────────────────────
+  getFriendCode(profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const profile = this.getProfileById(pid);
+    if (!profile) return 'KIBO-7842';
+    if (profile.friendCode) return profile.friendCode;
+
+    // Generate unique 4-character code avoiding ambiguous chars
+    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    let randomPart = '';
+    for (let i = 0; i < 4; i++) {
+      randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const newCode = `KIBO-${randomPart}`;
+    this.updateProfile(pid, { friendCode: newCode });
+    return newCode;
+  },
+
   // ─── Friend Management (Max 25 friends per profile) ───────────────────────
   getFriends(profileId = null) {
     const pid = profileId || this.getActiveProfileId();
