@@ -43,3 +43,24 @@ test-results/
 coverage
 
 .firebase/
+# Editor swap & backup files
+*.swp
+*.swo
+*~
+*.orig
+
+# Root test/screenshot captures
+*.png
+!public/**
+!ios/**
+!android/**
+
+# Local scratch & ad-hoc scripts
+scratch/
+fix.js
+test_word_reveals.js
+
+# Environment variables
+.env
+.env.local
+.env.*.local
