@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { analyticsService } from '../services/analyticsService';
 import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame, Terminal, Code2, HelpCircle, Shield, Compass } from 'lucide-react';
 import Mascot from './Mascot';
 import RollingNumberTicker from './RollingNumberTicker';

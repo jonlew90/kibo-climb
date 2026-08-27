@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { analyticsService } from '../services/analyticsService';
 import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame } from 'lucide-react';
 import Mascot from './Mascot';
 
@@ -1063,6 +1064,10 @@ export default function WordsSessionView({
       }
 
       const isBlockComplete = (questionsAnswered + 1) % 12 === 0;
+
+      if (isBlockComplete) {
+        analyticsService.logLevelUp('block_completed', blockCorrectCount + 1);
+      }
 
       // Allow the user to see and review the correct spelling before moving on
       setIncorrectReviewData({
