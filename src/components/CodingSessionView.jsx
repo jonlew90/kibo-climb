@@ -594,20 +594,22 @@ export default function CodingSessionView({
   // Continue climb after break
   const handleContinueClimb = () => {
     setShowBreakOverlay(false);
+    if (onResetDoubleSparks) onResetDoubleSparks();
+    storageService.clearActiveClimbState(profileId, 'coding');
+    setSavedClimbState(null);
+    setQuestionsAnswered(0);
+    setSessionQuestionIndex(1);
+    setCorrectCount(0);
     setBlockCorrectCount(0);
     setBlockSparksEarned(0);
+    setSessionSparksEarned(0);
     setBlockRatingGain(0);
+    setMistakeCount(0);
     setBlockShieldsUsed(0);
-
-    // Generate fresh problems if we finished the queue
-    if (currentProblemIndex >= problemQueue.length - 1) {
-      const freshProblems = generateProblems(15, activeTier);
-      setProblemQueue(freshProblems);
-      setCurrentProblemIndex(0);
-    } else {
-      setCurrentProblemIndex(prev => prev + 1);
-    }
-
+    setSessionAnswers([]);
+    const freshProblems = generateProblems(15, activeTier);
+    setProblemQueue(freshProblems);
+    setCurrentProblemIndex(0);
     setEliminatedOptions([]);
     setRevealedHint(null);
     setIsClueActive(false);
@@ -630,9 +632,23 @@ export default function CodingSessionView({
         isNewStreakRecord={completedBlockStats.isNewStreakRecord}
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
-          setHasStartedClimb(false);
+          if (onResetDoubleSparks) onResetDoubleSparks();
           storageService.clearActiveClimbState(profileId, 'coding');
           setSavedClimbState(null);
+          setQuestionsAnswered(0);
+          setSessionQuestionIndex(1);
+          setCorrectCount(0);
+          setBlockCorrectCount(0);
+          setBlockSparksEarned(0);
+          setSessionSparksEarned(0);
+          setBlockRatingGain(0);
+          setMistakeCount(0);
+          setBlockShieldsUsed(0);
+          setSessionAnswers([]);
+          setHasStartedClimb(false);
+          const freshProblems = generateProblems(15, activeTier);
+          setProblemQueue(freshProblems);
+          setCurrentProblemIndex(0);
           if (onOpenWorkshop) onOpenWorkshop();
         }}
         onResumeClimb={handleContinueClimb}

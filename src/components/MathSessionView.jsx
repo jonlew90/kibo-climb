@@ -541,14 +541,14 @@ export default function MathSessionView({
       setShouldPulseHint(true);
     }, 7000);
 
-    if (isMoneyQuestion && targetStr.startsWith('0.')) {
+    if (targetStr.startsWith('0.')) {
       setInputVal('0.');
     } else {
       setInputVal('');
     }
 
     return () => clearTimeout(hintTimer);
-  }, [currentIndex, currentProblem, isMoneyQuestion, targetStr, hasStartedClimb]);
+  }, [currentIndex, currentProblem, targetStr, hasStartedClimb]);
 
   const bannerTimerRef = useRef(null);
 
@@ -1250,7 +1250,7 @@ export default function MathSessionView({
         }
       }
     } else {
-      if (isMoneyQuestion && targetStr.startsWith('0.')) {
+      if (targetStr.startsWith('0.')) {
         if (!newInput || newInput === '0') {
           newInput = '0.' + val;
         } else if ((newInput === '0.' || newInput === '.') && val !== '.') {
