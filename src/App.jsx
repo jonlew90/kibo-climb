@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { Flame, Settings, Trophy, Crown, Zap, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Flame, Settings, Trophy, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, WifiOff } from 'lucide-react';
 import Mascot from './components/Mascot';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
@@ -27,41 +27,35 @@ import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
 import { pluralize } from './utils/formatters';
 import { storageService } from './services/storageService';
-import { questService } from './services/questService';
 import { getCompetenceRankTier } from './utils/GameEconomyModel';
-import { 
-  getTodayStr, 
-  getYesterdayStr, 
-  calculateStreakFromHistory, 
-  getCurrentTimezone, 
-  isWithinTravelGracePeriod 
+import {
+  getTodayStr,
+  getYesterdayStr,
+  calculateStreakFromHistory,
+  getCurrentTimezone,
+  isWithinTravelGracePeriod
 } from './utils/dateUtils';
 import { authService } from './services/authService';
 import { syncService } from './services/syncService';
-import { userSyncService } from './services/userSyncService';
 import { shopLedgerService } from './services/shopLedgerService';
 import { leaderboardService } from './services/leaderboardService';
 import AccountLinkModal from './components/AccountLinkModal';
 import { getNotificationPrefs, scheduleAllProfileReminders } from './utils/notifications';
 import MockCheckoutModal from './components/MockCheckoutModal';
 import StripeCheckoutModal from './components/StripeCheckoutModal';
-const SettingsScreen = lazy(() => import('./components/SettingsScreen'));
-const PrivacyPolicyScreen = lazy(() => import('./components/PrivacyPolicyScreen'));
+import SettingsScreen from './components/SettingsScreen';
+import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import ShareModal from './components/ShareModal';
 import ReferralRewardModal from './components/ReferralRewardModal';
-import NewsModal from './components/NewsModal';
-import { getNewsItems } from './utils/newsManager';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from './config/firebase';
-const TermsOfServiceScreen = lazy(() => import('./components/TermsOfServiceScreen'));
+import TermsOfServiceScreen from './components/TermsOfServiceScreen';
 import LeaderboardIcon from './components/LeaderboardIcon';
-const LeaderboardScreen = lazy(() => import('./components/LeaderboardScreen'));
-const QuestsScreen = lazy(() => import('./components/QuestsScreen'));
+import LeaderboardScreen from './components/LeaderboardScreen';
 import FeedbackModal from './components/FeedbackModal';
 import AddFriendModal from './components/AddFriendModal';
 import SubjectWallpaper from './components/SubjectWallpaper';
 import { setHapticsEnabled } from './utils/audio';
-import { analyticsService } from './services/analyticsService';
 
 export default function App() {
   // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms' | 'leaderboard'
@@ -78,7 +72,6 @@ export default function App() {
     if (path === '/terms' || path === '/terms/') return 'terms';
     if (path === '/settings' || path === '/settings/') return 'settings';
     if (path === '/leaderboard' || path === '/leaderboard/') return 'leaderboard';
-    if (path === '/quests' || path === '/quests/') return 'quests';
     return 'adaptive_session';
   });
 
@@ -93,8 +86,6 @@ export default function App() {
         setAppState('settings');
       } else if (path === '/leaderboard' || path === '/leaderboard/') {
         setAppState('leaderboard');
-      } else if (path === '/quests' || path === '/quests/') {
-        setAppState('quests');
       } else {
         setAppState('adaptive_session');
       }
@@ -107,16 +98,6 @@ export default function App() {
     window.history.pushState({}, '', path);
     setAppState(stateName);
     window.scrollTo(0, 0);
-
-    // Log screen view to Analytics
-    let screenName = 'Home';
-    if (stateName === 'settings') screenName = 'Settings';
-    else if (stateName === 'privacy') screenName = 'PrivacyPolicy';
-    else if (stateName === 'terms') screenName = 'TermsOfService';
-    else if (stateName === 'leaderboard') screenName = 'Leaderboard';
-    else if (stateName === 'quests') screenName = 'Quests';
-
-    analyticsService.logScreenView(screenName);
   };
 
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
@@ -126,7 +107,6 @@ export default function App() {
     soundFx.playKeyTap();
     setWorkshopOriginState(overrideOrigin || appState);
     setIsWorkshopOpen(true);
-    analyticsService.logScreenView('Shop');
   };
 
   const handleCloseWorkshop = () => {
@@ -153,10 +133,6 @@ export default function App() {
   const subjectDropdownRef = useRef(null);
 
   useEffect(() => {
-    analyticsService.logCustomEvent('app_open');
-  }, []);
-
-  useEffect(() => {
     function handleClickOutside(event) {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
@@ -169,23 +145,9 @@ export default function App() {
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
-
-  useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
     };
   }, []);
   const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
@@ -197,7 +159,7 @@ export default function App() {
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsCount, setFriendsCount] = useState(() => storageService.getFriends(activeProfileId).length);
-  const [pendingFriendRequestsCount, setPendingFriendRequestsCount] = useState(() => 
+  const [pendingFriendRequestsCount, setPendingFriendRequestsCount] = useState(() =>
     storageService.getFriendRequests(activeProfileId).filter(r => r.type === 'received').length
   );
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
@@ -218,9 +180,6 @@ export default function App() {
   }, [activeSubject]);
 
   // First-Time User Onboarding Modal State
-  const [showNewsModal, setShowNewsModal] = useState(false);
-  const [newsItems, setNewsItems] = useState([]);
-
   const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
     return !localStorage.getItem('kibo_math_has_onboarded') && !localStorage.getItem('kibo_math_tier');
   });
@@ -408,8 +367,8 @@ export default function App() {
     if (lastDateStr === todayStr) {
       if (currentStreak !== streak) {
         setStreak(currentStreak);
-        storageService.saveUserData({ 
-          streak: currentStreak, 
+        storageService.saveUserData({
+          streak: currentStreak,
           lastSprintDate: todayStr,
           lastSprintTimestamp: new Date().toISOString(),
           lastSprintTimezone: getCurrentTimezone()
@@ -430,21 +389,18 @@ export default function App() {
       const savedDays = storageService.getProfilePracticeDays() || [1, 2, 3, 4, 5];
       const [y, m, d] = lastDateStr.split('-').map(Number);
       const curr = new Date(y, m - 1, d);
+      curr.setDate(curr.getDate() + 1);
+
       let missedActiveDays = 0;
+      while (true) {
+        const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
+        if (dateStr >= todayStr) break;
 
-      if (!isNaN(curr.getTime())) {
-        curr.setDate(curr.getDate() + 1);
-        let safetyLimit = 3650;
-        while (safetyLimit-- > 0) {
-          const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
-          if (dateStr >= todayStr) break;
-
-          const dayIdx = curr.getDay();
-          if (savedDays.includes(dayIdx)) {
-            missedActiveDays++;
-          }
-          curr.setDate(curr.getDate() + 1);
+        const dayIdx = curr.getDay();
+        if (savedDays.includes(dayIdx)) {
+          missedActiveDays++;
         }
+        curr.setDate(curr.getDate() + 1);
       }
 
       if (missedActiveDays === 0) {
@@ -488,8 +444,8 @@ export default function App() {
     }
 
     setStreak(nextStreak);
-    storageService.saveUserData({ 
-      streak: nextStreak, 
+    storageService.saveUserData({
+      streak: nextStreak,
       lastSprintDate: todayStr,
       lastSprintTimestamp: new Date().toISOString(),
       lastSprintTimezone: getCurrentTimezone()
@@ -513,6 +469,14 @@ export default function App() {
     const currentRating = uData.adaptiveCompetenceRating || uData.competenceRank || 1000;
     
     let extraSparks = 0;
+    analyticsService.logQuestionAnswered(activeSubject, isCorrect, currentRating, 'unknown');
+    analyticsService.logQuestionAnswered(activeSubject, isCorrect, currentRating, 'unknown');
+
+    analyticsService.logQuestionAnswered(activeSubject, isCorrect, uData.competenceRank || 1000, 'unknown');
+
+
+    analyticsService.logQuestionAnswered(activeSubject, isCorrect, uData.competenceRank || 1000, 'unknown');
+
     let newBaseline = uData.baselineRating;
     let newlyCalibrated = uData.isCalibrated || false;
 
@@ -523,12 +487,6 @@ export default function App() {
       setSparks((prev) => prev + extraSparks);
       soundFx.playVictory();
     }
-
-    questService.recordProgress(activeProfileId, {
-      subject: activeSubject,
-      isCorrect,
-      streak: nextStreak
-    });
 
     storageService.saveUserData({
       totalProblemsSolved: nextTotal,
@@ -647,7 +605,6 @@ export default function App() {
 
   const handleSubjectChange = (newSubject) => {
     soundFx.playKeyTap();
-    analyticsService.logSubjectChange(newSubject);
     storageService.setLastActiveSubject(newSubject);
     setActiveSubject(newSubject);
     setAppState('adaptive_session');
@@ -871,13 +828,14 @@ export default function App() {
       setConsumables(nextConsumables);
       storageService.saveUserData({ consumables: nextConsumables });
       setIsDoubleSparksActive(true);
+      analyticsService.logSpendVirtualCurrency('double_sparks_potion', 0);
+      analyticsService.logSpendVirtualCurrency('double_sparks_potion', 0);
     }
   };
 
-  // Schedule-Aware & Timezone-Resilient Streak Validation per Profile
-  const validateStreakForActiveProfile = (subjectOverride) => {
-    const sub = subjectOverride || activeSubject;
-    const uData = storageService.getUserData(sub);
+  // Schedule-Aware & Timezone-Resilient Streak Validation on App Startup
+  useEffect(() => {
+    const uData = storageService.getUserData(activeSubject);
     const lastDateStr = uData.lastSprintDate;
     const lastTimestamp = uData.lastSprintTimestamp;
     const savedDays = storageService.getProfilePracticeDays() || [1, 2, 3, 4, 5];
@@ -888,7 +846,7 @@ export default function App() {
 
     if (savedStreak > storedStreak) {
       setStreak(savedStreak);
-      storageService.saveUserData({ streak: savedStreak }, sub);
+      storageService.saveUserData({ streak: savedStreak }, activeSubject);
     }
 
     if (!lastDateStr || savedStreak === 0) return;
@@ -904,30 +862,26 @@ export default function App() {
 
     const [y, m, d] = lastDateStr.split('-').map(Number);
     const curr = new Date(y, m - 1, d);
+    curr.setDate(curr.getDate() + 1);
+
     let missedActiveDays = 0;
+    while (true) {
+      const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
+      if (dateStr >= todayStr) break;
 
-    if (!isNaN(curr.getTime())) {
-      curr.setDate(curr.getDate() + 1);
-      let safetyLimit = 3650;
-      while (safetyLimit-- > 0) {
-        const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
-        if (dateStr >= todayStr) break;
-
-        const dayIdx = curr.getDay();
-        if (savedDays.includes(dayIdx)) {
-          missedActiveDays++;
-        }
-        curr.setDate(curr.getDate() + 1);
+      const dayIdx = curr.getDay();
+      if (savedDays.includes(dayIdx)) {
+        missedActiveDays++;
       }
+      curr.setDate(curr.getDate() + 1);
     }
 
     if (missedActiveDays >= 1) {
-      const activeConsumables = storageService.getConsumables();
-      const currentStreakSaverCount = activeConsumables.streakSaverCount || 0;
+      const currentStreakSaverCount = consumables.streakSaverCount || 0;
       if (currentStreakSaverCount > 0 || savedShields > 0) {
         if (currentStreakSaverCount > 0) {
           const nextStreakSavers = Math.max(0, currentStreakSaverCount - 1);
-          const nextConsumables = { ...activeConsumables, streakSaverCount: nextStreakSavers };
+          const nextConsumables = { ...consumables, streakSaverCount: nextStreakSavers };
           setConsumables(nextConsumables);
           storageService.saveUserData({ consumables: nextConsumables });
         } else {
@@ -940,15 +894,8 @@ export default function App() {
       } else {
         setStreak(0);
         localStorage.setItem('kibo_math_streak', '0');
-        storageService.saveUserData({ streak: 0 }, sub);
+        storageService.saveUserData({ streak: 0 }, activeSubject);
       }
-    }
-  };
-
-  useEffect(() => {
-    // Only run on startup if profile selector is NOT shown (e.g. single profile / direct mode)
-    if (!showProfileSelector) {
-      validateStreakForActiveProfile(activeSubject);
     }
   }, []);
 
@@ -1240,36 +1187,12 @@ export default function App() {
   const activeProfile = storageService.getActiveProfile();
   const allProfiles = storageService.getAllProfiles();
 
-  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal || showNewsModal;
+  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
 
-
-
-  // Check for News (Scoped per active profile)
-  useEffect(() => {
-    // Only check if we are on the main game screen and not in onboarding
-    if (showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || appState !== 'adaptive_session') return;
-
-    const currentPid = activeProfileId || storageService.getActiveProfileId();
-    if (!currentPid) return;
-
-    const activeNews = getNewsItems(new Date());
-    if (activeNews && activeNews.length > 0) {
-      const seenNewsIds = storageService.getSeenNews(currentPid);
-      const unseenNews = activeNews.filter(item => !seenNewsIds.includes(item.id));
-
-      if (unseenNews.length > 0) {
-        setNewsItems(unseenNews);
-        storageService.markNewsAsSeen(unseenNews.map(n => n.id), currentPid);
-        setShowNewsModal(true);
-      }
-    }
-  }, [appState, activeProfileId, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher]);
 
   const closeAllNavModals = (except = null) => {
-
     if (except !== 'workshop') setIsWorkshopOpen(false);
     if (except !== 'badges') setShowBadgesModal(false);
-    setShowNewsModal(false);
     if (except !== 'profile') setShowManualProfileSwitcher(false);
     if (except !== 'profileDropdown') setShowProfileDropdown(false);
     if (except !== 'parents') {
@@ -1316,7 +1239,7 @@ export default function App() {
           <span className="text-xs font-black tracking-wide truncate">Shop</span>
         </button>
 
-        {/* 2. Records Button: Golden Yellow */}
+        {/* 2. Badges Button: Golden Yellow */}
         <button
           type="button"
           onClick={() => {
@@ -1327,10 +1250,10 @@ export default function App() {
           className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
             showBadgesModal ? 'ring-2 ring-yellow-500 scale-105 font-bold' : ''
           }`}
-          title="View Records"
+          title="View Badges"
         >
-          <Trophy className="w-5 h-5 text-yellow-600 stroke-[2.5]" />
-          <span className="text-xs font-black tracking-wide truncate">Records</span>
+          <Award className="w-5 h-5 text-yellow-600 stroke-[2.5]" />
+          <span className="text-xs font-black tracking-wide truncate">Badges</span>
         </button>
 
         {/* 3. Leaderboard Button: Sapphire Blue */}
@@ -1348,7 +1271,7 @@ export default function App() {
           title="Leaderboard"
         >
           <div className="relative">
-            <Crown className={`w-5 h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
+            <Trophy className={`w-5 h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
             {pendingFriendRequestsCount > 0 && (
               <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
                 {pendingFriendRequestsCount}
@@ -1358,29 +1281,22 @@ export default function App() {
           <span className="text-xs font-black tracking-wide truncate">Rank</span>
         </button>
 
-        {/* 4. Quests Button: Royal Purple / Violet (Direct 1-Tap) */}
+        {/* 4. Settings Button: Slate Gray (Direct 1-Tap) */}
         <button
           type="button"
           onClick={() => {
             soundFx.playKeyTap();
             closeAllNavModals();
-            handleNavigateTo('/quests', 'quests');
+            setAppState('settings');
           }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] relative ${
-            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'quests' ? 'ring-2 ring-purple-500 scale-105 font-bold' : ''
+          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
+            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && (appState === 'settings' || appState === 'privacy' || appState === 'terms') ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
           }`}
-          aria-label="Mountain Quests"
-          title="Mountain Quests"
+          aria-label="Settings"
+          title="Settings"
         >
-          <div className="relative">
-            <Scroll className={`w-5 h-5 text-purple-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'quests' ? 'fill-purple-300' : ''}`} />
-            {questService.getUnclaimedCount(activeProfileId) > 0 && (
-              <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-amber-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-bounce leading-none">
-                {questService.getUnclaimedCount(activeProfileId)}
-              </span>
-            )}
-          </div>
-          <span className="text-xs font-black tracking-wide truncate">Quests</span>
+          <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+          <span className="text-xs font-black tracking-wide truncate">Settings</span>
         </button>
       </div>
     </footer>
@@ -1391,9 +1307,9 @@ export default function App() {
       {/* Subject Background Wallpaper */}
       <SubjectWallpaper activeSubject={activeSubject} />
       {isOffline && (
-        <div className="fixed top-0 inset-x-0 z-[2000] bg-amber-400 text-amber-950 border-b border-amber-500/40 px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-bold shadow-md select-none pointer-events-none">
+        <div className="bg-amber-100 text-amber-900 border-b border-amber-200 px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-bold z-50">
           <WifiOff className="w-3.5 h-3.5 shrink-0" />
-          <span>You are offline. Progress will sync when reconnected.</span>
+          You are offline. Progress will sync when reconnected.
         </div>
       )}
       {/* Sticky Top HUD Header Bar */}
@@ -1451,9 +1367,6 @@ export default function App() {
                   {allProfiles
                     .filter((p) => p.id !== activeProfileId)
                     .map((profile) => {
-                      const hasFamPlan = storageService.hasFamilyPlan();
-                      const actualPrimaryId = storageService.getPrimaryProfileId() || allProfiles[0]?.id;
-                      const isLocked = !hasFamPlan && profile.id !== actualPrimaryId;
                       const pRating = profile.userData?.subjects?.[activeSubject]?.competenceRank ||
                         profile.userData?.competenceRank ||
                         1000;
@@ -1464,49 +1377,28 @@ export default function App() {
                           type="button"
                           onClick={() => {
                             soundFx.playKeyTap();
-                            setShowProfileDropdown(false);
-                            if (isLocked) {
-                              setProfileSwitcherOrigin({ appState });
-                              setShowManualProfileSwitcher(true);
-                              return;
-                            }
                             storageService.setActiveProfileId(profile.id);
                             const targetSubject = profile?.lastActiveSubject || storageService.getLastActiveSubject(profile.id) || 'math';
                             storageService.setLastActiveSubject(targetSubject, profile.id);
                             setActiveProfileId(profile.id);
                             setActiveSubject(targetSubject);
                             syncAppStateWithStorage(targetSubject);
+                            setShowProfileDropdown(false);
                             setAppState('adaptive_session');
-                            validateStreakForActiveProfile(targetSubject);
                           }}
-                          className={`flex items-center justify-between px-2.5 py-2 rounded-xl transition-colors text-left cursor-pointer group w-full ${
-                            isLocked ? 'opacity-60 hover:bg-slate-100/60' : 'hover:bg-slate-100 active:bg-slate-200'
-                          }`}
+                          className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-slate-100 active:bg-slate-200 transition-colors text-left cursor-pointer group w-full"
                         >
                           <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
-                            <div className="relative">
-                              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-white flex items-center justify-center text-xs font-black shrink-0 border border-white/60 shadow-2xs group-hover:scale-105 transition-transform">
-                                {pName[0].toUpperCase()}
-                              </div>
-                              {isLocked && (
-                                <div className="absolute -bottom-1 -right-1 bg-slate-700 rounded-full p-0.5 border border-white">
-                                  <Lock className="w-2 h-2 text-white" />
-                                </div>
-                              )}
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-white flex items-center justify-center text-xs font-black shrink-0 border border-white/60 shadow-2xs group-hover:scale-105 transition-transform">
+                              {pName[0].toUpperCase()}
                             </div>
                             <div className="flex flex-col min-w-0 flex-1">
                               <span className="text-xs font-black text-slate-700 truncate group-hover:text-slate-900" title={pName}>
                                 {pName}
                               </span>
                               <span className="text-[10px] text-slate-500 font-bold flex items-center gap-0.5 shrink-0">
-                                {isLocked ? (
-                                  <span className="text-amber-600 font-bold">Family Plan Required</span>
-                                ) : (
-                                  <>
-                                    <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500 inline shrink-0" />
-                                    {pRating} pts
-                                  </>
-                                )}
+                                <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500 inline shrink-0" />
+                                {pRating} pts
                               </span>
                             </div>
                           </div>
@@ -1663,29 +1555,6 @@ export default function App() {
                     </div>
                     <span className="font-black">{liveCompetenceRating} pts</span>
                   </button>
-
-                  {/* Quest Rank & Level Item */}
-                  {(() => {
-                    const questState = questService.getQuests(activeProfileId);
-                    const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer' };
-                    return (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          soundFx.playKeyTap();
-                          setShowStatsDropdown(false);
-                          setAppState('quests');
-                        }}
-                        className="flex items-center justify-between px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Compass className="w-4 h-4 text-indigo-600 shrink-0" />
-                          <span>Quest ({questLevelInfo.title})</span>
-                        </div>
-                        <span className="font-black">Lvl {questLevelInfo.level} · {questState?.totalXp || 0} XP</span>
-                      </button>
-                    );
-                  })()}
                 </div>
               )}
             </div>
@@ -1773,7 +1642,7 @@ export default function App() {
                 </span>
               )}
               {pendingFriendRequestsCount > 0 && (
-                <span 
+                <span
                   className="absolute -top-1.5 -right-1.5 min-w-[1.125rem] h-4.5 px-1 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-md flex items-center justify-center animate-bounce leading-none"
                   title={`${pendingFriendRequestsCount} new friend request${pendingFriendRequestsCount > 1 ? 's' : ''}!`}
                 >
@@ -1790,7 +1659,7 @@ export default function App() {
       {appState === 'adaptive_session' && (
         <div className="w-full mb-2 sm:mb-3 flex items-center justify-center gap-2 px-1 shrink-0">
           {/* Mobile Subject Dropdown (< sm) */}
-          <div className="relative sm:hidden w-48 max-w-[220px]" ref={subjectDropdownRef}>
+          <div className="relative sm:hidden w-full" ref={subjectDropdownRef}>
             <button
               type="button"
               onClick={() => {
@@ -2022,7 +1891,6 @@ export default function App() {
 
       {/* SETTINGS SCREEN */}
       {appState === 'settings' && (
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <SettingsScreen
           preferences={preferences}
           onUpdatePreferences={handleUpdatePreferences}
@@ -2041,32 +1909,26 @@ export default function App() {
             setShowManualProfileSwitcher(true);
           }}
         />
-        </Suspense>
       )}
 
       {/* PRIVACY POLICY SCREEN */}
       {appState === 'privacy' && (
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <PrivacyPolicyScreen
           onBack={() => handleNavigateTo('/settings', 'settings')}
           renderFooter={renderNavigationFooter}
         />
-        </Suspense>
       )}
 
       {/* TERMS OF SERVICE SCREEN */}
       {appState === 'terms' && (
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <TermsOfServiceScreen
           onBack={() => handleNavigateTo('/settings', 'settings')}
           renderFooter={renderNavigationFooter}
         />
-        </Suspense>
       )}
 
       {/* LEADERBOARD SCREEN */}
       {appState === 'leaderboard' && (
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <LeaderboardScreen
           activeSubject={activeSubject}
           userState={{
@@ -2080,56 +1942,10 @@ export default function App() {
           renderFooter={renderNavigationFooter}
           equippedItems={equippedItems}
         />
-        </Suspense>
-      )}
-
-      {/* QUESTS SCREEN */}
-      {appState === 'quests' && (
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
-        <QuestsScreen
-          activeSubject={activeSubject}
-          userState={{
-            competenceRank: liveCompetenceRating,
-            adaptiveCompetenceRating: liveCompetenceRating,
-            tier: tier,
-            totalProblemsSolved: totalProblemsSolved,
-            streak: streak,
-            cumulativeCorrectStreak: cumulativeCorrectStreak
-          }}
-          onNavigate={handleNavigateTo}
-          onBack={() => handleNavigateTo('/', 'adaptive_session')}
-          renderFooter={renderNavigationFooter}
-          onAwardReward={(reward = {}) => {
-            if (reward.sparks) {
-              const clubMultiplier = isKiboClub ? 1.25 : 1;
-              const finalEarned = Math.round(reward.sparks * clubMultiplier);
-              const updated = (sparks || 0) + finalEarned;
-              setSparks(updated);
-              storageService.saveUserData({ sparks: updated }, activeSubject);
-            }
-            if (reward.shields) {
-              const nextConsumables = {
-                ...consumables,
-                shieldCount: (consumables.shieldCount || 0) + reward.shields
-              };
-              setConsumables(nextConsumables);
-              storageService.saveUserData({ consumables: nextConsumables }, activeSubject);
-            }
-          }}
-          onAwardSparks={(earned) => {
-            const clubMultiplier = isKiboClub ? 1.25 : 1;
-            const finalEarned = Math.round(earned * clubMultiplier);
-            const updated = (sparks || 0) + finalEarned;
-            setSparks(updated);
-            storageService.saveUserData({ sparks: updated }, activeSubject);
-          }}
-        />
-        </Suspense>
       )}
 
       {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
       {appState === 'adaptive_session' && activeSubject === 'math' && (
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <MathSessionView
           key={activeProfileId + '-math'}
           profileId={activeProfileId}
@@ -2151,7 +1967,11 @@ export default function App() {
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onRecordDailyPractice={recordDailyPractice}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
-          onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
+          onUnlockedBadgesChange={(newList) => {
+            const newBadges = newList.filter(b => !unlockedBadges.find(ub => ub.id === b.id));
+            newBadges.forEach(b => analyticsService.logBadgeUnlocked(b.id, activeSubject));
+            setUnlockedBadges(newList);
+          }}
           onUpdateCompetenceRating={(newRating) => {
             setLiveCompetenceRating(newRating);
             checkAndPromptLinkAccount(
@@ -2166,14 +1986,13 @@ export default function App() {
             const updated = sparks + finalEarned;
             setSparks(updated);
             localStorage.setItem('kibo_math_sparks', updated.toString());
+            analyticsService.logEarnVirtualCurrency(finalEarned, 'session_reward');
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
         />
-        </Suspense>
       )}
 
       {appState === 'adaptive_session' && activeSubject === 'words' && (
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <WordsSessionView
           key={activeProfileId + '-words'}
           profileId={activeProfileId}
@@ -2195,7 +2014,11 @@ export default function App() {
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onRecordDailyPractice={recordDailyPractice}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
-          onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
+          onUnlockedBadgesChange={(newList) => {
+            const newBadges = newList.filter(b => !unlockedBadges.find(ub => ub.id === b.id));
+            newBadges.forEach(b => analyticsService.logBadgeUnlocked(b.id, activeSubject));
+            setUnlockedBadges(newList);
+          }}
           onUpdateCompetenceRating={(newRating) => {
             setLiveCompetenceRating(newRating);
             checkAndPromptLinkAccount(
@@ -2210,14 +2033,13 @@ export default function App() {
             const updated = sparks + finalEarned;
             setSparks(updated);
             localStorage.setItem('kibo_math_sparks', updated.toString());
+            analyticsService.logEarnVirtualCurrency(finalEarned, 'session_reward');
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
         />
-        </Suspense>
       )}
 
       {appState === 'adaptive_session' && activeSubject === 'world' && (
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <WorldSessionView
           key={activeProfileId + '-world'}
           profileId={activeProfileId}
@@ -2239,7 +2061,11 @@ export default function App() {
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onRecordDailyPractice={recordDailyPractice}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
-          onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
+          onUnlockedBadgesChange={(newList) => {
+            const newBadges = newList.filter(b => !unlockedBadges.find(ub => ub.id === b.id));
+            newBadges.forEach(b => analyticsService.logBadgeUnlocked(b.id, activeSubject));
+            setUnlockedBadges(newList);
+          }}
           onUpdateCompetenceRating={(newRating) => {
             setLiveCompetenceRating(newRating);
             checkAndPromptLinkAccount(
@@ -2254,14 +2080,13 @@ export default function App() {
             const updated = sparks + finalEarned;
             setSparks(updated);
             localStorage.setItem('kibo_math_sparks', updated.toString());
+            analyticsService.logEarnVirtualCurrency(finalEarned, 'session_reward');
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
         />
-        </Suspense>
       )}
 
       {appState === 'adaptive_session' && activeSubject === 'coding' && (
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <CodingSessionView
           key={activeProfileId + '-coding'}
           profileId={activeProfileId}
@@ -2282,7 +2107,11 @@ export default function App() {
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onRecordDailyPractice={recordDailyPractice}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
-          onUnlockedBadgesChange={(newList) => setUnlockedBadges(newList)}
+          onUnlockedBadgesChange={(newList) => {
+            const newBadges = newList.filter(b => !unlockedBadges.find(ub => ub.id === b.id));
+            newBadges.forEach(b => analyticsService.logBadgeUnlocked(b.id, activeSubject));
+            setUnlockedBadges(newList);
+          }}
           onUpdateCompetenceRating={(newRating) => {
             setLiveCompetenceRating(newRating);
             checkAndPromptLinkAccount(
@@ -2297,10 +2126,10 @@ export default function App() {
             const updated = sparks + finalEarned;
             setSparks(updated);
             localStorage.setItem('kibo_math_sparks', updated.toString());
+            analyticsService.logEarnVirtualCurrency(finalEarned, 'session_reward');
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
         />
-        </Suspense>
       )}
 
       {/* PROFILE SELECTOR — shown on every load when 2+ profiles exist */}
@@ -2313,7 +2142,6 @@ export default function App() {
             syncAppStateWithStorage(targetSubject);
             setShowProfileSelector(false);
             setAppState('adaptive_session');
-            validateStreakForActiveProfile(targetSubject);
           }}
           onOpenParentZone={(targetTab = 'overview') => {
             setParentDashboardTab(targetTab);
@@ -2336,7 +2164,6 @@ export default function App() {
             syncAppStateWithStorage(targetSubject);
             setShowManualProfileSwitcher(false);
             setAppState('adaptive_session');
-            validateStreakForActiveProfile(targetSubject);
           }}
           onClose={() => {
             setShowManualProfileSwitcher(false);
@@ -2389,7 +2216,6 @@ export default function App() {
           setAppState('adaptive_session');
         }}
       />
-      </main>
 
       {/* STREAK SAVED MODAL */}
       <StreakSavedModal
@@ -2464,7 +2290,6 @@ export default function App() {
             }
           } else {
             setShowParentDashboard(true);
-            analyticsService.logScreenView('ParentDashboard');
             if (!hasVisitedParentZone) {
               setHasVisitedParentZone(true);
               storageService.saveUserData({ hasVisitedParentZone: true });
@@ -2551,35 +2376,37 @@ export default function App() {
               <X className="w-5 h-5 stroke-[2.5]" />
             </button>
 
-            <div className="flex items-center gap-2 text-amber-950 font-black text-lg border-b border-slate-100 pb-2">
-              <Zap className="w-6 h-6 text-amber-500 fill-amber-400" />
-              <span>Speed Factor (⚡)</span>
+            <div className="flex items-center gap-2">
+              <Info className="w-6 h-6 text-kibo-teal stroke-[2.5]" />
+              <h3 className="text-xl font-extrabold text-slate-800">How Recall Latency Works</h3>
             </div>
 
-            <p className="text-xs text-slate-600 font-medium leading-relaxed">
-              Speed Factor measures your climber's mastery & answering fluency compared to the target benchmark for their current grade/tier:
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              Kibo Math measures millisecond latency from the instant a problem appears until the user completes their answer.
             </p>
 
-            <div className="space-y-1.5 pt-1">
-              <div className="p-2.5 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between text-xs">
-                <span className="font-extrabold text-amber-950">⚡ Lightning Fast</span>
-                <span className="font-black text-amber-600">&lt; 2.5s / prob</span>
+            <div className="space-y-2 text-xs font-semibold">
+              <div className="p-2 bg-amber-50 border border-amber-200 rounded-xl">
+                <span className="font-extrabold text-amber-900">⚡ Instant Recall (&lt;1.5s / &lt;2.2s):</span>
+                <p className="text-amber-800 font-normal">Direct memory retrieval without needing scratchpad calculation.</p>
               </div>
-              <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
-                <span className="font-extrabold text-emerald-950">🎯 Mastered Pace</span>
-                <span className="font-black text-emerald-600">2.5s - 5.0s</span>
+
+              <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-xl">
+                <span className="font-extrabold text-yellow-900">🟡 Worked It Out (1.5s–4.0s / 2.2s–4.5s):</span>
+                <p className="text-yellow-800 font-normal">Active calculation in working memory. Fluent and correct!</p>
               </div>
-              <div className="p-2.5 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-between text-xs">
-                <span className="font-extrabold text-sky-950">🌱 Building Fluency</span>
-                <span className="font-black text-sky-600">&gt; 5.0s / prob</span>
+
+              <div className="p-2 bg-blue-50 border border-blue-200 rounded-xl">
+                <span className="font-extrabold text-blue-900">🔵 Focus Area (&gt;4.0s / &gt;4.5s or Incorrect):</span>
+                <p className="text-blue-800 font-normal">Automatically re-queued into future daily sessions to reinforce memory!</p>
               </div>
             </div>
 
             <button
               onClick={() => setShowSpeedInfoModal(false)}
-              className="w-full py-2.5 mt-2 bg-slate-900 text-white rounded-2xl font-black text-xs hover:bg-slate-800 transition-colors shadow-md"
+              className="btn-3d-teal w-full py-2.5 text-sm rounded-xl"
             >
-              Got it!
+              Got It!
             </button>
           </div>
         </div>
@@ -2603,25 +2430,27 @@ export default function App() {
               <span className="text-xs uppercase font-black text-purple-600 tracking-wider">Level-Up Unlocked!</span>
               <h3 className="text-2xl font-black text-slate-800">Advance to Tier {tier + 1}?</h3>
               <p className="text-xs text-slate-600 font-medium">
-                You have reached rating <strong>{liveCompetenceRating}</strong> in {activeSubject.toUpperCase()}! You're ready for new, exciting challenges!
+                {levelUpReason}
               </p>
             </div>
 
-            <div className="space-y-2 pt-2">
+            <div className="bg-purple-50 p-3 rounded-2xl border border-purple-200 text-purple-900 font-extrabold text-sm">
+              Unlock Tier {tier + 1}: {getTierMeta(tier + 1).title}
+            </div>
+
+            <div className="space-y-2">
               <button
-                onClick={() => {
-                  handleSetTierManual(tier + 1);
-                  setShowLevelUpModal(false);
-                }}
-                className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-black text-sm shadow-clay-purple hover:scale-105 active:scale-95 transition-all"
+                onClick={handleLevelUp}
+                className="btn-3d-purple w-full py-3.5 text-lg rounded-2xl flex items-center justify-center gap-2 shadow-bouncy-purple"
               >
-                🚀 Level Up to Tier {tier + 1}!
+                Advance to Tier {tier + 1}! 🎉
               </button>
+
               <button
                 onClick={() => setShowLevelUpModal(false)}
-                className="w-full py-2 text-xs font-black text-slate-600 hover:text-slate-900 transition-colors"
+                className="w-full py-2 text-slate-500 font-extrabold text-sm hover:text-slate-800"
               >
-                Stay on Tier {tier} for now
+                Stay in Tier {tier} for Now
               </button>
             </div>
           </div>
@@ -2633,7 +2462,6 @@ export default function App() {
         isOpen={isWorkshopOpen}
         onClose={handleCloseWorkshop}
         sparks={sparks}
-        activeSubject={activeSubject}
         streakShields={streakShields}
         consumables={consumables}
         unlockedItems={unlockedItems}
@@ -2770,13 +2598,6 @@ export default function App() {
         }}
       />
 
-      {/* News Modal */}
-      <NewsModal
-        isOpen={showNewsModal}
-        onClose={() => setShowNewsModal(false)}
-        newsItems={newsItems}
-      />
-
       {/* Feedback Modal */}
       <FeedbackModal
         isOpen={showFeedbackModal}
@@ -2848,8 +2669,10 @@ export default function App() {
         }}
       />
 
+      </main>
+
       {/* Bottom Navigation Bar */}
-      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}
+      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && renderNavigationFooter()}
     </div>
   );
 }
