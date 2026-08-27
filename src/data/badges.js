@@ -1,14 +1,14 @@
 // Trail Badges Database for Kibo Climb (Math, Words, World)
 
 export const BADGE_CATEGORIES = {
-  consistency: { label: 'Streak & Consistency', icon: '🔥' },
-  math: { label: 'Kibo Math', icon: '🔢' },
-  words: { label: 'Kibo Words', icon: '📚' },
-  world: { label: 'Kibo World', icon: '🌍' },
-  coding: { label: 'Kibo Coding', icon: '💻' },
-  precision: { label: 'Precision & Accuracy', icon: '🎯' },
-  shop: { label: 'Workshop & Purchases', icon: '🎒' },
-  quests: { label: 'Mountain Quests & Ascent', icon: '📜' }
+  consistency: { label: 'Streak', icon: '🔥' },
+  math: { label: 'Math', icon: '🔢' },
+  words: { label: 'Words', icon: '📚' },
+  world: { label: 'World', icon: '🌍' },
+  coding: { label: 'Coding', icon: '💻' },
+  precision: { label: 'Precision', icon: '🎯' },
+  shop: { label: 'Shop', icon: '🎒' },
+  quests: { label: 'Quests', icon: '📜' }
 };
 
 export const BADGES_CATALOG = [

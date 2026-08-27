@@ -117,9 +117,6 @@ export default function BadgesModal({
               <Trophy className="w-4 h-4 text-purple-600 stroke-[2.5]" />
               Personal Bests & Mountain Stats
             </span>
-            <span className="text-[11px] font-extrabold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
-              Active Records
-            </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-center">
