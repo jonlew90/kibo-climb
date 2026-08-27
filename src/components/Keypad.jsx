@@ -128,13 +128,13 @@ export default function Keypad({
           let fontClass = 'text-2xl sm:text-3xl font-black';
           if (isTextChoices) {
             if (optLength >= 24 || maxOptLen >= 25) {
-              fontClass = 'text-[10px] sm:text-[11.5px] leading-tight tracking-tight font-bold';
+              fontClass = 'text-xs sm:text-sm leading-tight tracking-tight font-bold';
             } else if (optLength >= 16 || maxOptLen >= 18 || maxWordLen >= 11 || maxOverallWordLen >= 12) {
-              fontClass = 'text-[11.5px] sm:text-xs md:text-sm leading-tight tracking-tight font-bold';
-            } else if (optLength >= 9 || maxOptLen >= 11 || maxWordLen >= 7) {
               fontClass = 'text-xs sm:text-sm md:text-base leading-tight font-bold';
-            } else {
+            } else if (optLength >= 9 || maxOptLen >= 11 || maxWordLen >= 7) {
               fontClass = 'text-sm sm:text-base md:text-lg leading-snug font-bold';
+            } else {
+              fontClass = 'text-base sm:text-lg md:text-xl leading-snug font-black';
             }
           }
 

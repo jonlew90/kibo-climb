@@ -1740,7 +1740,7 @@ export default function WorldSessionView({
 
               return (
                 <div className="w-full flex flex-col items-center space-y-1 sm:space-y-1.5">
-                  <div className="w-full text-center my-0.5 sm:my-1 text-sm sm:text-base font-bold text-slate-800 leading-tight">
+                  <div className="w-full text-center my-0.5 sm:my-1 text-base sm:text-lg font-extrabold text-slate-800 leading-snug">
                      {question}
                   </div>
 
@@ -1796,7 +1796,7 @@ export default function WorldSessionView({
                     const maxOverallWordLen = Math.max(0, ...optStrings.flatMap(s => s.split(/[\s,()/]+/).map(w => w.length)));
                     
                     return (
-                      <div className="grid grid-cols-2 gap-1.5 sm:gap-2 w-full mt-1 sm:mt-1.5 items-stretch">
+                      <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1 sm:mt-1.5 items-stretch">
                         {currentProblem.options.map((opt, idx) => {
                           const optStr = String(opt || '');
                           const optLength = optStr.length;
@@ -1804,15 +1804,15 @@ export default function WorldSessionView({
                           const maxWordLen = Math.max(0, ...words.map(w => w.length));
                           
                           // Dynamic per-option responsive typography tailored for clean fit inside 3D tactile borders
-                          let fontClass = 'text-xs sm:text-sm leading-snug';
+                          let fontClass = 'text-base sm:text-lg md:text-xl leading-snug';
                           if (optLength >= 24 || maxOptLen >= 25) {
-                            fontClass = 'text-[9.5px] sm:text-[10.5px] leading-tight tracking-tight';
-                          } else if (optLength >= 17 || maxOptLen >= 19 || maxWordLen >= 12 || maxOverallWordLen >= 13) {
-                            fontClass = 'text-[10.5px] sm:text-[11.5px] md:text-xs leading-tight tracking-tight';
-                          } else if (optLength >= 10 || maxOptLen >= 12 || maxWordLen >= 8) {
-                            fontClass = 'text-xs sm:text-xs md:text-sm leading-tight';
+                            fontClass = 'text-xs sm:text-sm leading-tight tracking-tight';
+                          } else if (optLength >= 16 || maxOptLen >= 18 || maxWordLen >= 12 || maxOverallWordLen >= 13) {
+                            fontClass = 'text-xs sm:text-sm md:text-base leading-tight';
+                          } else if (optLength >= 9 || maxOptLen >= 11 || maxWordLen >= 7) {
+                            fontClass = 'text-sm sm:text-base md:text-lg leading-snug';
                           } else {
-                            fontClass = 'text-xs sm:text-sm leading-snug';
+                            fontClass = 'text-base sm:text-lg md:text-xl leading-snug';
                           }
 
                           const isUserChoice = incorrectReviewData && (optStr.toLowerCase() === String(incorrectReviewData.userAnswer || '').toLowerCase());
@@ -1844,10 +1844,10 @@ export default function WorldSessionView({
                                   processAnswerEvaluation(opt);
                                 }
                               }}
-                              className={`${buttonStyle} w-full pt-1 pb-2 sm:pt-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 rounded-xl sm:rounded-2xl transition-all active:scale-95 flex items-center justify-center min-h-[46px] sm:min-h-[50px] shadow-sm select-none cursor-pointer`}
+                              className={`${buttonStyle} w-full py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl sm:rounded-2xl transition-all active:scale-95 flex items-center justify-center min-h-[50px] sm:min-h-[54px] shadow-sm select-none cursor-pointer`}
                               disabled={inputVal !== '' || !!incorrectReviewData || isPruned}
                             >
-                              <span className={`w-full max-w-full text-center font-bold break-words [overflow-wrap:anywhere] hyphens-auto px-0.5 ${fontClass} ${isUserChoice && !isCorrectAnswer ? 'line-through' : ''}`}>
+                              <span className={`w-full max-w-full text-center font-extrabold break-words [overflow-wrap:anywhere] hyphens-auto px-0.5 ${fontClass} ${isUserChoice && !isCorrectAnswer ? 'line-through' : ''}`}>
                                 {isCorrectAnswer ? `✓ ${opt}` : isUserChoice ? `✕ ${opt}` : opt}
                               </span>
                             </button>

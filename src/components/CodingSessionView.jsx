@@ -752,14 +752,14 @@ export default function CodingSessionView({
                 </div>
 
                 {/* Question Display Text */}
-                <div className="text-xs sm:text-sm font-extrabold text-slate-800 text-center mb-1 whitespace-pre-line leading-snug">
+                <div className="text-sm sm:text-base font-extrabold text-slate-800 text-center mb-1 whitespace-pre-line leading-snug">
                   {currentProblem.displayString}
                 </div>
 
                 {/* Code Snippet Box */}
                 {currentProblem.codeSnippet && (
-                  <div className="w-full mb-2 bg-slate-900 border-2 border-purple-500/40 rounded-2xl p-2.5 sm:p-3 text-left shadow-inner font-mono text-xs text-purple-200 overflow-x-auto max-h-[18vh]">
-                    <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-1 mb-1.5 text-[9px] font-sans uppercase font-bold tracking-wider">
+                  <div className="w-full mb-2 bg-slate-900 border-2 border-purple-500/40 rounded-2xl p-2.5 sm:p-3 text-left shadow-inner font-mono text-xs sm:text-sm text-purple-200 overflow-x-auto max-h-[18vh]">
+                    <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-1 mb-1.5 text-[10px] sm:text-xs font-sans uppercase font-bold tracking-wider">
                       <span className="flex items-center gap-1"><Code2 className="w-3 h-3 text-purple-400" /> logic_drill.py</span>
                       <span className="text-emerald-400">● Live Trace</span>
                     </div>
@@ -771,7 +771,7 @@ export default function CodingSessionView({
 
                 {/* Revealed Wisdom Hint */}
                 {revealedHint && (
-                  <div className="w-full mb-2 p-2 bg-amber-50 border border-amber-300 rounded-xl text-xs font-bold text-amber-900 flex items-start gap-2 animate-fade-in">
+                  <div className="w-full mb-2 p-2 bg-amber-50 border border-amber-300 rounded-xl text-xs sm:text-sm font-bold text-amber-900 flex items-start gap-2 animate-fade-in">
                     <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <span>{revealedHint}</span>
                   </div>
@@ -791,7 +791,7 @@ export default function CodingSessionView({
                           e.currentTarget.blur();
                           handleAnswerOption(option);
                         }}
-                        className={`py-2 px-3 sm:py-2.5 sm:px-4 rounded-xl border-2 text-xs sm:text-sm font-black transition-all cursor-pointer shadow-sm text-left flex items-center justify-between group focus:outline-none ${
+                        className={`py-2.5 px-3 sm:py-3 sm:px-4 rounded-xl border-2 text-sm sm:text-base font-black transition-all cursor-pointer shadow-sm text-left flex items-center justify-between group focus:outline-none ${
                           isEliminated
                             ? 'opacity-30 bg-slate-100 border-slate-200 text-slate-400 line-through cursor-not-allowed'
                             : 'bg-gradient-to-b from-white to-slate-50 hover:to-purple-50 border-purple-200 hover:border-purple-400 text-slate-800 active:scale-98'
@@ -799,7 +799,7 @@ export default function CodingSessionView({
                       >
                         <span className="truncate">{String(option)}</span>
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-purple-100 text-purple-700 group-hover:bg-purple-200 transition-colors">
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-purple-100 text-purple-700 group-hover:bg-purple-200 transition-colors">
                             {label}
                           </span>
                         </div>
