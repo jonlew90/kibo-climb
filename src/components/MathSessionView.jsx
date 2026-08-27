@@ -265,26 +265,32 @@ export default function MathSessionView({
       accumulatedProblemTime = Math.max(0, now - problemStartTimeRef.current - currentPause);
     }
 
+    const effectiveCurrentIndex = incorrectReviewData ? currentIndex + 1 : currentIndex;
+    const effectiveSessionQuestionIndex = incorrectReviewData ? sessionQuestionIndex + 1 : sessionQuestionIndex;
+    const effectiveQuestionsAnswered = incorrectReviewData ? incorrectReviewData.nextQuestionsAnswered : questionsAnswered;
+    const effectiveBlockAnswers = incorrectReviewData ? incorrectReviewData.nextBlockAnswers : blockAnswers;
+    const effectiveBlockRatingGain = incorrectReviewData ? incorrectReviewData.nextBlockRatingGain : blockRatingGain;
+
     const climbState = {
       subject: 'math',
       subjectId: 'math',
       version: 1,
       savedAt: Date.now(),
       problemQueue,
-      currentIndex,
-      sessionQuestionIndex,
-      questionsAnswered,
+      currentIndex: effectiveCurrentIndex,
+      sessionQuestionIndex: effectiveSessionQuestionIndex,
+      questionsAnswered: effectiveQuestionsAnswered,
       correctCount,
       blockCorrectCount,
       blockSparksEarned,
       sessionSparksEarned,
-      blockRatingGain,
+      blockRatingGain: effectiveBlockRatingGain,
       mistakeCount,
       inSessionStreak,
       inSessionIncorrectStreak,
       consecutiveSkips,
       competenceRank,
-      blockAnswers,
+      blockAnswers: effectiveBlockAnswers,
       accumulatedBlockTime,
       accumulatedProblemTime,
       isDoubleSparksActive
@@ -379,7 +385,8 @@ export default function MathSessionView({
     consecutiveSkips,
     competenceRank,
     blockAnswers,
-    isDoubleSparksActive
+    isDoubleSparksActive,
+    incorrectReviewData
   ]);
 
   // Window unload / unmount saving
@@ -415,7 +422,8 @@ export default function MathSessionView({
     inSessionIncorrectStreak,
     consecutiveSkips,
     competenceRank,
-    isDoubleSparksActive
+    isDoubleSparksActive,
+    incorrectReviewData
   ]);
 
   // Handle modal pausing logic

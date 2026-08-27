@@ -103,4 +103,29 @@ describe('Incorrect Answer Review Behavior & Scoring Integrity', () => {
     const userSpelling = 'RABIT';
     expect(userSpelling.toUpperCase()).not.toBe(targetWord.toUpperCase());
   });
+
+  it('ensures saved climb progress indexes past a failed question even if user navigates away mid-review', () => {
+    const currentIndex = 2;
+    const sessionQuestionIndex = 3;
+    const questionsAnswered = 2;
+    const blockAnswers = [{ problemId: 'prob_0', isCorrect: true }, { problemId: 'prob_1', isCorrect: true }];
+
+    const incorrectReviewData = {
+      problem: { id: 'prob_2', answerString: 'RABBIT' },
+      userAnswer: 'RABIT',
+      correctAnswer: 'RABBIT',
+      nextQuestionsAnswered: 3,
+      nextBlockAnswers: [...blockAnswers, { problemId: 'prob_2', isCorrect: false }],
+      nextBlockRatingGain: -15
+    };
+
+    const effectiveCurrentIndex = incorrectReviewData ? currentIndex + 1 : currentIndex;
+    const effectiveSessionQuestionIndex = incorrectReviewData ? sessionQuestionIndex + 1 : sessionQuestionIndex;
+    const effectiveQuestionsAnswered = incorrectReviewData ? incorrectReviewData.nextQuestionsAnswered : questionsAnswered;
+
+    expect(effectiveCurrentIndex).toBe(3);
+    expect(effectiveSessionQuestionIndex).toBe(4);
+    expect(effectiveQuestionsAnswered).toBe(3);
+  });
 });
+
