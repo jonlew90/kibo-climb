@@ -871,12 +871,12 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
 
         {hasAlpineFox && (
           <g className="animate-pulse" style={{ animationDuration: '2.8s' }} >
-            <ellipse cx="36" cy="148" rx="14" ry="10" fill="#F97316" stroke="#C2410C" strokeWidth="2" />
-            <circle cx="26" cy="142" r="8" fill="#F97316" stroke="#C2410C" strokeWidth="2" />
-            <polygon points="22,136 20,126 27,133" fill="#F97316" stroke="#C2410C" strokeWidth="1.5" />
-            <polygon points="29,136 32,126 33,134" fill="#F97316" stroke="#C2410C" strokeWidth="1.5" />
-            <ellipse cx="23" cy="145" rx="3" ry="2" fill="#FFFFFF" />
-            <circle cx="23" cy="142" r="1" fill="#000000" />
+            <ellipse cx="164" cy="148" rx="14" ry="10" fill="#F97316" stroke="#C2410C" strokeWidth="2" />
+            <circle cx="174" cy="142" r="8" fill="#F97316" stroke="#C2410C" strokeWidth="2" />
+            <polygon points="178,136 180,126 173,133" fill="#F97316" stroke="#C2410C" strokeWidth="1.5" />
+            <polygon points="171,136 168,126 167,134" fill="#F97316" stroke="#C2410C" strokeWidth="1.5" />
+            <ellipse cx="177" cy="145" rx="3" ry="2" fill="#FFFFFF" />
+            <circle cx="177" cy="142" r="1" fill="#000000" />
           </g>
         )}
 
