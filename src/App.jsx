@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Settings, Trophy, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, WifiOff } from 'lucide-react';
+import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass } from 'lucide-react';
 import Mascot from './components/Mascot';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
@@ -27,6 +27,7 @@ import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
 import { pluralize } from './utils/formatters';
 import { storageService } from './services/storageService';
+import { questService } from './services/questService';
 import { getCompetenceRankTier } from './utils/GameEconomyModel';
 import {
   getTodayStr,
@@ -49,11 +50,14 @@ import SettingsScreen from './components/SettingsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import ShareModal from './components/ShareModal';
 import ReferralRewardModal from './components/ReferralRewardModal';
+import NewsModal from './components/NewsModal';
+import { getNewsItems } from './utils/newsManager';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from './config/firebase';
 import TermsOfServiceScreen from './components/TermsOfServiceScreen';
 import LeaderboardIcon from './components/LeaderboardIcon';
 import LeaderboardScreen from './components/LeaderboardScreen';
+import QuestsScreen from './components/QuestsScreen';
 import FeedbackModal from './components/FeedbackModal';
 import AddFriendModal from './components/AddFriendModal';
 import SubjectWallpaper from './components/SubjectWallpaper';
@@ -87,6 +91,7 @@ export default function App() {
     if (path === '/terms' || path === '/terms/') return 'terms';
     if (path === '/settings' || path === '/settings/') return 'settings';
     if (path === '/leaderboard' || path === '/leaderboard/') return 'leaderboard';
+    if (path === '/quests' || path === '/quests/') return 'quests';
     return 'adaptive_session';
   });
 
@@ -101,6 +106,8 @@ export default function App() {
         setAppState('settings');
       } else if (path === '/leaderboard' || path === '/leaderboard/') {
         setAppState('leaderboard');
+      } else if (path === '/quests' || path === '/quests/') {
+        setAppState('quests');
       } else {
         setAppState('adaptive_session');
       }
@@ -113,6 +120,16 @@ export default function App() {
     window.history.pushState({}, '', path);
     setAppState(stateName);
     window.scrollTo(0, 0);
+
+    // Log screen view to Analytics
+    let screenName = 'Home';
+    if (stateName === 'settings') screenName = 'Settings';
+    else if (stateName === 'privacy') screenName = 'PrivacyPolicy';
+    else if (stateName === 'terms') screenName = 'TermsOfService';
+    else if (stateName === 'leaderboard') screenName = 'Leaderboard';
+    else if (stateName === 'quests') screenName = 'Quests';
+
+    analyticsService.logScreenView(screenName);
   };
 
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
@@ -196,6 +213,9 @@ export default function App() {
   }, [activeSubject]);
 
   // First-Time User Onboarding Modal State
+  const [showNewsModal, setShowNewsModal] = useState(false);
+  const [newsItems, setNewsItems] = useState([]);
+
   const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
     return !localStorage.getItem('kibo_math_has_onboarded') && !localStorage.getItem('kibo_math_tier');
   });
@@ -503,6 +523,12 @@ export default function App() {
       setSparks((prev) => prev + extraSparks);
       soundFx.playVictory();
     }
+
+    questService.recordProgress(activeProfileId, {
+      subject: activeSubject,
+      isCorrect,
+      streak: nextStreak
+    });
 
     storageService.saveUserData({
       totalProblemsSolved: nextTotal,
@@ -849,9 +875,10 @@ export default function App() {
     }
   };
 
-  // Schedule-Aware & Timezone-Resilient Streak Validation on App Startup
-  useEffect(() => {
-    const uData = storageService.getUserData(activeSubject);
+  // Schedule-Aware & Timezone-Resilient Streak Validation per Profile
+  const validateStreakForActiveProfile = (subjectOverride) => {
+    const sub = subjectOverride || activeSubject;
+    const uData = storageService.getUserData(sub);
     const lastDateStr = uData.lastSprintDate;
     const lastTimestamp = uData.lastSprintTimestamp;
     const savedDays = storageService.getProfilePracticeDays() || [1, 2, 3, 4, 5];
@@ -862,7 +889,7 @@ export default function App() {
 
     if (savedStreak > storedStreak) {
       setStreak(savedStreak);
-      storageService.saveUserData({ streak: savedStreak }, activeSubject);
+      storageService.saveUserData({ streak: savedStreak }, sub);
     }
 
     if (!lastDateStr || savedStreak === 0) return;
@@ -878,26 +905,30 @@ export default function App() {
 
     const [y, m, d] = lastDateStr.split('-').map(Number);
     const curr = new Date(y, m - 1, d);
-    curr.setDate(curr.getDate() + 1);
-
     let missedActiveDays = 0;
-    while (true) {
-      const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
-      if (dateStr >= todayStr) break;
 
-      const dayIdx = curr.getDay();
-      if (savedDays.includes(dayIdx)) {
-        missedActiveDays++;
-      }
+    if (!isNaN(curr.getTime())) {
       curr.setDate(curr.getDate() + 1);
+      let safetyLimit = 3650;
+      while (safetyLimit-- > 0) {
+        const dateStr = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
+        if (dateStr >= todayStr) break;
+
+        const dayIdx = curr.getDay();
+        if (savedDays.includes(dayIdx)) {
+          missedActiveDays++;
+        }
+        curr.setDate(curr.getDate() + 1);
+      }
     }
 
     if (missedActiveDays >= 1) {
-      const currentStreakSaverCount = consumables.streakSaverCount || 0;
+      const activeConsumables = storageService.getConsumables();
+      const currentStreakSaverCount = activeConsumables.streakSaverCount || 0;
       if (currentStreakSaverCount > 0 || savedShields > 0) {
         if (currentStreakSaverCount > 0) {
           const nextStreakSavers = Math.max(0, currentStreakSaverCount - 1);
-          const nextConsumables = { ...consumables, streakSaverCount: nextStreakSavers };
+          const nextConsumables = { ...activeConsumables, streakSaverCount: nextStreakSavers };
           setConsumables(nextConsumables);
           storageService.saveUserData({ consumables: nextConsumables });
         } else {
@@ -910,8 +941,15 @@ export default function App() {
       } else {
         setStreak(0);
         localStorage.setItem('kibo_math_streak', '0');
-        storageService.saveUserData({ streak: 0 }, activeSubject);
+        storageService.saveUserData({ streak: 0 }, sub);
       }
+    }
+  };
+
+  useEffect(() => {
+    // Only run on startup if profile selector is NOT shown (e.g. single profile / direct mode)
+    if (!showProfileSelector) {
+      validateStreakForActiveProfile(activeSubject);
     }
   }, []);
 
@@ -1203,12 +1241,33 @@ export default function App() {
   const activeProfile = storageService.getActiveProfile();
   const allProfiles = storageService.getAllProfiles();
 
-  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showFamilyUpgradeModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
+  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showFamilyUpgradeModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal || showNewsModal;
 
+  // Check for News (Scoped per active profile)
+  useEffect(() => {
+    // Only check if we are on the main game screen and not in onboarding
+    if (showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || appState !== 'adaptive_session') return;
+
+    const currentPid = activeProfileId || storageService.getActiveProfileId();
+    if (!currentPid) return;
+
+    const activeNews = getNewsItems(new Date());
+    if (activeNews && activeNews.length > 0) {
+      const seenNewsIds = storageService.getSeenNews(currentPid);
+      const unseenNews = activeNews.filter(item => !seenNewsIds.includes(item.id));
+
+      if (unseenNews.length > 0) {
+        setNewsItems(unseenNews);
+        storageService.markNewsAsSeen(unseenNews.map(n => n.id), currentPid);
+        setShowNewsModal(true);
+      }
+    }
+  }, [appState, activeProfileId, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher]);
 
   const closeAllNavModals = (except = null) => {
     if (except !== 'workshop') setIsWorkshopOpen(false);
     if (except !== 'badges') setShowBadgesModal(false);
+    setShowNewsModal(false);
     if (except !== 'profile') setShowManualProfileSwitcher(false);
     if (except !== 'profileDropdown') setShowProfileDropdown(false);
     if (except !== 'parents') {
@@ -1255,7 +1314,7 @@ export default function App() {
           <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Shop</span>
         </button>
 
-        {/* 2. Badges Button: Golden Yellow */}
+        {/* 2. Records Button: Golden Yellow */}
         <button
           type="button"
           onClick={() => {
@@ -1266,10 +1325,10 @@ export default function App() {
           className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] ${
             showBadgesModal ? 'ring-2 ring-yellow-500 scale-[1.02] sm:scale-105 font-bold' : ''
           }`}
-          title="View Badges"
+          title="View Records"
         >
-          <Award className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 stroke-[2.5]" />
-          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Badges</span>
+          <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 stroke-[2.5]" />
+          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Records</span>
         </button>
 
         {/* 3. Leaderboard Button: Sapphire Blue */}
@@ -1287,7 +1346,7 @@ export default function App() {
           title="Leaderboard"
         >
           <div className="relative">
-            <Trophy className={`w-4 h-4 sm:w-5 sm:h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
+            <Crown className={`w-4 h-4 sm:w-5 sm:h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
             {pendingFriendRequestsCount > 0 && (
               <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
                 {pendingFriendRequestsCount}
@@ -1297,22 +1356,29 @@ export default function App() {
           <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Rank</span>
         </button>
 
-        {/* 4. Settings Button: Slate Gray (Direct 1-Tap) */}
+        {/* 4. Quests Button: Royal Purple / Violet (Direct 1-Tap) */}
         <button
           type="button"
           onClick={() => {
             soundFx.playKeyTap();
             closeAllNavModals();
-            setAppState('settings');
+            handleNavigateTo('/quests', 'quests');
           }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] ${
-            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && (appState === 'settings' || appState === 'privacy' || appState === 'terms') ? 'ring-2 ring-slate-400 scale-[1.02] sm:scale-105 font-bold' : ''
+          className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] relative ${
+            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'quests' ? 'ring-2 ring-purple-500 scale-[1.02] sm:scale-105 font-bold' : ''
           }`}
-          aria-label="Settings"
-          title="Settings"
+          aria-label="Mountain Quests"
+          title="Mountain Quests"
         >
-          <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 stroke-[2.5]" />
-          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Settings</span>
+          <div className="relative">
+            <Scroll className={`w-4 h-4 sm:w-5 sm:h-5 text-purple-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'quests' ? 'fill-purple-300' : ''}`} />
+            {questService.getUnclaimedCount(activeProfileId) > 0 && (
+              <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-amber-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-bounce leading-none">
+                {questService.getUnclaimedCount(activeProfileId)}
+              </span>
+            )}
+          </div>
+          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Quests</span>
         </button>
       </div>
     </footer>
@@ -1593,6 +1659,29 @@ export default function App() {
                     </div>
                     <span className="font-black">{liveCompetenceRating} pts</span>
                   </button>
+
+                  {/* Quest Rank & Level Item */}
+                  {(() => {
+                    const questState = questService.getQuests(activeProfileId);
+                    const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer' };
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playKeyTap();
+                          setShowStatsDropdown(false);
+                          setAppState('quests');
+                        }}
+                        className="flex items-center justify-between px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Compass className="w-4 h-4 text-indigo-600 shrink-0" />
+                          <span>Quest ({questLevelInfo.title})</span>
+                        </div>
+                        <span className="font-black">Lvl {questLevelInfo.level} · {questState?.totalXp || 0} XP</span>
+                      </button>
+                    );
+                  })()}
                 </div>
               )}
             </div>
@@ -1982,6 +2071,48 @@ export default function App() {
         />
       )}
 
+      {/* QUESTS SCREEN */}
+      {appState === 'quests' && (
+        <QuestsScreen
+          activeSubject={activeSubject}
+          userState={{
+            competenceRank: liveCompetenceRating,
+            adaptiveCompetenceRating: liveCompetenceRating,
+            tier: tier,
+            totalProblemsSolved: totalProblemsSolved,
+            streak: streak,
+            cumulativeCorrectStreak: cumulativeCorrectStreak
+          }}
+          onNavigate={handleNavigateTo}
+          onBack={() => handleNavigateTo('/', 'adaptive_session')}
+          renderFooter={renderNavigationFooter}
+          onAwardReward={(reward = {}) => {
+            if (reward.sparks) {
+              const clubMultiplier = isKiboClub ? 1.25 : 1;
+              const finalEarned = Math.round(reward.sparks * clubMultiplier);
+              const updated = (sparks || 0) + finalEarned;
+              setSparks(updated);
+              storageService.saveUserData({ sparks: updated }, activeSubject);
+            }
+            if (reward.shields) {
+              const nextConsumables = {
+                ...consumables,
+                shieldCount: (consumables.shieldCount || 0) + reward.shields
+              };
+              setConsumables(nextConsumables);
+              storageService.saveUserData({ consumables: nextConsumables }, activeSubject);
+            }
+          }}
+          onAwardSparks={(earned) => {
+            const clubMultiplier = isKiboClub ? 1.25 : 1;
+            const finalEarned = Math.round(earned * clubMultiplier);
+            const updated = (sparks || 0) + finalEarned;
+            setSparks(updated);
+            storageService.saveUserData({ sparks: updated }, activeSubject);
+          }}
+        />
+      )}
+
       {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
       {appState === 'adaptive_session' && activeSubject === 'math' && (
         <MathSessionView
@@ -2180,6 +2311,7 @@ export default function App() {
             syncAppStateWithStorage(targetSubject);
             setShowProfileSelector(false);
             setAppState('adaptive_session');
+            validateStreakForActiveProfile(targetSubject);
           }}
           onOpenParentZone={(targetTab = 'overview') => {
             setParentDashboardTab(targetTab);
@@ -2202,6 +2334,7 @@ export default function App() {
             syncAppStateWithStorage(targetSubject);
             setShowManualProfileSwitcher(false);
             setAppState('adaptive_session');
+            validateStreakForActiveProfile(targetSubject);
           }}
           onClose={() => {
             setShowManualProfileSwitcher(false);
@@ -2649,6 +2782,13 @@ export default function App() {
         }}
       />
 
+      {/* News Modal */}
+      <NewsModal
+        isOpen={showNewsModal}
+        onClose={() => setShowNewsModal(false)}
+        newsItems={newsItems}
+      />
+
       {/* Feedback Modal */}
       <FeedbackModal
         isOpen={showFeedbackModal}
@@ -2723,7 +2863,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && renderNavigationFooter()}
+      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}
     </div>
   );
 }
