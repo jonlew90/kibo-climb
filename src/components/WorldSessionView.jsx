@@ -668,11 +668,6 @@ export default function WorldSessionView({
   };
 
   useEffect(() => {
-    triggerToastBanner({
-      type: 'success',
-      text: "Welcome to Kibo Climb! Let's start your organic climb! 🏔️✨"
-    }, 4500);
-
     return () => {
       if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
     };
