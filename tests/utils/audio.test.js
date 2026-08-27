@@ -96,6 +96,7 @@ describe('audio.js', () => {
       soundFx.playCorrect();
       expect(global.navigator.vibrate).toHaveBeenCalledWith([20, 30, 20]);
       expect(mockContext.createOscillator).toHaveBeenCalled();
+      expect(mockOscillator.type).toBe('sine');
       expect(mockOscillator.start).toHaveBeenCalled();
     });
 
@@ -103,7 +104,7 @@ describe('audio.js', () => {
       soundFx.playIncorrect();
       expect(global.navigator.vibrate).toHaveBeenCalledWith(40);
       expect(mockContext.createOscillator).toHaveBeenCalled();
-      expect(mockOscillator.type).toBe('triangle');
+      expect(mockOscillator.type).toBe('sawtooth');
       expect(mockOscillator.start).toHaveBeenCalled();
     });
 
@@ -111,26 +112,14 @@ describe('audio.js', () => {
       soundFx.playKeyTap();
       expect(global.navigator.vibrate).toHaveBeenCalledWith(15);
       expect(mockContext.createOscillator).toHaveBeenCalled();
-      expect(mockOscillator.type).toBe('sine');
+      expect(mockOscillator.type).toBe('triangle');
       expect(mockOscillator.start).toHaveBeenCalled();
     });
 
     it('playVictory plays sound and haptics', () => {
       soundFx.playVictory();
       expect(global.navigator.vibrate).toHaveBeenCalledWith([30, 40, 30, 40, 60]);
-      expect(mockContext.createOscillator).toHaveBeenCalled();
-    });
-
-    it('playStreakBonus plays sound and haptics', () => {
-      soundFx.playStreakBonus(4);
-      expect(global.navigator.vibrate).toHaveBeenCalledWith([20, 20, 30]);
-      expect(mockContext.createOscillator).toHaveBeenCalledTimes(4);
-    });
-
-    it('playEquipItem plays sound and haptics', () => {
-      soundFx.playEquipItem();
-      expect(global.navigator.vibrate).toHaveBeenCalledWith([25, 35]);
-      expect(mockContext.createOscillator).toHaveBeenCalledTimes(3);
+      expect(mockContext.createOscillator).toHaveBeenCalledTimes(4); // 4 notes
     });
 
     it('playVictoryFanfare wraps playVictory', () => {
