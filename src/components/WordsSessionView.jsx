@@ -258,10 +258,19 @@ export default function WordsSessionView({
   // Compute pruned keys when Letter Pruner power-up is active
   const prunedKeys = useMemo(() => {
     if (!isLetterPrunerActive || !targetStr) return [];
-    const targetLetters = new Set(targetStr.toUpperCase().replace(/[^A-Z]/g, '').split(''));
+    // Only keep letters that correspond to blank slots ('_')
+    const neededLetters = new Set();
+    effectiveWordSlots.forEach((slot, idx) => {
+      if (slot === '_' && idx < targetStr.length) {
+        const letter = targetStr[idx].toUpperCase();
+        if (/[A-Z]/.test(letter)) {
+          neededLetters.add(letter);
+        }
+      }
+    });
     const allAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-    return allAlphabet.filter((char) => !targetLetters.has(char));
-  }, [isLetterPrunerActive, targetStr]);
+    return allAlphabet.filter((char) => !neededLetters.has(char));
+  }, [isLetterPrunerActive, targetStr, effectiveWordSlots]);
 
   const handleUseLetterSpyglass = () => {
     const owned = consumables?.letterSpyglassCount ?? 0;
