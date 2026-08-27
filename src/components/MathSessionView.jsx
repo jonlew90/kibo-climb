@@ -210,13 +210,23 @@ export default function MathSessionView({
   });
 
   // Power-up States for Math Climbs
-  const [isLetterPrunerActive, setIsLetterPrunerActive] = useState(false);
-  const [spyglassRevealedAnswer, setSpyglassRevealedAnswer] = useState(null);
+  const [isLetterPrunerActive, setIsLetterPrunerActive] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'math');
+    return Boolean(saved?.isLetterPrunerActive);
+  });
+  const [spyglassRevealedAnswer, setSpyglassRevealedAnswer] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'math');
+    return saved?.spyglassRevealedAnswer || null;
+  });
 
-  // Reset per-question power-up state on question transition
+  // Reset per-question power-up state on question transition (only when index changes during active climb)
+  const prevIndexRef = useRef(currentIndex);
   useEffect(() => {
-    setIsLetterPrunerActive(false);
-    setSpyglassRevealedAnswer(null);
+    if (prevIndexRef.current !== currentIndex) {
+      setIsLetterPrunerActive(false);
+      setSpyglassRevealedAnswer(null);
+      prevIndexRef.current = currentIndex;
+    }
   }, [currentIndex]);
 
   const currentProblem = problemQueue[currentIndex] || {};
@@ -293,7 +303,10 @@ export default function MathSessionView({
       blockAnswers: effectiveBlockAnswers,
       accumulatedBlockTime,
       accumulatedProblemTime,
-      isDoubleSparksActive
+      isDoubleSparksActive,
+      isLetterPrunerActive,
+      spyglassRevealedAnswer,
+      showFrustrationCard
     };
 
     storageService.saveActiveClimbState(climbState, profileId, 'math');
@@ -308,6 +321,9 @@ export default function MathSessionView({
     storageService.clearActiveClimbState(profileId, 'math');
     setSavedClimbState(null);
     setBlockAnswers([]);
+    setIsLetterPrunerActive(false);
+    setSpyglassRevealedAnswer(null);
+    setShowFrustrationCard(false);
     setHasStartedClimb(true);
   };
 
@@ -331,6 +347,13 @@ export default function MathSessionView({
       setConsecutiveSkips(saved.consecutiveSkips || 0);
       if (saved.competenceRank) setCompetenceRank(saved.competenceRank);
       if (Array.isArray(saved.blockAnswers)) setBlockAnswers(saved.blockAnswers);
+
+      setIsLetterPrunerActive(Boolean(saved.isLetterPrunerActive));
+      setSpyglassRevealedAnswer(saved.spyglassRevealedAnswer || null);
+      if (saved.spyglassRevealedAnswer) {
+        setInputVal(saved.spyglassRevealedAnswer);
+      }
+      setShowFrustrationCard(Boolean(saved.showFrustrationCard));
 
       const now = performance.now();
       const blockTime = saved.accumulatedBlockTime || 0;
@@ -386,6 +409,9 @@ export default function MathSessionView({
     competenceRank,
     blockAnswers,
     isDoubleSparksActive,
+    isLetterPrunerActive,
+    spyglassRevealedAnswer,
+    showFrustrationCard,
     incorrectReviewData
   ]);
 
@@ -423,6 +449,9 @@ export default function MathSessionView({
     consecutiveSkips,
     competenceRank,
     isDoubleSparksActive,
+    isLetterPrunerActive,
+    spyglassRevealedAnswer,
+    showFrustrationCard,
     incorrectReviewData
   ]);
 

@@ -230,13 +230,23 @@ export default function WordsSessionView({
   const pauseStartRef = useRef(null);
 
   // Kibo Words Specialized Power-Up States
-  const [isLetterPrunerActive, setIsLetterPrunerActive] = useState(false);
-  const [spyglassRevealedSlots, setSpyglassRevealedSlots] = useState({});
+  const [isLetterPrunerActive, setIsLetterPrunerActive] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'words');
+    return Boolean(saved?.isLetterPrunerActive);
+  });
+  const [spyglassRevealedSlots, setSpyglassRevealedSlots] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'words');
+    return saved?.spyglassRevealedSlots || {};
+  });
 
-  // Reset per-word power-up state on question transition
+  // Reset per-word power-up state on question transition (only when index changes during active climb)
+  const prevIndexRef = useRef(currentIndex);
   useEffect(() => {
-    setIsLetterPrunerActive(false);
-    setSpyglassRevealedSlots({});
+    if (prevIndexRef.current !== currentIndex) {
+      setIsLetterPrunerActive(false);
+      setSpyglassRevealedSlots({});
+      prevIndexRef.current = currentIndex;
+    }
   }, [currentIndex]);
 
   // Compute base slots and effective slots (including permanent spyglass-revealed letters)
@@ -384,7 +394,10 @@ export default function WordsSessionView({
       blockAnswers: effectiveBlockAnswers,
       accumulatedBlockTime,
       accumulatedProblemTime,
-      isDoubleSparksActive
+      isDoubleSparksActive,
+      isLetterPrunerActive,
+      spyglassRevealedSlots,
+      showFrustrationCard
     };
 
     storageService.saveActiveClimbState(climbState, profileId, 'words');
@@ -399,6 +412,9 @@ export default function WordsSessionView({
     storageService.clearActiveClimbState(profileId, 'words');
     setSavedClimbState(null);
     setBlockAnswers([]);
+    setIsLetterPrunerActive(false);
+    setSpyglassRevealedSlots({});
+    setShowFrustrationCard(false);
     setHasStartedClimb(true);
   };
 
@@ -422,6 +438,10 @@ export default function WordsSessionView({
       setConsecutiveSkips(saved.consecutiveSkips || 0);
       if (saved.competenceRank) setCompetenceRank(saved.competenceRank);
       if (Array.isArray(saved.blockAnswers)) setBlockAnswers(saved.blockAnswers);
+
+      setIsLetterPrunerActive(Boolean(saved.isLetterPrunerActive));
+      setSpyglassRevealedSlots(saved.spyglassRevealedSlots || {});
+      setShowFrustrationCard(Boolean(saved.showFrustrationCard));
 
       const now = performance.now();
       const blockTime = saved.accumulatedBlockTime || 0;
@@ -477,6 +497,9 @@ export default function WordsSessionView({
     competenceRank,
     blockAnswers,
     isDoubleSparksActive,
+    isLetterPrunerActive,
+    spyglassRevealedSlots,
+    showFrustrationCard,
     incorrectReviewData
   ]);
 
@@ -514,6 +537,9 @@ export default function WordsSessionView({
     consecutiveSkips,
     competenceRank,
     isDoubleSparksActive,
+    isLetterPrunerActive,
+    spyglassRevealedSlots,
+    showFrustrationCard,
     incorrectReviewData
   ]);
 

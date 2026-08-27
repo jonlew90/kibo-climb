@@ -148,12 +148,14 @@ function generateTier1Problem() {
   const addVal = Math.floor(Math.random() * 4) + 1;
   const ansNum = startVal + addVal;
   const answer = String(ansNum);
-  const options = ensureUniqueOptions(answer, [
+  const distractors = [
     String(ansNum + 1),
-    String(ansNum - 1),
     String(ansNum + 2),
-    String(Math.max(1, ansNum - 2))
-  ]);
+    String(ansNum + 3),
+    ansNum - 1 > 0 ? String(ansNum - 1) : String(ansNum + 4),
+    ansNum - 2 > 0 ? String(ansNum - 2) : String(ansNum + 5)
+  ];
+  const options = ensureUniqueOptions(answer, distractors);
   return {
     tier: 1,
     concept: 'Step-by-Step Execution',

@@ -251,18 +251,34 @@ export default function WorldSessionView({
   const pauseStartRef = useRef(null);
 
   // Kibo World Specialized Power-Up States
-  const [isLetterPrunerActive, setIsLetterPrunerActive] = useState(false);
-  const [prunedOptions, setPrunedOptions] = useState(new Set());
-  const [showHintCard, setShowHintCard] = useState(false);
-  const [isCompassActive, setIsCompassActive] = useState(false);
+  const [isLetterPrunerActive, setIsLetterPrunerActive] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'world');
+    return Boolean(saved?.isLetterPrunerActive);
+  });
+  const [prunedOptions, setPrunedOptions] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'world');
+    return saved?.prunedOptions ? new Set(saved.prunedOptions) : new Set();
+  });
+  const [showHintCard, setShowHintCard] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'world');
+    return Boolean(saved?.showHintCard);
+  });
+  const [isCompassActive, setIsCompassActive] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'world');
+    return Boolean(saved?.isCompassActive);
+  });
 
-  // Reset per-question power-up state on question transition
+  // Reset per-question power-up state on question transition (only when index changes during active climb)
+  const prevIndexRef = useRef(currentIndex);
   useEffect(() => {
-    setIsLetterPrunerActive(false);
-    setPrunedOptions(new Set());
-    setShowHintCard(false);
-    setIsCompassActive(false);
-    setShouldPulseHint(false);
+    if (prevIndexRef.current !== currentIndex) {
+      setIsLetterPrunerActive(false);
+      setPrunedOptions(new Set());
+      setShowHintCard(false);
+      setIsCompassActive(false);
+      setShouldPulseHint(false);
+      prevIndexRef.current = currentIndex;
+    }
   }, [currentIndex]);
 
   const compassClue = useMemo(() => {
@@ -323,8 +339,8 @@ export default function WorldSessionView({
         soundFx.playSparkCollect();
         triggerToastBanner({
           type: 'success',
-          text: 'Kibo Explorer Hint Unlocked! 💡'
-        }, 1400);
+          text: '💡 Field Guide Hint Revealed!'
+        }, 1500);
       }
     } else if (onOpenWorkshop) {
       onOpenWorkshop();
@@ -432,7 +448,12 @@ export default function WorldSessionView({
       blockAnswers: effectiveBlockAnswers,
       accumulatedBlockTime,
       accumulatedProblemTime,
-      isDoubleSparksActive
+      isDoubleSparksActive,
+      isLetterPrunerActive,
+      prunedOptions: Array.from(prunedOptions),
+      showHintCard,
+      showFrustrationCard,
+      isCompassActive
     };
 
     storageService.saveActiveClimbState(climbState, profileId, 'world');
@@ -447,6 +468,11 @@ export default function WorldSessionView({
     storageService.clearActiveClimbState(profileId, 'world');
     setSavedClimbState(null);
     setBlockAnswers([]);
+    setIsLetterPrunerActive(false);
+    setPrunedOptions(new Set());
+    setShowHintCard(false);
+    setIsCompassActive(false);
+    setShowFrustrationCard(false);
     setHasStartedClimb(true);
   };
 
@@ -478,6 +504,12 @@ export default function WorldSessionView({
       setConsecutiveSkips(saved.consecutiveSkips || 0);
       if (saved.competenceRank) setCompetenceRank(saved.competenceRank);
       if (Array.isArray(saved.blockAnswers)) setBlockAnswers(saved.blockAnswers);
+
+      setIsLetterPrunerActive(Boolean(saved.isLetterPrunerActive));
+      setPrunedOptions(saved.prunedOptions ? new Set(saved.prunedOptions) : new Set());
+      setShowHintCard(Boolean(saved.showHintCard));
+      setShowFrustrationCard(Boolean(saved.showFrustrationCard));
+      setIsCompassActive(Boolean(saved.isCompassActive));
 
       const now = performance.now();
       const blockTime = saved.accumulatedBlockTime || 0;
@@ -533,6 +565,11 @@ export default function WorldSessionView({
     competenceRank,
     blockAnswers,
     isDoubleSparksActive,
+    isLetterPrunerActive,
+    prunedOptions,
+    showHintCard,
+    showFrustrationCard,
+    isCompassActive,
     incorrectReviewData
   ]);
 
@@ -570,6 +607,11 @@ export default function WorldSessionView({
     consecutiveSkips,
     competenceRank,
     isDoubleSparksActive,
+    isLetterPrunerActive,
+    prunedOptions,
+    showHintCard,
+    showFrustrationCard,
+    isCompassActive,
     incorrectReviewData
   ]);
 

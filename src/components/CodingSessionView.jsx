@@ -179,9 +179,29 @@ export default function CodingSessionView({
     return generateProblems(15, activeTier);
   });
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-  const [eliminatedOptions, setEliminatedOptions] = useState([]);
-  const [revealedHint, setRevealedHint] = useState(null);
-  const [isClueActive, setIsClueActive] = useState(false);
+  const [eliminatedOptions, setEliminatedOptions] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'coding');
+    return saved?.eliminatedOptions || [];
+  });
+  const [revealedHint, setRevealedHint] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'coding');
+    return saved?.revealedHint || null;
+  });
+  const [isClueActive, setIsClueActive] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'coding');
+    return Boolean(saved?.isClueActive);
+  });
+
+  // Reset per-question power-up state on question transition (only when index changes during active climb)
+  const prevIndexRef = useRef(currentProblemIndex);
+  useEffect(() => {
+    if (prevIndexRef.current !== currentProblemIndex) {
+      setEliminatedOptions([]);
+      setRevealedHint(null);
+      setIsClueActive(false);
+      prevIndexRef.current = currentProblemIndex;
+    }
+  }, [currentProblemIndex]);
 
   // Timing
   const [problemStartTime, setProblemStartTime] = useState(Date.now());
@@ -205,7 +225,10 @@ export default function CodingSessionView({
       blockRatingGain,
       mistakeCount,
       competenceRank,
-      sessionAnswers
+      sessionAnswers,
+      eliminatedOptions,
+      revealedHint,
+      isClueActive
     };
     storageService.saveActiveClimbState(climbState, profileId, 'coding');
     setSavedClimbState(climbState);
@@ -252,10 +275,14 @@ export default function CodingSessionView({
       setMistakeCount(saved.mistakeCount || 0);
       if (saved.competenceRank) setCompetenceRank(saved.competenceRank);
       if (Array.isArray(saved.sessionAnswers)) setSessionAnswers(saved.sessionAnswers);
+      setEliminatedOptions(saved.eliminatedOptions || []);
+      setRevealedHint(saved.revealedHint || null);
+      setIsClueActive(Boolean(saved.isClueActive));
+    } else {
+      setEliminatedOptions([]);
+      setRevealedHint(null);
+      setIsClueActive(false);
     }
-    setEliminatedOptions([]);
-    setRevealedHint(null);
-    setIsClueActive(false);
     setProblemStartTime(Date.now());
     setHasStartedClimb(true);
   };
@@ -351,7 +378,10 @@ export default function CodingSessionView({
     blockRatingGain,
     mistakeCount,
     competenceRank,
-    sessionAnswers
+    sessionAnswers,
+    eliminatedOptions,
+    revealedHint,
+    isClueActive
   ]);
 
   // Current active problem
@@ -583,6 +613,32 @@ export default function CodingSessionView({
     setIsClueActive(false);
     setProblemStartTime(Date.now());
   };
+
+  if (showBreakOverlay) {
+    return (
+      <KiboBreakOverlay
+        correctCount={completedBlockStats.correctCount}
+        totalCount={12}
+        streak={streak}
+        sparksEarned={completedBlockStats.sparksEarned}
+        blockRatingGain={completedBlockStats.blockRatingGain}
+        shieldsUsed={completedBlockStats.shieldsUsed}
+        competenceRating={competenceRank}
+        equippedItems={equippedItems}
+        blockTimeSec={completedBlockStats.blockTimeSec}
+        isNewSpeedRecord={completedBlockStats.isNewSpeedRecord}
+        isNewStreakRecord={completedBlockStats.isNewStreakRecord}
+        onOpenWorkshop={() => {
+          setShowBreakOverlay(false);
+          setHasStartedClimb(false);
+          storageService.clearActiveClimbState(profileId, 'coding');
+          setSavedClimbState(null);
+          if (onOpenWorkshop) onOpenWorkshop();
+        }}
+        onResumeClimb={handleContinueClimb}
+      />
+    );
+  }
 
   return (
     <div className="w-full h-full flex-1 min-h-0 relative overflow-visible animate-pop flex flex-col">
@@ -822,28 +878,6 @@ export default function CodingSessionView({
             )
           )}
         </div>
-
-        {/* BREAK OVERLAY */}
-        {showBreakOverlay && (
-          <KiboBreakOverlay
-            isOpen={showBreakOverlay}
-            onContinue={handleContinueClimb}
-            onOpenWorkshop={() => {
-              setShowBreakOverlay(false);
-              setHasStartedClimb(false);
-              storageService.clearActiveClimbState(profileId, 'coding');
-              setSavedClimbState(null);
-              if (onOpenWorkshop) onOpenWorkshop();
-            }}
-            onResumeClimb={handleContinueClimb}
-            subjectId="coding"
-            correctCount={completedBlockStats.correctCount}
-            totalCount={12}
-            sparksEarned={completedBlockStats.sparksEarned}
-            ratingGain={completedBlockStats.blockRatingGain}
-            currentRating={competenceRank}
-          />
-        )}
       </div>
     </div>
   );

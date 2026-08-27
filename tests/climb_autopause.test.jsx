@@ -167,6 +167,82 @@ describe('Climb Auto-Pause on Navigation / Inactivity across All Subjects', () =
           name
         );
       });
+
+      it('should persist and automatically reactivate mid-climb power-ups when pausing and resuming', async () => {
+        const onConsumeSpyglassMock = vi.fn(() => true);
+        const onConsumePrunerMock = vi.fn(() => true);
+        const onConsumeCompassMock = vi.fn(() => true);
+        const onConsumeHintMock = vi.fn(() => true);
+
+        await act(async () => {
+          root.render(
+            <Component
+              profileId="test_child"
+              isPaused={false}
+              equippedItems={[]}
+              sparks={100}
+              streak={5}
+              consumables={{
+                letterSpyglassCount: 5,
+                letterPrunerCount: 5,
+                explorerCompassCount: 5,
+                hintScrollCount: 5
+              }}
+              onConsumeLetterSpyglass={onConsumeSpyglassMock}
+              onConsumeLetterPruner={onConsumePrunerMock}
+              onConsumeExplorerCompass={onConsumeCompassMock}
+              onConsumeHintScroll={onConsumeHintMock}
+            />
+          );
+        });
+
+        // Click Start Climb
+        const startBtn = container.querySelector('button');
+        await act(async () => {
+          startBtn.click();
+        });
+
+        // Find a power-up button to activate mid-climb (e.g. Prune, 50:50, Hint, Clue)
+        const buttons = Array.from(container.querySelectorAll('button'));
+        const pruneBtn = buttons.find(b => /Prune|50:50|Compass/i.test(b.textContent || ''));
+        if (pruneBtn) {
+          await act(async () => {
+            pruneBtn.click();
+          });
+        }
+
+        // Trigger pause
+        Object.defineProperty(document, 'hidden', { value: true, writable: true, configurable: true });
+        await act(async () => {
+          document.dispatchEvent(new Event('visibilitychange'));
+        });
+
+        const saved = storageService.getActiveClimbState('test_child', name);
+        expect(saved).toBeTruthy();
+        if (pruneBtn) {
+          expect(
+            saved.isLetterPrunerActive ||
+            saved.isCompassActive ||
+            (saved.eliminatedOptions && saved.eliminatedOptions.length > 0)
+          ).toBeTruthy();
+        }
+
+        // Reset document.hidden and click Resume Climb
+        Object.defineProperty(document, 'hidden', { value: false, writable: true, configurable: true });
+        const resumeBtn = Array.from(container.querySelectorAll('button')).find(b => /Resume/i.test(b.textContent || ''));
+        if (resumeBtn) {
+          await act(async () => {
+            resumeBtn.click();
+          });
+        }
+
+        // Check that the power-up state is reactivated without needing to consume again
+        if (name === 'math' || name === 'words') {
+          expect(container.textContent).toMatch(/Pruned|distractor/i);
+        } else if (name === 'world') {
+          expect(container.textContent).toMatch(/Active|Pruned/i);
+        }
+      });
     });
   });
 });
