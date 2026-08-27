@@ -22,6 +22,7 @@ import KiboBreakOverlay from './KiboBreakOverlay';
 import { KiboAudioManager } from '../utils/KiboAudioManager';
 import { evaluateBadges } from '../utils/badgeManager';
 import { storageService } from '../services/storageService';
+import useInactivityAutoPause from '../hooks/useInactivityAutoPause';
 import {
   CONTINENTS,
   OCEANS,
@@ -170,6 +171,7 @@ export default function WorldSessionView({
   };
 
   const [hasStartedClimb, setHasStartedClimb] = useState(false);
+  const [isAutoPaused, setIsAutoPaused] = useState(false);
   const [savedClimbState, setSavedClimbState] = useState(() => {
     const saved = storageService.getActiveClimbState(profileId, 'world');
     if (saved && saved.problemQueue && (!saved.problemQueue.every(isWorldProblem) || (saved.subject && saved.subject !== 'world'))) {
@@ -432,6 +434,7 @@ export default function WorldSessionView({
 
   const handleStartClimb = () => {
     soundFx.playKeyTap();
+    setIsAutoPaused(false);
     blockStartTimeRef.current = performance.now();
     problemStartTimeRef.current = performance.now();
     storageService.clearActiveClimbState(profileId, 'world');
@@ -442,6 +445,7 @@ export default function WorldSessionView({
 
   const handleResumeClimb = () => {
     soundFx.playKeyTap();
+    setIsAutoPaused(false);
     const saved = storageService.getActiveClimbState(profileId, 'world');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWorldProblem)) {
       setProblemQueue(saved.problemQueue);
@@ -485,6 +489,19 @@ export default function WorldSessionView({
     }
     setHasStartedClimb(true);
   };
+
+  // Inactivity auto-pause mid-climb
+  useInactivityAutoPause({
+    isActive: hasStartedClimb && !isPaused && !showBreakOverlay,
+    timeoutMs: 60000,
+    onAutoPause: () => {
+      if (hasStartedClimb) {
+        saveCurrentClimbProgress();
+        setHasStartedClimb(false);
+        setIsAutoPaused(true);
+      }
+    }
+  });
 
 
   // Continuous background saving while climbing
@@ -1495,15 +1512,23 @@ export default function WorldSessionView({
           <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 sm:p-5 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[42vh]">
             <div className="space-y-1.5">
               <span className="text-xs sm:text-sm font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
-                {savedClimbState && savedClimbState.sessionQuestionIndex <= 12
+                {isAutoPaused
+                  ? '⏸️ Climb Auto-Paused'
+                  : savedClimbState && savedClimbState.sessionQuestionIndex <= 12
                   ? `🏔️ Mountain Climb • Question ${savedClimbState.sessionQuestionIndex || 1} of 12`
                   : '🏔️ Mountain Climb • 12 Problems'}
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
-                {savedClimbState && savedClimbState.sessionQuestionIndex <= 12 ? 'Climb in Progress!' : 'Ready for the Climb?'}
+                {isAutoPaused
+                  ? 'Are you still climbing?'
+                  : savedClimbState && savedClimbState.sessionQuestionIndex <= 12
+                  ? 'Climb in Progress!'
+                  : 'Ready for the Climb?'}
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed">
-                {savedClimbState && savedClimbState.sessionQuestionIndex <= 12
+                {isAutoPaused
+                  ? 'We paused your climb and timer so your speed record and streak stay safe! Click Resume to keep going.'
+                  : savedClimbState && savedClimbState.sessionQuestionIndex <= 12
                   ? 'You have a climb in progress! Click Resume Climb to continue where you left off.'
                   : 'Click Start Climb when you are ready! Your timer will begin as soon as you start.'}
               </p>
