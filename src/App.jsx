@@ -2033,7 +2033,7 @@ export default function App() {
           onUpdatePreferences={handleUpdatePreferences}
           renderFooter={renderNavigationFooter}
           onNavigate={handleNavigateTo}
-          onBack={() => handleNavigateTo('/', 'home')}
+          onBack={() => handleNavigateTo('/', 'adaptive_session')}
           onOpenFeedback={() => setShowFeedbackModal(true)}
           onOpenParentZone={(targetTab = 'overview') => {
             setParentDashboardTab(targetTab);

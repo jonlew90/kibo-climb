@@ -12,7 +12,7 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
     if (onBack) {
       onBack();
     } else if (onNavigate) {
-      onNavigate('/', 'home');
+      onNavigate('/', 'adaptive_session');
     }
   };
 
