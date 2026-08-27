@@ -279,7 +279,7 @@ exports.processReferralLinking = onCall(
 exports.claimUsername = onCall(
   { cors: true },
   async (request) => {
-    const { username, profileId } = request.data || {};
+    const { username, profileId, friendCode } = request.data || {};
     const uid = request.auth ? request.auth.uid : 'anonymous';
 
     if (!username || typeof username !== 'string') {
@@ -292,29 +292,55 @@ exports.claimUsername = onCall(
     }
 
     const normalized = trimmed.toLowerCase();
+    const cleanCode = (friendCode || '').trim().toUpperCase();
     const db = admin.firestore();
     const usernameRef = db.collection('usernames').doc(normalized);
+    const codeRef = cleanCode ? db.collection('friend_codes').doc(cleanCode) : null;
 
     try {
       return await db.runTransaction(async (transaction) => {
         const docSnap = await transaction.get(usernameRef);
         if (docSnap.exists) {
           const data = docSnap.data();
-          // If owned by same UID and profile, allow re-claiming
+          // If owned by different UID and profile, reject
           if (data.uid && data.uid !== uid) {
             throw new HttpsError('already-exists', 'This username is already taken. Please choose another one.');
           }
         }
 
-        transaction.set(usernameRef, {
+        if (codeRef) {
+          const codeSnap = await transaction.get(codeRef);
+          if (codeSnap.exists) {
+            const codeData = codeSnap.data();
+            if (codeData.uid && codeData.uid !== uid) {
+              throw new HttpsError('already-exists', 'This climber code is already in use. A new one will be generated.');
+            }
+          }
+        }
+
+        const usernamePayload = {
           username: trimmed,
           normalized,
           uid,
           profileId: profileId || 'default_child',
           claimedAt: admin.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+        };
+        if (cleanCode) usernamePayload.friendCode = cleanCode;
 
-        return { success: true, username: trimmed };
+        transaction.set(usernameRef, usernamePayload, { merge: true });
+
+        if (codeRef) {
+          transaction.set(codeRef, {
+            friendCode: cleanCode,
+            username: trimmed,
+            normalized,
+            uid,
+            profileId: profileId || 'default_child',
+            claimedAt: admin.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        }
+
+        return { success: true, username: trimmed, friendCode: cleanCode };
       });
     } catch (error) {
       if (error instanceof HttpsError) throw error;
@@ -341,12 +367,12 @@ exports.searchUsername = onCall(
     }
 
     const db = admin.firestore();
+    const cleanCode = query.trim().toUpperCase();
     try {
-      // Query usernames starting with the query string
+      // COPPA Safe: Exact match lookup by Climber Code only
       const snapshot = await db.collection('usernames')
-        .where('normalized', '>=', normalized)
-        .where('normalized', '<=', normalized + '\uf8ff')
-        .limit(10)
+        .where('friendCode', '==', cleanCode)
+        .limit(1)
         .get();
 
       if (snapshot.empty) {
