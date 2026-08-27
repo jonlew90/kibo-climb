@@ -1219,7 +1219,7 @@ export default function App() {
 
   const renderNavigationFooter = () => (
     <footer className="sticky bottom-0 z-50 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 shadow-xs shrink-0">
-      <div className="w-full px-2 py-2 sm:py-3 flex items-center justify-around gap-1 sm:gap-2 max-w-4xl mx-auto">
+      <div className="w-full px-2 sm:px-4 py-1.5 sm:py-2.5 flex items-center justify-between sm:justify-around gap-1.5 sm:gap-3 max-w-4xl mx-auto">
         {/* 0. Climb (Main Session) Button: Emerald / Green */}
         <button
           type="button"
@@ -1228,14 +1228,14 @@ export default function App() {
             closeAllNavModals();
             setAppState('adaptive_session');
           }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
-            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-105 font-bold' : ''
+          className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] ${
+            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-[1.02] sm:scale-105 font-bold' : ''
           }`}
           aria-label="Return to Main Climb Session"
           title="Main Mountain Climb"
         >
-          <Mountain className="w-5 h-5 text-emerald-700 stroke-[2.5]" />
-          <span className="text-xs font-black tracking-wide truncate">Climb</span>
+          <Mountain className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-700 stroke-[2.5]" />
+          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Climb</span>
         </button>
 
         {/* 1. Shop Button: Warm Orange */}
@@ -1245,14 +1245,14 @@ export default function App() {
             closeAllNavModals('workshop');
             handleOpenWorkshop();
           }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-orange-100 via-orange-50 to-orange-100 text-orange-950 border-2 border-orange-400 rounded-xl hover:from-orange-200 hover:to-orange-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
-            isWorkshopOpen ? 'ring-2 ring-orange-500 scale-105 font-bold' : ''
+          className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-orange-100 via-orange-50 to-orange-100 text-orange-950 border-2 border-orange-400 rounded-xl hover:from-orange-200 hover:to-orange-100 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] ${
+            isWorkshopOpen ? 'ring-2 ring-orange-500 scale-[1.02] sm:scale-105 font-bold' : ''
           }`}
           aria-label="Open Kibo's Shop"
           title="Kibo's Workshop & Shop"
         >
-          <ShoppingBag className="w-5 h-5 text-orange-600 stroke-[2.5]" />
-          <span className="text-xs font-black tracking-wide truncate">Shop</span>
+          <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 stroke-[2.5]" />
+          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Shop</span>
         </button>
 
         {/* 2. Badges Button: Golden Yellow */}
@@ -1263,13 +1263,13 @@ export default function App() {
             closeAllNavModals('badges');
             setShowBadgesModal(true);
           }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
-            showBadgesModal ? 'ring-2 ring-yellow-500 scale-105 font-bold' : ''
+          className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] ${
+            showBadgesModal ? 'ring-2 ring-yellow-500 scale-[1.02] sm:scale-105 font-bold' : ''
           }`}
           title="View Badges"
         >
-          <Award className="w-5 h-5 text-yellow-600 stroke-[2.5]" />
-          <span className="text-xs font-black tracking-wide truncate">Badges</span>
+          <Award className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 stroke-[2.5]" />
+          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Badges</span>
         </button>
 
         {/* 3. Leaderboard Button: Sapphire Blue */}
@@ -1280,21 +1280,21 @@ export default function App() {
             closeAllNavModals();
             setAppState('leaderboard');
           }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] relative ${
-            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'ring-2 ring-indigo-500 scale-105 font-bold' : ''
+          className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] relative ${
+            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'ring-2 ring-indigo-500 scale-[1.02] sm:scale-105 font-bold' : ''
           }`}
           aria-label="Leaderboard"
           title="Leaderboard"
         >
           <div className="relative">
-            <Trophy className={`w-5 h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
+            <Trophy className={`w-4 h-4 sm:w-5 sm:h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
             {pendingFriendRequestsCount > 0 && (
               <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
                 {pendingFriendRequestsCount}
               </span>
             )}
           </div>
-          <span className="text-xs font-black tracking-wide truncate">Rank</span>
+          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Rank</span>
         </button>
 
         {/* 4. Settings Button: Slate Gray (Direct 1-Tap) */}
@@ -1305,14 +1305,14 @@ export default function App() {
             closeAllNavModals();
             setAppState('settings');
           }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5.5rem] ${
-            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && (appState === 'settings' || appState === 'privacy' || appState === 'terms') ? 'ring-2 ring-slate-400 scale-105 font-bold' : ''
+          className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 text-slate-950 border-2 border-slate-300 rounded-xl hover:from-slate-200 hover:to-gray-200 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] ${
+            !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && (appState === 'settings' || appState === 'privacy' || appState === 'terms') ? 'ring-2 ring-slate-400 scale-[1.02] sm:scale-105 font-bold' : ''
           }`}
           aria-label="Settings"
           title="Settings"
         >
-          <Settings className="w-5 h-5 text-slate-700 stroke-[2.5]" />
-          <span className="text-xs font-black tracking-wide truncate">Settings</span>
+          <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 stroke-[2.5]" />
+          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Settings</span>
         </button>
       </div>
     </footer>

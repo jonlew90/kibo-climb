@@ -1,11 +1,8 @@
 name: Hourly Deploy to Firebase Hosting
 
 on:
-  push:
-    branches:
-      - main
   schedule:
-    # Runs at minute 0 past every hour (every 60 minutes) as a fallback for throttled commits
+    # Runs at minute 0 past every hour (every 60 minutes)
     - cron: '0 * * * *'
   workflow_dispatch:
 
