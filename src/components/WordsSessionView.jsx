@@ -1942,7 +1942,7 @@ export default function WordsSessionView({
                     <div className="w-full bg-rose-50 border-2 border-rose-200 rounded-2xl p-2 sm:p-2.5 text-center space-y-1 animate-pop">
                       <div className="flex items-center justify-center gap-2 flex-wrap text-xs sm:text-sm font-bold">
                         <span className="text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full border border-rose-200">
-                          ✕ Your spelling: <span className="line-through font-extrabold">{incorrectReviewData.userAnswer || '—'}</span>
+                          ✕ Your spelling: <span className="line-through font-extrabold">{incorrectReviewData.userAnswer ? String(incorrectReviewData.userAnswer).toUpperCase() : '—'}</span>
                         </span>
                         <span className="text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300 font-extrabold flex items-center gap-1">
                           ✓ Correct: {targetStr.toUpperCase()}
