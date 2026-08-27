@@ -1432,7 +1432,7 @@ export default function WordsSessionView({
       <div className="w-full h-full flex flex-col items-center justify-between sm:justify-end pb-1 sm:pb-2 pt-1 px-1.5 sm:px-3 max-w-4xl mx-auto relative overflow-visible flex-1 min-h-0">
 
       {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
-      {celebrationEvent && (
+      {!isPaused && celebrationEvent && (
         <div
           onClick={() => setCelebrationEvent(null)}
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-pop cursor-pointer"
