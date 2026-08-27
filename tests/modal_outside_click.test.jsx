@@ -23,7 +23,8 @@ vi.mock('../src/services/storageService', () => {
     getPerfectMonthProgress: vi.fn(() => ({ count: 0 })),
     getProfileCount: vi.fn(() => 1),
     needsProfileDowngradeSelection: vi.fn(() => false),
-    getPrimaryProfileId: vi.fn(() => 'p1')
+    getPrimaryProfileId: vi.fn(() => 'p1'),
+    isProfileLocked: vi.fn((profileId) => profileId !== 'p1')
   };
   return {
     default: mockStorage,

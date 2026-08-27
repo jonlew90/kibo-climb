@@ -1381,6 +1381,7 @@ export default function App() {
                   {allProfiles
                     .filter((p) => p.id !== activeProfileId)
                     .map((profile) => {
+                      const isLocked = storageService.isProfileLocked(profile.id);
                       const pRating = profile.userData?.subjects?.[activeSubject]?.competenceRank ||
                         profile.userData?.competenceRank ||
                         1000;
@@ -1391,6 +1392,19 @@ export default function App() {
                           type="button"
                           onClick={() => {
                             soundFx.playKeyTap();
+                            if (isLocked) {
+                              setShowProfileDropdown(false);
+                              setPendingSparksPurchase({
+                                id: 'kibo_club_family',
+                                name: 'Kibo Club Family',
+                                realMoneyPrice: '$7.99/mo',
+                                isSubscription: true,
+                                isFamilyPlan: true,
+                                description: 'Unlock access to all climber profiles with the Kibo Club Family Plan!'
+                              });
+                              setShowStripeCheckoutModal(true);
+                              return;
+                            }
                             storageService.setActiveProfileId(profile.id);
                             const targetSubject = profile?.lastActiveSubject || storageService.getLastActiveSubject(profile.id) || 'math';
                             storageService.setLastActiveSubject(targetSubject, profile.id);
@@ -1400,11 +1414,22 @@ export default function App() {
                             setShowProfileDropdown(false);
                             setAppState('adaptive_session');
                           }}
-                          className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-slate-100 active:bg-slate-200 transition-colors text-left cursor-pointer group w-full"
+                          className={`flex items-center justify-between px-2.5 py-2 rounded-xl transition-colors text-left cursor-pointer group w-full ${
+                            isLocked
+                              ? 'opacity-60 bg-slate-50/50 hover:bg-slate-100 hover:opacity-80 border border-slate-200'
+                              : 'hover:bg-slate-100 active:bg-slate-200'
+                          }`}
                         >
                           <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-white flex items-center justify-center text-xs font-black shrink-0 border border-white/60 shadow-2xs group-hover:scale-105 transition-transform">
-                              {pName[0].toUpperCase()}
+                            <div className="relative shrink-0">
+                              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-white flex items-center justify-center text-xs font-black border border-white/60 shadow-2xs group-hover:scale-105 transition-transform">
+                                {pName[0].toUpperCase()}
+                              </div>
+                              {isLocked && (
+                                <div className="absolute -top-1 -right-1 bg-slate-700 rounded-full p-0.5 border border-white shadow-xs">
+                                  <Lock className="w-2.5 h-2.5 text-white" />
+                                </div>
+                              )}
                             </div>
                             <div className="flex flex-col min-w-0 flex-1">
                               <span className="text-xs font-black text-slate-700 truncate group-hover:text-slate-900" title={pName}>
@@ -1416,6 +1441,11 @@ export default function App() {
                               </span>
                             </div>
                           </div>
+                          {isLocked && (
+                            <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded-md shrink-0">
+                              Locked
+                            </span>
+                          )}
                         </button>
                       );
                     })}

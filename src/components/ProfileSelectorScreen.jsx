@@ -452,8 +452,7 @@ export default function ProfileSelectorScreen({
                 'grid-cols-2 sm:grid-cols-3 max-w-2xl mx-auto'
               }`}>
                 {profiles.map((profile) => {
-                  const actualPrimaryId = primaryId || profiles[0]?.id;
-                  const isProfileLocked = !needsSelection && maxProfiles === 1 && profile.id !== actualPrimaryId;
+                  const isProfileLocked = storageService.isProfileLocked(profile.id);
                   return (
                   <ProfileCard
                     key={profile.id}

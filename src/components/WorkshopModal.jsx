@@ -403,7 +403,7 @@ export default function WorkshopModal({
         <div className="bg-white border-2 border-slate-200 rounded-2xl p-2.5 sm:p-4 flex items-center justify-center gap-3 sm:gap-6 shadow-sm relative">
           {/* Locked Responsive Mascot Anchor Box */}
           <div className="w-20 h-20 sm:w-28 sm:h-28 shrink-0 flex items-center justify-center relative p-1 overflow-visible">
-            <Mascot mood="happy" equipped={stageEquippedItems} className="w-18 h-18 sm:w-24 sm:h-24" />
+            <Mascot mood="happy" equipped={stageEquippedItems} className="w-16 h-16 sm:w-24 sm:h-24" />
           </div>
 
           <div className="text-left space-y-1 sm:space-y-1.5 flex-1 max-w-[260px] shrink-0">

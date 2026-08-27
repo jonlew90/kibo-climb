@@ -1059,6 +1059,16 @@ export const storageService = {
     });
   },
 
+  isProfileLocked(profileId) {
+    if (!profileId) return false;
+    const hasFamily = this.hasFamilyPlan();
+    if (hasFamily) return false;
+    const needsSelection = this.needsProfileDowngradeSelection();
+    if (needsSelection) return false;
+    const primaryId = this.getPrimaryProfileId() || this.getAllProfiles()[0]?.id;
+    return profileId !== primaryId;
+  },
+
   getPrimaryProfileId() {
     const state = safeGetProfilesState();
     return state.primaryProfileId || null;
