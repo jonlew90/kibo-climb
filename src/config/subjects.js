@@ -61,33 +61,50 @@ export const SUBJECTS_CONFIG = {
     icon: '📚',
     COMPETENCE_RANK_TIERS: [
       { min: 0, max: 1199, tier: 1, name: 'Letter Scout', location: 'Alphabet Meadow' },
-      { min: 1200, max: 1399, tier: 2, name: 'Word Builder', location: 'Phonics Forest' },
-      { min: 1400, max: 1599, tier: 3, name: 'Spelling Master', location: 'Vocab Valley' },
-      { min: 1600, max: 9999, tier: 4, name: 'Grammar Legend', location: 'Syntax Summit' }
+      { min: 1200, max: 1399, tier: 2, name: 'Word Builder', location: 'Consonant Forest' },
+      { min: 1400, max: 1599, tier: 3, name: 'Vowel Voyager', location: 'Vowel River' },
+      { min: 1600, max: 1799, tier: 4, name: 'Compound Crafter', location: 'Syllable Canyon' },
+      { min: 1800, max: 1999, tier: 5, name: 'Morphology Master', location: 'Prefix Falls' },
+      { min: 2000, max: 2199, tier: 6, name: 'Vocab Voyager', location: 'Synonym Ridge' },
+      { min: 2200, max: 2399, tier: 7, name: 'Etymology Explorer', location: 'Grammar Glacier' },
+      { min: 2400, max: 9999, tier: 8, name: 'Peak Lexicon Legend', location: 'Mount Word Summit' }
     ],
     getCompetenceDescription: (rating = 1000, totalProblemsSolved = 0) => {
       if (totalProblemsSolved < 15) return 'Calibrating baseline for Words...';
       const numRating = Number(rating) || 1000;
-      if (numRating < 1200) return 'Mastering alphabet and basic phonics.';
-      if (numRating < 1400) return 'Building sight words and simple spelling.';
-      if (numRating < 1600) return 'Expanding vocabulary and compound words.';
-      return 'Mastering complex spelling and grammar rules.';
+      if (numRating < 1200) return 'Mastering CVC words, short vowels, and high-frequency sight words. (K–Grade 2)';
+      if (numRating < 1400) return 'Building 4-letter words, consonant blends, and magic "e" long vowels. (Grade 2–3)';
+      if (numRating < 1600) return 'Mastering 5-letter words, digraphs (sh, ch, th), and vowel teams. (Grade 3–4)';
+      if (numRating < 1800) return 'Forming compound words and multi-syllable word decomposition. (Grade 4–5)';
+      if (numRating < 2000) return 'Analyzing morphology with common prefixes and suffixes. (Grade 5–6)';
+      if (numRating < 2200) return 'Expanding advanced academic vocabulary and descriptive terminology. (Grade 6–7)';
+      if (numRating < 2400) return 'Mastering complex multisyllabic words and Greek/Latin roots. (Grade 7–8)';
+      return 'Demonstrating peak lexicon mastery in nuanced rhetoric and high-level vocabulary. (Grade 8–High School+)';
     },
     SKILL_STRANDS: [
-      { tier: 1, id: 'letters', name: 'Alphabet & Phonics', ratingBand: { min: 0, max: 1199 }, probeTargetTier: 2 },
-      { tier: 2, id: 'sight_words', name: 'Sight Words & Basic Spelling', ratingBand: { min: 1200, max: 1399 }, probeTargetTier: 3 },
-      { tier: 3, id: 'vocab', name: 'Vocabulary & Compound Words', ratingBand: { min: 1400, max: 1599 }, probeTargetTier: 4 },
-      { tier: 4, id: 'grammar', name: 'Complex Spelling & Grammar', ratingBand: { min: 1600, max: 9999 }, probeTargetTier: 4 }
+      { tier: 1, id: 'cvc_sight_words', name: 'CVC Patterns & Sight Words', ratingBand: { min: 0, max: 1199 }, probeTargetTier: 3 },
+      { tier: 2, id: 'blends_magic_e', name: '4-Letter Blends & Magic E', ratingBand: { min: 1200, max: 1399 }, probeTargetTier: 4 },
+      { tier: 3, id: 'digraphs_vowel_teams', name: '5-Letter Digraphs & Vowel Teams', ratingBand: { min: 1400, max: 1599 }, probeTargetTier: 5 },
+      { tier: 4, id: 'compound_syllables', name: 'Compound Words & Syllable Bases', ratingBand: { min: 1600, max: 1799 }, probeTargetTier: 6 },
+      { tier: 5, id: 'prefixes_suffixes', name: 'Prefixes, Suffixes & Morphology', ratingBand: { min: 1800, max: 1999 }, probeTargetTier: 7 },
+      { tier: 6, id: 'academic_vocabulary', name: 'Advanced Academic Vocabulary', ratingBand: { min: 2000, max: 2199 }, probeTargetTier: 8 },
+      { tier: 7, id: 'multisyllabic_roots', name: 'Multisyllabic Words & Greek/Latin Roots', ratingBand: { min: 2200, max: 2399 }, probeTargetTier: 8 },
+      { tier: 8, id: 'elite_lexicon', name: 'Peak Rhetoric & Precision Language', ratingBand: { min: 2400, max: 9999 }, probeTargetTier: 8 }
     ],
     MASTERY_THRESHOLDS: [
-      { threshold: 1150, skillName: 'Alphabet & Phonics' },
-      { threshold: 1300, skillName: 'Sight Words' },
-      { threshold: 1450, skillName: 'Vocabulary' }
+      { threshold: 1150, skillName: 'CVC & Sight Words' },
+      { threshold: 1300, skillName: 'Blends & Magic E' },
+      { threshold: 1450, skillName: 'Digraphs & Vowel Teams' },
+      { threshold: 1600, skillName: 'Compound Words' },
+      { threshold: 1750, skillName: 'Prefixes & Suffixes' },
+      { threshold: 1950, skillName: 'Academic Vocabulary' },
+      { threshold: 2150, skillName: 'Classical Roots & Etymology' }
     ],
     DOMAIN_DEFINITIONS: [
-      { id: 'letters', name: 'Letters', icon: '🅰️', subtitle: 'Alphabet', minUnlockRating: 0, tiers: [1], defaultAcc: 90, defaultSpeed: 2.0 },
-      { id: 'spelling', name: 'Spelling', icon: '📝', subtitle: 'Sight Words', minUnlockRating: 1200, tiers: [2], defaultAcc: 85, defaultSpeed: 3.0 },
-      { id: 'grammar', name: 'Grammar', icon: '📚', subtitle: 'Sentence Structure', minUnlockRating: 1400, tiers: [3, 4], defaultAcc: 80, defaultSpeed: 4.0 }
+      { id: 'phonics_cvc', name: 'Phonics & CVC', icon: '🌱', subtitle: 'Short Vowels & Sight Words', minUnlockRating: 0, tiers: [1], defaultAcc: 90, defaultSpeed: 3.0 },
+      { id: 'blends_digraphs', name: 'Blends & Digraphs', icon: '🌲', subtitle: 'Magic E, Digraphs & Vowel Teams', minUnlockRating: 1200, tiers: [2, 3], defaultAcc: 85, defaultSpeed: 4.0 },
+      { id: 'compound_morphology', name: 'Compound & Affixes', icon: '🧩', subtitle: 'Compound Words, Prefixes & Suffixes', minUnlockRating: 1600, tiers: [4, 5], defaultAcc: 80, defaultSpeed: 5.0 },
+      { id: 'academic_etymology', name: 'Academic & Etymology', icon: '🏔️', subtitle: 'Academic Vocab & Classical Roots', minUnlockRating: 2000, tiers: [6, 7, 8], defaultAcc: 75, defaultSpeed: 6.0 }
     ]
   },
   world: {
@@ -104,29 +121,29 @@ export const SUBJECTS_CONFIG = {
     getCompetenceDescription: (rating = 1000, totalProblemsSolved = 0) => {
       if (totalProblemsSolved < 15) return 'Calibrating baseline for World...';
       const numRating = Number(rating) || 1000;
-      if (numRating < 1200) return 'Identifying 7 continents and 5 oceans.';
-      if (numRating < 1400) return 'Recognizing US states and basic shapes.';
-      if (numRating < 1600) return 'Identifying major countries and their capitals.';
-      if (numRating < 1800) return 'Mastering global geography and country shapes.';
-      return 'Expert knowledge of world geography, capitals, and obscure shapes.';
+      if (numRating < 1200) return 'Identifying 7 continents, 5 oceans, cardinal directions, and foundational facts. (K–Grade 2)';
+      if (numRating < 1400) return 'Recognizing US states, map outlines, state nicknames, and capitals. (Grade 3–4)';
+      if (numRating < 1600) return 'Identifying major world countries, sovereign capitals, and continent mapping. (Grade 5–6)';
+      if (numRating < 1800) return 'Mastering global country shapes, hemispheres, coordinates, and physical geography. (Grade 7–8)';
+      return 'Peak mastery in tricky capitals, strategic global straits, extreme geography, and enclaves. (Grade 8–High School+)';
     },
     SKILL_STRANDS: [
-      { tier: 1, id: 'continents_oceans', name: 'Continents & Oceans', ratingBand: { min: 0, max: 1199 }, probeTargetTier: 2 },
-      { tier: 2, id: 'states_shapes', name: 'US States & Shapes', ratingBand: { min: 1200, max: 1399 }, probeTargetTier: 3 },
-      { tier: 3, id: 'countries_capitals_basic', name: 'Major Countries & Capitals', ratingBand: { min: 1400, max: 1599 }, probeTargetTier: 4 },
-      { tier: 4, id: 'countries_shapes', name: 'Country Shapes & Locations', ratingBand: { min: 1600, max: 1799 }, probeTargetTier: 5 },
-      { tier: 5, id: 'global_expert', name: 'Global Geography Expert', ratingBand: { min: 1800, max: 9999 }, probeTargetTier: 5 }
+      { tier: 1, id: 'continents_oceans', name: 'Continents, Oceans & Directions', ratingBand: { min: 0, max: 1199 }, probeTargetTier: 2 },
+      { tier: 2, id: 'states_shapes', name: 'US States, Shapes & Capitals', ratingBand: { min: 1200, max: 1399 }, probeTargetTier: 3 },
+      { tier: 3, id: 'countries_capitals_basic', name: 'Major Countries & Sovereign Capitals', ratingBand: { min: 1400, max: 1599 }, probeTargetTier: 4 },
+      { tier: 4, id: 'countries_shapes', name: 'Country Shapes, Hemispheres & Physical Geography', ratingBand: { min: 1600, max: 1799 }, probeTargetTier: 5 },
+      { tier: 5, id: 'global_expert', name: 'Global Geography Expert, Straits & Extreme Points', ratingBand: { min: 1800, max: 9999 }, probeTargetTier: 5 }
     ],
     MASTERY_THRESHOLDS: [
       { threshold: 1150, skillName: 'Continents & Oceans' },
-      { threshold: 1300, skillName: 'US States' },
-      { threshold: 1450, skillName: 'Countries & Capitals' },
-      { threshold: 1650, skillName: 'Global Shapes' }
+      { threshold: 1300, skillName: 'US States & Capitals' },
+      { threshold: 1450, skillName: 'World Countries & Capitals' },
+      { threshold: 1650, skillName: 'Country Outlines & Physical Geo' }
     ],
     DOMAIN_DEFINITIONS: [
-      { id: 'basics', name: 'Basics', icon: '🗺️', subtitle: 'Continents & Oceans', minUnlockRating: 0, tiers: [1], defaultAcc: 90, defaultSpeed: 2.0 },
-      { id: 'national', name: 'National', icon: '🦅', subtitle: 'US States', minUnlockRating: 1200, tiers: [2], defaultAcc: 85, defaultSpeed: 3.0 },
-      { id: 'global', name: 'Global', icon: '🌎', subtitle: 'Countries & Capitals', minUnlockRating: 1400, tiers: [3, 4, 5], defaultAcc: 80, defaultSpeed: 4.0 }
+      { id: 'basics', name: 'Basics', icon: '🗺️', subtitle: 'Continents, Oceans & Directions', minUnlockRating: 0, tiers: [1], defaultAcc: 90, defaultSpeed: 2.0 },
+      { id: 'national', name: 'National', icon: '🦅', subtitle: 'US States & Capitals', minUnlockRating: 1200, tiers: [2], defaultAcc: 85, defaultSpeed: 3.0 },
+      { id: 'global', name: 'Global', icon: '🌎', subtitle: 'World Countries, Shapes & Straits', minUnlockRating: 1400, tiers: [3, 4, 5], defaultAcc: 80, defaultSpeed: 4.0 }
     ]
   },
   coding: {

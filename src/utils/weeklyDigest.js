@@ -6,7 +6,8 @@
 
 import { SUBJECTS_CONFIG } from '../config/subjects.js';
 import { getCompetenceRankTier } from './GameEconomyModel.js';
-import { getGradeLevelFromRating, getTierFromRating, CURRICULUM_TIERS } from './mathCurriculum.js';
+import { getTierFromRating, CURRICULUM_TIERS } from './mathCurriculum.js';
+import { getGradeLevelForSubject } from './SkillTreeConfig.js';
 import { WORDS_CURRICULUM_TIERS } from './wordsCurriculum.js';
 import { calculateAdaptiveCompetenceProfile, calculateDomainMastery } from './domainStats.js';
 import { calculateConceptBreakdown } from './skipDiagnosticEngine.js';
@@ -66,7 +67,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
     const rating = subData.adaptiveCompetenceRating || (subjectId === 'math' ? userData.adaptiveCompetenceRating : 1000) || 1000;
     const rankTitle = getCompetenceRankTier(rating, subjectId);
     const tier = subData.tier ?? (subjectId === 'math' ? (userData.tier ?? 1) : 1);
-    const gradeLevel = getGradeLevelFromRating(rating);
+    const gradeLevel = getGradeLevelForSubject(rating, subjectId);
     const totalSolved = subData.totalProblemsSolved ?? (subjectId === 'math' ? (userData.totalProblemsSolved ?? 0) : 0);
     const sprintHistory = subData.sprintHistory || (subjectId === 'math' ? (userData.sprintHistory || []) : []);
     const skipLogs = subData.skipLogs || (subjectId === 'math' ? (userData.skipLogs || []) : []);

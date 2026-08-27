@@ -71,17 +71,17 @@ describe('Domain Mastery & Question-Level Tier Attribution', () => {
 
     const wordsMastery = calculateDomainMastery([sprintWithMixedTiersWords], 3, 1450, [], 'words');
 
-    // Letters domain (Tier 1)
-    const lettersDomain = wordsMastery.find((d) => d.id === 'letters');
-    expect(lettersDomain).toBeDefined();
-    expect(lettersDomain.totalAttempted).toBe(4);
-    expect(lettersDomain.accuracy).toBe(100);
+    // Phonics & CVC domain (Tier 1)
+    const phonicsDomain = wordsMastery.find((d) => d.id === 'phonics_cvc');
+    expect(phonicsDomain).toBeDefined();
+    expect(phonicsDomain.totalAttempted).toBe(4);
+    expect(phonicsDomain.accuracy).toBe(100);
 
-    // Grammar domain (Tier 3 & 4)
-    const grammarDomain = wordsMastery.find((d) => d.id === 'grammar');
-    expect(grammarDomain).toBeDefined();
-    expect(grammarDomain.totalAttempted).toBe(8);
-    expect(grammarDomain.accuracy).toBe(88); // 7/8 = 87.5% -> 88%
+    // Blends & Digraphs domain (Tier 2 & 3)
+    const blendsDomain = wordsMastery.find((d) => d.id === 'blends_digraphs');
+    expect(blendsDomain).toBeDefined();
+    expect(blendsDomain.totalAttempted).toBe(8);
+    expect(blendsDomain.accuracy).toBe(88); // 7/8 = 87.5% -> 88%
   });
 
   it('maintains backwards compatibility for legacy sprint records without answers array', () => {

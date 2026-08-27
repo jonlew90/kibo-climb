@@ -89,22 +89,56 @@ export const WORLD_CURRICULUM_TIERS = [
 ];
 
 export const WORLD_TIER_RATING_THRESHOLDS = {
-  'Pre-K / K': 1000,
-  'Grade 1–2': 1200,
-  'Grade 3–4': 1400,
-  'Grade 5–6': 1600,
-  'Grade 7–8+': 1800,
+  'Kindergarten': 900,
+  'Grade 1–2': 1000,
+  'Grade 3–4': 1200,
+  'Grade 5–6': 1400,
+  'Grade 7–8': 1600,
+  'High School & Beyond': 1800,
 };
 
-export const getTierForRating = (rating) => {
-  if (rating < 1200) return 1;
-  if (rating < 1400) return 2;
-  if (rating < 1600) return 3;
-  if (rating < 1800) return 4;
+// Grade-level starting ratings for Kibo World
+export const GRADE_STARTING_RATINGS = {
+  'Kindergarten':                   900,   // Tier 1 — Continents, oceans & earth foundations
+  'Grade 1–2':                      1000,  // Tier 1 — Continents, oceans & cardinal directions
+  'Grade 3–4':                      1200,  // Tier 2 — US states, shapes & state capitals
+  'Grade 5–6':                      1400,  // Tier 3 — Major world countries & sovereign capitals
+  'Grade 7–8':                      1600,  // Tier 4 — Country shapes, hemispheres & physical geography
+  'High School & Beyond':           1800,  // Tier 5 — Peak global geography, tricky capitals & straits
+};
+
+export function getStartingRatingForGrade(gradeLevel) {
+  if (GRADE_STARTING_RATINGS[gradeLevel]) {
+    return GRADE_STARTING_RATINGS[gradeLevel];
+  }
+  if (gradeLevel === 'Pre-Algebra / Middle School' || gradeLevel === 'Pre-Algebra') return 1600;
+  if (gradeLevel === 'Algebra & Beyond' || gradeLevel === 'Algebra+') return 1800;
+  return 1000;
+}
+
+// Maps rating back to grade-level label for parent dashboard
+export function getGradeLevelFromRating(rating = 1000) {
+  const numRating = Number(rating) || 1000;
+  if (numRating < 1200) return 'K–Grade 2';   // Tier 1: Continents & Oceans
+  if (numRating < 1400) return 'Grade 3–4';   // Tier 2: US States & Capitals
+  if (numRating < 1600) return 'Grade 5–6';   // Tier 3: Major Countries & Capitals
+  if (numRating < 1800) return 'Grade 7–8';   // Tier 4: Country Shapes & Physical Geo
+  return 'Grade 7–8+';                        // Tier 5: World Summit
+}
+
+export const getTierForRating = (rating = 1000) => {
+  const numRating = Number(rating) || 1000;
+  if (numRating < 1200) return 1;
+  if (numRating < 1400) return 2;
+  if (numRating < 1600) return 3;
+  if (numRating < 1800) return 4;
   return 5;
 };
+
+export const getTierFromRating = getTierForRating;
 
 export const isNearTierThreshold = (rating) => {
   const thresholds = [1200, 1400, 1600, 1800];
   return thresholds.some(t => Math.abs(rating - t) <= 25);
 };
+

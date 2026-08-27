@@ -1,5 +1,9 @@
 // Skill Tree Configuration & Rating Band Mapping for Kibo Climb
 import { SUBJECTS_CONFIG } from '../config/subjects.js';
+import { getGradeLevelFromRating as getMathGradeLevel } from './mathCurriculum.js';
+import { getGradeLevelFromRating as getWordsGradeLevel } from './wordsCurriculum.js';
+import { getGradeLevelFromRating as getWorldGradeLevel } from './worldCurriculum.js';
+import { getGradeLevelFromRating as getCodingGradeLevel } from './codingCurriculum.js';
 
 /**
  * Returns dynamic K-factor based on user's total lifetime problems solved.
@@ -37,5 +41,18 @@ export function getSubjectStrands(subjectId = 'math') {
   return (SUBJECTS_CONFIG[subjectId] || SUBJECTS_CONFIG['math']).SKILL_STRANDS;
 }
 
+/**
+ * Returns the grade level string for a subject and rating.
+ */
+export function getGradeLevelForSubject(rating = 1000, subjectId = 'math') {
+  if (subjectId === 'words') return getWordsGradeLevel(rating);
+  if (subjectId === 'world' || subjectId === 'geography') return getWorldGradeLevel(rating);
+  if (subjectId === 'coding') return getCodingGradeLevel(rating);
+  return getMathGradeLevel(rating);
+}
+
+export const getGradeLevelFromRating = getGradeLevelForSubject;
+
 // Backward compatibility export
 export const SKILL_STRANDS = SUBJECTS_CONFIG['math'].SKILL_STRANDS;
+

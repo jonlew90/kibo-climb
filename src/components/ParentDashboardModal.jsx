@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star, Compass } from 'lucide-react';
-import { CURRICULUM_TIERS, getTierFromRating, getGradeLevelFromRating, GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
+import { CURRICULUM_TIERS, getTierFromRating, GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
@@ -9,6 +9,7 @@ import { getNotificationPrefs, saveNotificationPrefs, saveProfileReminderPrefs, 
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { calculateConceptBreakdown, generateParentInsightCards } from '../utils/skipDiagnosticEngine';
 import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEconomyModel';
+import { getGradeLevelForSubject } from '../utils/SkillTreeConfig';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
 import { communicationsService } from '../services/communicationsService';
@@ -398,8 +399,9 @@ export default function ParentDashboardModal({
           <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none touch-pan-x">
             {profilesList.map((p) => {
               const isActive = p.id === viewingProfileId;
-              const childRating = p.userData?.adaptiveCompetenceRating || p.userData?.competenceRank || 1000;
-              const displayGrade = getGradeLevelFromRating(childRating);
+              const subData = p.userData?.subjects?.[selectedSubject] || (selectedSubject === 'math' ? p.userData : {}) || {};
+              const childRating = subData.adaptiveCompetenceRating || subData.competenceRank || p.userData?.adaptiveCompetenceRating || 1000;
+              const displayGrade = getGradeLevelForSubject(childRating, selectedSubject);
               const profileStreak = p.userData?.streak ?? 0;
               return (
                 <button
@@ -893,7 +895,7 @@ export default function ParentDashboardModal({
               const currentTier = activeUserData.tier ?? getTierFromRating(actualRating);
               const childTotalSolved = activeUserData.totalProblemsSolved ?? 0;
               const rankTitle = getCompetenceRankTier(actualRating, selectedSubject);
-              const gradeLvl = getGradeLevelFromRating(actualRating);
+              const gradeLvl = getGradeLevelForSubject(actualRating, selectedSubject);
 
               return (
                 <section className="bg-white rounded-2xl p-4 border-2 border-indigo-200 text-left space-y-3 shadow-xs">
