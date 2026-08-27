@@ -351,23 +351,67 @@ class QuestService {
     if (targetQuest) {
       const previousXp = state.totalXp || 0;
       const previousLevelInfo = getQuestLevelInfo(previousXp);
+
+      // Base rewards
+      const baseSparks = targetQuest.reward?.sparks || 0;
       const earnedXp = targetQuest.reward?.altitude || targetQuest.reward?.xp || 0;
+      const baseShields = targetQuest.reward?.shields || 0;
+
+      // 1. Ascent Multiplier Boost
+      const ascentBonusSparks = Math.round(baseSparks * ((previousLevelInfo.sparkBonusPct || 0) / 100));
+
+      // 2. Real Friend Synergy Bonus (+25% Sparks on Team Quests with real friends)
+      let friendSynergySparks = 0;
+      let hasRealFriend = false;
+
+      if (isTeam) {
+        if (targetQuest.partner && typeof targetQuest.partner.id === 'string' && !targetQuest.partner.id.startsWith('buddy_')) {
+          hasRealFriend = true;
+        } else if (Array.isArray(targetQuest.partners) && targetQuest.partners.some(p => p && typeof p.id === 'string' && !p.id.startsWith('buddy_'))) {
+          hasRealFriend = true;
+        }
+
+        if (hasRealFriend && baseSparks > 0) {
+          friendSynergySparks = Math.max(10, Math.round(baseSparks * 0.25));
+        }
+      }
+
+      const totalQuestSparks = baseSparks + ascentBonusSparks + friendSynergySparks;
       
       state.totalXp = previousXp + earnedXp;
       state.claimsCount = (state.claimsCount || 0) + 1;
       if (isTeam) {
         state.teamClaimsCount = (state.teamClaimsCount || 0) + 1;
+        if (hasRealFriend) {
+          state.friendCoopClaimsCount = (state.friendCoopClaimsCount || 0) + 1;
+        }
       }
 
       const newLevelInfo = getQuestLevelInfo(state.totalXp);
       state.levelInfo = newLevelInfo;
 
-      const leveledUp = newLevelInfo.level > previousLevelInfo.level ? {
-        oldLevel: previousLevelInfo.level,
-        newLevel: newLevelInfo.level,
-        rank: QUEST_RANKS.find(r => r.level === newLevelInfo.level) || newLevelInfo,
-        reward: QUEST_RANKS.find(r => r.level === newLevelInfo.level)?.reward || null
-      } : null;
+      let leveledUp = null;
+      if (newLevelInfo.ascentTier > previousLevelInfo.ascentTier) {
+        // Ascent Summit Conquered!
+        leveledUp = {
+          isSummit: true,
+          oldTier: previousLevelInfo.ascentTier,
+          newTier: newLevelInfo.ascentTier,
+          oldAscentMode: previousLevelInfo.ascentMode,
+          newAscentMode: newLevelInfo.ascentMode,
+          level: newLevelInfo.level,
+          reward: previousLevelInfo.ascentMode.summitReward || { sparks: 500, shields: 3 }
+        };
+      } else if (newLevelInfo.level > previousLevelInfo.level) {
+        leveledUp = {
+          isSummit: false,
+          oldLevel: previousLevelInfo.level,
+          newLevel: newLevelInfo.level,
+          ascentTier: newLevelInfo.ascentTier,
+          rank: newLevelInfo,
+          reward: { sparks: 50 + newLevelInfo.level * 15 }
+        };
+      }
 
       this.saveRawState(profileId, state);
 
@@ -377,16 +421,28 @@ class QuestService {
         badgeResult = evaluateBadges({
           questElevation: state.totalXp,
           questLevel: newLevelInfo.level,
+          ascentTier: newLevelInfo.ascentTier,
           questClaimsCount: state.claimsCount,
-          teamQuestsClaimedCount: state.teamClaimsCount
+          teamQuestsClaimedCount: state.teamClaimsCount,
+          friendCoopClaimsCount: state.friendCoopClaimsCount || 0
         });
       } catch (err) {
         console.warn('Error evaluating quest badges:', err);
       }
 
+      const finalReward = {
+        sparks: totalQuestSparks,
+        baseSparks,
+        ascentBonusSparks,
+        friendSynergySparks,
+        hasRealFriend,
+        altitude: earnedXp,
+        shields: baseShields
+      };
+
       return {
         success: true,
-        reward: targetQuest.reward,
+        reward: finalReward,
         quest: targetQuest,
         earnedXp,
         totalXp: state.totalXp,

@@ -26,8 +26,10 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
     totalProblemsSolved = 0,
     questElevation = 0,
     questLevel = 1,
+    ascentTier = 1,
     questClaimsCount = 0,
-    teamQuestsClaimedCount = 0
+    teamQuestsClaimedCount = 0,
+    friendCoopClaimsCount = 0
   } = userState;
 
   const currentRating = Math.max(
@@ -580,17 +582,50 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
       case 'quest_elevation_5000':
         unlocked = questElevation >= 5000;
         break;
+      case 'quest_elevation_20000':
+        unlocked = questElevation >= 20000;
+        break;
+      case 'quest_elevation_60000':
+        unlocked = questElevation >= 60000;
+        break;
       case 'quest_level_5':
         unlocked = questLevel >= 5;
         break;
       case 'quest_level_10':
         unlocked = questLevel >= 10;
         break;
+      case 'quest_level_20':
+        unlocked = questLevel >= 20;
+        break;
+      case 'quest_level_30':
+        unlocked = questLevel >= 30;
+        break;
+      case 'quest_ascent_2':
+        unlocked = ascentTier >= 2;
+        break;
+      case 'quest_ascent_3':
+        unlocked = ascentTier >= 3;
+        break;
+      case 'quest_ascent_4':
+        unlocked = ascentTier >= 4;
+        break;
+      case 'quest_ascent_5':
+        unlocked = ascentTier >= 5;
+        break;
+      case 'quest_friend_duo':
+        unlocked = friendCoopClaimsCount >= 1;
+        break;
       case 'quest_claims_10':
         unlocked = questClaimsCount >= 10;
         break;
+      case 'quest_claims_50':
+        unlocked = questClaimsCount >= 50;
+        break;
       case 'quest_team_first':
         unlocked = teamQuestsClaimedCount >= 1;
+        break;
+      case 'quest_team_10':
+        unlocked = teamQuestsClaimedCount >= 10;
         break;
 
       default:

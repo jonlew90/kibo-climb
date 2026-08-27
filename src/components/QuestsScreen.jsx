@@ -26,9 +26,10 @@ import {
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import { questService } from '../services/questService';
-import { COMPANION_BUDDIES, QUEST_RANKS } from '../data/questsData';
+import { COMPANION_BUDDIES, ASCENT_MODES, ASCENT_RANKS, QUEST_RANKS } from '../data/questsData';
 import { storageService } from '../services/storageService';
 import ConfettiCanvas from './ConfettiCanvas';
+import AddFriendModal from './AddFriendModal';
 
 export default function QuestsScreen({
   activeSubject = 'math',
@@ -49,7 +50,8 @@ export default function QuestsScreen({
   const [celebrationReward, setCelebrationReward] = useState(null);
   const [showTeammatePicker, setShowTeammatePicker] = useState(null); // { questId, teamType, slotIndex }
   const [showLevelInfoModal, setShowLevelInfoModal] = useState(false);
-  const [friendsList] = useState(() => storageService.getFriends());
+  const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [friendsList, setFriendsList] = useState(() => storageService.getFriends());
 
   // Update countdown timers periodically
   useEffect(() => {
@@ -254,6 +256,8 @@ export default function QuestsScreen({
           {/* Quest Rank & XP Level Bar */}
           {(() => {
             const levelInfo = questState?.levelInfo || {
+              ascentTier: 1,
+              ascentMode: ASCENT_MODES[0],
               level: 1,
               title: 'Basecamp Explorer',
               icon: '🏕️',
@@ -261,22 +265,41 @@ export default function QuestsScreen({
               xpIntoLevel: 0,
               xpRequiredForLevel: 150,
               progressPct: 0,
-              isMaxLevel: false
+              sparkBonusPct: 0
             };
+
+            const ascentMode = levelInfo.ascentMode || ASCENT_MODES[0];
 
             return (
               <div className="relative z-10 mt-5 pt-4 border-t border-white/15">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <span className="text-2xl drop-shadow-xs">{levelInfo.icon}</span>
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="px-2 py-0.5 rounded-md bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-wider shadow-2xs">
-                          Quest Lv. {levelInfo.level}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {/* Ascent Mode Tag */}
+                        <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 text-[10px] font-black uppercase tracking-wider shadow-2xs flex items-center gap-1">
+                          <span>{ascentMode.icon}</span>
+                          <span>Ascent {levelInfo.ascentTier}: {ascentMode.name}</span>
                         </span>
+
+                        {/* Level Tag */}
+                        <span className="px-2 py-0.5 rounded-md bg-white/25 text-white text-[10px] font-black uppercase tracking-wider">
+                          Lv. {levelInfo.level}
+                        </span>
+
                         <span className="font-black text-sm text-white tracking-wide">
                           {levelInfo.title}
                         </span>
+
+                        {/* Permanent Spark Boost Tag */}
+                        {levelInfo.sparkBonusPct > 0 && (
+                          <span className="px-1.5 py-0.2 rounded-md bg-emerald-400 text-emerald-950 text-[9px] font-black uppercase tracking-wider flex items-center gap-0.5">
+                            <Sparkles className="w-2.5 h-2.5" />
+                            +{levelInfo.sparkBonusPct}% Sparks
+                          </span>
+                        )}
+
                         <button
                           type="button"
                           onClick={() => {
@@ -292,21 +315,16 @@ export default function QuestsScreen({
                       </div>
                       <span className="text-[11px] text-purple-200 block mt-0.5">
                         Total XP: <strong className="text-emerald-300 font-black">{levelInfo.currentXp.toLocaleString()} XP</strong>
+                        <span className="text-purple-300/80 ml-1.5 font-medium">({ascentMode.weather})</span>
                       </span>
                     </div>
                   </div>
 
                   <div className="text-right flex flex-col items-end">
                     <span className="text-xs font-black text-white block">
-                      {levelInfo.isMaxLevel ? (
-                        <span className="text-amber-300">MAX RANK REACHED 👑</span>
-                      ) : (
-                        <span>
-                          {levelInfo.xpIntoLevel} / {levelInfo.xpRequiredForLevel} XP <span className="text-purple-200 font-normal">({levelInfo.progressPct}%)</span>
-                        </span>
-                      )}
+                      {levelInfo.xpIntoLevel} / {levelInfo.xpRequiredForLevel} XP <span className="text-purple-200 font-normal">({levelInfo.progressPct}%)</span>
                     </span>
-                    {!levelInfo.isMaxLevel && levelInfo.nextRankTitle && (
+                    {levelInfo.nextRankTitle && (
                       <span className="text-[10px] text-purple-200">
                         Next: <span className="font-bold text-white">{levelInfo.nextRankTitle}</span>
                       </span>
@@ -473,18 +491,66 @@ export default function QuestsScreen({
                       </p>
 
                       {/* Team Co-op Breakdown for 2-Person & 3-Person */}
-                      {isTeam2 && (
-                        <div className="mt-3 bg-gradient-to-r from-slate-50 to-indigo-50/40 border border-indigo-100 rounded-2xl p-2.5 flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-2.5 text-xs flex-wrap">
-                            <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs">
-                              <span className="text-base">🧗</span>
-                              <div>
-                                <span className="text-[10px] text-slate-500 font-bold block">You</span>
-                                <span className="font-black text-slate-800">{quest.userProgress || 0}</span>
-                              </div>
-                            </div>
+                      {isTeam2 && (() => {
+                        const isRealFriend = quest.partner && typeof quest.partner.id === 'string' && !quest.partner.id.startsWith('buddy_');
 
-                            <span className="text-slate-400 font-bold text-sm">+</span>
+                        return (
+                          <div className={`mt-3 border rounded-2xl p-2.5 flex items-center justify-between gap-2 flex-wrap ${
+                            isRealFriend
+                              ? 'bg-gradient-to-r from-amber-50/70 via-emerald-50/50 to-teal-50/70 border-emerald-300 ring-1 ring-emerald-300/50'
+                              : 'bg-gradient-to-r from-slate-50 to-indigo-50/40 border-indigo-100'
+                          }`}>
+                            <div className="flex items-center gap-2.5 text-xs flex-wrap">
+                              <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                                <span className="text-base">🧗</span>
+                                <div>
+                                  <span className="text-[10px] text-slate-500 font-bold block">You</span>
+                                  <span className="font-black text-slate-800">{quest.userProgress || 0}</span>
+                                </div>
+                              </div>
+
+                              <span className="text-slate-400 font-bold text-sm">+</span>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  soundFx.playKeyTap();
+                                  setShowTeammatePicker({ questId: quest.id, teamType: 'team2', slotIndex: 0, currentPartner: quest.partner, questTitle: quest.title });
+                                }}
+                                className={`flex items-center gap-1.5 bg-white hover:bg-indigo-50 border px-2.5 py-1 rounded-xl transition-all shadow-2xs group cursor-pointer text-left ${
+                                  isRealFriend ? 'border-emerald-300 ring-1 ring-emerald-200' : 'border-indigo-200 hover:border-indigo-400'
+                                }`}
+                                title="Click to choose partner"
+                              >
+                                <span className="text-base group-hover:scale-110 transition-transform">
+                                  {quest.partner?.avatar || '🦁'}
+                                </span>
+                                <div>
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[10px] text-indigo-900 font-black block truncate max-w-[80px]">
+                                      {quest.partner?.name || 'Asha'}
+                                    </span>
+                                    <span className="text-[9px] text-indigo-500 font-bold group-hover:underline">
+                                      Swap 🔄
+                                    </span>
+                                  </div>
+                                  <span className="font-black text-slate-800 text-xs">
+                                    {quest.partnerProgress || 0}
+                                  </span>
+                                </div>
+                              </button>
+
+                              {isRealFriend ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-900 text-[10px] font-black shadow-2xs animate-pulse">
+                                  <Sparkles className="w-3 h-3 text-emerald-600" />
+                                  <span>+25% Friend Synergy</span>
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-500 font-medium hidden sm:inline">
+                                  (Expedition Guide)
+                                </span>
+                              )}
+                            </div>
 
                             <button
                               type="button"
@@ -492,141 +558,129 @@ export default function QuestsScreen({
                                 soundFx.playKeyTap();
                                 setShowTeammatePicker({ questId: quest.id, teamType: 'team2', slotIndex: 0, currentPartner: quest.partner, questTitle: quest.title });
                               }}
-                              className="flex items-center gap-1.5 bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-400 px-2.5 py-1 rounded-xl transition-all shadow-2xs group cursor-pointer text-left"
-                              title="Click to choose partner"
+                              className="flex items-center gap-1 text-[11px] font-black text-indigo-700 hover:text-indigo-950 bg-indigo-100/80 hover:bg-indigo-200 px-2.5 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs hover:scale-102"
                             >
-                              <span className="text-base group-hover:scale-110 transition-transform">
-                                {quest.partner?.avatar || '🦁'}
-                              </span>
-                              <div>
-                                <div className="flex items-center gap-1">
-                                  <span className="text-[10px] text-indigo-900 font-black block truncate max-w-[80px]">
-                                    {quest.partner?.name || 'Asha'}
-                                  </span>
-                                  <span className="text-[9px] text-indigo-500 font-bold group-hover:underline">
-                                    Swap 🔄
-                                  </span>
-                                </div>
-                                <span className="font-black text-slate-800 text-xs">
-                                  {quest.partnerProgress || 0}
-                                </span>
-                              </div>
+                              <UserPlus className="w-3.5 h-3.5" />
+                              <span>{isRealFriend ? 'Change Friend' : 'Invite / Add Friend (+25% Sparks)'}</span>
                             </button>
                           </div>
+                        );
+                      })()}
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              soundFx.playKeyTap();
-                              setShowTeammatePicker({ questId: quest.id, teamType: 'team2', slotIndex: 0, currentPartner: quest.partner, questTitle: quest.title });
-                            }}
-                            className="flex items-center gap-1 text-[11px] font-black text-indigo-700 hover:text-indigo-950 bg-indigo-100/80 hover:bg-indigo-200 px-2.5 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs hover:scale-102"
-                          >
-                            <UserPlus className="w-3.5 h-3.5" />
-                            <span>Change Partner</span>
-                          </button>
-                        </div>
-                      )}
+                      {isTeam3 && (() => {
+                        const hasRealFriend = Array.isArray(quest.partners) && quest.partners.some(p => p && typeof p.id === 'string' && !p.id.startsWith('buddy_'));
 
-                      {isTeam3 && (
-                        <div className="mt-3 bg-gradient-to-r from-slate-50 to-indigo-50/40 border border-indigo-100 rounded-2xl p-2.5 flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-2 text-xs flex-wrap">
-                            {/* User Slot */}
-                            <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-xl border border-slate-200 shadow-2xs">
-                              <span className="text-base">🧗</span>
-                              <div>
-                                <span className="text-[9px] text-slate-500 font-bold block">You</span>
-                                <span className="font-black text-slate-800">{quest.userProgress || 0}</span>
+                        return (
+                          <div className={`mt-3 border rounded-2xl p-2.5 flex items-center justify-between gap-2 flex-wrap ${
+                            hasRealFriend
+                              ? 'bg-gradient-to-r from-amber-50/70 via-emerald-50/50 to-teal-50/70 border-emerald-300 ring-1 ring-emerald-300/50'
+                              : 'bg-gradient-to-r from-slate-50 to-indigo-50/40 border-indigo-100'
+                          }`}>
+                            <div className="flex items-center gap-2 text-xs flex-wrap">
+                              {/* User Slot */}
+                              <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                                <span className="text-base">🧗</span>
+                                <div>
+                                  <span className="text-[9px] text-slate-500 font-bold block">You</span>
+                                  <span className="font-black text-slate-800">{quest.userProgress || 0}</span>
+                                </div>
                               </div>
+
+                              <span className="text-slate-400 font-bold text-xs">+</span>
+
+                              {/* Partner 1 Slot */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  soundFx.playKeyTap();
+                                  setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 0, currentPartner: quest.partners?.[0], questTitle: quest.title });
+                                }}
+                                className="flex items-center gap-1.5 bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-400 px-2 py-1 rounded-xl transition-all shadow-2xs group cursor-pointer text-left"
+                                title="Click to change Partner 1"
+                              >
+                                <span className="text-base group-hover:scale-110 transition-transform">
+                                  {quest.partners?.[0]?.avatar || '🦁'}
+                                </span>
+                                <div>
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[9px] text-indigo-900 font-black block truncate max-w-[65px]">
+                                      {quest.partners?.[0]?.name || 'Asha'}
+                                    </span>
+                                    <span className="text-[8px] text-indigo-500 font-bold group-hover:underline">
+                                      🔄
+                                    </span>
+                                  </div>
+                                  <span className="font-black text-slate-800 text-xs">
+                                    {quest.partnerProgresses?.[0] || 0}
+                                  </span>
+                                </div>
+                              </button>
+
+                              <span className="text-slate-400 font-bold text-xs">+</span>
+
+                              {/* Partner 2 Slot */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  soundFx.playKeyTap();
+                                  setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 1, currentPartner: quest.partners?.[1], questTitle: quest.title });
+                                }}
+                                className="flex items-center gap-1.5 bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-400 px-2 py-1 rounded-xl transition-all shadow-2xs group cursor-pointer text-left"
+                                title="Click to change Partner 2"
+                              >
+                                <span className="text-base group-hover:scale-110 transition-transform">
+                                  {quest.partners?.[1]?.avatar || '🦅'}
+                                </span>
+                                <div>
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[9px] text-indigo-900 font-black block truncate max-w-[65px]">
+                                      {quest.partners?.[1]?.name || 'Leo'}
+                                    </span>
+                                    <span className="text-[8px] text-indigo-500 font-bold group-hover:underline">
+                                      🔄
+                                    </span>
+                                  </div>
+                                  <span className="font-black text-slate-800 text-xs">
+                                    {quest.partnerProgresses?.[1] || 0}
+                                  </span>
+                                </div>
+                              </button>
+
+                              {hasRealFriend && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-900 text-[10px] font-black shadow-2xs animate-pulse">
+                                  <Sparkles className="w-3 h-3 text-emerald-600" />
+                                  <span>+25% Friend Synergy</span>
+                                </span>
+                              )}
                             </div>
 
-                            <span className="text-slate-400 font-bold text-xs">+</span>
-
-                            {/* Partner 1 Slot */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                soundFx.playKeyTap();
-                                setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 0, currentPartner: quest.partners?.[0], questTitle: quest.title });
-                              }}
-                              className="flex items-center gap-1.5 bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-400 px-2 py-1 rounded-xl transition-all shadow-2xs group cursor-pointer text-left"
-                              title="Click to change Partner 1"
-                            >
-                              <span className="text-base group-hover:scale-110 transition-transform">
-                                {quest.partners?.[0]?.avatar || '🦁'}
-                              </span>
-                              <div>
-                                <div className="flex items-center gap-1">
-                                  <span className="text-[9px] text-indigo-900 font-black block truncate max-w-[65px]">
-                                    {quest.partners?.[0]?.name || 'Asha'}
-                                  </span>
-                                  <span className="text-[8px] text-indigo-500 font-bold group-hover:underline">
-                                    🔄
-                                  </span>
-                                </div>
-                                <span className="font-black text-slate-800 text-xs">
-                                  {quest.partnerProgresses?.[0] || 0}
-                                </span>
-                              </div>
-                            </button>
-
-                            <span className="text-slate-400 font-bold text-xs">+</span>
-
-                            {/* Partner 2 Slot */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                soundFx.playKeyTap();
-                                setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 1, currentPartner: quest.partners?.[1], questTitle: quest.title });
-                              }}
-                              className="flex items-center gap-1.5 bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-400 px-2 py-1 rounded-xl transition-all shadow-2xs group cursor-pointer text-left"
-                              title="Click to change Partner 2"
-                            >
-                              <span className="text-base group-hover:scale-110 transition-transform">
-                                {quest.partners?.[1]?.avatar || '🦅'}
-                              </span>
-                              <div>
-                                <div className="flex items-center gap-1">
-                                  <span className="text-[9px] text-indigo-900 font-black block truncate max-w-[65px]">
-                                    {quest.partners?.[1]?.name || 'Leo'}
-                                  </span>
-                                  <span className="text-[8px] text-indigo-500 font-bold group-hover:underline">
-                                    🔄
-                                  </span>
-                                </div>
-                                <span className="font-black text-slate-800 text-xs">
-                                  {quest.partnerProgresses?.[1] || 0}
-                                </span>
-                              </div>
-                            </button>
+                            <div className="flex gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  soundFx.playKeyTap();
+                                  setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 0, currentPartner: quest.partners?.[0], questTitle: quest.title });
+                                }}
+                                className="flex items-center gap-1 text-[10px] font-black text-indigo-700 hover:text-indigo-950 bg-indigo-100/80 hover:bg-indigo-200 px-2 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
+                              >
+                                <UserPlus className="w-3 h-3" />
+                                <span>Swap P1</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  soundFx.playKeyTap();
+                                  setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 1, currentPartner: quest.partners?.[1], questTitle: quest.title });
+                                }}
+                                className="flex items-center gap-1 text-[10px] font-black text-indigo-700 hover:text-indigo-950 bg-indigo-100/80 hover:bg-indigo-200 px-2 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
+                              >
+                                <UserPlus className="w-3 h-3" />
+                                <span>Swap P2</span>
+                              </button>
+                            </div>
                           </div>
-
-                          <div className="flex gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                soundFx.playKeyTap();
-                                setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 0, currentPartner: quest.partners?.[0], questTitle: quest.title });
-                              }}
-                              className="flex items-center gap-1 text-[10px] font-black text-indigo-700 hover:text-indigo-950 bg-indigo-100/80 hover:bg-indigo-200 px-2 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
-                            >
-                              <UserPlus className="w-3 h-3" />
-                              <span>Swap P1</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                soundFx.playKeyTap();
-                                setShowTeammatePicker({ questId: quest.id, teamType: 'team3', slotIndex: 1, currentPartner: quest.partners?.[1], questTitle: quest.title });
-                              }}
-                              className="flex items-center gap-1 text-[10px] font-black text-indigo-700 hover:text-indigo-950 bg-indigo-100/80 hover:bg-indigo-200 px-2 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
-                            >
-                              <UserPlus className="w-3 h-3" />
-                              <span>Swap P2</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                        );
+                      })()}
 
                       {/* Progress Bar */}
                       <div className="mt-3">
@@ -737,13 +791,109 @@ export default function QuestsScreen({
               </span>
             </div>
 
-            <p className="text-xs text-slate-600 mb-4">
-              Select a companion or friend to climb alongside you in <strong className="text-slate-800">{showTeammatePicker.questTitle || 'Team Quest'}</strong>.
-            </p>
+            {/* Friend Synergy Announcement Banner */}
+            <div className="mb-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl p-2.5 shadow-xs flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-300 shrink-0" />
+              <div>
+                <span className="text-[11px] font-black uppercase tracking-wide block">
+                  Friend Synergy Bonus Active!
+                </span>
+                <span className="text-[10px] text-emerald-100 block leading-tight">
+                  Climb with a real friend to earn <strong className="text-amber-200 font-black">+25% Extra Sparks</strong> on this quest!
+                </span>
+              </div>
+            </div>
 
             <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
-              <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
-                Mountain Companions
+              {/* 1. Real Friends Section */}
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase text-emerald-800 tracking-wider flex items-center gap-1">
+                  <span>👥 Your Friends</span>
+                  <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full font-black">+25% Sparks</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setShowAddFriendModal(true);
+                  }}
+                  className="flex items-center gap-1 text-[11px] font-black text-emerald-800 hover:text-emerald-950 bg-emerald-100/90 hover:bg-emerald-200 px-2 py-0.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:scale-102"
+                >
+                  <UserPlus className="w-3 h-3" />
+                  <span>+ Find Friends</span>
+                </button>
+              </div>
+
+              {friendsList && friendsList.length > 0 ? (
+                friendsList.map((friend) => {
+                  const isSelected = showTeammatePicker.currentPartner?.id === friend.id;
+                  return (
+                    <button
+                      key={friend.id}
+                      type="button"
+                      onClick={() => handleSelectTeammate({
+                        id: friend.id,
+                        name: friend.username || friend.name || 'Friend',
+                        avatar: '🧗',
+                        title: 'Climbing Friend'
+                      })}
+                      className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all text-left cursor-pointer group ${
+                        isSelected
+                          ? 'border-emerald-500 bg-emerald-50/80 ring-2 ring-emerald-300'
+                          : 'border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50/50 bg-emerald-50/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">🧗</span>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-black text-sm text-slate-800 block group-hover:text-emerald-950">
+                              {friend.username || friend.name}
+                            </span>
+                            <span className="px-1.5 py-0.2 rounded bg-emerald-200 text-emerald-900 text-[9px] font-black uppercase">
+                              +25% Sparks
+                            </span>
+                            {isSelected && (
+                              <span className="px-1.5 py-0.2 rounded bg-purple-200 text-purple-900 text-[9px] font-black uppercase">
+                                Current
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] text-slate-500 font-bold">
+                            Friend
+                          </span>
+                        </div>
+                      </div>
+                      {isSelected ? (
+                        <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600" />
+                      )}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="p-3.5 bg-emerald-50/50 border border-emerald-200 rounded-2xl text-center space-y-2">
+                  <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                    No friends added yet! Search for friends or share your invite link to earn the <strong className="text-emerald-700 font-bold">+25% Friend Synergy Bonus</strong>!
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowAddFriendModal(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-xs cursor-pointer active:scale-95 transition-all"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>Find & Add Friends (+25% Sparks)</span>
+                  </button>
+                </div>
+              )}
+
+              {/* 2. Mountain Companions (Starter Guides) */}
+              <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider mt-3">
+                Mountain Companions (Starter Guides)
               </span>
               {COMPANION_BUDDIES.map((buddy) => {
                 const isSelected = showTeammatePicker.currentPartner?.id === buddy.id;
@@ -784,58 +934,6 @@ export default function QuestsScreen({
                   </button>
                 );
               })}
-
-              {friendsList && friendsList.length > 0 && (
-                <>
-                  <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider mt-2">
-                    Your Friends
-                  </span>
-                  {friendsList.map((friend) => {
-                    const isSelected = showTeammatePicker.currentPartner?.id === friend.id;
-                    return (
-                      <button
-                        key={friend.id}
-                        type="button"
-                        onClick={() => handleSelectTeammate({
-                          id: friend.id,
-                          name: friend.username || friend.name || 'Friend',
-                          avatar: '🧗',
-                          title: 'Climbing Friend'
-                        })}
-                        className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all text-left cursor-pointer group ${
-                          isSelected
-                            ? 'border-purple-500 bg-purple-50/80 ring-2 ring-purple-300'
-                            : 'border-slate-200 hover:border-purple-400 hover:bg-purple-50/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">🧗</span>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-black text-sm text-slate-800 block group-hover:text-purple-950">
-                                {friend.username || friend.name}
-                              </span>
-                              {isSelected && (
-                                <span className="px-1.5 py-0.2 rounded bg-purple-200 text-purple-900 text-[9px] font-black uppercase">
-                                  Current
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[11px] text-slate-500 font-bold">
-                              Friend
-                            </span>
-                          </div>
-                        </div>
-                        {isSelected ? (
-                          <Check className="w-4 h-4 text-purple-600 stroke-[3]" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </>
-              )}
             </div>
 
             <button
@@ -857,7 +955,7 @@ export default function QuestsScreen({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-purple-200 overflow-hidden cursor-default flex flex-col max-h-[85vh] animate-scaleIn"
+            className="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-purple-200 overflow-hidden cursor-default flex flex-col max-h-[70vh] sm:max-h-[75vh] animate-scaleIn"
           >
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-700 p-4 text-white flex items-center justify-between">
@@ -867,10 +965,10 @@ export default function QuestsScreen({
                 </div>
                 <div>
                   <h3 className="text-base font-black tracking-tight leading-tight">
-                    Quest Level XP Roadmap
+                    Expedition Ascents & Level Roadmap
                   </h3>
                   <p className="text-[11px] text-purple-200">
-                    XP required for all climbing ranks
+                    Conquer 10 levels per Ascent to unlock harder weather & permanent perks!
                   </p>
                 </div>
               </div>
@@ -886,107 +984,152 @@ export default function QuestsScreen({
             {/* Current Player Status Banner */}
             {(() => {
               const currentLvl = questState?.levelInfo?.level || 1;
+              const currentTier = questState?.levelInfo?.ascentTier || 1;
+              const currentAscent = questState?.levelInfo?.ascentMode || ASCENT_MODES[0];
               const currentXp = questState?.levelInfo?.currentXp || 0;
+              const sparkBonus = questState?.levelInfo?.sparkBonusPct || 0;
+
               return (
-                <div className="bg-purple-50 px-4 py-2.5 border-b border-purple-100 flex items-center justify-between text-xs">
-                  <span className="font-bold text-purple-900">
-                    Your Total XP: <strong className="text-purple-700 font-black">{currentXp.toLocaleString()} XP</strong>
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-purple-200 text-purple-900 font-black text-[10px]">
-                    Current: Lv. {currentLvl}
+                <div className="bg-purple-50 px-4 py-2.5 border-b border-purple-100 flex items-center justify-between text-xs flex-wrap gap-2">
+                  <div>
+                    <span className="font-bold text-purple-900 block">
+                      Total Elevation XP: <strong className="text-purple-700 font-black">{currentXp.toLocaleString()} XP</strong>
+                    </span>
+                    <span className="text-[10px] text-purple-600 font-semibold">
+                      Current Boost: <strong className="text-emerald-600 font-black">+{sparkBonus}% Sparks</strong>
+                    </span>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-purple-200 text-purple-900 font-black text-[11px] flex items-center gap-1">
+                    <span>{currentAscent.icon}</span>
+                    <span>Ascent {currentTier} • Lv. {currentLvl}</span>
                   </span>
                 </div>
               );
             })()}
 
-            {/* Level List */}
-            <div className="p-4 overflow-y-auto space-y-2.5 custom-scrollbar flex-1">
-              {QUEST_RANKS.map((rank) => {
-                const currentXp = questState?.levelInfo?.currentXp || 0;
-                const currentLvl = questState?.levelInfo?.level || 1;
-                const isCurrent = currentLvl === rank.level;
-                const isReached = currentXp >= rank.minXp;
-                const xpNeeded = Math.max(0, rank.minXp - currentXp);
+            {/* Modal Body: Ascent Modes & 10 Ranks */}
+            <div className="p-4 overflow-y-auto space-y-3.5 custom-scrollbar flex-1">
+              
+              {/* 1. Ascent Difficulty Tiers Section */}
+              <div>
+                <h4 className="text-[11px] font-black uppercase text-slate-400 tracking-wider mb-2">
+                  Mountain Ascent Difficulty Tiers
+                </h4>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {ASCENT_MODES.map((mode) => {
+                    const currentTier = questState?.levelInfo?.ascentTier || 1;
+                    const isCurrentTier = currentTier === mode.tier;
+                    const isUnlocked = currentTier >= mode.tier;
 
-                return (
-                  <div
-                    key={rank.level}
-                    className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
-                      isCurrent
-                        ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
-                        : isReached
-                        ? 'bg-emerald-50/60 border-emerald-200'
-                        : 'bg-slate-50/70 border-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl drop-shadow-xs">{rank.icon}</span>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={`px-1.5 py-0.2 rounded text-[10px] font-black ${
-                              isCurrent
-                                ? 'bg-amber-400 text-amber-950'
-                                : isReached
-                                ? 'bg-emerald-200 text-emerald-900'
-                                : 'bg-slate-200 text-slate-700'
-                            }`}
-                          >
-                            Lv. {rank.level}
-                          </span>
-                          <span className="font-black text-xs text-slate-800">
-                            {rank.title}
-                          </span>
-                          {isCurrent && (
-                            <span className="px-1.5 py-0.2 rounded-full bg-amber-200 text-amber-900 text-[9px] font-black uppercase">
-                              Current
+                    return (
+                      <div
+                        key={mode.tier}
+                        className={`p-2.5 rounded-2xl border transition-all flex items-center justify-between gap-2 ${
+                          isCurrentTier
+                            ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
+                            : isUnlocked
+                            ? 'bg-emerald-50/60 border-emerald-200'
+                            : 'bg-slate-50 border-slate-200 opacity-75'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-2xl">{mode.icon}</span>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-black text-xs text-slate-800">
+                                Ascent {mode.tier}: {mode.name}
+                              </span>
+                              {isCurrentTier && (
+                                <span className="px-1.5 py-0.2 rounded-full bg-amber-200 text-amber-950 text-[9px] font-black uppercase">
+                                  Current
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-slate-500 block">
+                              {mode.subtitle} • {mode.weather}
                             </span>
-                          )}
+                          </div>
                         </div>
 
-                        {/* Rewards tags */}
-                        <div className="flex items-center gap-1 mt-1 flex-wrap">
-                          {rank.reward?.sparks && (
-                            <span className="text-[10px] font-bold text-amber-800 bg-amber-100/80 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
-                              <Sparkles className="w-2.5 h-2.5 text-amber-600" />
-                              +{rank.reward.sparks} Sparks
-                            </span>
-                          )}
-                          {rank.reward?.shields && (
-                            <span className="text-[10px] font-bold text-indigo-800 bg-indigo-100/80 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
-                              <Shield className="w-2.5 h-2.5 text-indigo-600" />
-                              +{rank.reward.shields} Shield
-                            </span>
-                          )}
-                          {!rank.reward && (
-                            <span className="text-[10px] text-slate-400 font-medium">
-                              Starting Rank
-                            </span>
-                          )}
+                        <div className="text-right shrink-0">
+                          <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md block">
+                            +{mode.sparkBonusPct}% Sparks
+                          </span>
+                          <span className="text-[9px] text-slate-400 font-bold block mt-0.5">
+                            {mode.minXp.toLocaleString()} XP
+                          </span>
                         </div>
                       </div>
-                    </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-                    {/* XP Requirement Details */}
-                    <div className="text-right shrink-0">
-                      <div className="font-black text-xs text-slate-800">
-                        {rank.minXp.toLocaleString()} <span className="text-[10px] font-medium text-slate-500">XP</span>
-                      </div>
-                      <div className="text-[10px] font-bold mt-0.5">
-                        {isReached ? (
-                          <span className="text-emerald-600 flex items-center gap-0.5 justify-end">
-                            <Check className="w-3 h-3 stroke-[3]" /> Unlocked
+              {/* 2. The 10 Core Mountain Levels per Ascent */}
+              <div>
+                <h4 className="text-[11px] font-black uppercase text-slate-400 tracking-wider mb-2">
+                  10 Mountain Levels in Current Ascent
+                </h4>
+                <div className="space-y-1.5">
+                  {ASCENT_RANKS.map((rank) => {
+                    const currentLvl = questState?.levelInfo?.level || 1;
+                    const isCurrent = currentLvl === rank.level;
+                    const isReached = currentLvl >= rank.level;
+
+                    return (
+                      <div
+                        key={rank.level}
+                        className={`p-2.5 rounded-2xl border transition-all flex items-center justify-between gap-2 ${
+                          isCurrent
+                            ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
+                            : isReached
+                            ? 'bg-emerald-50/50 border-emerald-200'
+                            : 'bg-slate-50/70 border-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-xl">{rank.icon}</span>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`px-1.5 py-0.2 rounded text-[10px] font-black ${
+                                isCurrent ? 'bg-amber-400 text-amber-950' : isReached ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-200 text-slate-700'
+                              }`}>
+                                Lv. {rank.level}
+                              </span>
+                              <span className="font-black text-xs text-slate-800">
+                                {rank.title}
+                              </span>
+                            </div>
+
+                            {rank.reward?.sparks && (
+                              <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded-md inline-flex items-center gap-0.5 mt-0.5">
+                                <Sparkles className="w-2 h-2 text-amber-600" />
+                                +{rank.reward.sparks} Sparks
+                                {rank.reward.shields ? ` • +${rank.reward.shields} Shield` : ''}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {isCurrent ? (
+                          <span className="text-[10px] font-black text-amber-800 bg-amber-200 px-2 py-0.5 rounded-full">
+                            Active Level
+                          </span>
+                        ) : isReached ? (
+                          <span className="text-emerald-600 text-[10px] font-bold flex items-center gap-0.5">
+                            <Check className="w-3 h-3 stroke-[3]" /> Conquered
                           </span>
                         ) : (
-                          <span className="text-purple-600 font-extrabold">
-                            +{xpNeeded.toLocaleString()} XP needed
+                          <span className="text-slate-400 text-[10px] font-medium">
+                            Locked
                           </span>
                         )}
                       </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
+
             </div>
 
             {/* Modal Footer */}
@@ -1014,26 +1157,47 @@ export default function QuestsScreen({
             className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border-2 border-amber-300 text-center animate-scaleIn cursor-default"
           >
             <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner">
-              {celebrationReward.leveledUp ? '🎉' : '🎁'}
+              {celebrationReward.leveledUp?.isSummit ? '🏔️' : celebrationReward.leveledUp ? '🎉' : '🎁'}
             </div>
             
             <h3 className="text-xl font-black text-slate-900 mb-1">
-              {celebrationReward.leveledUp ? 'Quest Rank Up!' : 'Quest Complete!'}
+              {celebrationReward.leveledUp?.isSummit
+                ? 'Ascent Summit Conquered!'
+                : celebrationReward.leveledUp
+                ? 'Quest Rank Up!'
+                : 'Quest Complete!'}
             </h3>
 
             {celebrationReward.leveledUp ? (
               <div className="mb-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl p-3 shadow-md">
                 <span className="text-xs font-black uppercase tracking-wider block opacity-90">
-                  New Quest Rank Achieved
+                  {celebrationReward.leveledUp.isSummit
+                    ? `Promoted to Ascent ${celebrationReward.leveledUp.newTier}!`
+                    : 'New Level Achieved'}
                 </span>
                 <span className="text-lg font-black block mt-0.5">
-                  Lv. {celebrationReward.leveledUp.newLevel} {celebrationReward.leveledUp.rank?.title || ''} {celebrationReward.leveledUp.rank?.icon || ''}
+                  {celebrationReward.leveledUp.isSummit
+                    ? `${celebrationReward.leveledUp.newAscentMode?.name || 'Next Peak'} ${celebrationReward.leveledUp.newAscentMode?.icon || '👑'}`
+                    : `Lv. ${celebrationReward.leveledUp.newLevel} ${celebrationReward.leveledUp.rank?.title || ''} ${celebrationReward.leveledUp.rank?.icon || ''}`}
                 </span>
+                {celebrationReward.leveledUp.isSummit && (
+                  <span className="text-xs font-bold text-amber-100 block mt-1">
+                    Permanent Perk: +{celebrationReward.leveledUp.newAscentMode?.sparkBonusPct || 0}% Sparks on all future climbs!
+                  </span>
+                )}
               </div>
             ) : (
               <p className="text-xs text-slate-600 mb-4">
                 Awesome climbing! Your rewards have been added to your inventory.
               </p>
+            )}
+
+            {/* Real Friend Synergy Bonus Highlight */}
+            {celebrationReward.friendSynergySparks > 0 && (
+              <div className="mb-3 bg-emerald-50 border border-emerald-300 rounded-2xl p-2 flex items-center justify-center gap-1.5 text-xs font-black text-emerald-900">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 fill-emerald-500" />
+                <span>Includes +{celebrationReward.friendSynergySparks} Real Friend Synergy Bonus!</span>
+              </div>
             )}
 
             {/* Unlocked Badges announcement if any */}
@@ -1086,6 +1250,19 @@ export default function QuestsScreen({
           </div>
         </div>
       )}
+
+      {/* Add / Search Friends Modal */}
+      <AddFriendModal
+        isOpen={showAddFriendModal}
+        onClose={() => {
+          setShowAddFriendModal(false);
+          setFriendsList(storageService.getFriends());
+        }}
+        activeSubject={activeSubject}
+        onFriendAdded={() => {
+          setFriendsList(storageService.getFriends());
+        }}
+      />
 
       {/* Render Sticky Bottom Navigation Footer */}
       {renderFooter ? renderFooter() : null}

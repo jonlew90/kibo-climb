@@ -394,12 +394,12 @@ export default function AddFriendModal({
 
               {/* Quick Invite Link Card */}
               <div className="p-3 bg-gradient-to-r from-purple-50 to-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-between gap-2">
-                <div className="overflow-hidden">
+                <div className="min-w-0 flex-1">
                   <div className="text-xs font-black text-indigo-900 flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Share Invite Link
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" /> Share Invite Link
                   </div>
-                  <div className="text-[11px] text-slate-500 font-medium truncate">
-                    Friends get 500 Sparks when they join!
+                  <div className="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">
+                    Friends get 500 Sparks & you earn exclusive rewards!
                   </div>
                 </div>
                 <button

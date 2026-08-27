@@ -637,15 +637,31 @@ export const BADGES_CATALOG = [
   },
   {
     id: 'quest_elevation_5000',
-    title: 'Summit Trail Master',
+    title: 'Moorland Master',
     description: 'Conquered 5,000+ meters of Elevation XP on Mount Kibo!',
     category: 'quests',
     icon: '⛰️',
     reqText: 'Gain 5,000m Quest Elevation XP'
   },
   {
+    id: 'quest_elevation_20000',
+    title: 'Alpine Pioneer',
+    description: 'Conquered 20,000+ meters of Elevation XP high on the mountain!',
+    category: 'quests',
+    icon: '🧗',
+    reqText: 'Gain 20,000m Quest Elevation XP'
+  },
+  {
+    id: 'quest_elevation_60000',
+    title: 'Stratosphere Conqueror',
+    description: 'Conquered 60,000+ meters of Elevation XP reaching celestial heights!',
+    category: 'quests',
+    icon: '🌌',
+    reqText: 'Gain 60,000m Quest Elevation XP'
+  },
+  {
     id: 'quest_level_5',
-    title: 'High-Altitude Pioneer',
+    title: 'Altitude Pioneer',
     description: 'Reached Quest Level 5 on the mountain progression trail!',
     category: 'quests',
     icon: '⚡',
@@ -653,11 +669,67 @@ export const BADGES_CATALOG = [
   },
   {
     id: 'quest_level_10',
-    title: 'Apex Summit Climber',
-    description: 'Reached the maximum Quest Level 10! The summit is yours.',
+    title: 'Shira Ridge Champion',
+    description: 'Conquered Quest Level 10 and mastered the Shira Plateau!',
+    category: 'quests',
+    icon: '🛡️',
+    reqText: 'Reach Quest Level 10'
+  },
+  {
+    id: 'quest_level_20',
+    title: 'Uhuru Summit Legend',
+    description: 'Reached Quest Level 20 and stood atop the roof of Africa!',
     category: 'quests',
     icon: '👑',
-    reqText: 'Reach Quest Level 10'
+    reqText: 'Reach Quest Level 20'
+  },
+  {
+    id: 'quest_level_30',
+    title: 'Apex Cosmic Sovereign',
+    description: 'Reached Quest Level 30! The highest peak in the universe is yours.',
+    category: 'quests',
+    icon: '🏆',
+    reqText: 'Reach Quest Level 30'
+  },
+  {
+    id: 'quest_ascent_2',
+    title: 'Alpine Gale Climber',
+    description: 'Conquered Ascent 1 and unlocked Ascent 2: Alpine Gale (+10% Spark Boost)!',
+    category: 'quests',
+    icon: '💨',
+    reqText: 'Reach Ascent Tier 2'
+  },
+  {
+    id: 'quest_ascent_3',
+    title: 'Blizzard Legend',
+    description: 'Conquered Ascent 2 and unlocked Ascent 3: Glacial Blizzard (+20% Spark Boost)!',
+    category: 'quests',
+    icon: '❄️',
+    reqText: 'Reach Ascent Tier 3'
+  },
+  {
+    id: 'quest_ascent_4',
+    title: 'Midnight Sovereign',
+    description: 'Conquered Ascent 3 and unlocked Ascent 4: Midnight Summit (+30% Spark Boost)!',
+    category: 'quests',
+    icon: '🌙',
+    reqText: 'Reach Ascent Tier 4'
+  },
+  {
+    id: 'quest_ascent_5',
+    title: 'Cosmic Apex Master',
+    description: 'Conquered Ascent 4 and entered the legendary Cosmic Apex (+50% Spark Boost)!',
+    category: 'quests',
+    icon: '👑',
+    reqText: 'Reach Ascent Tier 5'
+  },
+  {
+    id: 'quest_friend_duo',
+    title: 'True Friends Duo',
+    description: 'Completed a collaborative team quest with a real friend and earned the +25% Friend Synergy Spark Bonus!',
+    category: 'quests',
+    icon: '💖',
+    reqText: 'Complete 1 Team Quest with a Friend'
   },
   {
     id: 'quest_claims_10',
@@ -668,12 +740,28 @@ export const BADGES_CATALOG = [
     reqText: 'Claim 10 total Quests'
   },
   {
+    id: 'quest_claims_50',
+    title: 'Master Expeditionary',
+    description: 'Successfully completed and claimed 50 total quests!',
+    category: 'quests',
+    icon: '🌟',
+    reqText: 'Claim 50 total Quests'
+  },
+  {
     id: 'quest_team_first',
     title: 'Expedition Partner',
     description: 'Completed and claimed a collaborative Team Quest!',
     category: 'quests',
     icon: '🤝',
     reqText: 'Complete 1 Team Quest'
+  },
+  {
+    id: 'quest_team_10',
+    title: 'Squad Commander',
+    description: 'Completed and claimed 10 collaborative Team Quests with your partners!',
+    category: 'quests',
+    icon: '👥',
+    reqText: 'Complete 10 Team Quests'
   }
 ];
 

@@ -337,58 +337,185 @@ export const TEAM_3P_QUEST_POOL = [
   }
 ];
 
-export const QUEST_RANKS = [
-  { level: 1, title: 'Basecamp Explorer', minXp: 0, icon: '🏕️', reward: null },
-  { level: 2, title: 'Trailhead Scout', minXp: 150, icon: '🥾', reward: { sparks: 50 } },
-  { level: 3, title: 'Ridge Runner', minXp: 350, icon: '🌲', reward: { sparks: 75, shields: 1 } },
-  { level: 4, title: 'Alpine Climber', minXp: 650, icon: '🧗', reward: { sparks: 100 } },
-  { level: 5, title: 'Altitude Pioneer', minXp: 1050, icon: '⚡', reward: { sparks: 150, shields: 1 } },
-  { level: 6, title: 'Glacier Voyager', minXp: 1600, icon: '❄️', reward: { sparks: 175 } },
-  { level: 7, title: 'Highland Navigator', minXp: 2300, icon: '🧭', reward: { sparks: 200, shields: 1 } },
-  { level: 8, title: 'Summit Vanguard', minXp: 3200, icon: '🦅', reward: { sparks: 250 } },
-  { level: 9, title: 'Peak Master', minXp: 4300, icon: '👑', reward: { sparks: 300, shields: 2 } },
-  { level: 10, title: 'Kibo Summit Legend', minXp: 5600, icon: '🏔️', reward: { sparks: 500, shields: 3 } }
+export const ASCENT_MODES = [
+  {
+    tier: 1,
+    name: 'Sunny Trailhead',
+    subtitle: 'Standard Expedition',
+    icon: '☀️',
+    weather: 'Clear Skies',
+    color: 'from-amber-500 to-orange-500',
+    sparkBonusPct: 0,
+    minXp: 0,
+    maxXp: 5600,
+    summitReward: { sparks: 300, shields: 2 }
+  },
+  {
+    tier: 2,
+    name: 'Alpine Gale',
+    subtitle: 'High Winds Expedition',
+    icon: '💨',
+    weather: 'High Winds',
+    color: 'from-sky-500 to-indigo-600',
+    sparkBonusPct: 10,
+    minXp: 5600,
+    maxXp: 15000,
+    summitReward: { sparks: 500, shields: 3 }
+  },
+  {
+    tier: 3,
+    name: 'Glacial Blizzard',
+    subtitle: 'Sub-Zero Ice Expedition',
+    icon: '❄️',
+    weather: 'Freezing Blizzard',
+    color: 'from-cyan-500 to-blue-700',
+    sparkBonusPct: 20,
+    minXp: 15000,
+    maxXp: 30000,
+    summitReward: { sparks: 750, shields: 3 }
+  },
+  {
+    tier: 4,
+    name: 'Midnight Summit',
+    subtitle: 'Moonlit Ridge Push',
+    icon: '🌙',
+    weather: 'Midnight Chill',
+    color: 'from-indigo-700 to-purple-900',
+    sparkBonusPct: 30,
+    minXp: 30000,
+    maxXp: 55000,
+    summitReward: { sparks: 1000, shields: 4 }
+  },
+  {
+    tier: 5,
+    name: 'Cosmic Apex',
+    subtitle: 'Infinite Sovereign Master',
+    icon: '👑',
+    weather: 'Starlight Void',
+    color: 'from-purple-600 via-pink-600 to-amber-500',
+    sparkBonusPct: 50,
+    minXp: 55000,
+    maxXp: null,
+    summitReward: { sparks: 1500, shields: 5 }
+  }
 ];
+
+export const ASCENT_RANKS = [
+  { level: 1, title: 'Basecamp Explorer', icon: '🏕️', reward: null },
+  { level: 2, title: 'Trailhead Scout', icon: '🥾', reward: { sparks: 50 } },
+  { level: 3, title: 'Forest Wanderer', icon: '🌲', reward: { sparks: 60 } },
+  { level: 4, title: 'Ridge Runner', icon: '🧗', reward: { sparks: 75, shields: 1 } },
+  { level: 5, title: 'Altitude Pioneer', icon: '⚡', reward: { sparks: 100, shields: 1 } },
+  { level: 6, title: 'Moorland Ranger', icon: '🌿', reward: { sparks: 120 } },
+  { level: 7, title: 'Highland Navigator', icon: '🧭', reward: { sparks: 140, shields: 1 } },
+  { level: 8, title: 'Plateau Pathfinder', icon: '🦅', reward: { sparks: 160 } },
+  { level: 9, title: 'Glacier Voyager', icon: '❄️', reward: { sparks: 180, shields: 1 } },
+  { level: 10, title: 'Summit Sovereign', icon: '👑', reward: { sparks: 250, shields: 2 } }
+];
+
+// Helper: Level XP curves per Ascent Mode
+const ASCENT_LEVEL_THRESHOLDS = {
+  1: [0, 150, 350, 650, 1050, 1600, 2300, 3200, 4300, 5600],
+  2: [5600, 6000, 6600, 7400, 8400, 9600, 10900, 12300, 13700, 15000],
+  3: [15000, 15800, 16800, 18100, 19700, 21600, 23700, 25900, 28000, 30000],
+  4: [30000, 31500, 33500, 36000, 39000, 42500, 46200, 50000, 53000, 55000]
+};
+
+// Backward-compatible export of flattened ranks for legacy references
+export const QUEST_RANKS = ASCENT_RANKS.map((r, i) => ({
+  ...r,
+  minXp: ASCENT_LEVEL_THRESHOLDS[1][i]
+}));
 
 export function getQuestLevelInfo(totalXp = 0) {
   const safeXp = Math.max(0, Number(totalXp) || 0);
-  let currentRankIndex = 0;
 
-  for (let i = QUEST_RANKS.length - 1; i >= 0; i--) {
-    if (safeXp >= QUEST_RANKS[i].minXp) {
-      currentRankIndex = i;
-      break;
+  // 1. Determine Ascent Mode Tier
+  let currentTier = 1;
+  let ascentMode = ASCENT_MODES[0];
+
+  if (safeXp >= 55000) {
+    currentTier = 5;
+    ascentMode = ASCENT_MODES[4];
+  } else if (safeXp >= 30000) {
+    currentTier = 4;
+    ascentMode = ASCENT_MODES[3];
+  } else if (safeXp >= 15000) {
+    currentTier = 3;
+    ascentMode = ASCENT_MODES[2];
+  } else if (safeXp >= 5600) {
+    currentTier = 2;
+    ascentMode = ASCENT_MODES[1];
+  }
+
+  // 2. Determine Level 1..10 within the Ascent
+  let level = 1;
+  let levelStartXp = 0;
+  let nextLevelXp = 150;
+  let currentRank = ASCENT_RANKS[0];
+  let nextRank = ASCENT_RANKS[1];
+
+  if (currentTier <= 4) {
+    const thresholds = ASCENT_LEVEL_THRESHOLDS[currentTier];
+    for (let i = thresholds.length - 1; i >= 0; i--) {
+      if (safeXp >= thresholds[i]) {
+        level = i + 1;
+        levelStartXp = thresholds[i];
+        currentRank = ASCENT_RANKS[i];
+        break;
+      }
+    }
+
+    if (level < 10) {
+      nextLevelXp = thresholds[level];
+      nextRank = ASCENT_RANKS[level];
+    } else {
+      // At Level 10 of current tier: Next milestone is Summit Promotion to next Ascent!
+      const nextAscent = ASCENT_MODES[currentTier]; // tier index + 1
+      nextLevelXp = nextAscent ? nextAscent.minXp : thresholds[9] + 2500;
+      nextRank = {
+        title: nextAscent ? `${nextAscent.name} (Ascent ${nextAscent.tier})` : 'Summit Promotion',
+        reward: ascentMode.summitReward
+      };
+    }
+  } else {
+    // Infinite Cosmic Apex Tier 5+ (Looping every 30,000 XP)
+    const baseApexXp = 55000;
+    const apexCycleXp = 30000;
+    const overflow = safeXp - baseApexXp;
+    const cycle = Math.floor(overflow / apexCycleXp);
+    const xpInCycle = overflow % apexCycleXp;
+
+    // Distribute 10 levels across 30,000 XP in the cycle (~3,000 XP per level)
+    const step = apexCycleXp / 10;
+    const lvlIdx = Math.min(9, Math.floor(xpInCycle / step));
+    level = lvlIdx + 1;
+    currentRank = ASCENT_RANKS[lvlIdx];
+
+    const cycleBaseXp = baseApexXp + cycle * apexCycleXp;
+    levelStartXp = cycleBaseXp + lvlIdx * step;
+    nextLevelXp = levelStartXp + step;
+
+    if (level < 10) {
+      nextRank = ASCENT_RANKS[lvlIdx + 1];
+    } else {
+      nextRank = {
+        title: `Cosmic Summit Loop ⭐${cycle + 2}`,
+        reward: ascentMode.summitReward
+      };
     }
   }
 
-  const currentRank = QUEST_RANKS[currentRankIndex];
-  const nextRank = QUEST_RANKS[currentRankIndex + 1] || null;
-
-  if (!nextRank) {
-    return {
-      level: currentRank.level,
-      title: currentRank.title,
-      icon: currentRank.icon,
-      currentXp: safeXp,
-      levelStartXp: currentRank.minXp,
-      nextLevelXp: currentRank.minXp,
-      xpIntoLevel: 0,
-      xpRequiredForLevel: 0,
-      progressPct: 100,
-      isMaxLevel: true,
-      reward: currentRank.reward
-    };
-  }
-
-  const levelStartXp = currentRank.minXp;
-  const nextLevelXp = nextRank.minXp;
-  const xpRequiredForLevel = nextLevelXp - levelStartXp;
-  const xpIntoLevel = safeXp - levelStartXp;
+  const xpRequiredForLevel = Math.max(1, nextLevelXp - levelStartXp);
+  const xpIntoLevel = Math.max(0, safeXp - levelStartXp);
   const progressPct = Math.min(100, Math.max(0, Math.round((xpIntoLevel / xpRequiredForLevel) * 100)));
 
   return {
-    level: currentRank.level,
+    ascentTier: currentTier,
+    ascentMode,
+    level,
     title: currentRank.title,
+    fullTitle: `[Ascent ${currentTier}: ${ascentMode.name}] Lv. ${level} • ${currentRank.title}`,
     icon: currentRank.icon,
     currentXp: safeXp,
     levelStartXp,
@@ -396,9 +523,11 @@ export function getQuestLevelInfo(totalXp = 0) {
     xpIntoLevel,
     xpRequiredForLevel,
     progressPct,
+    sparkBonusPct: ascentMode.sparkBonusPct,
+    sparkBonusMultiplier: 1 + (ascentMode.sparkBonusPct / 100),
     isMaxLevel: false,
-    nextRankTitle: nextRank.title,
-    nextRankReward: nextRank.reward
+    nextRankTitle: nextRank?.title || 'Next Peak',
+    nextRankReward: nextRank?.reward || null
   };
 }
 
