@@ -41,3 +41,5 @@ functions/*credentials*.json
 functions/*service-account*.json
 test-results/
 coverage
+
+.firebase/
