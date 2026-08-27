@@ -534,6 +534,17 @@ export default function MathSessionView({
     };
   }, []);
 
+  useEffect(() => {
+    if (hasStartedClimb && !isPaused) {
+      KiboAudioManager.startBGM();
+    } else {
+      KiboAudioManager.stopBGM();
+    }
+    return () => {
+      KiboAudioManager.stopBGM();
+    };
+  }, [hasStartedClimb, isPaused]);
+
   // Ensure new problems generated dynamically when queue gets low (deduplicated across active block)
   const replenishQueueIfNeeded = (nextIndex) => {
     if (nextIndex >= problemQueue.length - 3) {

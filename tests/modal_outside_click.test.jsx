@@ -41,7 +41,7 @@ vi.mock('../src/utils/audio', () => ({
   soundFx: {
     playVictory: vi.fn(),
     playKeyTap: vi.fn(),
-    playIncorrect: vi.fn()
+    playIncorrect: vi.fn(), setMuted: vi.fn(), startBGM: vi.fn(), stopBGM: vi.fn(), setMusicMuted: vi.fn()
   }
 }));
 

@@ -556,13 +556,16 @@ export default function App() {
   const [durationInSeconds, setDurationInSeconds] = useState(0);
 
   const [preferences, setPreferences] = useState(() => {
-    const defaultPrefs = { hideSprintTimer: false, isMuted: false, isHapticsEnabled: true };
+    const defaultPrefs = { hideSprintTimer: false, isMuted: false, isMusicMuted: false, isHapticsEnabled: true };
     return { ...defaultPrefs, ...(storageService.getUserData(activeSubject).preferences || {}) };
   });
 
   // Apply preferences to audio engine and initialize multi-profile reminders on load
   useEffect(() => {
     soundFx.setMuted(preferences.isMuted);
+    if (soundFx.setMusicMuted) {
+      soundFx.setMusicMuted(preferences.isMusicMuted);
+    }
     setHapticsEnabled(preferences.isHapticsEnabled);
     scheduleAllProfileReminders();
   }, []);
@@ -573,6 +576,9 @@ export default function App() {
 
     if (newPrefs.isMuted !== undefined) {
       soundFx.setMuted(newPrefs.isMuted);
+    }
+    if (newPrefs.isMusicMuted !== undefined && soundFx.setMusicMuted) {
+      soundFx.setMusicMuted(newPrefs.isMusicMuted);
     }
     if (newPrefs.isHapticsEnabled !== undefined) {
       setHapticsEnabled(newPrefs.isHapticsEnabled);
@@ -636,10 +642,14 @@ export default function App() {
     const prefs = {
       hideSprintTimer: false,
       isMuted: false,
+      isMusicMuted: false,
       isHapticsEnabled: true,
       ...(uData.preferences || {})
     };
     soundFx.setMuted(prefs.isMuted);
+    if (soundFx.setMusicMuted) {
+      soundFx.setMusicMuted(prefs.isMusicMuted);
+    }
     setHapticsEnabled(prefs.isHapticsEnabled);
     setPreferences(prefs);
     setIsDoubleSparksActive(false);

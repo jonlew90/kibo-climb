@@ -302,6 +302,17 @@ export default function CodingSessionView({
     }
   }, [isPaused, hasStartedClimb]);
 
+  useEffect(() => {
+    if (hasStartedClimb && !isPaused && !isAutoPaused) {
+      KiboAudioManager.startBGM();
+    } else {
+      KiboAudioManager.stopBGM();
+    }
+    return () => {
+      KiboAudioManager.stopBGM();
+    };
+  }, [hasStartedClimb, isPaused, isAutoPaused]);
+
   // Handle Tab Visibility & Navigating Away pausing/resume logic
   useEffect(() => {
     const handleVisibilityChange = () => {

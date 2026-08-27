@@ -1,9 +1,10 @@
 import React from 'react';
-import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, Mail, ArrowLeft } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, Mail, ArrowLeft, Music } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
 export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter, onNavigate, onBack, onOpenFeedback, onOpenParentZone, onSwitchProfile }) {
   const isMuted = preferences?.isMuted ?? false;
+  const isMusicMuted = preferences?.isMusicMuted ?? false;
   const isHapticsEnabled = preferences?.isHapticsEnabled ?? true;
 
   const handleBack = () => {
@@ -18,6 +19,11 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
   const handleToggleMute = () => {
     soundFx.playKeyTap();
     onUpdatePreferences({ ...preferences, isMuted: !isMuted });
+  };
+
+  const handleToggleMusic = () => {
+    soundFx.playKeyTap();
+    onUpdatePreferences({ ...preferences, isMusicMuted: !isMusicMuted });
   };
 
   const handleToggleHaptics = () => {
@@ -112,7 +118,7 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
                 </div>
                 <div>
                   <span className="font-extrabold text-slate-700 block text-sm">Sound Effects</span>
-                  <span className="text-xs text-slate-500">In-game audio and music</span>
+                  <span className="text-xs text-slate-500">In-game sound effects</span>
                 </div>
               </div>
               <button
@@ -120,6 +126,24 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
                 className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${!isMuted ? 'bg-emerald-500' : 'bg-slate-300'}`}
               >
                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${!isMuted ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-xl border-2 ${!isMusicMuted ? 'bg-purple-100 border-purple-300 text-purple-600' : 'bg-slate-200 border-slate-300 text-slate-500'}`}>
+                  <Music className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-slate-700 block text-sm">Background Music</span>
+                  <span className="text-xs text-slate-500">In-game background music</span>
+                </div>
+              </div>
+              <button
+                onClick={handleToggleMusic}
+                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${!isMusicMuted ? 'bg-emerald-500' : 'bg-slate-300'}`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${!isMusicMuted ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
             </div>
 

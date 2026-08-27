@@ -22,6 +22,10 @@ class SoundSystem {
   constructor() {
     this.ctx = null;
     this.isMuted = false;
+    this.isMusicMuted = false;
+    this.bgmOscillator = null;
+    this.bgmGain = null;
+    this.bgmInterval = null;
   }
 
   init() {
@@ -43,6 +47,73 @@ class SoundSystem {
 
   setMuted(muted) {
     this.isMuted = muted;
+  }
+
+  setMusicMuted(muted) {
+    this.isMusicMuted = muted;
+    if (muted) {
+      this.stopBGM();
+    } else {
+      // Re-start BGM if it should be playing. For simplicity, we just allow the session to start it.
+    }
+  }
+
+  startBGM() {
+    if (this.isMusicMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    // Stop any existing BGM loop
+    this.stopBGM();
+
+    // Simple generative loop using Web Audio API
+    // We will play a gentle sequence of notes periodically
+    const notes = [
+      261.63, // C4
+      329.63, // E4
+      392.00, // G4
+      523.25  // C5
+    ];
+
+    let noteIndex = 0;
+
+    const playNextNote = () => {
+      if (this.isMusicMuted) return;
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(notes[noteIndex], now);
+
+      // Very soft volume
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.05, now + 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 2.0);
+
+      noteIndex = (noteIndex + 1) % notes.length;
+    };
+
+    // Play first note immediately
+    playNextNote();
+
+    // Set up loop
+    this.bgmInterval = setInterval(playNextNote, 2000);
+  }
+
+  stopBGM() {
+    if (this.bgmInterval) {
+      clearInterval(this.bgmInterval);
+      this.bgmInterval = null;
+    }
   }
 
   // Play crisp pop for correct answers + haptic pulse

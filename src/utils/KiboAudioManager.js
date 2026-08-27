@@ -10,8 +10,20 @@ class KiboAudioManagerEngine {
     return this.soundFx.isMuted;
   }
 
+  get isMusicMuted() {
+    return this.soundFx.isMusicMuted;
+  }
+
   toggleMute() {
     return this.soundFx.toggleMute();
+  }
+
+  startBGM() {
+    this.soundFx.startBGM();
+  }
+
+  stopBGM() {
+    this.soundFx.stopBGM();
   }
 
   // Play rising major chord chime (C5 -> E5 -> G5)
