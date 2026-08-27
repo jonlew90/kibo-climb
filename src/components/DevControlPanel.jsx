@@ -8,6 +8,8 @@ import { getTierFromRating } from '../utils/mathCurriculum';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { SEASONAL_EVENTS } from '../utils/itemsCatalog';
 
+import { SUBJECTS_CONFIG } from '../config/subjects';
+
 export default function DevControlPanel({
   isOpen,
   onClose,
@@ -17,15 +19,16 @@ export default function DevControlPanel({
   onUnlockAllWorkshopItems,
   onStateRefresh
 }) {
+  const [selectedSubject, setSelectedSubject] = useState('math');
   const [ratingInput, setRatingInput] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [testEmail, setTestEmail] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [customDateInput, setCustomDateInput] = useState('');
 
-  const currentData = storageService.getUserData('math');
+  const currentData = storageService.getUserData(selectedSubject);
   const currentRating = currentData.adaptiveCompetenceRating || currentData.competenceRank || 1000;
-  const currentSparks = currentData.sparks || 0;
+  const currentSparks = storageService.getUserData('math').sparks || 0;
   const activeProfile = storageService.getActiveProfile() || {};
   const childName = activeProfile.name || 'Your Child';
 
@@ -104,19 +107,41 @@ export default function DevControlPanel({
               </span>
             </div>
 
+            {/* Subject Selector Tabs */}
+            <div className="grid grid-cols-4 gap-1.5 p-1 bg-slate-950/60 border border-slate-700/60 rounded-xl">
+              {Object.keys(SUBJECTS_CONFIG).map((subKey) => {
+                const sub = SUBJECTS_CONFIG[subKey];
+                const isSelected = selectedSubject === subKey;
+                return (
+                  <button
+                    key={subKey}
+                    onClick={() => setSelectedSubject(subKey)}
+                    className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-extrabold transition-all ${
+                      isSelected
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <span>{sub.icon}</span>
+                    <span>{sub.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="flex items-center gap-2">
               <input
                 type="number"
                 value={ratingInput}
                 onChange={(e) => setRatingInput(e.target.value)}
-                placeholder={`Current: ${currentRating}`}
+                placeholder={`Current ${SUBJECTS_CONFIG[selectedSubject]?.name || selectedSubject}: ${currentRating}`}
                 className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
               />
               <button
                 onClick={() => {
                   if (ratingInput) {
-                    onSetRating(ratingInput);
-                    showToast(`Competence rating updated to ${ratingInput}!`);
+                    onSetRating(ratingInput, selectedSubject);
+                    showToast(`${SUBJECTS_CONFIG[selectedSubject]?.name || selectedSubject} rating updated to ${ratingInput}!`);
                     setRatingInput('');
                     if (onStateRefresh) onStateRefresh();
                   }
@@ -133,8 +158,8 @@ export default function DevControlPanel({
                 <button
                   key={preset}
                   onClick={() => {
-                    onSetRating(preset);
-                    showToast(`Rating set to ${preset}!`);
+                    onSetRating(preset, selectedSubject);
+                    showToast(`${SUBJECTS_CONFIG[selectedSubject]?.name || selectedSubject} rating set to ${preset}!`);
                     if (onStateRefresh) onStateRefresh();
                   }}
                   className="text-xs font-bold bg-slate-900 hover:bg-indigo-950 text-indigo-300 border border-indigo-800/50 px-2.5 py-1 rounded-lg transition-all"

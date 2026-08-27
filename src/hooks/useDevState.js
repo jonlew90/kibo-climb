@@ -56,12 +56,12 @@ export function useDevState(onStateChange) {
     window.location.reload();
   };
 
-  const setRating = (newRating) => {
+  const setRating = (newRating, subjectId = 'math') => {
     const numericRating = Math.max(500, Math.min(3000, Number(newRating) || 1000));
     storageService.saveUserData({
       adaptiveCompetenceRating: numericRating,
       competenceRank: numericRating
-    });
+    }, subjectId);
     if (onStateChange) onStateChange();
   };
 
