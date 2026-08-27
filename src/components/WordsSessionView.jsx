@@ -1087,7 +1087,7 @@ export default function WordsSessionView({
       // Allow the user to see and review the correct spelling before moving on
       setIncorrectReviewData({
         problem: currentProblem,
-        userAnswer: userAnsString,
+        userAnswer: fullWordGuess,
         correctAnswer: normTargetAns || (currentProblem.answerString || currentProblem.answer || '').toString(),
         isProbe: !!currentProblem.isProbe,
         evalResult,
