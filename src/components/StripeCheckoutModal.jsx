@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import ItemThumbnail from "./ItemThumbnail";
+import { analyticsService } from "../services/analyticsService";
 
 // Simulates loading Stripe for real-money checkout
 import { loadStripe } from '@stripe/stripe-js';
@@ -10,11 +11,20 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && packageInfo) {
       setLoading(false);
       setError(null);
+      if (packageInfo.isSubscription) {
+        analyticsService.logBeginCheckout(packageInfo.id);
+      } else {
+        analyticsService.logCustomEvent('begin_checkout_sparks', {
+          item_id: packageInfo.id,
+          item_name: packageInfo.name,
+          price: packageInfo.price
+        });
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, packageInfo]);
 
   if (!isOpen || !packageInfo) return null;
 
@@ -36,6 +46,15 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
       // await stripe.redirectToCheckout({ sessionId: "..." });
 
       // For now, we immediately confirm success
+      if (packageInfo.isSubscription) {
+        analyticsService.logPurchase(packageInfo.id);
+      } else {
+        analyticsService.logCustomEvent('purchase_sparks', {
+          item_id: packageInfo.id,
+          item_name: packageInfo.name,
+          price: packageInfo.price
+        });
+      }
       onConfirm(packageInfo);
     } catch (e) {
       console.error("Checkout failed:", e);

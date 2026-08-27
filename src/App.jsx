@@ -61,6 +61,7 @@ import FeedbackModal from './components/FeedbackModal';
 import AddFriendModal from './components/AddFriendModal';
 import SubjectWallpaper from './components/SubjectWallpaper';
 import { setHapticsEnabled } from './utils/audio';
+import { analyticsService } from './services/analyticsService';
 
 export default function App() {
   // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms' | 'leaderboard'
@@ -106,6 +107,16 @@ export default function App() {
     window.history.pushState({}, '', path);
     setAppState(stateName);
     window.scrollTo(0, 0);
+
+    // Log screen view to Analytics
+    let screenName = 'Home';
+    if (stateName === 'settings') screenName = 'Settings';
+    else if (stateName === 'privacy') screenName = 'PrivacyPolicy';
+    else if (stateName === 'terms') screenName = 'TermsOfService';
+    else if (stateName === 'leaderboard') screenName = 'Leaderboard';
+    else if (stateName === 'quests') screenName = 'Quests';
+
+    analyticsService.logScreenView(screenName);
   };
 
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
@@ -115,6 +126,7 @@ export default function App() {
     soundFx.playKeyTap();
     setWorkshopOriginState(overrideOrigin || appState);
     setIsWorkshopOpen(true);
+    analyticsService.logScreenView('Shop');
   };
 
   const handleCloseWorkshop = () => {
@@ -139,6 +151,10 @@ export default function App() {
   const profileDropdownRef = useRef(null);
   const statsDropdownRef = useRef(null);
   const subjectDropdownRef = useRef(null);
+
+  useEffect(() => {
+    analyticsService.logCustomEvent('app_open');
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -631,6 +647,7 @@ export default function App() {
 
   const handleSubjectChange = (newSubject) => {
     soundFx.playKeyTap();
+    analyticsService.logSubjectChange(newSubject);
     storageService.setLastActiveSubject(newSubject);
     setActiveSubject(newSubject);
     setAppState('adaptive_session');
@@ -2447,6 +2464,7 @@ export default function App() {
             }
           } else {
             setShowParentDashboard(true);
+            analyticsService.logScreenView('ParentDashboard');
             if (!hasVisitedParentZone) {
               setHasVisitedParentZone(true);
               storageService.saveUserData({ hasVisitedParentZone: true });
