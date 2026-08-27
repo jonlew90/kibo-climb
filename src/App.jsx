@@ -44,6 +44,7 @@ import AccountLinkModal from './components/AccountLinkModal';
 import { getNotificationPrefs, scheduleAllProfileReminders } from './utils/notifications';
 import MockCheckoutModal from './components/MockCheckoutModal';
 import StripeCheckoutModal from './components/StripeCheckoutModal';
+import FamilyPlanUpgradeModal from './components/FamilyPlanUpgradeModal';
 import SettingsScreen from './components/SettingsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import ShareModal from './components/ShareModal';
@@ -167,6 +168,7 @@ export default function App() {
   const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStripeCheckoutModal, setShowStripeCheckoutModal] = useState(false);
+  const [showFamilyUpgradeModal, setShowFamilyUpgradeModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showDailyStreakIncreasedModal, setShowDailyStreakIncreasedModal] = useState(false);
   const [perfectMonthData, setPerfectMonthData] = useState(null);
@@ -1201,7 +1203,7 @@ export default function App() {
   const activeProfile = storageService.getActiveProfile();
   const allProfiles = storageService.getAllProfiles();
 
-  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
+  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showFamilyUpgradeModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal;
 
 
   const closeAllNavModals = (except = null) => {
@@ -1394,15 +1396,7 @@ export default function App() {
                             soundFx.playKeyTap();
                             if (isLocked) {
                               setShowProfileDropdown(false);
-                              setPendingSparksPurchase({
-                                id: 'kibo_club_family',
-                                name: 'Kibo Club Family',
-                                realMoneyPrice: '$7.99/mo',
-                                isSubscription: true,
-                                isFamilyPlan: true,
-                                description: 'Unlock access to all climber profiles with the Kibo Club Family Plan!'
-                              });
-                              setShowStripeCheckoutModal(true);
+                              setShowFamilyUpgradeModal(true);
                               return;
                             }
                             storageService.setActiveProfileId(profile.id);
@@ -2639,6 +2633,19 @@ export default function App() {
           soundFx.playSparkCollect();
           setShowStripeCheckoutModal(false);
           setPendingSparksPurchase(null);
+        }}
+      />
+
+      {/* Family Plan Upgrade Modal */}
+      <FamilyPlanUpgradeModal
+        isOpen={showFamilyUpgradeModal}
+        onClose={() => setShowFamilyUpgradeModal(false)}
+        onOpenParentZone={(targetTab = 'overview') => {
+          setParentDashboardTab(targetTab);
+          setParentDashboardHighlight(null);
+          setShowFamilyUpgradeModal(false);
+          setPinGateSource('profile_dropdown');
+          setShowPinGateModal(true);
         }}
       />
 
