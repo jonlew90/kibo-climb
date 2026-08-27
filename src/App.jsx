@@ -1434,6 +1434,9 @@ export default function App() {
                   {allProfiles
                     .filter((p) => p.id !== activeProfileId)
                     .map((profile) => {
+                      const hasFamPlan = storageService.hasFamilyPlan();
+                      const actualPrimaryId = storageService.getPrimaryProfileId() || allProfiles[0]?.id;
+                      const isLocked = !hasFamPlan && profile.id !== actualPrimaryId;
                       const pRating = profile.userData?.subjects?.[activeSubject]?.competenceRank ||
                         profile.userData?.competenceRank ||
                         1000;
@@ -1444,29 +1447,49 @@ export default function App() {
                           type="button"
                           onClick={() => {
                             soundFx.playKeyTap();
+                            setShowProfileDropdown(false);
+                            if (isLocked) {
+                              setProfileSwitcherOrigin({ appState });
+                              setShowManualProfileSwitcher(true);
+                              return;
+                            }
                             storageService.setActiveProfileId(profile.id);
                             const targetSubject = profile?.lastActiveSubject || storageService.getLastActiveSubject(profile.id) || 'math';
                             storageService.setLastActiveSubject(targetSubject, profile.id);
                             setActiveProfileId(profile.id);
                             setActiveSubject(targetSubject);
                             syncAppStateWithStorage(targetSubject);
-                            setShowProfileDropdown(false);
                             setAppState('adaptive_session');
                             validateStreakForActiveProfile(targetSubject);
                           }}
-                          className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-slate-100 active:bg-slate-200 transition-colors text-left cursor-pointer group w-full"
+                          className={`flex items-center justify-between px-2.5 py-2 rounded-xl transition-colors text-left cursor-pointer group w-full ${
+                            isLocked ? 'opacity-60 hover:bg-slate-100/60' : 'hover:bg-slate-100 active:bg-slate-200'
+                          }`}
                         >
                           <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-white flex items-center justify-center text-xs font-black shrink-0 border border-white/60 shadow-2xs group-hover:scale-105 transition-transform">
-                              {pName[0].toUpperCase()}
+                            <div className="relative">
+                              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-white flex items-center justify-center text-xs font-black shrink-0 border border-white/60 shadow-2xs group-hover:scale-105 transition-transform">
+                                {pName[0].toUpperCase()}
+                              </div>
+                              {isLocked && (
+                                <div className="absolute -bottom-1 -right-1 bg-slate-700 rounded-full p-0.5 border border-white">
+                                  <Lock className="w-2 h-2 text-white" />
+                                </div>
+                              )}
                             </div>
                             <div className="flex flex-col min-w-0 flex-1">
                               <span className="text-xs font-black text-slate-700 truncate group-hover:text-slate-900" title={pName}>
                                 {pName}
                               </span>
                               <span className="text-[10px] text-slate-500 font-bold flex items-center gap-0.5 shrink-0">
-                                <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500 inline shrink-0" />
-                                {pRating} pts
+                                {isLocked ? (
+                                  <span className="text-amber-600 font-bold">Family Plan Required</span>
+                                ) : (
+                                  <>
+                                    <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500 inline shrink-0" />
+                                    {pRating} pts
+                                  </>
+                                )}
                               </span>
                             </div>
                           </div>
