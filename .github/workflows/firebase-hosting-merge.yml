@@ -1,8 +1,11 @@
 name: Hourly Deploy to Firebase Hosting
 
 on:
+  push:
+    branches:
+      - main
   schedule:
-    # Runs at minute 0 past every hour (every 60 minutes)
+    # Runs at minute 0 past every hour (every 60 minutes) as a fallback for throttled commits
     - cron: '0 * * * *'
   workflow_dispatch:
 
@@ -19,19 +22,42 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Check for new changes
+      - name: Check for new changes and rate limit
         id: check_changes
         run: |
           LATEST_SHA=$(git rev-parse HEAD)
           TAG_SHA=$(git rev-parse -q --verify "refs/tags/last-deployed-prod" || echo "")
 
+          # Check for new commits
           if [ "$LATEST_SHA" = "$TAG_SHA" ]; then
             echo "No new commits on main since last deploy ($TAG_SHA). Skipping."
             echo "has_changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "New changes found. Latest: $LATEST_SHA, Previous: $TAG_SHA"
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            exit 0
           fi
+
+          # Manual triggers bypass rate limiting
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual trigger: bypassing rate limit."
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check 1-hour (3600s) rate limit against last deployed commit timestamp
+          if [ -n "$TAG_SHA" ]; then
+            TAG_TIME=$(git log -1 --format=%ct "$TAG_SHA")
+            CURRENT_TIME=$(date +%s)
+            ELAPSED=$(( CURRENT_TIME - TAG_TIME ))
+
+            if [ "$ELAPSED" -lt 3600 ]; then
+              MINUTES_REMAINING=$(( (3600 - ELAPSED) / 60 ))
+              echo "Throttled: Last deploy was $ELAPSED seconds ago (< 3600s). Next deploy eligible in ~$MINUTES_REMAINING min."
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+
+          echo "New changes found and rate limit passed. Deploying."
+          echo "has_changes=true" >> $GITHUB_OUTPUT
 
       - name: Install Dependencies
         if: steps.check_changes.outputs.has_changes == 'true'
