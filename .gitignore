@@ -64,3 +64,7 @@ test_word_reveals.js
 .env
 .env.local
 .env.*.local
+
+# IntelliJ / Android Studio
+.idea/
+*.iml

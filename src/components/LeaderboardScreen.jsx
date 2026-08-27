@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X, Users, UserPlus, ChevronDown, Heart, UserCheck } from 'lucide-react';
+import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X, Users, UserPlus, ChevronDown, Heart, UserCheck, Scroll, Mountain, Compass, Award, Shield } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
+import { questService } from '../services/questService';
+import { getQuestLevelInfo, ASCENT_MODES } from '../data/questsData';
 import { getWeekStr } from '../utils/dateUtils';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { getDeterministicAnonymousName } from '../utils/safeNames';
@@ -12,6 +14,7 @@ import AddFriendModal from './AddFriendModal';
 
 export default function LeaderboardScreen({
   activeSubject = 'math',
+  initialViewMode,
   userState,
   renderFooter,
   equippedItems = []
@@ -20,8 +23,19 @@ export default function LeaderboardScreen({
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const subjectDropdownRef = useRef(null);
   const [liveStandings, setLiveStandings] = useState([]);
-  const [viewMode, setViewMode] = useState('global'); // 'global' | 'weekly' | 'friends'
+  const [viewMode, setViewMode] = useState(() => {
+    if (initialViewMode) return initialViewMode;
+    try {
+      const stored = localStorage.getItem('kibo_leaderboard_initial_view');
+      if (stored) {
+        localStorage.removeItem('kibo_leaderboard_initial_view');
+        return stored;
+      }
+    } catch (e) {}
+    return 'global';
+  }); // 'global' | 'weekly' | 'quests' | 'friends'
   const [weeklyStandings, setWeeklyStandings] = useState([]);
+  const [questsStandings, setQuestsStandings] = useState([]);
   const [friendsStandings, setFriendsStandings] = useState([]);
   const [friendsList, setFriendsList] = useState(() => storageService.getFriends());
   const [pendingRequestsCount, setPendingRequestsCount] = useState(() => 
@@ -207,6 +221,45 @@ export default function LeaderboardScreen({
     };
   }, [viewMode, cohortId, selectedSubject]);
 
+  // Subscribe to Firestore real-time updates for Mountain Quest Standings
+  useEffect(() => {
+    if (viewMode !== 'quests') return;
+
+    allAccountProfiles.forEach(p => {
+      const pQuestState = questService.getQuests(p.id);
+      const pTotalXp = pQuestState?.totalXp || 0;
+      const pLevelInfo = pQuestState?.levelInfo || getQuestLevelInfo(pTotalXp);
+      const pClaims = pQuestState?.claimsCount || 0;
+      const isCurrent = p.id === activeProfile?.id;
+      const pName = isCurrent ? username : (p.username || p.name || 'Climber');
+      const pEquipped = isCurrent ? userEquippedItems : (p.shopState?.equippedItems || []);
+
+      leaderboardService.syncQuestScore({
+        profileId: p.id,
+        name: pName,
+        totalXp: pTotalXp,
+        level: pLevelInfo.level,
+        ascentTier: pLevelInfo.ascentTier,
+        ascentName: pLevelInfo.ascentMode?.name || 'Sunny Trailhead',
+        title: pLevelInfo.title,
+        claimsCount: pClaims,
+        equipped: pEquipped
+      });
+    });
+
+    const unsubscribe = leaderboardService.subscribeToQuestLeaderboard(30, (remoteData) => {
+      if (remoteData && remoteData.length > 0) {
+        setQuestsStandings(remoteData);
+      } else {
+        setQuestsStandings([]);
+      }
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
+  }, [viewMode, activeProfile?.id]);
+
   // Subscribe to Firestore real-time updates and sync all account profiles for selected subject
   useEffect(() => {
     accountPlayers.forEach(p => {
@@ -324,6 +377,66 @@ export default function LeaderboardScreen({
     }
   }
 
+  // Handle Quests Standings merging with account profiles
+  const accountPlayersQuests = allAccountProfiles.map(p => {
+    const isCurrent = p.id === activeProfile?.id;
+    const pName = isCurrent ? username : (p.username || p.name || 'Climber');
+    const pQuestState = questService.getQuests(p.id);
+    const pTotalXp = pQuestState?.totalXp || 0;
+    const pLevelInfo = pQuestState?.levelInfo || getQuestLevelInfo(pTotalXp);
+    const pClaims = pQuestState?.claimsCount || 0;
+    const pEquipped = isCurrent 
+      ? userEquippedItems 
+      : (p.shopState?.equippedItems || []);
+    const pSubjects = isCurrent
+      ? (userSubjectsMastered || 5)
+      : (p.userData?.subjectsMastered ?? Object.keys(p.userData?.masteredTricks || {}).length ?? 5);
+
+    return {
+      id: p.id,
+      profileId: p.id,
+      isCurrentUser: isCurrent,
+      isAccountProfile: true,
+      name: pName,
+      totalXp: pTotalXp,
+      score: pTotalXp,
+      level: pLevelInfo.level,
+      ascentTier: pLevelInfo.ascentTier,
+      ascentName: pLevelInfo.ascentMode?.name || 'Sunny Trailhead',
+      ascentMode: pLevelInfo.ascentMode,
+      title: pLevelInfo.title,
+      icon: pLevelInfo.icon,
+      claimsCount: pClaims,
+      subjectsMastered: pSubjects,
+      equipped: pEquipped
+    };
+  });
+
+  const questsFilteredRemote = questsStandings.filter(p => {
+    if (currentUid && p.uid === currentUid) return false;
+    if (currentUid && p.id && p.id.startsWith(`${currentUid}_`)) return false;
+    if (p.profileId && accountProfileIds.has(p.profileId)) return false;
+    const normName = (p.name || '').trim().toLowerCase();
+    if (accountNamesNormalized.has(normName)) return false;
+    return true;
+  });
+
+  const mergedQuestsList = [...questsFilteredRemote, ...accountPlayersQuests];
+  mergedQuestsList.sort((a, b) => (Number(b.totalXp ?? b.score) || 0) - (Number(a.totalXp ?? a.score) || 0));
+
+  const seenQuestsKeys = new Set();
+  const uniqueQuestsStandings = [];
+  for (const player of mergedQuestsList) {
+    const key = player.isCurrentUser
+      ? '__current_active_user__'
+      : (player.profileId && player.uid ? `${player.uid}_${player.profileId}` : (player.name || '').trim().toLowerCase() || player.id);
+
+    if (!seenQuestsKeys.has(key)) {
+      seenQuestsKeys.add(key);
+      uniqueQuestsStandings.push(player);
+    }
+  }
+
   // Handle Friends Standings merging with account profiles
   const mergedFriendsList = [...friendsStandings, ...accountPlayers];
   mergedFriendsList.sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
@@ -343,6 +456,8 @@ export default function LeaderboardScreen({
 
   const activeStandingsList = viewMode === 'weekly' 
     ? uniqueWeeklyStandings 
+    : viewMode === 'quests'
+    ? uniqueQuestsStandings
     : viewMode === 'friends' 
     ? uniqueFriendsStandings 
     : uniqueStandings;
@@ -399,12 +514,18 @@ export default function LeaderboardScreen({
   const currentUserRank = userRankObj ? userRankObj.rank : rankedStandings.length;
 
   const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG.math;
+  const userQuestState = questService.getQuests(activeProfile?.id);
+  const userQuestElevation = userQuestState?.totalXp || 0;
+  const userLevelInfo = userQuestState?.levelInfo || getQuestLevelInfo(userQuestElevation);
 
   let pinnedScoreDisplay = userScore;
   let pinnedScoreLabel = `pts (${subjectConfig.name})`;
   if (viewMode === 'weekly') {
     pinnedScoreDisplay = userRankObj ? (userRankObj.sparks || 0) : (activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0);
     pinnedScoreLabel = 'Sparks Earned';
+  } else if (viewMode === 'quests') {
+    pinnedScoreDisplay = userRankObj ? (userRankObj.totalXp ?? userRankObj.score ?? userQuestElevation) : userQuestElevation;
+    pinnedScoreLabel = 'XP Elevation';
   }
 
   let pointsNeeded = 0;
@@ -412,8 +533,10 @@ export default function LeaderboardScreen({
     const playerAbove = rankedStandings[currentUserRank - 2];
     if (viewMode === 'global' || viewMode === 'friends') {
       pointsNeeded = playerAbove ? Math.max(1, playerAbove.score - userScore + 1) : 1;
-    } else {
+    } else if (viewMode === 'weekly') {
       pointsNeeded = playerAbove ? Math.max(1, (playerAbove.sparks || playerAbove.score || 0) - pinnedScoreDisplay + 1) : 1;
+    } else if (viewMode === 'quests') {
+      pointsNeeded = playerAbove ? Math.max(1, (playerAbove.totalXp ?? playerAbove.score ?? 0) - pinnedScoreDisplay + 1) : 1;
     }
   }
 
@@ -432,8 +555,14 @@ export default function LeaderboardScreen({
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
         <div className="flex items-center gap-2 text-slate-800 min-w-0">
-          <Crown className="w-5 h-5 text-indigo-600 stroke-[2.5] shrink-0" />
-          <h2 className="text-base sm:text-lg font-black tracking-tight">Global Standings</h2>
+          {viewMode === 'quests' ? (
+            <Scroll className="w-5 h-5 text-purple-600 stroke-[2.5] shrink-0" />
+          ) : (
+            <Crown className="w-5 h-5 text-indigo-600 stroke-[2.5] shrink-0" />
+          )}
+          <h2 className="text-base sm:text-lg font-black tracking-tight">
+            {viewMode === 'quests' ? 'Mountain Quest Standings' : viewMode === 'weekly' ? 'Weekly League' : viewMode === 'friends' ? 'Friends Standings' : 'Global Standings'}
+          </h2>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
@@ -512,6 +641,22 @@ export default function LeaderboardScreen({
             type="button"
             onClick={() => {
               soundFx.playKeyTap();
+              setViewMode('quests');
+            }}
+            className={`flex-1 py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer ${
+              viewMode === 'quests'
+                ? 'bg-purple-600 text-white border-purple-700 shadow-xs ring-2 ring-purple-400/30'
+                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
+            }`}
+          >
+            <Scroll className="w-3.5 h-3.5 shrink-0" />
+            <span>Quests</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
               setViewMode('friends');
             }}
             className={`flex-1 py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer relative ${
@@ -532,11 +677,33 @@ export default function LeaderboardScreen({
           </button>
         </div>
 
-
-        {/* SUBJECT SELECTION TABS */}
-        <div className="w-full px-4 pt-1 flex items-center justify-center gap-2 shrink-0">
-          {/* Mobile Subject Dropdown (< sm) */}
-          <div className="relative sm:hidden w-48 max-w-[220px]" ref={subjectDropdownRef}>
+        {/* SUBJECT SELECTION OR QUESTS BANNER */}
+        {viewMode === 'quests' ? (
+          <div className="w-full px-4 pt-1 flex items-center justify-center shrink-0">
+            <div className="bg-gradient-to-r from-purple-100 via-indigo-100 to-sky-100 border-2 border-purple-200 rounded-2xl px-4 py-2 flex items-center justify-between gap-3 w-full shadow-2xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                  <Mountain className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs font-black text-purple-950 block truncate">
+                    Mountain Expedition Elevation
+                  </span>
+                  <span className="text-[10px] text-purple-700 font-medium block truncate">
+                    Earn XP across Daily, Weekly, and Squad Quests to conquer Ascent summits
+                  </span>
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-purple-600 text-white font-black text-[11px] shrink-0 shadow-2xs">
+                <span>{userLevelInfo.icon}</span>
+                <span>Ascent {userLevelInfo.ascentTier}: {userLevelInfo.ascentMode?.name}</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full px-4 pt-1 flex items-center justify-center gap-2 shrink-0">
+            {/* Mobile Subject Dropdown (< sm) */}
+            <div className="relative sm:hidden w-48 max-w-[220px]" ref={subjectDropdownRef}>
             <button
               type="button"
               onClick={() => {
@@ -780,6 +947,7 @@ export default function LeaderboardScreen({
             </button>
           </div>
         </div>
+        )}
       </div>
 
       {/* MAIN CONTENT AREA */}
@@ -848,7 +1016,13 @@ export default function LeaderboardScreen({
                     </span>
                   ) : null}
                 </div>
-                <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[1].score + ' pts' : (top3[1].sparks || 0) + ' sparks'}</span>
+                <span className="text-xs text-slate-500 font-bold mb-2">
+                  {viewMode === 'global'
+                    ? top3[1].score + ' pts'
+                    : viewMode === 'weekly'
+                    ? (top3[1].sparks || 0) + ' sparks'
+                    : (top3[1].totalXp ?? top3[1].score ?? 0).toLocaleString() + ' XP'}
+                </span>
                 <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                   <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
                 </div>
@@ -880,7 +1054,13 @@ export default function LeaderboardScreen({
                     </span>
                   ) : null}
                 </div>
-                <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{viewMode === 'global' ? top3[0].score + ' pts' : (top3[0].sparks || 0) + ' sparks'}</span>
+                <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">
+                  {viewMode === 'global'
+                    ? top3[0].score + ' pts'
+                    : viewMode === 'weekly'
+                    ? (top3[0].sparks || 0) + ' sparks'
+                    : (top3[0].totalXp ?? top3[0].score ?? 0).toLocaleString() + ' XP'}
+                </span>
                 <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
                   <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
@@ -910,7 +1090,13 @@ export default function LeaderboardScreen({
                     </span>
                   ) : null}
                 </div>
-                <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[2].score + ' pts' : (top3[2].sparks || 0) + ' sparks'}</span>
+                <span className="text-xs text-slate-500 font-bold mb-2">
+                  {viewMode === 'global'
+                    ? top3[2].score + ' pts'
+                    : viewMode === 'weekly'
+                    ? (top3[2].sparks || 0) + ' sparks'
+                    : (top3[2].totalXp ?? top3[2].score ?? 0).toLocaleString() + ' XP'}
+                </span>
                 <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                   <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
                 </div>
@@ -961,17 +1147,34 @@ export default function LeaderboardScreen({
                     </span>
                   )}
                 </div>
-                <span className="text-xs text-slate-500 font-medium truncate flex items-center gap-1">
-                  <Activity className="w-3.5 h-3.5 text-slate-400" />
-                  {player.subjectsMastered} Skills Mastered
-                </span>
+                {viewMode === 'quests' ? (
+                  <span className="text-xs text-purple-700 font-medium truncate flex items-center gap-1">
+                    <Mountain className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                    <span>[Ascent {player.ascentTier || 1}] Lv. {player.level || 1} • {player.title || 'Basecamp Explorer'}</span>
+                  </span>
+                ) : (
+                  <span className="text-xs text-slate-500 font-medium truncate flex items-center gap-1">
+                    <Activity className="w-3.5 h-3.5 text-slate-400" />
+                    {player.subjectsMastered} Skills Mastered
+                  </span>
+                )}
               </div>
 
               {/* Score / Rank Badge */}
               <div className="flex flex-col items-end shrink-0">
-                <span className="font-black text-indigo-700 text-sm">{viewMode === 'global' ? player.score : (player.sparks || 0)}</span>
+                <span className="font-black text-indigo-700 text-sm">
+                  {viewMode === 'global'
+                    ? player.score
+                    : viewMode === 'weekly'
+                    ? (player.sparks || 0)
+                    : (player.totalXp ?? player.score ?? 0).toLocaleString()}
+                </span>
                 <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
-                  {viewMode === 'global' ? getRankTitle(player.score) : 'Sparks'}
+                  {viewMode === 'global'
+                    ? getRankTitle(player.score)
+                    : viewMode === 'weekly'
+                    ? 'Sparks'
+                    : 'Elevation XP'}
                 </span>
               </div>
             </div>
@@ -1000,22 +1203,36 @@ export default function LeaderboardScreen({
 
             {/* User Info & Progress */}
             <div className="flex-1 min-w-0 flex flex-col z-10">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-black text-white text-sm truncate">You ({username})</span>
-                <span className="bg-indigo-500 text-indigo-50 text-xs uppercase px-2 py-0.5 rounded font-bold tracking-wider">
-                  {getRankTitle(userScore)}
-                </span>
+                {viewMode === 'quests' ? (
+                  <span className="bg-purple-600 text-purple-100 text-xs uppercase px-2 py-0.5 rounded font-bold tracking-wider">
+                    [Ascent {userLevelInfo.ascentTier}] Lv. {userLevelInfo.level} • {userLevelInfo.title}
+                  </span>
+                ) : (
+                  <span className="bg-indigo-500 text-indigo-50 text-xs uppercase px-2 py-0.5 rounded font-bold tracking-wider">
+                    {getRankTitle(userScore)}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-1 mt-0.5">
-                <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                <span className="text-indigo-200 font-bold text-xs">{pinnedScoreDisplay} {pinnedScoreLabel}</span>
+                {viewMode === 'quests' ? (
+                  <Mountain className="w-3.5 h-3.5 text-amber-400" />
+                ) : (
+                  <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                )}
+                <span className="text-indigo-200 font-bold text-xs">{pinnedScoreDisplay.toLocaleString()} {pinnedScoreLabel}</span>
               </div>
 
               {/* Contextual progress message */}
               <p className="text-xs text-indigo-300 mt-1 leading-tight font-medium">
                 {currentUserRank > 1
-                  ? `+${pointsNeeded} ${viewMode === 'global' ? 'pts' : 'sparks'} needed to rank up in ${subjectConfig.name}`
-                  : `You are currently holding 1st place in ${subjectConfig.name}! Keep it up!`}
+                  ? (viewMode === 'quests'
+                      ? `+${pointsNeeded.toLocaleString()} XP needed to rank up in Mountain Quests`
+                      : `+${pointsNeeded} ${viewMode === 'global' ? 'pts' : 'sparks'} needed to rank up in ${subjectConfig.name}`)
+                  : (viewMode === 'quests'
+                      ? `You are currently holding 1st place in Mountain Quests Elevation! Keep ascending!`
+                      : `You are currently holding 1st place in ${subjectConfig.name}! Keep it up!`)}
               </p>
             </div>
           </div>
@@ -1049,28 +1266,30 @@ export default function LeaderboardScreen({
 
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
-                viewMode === 'global' ? 'bg-indigo-100 text-indigo-600' : viewMode === 'weekly' ? 'bg-emerald-100 text-emerald-600' : 'bg-purple-100 text-purple-600'
+                viewMode === 'global' ? 'bg-indigo-100 text-indigo-600' : viewMode === 'weekly' ? 'bg-emerald-100 text-emerald-600' : viewMode === 'quests' ? 'bg-purple-100 text-purple-600' : 'bg-purple-100 text-purple-600'
               }`}>
                 {viewMode === 'global' ? (
                   <Trophy className="w-6 h-6 stroke-[2.5]" />
                 ) : viewMode === 'weekly' ? (
                   <Zap className="w-6 h-6 fill-current stroke-[2.5]" />
+                ) : viewMode === 'quests' ? (
+                  <Scroll className="w-6 h-6 stroke-[2.5]" />
                 ) : (
                   <Users className="w-6 h-6 stroke-[2.5]" />
                 )}
               </div>
               <div className="min-w-0 flex-1 pr-6">
                 <h3 className="text-lg font-black text-slate-900 leading-tight">
-                  {viewMode === 'global' ? `${subjectConfig.name} Competence` : viewMode === 'weekly' ? 'Weekly League' : 'Friends Standings'}
+                  {viewMode === 'global' ? `${subjectConfig.name} Competence` : viewMode === 'weekly' ? 'Weekly League' : viewMode === 'quests' ? 'Mountain Quest Standings' : 'Friends Standings'}
                 </h3>
                 <p className="text-xs font-semibold text-slate-500">
-                  {viewMode === 'global' ? 'How Global Standings Work' : viewMode === 'weekly' ? 'How Weekly League Works' : 'How Friends Standings Work'}
+                  {viewMode === 'global' ? 'How Global Standings Work' : viewMode === 'weekly' ? 'How Weekly League Works' : viewMode === 'quests' ? 'How Quest Standings Work' : 'How Friends Standings Work'}
                 </p>
               </div>
             </div>
 
             <div className={`rounded-2xl p-4 border text-xs sm:text-sm font-medium leading-relaxed ${
-              viewMode === 'global' ? 'bg-indigo-50/80 border-indigo-200 text-indigo-950' : viewMode === 'weekly' ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950' : 'bg-purple-50/80 border-purple-200 text-purple-950'
+              viewMode === 'global' ? 'bg-indigo-50/80 border-indigo-200 text-indigo-950' : viewMode === 'weekly' ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950' : viewMode === 'quests' ? 'bg-purple-50/80 border-purple-200 text-purple-950' : 'bg-purple-50/80 border-purple-200 text-purple-950'
             }`}>
               <div className="flex items-start gap-2.5">
                 <Info className={`w-4 h-4 shrink-0 mt-0.5 ${viewMode === 'global' ? 'text-indigo-600' : viewMode === 'weekly' ? 'text-emerald-600' : 'text-purple-600'}`} />
@@ -1083,6 +1302,8 @@ export default function LeaderboardScreen({
                        : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.')
                     : viewMode === 'weekly'
                     ? (`Compete in this week's cohort by earning Sparks! ${cohortId ? 'Group: ' + cohortId.split('_bucket_')[1] : ''}`)
+                    : viewMode === 'quests'
+                    ? ('Climbers earn XP Elevation by completing Daily Expeditions, Weekly Milestones, and Squad Quests. Leveling up advances your Ascent Tier (from Sunny Trailhead to Cosmic Apex) and unlocks permanent Spark boosts!')
                     : (`Compare your ${subjectConfig.name} competence ratings and cosmetics directly against your added friends and classmates!`)}
                 </p>
               </div>
@@ -1093,6 +1314,8 @@ export default function LeaderboardScreen({
                 ? '💡 Keep climbing and answering accurately to raise your rank tier!'
                 : viewMode === 'weekly'
                 ? '💡 Sparks reset every week at midnight Sunday UTC. Climb every day to stay on top!'
+                : viewMode === 'quests'
+                ? '💡 Complete team quests with real friends to earn +25% Synergy Sparks and climb faster!'
                 : '💡 Add up to 25 friends using their unique climber tags to follow each other\'s climb!'}
             </p>
 

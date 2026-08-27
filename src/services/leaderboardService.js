@@ -287,6 +287,99 @@ class LeaderboardService {
     }
   }
 
+  // Sync quest progress & elevation to Firestore
+  async syncQuestScore({ profileId, name, totalXp = 0, level = 1, ascentTier = 1, ascentName = 'Sunny Trailhead', title = 'Basecamp Explorer', claimsCount = 0, equipped = [] }) {
+    try {
+      let user = this.currentUser || auth.currentUser;
+      if (!user) {
+        try {
+          const userCred = await signInAnonymously(auth);
+          user = userCred.user;
+          this.currentUser = user;
+        } catch (authErr) {
+          return;
+        }
+      }
+
+      if (!user || !user.uid) return;
+
+      const baseUid = user.uid;
+      const safeProfileId = profileId || 'default_child';
+      const documentId = `${baseUid}_${safeProfileId}`;
+      const userRef = doc(db, 'quest_stats', documentId);
+      const anonymousName = getDeterministicAnonymousName(documentId);
+
+      const payload = {
+        uid: baseUid,
+        profileId: safeProfileId,
+        name: name || 'Kibo Climber',
+        anonymousName: anonymousName,
+        totalXp: Number(totalXp) || 0,
+        level: Number(level) || 1,
+        ascentTier: Number(ascentTier) || 1,
+        ascentName: ascentName || 'Sunny Trailhead',
+        title: title || 'Basecamp Explorer',
+        claimsCount: Number(claimsCount) || 0,
+        equipped: Array.isArray(equipped) ? equipped : [],
+        updatedAt: serverTimestamp()
+      };
+
+      await setDoc(userRef, payload, { merge: true });
+    } catch (error) {
+      if (error?.code === 'permission-denied') {
+        console.warn('LeaderboardService: Quest sync permission denied. Check Firestore security rules.');
+      } else {
+        console.warn('LeaderboardService: Failed to sync quest score', error);
+      }
+    }
+  }
+
+  // Subscribe to real-time Quest Elevation Leaderboard
+  subscribeToQuestLeaderboard(limitCount = 30, onUpdate) {
+    try {
+      const q = query(
+        collection(db, 'quest_stats'),
+        orderBy('totalXp', 'desc'),
+        limit(limitCount * 2)
+      );
+
+      return onSnapshot(q, (snapshot) => {
+        const seenKeys = new Set();
+        const standings = [];
+
+        for (let i = 0; i < snapshot.docs.length; i++) {
+          if (standings.length >= limitCount) break;
+
+          const docSnap = snapshot.docs[i];
+          const data = docSnap.data();
+
+          const uniqueKey = data.uid && data.profileId
+            ? `${data.uid}_${data.profileId}`
+            : (data.name ? data.name.trim().toLowerCase() : docSnap.id);
+
+          if (!seenKeys.has(uniqueKey)) {
+            seenKeys.add(uniqueKey);
+            standings.push({
+              id: docSnap.id,
+              ...data,
+              score: Number(data.totalXp) || 0,
+              rank: standings.length + 1
+            });
+          }
+        }
+
+        onUpdate(standings);
+      }, (error) => {
+        console.warn('LeaderboardService: Firestore quest subscription fallback', error);
+        onUpdate([]);
+      });
+    } catch (error) {
+      console.warn('LeaderboardService: Firestore quest subscription error', error);
+      onUpdate([]);
+      return () => {};
+    }
+  }
+
   // ─── Friend System & Username Management ──────────────────────────────────
   async claimUsername(username, profileId = 'default_child', friendCode = null) {
     if (!username || typeof username !== 'string') {

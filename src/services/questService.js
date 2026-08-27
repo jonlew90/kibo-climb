@@ -10,6 +10,8 @@ import {
 } from '../data/questsData.js';
 import { getWeekStr } from '../utils/dateUtils.js';
 import { evaluateBadges } from '../utils/badgeManager.js';
+import { leaderboardService } from './leaderboardService.js';
+import { storageService } from './storageService.js';
 
 const STORAGE_PREFIX = 'kibo_quests_state_';
 
@@ -414,6 +416,26 @@ class QuestService {
       }
 
       this.saveRawState(profileId, state);
+
+      // Sync quest elevation and stats to leaderboard
+      try {
+        const activeProf = storageService.getActiveProfile();
+        const profName = activeProf?.username || activeProf?.name || 'Climber';
+        const equipped = activeProf?.shopState?.equippedItems || [];
+        leaderboardService.syncQuestScore({
+          profileId,
+          name: profName,
+          totalXp: state.totalXp,
+          level: newLevelInfo.level,
+          ascentTier: newLevelInfo.ascentTier,
+          ascentName: newLevelInfo.ascentMode?.name || 'Sunny Trailhead',
+          title: newLevelInfo.title,
+          claimsCount: state.claimsCount,
+          equipped
+        });
+      } catch (syncErr) {
+        console.warn('Error syncing quest stats to leaderboard:', syncErr);
+      }
 
       // Evaluate quest-related badges
       let badgeResult = { newlyUnlocked: [] };

@@ -22,6 +22,7 @@ import {
   Check,
   Scroll,
   Info,
+  Trophy,
   X
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
@@ -54,6 +55,16 @@ export default function QuestsScreen({
   const [showLevelInfoModal, setShowLevelInfoModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [friendsList, setFriendsList] = useState(() => storageService.getFriends());
+
+  const handleOpenQuestLeaderboard = () => {
+    soundFx.playKeyTap();
+    try {
+      localStorage.setItem('kibo_leaderboard_initial_view', 'quests');
+    } catch (e) {}
+    if (onNavigate) {
+      onNavigate('/leaderboard', 'leaderboard');
+    }
+  };
 
   // Update countdown timers periodically
   useEffect(() => {
@@ -186,6 +197,16 @@ export default function QuestsScreen({
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleOpenQuestLeaderboard}
+            className="flex items-center gap-1 px-2.5 py-1 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white rounded-full text-xs font-black shadow-xs cursor-pointer transition-all border border-purple-700"
+            title="View Mountain Quest Standings"
+          >
+            <Trophy className="w-3.5 h-3.5" />
+            <span>Leaderboard</span>
+          </button>
+
           {unclaimedCount > 0 && (
             <button
               type="button"
@@ -302,6 +323,16 @@ export default function QuestsScreen({
                         >
                           <Info className="w-3 h-3 text-amber-300" />
                           <span>All Levels XP</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleOpenQuestLeaderboard}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 hover:bg-white/30 active:scale-95 text-[11px] font-bold text-amber-200 border border-amber-300/40 cursor-pointer transition-all shadow-xs"
+                          title="View Mountain Quest Standings"
+                        >
+                          <Trophy className="w-3 h-3 text-amber-300" />
+                          <span>Standings</span>
                         </button>
                       </div>
                       <span className="text-[11px] text-purple-200 block mt-0.5">
