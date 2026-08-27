@@ -17,6 +17,7 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { storageService } from './storageService.js';
+import { getDeterministicAnonymousName } from '../utils/safeNames.js';
 
 const LEADERBOARD_COLLECTION = 'leaderboard';
 
@@ -76,12 +77,14 @@ class LeaderboardService {
       const safeSubject = subject || 'math';
       const documentId = `${baseUid}_${safeProfileId}_${safeSubject}`;
       const userRef = doc(db, LEADERBOARD_COLLECTION, documentId);
+      const anonymousName = getDeterministicAnonymousName(documentId);
 
       const payload = {
         uid: baseUid,
         profileId: safeProfileId,
         subject: safeSubject,
         name: name || 'Kibo Climber',
+        anonymousName: anonymousName,
         score: Number(score) || 1000,
         subjectsMastered: Number(subjectsMastered) || 0,
         equipped: Array.isArray(equipped) ? equipped : [],
@@ -221,12 +224,14 @@ class LeaderboardService {
       const safeCohortId = cohortId || `league_${weekStr}_${safeSubject}_bucket_1`;
       const documentId = `${baseUid}_${safeProfileId}_${safeSubject}`;
       const userRef = doc(db, 'weekly_stats', documentId);
+      const anonymousName = getDeterministicAnonymousName(documentId);
 
       const payload = {
         uid: baseUid,
         profileId: safeProfileId,
         subject: safeSubject,
         name: name || 'Kibo Climber',
+        anonymousName: anonymousName,
         weekStr: weekStr,
         cohortId: safeCohortId,
         sparks: Number(sparks) || 0,
@@ -283,18 +288,19 @@ class LeaderboardService {
   }
 
   // ─── Friend System & Username Management ──────────────────────────────────
-  async claimUsername(username, profileId = 'default_child') {
+  async claimUsername(username, profileId = 'default_child', friendCode = null) {
     if (!username || typeof username !== 'string') {
       return { success: false, error: 'Please enter a username.' };
     }
 
     const trimmed = username.trim();
     const normalized = trimmed.toLowerCase();
+    const cleanCode = (friendCode || storageService.getFriendCode(profileId) || '').trim().toUpperCase();
 
     try {
       const claimFn = httpsCallable(functions, 'claimUsername');
-      const res = await claimFn({ username: trimmed, profileId });
-      return { success: true, username: res.data?.username || trimmed };
+      const res = await claimFn({ username: trimmed, profileId, friendCode: cleanCode });
+      return { success: true, username: res.data?.username || trimmed, friendCode: res.data?.friendCode || cleanCode };
     } catch (error) {
       // If error is already-exists, surface human-readable message
       if (error?.code === 'functions/already-exists' || error?.message?.includes('already taken')) {
@@ -325,16 +331,29 @@ class LeaderboardService {
           await setDoc(usernameRef, {
             username: trimmed,
             normalized,
+            friendCode: cleanCode,
             uid: user.uid,
             profileId: profileId || 'default_child',
             claimedAt: serverTimestamp()
           }, { merge: true });
+
+          if (cleanCode) {
+            const codeRef = doc(db, 'friend_codes', cleanCode);
+            await setDoc(codeRef, {
+              friendCode: cleanCode,
+              username: trimmed,
+              normalized,
+              uid: user.uid,
+              profileId: profileId || 'default_child',
+              claimedAt: serverTimestamp()
+            }, { merge: true });
+          }
         }
       } catch (firestoreErr) {
         console.warn('LeaderboardService: direct Firestore claim error', firestoreErr);
       }
 
-      return { success: true, username: trimmed, isOfflineFallback: true };
+      return { success: true, username: trimmed, friendCode: cleanCode, isOfflineFallback: true };
     }
   }
 
@@ -348,13 +367,12 @@ class LeaderboardService {
     const cleanCode = trimmed.toUpperCase();
     const localMatches = [];
 
-    // Check local profiles so profiles under the same account / device are always discoverable
+    // Check local profiles so profiles under the same account / device are always discoverable by code
     try {
       const allProfiles = storageService.getAllProfiles ? storageService.getAllProfiles() : [];
       for (const p of allProfiles) {
-        const pUser = (p.username || p.name || '').trim().toLowerCase();
         const pCode = (p.friendCode || '').trim().toUpperCase();
-        if (pCode === cleanCode || pUser === normalized) {
+        if (pCode === cleanCode) {
           const uData = p.userData || {};
           const currentSubRating = uData.adaptiveCompetenceRating || 1000;
           localMatches.push({
@@ -376,11 +394,11 @@ class LeaderboardService {
 
     let remoteResults = [];
 
-    // Attempt Cloud Function (exact match)
+    // Attempt Cloud Function (exact match by code)
     let cloudFunctionSucceeded = false;
     try {
       const searchFn = httpsCallable(functions, 'searchUsername');
-      const res = await searchFn({ query: trimmed, exact: true });
+      const res = await searchFn({ query: cleanCode, exact: true });
       if (res?.data?.results) {
         remoteResults = res.data.results;
         cloudFunctionSucceeded = true;
@@ -407,10 +425,10 @@ class LeaderboardService {
             new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
           ]);
 
-        // COPPA Safe: Exact match only by friendCode OR exact normalized username
+        // COPPA Safe: Exact match only by friendCode
         let docs = [];
         
-        // 1. Try exact friendCode lookup
+        // Exact friendCode lookup
         const codeQuery = query(
           collection(db, 'usernames'),
           where('friendCode', '==', cleanCode),
@@ -422,21 +440,6 @@ class LeaderboardService {
             docs = codeSnapshot.docs;
           }
         } catch (e) {}
-
-        if (docs.length === 0) {
-          // 2. Try exact normalized username lookup
-          const userQuery = query(
-            collection(db, 'usernames'),
-            where('normalized', '==', normalized),
-            limit(1)
-          );
-          try {
-            const userSnapshot = await withTimeout(getDocs(userQuery));
-            if (userSnapshot && !userSnapshot.empty) {
-              docs = userSnapshot.docs;
-            }
-          } catch (e) {}
-        }
 
         if (docs.length > 0) {
           const fetchPromises = docs.map(async (docSnap) => {

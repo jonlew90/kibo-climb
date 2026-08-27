@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X, Users, UserPlus, ChevronDown } from 'lucide-react';
+import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X, Users, UserPlus, ChevronDown, Heart, UserCheck } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
@@ -7,6 +7,7 @@ import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
 import { getWeekStr } from '../utils/dateUtils';
 import { SUBJECTS_CONFIG } from '../config/subjects';
+import { getDeterministicAnonymousName } from '../utils/safeNames';
 import AddFriendModal from './AddFriendModal';
 
 export default function LeaderboardScreen({
@@ -346,11 +347,53 @@ export default function LeaderboardScreen({
     ? uniqueFriendsStandings 
     : uniqueStandings;
 
-  // Assign ranks
-  const rankedStandings = activeStandingsList.map((player, index) => ({
-    ...player,
-    rank: index + 1
-  }));
+  // Build lookup for active friends (by ID, UID, or username)
+  const currentFriends = storageService.getFriends(activeProfile?.id) || [];
+  const friendIdSet = new Set();
+  const friendUsernamesSet = new Set();
+  currentFriends.forEach(f => {
+    if (f.id) friendIdSet.add(f.id.trim().toLowerCase());
+    if (f.uid) friendIdSet.add(f.uid.trim().toLowerCase());
+    if (f.profileId && f.uid) friendIdSet.add(`${f.uid}_${f.profileId}`.trim().toLowerCase());
+    const uname = (f.username || f.name || '').trim().toLowerCase();
+    if (uname) friendUsernamesSet.add(uname);
+  });
+
+  // Assign ranks, resolved display names (COPPA safe), and friend indicators
+  const rankedStandings = activeStandingsList.map((player, index) => {
+    const isCurrent = !!player.isCurrentUser;
+    const isAccountProf = !!player.isAccountProfile;
+    
+    // Check if player is a confirmed friend
+    const playerId = (player.id || '').trim().toLowerCase();
+    const playerUid = (player.uid || '').trim().toLowerCase();
+    const combinedId = (player.uid && player.profileId) ? `${player.uid}_${player.profileId}`.trim().toLowerCase() : '';
+    const rawNameLower = (player.name || player.username || '').trim().toLowerCase();
+    
+    const isFriend = !isCurrent && !isAccountProf && (
+      player.isFriend ||
+      (playerId && friendIdSet.has(playerId)) ||
+      (playerUid && friendIdSet.has(playerUid)) ||
+      (combinedId && friendIdSet.has(combinedId)) ||
+      (rawNameLower && friendUsernamesSet.has(rawNameLower))
+    );
+
+    // COPPA Safe Display Name resolution:
+    // - Current user or same-account profiles: show their real chosen name
+    // - Confirmed friends: show their real chosen username
+    // - Strangers: show deterministic kid-safe anonymous name (e.g. BraveOtter#482)
+    let displayName = player.name || player.username || 'Climber';
+    if (!isCurrent && !isAccountProf && !isFriend) {
+      displayName = player.anonymousName || getDeterministicAnonymousName(player.id || player.uid || player.profileId || player.name || `seed_${index}`);
+    }
+
+    return {
+      ...player,
+      name: displayName,
+      isFriend,
+      rank: index + 1
+    };
+  });
 
   const userRankObj = rankedStandings.find(p => p.isCurrentUser);
   const currentUserRank = userRankObj ? userRankObj.rank : rankedStandings.length;
@@ -797,9 +840,13 @@ export default function LeaderboardScreen({
                   <span className="font-bold text-xs truncate min-w-0 text-center">
                     {top3[1].name}
                   </span>
-                  {top3[1].isCurrentUser && (
+                  {top3[1].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
-                  )}
+                  ) : top3[1].isFriend ? (
+                    <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
+                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" /> Friend
+                    </span>
+                  ) : null}
                 </div>
                 <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[1].score + ' pts' : (top3[1].sparks || 0) + ' sparks'}</span>
                 <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
@@ -825,9 +872,13 @@ export default function LeaderboardScreen({
                   <span className="font-black text-sm text-amber-900 truncate min-w-0 text-center">
                     {top3[0].name}
                   </span>
-                  {top3[0].isCurrentUser && (
+                  {top3[0].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
-                  )}
+                  ) : top3[0].isFriend ? (
+                    <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
+                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" /> Friend
+                    </span>
+                  ) : null}
                 </div>
                 <span className="text-xs text-amber-700 font-bold mb-2 bg-amber-100 px-2 py-0.5 rounded-full mt-0.5 border border-amber-200">{viewMode === 'global' ? top3[0].score + ' pts' : (top3[0].sparks || 0) + ' sparks'}</span>
                 <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
@@ -851,9 +902,13 @@ export default function LeaderboardScreen({
                   <span className="font-bold text-xs truncate min-w-0 text-center">
                     {top3[2].name}
                   </span>
-                  {top3[2].isCurrentUser && (
+                  {top3[2].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
-                  )}
+                  ) : top3[2].isFriend ? (
+                    <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
+                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" /> Friend
+                    </span>
+                  ) : null}
                 </div>
                 <span className="text-xs text-slate-500 font-bold mb-2">{viewMode === 'global' ? top3[2].score + ' pts' : (top3[2].sparks || 0) + ' sparks'}</span>
                 <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
@@ -872,6 +927,8 @@ export default function LeaderboardScreen({
               className={`rounded-2xl p-3 flex items-center gap-3 transition-all ${
                 player.isCurrentUser
                   ? 'bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border-2 border-indigo-500 shadow-md ring-2 ring-indigo-400/30'
+                  : player.isFriend
+                  ? 'bg-gradient-to-r from-rose-50/50 via-pink-50/30 to-white border border-rose-200 shadow-sm hover:shadow-md'
                   : 'bg-white border border-slate-200 shadow-sm hover:shadow-md'
               }`}
             >
@@ -882,7 +939,7 @@ export default function LeaderboardScreen({
 
               {/* Avatar Mascot */}
               <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border flex items-center justify-center shrink-0 overflow-hidden relative ${
-                player.isCurrentUser ? 'bg-indigo-100 border-indigo-300 ring-2 ring-indigo-400/30' : 'bg-slate-100 border-slate-200'
+                player.isCurrentUser ? 'bg-indigo-100 border-indigo-300 ring-2 ring-indigo-400/30' : player.isFriend ? 'bg-rose-50 border-rose-200 ring-2 ring-rose-300/40' : 'bg-slate-100 border-slate-200'
               }`}>
                 <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
                   <Mascot size={44} mood={player.isCurrentUser ? "happy" : "neutral"} equipped={player.equipped} className="w-full h-full" />
@@ -891,11 +948,16 @@ export default function LeaderboardScreen({
 
               {/* Player Info */}
               <div className="flex-1 min-w-0 flex flex-col">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="font-bold text-sm text-slate-800 truncate">{player.name}</span>
                   {player.isCurrentUser && (
                     <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
                       YOU
+                    </span>
+                  )}
+                  {player.isFriend && (
+                    <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0">
+                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" /> Friend
                     </span>
                   )}
                 </div>

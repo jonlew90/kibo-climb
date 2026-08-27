@@ -11,24 +11,8 @@ import { Dices, ShieldCheck } from 'lucide-react';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 
-export const SAFE_ADJECTIVES = [
-  'Swift', 'Brave', 'Cosmic', 'Solar', 'Clever', 'Super', 'Bright', 'Epic',
-  'Mighty', 'Happy', 'Starry', 'Golden', 'Sparky', 'Hyper', 'Nova', 'Sunny',
-  'Cool', 'Lucky', 'Speedy', 'Wise', 'Alpine', 'Turbo', 'Quick', 'Cheer'
-];
-
-export const SAFE_NOUNS = [
-  'Otter', 'Falcon', 'Panda', 'Tiger', 'Fox', 'Koala', 'Eagle', 'Dolphin',
-  'Badger', 'Lynx', 'Dragon', 'Penguin', 'Cheetah', 'Rabbit', 'Wolf', 'Hawk',
-  'Owl', 'Bear', 'Climber', 'Star', 'Runner', 'Pioneer', 'Ranger', 'Comet'
-];
-
-export function generateSafeUsername() {
-  const adj = SAFE_ADJECTIVES[Math.floor(Math.random() * SAFE_ADJECTIVES.length)];
-  const noun = SAFE_NOUNS[Math.floor(Math.random() * SAFE_NOUNS.length)];
-  const num = Math.floor(Math.random() * 90) + 10;
-  return `${adj}${noun}${num}`;
-}
+import { SAFE_ADJECTIVES, SAFE_NOUNS, generateSafeUsername } from '../utils/safeNames';
+export { SAFE_ADJECTIVES, SAFE_NOUNS, generateSafeUsername };
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 

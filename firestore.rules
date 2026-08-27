@@ -59,6 +59,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /friend_codes/{codeDoc} {
+      // Allow authenticated users to lookup friend codes
+      allow read: if request.auth != null;
+      // Creation/modification allowed if user locks code for themselves
+      allow create, update: if request.auth != null && (
+        request.resource.data.uid == request.auth.uid
+      );
+      allow delete: if false;
+    }
+
     match /friend_requests/{requestId} {
       // Allow sender and receiver to read requests
       allow read: if request.auth != null && (

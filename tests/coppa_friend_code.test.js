@@ -9,7 +9,7 @@ describe('COPPA Climber Friend Code & Exact Search', () => {
 
   it('should generate a valid Climber Friend Code for active profile', () => {
     const code = storageService.getFriendCode();
-    expect(code).toMatch(/^KIBO-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/);
+    expect(code).toMatch(/^KIBO-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/);
   });
 
   it('should maintain the same Climber Friend Code across multiple calls', () => {
@@ -26,8 +26,8 @@ describe('COPPA Climber Friend Code & Exact Search', () => {
     const code2 = storageService.getFriendCode(prof2.id);
 
     expect(code1).not.toBe(code2);
-    expect(code1).toMatch(/^KIBO-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/);
-    expect(code2).toMatch(/^KIBO-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/);
+    expect(code1).toMatch(/^KIBO-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/);
+    expect(code2).toMatch(/^KIBO-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/);
   });
 
   it('should perform exact match search by Climber Code on local profiles', async () => {
@@ -44,16 +44,11 @@ describe('COPPA Climber Friend Code & Exact Search', () => {
     expect(resPartial.results.length).toBe(0);
   });
 
-  it('should perform exact match search by exact username on local profiles', async () => {
-    const prof = storageService.createProfile('UniqueHero99', 'Grade 1–2');
+  it('should reject search by username string to protect child privacy under COPPA', async () => {
+    storageService.createProfile('UniqueHero99', 'Grade 1–2');
 
-    // Exact search
-    const resExact = await leaderboardService.searchUsername('UniqueHero99');
-    expect(resExact.results.length).toBe(1);
-    expect(resExact.results[0].profileId).toBe(prof.id);
-
-    // Partial search should return no matches
-    const resPartial = await leaderboardService.searchUsername('UniqueHero');
-    expect(resPartial.results.length).toBe(0);
+    // Searching by username should return no results as friend codes are required
+    const resUsername = await leaderboardService.searchUsername('UniqueHero99');
+    expect(resUsername.results.length).toBe(0);
   });
 });

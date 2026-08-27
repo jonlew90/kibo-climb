@@ -95,7 +95,7 @@ export default function AddFriendModal({
     if (e) e.preventDefault();
     const query = searchQuery.trim();
     if (!query) {
-      setSearchError('Please enter a username to search.');
+      setSearchError('Please enter a Climber Code (e.g. KIBO-7842) to find a friend.');
       return;
     }
     if (query.length < 2) {
@@ -350,8 +350,8 @@ export default function AddFriendModal({
                         setSearchQuery(e.target.value);
                         setSearchError('');
                       }}
-                      placeholder="Code (e.g. KIBO-7842) or Username"
-                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-800 text-xs sm:text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 transition-all"
+                      placeholder="Enter Climber Code (e.g. KIBO-7842)"
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-800 text-xs sm:text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 transition-all font-mono uppercase tracking-wide"
                     />
                   </div>
                   <button
@@ -359,12 +359,12 @@ export default function AddFriendModal({
                     disabled={isSearching}
                     className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1 shrink-0"
                   >
-                    {isSearching ? <span className="animate-spin text-xs">🌀</span> : 'Search'}
+                    {isSearching ? <span className="animate-spin text-xs">🌀</span> : 'Find'}
                   </button>
                 </div>
                 <p className="text-[11px] text-slate-500 font-medium px-1 flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>To protect kid privacy, search requires an exact Climber Code or exact username.</span>
+                  <span>To protect kid privacy under COPPA, connect using a private Climber Code.</span>
                 </p>
                 {searchError && (
                   <p className="text-xs font-bold text-rose-500 px-1">{searchError}</p>

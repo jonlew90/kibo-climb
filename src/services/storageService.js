@@ -1199,17 +1199,17 @@ export const storageService = {
     return this.getSimulatedDate() || new Date();
   },
 
-  // ─── COPPA-Compliant Climber Friend Code ──────────────────────────────────
+  // ─── COPPA-Compliant Climber Friend Code (1.07 Billion Combinations) ─────
   getFriendCode(profileId = null) {
     const pid = profileId || this.getActiveProfileId();
     const profile = this.getProfileById(pid);
-    if (!profile) return 'KIBO-7842';
+    if (!profile) return 'KIBO-7842AB';
     if (profile.friendCode) return profile.friendCode;
 
-    // Generate unique 4-character code avoiding ambiguous chars
+    // Generate unique 6-character code avoiding ambiguous chars (2-9, A-Z excl I, O, 1, 0)
     const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
     let randomPart = '';
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     const newCode = `KIBO-${randomPart}`;
