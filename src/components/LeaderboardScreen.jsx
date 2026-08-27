@@ -429,7 +429,7 @@ export default function LeaderboardScreen({
       </header>
 
       {/* CONTROLS BAR (VIEW MODES & SUBJECTS) */}
-      <div className="bg-white/80 backdrop-blur-xs border-b border-slate-200 z-10 shrink-0 px-4 py-2 space-y-2 shadow-2xs">
+      <div className="bg-white/80 backdrop-blur-xs border-b border-slate-200 relative z-30 shrink-0 px-4 py-2 space-y-2 shadow-2xs">
 
         {/* VIEW MODE TABS */}
         <div className="px-4 py-1.5 flex items-center gap-1.5 sm:gap-2 mb-1">
