@@ -28,16 +28,20 @@ describe('Coding Curriculum & Generator', () => {
     expect(codingCurriculum.getGradeLevelFromRating(2500)).toBe('Grade 7–8+');
   });
 
-  it('generates valid problems for each tier (1-8)', () => {
+  it('generates valid problems for each tier (1-8) with strictly unique options', () => {
     for (let tier = 1; tier <= 8; tier++) {
-      const prob = codingGenerator.generateCodingProblem(tier);
-      expect(prob).toBeDefined();
-      expect(prob.tier).toBe(tier);
-      expect(prob.displayString).toBeDefined();
-      expect(prob.answer).toBeDefined();
-      expect(prob.options).toBeDefined();
-      expect(prob.options.length).toBeGreaterThanOrEqual(2);
-      expect(prob.options).toContain(prob.answer);
+      for (let i = 0; i < 50; i++) {
+        const prob = codingGenerator.generateCodingProblem(tier);
+        expect(prob).toBeDefined();
+        expect(prob.tier).toBe(tier);
+        expect(prob.displayString).toBeDefined();
+        expect(prob.answer).toBeDefined();
+        expect(prob.options).toBeDefined();
+        expect(prob.options.length).toBeGreaterThanOrEqual(2);
+        expect(prob.options).toContain(String(prob.answer));
+        const uniqueOptions = new Set(prob.options.map(String));
+        expect(uniqueOptions.size).toBe(prob.options.length);
+      }
     }
   });
 

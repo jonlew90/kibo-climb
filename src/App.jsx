@@ -202,7 +202,14 @@ export default function App() {
   const [unlockedBadges, setUnlockedBadges] = useState(() => {
     return storageService.getUserData(activeSubject).unlockedBadges || [];
   });
+  const [seenBadges, setSeenBadges] = useState(() => {
+    return storageService.getSeenBadges(activeProfileId);
+  });
   const [newlyUnlockedBadges, setNewlyUnlockedBadges] = useState([]);
+
+  const unseenBadgesCount = (unlockedBadges || []).filter(
+    (b) => !seenBadges.includes(typeof b === 'string' ? b : b?.id)
+  ).length;
 
   useEffect(() => {
     const activeUserData = storageService.getUserData(activeSubject);
@@ -211,6 +218,17 @@ export default function App() {
       setUnlockedBadges(evalRes.updatedUnlocked);
     }
   }, [activeSubject]);
+
+  const handleOpenBadgesModal = () => {
+    soundFx.playKeyTap();
+    closeAllNavModals('badges');
+    setShowBadgesModal(true);
+    const currentUnlockedIds = (unlockedBadges || []).map((b) => (typeof b === 'string' ? b : b?.id)).filter(Boolean);
+    if (currentUnlockedIds.length > 0) {
+      storageService.markBadgesAsSeen(currentUnlockedIds, activeProfileId);
+      setSeenBadges(storageService.getSeenBadges(activeProfileId));
+    }
+  };
 
   // First-Time User Onboarding Modal State
   const [showNewsModal, setShowNewsModal] = useState(false);
@@ -387,6 +405,27 @@ export default function App() {
     };
   });
 
+  const [lastSprintDate, setLastSprintDate] = useState(() => {
+    return storageService.getUserData(activeSubject).lastSprintDate;
+  });
+
+  const isStreakCompletedToday = lastSprintDate === getTodayStr();
+
+  const [isSparksBouncing, setIsSparksBouncing] = useState(false);
+  const sparksBounceTimerRef = useRef(null);
+
+  const prevSparksRef = useRef(sparks);
+  useEffect(() => {
+    if (sparks > prevSparksRef.current) {
+      setIsSparksBouncing(true);
+      if (sparksBounceTimerRef.current) clearTimeout(sparksBounceTimerRef.current);
+      sparksBounceTimerRef.current = setTimeout(() => {
+        setIsSparksBouncing(false);
+      }, 1000);
+    }
+    prevSparksRef.current = sparks;
+  }, [sparks]);
+
   const recordDailyPractice = () => {
 
     const todayStr = getTodayStr();
@@ -480,6 +519,7 @@ export default function App() {
     }
 
     setStreak(nextStreak);
+    setLastSprintDate(todayStr);
     storageService.saveUserData({
       streak: nextStreak,
       lastSprintDate: todayStr,
@@ -627,8 +667,10 @@ export default function App() {
     });
     setSprintHistory(uData.sprintHistory || []);
     setPracticeQueue(uData.practiceQueue || []);
+    setLastSprintDate(uData.lastSprintDate ?? null);
     const badgeEval = evaluateBadges({ ...uData, subjectId: sub });
     setUnlockedBadges(badgeEval?.updatedUnlocked || uData.unlockedBadges || []);
+    setSeenBadges(storageService.getSeenBadges(storageService.getActiveProfileId()));
     setPracticeDays(storageService.getProfilePracticeDays());
     setEquippedItems(sData.equippedItems ?? []);
     setUnlockedItems(sData.unlockedItems ?? ['cap']);
@@ -1327,17 +1369,20 @@ export default function App() {
         {/* 2. Records Button: Golden Yellow */}
         <button
           type="button"
-          onClick={() => {
-            soundFx.playKeyTap();
-            closeAllNavModals('badges');
-            setShowBadgesModal(true);
-          }}
-          className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] ${
+          onClick={handleOpenBadgesModal}
+          className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] relative ${
             showBadgesModal ? 'ring-2 ring-yellow-500 scale-[1.02] sm:scale-105 font-bold' : ''
           }`}
           title="View Records"
         >
-          <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 stroke-[2.5]" />
+          <div className="relative">
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 stroke-[2.5]" />
+            {unseenBadgesCount > 0 && (
+              <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-amber-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none shadow-xs">
+                {unseenBadgesCount}
+              </span>
+            )}
+          </div>
           <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Records</span>
         </button>
 
@@ -1357,11 +1402,6 @@ export default function App() {
         >
           <div className="relative">
             <Crown className={`w-4 h-4 sm:w-5 sm:h-5 text-indigo-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'fill-indigo-300' : ''}`} />
-            {pendingFriendRequestsCount > 0 && (
-              <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none">
-                {pendingFriendRequestsCount}
-              </span>
-            )}
           </div>
           <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Rank</span>
         </button>
@@ -1625,7 +1665,7 @@ export default function App() {
                     className="flex items-center justify-between px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
                   >
                     <div className="flex items-center gap-2">
-                      <Flame className="w-4 h-4 text-rose-500 fill-rose-500 shrink-0" />
+                      <Flame className={`w-4 h-4 text-rose-500 fill-rose-500 shrink-0 ${!isStreakCompletedToday ? 'animate-pulse' : ''}`} />
                       <span>Daily Streak</span>
                     </div>
                     <div className="flex items-center gap-1">
@@ -1647,7 +1687,7 @@ export default function App() {
                     className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
                   >
                     <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-amber-600 fill-amber-500 stroke-[2.5] shrink-0" />
+                      <Zap className={`w-4 h-4 text-amber-600 fill-amber-500 stroke-[2.5] shrink-0 ${isSparksBouncing ? 'animate-bounce' : ''}`} />
                       <span>Sparks</span>
                     </div>
                     <span className="font-black">{sparks}</span>
@@ -1712,7 +1752,7 @@ export default function App() {
                 suffix={` ${streak === 1 ? 'd' : 'd'}`}
                 profileId={activeProfileId}
                 subjectId={activeSubject}
-                icon={<Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 fill-amber-300 shrink-0" />}
+                icon={<Flame className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 fill-amber-300 shrink-0 ${!isStreakCompletedToday ? 'animate-pulse' : ''}`} />}
               />
               {((consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0) && (
                 <span className="inline-flex items-center justify-center bg-white/95 rounded-full w-3.5 h-3.5 text-[10px] ml-0.5 animate-pulse shadow-2xs border border-rose-200 leading-none shrink-0" title="Kibo Shield Active">
@@ -1733,7 +1773,7 @@ export default function App() {
             >
               <RollingNumberTicker
                 value={sparks}
-                icon={<Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-800 fill-amber-500 stroke-[2.5]" />}
+                icon={<Zap className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-800 fill-amber-500 stroke-[2.5] ${isSparksBouncing ? 'animate-bounce' : ''}`} />}
                 profileId={activeProfileId}
                 subjectId={activeSubject}
               />
@@ -1745,10 +1785,7 @@ export default function App() {
               return (
                 <button
                   type="button"
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    setShowBadgesModal(true);
-                  }}
+                  onClick={handleOpenBadgesModal}
                   className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
                   title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
                 >

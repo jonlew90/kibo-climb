@@ -10,6 +10,56 @@ export function shuffleArray(array) {
   return arr;
 }
 
+export function ensureUniqueOptions(answer, options = [], fallbackPool = []) {
+  const ansStr = String(answer);
+  const result = [ansStr];
+  const seen = new Set([ansStr]);
+
+  for (const opt of options) {
+    if (opt === undefined || opt === null) continue;
+    const str = String(opt);
+    if (!seen.has(str)) {
+      seen.add(str);
+      result.push(str);
+    }
+  }
+
+  for (const fb of fallbackPool) {
+    if (result.length >= 4) break;
+    if (fb === undefined || fb === null) continue;
+    const str = String(fb);
+    if (!seen.has(str)) {
+      seen.add(str);
+      result.push(str);
+    }
+  }
+
+  let step = 1;
+  while (result.length < 4) {
+    const num = Number(ansStr);
+    if (!isNaN(num)) {
+      const up = String(num + step);
+      const down = String(num - step);
+      if (!seen.has(up)) {
+        seen.add(up);
+        result.push(up);
+      } else if (!seen.has(down) && (num - step >= 0 || num < 0)) {
+        seen.add(down);
+        result.push(down);
+      }
+    } else {
+      const fbStr = `${ansStr} #${step}`;
+      if (!seen.has(fbStr)) {
+        seen.add(fbStr);
+        result.push(fbStr);
+      }
+    }
+    step++;
+  }
+
+  return shuffleArray(result.slice(0, 4));
+}
+
 // ============================================================================
 // PROCEDURAL TEMPLATE GENERATORS BY TIER
 // ============================================================================
@@ -25,12 +75,13 @@ function generateTier1Problem() {
     const step = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
     const start = Math.floor(Math.random() * 10) + 1;
     const seq = [start, start + step, start + step * 2, start + step * 3];
-    const answer = String(start + step * 4);
-    const options = shuffleArray([
-      answer,
-      String(start + step * 4 + step),
-      String(start + step * 3 + 1),
-      String(start + step * 4 - 1)
+    const ansNum = start + step * 4;
+    const answer = String(ansNum);
+    const options = ensureUniqueOptions(answer, [
+      String(ansNum + step),
+      String(ansNum - step),
+      String(ansNum + 1),
+      String(ansNum - 1)
     ]);
     return {
       tier: 1,
@@ -49,11 +100,12 @@ function generateTier1Problem() {
     // Doubling sequence
     const start = [1, 2, 3][Math.floor(Math.random() * 3)];
     const seq = [start, start * 2, start * 4, start * 8];
-    const answer = String(start * 16);
-    const options = shuffleArray([
-      answer,
-      String(start * 8 + 4),
-      String(start * 8 * 2 + 2),
+    const ansNum = start * 16;
+    const answer = String(ansNum);
+    const options = ensureUniqueOptions(answer, [
+      String(ansNum / 2 + 4),
+      String(ansNum + 4),
+      String(ansNum - 4),
       String(start * 12)
     ]);
     return {
@@ -94,12 +146,13 @@ function generateTier1Problem() {
   // Execution Step Order
   const startVal = Math.floor(Math.random() * 5) + 1;
   const addVal = Math.floor(Math.random() * 4) + 1;
-  const answer = String(startVal + addVal);
-  const options = shuffleArray([
-    answer,
-    String(startVal + addVal + 1),
-    String(startVal + addVal - 1),
-    String(startVal * 2)
+  const ansNum = startVal + addVal;
+  const answer = String(ansNum);
+  const options = ensureUniqueOptions(answer, [
+    String(ansNum + 1),
+    String(ansNum - 1),
+    String(ansNum + 2),
+    String(Math.max(1, ansNum - 2))
   ]);
   return {
     tier: 1,
@@ -129,11 +182,12 @@ function generateTier2Problem() {
     const finalX = startX + right;
     const finalY = startY + up;
     const answer = `(${finalX}, ${finalY})`;
-    const options = shuffleArray([
-      answer,
+    const options = ensureUniqueOptions(answer, [
       `(${finalX + 1}, ${finalY})`,
       `(${finalX}, ${finalY + 1})`,
-      `(${finalY}, ${finalX})`
+      `(${finalY}, ${finalX})`,
+      `(${finalX - 1}, ${finalY})`,
+      `(${finalX}, ${finalY - 1})`
     ]);
     return {
       tier: 2,
@@ -154,10 +208,10 @@ function generateTier2Problem() {
     const action = ['Forward', 'Jump', 'Turn Left', 'Climb'][Math.floor(Math.random() * 4)];
     const expanded = Array(count).fill(action).join(', ');
     const answer = `Repeat ${count} [${action}]`;
-    const options = shuffleArray([
-      answer,
+    const options = ensureUniqueOptions(answer, [
       `Repeat ${count - 1} [${action}]`,
       `Repeat ${count + 1} [${action}]`,
+      `Repeat ${count + 2} [${action}]`,
       `Repeat 2 [${action}]`
     ]);
     return {
@@ -176,12 +230,13 @@ function generateTier2Problem() {
   // Total steps in nested loop
   const outer = Math.floor(Math.random() * 3) + 2;
   const inner = Math.floor(Math.random() * 3) + 2;
-  const answer = String(outer * inner);
-  const options = shuffleArray([
-    answer,
+  const totalSteps = outer * inner;
+  const answer = String(totalSteps);
+  const options = ensureUniqueOptions(answer, [
     String(outer + inner),
-    String(outer * inner + 2),
-    String((outer - 1) * inner)
+    String(totalSteps + inner),
+    String(totalSteps - inner),
+    String(totalSteps + 2)
   ]);
   return {
     tier: 2,
@@ -296,12 +351,13 @@ function generateTier4Problem() {
     const initial = Math.floor(Math.random() * 6) + 2;
     const add = Math.floor(Math.random() * 5) + 2;
     const mult = 2;
-    const answer = String((initial + add) * mult);
-    const options = shuffleArray([
-      answer,
+    const ansNum = (initial + add) * mult;
+    const answer = String(ansNum);
+    const options = ensureUniqueOptions(answer, [
       String(initial + add * mult),
-      String((initial + add) * mult + 2),
-      String(initial * mult + add)
+      String(ansNum + 2),
+      String(initial * mult + add),
+      String(ansNum - 2)
     ]);
     return {
       tier: 4,
@@ -327,11 +383,11 @@ function generateTier4Problem() {
     const binStr = `${finalB3}${b2}${b1}${b0}`;
     const decVal = finalB3 * 8 + b2 * 4 + b1 * 2 + b0 * 1;
     const answer = String(decVal);
-    const options = shuffleArray([
-      answer,
+    const options = ensureUniqueOptions(answer, [
       String((decVal + 2) % 16),
-      String(Math.max(1, decVal - 3)),
-      String((decVal + 4) % 16)
+      String((decVal + 4) % 16),
+      String(Math.max(1, (decVal - 3 + 16) % 16)),
+      String((decVal + 1) % 16)
     ]);
     return {
       tier: 4,
@@ -350,7 +406,7 @@ function generateTier4Problem() {
   const aVal = 5;
   const bVal = 9;
   const answer = `${aVal}`;
-  const options = shuffleArray([String(aVal), String(bVal), '0', '14']);
+  const options = ensureUniqueOptions(answer, [String(bVal), '0', '14', String(aVal + bVal)]);
   return {
     tier: 4,
     concept: 'Variable Swapping',
@@ -392,8 +448,7 @@ function generateTier5Problem() {
   if (type === 1) {
     // Spot the Bug / Off-by-one error
     const answer = 'Runs 6 times instead of 5';
-    const options = shuffleArray([
-      answer,
+    const options = ensureUniqueOptions(answer, [
       'Runs 4 times instead of 5',
       'Causes a syntax error',
       'Never stops running'
@@ -415,7 +470,7 @@ function generateTier5Problem() {
   const isWeekend = true;
   const isSunny = false;
   const answer = 'Read a Book';
-  const options = shuffleArray(['Go Hiking', 'Read a Book', 'Go to School', 'Do Homework']);
+  const options = ensureUniqueOptions(answer, ['Go Hiking', 'Go to School', 'Do Homework']);
   return {
     tier: 5,
     concept: 'Nested Conditionals',
@@ -441,11 +496,11 @@ function generateTier6Problem() {
     let expectedSum = 0;
     for (let i = 1; i <= n; i++) expectedSum += i;
     const answer = String(expectedSum);
-    const options = shuffleArray([
-      answer,
+    const options = ensureUniqueOptions(answer, [
       String(expectedSum + n),
       String(expectedSum - 1),
-      String(n * 2)
+      String(n * 2),
+      String(expectedSum + 1)
     ]);
     return {
       tier: 6,
@@ -471,11 +526,11 @@ function generateTier6Problem() {
       count++;
     }
     const answer = String(curr);
-    const options = shuffleArray([
-      answer,
+    const options = ensureUniqueOptions(answer, [
       String(curr / 2),
       String(curr * 2),
-      String(maxVal)
+      String(maxVal),
+      String(curr + 2)
     ]);
     return {
       tier: 6,
@@ -493,7 +548,7 @@ function generateTier6Problem() {
   // Array length & loop iterations
   const items = ['"ruby"', '"gem"', '"spark"', '"scroll"'];
   const answer = '4';
-  const options = shuffleArray(['4', '3', '5', '0']);
+  const options = ensureUniqueOptions(answer, ['3', '5', '0']);
   return {
     tier: 6,
     concept: 'Array Iteration',
@@ -518,12 +573,13 @@ function generateTier7Problem() {
     const p1 = Math.floor(Math.random() * 5) + 2;
     const p2 = Math.floor(Math.random() * 4) + 2;
     const mult = 3;
-    const answer = String((p1 + p2) * mult);
-    const options = shuffleArray([
-      answer,
+    const ansNum = (p1 + p2) * mult;
+    const answer = String(ansNum);
+    const options = ensureUniqueOptions(answer, [
       String(p1 + p2 * mult),
-      String((p1 + p2) * mult + mult),
-      String(p1 * mult + p2)
+      String(ansNum + mult),
+      String(p1 * mult + p2),
+      String(ansNum - mult)
     ]);
     return {
       tier: 7,
@@ -541,7 +597,7 @@ function generateTier7Problem() {
   if (type === 1) {
     // Stack LIFO operations
     const answer = '7';
-    const options = shuffleArray(['7', '4', '9', '2']);
+    const options = ensureUniqueOptions(answer, ['4', '9', '2']);
     return {
       tier: 7,
       concept: 'Stack (LIFO)',
@@ -557,7 +613,7 @@ function generateTier7Problem() {
 
   // Queue FIFO operations
   const answer = 'Alpha';
-  const options = shuffleArray(['Alpha', 'Beta', 'Gamma', 'Empty']);
+  const options = ensureUniqueOptions(answer, ['Beta', 'Gamma', 'Empty']);
   return {
     tier: 7,
     concept: 'Queue (FIFO)',
@@ -581,7 +637,7 @@ function generateTier8Problem() {
     // Factorial recursive trace
     const n = 4;
     const answer = '24';
-    const options = shuffleArray(['24', '12', '8', '48']);
+    const options = ensureUniqueOptions(answer, ['12', '8', '48']);
     return {
       tier: 8,
       concept: 'Recursion',
@@ -598,8 +654,7 @@ function generateTier8Problem() {
   if (type === 1) {
     // Big-O Time Complexity
     const answer = 'O(1) Constant Time';
-    const options = shuffleArray([
-      'O(1) Constant Time',
+    const options = ensureUniqueOptions(answer, [
       'O(N) Linear Time',
       'O(N²) Quadratic Time',
       'O(log N) Logarithmic Time'
@@ -619,7 +674,7 @@ function generateTier8Problem() {
 
   // Binary Search Step elimination
   const answer = '50';
-  const options = shuffleArray(['50', '25', '75', '100']);
+  const options = ensureUniqueOptions(answer, ['25', '75', '100']);
   return {
     tier: 8,
     concept: 'Binary Search',
@@ -649,8 +704,15 @@ export function generateCodingProblem(tier = 1, isProbe = false, seenKeys = new 
     default: prob = generateTier1Problem(); break;
   }
 
+  const finalOptions = (prob.options && prob.options.length === 2 && prob.options.includes('true') && prob.options.includes('false'))
+    ? prob.options
+    : (prob.options && prob.options.length === 2 && prob.options.includes('PASS') && prob.options.includes('RETRY'))
+    ? prob.options
+    : ensureUniqueOptions(prob.answer, prob.options || []);
+
   return {
     ...prob,
+    options: finalOptions,
     id: `code_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     isProbeQuestion: !!isProbe
   };

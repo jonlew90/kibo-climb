@@ -1199,6 +1199,27 @@ export const storageService = {
     return this.getSimulatedDate() || new Date();
   },
 
+  // ─── Unlocked & Seen Badges Tracking ────────────────────────────────────
+  getSeenBadges(profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const profile = this.getProfileById(pid);
+    if (!profile || !profile.userData) return [];
+    return profile.userData.seenBadges || [];
+  },
+
+  markBadgesAsSeen(badgeIds = [], profileId = null) {
+    if (!Array.isArray(badgeIds) || badgeIds.length === 0) return;
+    const pid = profileId || this.getActiveProfileId();
+    const state = safeGetProfilesState();
+    if (!state.profiles[pid]) return;
+    const currentUserData = state.profiles[pid].userData || {};
+    const existingSeen = new Set(currentUserData.seenBadges || []);
+    badgeIds.forEach(id => existingSeen.add(id));
+    currentUserData.seenBadges = Array.from(existingSeen);
+    state.profiles[pid].userData = currentUserData;
+    safeSaveProfilesState(state);
+  },
+
   // ─── COPPA-Compliant Climber Friend Code (1.07 Billion Combinations) ─────
   getFriendCode(profileId = null) {
     const pid = profileId || this.getActiveProfileId();
