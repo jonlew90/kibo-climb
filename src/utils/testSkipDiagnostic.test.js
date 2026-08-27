@@ -43,7 +43,7 @@ function runTests() {
   // Test 5: generateParentInsightCards
   const cards = generateParentInsightCards(logs, [], 'Leo');
   console.assert(cards.length >= 1, 'Test Card Generation Failed');
-  console.assert(cards[0].description.includes('Leo skipped 3 fractions & gcf/lcm problems today'), 'Test Card Content Failed');
+  console.assert(cards[0].description.includes('Leo skipped 3 fractions & gcf/lcm questions today'), 'Test Card Content Failed');
 
   console.log('✅ ALL TESTS PASSED SUCCESSFULLY!');
 }

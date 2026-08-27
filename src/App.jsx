@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Flame, Settings, Trophy, Crown, Zap, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass } from 'lucide-react';
 import Mascot from './components/Mascot';
 import ConfettiCanvas from './components/ConfettiCanvas';
@@ -10,10 +10,10 @@ import DailyStreakIncreasedModal from './components/DailyStreakIncreasedModal';
 import PerfectMonthProgressModal from './components/PerfectMonthProgressModal';
 import FirstLaunchOnboardingModal from './components/FirstLaunchOnboardingModal';
 import ProfileSelectorScreen from './components/ProfileSelectorScreen';
-import MathSessionView from './components/MathSessionView';
-import WordsSessionView from './components/WordsSessionView';
-import WorldSessionView from './components/WorldSessionView';
-import CodingSessionView from './components/CodingSessionView';
+const MathSessionView = lazy(() => import('./components/MathSessionView'));
+const WordsSessionView = lazy(() => import('./components/WordsSessionView'));
+const WorldSessionView = lazy(() => import('./components/WorldSessionView'));
+const CodingSessionView = lazy(() => import('./components/CodingSessionView'));
 import BadgesModal from './components/BadgesModal';
 import DevControlPanel from './components/DevControlPanel';
 import RollingNumberTicker from './components/RollingNumberTicker';
@@ -45,18 +45,18 @@ import AccountLinkModal from './components/AccountLinkModal';
 import { getNotificationPrefs, scheduleAllProfileReminders } from './utils/notifications';
 import MockCheckoutModal from './components/MockCheckoutModal';
 import StripeCheckoutModal from './components/StripeCheckoutModal';
-import SettingsScreen from './components/SettingsScreen';
-import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
+const SettingsScreen = lazy(() => import('./components/SettingsScreen'));
+const PrivacyPolicyScreen = lazy(() => import('./components/PrivacyPolicyScreen'));
 import ShareModal from './components/ShareModal';
 import ReferralRewardModal from './components/ReferralRewardModal';
 import NewsModal from './components/NewsModal';
 import { getNewsItems } from './utils/newsManager';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from './config/firebase';
-import TermsOfServiceScreen from './components/TermsOfServiceScreen';
+const TermsOfServiceScreen = lazy(() => import('./components/TermsOfServiceScreen'));
 import LeaderboardIcon from './components/LeaderboardIcon';
-import LeaderboardScreen from './components/LeaderboardScreen';
-import QuestsScreen from './components/QuestsScreen';
+const LeaderboardScreen = lazy(() => import('./components/LeaderboardScreen'));
+const QuestsScreen = lazy(() => import('./components/QuestsScreen'));
 import FeedbackModal from './components/FeedbackModal';
 import AddFriendModal from './components/AddFriendModal';
 import SubjectWallpaper from './components/SubjectWallpaper';
@@ -1982,6 +1982,7 @@ export default function App() {
 
       {/* SETTINGS SCREEN */}
       {appState === 'settings' && (
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <SettingsScreen
           preferences={preferences}
           onUpdatePreferences={handleUpdatePreferences}
@@ -2000,26 +2001,32 @@ export default function App() {
             setShowManualProfileSwitcher(true);
           }}
         />
+        </Suspense>
       )}
 
       {/* PRIVACY POLICY SCREEN */}
       {appState === 'privacy' && (
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <PrivacyPolicyScreen
           onBack={() => handleNavigateTo('/settings', 'settings')}
           renderFooter={renderNavigationFooter}
         />
+        </Suspense>
       )}
 
       {/* TERMS OF SERVICE SCREEN */}
       {appState === 'terms' && (
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <TermsOfServiceScreen
           onBack={() => handleNavigateTo('/settings', 'settings')}
           renderFooter={renderNavigationFooter}
         />
+        </Suspense>
       )}
 
       {/* LEADERBOARD SCREEN */}
       {appState === 'leaderboard' && (
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <LeaderboardScreen
           activeSubject={activeSubject}
           userState={{
@@ -2033,10 +2040,12 @@ export default function App() {
           renderFooter={renderNavigationFooter}
           equippedItems={equippedItems}
         />
+        </Suspense>
       )}
 
       {/* QUESTS SCREEN */}
       {appState === 'quests' && (
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <QuestsScreen
           activeSubject={activeSubject}
           userState={{
@@ -2075,10 +2084,12 @@ export default function App() {
             storageService.saveUserData({ sparks: updated }, activeSubject);
           }}
         />
+        </Suspense>
       )}
 
       {/* PURE ADAPTIVE MASTERY SESSION VIEW (Default & Fallback Main View) */}
       {appState === 'adaptive_session' && activeSubject === 'math' && (
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <MathSessionView
           key={activeProfileId + '-math'}
           profileId={activeProfileId}
@@ -2118,9 +2129,11 @@ export default function App() {
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
         />
+        </Suspense>
       )}
 
       {appState === 'adaptive_session' && activeSubject === 'words' && (
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <WordsSessionView
           key={activeProfileId + '-words'}
           profileId={activeProfileId}
@@ -2160,9 +2173,11 @@ export default function App() {
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
         />
+        </Suspense>
       )}
 
       {appState === 'adaptive_session' && activeSubject === 'world' && (
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <WorldSessionView
           key={activeProfileId + '-world'}
           profileId={activeProfileId}
@@ -2202,9 +2217,11 @@ export default function App() {
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
         />
+        </Suspense>
       )}
 
       {appState === 'adaptive_session' && activeSubject === 'coding' && (
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-slate-500 font-bold">Loading...</div>}>
         <CodingSessionView
           key={activeProfileId + '-coding'}
           profileId={activeProfileId}
@@ -2243,6 +2260,7 @@ export default function App() {
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
         />
+        </Suspense>
       )}
 
       {/* PROFILE SELECTOR — shown on every load when 2+ profiles exist */}
