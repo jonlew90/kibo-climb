@@ -1282,6 +1282,9 @@ export default function WorkshopModal({
                   const rarityInfo = RARITY_TIERS[item.rarity] || RARITY_TIERS.common;
                   const availability = getItemAvailabilityStatus(item, currentDate);
                   const isJustPurchased = recentlyPurchasedId === item.id;
+                  const itemSlotId = getItemSlot(item);
+                  const slotMeta = COSMETIC_SLOTS.find((s) => s.id === itemSlotId);
+                  const showSlotTag = (selectedSlot === 'all' || activeHub === 'seasonal' || searchQuery.trim().length > 0) && slotMeta && slotMeta.id !== 'all';
 
                   return (
                     <div
@@ -1303,22 +1306,30 @@ export default function WorkshopModal({
                           : 'border-slate-200 opacity-95 hover:border-slate-300'
                       }`}
                     >
-                      {/* Top Row: Rarity Badge + Equipped/Preview Indicator */}
+                      {/* Top Row: Rarity Badge + Category Slot Tag (only in mixed views) + Equipped Indicator */}
                       <div className="w-full flex items-center justify-between gap-1 mb-1">
-                        <span className={`text-[8px] sm:text-[9px] uppercase font-black px-1.5 py-0.2 rounded-md border ${rarityInfo.badgeClass}`}>
-                          {rarityInfo.label}
-                        </span>
+                        <div className="flex items-center gap-1 min-w-0">
+                          <span className={`text-[8px] sm:text-[9px] uppercase font-black px-1.5 py-0.2 rounded-md border shrink-0 ${rarityInfo.badgeClass}`}>
+                            {rarityInfo.label}
+                          </span>
+                          {showSlotTag && (
+                            <span className="text-[8px] sm:text-[9px] font-bold text-slate-500 bg-slate-100 px-1 py-0.2 rounded-md shrink-0 flex items-center gap-0.5 border border-slate-200" title={slotMeta.label}>
+                              <span>{slotMeta.icon}</span>
+                              <span className="hidden xxs:inline">{slotMeta.label}</span>
+                            </span>
+                          )}
+                        </div>
 
                         {isEquippedInApp ? (
-                          <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded-md flex items-center gap-0.5">
+                          <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded-md flex items-center gap-0.5 shrink-0">
                             <Check className="w-2.5 h-2.5 stroke-[3]" /> Worn
                           </span>
                         ) : isPreviewedOnStage && !isConsumable ? (
-                          <span className="text-[9px] font-black text-purple-800 bg-purple-100 px-1.5 py-0.2 rounded-md flex items-center gap-0.5">
+                          <span className="text-[9px] font-black text-purple-800 bg-purple-100 px-1.5 py-0.2 rounded-md flex items-center gap-0.5 shrink-0">
                             <Eye className="w-2.5 h-2.5" /> Tried
                           </span>
                         ) : isUnlocked ? (
-                          <span className="text-[9px] font-black text-sky-800 bg-sky-100 px-1.5 py-0.2 rounded-md">
+                          <span className="text-[9px] font-black text-sky-800 bg-sky-100 px-1.5 py-0.2 rounded-md shrink-0">
                             Owned
                           </span>
                         ) : null}
@@ -1455,13 +1466,23 @@ export default function WorkshopModal({
             className="bg-white rounded-t-3xl sm:rounded-3xl border-t-4 sm:border-3 border-amber-300 p-4 sm:p-5 w-full max-w-sm shadow-2xl space-y-3.5 animate-slide-up sm:animate-scale-in relative text-slate-800 cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header: Title + Close */}
+            {/* Header: Title + Category Slot + Close */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-full border ${(RARITY_TIERS[selectedItemDetail.rarity] || RARITY_TIERS.common).badgeClass}`}>
                   {(RARITY_TIERS[selectedItemDetail.rarity] || RARITY_TIERS.common).label}
                 </span>
-                <h3 className="text-sm font-black text-slate-900 truncate max-w-[180px]">{selectedItemDetail.name}</h3>
+                {(() => {
+                  const detailSlot = getItemSlot(selectedItemDetail);
+                  const slotObj = COSMETIC_SLOTS.find((s) => s.id === detailSlot);
+                  return slotObj && slotObj.id !== 'all' ? (
+                    <span className="text-[10px] font-extrabold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span>{slotObj.icon}</span>
+                      <span>{slotObj.label}</span>
+                    </span>
+                  ) : null;
+                })()}
+                <h3 className="text-sm font-black text-slate-900 truncate max-w-[160px]">{selectedItemDetail.name}</h3>
               </div>
 
               <button
@@ -1492,6 +1513,18 @@ export default function WorkshopModal({
 
             {/* Description & Lore */}
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-left space-y-1">
+              {(() => {
+                const detailSlot = getItemSlot(selectedItemDetail);
+                const replacedItem = stageEquippedItems
+                  .map((id) => getItemById(id))
+                  .find((it) => it && it.id !== selectedItemDetail.id && getItemSlot(it) === detailSlot);
+                return replacedItem ? (
+                  <div className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg flex items-center gap-1 mb-1">
+                    <span>🔄</span>
+                    <span>Replaces currently worn <strong>{replacedItem.name}</strong></span>
+                  </div>
+                ) : null;
+              })()}
               <p className="text-xs text-slate-600 font-medium leading-relaxed">
                 {selectedItemDetail.description}
               </p>
