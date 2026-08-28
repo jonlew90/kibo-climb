@@ -69,14 +69,21 @@ export default function QuestsScreen({
     }
   };
 
-  // Update countdown timers periodically
+  // Update countdown timers periodically and refresh quests on date/week rollover
   useEffect(() => {
     const timer = setInterval(() => {
       setDailyCountdown(questService.getTimeUntilDailyReset());
       setWeeklyCountdown(questService.getTimeUntilWeeklyReset());
+      setQuestState(prevState => {
+        const latestState = questService.getQuests(profileId);
+        if (latestState.dateKey !== prevState.dateKey || latestState.weekKey !== prevState.weekKey) {
+          return latestState;
+        }
+        return prevState;
+      });
     }, 30000);
     return () => clearInterval(timer);
-  }, []);
+  }, [profileId]);
 
   const handleClaim = (quest) => {
     if (!quest.completed || quest.claimed) return;
@@ -253,7 +260,7 @@ export default function QuestsScreen({
             <Compass className="w-48 h-48 text-white" />
           </div>
           
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="relative z-10">
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-black uppercase tracking-wider mb-2">
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
@@ -265,35 +272,6 @@ export default function QuestsScreen({
               <p className="text-purple-100 text-xs sm:text-sm mt-1 max-w-md">
                 Complete daily objectives, weekly milestones, and team ascents to gain XP, level up your Quest Rank, and earn Sparks & Shields!
               </p>
-            </div>
-
-            {/* Timers Panel */}
-            <div className="flex flex-row sm:flex-col gap-2 bg-black/35 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 border border-white/20 shrink-0 shadow-xs">
-              <div className="flex items-center gap-2 text-xs">
-                <div className="w-6 h-6 rounded-lg bg-amber-400/20 border border-amber-300/40 flex items-center justify-center shrink-0">
-                  <Clock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-purple-200 font-bold block leading-tight">Daily Quests</span>
-                    <span className="text-[9px] text-amber-300/90 font-semibold">(Midnight)</span>
-                  </div>
-                  <span className="font-black text-white text-xs sm:text-sm tracking-tight">{dailyCountdown}</span>
-                </div>
-              </div>
-              <div className="h-full w-px bg-white/15 sm:w-full sm:h-px my-0.5" />
-              <div className="flex items-center gap-2 text-xs">
-                <div className="w-6 h-6 rounded-lg bg-emerald-400/20 border border-emerald-300/40 flex items-center justify-center shrink-0">
-                  <Mountain className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-purple-200 font-bold block leading-tight">Weekly & Team</span>
-                    <span className="text-[9px] text-emerald-300/90 font-semibold">(Monday)</span>
-                  </div>
-                  <span className="font-black text-white text-xs sm:text-sm tracking-tight">{weeklyCountdown}</span>
-                </div>
-              </div>
             </div>
           </div>
 
