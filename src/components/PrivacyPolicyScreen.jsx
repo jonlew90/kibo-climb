@@ -49,10 +49,8 @@ export default function PrivacyPolicyScreen({ onBack, renderFooter }) {
               <p className="text-sm text-slate-600 mt-1 font-medium leading-relaxed">
                 Kibo Climb is committed to protecting the privacy of children under 13. We strictly adhere to the Children's Online Privacy Protection Act (COPPA). We do not sell personal data, display third-party advertisements, or track children across third-party apps.
               </p>
-              <div className="mt-3 flex items-center gap-3 text-xs font-semibold text-slate-400">
-                <span>Operator: Kibo Climb Inc.</span>
-                <span>•</span>
-                <span>Last Updated: August 28, 2026</span>
+              <div className="mt-3 text-xs font-semibold text-slate-400">
+                Last Updated: August 28, 2026
               </div>
             </div>
           </div>
@@ -82,21 +80,21 @@ export default function PrivacyPolicyScreen({ onBack, renderFooter }) {
           </div>
           <div className="space-y-3 text-sm text-slate-600 font-medium leading-relaxed">
             <p>
-              In accordance with COPPA's data minimization mandate, we collect only the minimal data strictly necessary for participation in educational learning climbs:
+              In accordance with COPPA's data minimization mandate, we aim to collect only minimal data strictly necessary for participation in educational learning climbs:
             </p>
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
               <h4 className="font-extrabold text-slate-800 text-xs uppercase tracking-wider">What We Collect</h4>
               <ul className="list-disc list-inside space-y-1 text-slate-600">
-                <li><strong className="text-slate-700">Kid-Safe Pseudonym / Handle:</strong> Screen nicknames (e.g. "CosmicOtter42") generated or chosen by the user. Usernames are checked to reject emails, phone numbers, or real names.</li>
+                <li><strong className="text-slate-700">Kid-Safe Pseudonym / Handle:</strong> Screen nicknames (e.g. "CosmicOtter42") generated or chosen by the user. We implement automated filtering designed to screen out emails, phone numbers, and common real name patterns, and we strongly encourage players and parents to use randomized climber tags.</li>
                 <li><strong className="text-slate-700">Academic Learning Telemetry:</strong> Questions answered, accuracy, response speeds, streak lengths, mastery tiers, and unlocked badges.</li>
                 <li><strong className="text-slate-700">Gameplay Preferences:</strong> Audio toggle states, avatar customization, and local app preferences.</li>
                 <li><strong className="text-slate-700">Technical Device Identifiers:</strong> Anonymous device tokens used solely for session persistence, offline caching, and crash diagnostics with PII redacted.</li>
               </ul>
             </div>
-            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 space-y-1 text-rose-900">
-              <h4 className="font-extrabold text-rose-800 text-xs uppercase tracking-wider">What We NEVER Collect From Children</h4>
-              <p className="text-xs font-semibold leading-relaxed">
-                We NEVER collect children's full real names, postal street addresses, phone numbers, precise geolocation (GPS), photos/webcam imagery, voice/microphone recordings, or freeform text messages.
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1 text-amber-900">
+              <h4 className="font-extrabold text-amber-800 text-xs uppercase tracking-wider">Information We Ask You Not to Provide</h4>
+              <p className="text-xs font-medium leading-relaxed">
+                Kibo Climb is designed to operate without collecting personal identifying information from children. We ask that children and parents never submit full real names, postal addresses, phone numbers, precise location data, photos, or voice recordings. If you discover that your child has submitted personal details, please contact us immediately at hello@kiboclimb.com so we can remove it.
               </p>
             </div>
           </div>
@@ -153,26 +151,25 @@ export default function PrivacyPolicyScreen({ onBack, renderFooter }) {
           </ul>
         </section>
 
-        {/* SECTION 6: OPERATOR CONTACT */}
+        {/* SECTION 6: CONTACT INFORMATION */}
         <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
           <div className="flex items-center gap-2.5 text-sky-700">
             <Mail className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">6. Operator Contact Information</h3>
+            <h3 className="text-base font-extrabold tracking-tight">6. Contact Information</h3>
           </div>
           <p className="text-sm text-slate-600 leading-relaxed font-medium">
             If you have questions regarding this COPPA Privacy Policy, our data practices, or wish to submit a data request:
           </p>
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-semibold text-slate-700 space-y-1">
-            <p><strong>Operator:</strong> Kibo Climb Inc. / Kibo Labs</p>
-            <p><strong>Contact Email:</strong> hello@kiboclimb.com</p>
-            <p><strong>Address:</strong> 100 Mountain View Way, Suite 400, Boulder, CO 80302</p>
+            <p><strong>App:</strong> Kibo Climb</p>
+            <p><strong>Support & Privacy Inquiries:</strong> hello@kiboclimb.com</p>
           </div>
           <a
             href="mailto:hello@kiboclimb.com?subject=COPPA%20Child%20Privacy%20Inquiry"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-xl font-extrabold text-sm transition-colors cursor-pointer"
           >
             <Mail className="w-4 h-4 stroke-[2.5]" />
-            Contact Privacy Team (hello@kiboclimb.com)
+            Contact Support & Privacy (hello@kiboclimb.com)
           </a>
         </section>
       </main>

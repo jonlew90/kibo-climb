@@ -8,6 +8,7 @@ import { SUBJECTS_CONFIG } from '../config/subjects';
 import { GRADE_CURRICULUM_DETAILS } from './FirstLaunchOnboardingModal';
 import { analyticsService } from '../services/analyticsService';
 import FamilyPlanUpgradeModal from './FamilyPlanUpgradeModal';
+import { validateSafeChildUsername } from '../utils/safeNames';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 
@@ -200,9 +201,8 @@ function AddProfilePanel({ onCancel, onCreated }) {
 
   const handleCreateSubmit = (e) => {
     e.preventDefault();
-    if (!childName.trim()) { setNameError('Please enter a name.'); return; }
-    if (childName.trim().length < 2) { setNameError('Must be at least 2 characters.'); return; }
-    if (childName.trim().length > 20) { setNameError('Must be 20 characters or fewer.'); return; }
+    const error = validateSafeChildUsername(childName);
+    if (error) { setNameError(error); return; }
     const newProfile = storageService.createProfile(childName.trim(), childGrade);
     if (!newProfile) {
       setNameError('Maximum profile limit of 6 reached.');

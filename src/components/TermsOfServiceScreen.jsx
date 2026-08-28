@@ -50,7 +50,7 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
                 Welcome to Kibo Climb. By creating an account, practicing on our application, or accessing our services, you agree to these Terms of Service.
               </p>
               <div className="mt-3 text-xs font-semibold text-slate-400">
-                Effective Date: August 9, 2026
+                Effective Date: August 28, 2026
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
             <h3 className="text-base font-extrabold tracking-tight">1. Acceptance & Parent Responsibility</h3>
           </div>
           <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            Kibo Climb is designed for children and families. If a user is under 18 years old, a parent or legal guardian must review and accept these terms on behalf of the child before establishing an account or subscribing to premium features.
+            Kibo Climb is designed for children and families. If a user is under 18 years old, a parent or legal guardian must review and accept these terms on behalf of the child before establishing an account or subscribing to premium features. Our collection and handling of educational data is governed by our COPPA Privacy Policy, which is incorporated into these Terms.
           </p>
         </section>
 
@@ -82,7 +82,7 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
         <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
           <div className="flex items-center gap-2.5 text-indigo-700">
             <Sparkles className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">3. Virtual Currency & In-Game Items</h3>
+            <h3 className="text-base font-extrabold tracking-tight">3. Virtual Currency, Items & Subscriptions</h3>
           </div>
           <div className="space-y-2 text-sm text-slate-600 font-medium leading-relaxed">
             <p>
@@ -91,6 +91,7 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
             <ul className="list-disc list-inside space-y-1.5 pl-1 text-slate-600">
               <li>Virtual items hold no real-world monetary value and cannot be exchanged for cash.</li>
               <li>Sparks earned through practice sessions are educational incentives designed to celebrate effort.</li>
+              <li>Subscriptions (Kibo Club Individual and Family plans) and in-app purchases may only be authorized and purchased by an adult parent or legal guardian through the Parent Zone.</li>
               <li>We reserve the right to adjust virtual item balances in the event of software glitches or cheat prevention.</li>
             </ul>
           </div>
@@ -100,10 +101,13 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
         <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
           <div className="flex items-center gap-2.5 text-rose-700">
             <AlertCircle className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">4. Acceptable Use & Fair Play</h3>
+            <h3 className="text-base font-extrabold tracking-tight">4. Acceptable Use, Fair Play & Child Privacy</h3>
           </div>
           <p className="text-sm text-slate-600 leading-relaxed font-medium">
             Users agree not to exploit bugs, use automated bots or scripts to auto-answer practice problems, attempt unauthorized access to servers, or tamper with app local storage data.
+          </p>
+          <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            <strong>Climber Handles & Privacy:</strong> To protect child privacy under COPPA, users agree not to input full real names, phone numbers, email addresses, or personal identifying details as climber tags or profile handles. Automated filters are used to screen handles, and we encourage players to use randomized safe tags.
           </p>
         </section>
 

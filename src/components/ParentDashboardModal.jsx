@@ -21,6 +21,7 @@ import AccountLinkModal from './AccountLinkModal';
 import FamilyPlanUpgradeModal from './FamilyPlanUpgradeModal';
 import PrivacyPolicyScreen from './PrivacyPolicyScreen';
 import { parentChildService } from '../services/parentChildService';
+import { validateSafeChildUsername } from '../utils/safeNames';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
@@ -148,6 +149,7 @@ export default function ParentDashboardModal({
   }
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editChildName, setEditChildName] = useState('');
+  const [editProfileError, setEditProfileError] = useState('');
   const [showFamilyUpgradeModal, setShowFamilyUpgradeModal] = useState(false);
 
   // Data Privacy Confirmation States
@@ -182,16 +184,22 @@ export default function ParentDashboardModal({
     soundFx.playKeyTap();
     const activeProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getActiveProfile();
     setEditChildName(activeProf.name || 'Kibo Climber');
+    setEditProfileError('');
     setShowEditProfile((prev) => !prev);
   };
 
   const handleSaveEditProfile = (e) => {
     e.preventDefault();
-    if (!editChildName.trim()) return;
+    const error = validateSafeChildUsername(editChildName);
+    if (error) {
+      setEditProfileError(error);
+      return;
+    }
     soundFx.playVictory();
     storageService.updateProfile(viewingProfileId, { name: editChildName.trim() });
     setProfilesList(storageService.getAllProfiles());
     setLiveUserData(getProfileSubjectData(viewingProfileId, selectedSubject));
+    setEditProfileError('');
     setShowEditProfile(false);
   };
 
@@ -449,6 +457,11 @@ export default function ParentDashboardModal({
                   </button>
                 )}
               </div>
+              {editProfileError && (
+                <p className="w-full text-left text-xs font-bold text-rose-600 px-1 pt-1">
+                  ⚠️ {editProfileError}
+                </p>
+              )}
             </form>
           )}
 

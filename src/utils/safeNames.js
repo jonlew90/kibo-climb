@@ -87,9 +87,68 @@ export function getDeterministicAnonymousName(seed = '') {
   return `${adj}${noun}#${num}`;
 }
 
+const COMMON_FIRST_NAMES = new Set([
+  'james', 'john', 'robert', 'michael', 'william', 'david', 'richard', 'joseph', 'thomas', 'charles',
+  'christopher', 'daniel', 'matthew', 'anthony', 'donald', 'mark', 'paul', 'steven', 'andrew', 'kenneth',
+  'joshua', 'george', 'kevin', 'brian', 'edward', 'ronald', 'timothy', 'jason', 'jeffrey', 'ryan',
+  'jacob', 'gary', 'nicholas', 'eric', 'jonathan', 'stephen', 'larry', 'justin', 'scott', 'brandon',
+  'benjamin', 'samuel', 'gregory', 'alexander', 'patrick', 'frank', 'raymond', 'jack', 'dennis', 'jerry',
+  'mary', 'patricia', 'jennifer', 'linda', 'elizabeth', 'barbara', 'susan', 'jessica', 'sarah', 'karen',
+  'nancy', 'lisa', 'betty', 'margaret', 'sandra', 'ashley', 'kimberly', 'emily', 'donna', 'michelle',
+  'dorothy', 'carol', 'amanda', 'melissa', 'deborah', 'stephanie', 'rebecca', 'sharon', 'laura', 'cynthia',
+  'kathleen', 'amy', 'shirley', 'angela', 'helen', 'anna', 'brenda', 'pamela', 'nicole', 'samantha',
+  'katherine', 'emma', 'christine', 'debra', 'rachel', 'catherine', 'carolyn', 'janet', 'ruth', 'maria',
+  'heather', 'diane', 'virginia', 'julie', 'joyce', 'victoria', 'olivia', 'kelly', 'christina', 'lauren',
+  'joan', 'evelyn', 'judith', 'megan', 'cheryl', 'andrea', 'hannah', 'martha', 'jacqueline', 'frances',
+  'gloria', 'ann', 'teresa', 'kathryn', 'sara', 'janice', 'jean', 'alice', 'madison', 'doris', 'abigail',
+  'julia', 'judy', 'grace', 'denise', 'amber', 'marilyn', 'beverly', 'danielle', 'theresa', 'sophia',
+  'marie', 'diana', 'brittany', 'natalie', 'isabella', 'charlotte', 'amelia', 'harper', 'ava', 'lucas',
+  'liam', 'noah', 'oliver', 'elijah', 'mateo', 'leo', 'mason', 'ethan', 'aiden', 'logan'
+]);
+
+const COMMON_SURNAMES = new Set([
+  'smith', 'johnson', 'williams', 'brown', 'jones', 'garcia', 'miller', 'davis', 'rodriguez', 'martinez',
+  'hernandez', 'lopez', 'gonzalez', 'wilson', 'anderson', 'thomas', 'taylor', 'moore', 'jackson', 'martin',
+  'lee', 'perez', 'thompson', 'white', 'harris', 'sanchez', 'clark', 'ramirez', 'lewis', 'robinson',
+  'walker', 'young', 'allen', 'king', 'wright', 'scott', 'torres', 'nguyen', 'hill', 'flores',
+  'green', 'adams', 'nelson', 'baker', 'hall', 'rivera', 'campbell', 'mitchell', 'carter', 'roberts',
+  'gomez', 'phillips', 'evans', 'turner', 'diaz', 'parker', 'cruz', 'edwards', 'collins', 'reyes',
+  'stewart', 'morris', 'morales', 'murphy', 'cook', 'rogers', 'gutierrez', 'ortiz', 'morgan', 'cooper',
+  'peterson', 'bailey', 'reed', 'kelly', 'howard', 'ramos', 'kim', 'cox', 'ward', 'richardson',
+  'watson', 'brooks', 'chavez', 'wood', 'james', 'bennett', 'gray', 'mendoza', 'ruiz', 'hughes',
+  'price', 'alvarez', 'castillo', 'sanders', 'patel', 'myers', 'long', 'ross', 'foster', 'jimenez'
+]);
+
+/**
+ * Checks if a string resembles a real first + last name combination.
+ */
+function resemblesRealFullName(str) {
+  const clean = str.toLowerCase().replace(/[^a-z_]/g, '');
+  if (clean.includes('_')) {
+    const parts = clean.split('_').filter(Boolean);
+    if (parts.length >= 2) {
+      if ((COMMON_FIRST_NAMES.has(parts[0]) && COMMON_SURNAMES.has(parts[1])) ||
+          (COMMON_SURNAMES.has(parts[0]) && COMMON_FIRST_NAMES.has(parts[1]))) {
+        return true;
+      }
+    }
+  }
+  const noUnderscore = clean.replace(/_/g, '');
+  if (noUnderscore.length >= 6) {
+    for (let i = 3; i <= noUnderscore.length - 3; i++) {
+      const p1 = noUnderscore.slice(0, i);
+      const p2 = noUnderscore.slice(i);
+      if (COMMON_FIRST_NAMES.has(p1) && COMMON_SURNAMES.has(p2)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /**
  * COPPA Child Data Minimization: Validates that a username contains no PII
- * (e.g. no emails, phone numbers, or invalid characters).
+ * (e.g. no emails, phone numbers, real names, or invalid characters).
  */
 export function validateSafeChildUsername(val) {
   if (!val || val.trim().length === 0) return 'Please enter a username.';
@@ -104,7 +163,12 @@ export function validateSafeChildUsername(val) {
   if (/\d{7,}/.test(trimmed)) {
     return 'COPPA notice: Usernames cannot contain phone numbers.';
   }
+  // Data minimization: block real first and last names
+  if (resemblesRealFullName(trimmed)) {
+    return 'COPPA notice: Please avoid using your real first and last name. Pick a climber nickname or click "Generate Kid-Safe Tag"!';
+  }
   if (!/^[a-zA-Z0-9_]{3,20}$/.test(trimmed)) return 'Letters, numbers, and underscores only.';
   return null;
 }
+
 

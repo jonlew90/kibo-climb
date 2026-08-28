@@ -82,6 +82,13 @@ describe('COPPA Compliance & Operational Requirements', () => {
       expect(error).toMatch(/phone numbers/);
     });
 
+    it('rejects obvious real first and last names', () => {
+      expect(validateSafeChildUsername('JohnSmith')).toMatch(/real first and last name/);
+      expect(validateSafeChildUsername('John_Smith')).toMatch(/real first and last name/);
+      expect(validateSafeChildUsername('EmilyDavis')).toMatch(/real first and last name/);
+      expect(validateSafeChildUsername('MichaelBrown')).toMatch(/real first and last name/);
+    });
+
     it('rejects empty, too short, or too long usernames', () => {
       expect(validateSafeChildUsername('')).toBeTruthy();
       expect(validateSafeChildUsername('ab')).toBeTruthy();
