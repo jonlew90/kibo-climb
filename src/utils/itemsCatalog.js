@@ -16,6 +16,25 @@ export const ITEM_CATEGORIES = [
   { id: 'premium', label: 'Premium & Bundles' }
 ];
 
+export const CATEGORY_HUBS = [
+  { id: 'wearables', label: 'Cosmetics', icon: '👗' },
+  { id: 'powerups', label: 'Power-Ups', icon: '🧪' },
+  { id: 'seasonal', label: 'Events & Deals', icon: '🎉' },
+  { id: 'sparks', label: 'Sparks & Club', icon: '⚡' }
+];
+
+export const COSMETIC_SLOTS = [
+  { id: 'all', label: 'All', icon: '✨' },
+  { id: 'headwear', label: 'Headwear', icon: '🧢' },
+  { id: 'outfits', label: 'Outfits', icon: '👕' },
+  { id: 'gear', label: 'Gear', icon: '🎒' },
+  { id: 'pets', label: 'Pets', icon: '🐾' },
+  { id: 'skins', label: 'Skins', icon: '🎨' },
+  { id: 'background', label: 'Backdrops', icon: '🌄' },
+  { id: 'borders', label: 'Borders', icon: '🖼️' },
+  { id: 'fx', label: 'Effects', icon: '💫' }
+];
+
 export const RARITY_TIERS = {
   common: {
     label: 'Common',
@@ -1479,6 +1498,16 @@ export function getItemSlot(item) {
     if (item.id === 'kibo_club_sub' || item.id === 'kibo_club_family') return 'fx';
   }
   return item.category;
+}
+
+export function isWearableItem(item) {
+  if (!item || item.isConsumable) return false;
+  const slot = getItemSlot(item);
+  return ['headwear', 'gear', 'outfits', 'pets', 'skins', 'background', 'borders', 'fx', 'effects'].includes(slot);
+}
+
+export function getOwnedItems(unlockedItems = []) {
+  return WORKSHOP_ITEMS.filter((item) => !item.isConsumable && unlockedItems.includes(item.id));
 }
 
 /**

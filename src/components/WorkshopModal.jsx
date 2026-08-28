@@ -1,8 +1,55 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, Zap, Check, Lock, Sparkles, X, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight, ArrowLeft, User, Ticket, Gift, Clock, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import {
+  ShoppingBag,
+  Zap,
+  Check,
+  Lock,
+  Sparkles,
+  X,
+  RotateCcw,
+  ShieldCheck,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  Ticket,
+  Gift,
+  Clock,
+  AlertCircle,
+  Info,
+  Search,
+  Tag,
+  SlidersHorizontal,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  CheckCircle2,
+  Package
+} from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
-import { ITEM_CATEGORIES, WORKSHOP_ITEMS, SPARKS_PACKAGES, RARITY_TIERS, RARITY_ORDER, SEASONAL_EVENTS, getAvailableSeasonalEvents, getActiveHolidayOrSeasonalSaleEvent, isSeasonalEventAvailableOrUpcoming, getItemsByCategory, getItemById, getItemSlot, getItemAvailabilityStatus, isItemVisibleInShop, getItemSalePrice, calculateSparksPackageSavings, getRealMoneyItemSavings } from '../utils/itemsCatalog';
+import {
+  ITEM_CATEGORIES,
+  CATEGORY_HUBS,
+  COSMETIC_SLOTS,
+  WORKSHOP_ITEMS,
+  SPARKS_PACKAGES,
+  RARITY_TIERS,
+  RARITY_ORDER,
+  SEASONAL_EVENTS,
+  getAvailableSeasonalEvents,
+  getActiveHolidayOrSeasonalSaleEvent,
+  isSeasonalEventAvailableOrUpcoming,
+  getItemsByCategory,
+  getItemById,
+  getItemSlot,
+  getItemAvailabilityStatus,
+  isItemVisibleInShop,
+  getItemSalePrice,
+  calculateSparksPackageSavings,
+  getRealMoneyItemSavings,
+  isWearableItem,
+  getOwnedItems
+} from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
@@ -55,7 +102,7 @@ export function sortShopItems(items, userSparks, unlockedItems = [], equippedIte
 export default function WorkshopModal({
   isOpen,
   onClose,
-  sparks,
+  sparks = 0,
   streakShields = 1,
   consumables = { shieldCount: 1, timeFreezeCount: 0 },
   unlockedItems = [],
@@ -83,14 +130,30 @@ export default function WorkshopModal({
     borders: null
   };
 
-  const [activeCategory, setActiveCategory] = useState('powerups');
+  // View Mode: 'shop' vs 'closet'
+  const [viewMode, setViewMode] = useState('shop');
+
+  // Active Category Hub in Shop Mode
+  const [activeHub, setActiveHub] = useState('wearables');
+
+  // Sub-slot filter (for Wearables & Closet)
+  const [selectedSlot, setSelectedSlot] = useState('all');
+
+  // Seasonal filter
   const [seasonalEventFilter, setSeasonalEventFilter] = useState('all_active');
 
-  useEffect(() => {
-    if (isOpen && activeCategory === 'premium') {
-      analyticsService.logSubscriptionUpsellView('Shop');
-    }
-  }, [isOpen, activeCategory]);
+  // Search & Filter Toggles
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterOnlySale, setFilterOnlySale] = useState(false);
+  const [filterOnlyOwned, setFilterOnlyOwned] = useState(false);
+
+  // Mobile Stage Collapse State
+  const [mobileStageCollapsed, setMobileStageCollapsed] = useState(false);
+
+  // Detail Modal / Sheet State
+  const [selectedItemDetail, setSelectedItemDetail] = useState(null);
+
+  // Preview Slots State
   const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
   const [recentlyPurchasedId, setRecentlyPurchasedId] = useState(null);
 
@@ -103,28 +166,27 @@ export default function WorkshopModal({
   const [promoFeedback, setPromoFeedback] = useState(null);
   const [isRedeeming, setIsRedeeming] = useState(false);
 
-  const categoryScrollRef = useRef(null);
-  const seasonalEventScrollRef = useRef(null);
+  const slotScrollRef = useRef(null);
+  const hubScrollRef = useRef(null);
   const itemsContainerRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const checkScroll = () => {
-    if (!categoryScrollRef.current) return;
-    requestAnimationFrame(() => {
-      if (!categoryScrollRef.current) return;
-      const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
-      setCanScrollLeft(scrollLeft > 4);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
-    });
-  };
+  // Log analytics when visiting sparks or subscriptions
+  useEffect(() => {
+    if (isOpen && activeHub === 'sparks') {
+      analyticsService.logSubscriptionUpsellView('Shop');
+    }
+  }, [isOpen, activeHub]);
 
-  // Reset preview slots when modal opens and add Escape key listener
+  // Handle Escape key listener and reset previews on open
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) {
-        if (showPromoModal) {
+        if (selectedItemDetail) {
+          setSelectedItemDetail(null);
+        } else if (showPromoModal) {
           setShowPromoModal(false);
+        } else if (itemToSell) {
+          setItemToSell(null);
         } else if (onClose) {
           onClose();
         }
@@ -138,115 +200,36 @@ export default function WorkshopModal({
       if (itemsContainerRef.current) {
         itemsContainerRef.current.scrollTop = 0;
       }
-      setTimeout(checkScroll, 100);
     }
 
     return () => {
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose, showPromoModal]);
+  }, [isOpen, onClose, showPromoModal, selectedItemDetail, itemToSell]);
 
-  // Scroll to top of item list whenever category or seasonal filter changes
+  // Scroll to top of item list on filter/mode change
   useEffect(() => {
     if (itemsContainerRef.current) {
       itemsContainerRef.current.scrollTop = 0;
     }
-  }, [activeCategory, seasonalEventFilter]);
-
-  const handleScrollLeft = () => {
-    soundFx.playKeyTap();
-    if (categoryScrollRef.current) {
-      categoryScrollRef.current.scrollBy({ left: -100, behavior: 'smooth' });
-    }
-  };
-
-  const handleScrollRight = () => {
-    soundFx.playKeyTap();
-    if (categoryScrollRef.current) {
-      categoryScrollRef.current.scrollBy({ left: 100, behavior: 'smooth' });
-    }
-  };
-
-  const handleCategoryWheel = (e) => {
-    if (categoryScrollRef.current && (e.deltaX !== 0 || e.shiftKey)) {
-      const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
-      categoryScrollRef.current.scrollLeft += delta;
-      checkScroll();
-    }
-  };
-
-  const handleRedeemPromo = async (codeOverride) => {
-    const targetCode = promoCodeService.normalizeCode(codeOverride || promoInput);
-    if (!targetCode) {
-      soundFx.playIncorrect();
-      setPromoFeedback({ type: 'error', message: 'Please enter a promo code.' });
-      return;
-    }
-
-    soundFx.playKeyTap();
-    setIsRedeeming(true);
-    setPromoFeedback(null);
-
-    const res = await promoCodeService.redeemCode(targetCode);
-    setIsRedeeming(false);
-
-    if (res.success) {
-      soundFx.playVictory();
-      setPromoFeedback({
-        type: 'success',
-        message: res.message,
-        reward: res.reward
-      });
-      setPromoInput('');
-
-      // Auto-preview newly unlocked item on stage if an item was unlocked
-      if (res.reward.items && res.reward.items.length > 0) {
-        const firstItemId = res.reward.items[0];
-        const itemObj = getItemById(firstItemId);
-        if (itemObj) {
-          const slot = getItemSlot(itemObj);
-          setPreviewSlots((prev) => ({ ...prev, [slot]: firstItemId }));
-        }
-      }
-
-      if (onRedeemPromoCode) {
-        onRedeemPromoCode(res);
-      }
-    } else {
-      soundFx.playIncorrect();
-      setPromoFeedback({
-        type: 'error',
-        message: res.reason || 'Failed to redeem promo code.'
-      });
-    }
-  };
-
-  const openPromoDialogWithCode = (code = '') => {
-    soundFx.playKeyTap();
-    setPromoInput(code);
-    setPromoFeedback(null);
-    setShowPromoModal(true);
-  };
-
-  if (!isOpen) return null;
+  }, [viewMode, activeHub, selectedSlot, seasonalEventFilter, filterOnlySale, filterOnlyOwned]);
 
   const currentDate = storageService.getCurrentDate();
   const availableSeasonalEvents = getAvailableSeasonalEvents(currentDate);
-
-  // If currently selected seasonal event filter is not among available/upcoming filters, fall back to 'all_active'
   const effectiveSeasonalEventFilter = availableSeasonalEvents.some((e) => e.id === seasonalEventFilter)
     ? seasonalEventFilter
     : 'all_active';
 
-  // Compute active stage items (merges saved equipped items with active preview slots)
+  // Compute active stage items (merges saved equipped items with active preview overrides)
+  const SLOTS = ['headwear', 'gear', 'outfits', 'pets', 'fx', 'skins', 'effects', 'background', 'borders'];
+
   const computeStageEquipped = () => {
     const stageItems = [];
-    const SLOTS = ['headwear', 'gear', 'outfits', 'pets', 'fx', 'skins', 'effects', 'background', 'borders'];
 
     SLOTS.forEach((slot) => {
       if (previewSlots[slot] !== null && previewSlots[slot] !== undefined) {
-        if (previewSlots[slot]) {
+        if (previewSlots[slot] && previewSlots[slot] !== '') {
           stageItems.push(previewSlots[slot]);
         }
       } else {
@@ -265,41 +248,81 @@ export default function WorkshopModal({
 
   const stageEquippedItems = computeStageEquipped();
 
-  const getDisplayItems = () => {
-    if (activeCategory === 'seasonal') {
-      if (effectiveSeasonalEventFilter === 'all_active') {
-        return getItemsByCategory('seasonal', unlockedItems, currentDate);
-      }
-      return WORKSHOP_ITEMS.filter(
-        (item) => item.category === 'seasonal' && item.seasonId === effectiveSeasonalEventFilter && isItemVisibleInShop(item, unlockedItems, currentDate)
-      );
-    }
-    return getItemsByCategory(activeCategory, unlockedItems, currentDate);
-  };
-
-  const currentCategoryItems = getDisplayItems();
-
-  // Check if any active preview overrides exist
+  // Active preview states
   const hasActivePreview = Object.values(previewSlots).some((v) => v !== null);
   const hasUnownedPreview = stageEquippedItems.some((id) => !unlockedItems.includes(id));
 
-  const handleCategorySelect = (catId) => {
-    soundFx.playKeyTap();
-    setActiveCategory(catId);
-    if (categoryScrollRef.current) {
-      if (catId === 'get_sparks' || catId === 'premium') {
-        categoryScrollRef.current.scrollTo({ left: categoryScrollRef.current.scrollWidth, behavior: 'smooth' });
-      } else if (catId === 'powerups' || catId === 'headwear') {
-        categoryScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+  // Determine which items to show based on mode, hubs, slots, and search query
+  const getCatalogItems = () => {
+    let items = [];
+
+    if (viewMode === 'closet') {
+      // My Closet: Only wearable items unlocked by user
+      items = WORKSHOP_ITEMS.filter((item) => {
+        if (item.isConsumable) return false;
+        if (!unlockedItems.includes(item.id)) return false;
+        if (selectedSlot !== 'all') {
+          return getItemSlot(item) === selectedSlot;
+        }
+        return true;
+      });
+    } else {
+      // Shop Mode: Filter by active hub
+      if (activeHub === 'wearables') {
+        items = WORKSHOP_ITEMS.filter((item) => {
+          if (item.isConsumable || item.category === 'powerups') return false;
+          if (item.category === 'seasonal') return false; // seasonal has its own hub
+          if (!isItemVisibleInShop(item, unlockedItems, currentDate)) return false;
+          if (selectedSlot !== 'all') {
+            return getItemSlot(item) === selectedSlot;
+          }
+          return true;
+        });
+      } else if (activeHub === 'powerups') {
+        items = WORKSHOP_ITEMS.filter((item) => item.isConsumable || item.category === 'powerups');
+      } else if (activeHub === 'seasonal') {
+        if (effectiveSeasonalEventFilter === 'all_active') {
+          items = getItemsByCategory('seasonal', unlockedItems, currentDate);
+        } else {
+          items = WORKSHOP_ITEMS.filter(
+            (item) => item.category === 'seasonal' && item.seasonId === effectiveSeasonalEventFilter && isItemVisibleInShop(item, unlockedItems, currentDate)
+          );
+        }
+      } else if (activeHub === 'sparks') {
+        items = []; // Sparks hub renders packages & Kibo Club custom cards
       }
     }
+
+    // Apply Quick Filters
+    if (viewMode === 'shop') {
+      if (filterOnlySale) {
+        items = items.filter((item) => {
+          const sale = getItemSalePrice(item, currentDate);
+          return sale && sale.isSale;
+        });
+      }
+      if (filterOnlyOwned) {
+        items = items.filter((item) => unlockedItems.includes(item.id));
+      }
+    }
+
+    // Apply Search Query Filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      items = items.filter((item) => {
+        const name = (item.name || '').toLowerCase();
+        const desc = (item.description || '').toLowerCase();
+        const slot = (getItemSlot(item) || '').toLowerCase();
+        return name.includes(q) || desc.includes(q) || slot.includes(q);
+      });
+    }
+
+    return sortShopItems(items, sparks, unlockedItems, equippedItems, currentDate);
   };
 
-  const handleResetPreview = () => {
-    soundFx.playKeyTap();
-    setPreviewSlots(INITIAL_PREVIEW_SLOTS);
-  };
+  const displayedItems = getCatalogItems();
 
+  // Handle preview toggle
   const handlePreviewToggle = (item) => {
     if (item.isConsumable) return;
     soundFx.playKeyTap();
@@ -307,18 +330,54 @@ export default function WorkshopModal({
     const previewId = (item.bundleItems && item.bundleItems.length > 0) ? item.bundleItems[0] : item.id;
 
     if (previewSlots[slot] === previewId) {
+      // Revert this slot to default saved look
       setPreviewSlots((prev) => ({ ...prev, [slot]: null }));
     } else {
       setPreviewSlots((prev) => ({ ...prev, [slot]: previewId }));
     }
   };
 
-  const handleSellConfirm = () => {
-    if (itemToSell && onSellItem) {
-      soundFx.playKeyTap();
-      onSellItem(itemToSell);
+  // Remove a specific slot from preview or unequip it
+  const handleClearSlot = (slot) => {
+    soundFx.playKeyTap();
+    const currentSavedInSlot = equippedItems.find((id) => {
+      const item = getItemById(id);
+      return item ? getItemSlot(item) === slot : false;
+    });
+
+    if (previewSlots[slot] !== null) {
+      // Reset preview override for this slot
+      setPreviewSlots((prev) => ({ ...prev, [slot]: null }));
+    } else if (currentSavedInSlot) {
+      // Unequip currently saved item in slot
+      onToggleEquip(currentSavedInSlot);
     }
-    setItemToSell(null);
+  };
+
+  // Batch Apply All Previewed Owned Items
+  const handleApplyPreviewLook = () => {
+    soundFx.playVictory();
+    SLOTS.forEach((slot) => {
+      const previewId = previewSlots[slot];
+      if (previewId !== null) {
+        const currentSaved = equippedItems.find((id) => {
+          const item = getItemById(id);
+          return item ? getItemSlot(item) === slot : false;
+        });
+
+        if (previewId === '' && currentSaved) {
+          onToggleEquip(currentSaved);
+        } else if (previewId && previewId !== currentSaved && unlockedItems.includes(previewId)) {
+          onToggleEquip(previewId);
+        }
+      }
+    });
+    setPreviewSlots(INITIAL_PREVIEW_SLOTS);
+  };
+
+  const handleResetPreview = () => {
+    soundFx.playKeyTap();
+    setPreviewSlots(INITIAL_PREVIEW_SLOTS);
   };
 
   const handleBuyClick = (item) => {
@@ -339,8 +398,6 @@ export default function WorkshopModal({
 
     if (item.realMoneyPrice) {
       soundFx.playKeyTap();
-      // Forward the real money purchase up to App.jsx for mock checkout processing
-      // Note: `onBuySparksPackage` handles mock checkout natively right now.
       onBuySparksPackage(item);
       return;
     }
@@ -371,259 +428,462 @@ export default function WorkshopModal({
     }
   };
 
-  const isWearableCategory = activeCategory !== 'powerups' && activeCategory !== 'get_sparks';
+  const handleSellConfirm = () => {
+    if (itemToSell && onSellItem) {
+      soundFx.playKeyTap();
+      onSellItem(itemToSell);
+    }
+    setItemToSell(null);
+    if (selectedItemDetail?.id === itemToSell?.id) {
+      setSelectedItemDetail(null);
+    }
+  };
+
+  const handleRedeemPromo = async (codeOverride) => {
+    const targetCode = promoCodeService.normalizeCode(codeOverride || promoInput);
+    if (!targetCode) {
+      soundFx.playIncorrect();
+      setPromoFeedback({ type: 'error', message: 'Please enter a promo code.' });
+      return;
+    }
+
+    soundFx.playKeyTap();
+    setIsRedeeming(true);
+    setPromoFeedback(null);
+
+    const res = await promoCodeService.redeemCode(targetCode);
+    setIsRedeeming(false);
+
+    if (res.success) {
+      soundFx.playVictory();
+      setPromoFeedback({
+        type: 'success',
+        message: res.message,
+        reward: res.reward
+      });
+      setPromoInput('');
+
+      if (res.reward.items && res.reward.items.length > 0) {
+        const firstItemId = res.reward.items[0];
+        const itemObj = getItemById(firstItemId);
+        if (itemObj) {
+          const slot = getItemSlot(itemObj);
+          setPreviewSlots((prev) => ({ ...prev, [slot]: firstItemId }));
+        }
+      }
+
+      if (onRedeemPromoCode) {
+        onRedeemPromoCode(res);
+      }
+    } else {
+      soundFx.playIncorrect();
+      setPromoFeedback({
+        type: 'error',
+        message: res.reason || 'Failed to redeem promo code.'
+      });
+    }
+  };
+
+  const openPromoDialogWithCode = (code = '') => {
+    soundFx.playKeyTap();
+    setPromoInput(code);
+    setPromoFeedback(null);
+    setShowPromoModal(true);
+  };
+
+  const unlockedWearablesCount = useMemo(() => {
+    return getOwnedItems(unlockedItems).length;
+  }, [unlockedItems]);
+
+  const activeSaleEvent = getActiveHolidayOrSeasonalSaleEvent(currentDate);
+
+  // Compute active equipped look details for slot HUD
+  const activeSlotDetails = SLOTS.map((slot) => {
+    const itemId = stageEquippedItems.find((id) => {
+      const item = getItemById(id);
+      return item ? getItemSlot(item) === slot : false;
+    });
+    if (!itemId) return null;
+    const item = getItemById(itemId);
+    if (!item) return null;
+    return {
+      slot,
+      item,
+      isOwned: unlockedItems.includes(item.id),
+      isPreview: previewSlots[slot] !== null
+    };
+  }).filter(Boolean);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
-      {/* STICKY TOP HEADER BAR */}
-      <header className="bg-white border-b-2 border-slate-200 px-3.5 sm:px-4 py-2.5 flex items-center justify-between shadow-xs shrink-0 z-10">
-        <div className="flex items-center gap-2 text-slate-800">
-          <ShoppingBag className="w-5 h-5 text-orange-500 stroke-[2.5]" />
-          <h2 className="text-base sm:text-lg font-black tracking-tight">Kibo's Corner 🐾</h2>
+      
+      {/* 1. TOP HEADER BAR */}
+      <header className="bg-white border-b-2 border-slate-200 px-3 sm:px-5 py-2.5 flex items-center justify-between shadow-xs shrink-0 z-20">
+        {/* Title & Brand */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-orange-100 border border-orange-300 flex items-center justify-center shrink-0 shadow-2xs">
+            <ShoppingBag className="w-4 h-4 text-orange-600 stroke-[2.5]" />
+          </div>
+          <div>
+            <h2 className="text-sm sm:text-base font-black tracking-tight text-slate-900 leading-tight">
+              Kibo's Corner
+            </h2>
+            <p className="text-[10px] sm:text-xs font-bold text-slate-500 hidden xs:block leading-none">
+              Shop & Dressing Room
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Direct Kibo Club Deeplink to Get Sparks */}
+        {/* Center: Mode Segmented Switcher (Shop vs My Closet) */}
+        <div className="flex items-center bg-slate-100 border-2 border-slate-200/80 p-0.5 sm:p-1 rounded-2xl shadow-inner">
           <button
             type="button"
-            onClick={() => handleCategorySelect('get_sparks')}
-            className={`flex items-center gap-1 px-2.5 py-1 font-black text-xs rounded-full border active:scale-95 transition-all cursor-pointer shadow-2xs ${
-              activeCategory === 'get_sparks'
-                ? 'bg-gradient-to-r from-purple-700 to-indigo-700 text-white border-purple-800 ring-2 ring-purple-300'
-                : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white border-purple-500'
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('shop');
+            }}
+            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
+              viewMode === 'shop'
+                ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
-            title="View Kibo Club & Sparks"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300 stroke-[2.5]" />
-            <span>Kibo Club</span>
+            <span>🛍️</span>
+            <span>Shop</span>
           </button>
 
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('closet');
+            }}
+            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
+              viewMode === 'closet'
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <span>👗</span>
+            <span>My Closet</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+              viewMode === 'closet' ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'
+            }`}>
+              {unlockedWearablesCount}
+            </span>
+          </button>
+        </div>
+
+        {/* Right: Currency, Promo Code, & Quick Actions */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
           <button
             type="button"
             onClick={() => openPromoDialogWithCode()}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 bg-gradient-to-b from-orange-400 via-kibo-orange to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white font-black text-xs rounded-full border border-orange-600 active:scale-95 transition-all"
+            className="flex items-center gap-1 px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-950 font-black text-xs rounded-full border border-amber-300 active:scale-95 transition-all cursor-pointer shadow-2xs"
+            title="Redeem Promo Code"
           >
-            <Ticket className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span className="hidden sm:inline">Redeem</span> Code
+            <Ticket className="w-3.5 h-3.5 text-amber-700 stroke-[2.5]" />
+            <span className="hidden sm:inline">Code</span>
           </button>
 
-          {(() => {
-            const username = storageService.getUsername() || storageService.getActiveProfile()?.name || '';
-            return username ? (
-              <span className="hidden md:flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
-                <User className="w-3 h-3" />{username}
-              </span>
-            ) : null;
-          })()}
-          <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 bg-amber-100 border-2 border-amber-300 rounded-full text-amber-950 font-black text-xs shadow-xs">
-            <Zap className="w-4 h-4 text-amber-900 fill-amber-500 stroke-[2]" />
+          <div
+            onClick={() => {
+              soundFx.playKeyTap();
+              setViewMode('shop');
+              setActiveHub('sparks');
+            }}
+            className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-300 rounded-full text-amber-950 font-black text-xs shadow-xs cursor-pointer hover:scale-105 active:scale-95 transition-all"
+            title="Click to get more Sparks"
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-900 fill-amber-500 stroke-[2]" />
             <span>{sparks}</span>
           </div>
         </div>
       </header>
-      {/* STICKY TOP STAGE, SALE BANNER & CATEGORY FILTERS */}
-      <div className="w-full max-w-4xl mx-auto p-2.5 sm:px-6 sm:pt-3.5 sm:pb-3 shrink-0 space-y-2 bg-slate-50 border-b border-slate-200 shadow-xs z-10">
-        {/* Live Try-On Preview Mascot Stage Header (For Wearables & Customization) */}
-        {isWearableCategory ? (
-          <div className="bg-white border-2 border-slate-200 rounded-2xl p-2.5 sm:p-4 flex items-center justify-center gap-3 sm:gap-6 shadow-xs relative overflow-hidden">
-            {/* Large Framed Responsive Mascot Anchor Box */}
-            <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 shrink-0 flex items-center justify-center relative rounded-3xl bg-gradient-to-b from-sky-50 via-white to-amber-50 border-2 border-slate-200 shadow-inner overflow-hidden p-1.5">
-              <Mascot mood="happy" equipped={stageEquippedItems} className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40" />
+
+      {/* 2. MAIN 2-PANE RESPONSIVE CONTAINER */}
+      <div className="flex-1 flex flex-col md:flex-row min-h-0 w-full max-w-7xl mx-auto overflow-hidden">
+        
+        {/* LEFT PANE: DRESSING STAGE & ACTIVE LOOK HUD (Sticky on Desktop, Stacked on Mobile) */}
+        <aside className="w-full md:w-80 lg:w-96 shrink-0 bg-white md:border-r-2 border-b-2 md:border-b-0 border-slate-200 flex flex-col z-10 shadow-xs md:shadow-none overflow-y-auto">
+          
+          {/* Mobile Stage Toggle Bar */}
+          <div className="md:hidden flex items-center justify-between px-3 py-1.5 bg-slate-100 border-b border-slate-200">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black text-slate-700">🐾 Live Preview Stage</span>
+              {hasUnownedPreview ? (
+                <span className="bg-purple-600 text-white font-black text-[10px] px-2 py-0.5 rounded-full animate-pulse">
+                  Preview Mode
+                </span>
+              ) : (
+                <span className="bg-emerald-600 text-white font-black text-[10px] px-2 py-0.5 rounded-full">
+                  Active Look
+                </span>
+              )}
             </div>
+            <button
+              type="button"
+              onClick={() => setMobileStageCollapsed((prev) => !prev)}
+              className="text-xs font-black text-slate-600 flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-slate-200"
+            >
+              <span>{mobileStageCollapsed ? 'Show Stage' : 'Collapse'}</span>
+              {mobileStageCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+            </button>
+          </div>
 
-            <div className="text-left space-y-1.5 sm:space-y-2 flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {hasUnownedPreview ? (
-                  <span className="bg-purple-600 text-white font-black text-[10px] sm:text-xs uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-xs">
-                    <Sparkles className="w-3 h-3 fill-amber-300 stroke-[2.5]" /> Preview Mode
-                  </span>
-                ) : (
-                  <span className="bg-emerald-600 text-white font-black text-[10px] sm:text-xs uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
-                    <ShieldCheck className="w-3 h-3 stroke-[2.5]" /> Active Look
-                  </span>
-                )}
+          {/* Stage Body */}
+          {(!mobileStageCollapsed || window.innerWidth >= 768) && (
+            <div className="p-3 sm:p-4 space-y-3 flex flex-col items-center">
+              {/* Live Framed Mascot Box */}
+              <div className="w-full max-w-xs md:max-w-none h-36 sm:h-44 md:h-52 rounded-3xl bg-gradient-to-b from-sky-100 via-white to-amber-50 border-3 border-slate-200 shadow-inner flex items-center justify-center relative overflow-hidden p-2 group">
+                <Mascot mood="happy" equipped={stageEquippedItems} className="w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 transition-transform duration-300 group-hover:scale-105" />
 
+                {/* Stage Corner Status Badge */}
+                <div className="absolute top-2.5 left-2.5">
+                  {hasUnownedPreview ? (
+                    <span className="bg-purple-700/90 backdrop-blur-xs text-white font-black text-[10px] uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm animate-pulse">
+                      <Sparkles className="w-3 h-3 fill-amber-300 stroke-[2.5]" /> Preview Mode
+                    </span>
+                  ) : (
+                    <span className="bg-emerald-700/90 backdrop-blur-xs text-white font-black text-[10px] uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                      <ShieldCheck className="w-3 h-3 stroke-[2.5]" /> Active Look
+                    </span>
+                  )}
+                </div>
+
+                {/* Reset Preview Button */}
                 {hasActivePreview && (
                   <button
+                    type="button"
                     onClick={handleResetPreview}
-                    className="text-[10px] sm:text-xs font-extrabold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 transition-all border border-slate-200 cursor-pointer"
+                    className="absolute top-2.5 right-2.5 bg-white/95 hover:bg-white text-slate-700 font-black text-[10px] px-2.5 py-1 rounded-full border border-slate-300 shadow-sm flex items-center gap-1 active:scale-95 transition-all cursor-pointer"
+                    title="Reset to currently saved look"
                   >
                     <RotateCcw className="w-3 h-3" /> Reset
                   </button>
                 )}
               </div>
 
-              <p className="text-xs sm:text-sm font-bold text-slate-600 leading-snug">
-                {hasUnownedPreview
-                  ? 'Previewing items on Kibo! Tap any item to try it on.'
-                  : '✨ Tap any item below to try it on Kibo!'}
-              </p>
-            </div>
-          </div>
-        ) : activeCategory === 'powerups' ? (
-          <div className="bg-gradient-to-r from-amber-100 via-orange-50 to-amber-100 border-2 border-amber-300 rounded-xl px-3 py-2 flex items-center justify-between gap-2 shadow-2xs">
-            <div className="flex items-center gap-2">
-              <span className="text-base sm:text-lg">🧪</span>
-              <div>
-                <h3 className="text-xs sm:text-sm font-black text-amber-950 leading-tight">Climb Boosters & Power-Ups</h3>
-                <p className="text-[11px] sm:text-xs font-bold text-amber-800 leading-tight">Use hints, shields & potions during climb sessions!</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 bg-amber-200/90 px-2.5 py-1 rounded-full text-amber-950 font-black text-xs border border-amber-300 shrink-0 shadow-2xs">
-              <Zap className="w-3.5 h-3.5 text-amber-900 fill-amber-500 stroke-[2]" />
-              <span>{sparks}</span>
-            </div>
-          </div>
-        ) : null}
-
-        {/* Seasonal / Holiday Sale Banner */}
-        {(() => {
-          const activeSaleEvent = getActiveHolidayOrSeasonalSaleEvent(currentDate);
-          if (!activeSaleEvent) return null;
-
-          const isChristmasOrWinter = activeSaleEvent.id === 'holiday_season' || activeSaleEvent.id === 'winter';
-          const isSummer = activeSaleEvent.id === 'summer';
-          const isAutumnOrHalloween = activeSaleEvent.id === 'autumn' || activeSaleEvent.id === 'halloween' || activeSaleEvent.id === 'thanksgiving';
-          const isSpring = activeSaleEvent.id === 'spring' || activeSaleEvent.id === 'earth_day' || activeSaleEvent.id === 'st_patricks';
-
-          const gradientClass = isSummer
-            ? 'from-amber-500 via-orange-500 to-rose-500'
-            : isAutumnOrHalloween
-            ? 'from-amber-600 via-orange-600 to-amber-700'
-            : isSpring
-            ? 'from-emerald-500 via-teal-500 to-cyan-600'
-            : isChristmasOrWinter
-            ? 'from-rose-500 via-red-600 to-rose-700'
-            : 'from-purple-600 via-indigo-600 to-blue-600';
-
-          const eventName = activeSaleEvent.label || 'SEASONAL';
-
-          return (
-            <div className={`bg-gradient-to-r ${gradientClass} px-3 py-1.5 text-center shadow-inner rounded-xl relative z-10 shrink-0 animate-fade-in`}>
-              <p className="text-white font-black text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2">
-                <span>{eventName.toUpperCase()} SALE!</span>
-                <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-xs">
-                  25% OFF ALL ITEMS
-                </span>
-              </p>
-            </div>
-          );
-        })()}
-
-        {/* Category Selector Tabs */}
-        <div className="space-y-1">
-          <div className="relative flex items-center">
-            {canScrollLeft && (
-              <button
-                type="button"
-                onClick={handleScrollLeft}
-                className="absolute left-0 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white active:scale-95 transition-all"
-              >
-                <ChevronLeft className="w-4 h-4 stroke-[3]" />
-              </button>
-            )}
-
-            <div
-              ref={categoryScrollRef}
-              onScroll={checkScroll}
-              onWheel={handleCategoryWheel}
-              className="flex items-center gap-2 p-1 bg-slate-100 rounded-full overflow-x-auto scrollbar-none w-full touch-pan-x"
-            >
-              {ITEM_CATEGORIES.map((cat) => {
-                const isSpecial = cat.id === 'get_sparks' || cat.id === 'premium';
-                const isSelected = activeCategory === cat.id;
-
-                let tabStyle = '';
-                if (isSelected) {
-                  tabStyle = isSpecial
-                    ? 'bg-amber-500 text-white shadow-md border border-amber-600 ring-2 ring-amber-400/40 font-black'
-                    : 'bg-white text-slate-900 shadow-sm border border-amber-300 ring-2 ring-amber-400/20';
-                } else {
-                  tabStyle = isSpecial
-                    ? 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100/80 hover:border-amber-400 font-bold'
-                    : 'border border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-200/60';
-                }
-
-                return (
+              {/* Stage Actions: Apply Look (If previews differ from saved) */}
+              {hasActivePreview && (
+                <div className="w-full flex items-center gap-2">
                   <button
-                    key={cat.id}
-                    onClick={() => handleCategorySelect(cat.id)}
-                    className={`py-1.5 px-3 text-xs font-extrabold rounded-full shrink-0 transition-all cursor-pointer ${tabStyle}`}
+                    type="button"
+                    onClick={handleApplyPreviewLook}
+                    disabled={hasUnownedPreview}
+                    className={`flex-1 py-2 px-3 text-xs font-black rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all ${
+                      hasUnownedPreview
+                        ? 'bg-slate-200 text-slate-500 border border-slate-300 cursor-not-allowed'
+                        : 'btn-3d-orange active:scale-95 cursor-pointer'
+                    }`}
                   >
-                    {cat.label}
+                    <Check className="w-4 h-4 stroke-[3]" />
+                    <span>{hasUnownedPreview ? 'Buy Items to Apply' : 'Apply Outfit'}</span>
                   </button>
-                );
-              })}
-            </div>
 
-            {canScrollRight && (
-              <button
-                type="button"
-                onClick={handleScrollRight}
-                className="absolute right-0 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white active:scale-95 transition-all"
-              >
-                <ChevronRight className="w-4 h-4 stroke-[3]" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* DEDICATED INDEPENDENT ITEM GRID SCROLL CONTAINER */}
-      <main
-        ref={itemsContainerRef}
-        style={{ WebkitOverflowScrolling: 'touch' }}
-        className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-2.5 sm:p-5"
-      >
-        <div className="space-y-2.5 pb-28 sm:pb-16">
-
-          {/* Dedicated Promo Redemption Card inside Promo Exclusives category */}
-          {activeCategory === 'promo' && (
-            <div className="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 rounded-2xl p-3.5 sm:p-4 text-white shadow-md">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center border border-white/40">
-                    <Ticket className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black leading-tight">Have a Secret Promo Code?</h3>
-                    <p className="text-xs font-bold text-amber-100">Redeem exclusive gear, companions, and bonus Sparks!</p>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleResetPreview}
+                    className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => openPromoDialogWithCode()}
-                  className="bg-white text-amber-900 font-extrabold text-xs px-3.5 py-1.5 rounded-xl shadow-sm hover:bg-amber-50 active:scale-95 transition-all whitespace-nowrap cursor-pointer"
-                >
-                  Enter Code
-                </button>
+              )}
+
+              {/* Active Look Slot HUD: Chips for each equipped item */}
+              <div className="w-full space-y-1.5 text-left">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+                    Equipped Slots ({activeSlotDetails.length})
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-bold">Tap × to unequip</span>
+                </div>
+
+                {activeSlotDetails.length === 0 ? (
+                  <div className="p-2.5 text-center bg-slate-50 border border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-400">
+                    No items equipped on Kibo. Tap any item to try it on!
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {activeSlotDetails.map(({ slot, item, isOwned, isPreview }) => (
+                      <div
+                        key={slot}
+                        onClick={() => setSelectedItemDetail(item)}
+                        className={`group flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-xl text-xs font-black border transition-all cursor-pointer ${
+                          isPreview
+                            ? 'bg-purple-50 border-purple-300 text-purple-950 ring-1 ring-purple-400'
+                            : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800'
+                        }`}
+                      >
+                        <ItemThumbnail itemId={item.id} rarity={item.rarity} className="w-4 h-4 rounded-xs shrink-0" />
+                        <span className="truncate max-w-[100px] sm:max-w-[120px]">{item.name}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleClearSlot(slot);
+                          }}
+                          className="w-4 h-4 rounded-full bg-slate-200/80 hover:bg-rose-200 hover:text-rose-800 text-slate-500 flex items-center justify-center text-[10px] font-black transition-colors"
+                          title="Unequip slot"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
+        </aside>
 
-          {/* Dedicated Seasonal Events Explorer Bar inside Seasonal category */}
-          {activeCategory === 'seasonal' && (
-            <div className="space-y-2 mb-2">
-              <div className="bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600 rounded-2xl p-3 sm:p-3.5 text-white shadow-md flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/20 flex items-center justify-center border border-white/40 shrink-0">
-                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 animate-pulse" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-black leading-tight">
-                      {effectiveSeasonalEventFilter === 'all_active'
-                        ? '🐾 Recurring Seasonal Catalog'
-                        : (availableSeasonalEvents.find((e) => e.id === effectiveSeasonalEventFilter)?.label || 'Seasonal Event')}
-                    </h3>
-                    <p className="text-[11px] sm:text-xs font-bold text-teal-100 leading-snug">
-                      Items rotate automatically throughout the year for seasons & holidays! Unlocked items stay forever.
-                    </p>
-                  </div>
+        {/* RIGHT PANE: CATALOG & CLOSET CONTROLS & ITEM GRID */}
+        <main className="flex-1 min-w-0 flex flex-col overflow-hidden bg-slate-50/50">
+          
+          {/* STICKY CATALOG NAVIGATION BAR */}
+          <div className="bg-white border-b-2 border-slate-200 p-2.5 sm:px-4 sm:py-3 space-y-2.5 shrink-0 z-10 shadow-2xs">
+            
+            {/* Seasonal Sale Banner (if active) */}
+            {activeSaleEvent && viewMode === 'shop' && (
+              <div className="bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 text-white px-3 py-1.5 rounded-xl shadow-xs flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300 animate-pulse shrink-0" />
+                  <span className="font-black text-xs sm:text-sm tracking-wide truncate">
+                    {activeSaleEvent.label.toUpperCase()} SALE!
+                  </span>
                 </div>
+                <span className="bg-white/25 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider whitespace-nowrap">
+                  25% OFF ALL ITEMS
+                </span>
+              </div>
+            )}
+
+            {/* Top Toolbar: Search + Category Hubs / Slot Switchers */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              {/* Search Box */}
+              <div className="relative flex-1 min-w-0">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={viewMode === 'closet' ? 'Search your closet...' : 'Search gear, pets, boosters...'}
+                  className="w-full pl-8 pr-8 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-hidden focus:bg-white focus:border-amber-400 transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-black text-xs"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
 
-              {/* Event Sub-Navigation Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 px-0.5 touch-pan-x">
+              {/* Quick Filter Badges (Shop Mode Only) */}
+              {viewMode === 'shop' && (
+                <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto scrollbar-none py-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setFilterOnlySale((prev) => !prev);
+                    }}
+                    className={`px-2.5 py-1 text-xs font-black rounded-xl border transition-all cursor-pointer flex items-center gap-1 shrink-0 ${
+                      filterOnlySale
+                        ? 'bg-rose-600 text-white border-rose-700 shadow-2xs'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    <Tag className="w-3 h-3" />
+                    <span>On Sale</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setFilterOnlyOwned((prev) => !prev);
+                    }}
+                    className={`px-2.5 py-1 text-xs font-black rounded-xl border transition-all cursor-pointer flex items-center gap-1 shrink-0 ${
+                      filterOnlyOwned
+                        ? 'bg-sky-600 text-white border-sky-700 shadow-2xs'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>Owned</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Shop Mode: Primary Category Hubs */}
+            {viewMode === 'shop' && (
+              <div
+                ref={hubScrollRef}
+                className="flex items-center gap-1.5 overflow-x-auto scrollbar-none touch-pan-x py-0.5"
+              >
+                {CATEGORY_HUBS.map((hub) => {
+                  const isSelected = activeHub === hub.id;
+                  return (
+                    <button
+                      key={hub.id}
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setActiveHub(hub.id);
+                        if (hub.id !== 'wearables') setSelectedSlot('all');
+                      }}
+                      className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-black rounded-full shrink-0 transition-all cursor-pointer border ${
+                        isSelected
+                          ? 'bg-amber-500 text-white border-amber-600 shadow-xs ring-2 ring-amber-400/30'
+                          : 'bg-slate-100 hover:bg-slate-200/80 text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      <span>{hub.icon}</span>
+                      <span>{hub.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Sub-Filters: Slot Pills for Wearables & Closet */}
+            {(viewMode === 'closet' || (viewMode === 'shop' && activeHub === 'wearables')) && (
+              <div
+                ref={slotScrollRef}
+                className="flex items-center gap-1.5 overflow-x-auto scrollbar-none touch-pan-x py-0.5"
+              >
+                {COSMETIC_SLOTS.map((slot) => {
+                  const isSelected = selectedSlot === slot.id;
+                  return (
+                    <button
+                      key={slot.id}
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setSelectedSlot(slot.id);
+                      }}
+                      className={`flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-xs font-extrabold rounded-full shrink-0 transition-all cursor-pointer border ${
+                        isSelected
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                          : 'bg-white hover:bg-slate-100 text-slate-600 border-slate-200'
+                      }`}
+                    >
+                      {slot.icon && <span>{slot.icon}</span>}
+                      <span>{slot.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Sub-Filters: Seasonal Events Bar */}
+            {viewMode === 'shop' && activeHub === 'seasonal' && (
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none touch-pan-x py-0.5">
                 {availableSeasonalEvents.map((event) => (
                   <button
                     key={event.id}
@@ -631,487 +891,514 @@ export default function WorkshopModal({
                       soundFx.playKeyTap();
                       setSeasonalEventFilter(event.id);
                     }}
-                    className={`py-1 px-3 text-xs font-extrabold rounded-full shrink-0 transition-all cursor-pointer ${
+                    className={`py-1 px-3 text-xs font-extrabold rounded-full shrink-0 transition-all cursor-pointer border ${
                       effectiveSeasonalEventFilter === event.id
-                        ? 'bg-teal-700 text-white shadow-xs border border-teal-800 ring-2 ring-teal-400/20'
-                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-2xs'
+                        ? 'bg-teal-700 text-white border-teal-800 shadow-xs ring-2 ring-teal-400/20'
+                        : 'bg-white hover:bg-slate-100 text-slate-600 border-slate-200'
                     }`}
                   >
                     {event.label}
                   </button>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Kibo Club Subscription Banners - Prominently featured on Premium & Get Sparks tabs */}
-          {(activeCategory === 'premium' || activeCategory === 'get_sparks') && (
-            <div className="flex flex-col gap-2.5 sm:gap-3 mb-3">
-              <div
-                onClick={() => {
-                  if (allowRealMoneyPurchases) {
-                    onBuySparksPackage({ id: 'kibo_club_sub', name: 'Kibo Club Individual', realMoneyPrice: '$4.99/mo', price: '$4.99/mo', isSubscription: true, isFamilyPlan: false, description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!' });
-                  } else if (onOpenParentZone) {
-                    onOpenParentZone('verification', 'real_money_purchases');
-                  }
-                }}
-                className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 border-2 border-purple-400 rounded-2xl p-2.5 sm:p-3 flex flex-row items-center justify-between shadow-md cursor-pointer hover:scale-[1.01] active:scale-98 transition-transform"
-              >
-                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/50 shrink-0">
-                    <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white animate-pulse" />
-                  </div>
-                  <div className="text-left min-w-0">
-                    <h3 className="text-xs sm:text-sm font-black text-white leading-tight">Join Kibo Club (Individual)</h3>
-                    <p className="text-[11px] sm:text-xs font-bold text-indigo-100 leading-snug">
-                      1.25x Sparks Forever & More • $4.99/mo
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="bg-white text-indigo-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap shrink-0 ml-2 flex items-center gap-1 cursor-pointer"
-                >
-                  {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-indigo-900 stroke-[2.5]" />}
-                  {allowRealMoneyPurchases ? 'Join' : 'Enable'}
-                </button>
-              </div>
-
-              <div
-                onClick={() => {
-                  if (allowRealMoneyPurchases) {
-                    onBuySparksPackage({ id: 'kibo_club_family', name: 'Kibo Club Family', realMoneyPrice: '$7.99/mo', price: '$7.99/mo', isSubscription: true, isFamilyPlan: true, description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.' });
-                  } else if (onOpenParentZone) {
-                    onOpenParentZone('verification', 'real_money_purchases');
-                  }
-                }}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-600 border-2 border-amber-400 rounded-2xl p-2.5 sm:p-3 flex flex-row items-center justify-between shadow-md cursor-pointer hover:scale-[1.01] active:scale-98 transition-transform"
-              >
-                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/50 shrink-0">
-                    <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white animate-pulse" />
-                  </div>
-                  <div className="text-left min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="text-xs sm:text-sm font-black text-white leading-tight">Join Kibo Club (Family)</h3>
-                      <span className="bg-emerald-500 text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-2xs border border-emerald-400">
-                        Save 20%
-                      </span>
+          {/* DEDICATED SCROLLABLE ITEM CATALOG GRID */}
+          <div
+            ref={itemsContainerRef}
+            style={{ WebkitOverflowScrolling: 'touch' }}
+            className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain p-3 sm:p-4"
+          >
+            {/* Sparks & Subscription Packages View */}
+            {viewMode === 'shop' && activeHub === 'sparks' ? (
+              <div className="space-y-4 max-w-3xl mx-auto pb-24 sm:pb-16">
+                {/* Kibo Club Subscription Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Individual Plan */}
+                  <div
+                    onClick={() => {
+                      if (allowRealMoneyPurchases) {
+                        onBuySparksPackage({
+                          id: 'kibo_club_sub',
+                          name: 'Kibo Club Individual',
+                          realMoneyPrice: '$4.99/mo',
+                          price: '$4.99/mo',
+                          isSubscription: true,
+                          isFamilyPlan: false,
+                          description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!'
+                        });
+                      } else if (onOpenParentZone) {
+                        onOpenParentZone('verification', 'real_money_purchases');
+                      }
+                    }}
+                    className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white rounded-3xl p-4 sm:p-5 shadow-md hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex flex-col justify-between space-y-3"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="bg-white/20 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
+                          ⭐ Monthly Club
+                        </span>
+                        <span className="text-sm font-black text-amber-300">$4.99 / mo</span>
+                      </div>
+                      <h3 className="text-base font-black leading-snug">Join Kibo Club</h3>
+                      <p className="text-xs text-indigo-100 font-medium leading-relaxed">
+                        1.25x Sparks Forever on all challenges, exclusive golden badge, and daily bonus Sparks!
+                      </p>
                     </div>
-                    <p className="text-[11px] sm:text-xs font-bold text-orange-100 leading-snug">
-                      Benefits for ALL profiles • $7.99/mo
-                    </p>
+                    <button
+                      type="button"
+                      className="w-full bg-white text-indigo-950 font-black text-xs py-2.5 rounded-xl shadow-md flex items-center justify-center gap-1.5"
+                    >
+                      {!allowRealMoneyPurchases && <Lock className="w-3.5 h-3.5 text-indigo-900" />}
+                      <span>{allowRealMoneyPurchases ? 'Subscribe Now' : 'Enable in Parent Zone'}</span>
+                    </button>
+                  </div>
+
+                  {/* Family Plan */}
+                  <div
+                    onClick={() => {
+                      if (allowRealMoneyPurchases) {
+                        onBuySparksPackage({
+                          id: 'kibo_club_family',
+                          name: 'Kibo Club Family',
+                          realMoneyPrice: '$7.99/mo',
+                          price: '$7.99/mo',
+                          isSubscription: true,
+                          isFamilyPlan: true,
+                          description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
+                        });
+                      } else if (onOpenParentZone) {
+                        onOpenParentZone('verification', 'real_money_purchases');
+                      }
+                    }}
+                    className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-3xl p-4 sm:p-5 shadow-md hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex flex-col justify-between space-y-3"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="bg-emerald-500 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs">
+                          Save 20% • Whole Family
+                        </span>
+                        <span className="text-sm font-black text-yellow-200">$7.99 / mo</span>
+                      </div>
+                      <h3 className="text-base font-black leading-snug">Kibo Club Family</h3>
+                      <p className="text-xs text-orange-100 font-medium leading-relaxed">
+                        Full benefits unlocked for EVERY child profile on your account simultaneously!
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="w-full bg-white text-orange-950 font-black text-xs py-2.5 rounded-xl shadow-md flex items-center justify-center gap-1.5"
+                    >
+                      {!allowRealMoneyPurchases && <Lock className="w-3.5 h-3.5 text-orange-900" />}
+                      <span>{allowRealMoneyPurchases ? 'Subscribe Family' : 'Enable in Parent Zone'}</span>
+                    </button>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="bg-white text-orange-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap shrink-0 ml-2 flex items-center gap-1 cursor-pointer"
-                >
-                  {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-orange-900 stroke-[2.5]" />}
-                  {allowRealMoneyPurchases ? 'Join' : 'Enable'}
-                </button>
-              </div>
-            </div>
-          )}
 
-          {/* Promotional Account Link Banner in Get Sparks tab */}
-          {activeCategory === 'get_sparks' && authService.getAuthState().isAnonymous && onRequestAccountLink && (
-            <div
-              onClick={onRequestAccountLink}
-              className="mb-2.5 w-full bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-300 rounded-2xl p-2.5 flex flex-row items-center justify-between shadow-sm cursor-pointer hover:scale-[1.01] active:scale-98 transition-transform"
-            >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-amber-50 rounded-full flex items-center justify-center border-2 border-amber-400 shrink-0 shadow-inner">
-                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 fill-amber-400 animate-pulse" />
+                {/* Account Link Banner */}
+                {authService.getAuthState().isAnonymous && onRequestAccountLink && (
+                  <div
+                    onClick={onRequestAccountLink}
+                    className="bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-300 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs cursor-pointer hover:scale-[1.01] transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-amber-50 border-2 border-amber-400 flex items-center justify-center shrink-0">
+                        <Zap className="w-5 h-5 text-amber-500 fill-amber-400" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-black text-amber-950">Link Account for +200 ⚡ Free</h4>
+                        <p className="text-[11px] sm:text-xs font-bold text-amber-800">Save progress and get Sparks instantly!</p>
+                      </div>
+                    </div>
+                    <button className="bg-amber-500 text-white font-black text-xs px-3.5 py-1.5 rounded-xl shadow-md border-b-2 border-amber-700 whitespace-nowrap">
+                      Link Free
+                    </button>
+                  </div>
+                )}
+
+                {/* Sparks Packages Grid */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-500">Spark Bundles</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {SPARKS_PACKAGES.map((pack) => {
+                      const savings = calculateSparksPackageSavings(pack);
+                      const displayPrice = pack.realMoneyPrice || pack.price;
+                      return (
+                        <div
+                          key={pack.id}
+                          className="bg-white p-3.5 rounded-2xl border-2 border-slate-200 hover:border-amber-300 shadow-xs flex items-center justify-between gap-3 transition-all"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <ItemThumbnail itemId={pack.id} rarity={pack.rarity || 'legendary'} className="w-10 h-10 rounded-xl shrink-0 p-0.5" />
+                            <div className="min-w-0">
+                              <h5 className="font-extrabold text-sm text-slate-800 truncate">{pack.name}</h5>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="text-xs font-black text-amber-600">⚡ {pack.sparks}</span>
+                                {savings !== null && (
+                                  <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded-md">
+                                    Save {savings}%
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (allowRealMoneyPurchases) {
+                                onBuySparksPackage(pack);
+                              } else if (onOpenParentZone) {
+                                onOpenParentZone('verification', 'real_money_purchases');
+                              }
+                            }}
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-black text-xs px-3 py-2 rounded-xl shadow-xs whitespace-nowrap shrink-0 active:scale-95 transition-all flex items-center gap-1"
+                          >
+                            {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-purple-200" />}
+                            <span>{displayPrice}</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="text-left min-w-0">
-                  <h3 className="text-xs sm:text-sm font-black text-amber-950 leading-tight">Link Account for +200 ⚡</h3>
-                  <p className="text-[11px] sm:text-xs font-bold text-amber-800 leading-tight">
-                    Save progress and get free Sparks instantly!
+              </div>
+            ) : displayedItems.length === 0 ? (
+              /* Empty Catalog State */
+              <div className="py-16 text-center text-slate-500 font-bold space-y-3 bg-white rounded-3xl border-2 border-dashed border-slate-200 p-6 max-w-md mx-auto">
+                <div className="w-14 h-14 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                  <Package className="w-7 h-7 stroke-[1.5]" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-black text-slate-800">
+                    {viewMode === 'closet'
+                      ? 'No items found in your closet'
+                      : 'No items matching your search'}
+                  </h4>
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                    {viewMode === 'closet'
+                      ? 'Switch to the Shop to discover and unlock hats, outfits, pets, and effects!'
+                      : 'Try adjusting your search query, slot filter, or seasonal event tab.'}
                   </p>
                 </div>
+                {viewMode === 'closet' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setViewMode('shop');
+                      setActiveHub('wearables');
+                    }}
+                    className="btn-3d-orange px-4 py-2 text-xs rounded-xl font-black"
+                  >
+                    Browse the Shop ➔
+                  </button>
+                )}
               </div>
-              <button className="bg-amber-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-md border-b-2 border-amber-700 whitespace-nowrap shrink-0 ml-2 cursor-pointer">
-                Link Now
+            ) : (
+              /* RESPONSIVE HIGH-DENSITY VISUAL GRID TILES */
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 pb-24 sm:pb-16">
+                {displayedItems.map((item) => {
+                  const isConsumable = item.isConsumable;
+                  const shieldOwned = consumables?.shieldCount ?? 1;
+                  const isShieldFull = isConsumable && item.id === 'kibo_shield' && shieldOwned >= 2;
+                  const isUnlocked = isConsumable ? false : unlockedItems.includes(item.id);
+                  const isEquippedInApp = equippedItems.includes(item.id);
+                  const isPreviewedOnStage = stageEquippedItems.includes(item.id) || (item.bundleItems && item.bundleItems.some((id) => stageEquippedItems.includes(id)));
+                  const isRealMoney = !!item.realMoneyPrice;
+
+                  const saleInfo = getItemSalePrice(item, currentDate);
+                  const activeCost = saleInfo.isSale ? saleInfo.salePrice : item.cost;
+                  const canAfford = isRealMoney ? true : sparks >= activeCost;
+                  const rarityInfo = RARITY_TIERS[item.rarity] || RARITY_TIERS.common;
+                  const availability = getItemAvailabilityStatus(item, currentDate);
+                  const isJustPurchased = recentlyPurchasedId === item.id;
+
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => handlePreviewToggle(item)}
+                      className={`group relative bg-white rounded-2xl border-2 p-2.5 sm:p-3 flex flex-col justify-between transition-all duration-200 cursor-pointer text-center select-none ${
+                        isJustPurchased
+                          ? 'ring-4 ring-emerald-400 border-emerald-500 bg-emerald-50 scale-[1.02] shadow-lg'
+                          : isPreviewedOnStage
+                          ? 'bg-purple-50/90 border-purple-400 shadow-md ring-2 ring-purple-300'
+                          : isUnlocked
+                          ? 'border-slate-200 hover:border-slate-300 shadow-xs hover:shadow-md'
+                          : availability.isUpcoming
+                          ? 'bg-slate-100/80 border-slate-200 opacity-90'
+                          : canAfford
+                          ? 'border-slate-200 hover:border-amber-400 hover:shadow-md'
+                          : 'border-slate-200 opacity-95 hover:border-slate-300'
+                      }`}
+                    >
+                      {/* Top Header Row of Tile: Rarity Tag + Info Button */}
+                      <div className="w-full flex items-center justify-between gap-1 mb-1">
+                        <span className={`text-[9px] uppercase font-black px-1.5 py-0.2 rounded-md border ${rarityInfo.badgeClass}`}>
+                          {rarityInfo.label}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            soundFx.playKeyTap();
+                            setSelectedItemDetail(item);
+                          }}
+                          className="w-5 h-5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-[10px] transition-colors"
+                          title="View Details & Lore"
+                        >
+                          <Info className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      {/* Thumbnail with Dynamic Glowing Backdrop */}
+                      <div className="relative my-1 flex items-center justify-center">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 flex items-center justify-center p-1 relative shadow-inner group-hover:scale-105 transition-transform">
+                          <ItemThumbnail
+                            itemId={item.id}
+                            rarity={item.rarity}
+                            className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl"
+                            saleDiscount={!isUnlocked && saleInfo.isSale ? saleInfo.discountPercent : 0}
+                          />
+
+                          {/* Previewing Marker */}
+                          {isPreviewedOnStage && !isConsumable && (
+                            <span className="absolute -bottom-1 -right-1 bg-purple-600 text-white rounded-full p-0.5 shadow-sm border border-white">
+                              <Eye className="w-3 h-3" />
+                            </span>
+                          )}
+
+                          {/* Equipped Marker */}
+                          {isEquippedInApp && (
+                            <span className="absolute -top-1 -right-1 bg-emerald-500 text-white rounded-full p-0.5 shadow-sm border border-white">
+                              <Check className="w-3 h-3 stroke-[3]" />
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Sale / Countdown Overlay Pill */}
+                        {!isUnlocked && saleInfo.isSale && (
+                          <span className="absolute top-0 left-0 bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase shadow-2xs border border-rose-700">
+                            -{saleInfo.discountPercent}%
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Item Name */}
+                      <div className="my-1">
+                        <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 leading-tight line-clamp-1" title={item.name}>
+                          {item.name}
+                        </h4>
+                      </div>
+
+                      {/* Bottom Action / Price Bar */}
+                      <div className="mt-1 pt-1.5 border-t border-slate-100 w-full" onClick={(e) => e.stopPropagation()}>
+                        {isConsumable ? (
+                          isShieldFull ? (
+                            <div className="text-[10px] font-black text-slate-400 bg-slate-100 py-1 rounded-lg">
+                              Full (2/2)
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleBuyClick(item)}
+                              className="w-full py-1 px-2 text-xs font-black rounded-lg btn-3d-purple active:scale-95 flex items-center justify-center gap-1 shadow-2xs cursor-pointer"
+                            >
+                              <span>Buy</span>
+                              <span className="inline-flex items-center text-amber-300">{activeCost}⚡</span>
+                            </button>
+                          )
+                        ) : isUnlocked ? (
+                          <button
+                            type="button"
+                            onClick={() => handleBuyClick(item)}
+                            className={`w-full py-1 px-2 text-xs font-black rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                              isEquippedInApp
+                                ? 'bg-emerald-600 text-white shadow-2xs'
+                                : 'bg-teal-100 hover:bg-teal-200 text-teal-900 border border-teal-300'
+                            }`}
+                          >
+                            {isEquippedInApp ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 stroke-[3]" /> Equipped
+                              </>
+                            ) : (
+                              'Equip'
+                            )}
+                          </button>
+                        ) : availability.isUpcoming ? (
+                          <div className="text-[10px] font-bold text-slate-400 bg-slate-100 py-1 rounded-lg flex items-center justify-center gap-1">
+                            <Lock className="w-2.5 h-2.5" /> Soon
+                          </div>
+                        ) : item.promoCodeRequired ? (
+                          <button
+                            type="button"
+                            onClick={() => openPromoDialogWithCode()}
+                            className="w-full py-1 px-2 text-xs font-black rounded-lg btn-3d-orange shadow-2xs flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <Ticket className="w-3 h-3" /> Code
+                          </button>
+                        ) : isRealMoney ? (
+                          <button
+                            type="button"
+                            onClick={() => handleBuyClick(item)}
+                            className="w-full py-1 px-2 text-xs font-black rounded-lg btn-3d-purple shadow-2xs flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            {item.realMoneyPrice}
+                          </button>
+                        ) : canAfford ? (
+                          <button
+                            type="button"
+                            onClick={() => handleBuyClick(item)}
+                            className="w-full py-1 px-2 text-xs font-black rounded-lg btn-3d-purple active:scale-95 flex items-center justify-center gap-1 shadow-2xs cursor-pointer"
+                          >
+                            <span>Buy</span>
+                            <span className="inline-flex items-center text-amber-300">{activeCost}⚡</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFx.playKeyTap();
+                              setViewMode('shop');
+                              setActiveHub('sparks');
+                            }}
+                            className="w-full py-1 px-1.5 text-[11px] font-black rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 flex items-center justify-center gap-0.5 cursor-pointer"
+                          >
+                            <span>Need</span>
+                            <span>{activeCost - sparks}⚡</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+
+      {/* 3. ITEM DETAIL DIALOG / POPOVER */}
+      {selectedItemDetail && (
+        <div
+          onClick={() => setSelectedItemDetail(null)}
+          className="fixed inset-0 z-[65] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
+        >
+          <div
+            className="bg-white rounded-3xl border-3 border-amber-300 p-5 sm:p-6 w-full max-w-sm shadow-2xl space-y-4 animate-scale-in relative text-slate-800 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <span className={`text-xs uppercase font-black px-2.5 py-0.5 rounded-full border ${(RARITY_TIERS[selectedItemDetail.rarity] || RARITY_TIERS.common).badgeClass}`}>
+                {(RARITY_TIERS[selectedItemDetail.rarity] || RARITY_TIERS.common).label}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setSelectedItemDetail(null);
+                }}
+                className="p-1.5 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full transition-all"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
-          )}
 
-          {activeCategory === 'get_sparks' ? (
-            <div className="space-y-2.5">
-              {SPARKS_PACKAGES.map((pack) => {
-                const savings = calculateSparksPackageSavings(pack);
-                const displayPrice = pack.realMoneyPrice || pack.price;
-                return (
-                  <div
-                    key={pack.id}
-                    className="bg-white p-3 sm:p-3.5 rounded-2xl border-2 border-amber-200 shadow-sm hover:border-amber-300 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3"
-                  >
-                    <div className="space-y-1.5 text-left flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <ItemThumbnail itemId={pack.id} rarity={pack.rarity || 'legendary'} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg p-0.5 shrink-0" />
-                        <h4 className="font-extrabold text-slate-800 text-sm sm:text-base">{pack.name}</h4>
-                        <span className="text-[10px] sm:text-xs font-black text-purple-900 bg-purple-100 border border-purple-300 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                          💵 {displayPrice}
-                        </span>
-                        {savings !== null && (
-                          <span className="text-[10px] sm:text-xs font-black text-white bg-emerald-600 border border-emerald-700 px-2 py-0.5 rounded-full shadow-2xs inline-flex items-center gap-1">
-                            Save {savings}%
-                          </span>
-                        )}
-                        <span className="text-[10px] sm:text-xs font-black uppercase text-amber-950 bg-amber-300 px-2 py-0.5 rounded-full border border-amber-500 shadow-xs inline-block">
-                          ⚡ {pack.sparks} Sparks
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 font-medium leading-snug">{pack.description}</p>
-                    </div>
-
-                    <div className="w-full sm:w-auto shrink-0 flex items-center justify-end pt-1 sm:pt-0 border-t border-slate-100 sm:border-0">
-                      {allowRealMoneyPurchases ? (
-                        <button
-                          type="button"
-                          onClick={() => onBuySparksPackage(pack)}
-                          className="w-full sm:w-auto btn-3d-purple px-4 py-2 text-xs rounded-xl flex items-center justify-center gap-1 font-extrabold cursor-pointer"
-                        >
-                          Buy for {displayPrice}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => onOpenParentZone && onOpenParentZone('verification', 'real_money_purchases')}
-                          className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 px-3.5 py-2 text-xs rounded-xl flex items-center justify-center gap-1 font-extrabold shadow-sm transition-all cursor-pointer"
-                        >
-                          <Lock className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
-                          <span>Enable in Parent Zone</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            {/* Thumbnail & Title */}
+            <div className="text-center space-y-2">
+              <div className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-b from-amber-50 to-sky-50 border-2 border-slate-200 flex items-center justify-center p-2 shadow-inner">
+                <ItemThumbnail itemId={selectedItemDetail.id} rarity={selectedItemDetail.rarity} className="w-20 h-20" />
+              </div>
+              <h3 className="text-lg font-black text-slate-900">{selectedItemDetail.name}</h3>
+              {selectedItemDetail.subjectLabel && (
+                <span className="inline-block text-[10px] font-black text-purple-900 bg-purple-100 border border-purple-300 px-2 py-0.5 rounded-full">
+                  {selectedItemDetail.subjectLabel}
+                </span>
+              )}
             </div>
-          ) : currentCategoryItems.length === 0 ? (
-            <div className="py-8 text-center text-slate-500 font-bold space-y-2 bg-white/80 rounded-2xl border-2 border-dashed border-slate-300 p-4">
-              <ShoppingBag className="w-8 h-8 mx-auto text-slate-400 stroke-[1.5]" />
-              <p className="text-sm font-black text-slate-700">No seasonal items available right now!</p>
-              <p className="text-xs text-slate-500">Pick another holiday or season above to explore upcoming items.</p>
+
+            {/* Lore / Description */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-left space-y-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Description & Lore</span>
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                {selectedItemDetail.description}
+              </p>
             </div>
-          ) : (
-            sortShopItems(currentCategoryItems, sparks, unlockedItems, equippedItems, currentDate).map((item) => {
-              const isConsumable = item.isConsumable;
-              const shieldOwned = consumables?.shieldCount ?? 1;
-              const isShieldFull = isConsumable && item.id === 'kibo_shield' && shieldOwned >= 2;
-              const isUnlocked = isConsumable ? false : unlockedItems.includes(item.id);
-              const isEquippedInApp = equippedItems.includes(item.id);
-              const isPreviewedOnStage = stageEquippedItems.includes(item.id) || (item.bundleItems && item.bundleItems.some((id) => stageEquippedItems.includes(id)));
-              const isRealMoney = !!item.realMoneyPrice;
 
-              const saleInfo = getItemSalePrice(item, currentDate);
-              const activeCost = saleInfo.isSale ? saleInfo.salePrice : item.cost;
-
-              const canAfford = isRealMoney ? true : sparks >= activeCost;
-              const shortfall = isRealMoney ? 0 : activeCost - sparks;
-              const rarityInfo = RARITY_TIERS[item.rarity] || RARITY_TIERS.common;
-
-              const isJustPurchased = recentlyPurchasedId === item.id;
-              const availability = getItemAvailabilityStatus(item, currentDate);
-
-              // Calculate sell availability and price
-              const sellPrice = item.cost ? Math.floor(item.cost * 0.5) : 0;
-              let canSell = false;
-
-              if (activeCost && !isRealMoney) {
-                if (isConsumable) {
-                  if (item.id === 'kibo_shield' && (consumables?.shieldCount || 0) > 0) canSell = true;
-                  if (item.id === 'streak_saver' && (consumables?.streakSaverCount || 0) > 0) canSell = true;
-                  if (item.id === 'double_sparks_potion' && (consumables?.doubleSparksPotionCount || 0) > 0) canSell = true;
-                  if (item.id === 'double_coin_potion' && (consumables?.doubleCoinPotionCount || 0) > 0) canSell = true;
-                  if (item.id === 'hint_scroll' && (consumables?.hintScrollCount || 0) > 0) canSell = true;
-                  if (item.id === 'letter_spyglass' && (consumables?.letterSpyglassCount || 0) > 0) canSell = true;
-                  if (item.id === 'letter_pruner' && (consumables?.letterPrunerCount || 0) > 0) canSell = true;
-                  if (item.id === 'explorer_compass' && (consumables?.explorerCompassCount || 0) > 0) canSell = true;
-                } else if (isUnlocked) {
-                  canSell = true;
-                }
-              }
-
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => handlePreviewToggle(item)}
-                  className={`p-3 sm:p-3.5 rounded-2xl border-2 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 cursor-pointer relative ${
-                    isJustPurchased
-                      ? 'ring-4 ring-emerald-400 border-emerald-500 bg-emerald-50/90 shadow-xl scale-[1.01]'
-                      : isPreviewedOnStage
-                      ? 'bg-purple-50/90 border-purple-400 shadow-md ring-2 ring-purple-200'
-                      : isUnlocked
-                      ? 'bg-white border-slate-200 shadow-sm hover:border-slate-300'
-                      : availability.isUpcoming
-                      ? 'bg-slate-100/80 border-slate-300 opacity-90'
-                      : canAfford
-                      ? 'bg-amber-50/40 border-amber-300 shadow-sm hover:border-amber-400'
-                      : 'bg-slate-50 border-slate-200 opacity-95 hover:border-slate-300'
-                  }`}
+            {/* Actions: Try On, Equip, Buy, Sell */}
+            <div className="space-y-2 pt-1">
+              {!selectedItemDetail.isConsumable && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePreviewToggle(selectedItemDetail);
+                  }}
+                  className="w-full py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-900 font-black text-xs rounded-xl border border-purple-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
-                  {/* Floating +1 Purchase Notification Badge */}
-                  {isJustPurchased && (
-                    <span className="absolute -top-3 right-6 text-xs font-black text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-0.5 rounded-full border-2 border-white shadow-lg animate-bounce flex items-center gap-1 z-30">
-                      ✨ +1 Purchased!
-                    </span>
-                  )}
+                  <Eye className="w-4 h-4" />
+                  <span>
+                    {stageEquippedItems.includes(selectedItemDetail.id)
+                      ? 'Currently on Kibo'
+                      : 'Try On Kibo'}
+                  </span>
+                </button>
+              )}
 
-                  {/* ITEM DETAILS: Thumbnail Icon Inline + Name + Badges + Full Width Description */}
-                  <div className="space-y-1.5 text-left flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <ItemThumbnail itemId={item.id} rarity={item.rarity} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg p-0.5 shrink-0" saleDiscount={!isUnlocked && saleInfo.isSale ? saleInfo.discountPercent : 0} />
-                      
-                      <h4 className="font-extrabold text-slate-800 text-sm sm:text-base leading-tight">{item.name}</h4>
-
-                      <span className={`text-[10px] sm:text-xs uppercase px-2 py-0.5 rounded-full border ${rarityInfo.badgeClass}`}>
-                        {rarityInfo.label}
-                      </span>
-                      
-                      {!isUnlocked && saleInfo.isSale && (
-                        <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-black bg-rose-600 text-white px-2 py-0.5 rounded-full border border-rose-700 shadow-sm">
-                          <span className="bg-rose-800/90 px-1 py-0.2 rounded text-[9px] uppercase tracking-wide">SALE</span>
-                          <span>-{saleInfo.discountPercent}%</span>
-                        </span>
-                      )}
-
-                      {/* Rotation / Expiration Countdown Pill */}
-                      {!isUnlocked && availability.status === 'active' && availability.daysRemaining !== null && (
-                        <span className="text-[10px] sm:text-xs font-black uppercase text-orange-950 bg-orange-200/90 border border-orange-400 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse shadow-2xs">
-                          <Clock className="w-2.5 h-2.5 text-orange-700" />
-                          {availability.daysRemaining === 0 ? 'Last Day!' : `${availability.daysRemaining}d Left`}
-                        </span>
-                      )}
-
-                      {/* Upcoming Preview Badge */}
-                      {!isUnlocked && availability.status === 'upcoming' && (
-                        <span className="text-[10px] sm:text-xs font-black uppercase text-amber-950 bg-amber-200 border border-amber-400 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
-                          <Lock className="w-2.5 h-2.5 text-amber-800" />
-                          Coming Soon ({availability.formattedDate})
-                        </span>
-                      )}
-
-                      {/* Promo Code Required Badge */}
-                      {!isUnlocked && item.promoCodeRequired && (
-                        <span className="text-[10px] sm:text-xs font-black uppercase text-amber-950 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Ticket className="w-2.5 h-2.5 text-amber-700" />
-                          Promo Exclusive
-                        </span>
-                      )}
-
-                      {/* Status Badges */}
-                      {isConsumable ? (
-                        <span className={`text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 rounded-full border transition-all duration-300 ${
-                          isJustPurchased
-                            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-600 scale-105 ring-2 ring-emerald-300 shadow-sm animate-pulse'
-                            : 'text-amber-950 bg-amber-100 border-amber-300'
-                        }`}>
-                          {item.id === 'kibo_shield'
-                            ? `🛡️ CAPACITY: ${shieldOwned}/2`
-                            : item.id === 'streak_saver'
-                            ? `🎒 OWNED: ${consumables?.streakSaverCount ?? 0}`
-                            : item.id === 'hint_scroll'
-                            ? `🎒 OWNED: ${consumables?.hintScrollCount ?? 0}`
-                            : item.id === 'letter_spyglass'
-                            ? `🎒 OWNED: ${consumables?.letterSpyglassCount ?? 0}`
-                            : item.id === 'explorer_compass'
-                            ? `🎒 OWNED: ${consumables?.explorerCompassCount ?? 0}`
-                            : item.id === 'letter_pruner'
-                            ? `🎒 OWNED: ${consumables?.letterPrunerCount ?? 0}`
-                            : `🎒 OWNED: ${consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0}`}
-                        </span>
-                      ) : isEquippedInApp ? (
-                        <span className="text-[10px] sm:text-xs font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5">
-                          🟢 EQUIPPED
-                        </span>
-                      ) : isUnlocked ? (
-                        <span className="text-[10px] sm:text-xs font-black uppercase text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-300">
-                          🟦 OWNED
-                        </span>
-                      ) : isRealMoney && !isUnlocked ? (
-                        <>
-                          <span className="text-[10px] sm:text-xs font-black uppercase text-purple-900 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-300 flex items-center gap-1">
-                            💵 {item.realMoneyPrice}
-                          </span>
-                          {getRealMoneyItemSavings(item) !== null && (
-                            <span className="text-[10px] sm:text-xs font-black text-white bg-emerald-600 border border-emerald-700 px-2 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
-                              Save {getRealMoneyItemSavings(item)}%
-                            </span>
-                          )}
-                          <span className="text-[10px] sm:text-xs font-black uppercase text-purple-900 bg-purple-200 px-2 py-0.5 rounded-full border border-purple-400">
-                            💎 PREMIUM
-                          </span>
-                        </>
-                      ) : null}
-
-                      {/* ACTIVE PREVIEW STAGE INDICATOR */}
-                      {!isUnlocked && !isConsumable && isPreviewedOnStage && (
-                        <span className="text-[10px] sm:text-xs font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all bg-purple-600 text-white border border-purple-700">
-                          👁️ Previewing on Stage
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Description underneath across full card width */}
-                    <p className="text-xs text-slate-500 font-medium leading-snug">{item.description}</p>
-                  </div>
-
-                  {/* ACTION BUTTONS (Full-width on mobile, auto-width on sm) */}
-                  <div className="w-full sm:w-auto shrink-0 flex items-center justify-end gap-2 pt-2 sm:pt-0 border-t border-slate-100 sm:border-0" onClick={(e) => e.stopPropagation()}>
-                    {canSell && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          soundFx.playKeyTap();
-                          setItemToSell(item);
-                        }}
-                        className="bg-rose-100 hover:bg-rose-200 text-rose-800 border-2 border-rose-300 px-3 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center shrink-0 cursor-pointer"
-                      >
-                        <span className="inline-flex items-center">Sell ({sellPrice}<Zap className="w-3 h-3 text-amber-950 fill-amber-500 stroke-[2]" />)</span>
-                      </button>
-                    )}
-                    {isConsumable ? (
-                      isShieldFull ? (
-                        <button
-                          type="button"
-                          disabled
-                          className="w-full sm:w-auto bg-slate-200 text-slate-500 border-2 border-slate-300 text-xs px-3.5 py-2 rounded-xl font-bold cursor-not-allowed text-center justify-center"
-                        >
-                          Full ({shieldOwned}/2)
-                        </button>
-                      ) : canAfford ? (
-                        <button
-                          type="button"
-                          onClick={() => handleBuyClick(item)}
-                          className="flex-1 sm:flex-initial w-full sm:w-auto btn-3d-purple px-4 py-2 text-xs rounded-xl flex items-center justify-center gap-1 font-extrabold cursor-pointer"
-                        >
-                          <span>Buy for</span>
-                          {saleInfo.isSale && (
-                            <span className="bg-black/25 px-1 py-0.5 rounded text-white/85 line-through decoration-rose-400 decoration-[1.5px] font-bold text-xs mr-0.5 select-none">
-                              {item.cost}
-                            </span>
-                          )}
-                          <span className="font-black text-white text-xs inline-flex items-center">{activeCost}<Zap className="w-3.5 h-3.5 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" /></span>
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            soundFx.playKeyTap();
-                            setActiveCategory('get_sparks');
-                          }}
-                          className="flex-1 sm:flex-initial w-full sm:w-auto bg-amber-50 hover:bg-amber-100 text-amber-900 border-2 border-amber-300 hover:border-amber-400 text-xs px-3.5 py-2 rounded-xl font-extrabold cursor-pointer flex items-center justify-center gap-1 shadow-xs transition-all active:scale-95"
-                        >
-                          <span className="inline-flex items-center gap-1">
-                            Need <span className="inline-flex items-center">{shortfall}<Zap className="w-3.5 h-3.5 text-amber-950 fill-amber-500 stroke-[2] shrink-0" /></span> More
-                          </span>
-                          <span className="text-amber-700 font-black">➔</span>
-                        </button>
-                      )
-                    ) : isUnlocked ? (
-                      <button
-                        type="button"
-                        onClick={() => handleBuyClick(item)}
-                        className={`flex-1 sm:flex-initial w-full sm:w-auto px-4 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                          isEquippedInApp
-                            ? 'btn-3d-orange'
-                            : 'bg-teal-100 hover:bg-teal-200 text-teal-900 border-2 border-teal-300'
-                        }`}
-                      >
-                        {isEquippedInApp ? (
-                          <>
-                            <Check className="w-4 h-4 stroke-[3]" /> Equipped
-                          </>
-                        ) : (
-                          'Equip'
-                        )}
-                      </button>
-                    ) : availability.isUpcoming ? (
-                      <button
-                        type="button"
-                        disabled
-                        className="w-full sm:w-auto bg-slate-100 text-slate-400 border-2 border-slate-200 text-xs px-3.5 py-2 rounded-xl font-bold cursor-not-allowed flex items-center justify-center gap-1"
-                      >
-                        <Lock className="w-3.5 h-3.5" /> Coming Soon
-                      </button>
-                    ) : item.promoCodeRequired ? (
-                      <button
-                        type="button"
-                        onClick={() => openPromoDialogWithCode()}
-                        className="flex-1 sm:flex-initial w-full sm:w-auto btn-3d-orange px-4 py-2 text-xs rounded-xl flex items-center justify-center gap-1 font-extrabold shadow-sm cursor-pointer"
-                      >
-                        <Ticket className="w-3.5 h-3.5" /> Redeem Code
-                      </button>
-                    ) : isRealMoney ? (
-                       allowRealMoneyPurchases ? (
-                        <button
-                          type="button"
-                          onClick={() => handleBuyClick(item)}
-                          className="flex-1 sm:flex-initial w-full sm:w-auto btn-3d-purple px-4 py-2 text-xs rounded-xl flex items-center justify-center gap-1 font-extrabold cursor-pointer"
-                        >
-                          Buy for {item.realMoneyPrice}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => onOpenParentZone && onOpenParentZone('verification', 'real_money_purchases')}
-                          className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 px-3.5 py-2 text-xs rounded-xl flex items-center justify-center gap-1 font-extrabold shadow-sm transition-all cursor-pointer"
-                        >
-                          <Lock className="w-3.5 h-3.5 text-purple-600 stroke-[2.5]" />
-                          <span>Enable in Parent Zone</span>
-                        </button>
-                      )
-                    ) : canAfford ? (
-                      <button
-                        type="button"
-                        onClick={() => handleBuyClick(item)}
-                        className="flex-1 sm:flex-initial w-full sm:w-auto btn-3d-purple px-4 py-2 text-xs rounded-xl flex items-center justify-center gap-1 font-extrabold cursor-pointer"
-                      >
-                        <span>Buy for</span>
-                        {saleInfo.isSale && (
-                          <span className="bg-black/25 px-1 py-0.5 rounded text-white/85 line-through decoration-rose-400 decoration-[1.5px] font-bold text-xs mr-0.5 select-none">
-                            {item.cost}
-                          </span>
-                        )}
-                        <span className="font-black text-white text-xs inline-flex items-center">{activeCost}<Zap className="w-3.5 h-3.5 fill-amber-400 text-purple-950 stroke-[2] drop-shadow-sm shrink-0" /></span>
-                      </button>
+              {/* Unlocked Equip / Sell Controls */}
+              {unlockedItems.includes(selectedItemDetail.id) && !selectedItemDetail.isConsumable ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleBuyClick(selectedItemDetail);
+                      setSelectedItemDetail(null);
+                    }}
+                    className={`flex-1 py-2.5 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                      equippedItems.includes(selectedItemDetail.id)
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'btn-3d-orange'
+                    }`}
+                  >
+                    {equippedItems.includes(selectedItemDetail.id) ? (
+                      <>
+                        <Check className="w-4 h-4 stroke-[3]" /> Equipped
+                      </>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          soundFx.playKeyTap();
-                          setActiveCategory('get_sparks');
-                        }}
-                        className="flex-1 sm:flex-initial w-full sm:w-auto bg-amber-50 hover:bg-amber-100 text-amber-900 border-2 border-amber-300 hover:border-amber-400 text-xs px-3.5 py-2 rounded-xl font-extrabold cursor-pointer flex items-center justify-center gap-1 shadow-xs transition-all active:scale-95"
-                      >
-                        <span className="inline-flex items-center gap-1">
-                          Need <span className="inline-flex items-center">{shortfall}<Zap className="w-3.5 h-3.5 text-amber-950 fill-amber-500 stroke-[2] shrink-0" /></span> More
-                        </span>
-                        <span className="text-amber-700 font-black">➔</span>
-                      </button>
+                      'Equip Now'
                     )}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </main>
+                  </button>
 
-      {/* PROMO CODE REDEMPTION MODAL DIALOG */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setItemToSell(selectedItemDetail);
+                    }}
+                    className="py-2.5 px-3 bg-rose-100 hover:bg-rose-200 text-rose-800 border-2 border-rose-300 font-black text-xs rounded-xl transition-all cursor-pointer"
+                  >
+                    Sell ({Math.floor((selectedItemDetail.cost || 0) * 0.5)}⚡)
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. PROMO CODE REDEMPTION MODAL */}
       {showPromoModal && (
         <div
           onClick={() => setShowPromoModal(false)}
-          className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
+          className="fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
         >
           <div
             className="bg-white rounded-3xl border-3 border-amber-300 p-5 sm:p-6 w-full max-w-md shadow-2xl space-y-4 animate-scale-in relative text-slate-800 cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center">
@@ -1134,7 +1421,6 @@ export default function WorkshopModal({
               </button>
             </div>
 
-            {/* Input Form */}
             <div className="space-y-3">
               <div className="space-y-1 text-left">
                 <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Enter Code</label>
@@ -1162,7 +1448,6 @@ export default function WorkshopModal({
                 </div>
               </div>
 
-              {/* Feedback Message */}
               {promoFeedback && (
                 <div
                   className={`p-3 rounded-2xl border text-xs font-bold space-y-1.5 animate-fade-in text-left ${
@@ -1180,7 +1465,6 @@ export default function WorkshopModal({
                     <span>{promoFeedback.message}</span>
                   </div>
 
-                  {/* If reward breakdown exists */}
                   {promoFeedback.reward && (
                     <div className="pt-1.5 border-t border-emerald-200/60 flex items-center gap-2 flex-wrap text-xs">
                       {promoFeedback.reward.sparks > 0 && (
@@ -1206,7 +1490,6 @@ export default function WorkshopModal({
                 </div>
               )}
 
-              {/* Promo Code Info Tip */}
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-left space-y-1">
                 <div className="flex items-center gap-1.5 text-xs font-black text-slate-700">
                   <Gift className="w-3.5 h-3.5 text-amber-500" />
@@ -1218,7 +1501,6 @@ export default function WorkshopModal({
               </div>
             </div>
 
-            {/* Modal Actions */}
             <div className="pt-2">
               <button
                 type="button"
@@ -1232,11 +1514,11 @@ export default function WorkshopModal({
         </div>
       )}
 
-      {/* ITEM SELL CONFIRMATION MODAL */}
+      {/* 5. ITEM SELL CONFIRMATION MODAL */}
       {itemToSell && (
         <div
           onClick={() => setItemToSell(null)}
-          className="fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
+          className="fixed inset-0 z-[75] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
         >
           <div
             className="bg-white rounded-3xl border-3 border-amber-300 p-5 sm:p-6 w-full max-w-sm shadow-2xl space-y-4 animate-scale-in text-center relative cursor-default"
@@ -1249,7 +1531,7 @@ export default function WorkshopModal({
             <div className="space-y-1">
               <h3 className="text-lg font-black text-slate-800">Sell Item</h3>
               <p className="text-sm font-bold text-slate-500 leading-tight">
-                Are you sure you want to sell <span className="text-slate-700">{itemToSell.name}</span> for <span className="text-amber-600">{Math.floor(itemToSell.cost * 0.5)} ⚡</span>?
+                Are you sure you want to sell <span className="text-slate-700">{itemToSell.name}</span> for <span className="text-amber-600">{Math.floor((itemToSell.cost || 0) * 0.5)} ⚡</span>?
               </p>
               {!itemToSell.isConsumable && (
                 <p className="text-xs text-rose-500 font-bold mt-2">
@@ -1281,7 +1563,7 @@ export default function WorkshopModal({
         </div>
       )}
 
-      {/* STICKY BOTTOM NAVIGATION FOOTER */}
+      {/* 6. BOTTOM NAVIGATION FOOTER */}
       {renderFooter ? renderFooter() : null}
     </div>
   );

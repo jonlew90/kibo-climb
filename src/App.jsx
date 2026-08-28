@@ -1339,8 +1339,8 @@ export default function App() {
   };
 
   const renderNavigationFooter = () => (
-    <footer className="sticky bottom-0 z-50 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 shadow-xs shrink-0">
-      <div className="w-full px-2 sm:px-4 py-1.5 sm:py-2.5 flex items-center justify-between sm:justify-around gap-1.5 sm:gap-3 max-w-4xl mx-auto">
+    <footer className="sticky bottom-0 z-50 w-full bg-white/95 backdrop-blur-md border-t-2 border-slate-200 shadow-xs shrink-0 safe-pb">
+      <div className="w-full safe-px px-3 sm:px-4 py-1.5 sm:py-2.5 flex items-center justify-between sm:justify-around gap-1.5 sm:gap-3 max-w-4xl mx-auto">
         {/* 0. Climb (Main Session) Button: Emerald / Green */}
         <button
           type="button"
