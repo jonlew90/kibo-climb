@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Zap, Star, Shield } from 'lucide-react';
 import Mascot from './Mascot';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db, auth } from '../config/firebase';
 import { authService } from '../services/authService';
 import { storageService } from '../services/storageService';
 
@@ -13,7 +13,8 @@ export default function ReferralRewardModal({ rewardData, onClose, activeSubject
   const handleClaim = async (rewardType) => {
     setClaiming(true);
     const currentUser = authService.getAuthState();
-    if (!currentUser) return;
+    const targetUid = auth.currentUser?.uid || currentUser?.uid;
+    if (!targetUid) return;
     try {
       if (rewardType === 'sparks') {
         const currentSparks = parseInt(localStorage.getItem('kibo_math_sparks') || '0', 10);
@@ -25,7 +26,7 @@ export default function ReferralRewardModal({ rewardData, onClose, activeSubject
          storageService.unlockItem('wizard_hat');
       }
 
-      const rewardRef = doc(db, 'users', currentUser.uid, 'pendingRewards', rewardData.id);
+      const rewardRef = doc(db, 'users', targetUid, 'pendingRewards', rewardData.id);
       await updateDoc(rewardRef, {
         status: 'claimed',
         claimedRewardType: rewardType,

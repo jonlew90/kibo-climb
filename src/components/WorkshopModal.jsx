@@ -428,7 +428,11 @@ export default function WorkshopModal({
 
     if (item.realMoneyPrice) {
       soundFx.playKeyTap();
-      onBuySparksPackage(item);
+      if (allowRealMoneyPurchases) {
+        onBuySparksPackage(item);
+      } else if (onOpenParentZone) {
+        onOpenParentZone('verification', 'real_money_purchases');
+      }
       return;
     }
 
@@ -1391,7 +1395,8 @@ export default function WorkshopModal({
                             onClick={() => handleBuyClick(item)}
                             className="w-full py-1 text-[11px] font-black rounded-lg btn-3d-purple shadow-2xs flex items-center justify-center gap-1 cursor-pointer"
                           >
-                            {item.realMoneyPrice}
+                            {!allowRealMoneyPurchases && <Lock className="w-2.5 h-2.5 text-purple-200" />}
+                            <span>{item.realMoneyPrice}</span>
                           </button>
                         ) : canAfford ? (
                           <button

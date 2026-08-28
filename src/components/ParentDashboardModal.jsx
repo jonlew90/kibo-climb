@@ -19,6 +19,8 @@ import { generateWeeklyDigestData, formatWeeklyDigestText } from '../utils/weekl
 import { requestAppReview } from '../utils/AppReview';
 import AccountLinkModal from './AccountLinkModal';
 import FamilyPlanUpgradeModal from './FamilyPlanUpgradeModal';
+import PrivacyPolicyScreen from './PrivacyPolicyScreen';
+import { parentChildService } from '../services/parentChildService';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
@@ -152,6 +154,9 @@ export default function ParentDashboardModal({
   const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
+  const [coppaStatus, setCoppaStatus] = useState(() => parentChildService.getCOPPAConsentStatus());
+  const [showRevokeConsentConfirm, setShowRevokeConsentConfirm] = useState(false);
+  const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
 
   const handleSwitchProfile = (pId) => {
     soundFx.playKeyTap();
@@ -1676,11 +1681,42 @@ export default function ParentDashboardModal({
               </div>
             </div>
 
-            {/* Account & Data Privacy Card */}
+            {/* COPPA Parental Rights & Data Privacy Card */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
-              <div className="flex items-center gap-2 text-purple-700">
-                <Cloud className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Account & Data Privacy</h4>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-purple-700">
+                  <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
+                  <h4 className="font-extrabold text-sm text-slate-800">COPPA Parental Rights & Data Privacy</h4>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { soundFx.playKeyTap(); setShowPrivacyPolicyModal(true); }}
+                  className="text-xs font-bold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-2.5 py-1 rounded-xl transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Privacy Policy</span>
+                </button>
+              </div>
+
+              {/* Consent Status Badge */}
+              <div className={`p-3 rounded-xl border text-xs font-medium space-y-1 ${
+                coppaStatus?.consented
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  : 'bg-amber-50 border-amber-200 text-amber-900'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold flex items-center gap-1.5">
+                    {coppaStatus?.consented ? '✅ Verifiable Parental Consent Active' : '⚠️ Parental Consent Inactive / Revoked'}
+                  </span>
+                  <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-white/70">
+                    COPPA Compliant
+                  </span>
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  {coppaStatus?.consented
+                    ? `Consent granted on ${coppaStatus.consentedAt ? new Date(coppaStatus.consentedAt).toLocaleDateString() : 'initial setup'} via adult verification (${coppaStatus.method || 'knowledge_challenge'}).`
+                    : 'Personal data synchronization is restricted. Practice operates in local offline mode only.'}
+                </p>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
@@ -1696,11 +1732,11 @@ export default function ParentDashboardModal({
                             return 'Email';
                           })()})`}
                     </span>
-                    {authService.getAuthState().isAnonymous && (
-                      <span className="text-xs text-slate-500 font-medium block">
-                        Link with Google, Apple, or Email to back up progress across devices
-                      </span>
-                    )}
+                    <span className="text-xs text-slate-500 font-medium block">
+                      {authService.getAuthState().isAnonymous
+                        ? 'Link with Google, Apple, or Email to back up progress across devices'
+                        : 'Cloud backup active with parent authentication'}
+                    </span>
                   </div>
 
                   {authService.getAuthState().isAnonymous && (
@@ -1718,16 +1754,74 @@ export default function ParentDashboardModal({
                 </div>
 
                 <div className="pt-3 mt-2 border-t border-slate-100 flex flex-col gap-2">
-                  <button
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      authService.exportUserData();
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors text-left"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Export Data (JSON)</span>
-                  </button>
+                  {/* Parental Review & Data Export */}
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        authService.exportUserData();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors text-left cursor-pointer"
+                    >
+                      <Download className="w-4 h-4 text-purple-600" />
+                      <span>Review & Export Child Data (JSON)</span>
+                    </button>
+                    <span className="text-[10px] text-slate-400 block px-1">
+                      Download all practice answers, streaks, mastery ratings, and friend codes.
+                    </span>
+                  </div>
+
+                  {/* Revoke Consent Control */}
+                  {coppaStatus?.consented && (
+                    <div className="pt-1">
+                      {!showRevokeConsentConfirm ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            setShowRevokeConsentConfirm(true);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl font-bold text-xs transition-colors text-left border border-amber-200 cursor-pointer"
+                        >
+                          <Unplug className="w-4 h-4 text-amber-600" />
+                          <span>Revoke Parental Consent</span>
+                        </button>
+                      ) : (
+                        <div className="bg-amber-50 p-3 rounded-xl border border-amber-300 space-y-2 text-left">
+                          <p className="text-xs font-bold text-amber-900">
+                            Revoking parental consent will immediately stop cloud data synchronization, disconnect linked parent accounts, and purge remote child records under COPPA. Local progress will remain on this device only.
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                soundFx.playKeyTap();
+                                parentChildService.revokeParentalConsent();
+                                if (!authService.getAuthState().isAnonymous) {
+                                  await authService.unlinkAccount();
+                                }
+                                setCoppaStatus(parentChildService.getCOPPAConsentStatus());
+                                setShowRevokeConsentConfirm(false);
+                              }}
+                              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs cursor-pointer"
+                            >
+                              Confirm Revoke Consent
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                soundFx.playKeyTap();
+                                setShowRevokeConsentConfirm(false);
+                              }}
+                              className="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded-lg font-bold text-xs cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {!authService.getAuthState().isAnonymous && (
                     <>
@@ -1737,7 +1831,7 @@ export default function ParentDashboardModal({
                             soundFx.playKeyTap();
                             setShowUnlinkConfirm(true);
                           }}
-                          className="flex items-center gap-2 px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-bold text-xs transition-colors text-left"
+                          className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors text-left"
                         >
                           <Unplug className="w-4 h-4" />
                           <span>Unlink Account</span>
@@ -1772,6 +1866,7 @@ export default function ParentDashboardModal({
                     </>
                   )}
 
+                  {/* Permanent Account & Data Deletion */}
                   {!showDeleteConfirm ? (
                     <button
                       onClick={() => {
@@ -1781,7 +1876,7 @@ export default function ParentDashboardModal({
                       className="flex items-center gap-2 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-xs transition-colors text-left"
                     >
                       <Trash2 className="w-4 h-4" />
-                      <span>Delete Account & Data</span>
+                      <span>Permanently Delete Account & Child Data</span>
                     </button>
                   ) : (
                     <div className="bg-rose-100 p-3 rounded-xl border border-rose-300 space-y-2">
@@ -1875,6 +1970,11 @@ export default function ParentDashboardModal({
           setActiveHighlight(targetHighlight);
         }}
       />
+
+      {/* COPPA Privacy Policy Modal */}
+      {showPrivacyPolicyModal && (
+        <PrivacyPolicyScreen onBack={() => setShowPrivacyPolicyModal(false)} />
+      )}
     </div>
   );
 }

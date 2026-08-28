@@ -86,3 +86,25 @@ export function getDeterministicAnonymousName(seed = '') {
   
   return `${adj}${noun}#${num}`;
 }
+
+/**
+ * COPPA Child Data Minimization: Validates that a username contains no PII
+ * (e.g. no emails, phone numbers, or invalid characters).
+ */
+export function validateSafeChildUsername(val) {
+  if (!val || val.trim().length === 0) return 'Please enter a username.';
+  const trimmed = val.trim();
+  if (trimmed.length < 3) return 'Must be at least 3 characters.';
+  if (trimmed.length > 20) return 'Must be 20 characters or fewer.';
+  // Data minimization: block email patterns
+  if (/@/.test(trimmed) || /\.(com|org|net|edu|io|co)/i.test(trimmed)) {
+    return 'COPPA notice: Usernames cannot contain emails or web domains.';
+  }
+  // Data minimization: block phone numbers (7+ consecutive digits)
+  if (/\d{7,}/.test(trimmed)) {
+    return 'COPPA notice: Usernames cannot contain phone numbers.';
+  }
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(trimmed)) return 'Letters, numbers, and underscores only.';
+  return null;
+}
+

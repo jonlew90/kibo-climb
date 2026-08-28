@@ -7,22 +7,15 @@ import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
 import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { SUBJECTS_CONFIG } from '../config/subjects';
-import { Dices, ShieldCheck } from 'lucide-react';
+import { Dices, ShieldCheck, RefreshCw, AlertCircle, Lock } from 'lucide-react';
+import { parentChildService } from '../services/parentChildService';
+import { dynamicChallengeGenerator } from '../utils/dynamicChallengeGenerator';
+import PrivacyPolicyScreen from './PrivacyPolicyScreen';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 
-import { SAFE_ADJECTIVES, SAFE_NOUNS, generateSafeUsername } from '../utils/safeNames';
-export { SAFE_ADJECTIVES, SAFE_NOUNS, generateSafeUsername };
-
-const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
-
-function validateUsername(val) {
-  if (!val || val.trim().length === 0) return 'Please enter a username.';
-  if (val.trim().length < 3) return 'Must be at least 3 characters.';
-  if (val.trim().length > 20) return 'Must be 20 characters or fewer.';
-  if (!USERNAME_RE.test(val.trim())) return 'Letters, numbers, and underscores only.';
-  return null;
-}
+import { SAFE_ADJECTIVES, SAFE_NOUNS, generateSafeUsername, validateSafeChildUsername } from '../utils/safeNames';
+export { SAFE_ADJECTIVES, SAFE_NOUNS, generateSafeUsername, validateSafeChildUsername };
 
 export const GRADE_CURRICULUM_DETAILS = {
   'Kindergarten': {
@@ -94,7 +87,7 @@ export default function FirstLaunchOnboardingModal({
   onUsernameSet,
   hasVisitedParentZone = false,
 }) {
-  // step: 1 = username, 2 = grade selection, 3 = welcome splash
+  // step: 1 = username, 2 = grade selection, 'coppa_consent' = parent consent, 3 = welcome splash
   const [step, setStep] = useState(1);
   const [usernameInput, setUsernameInput] = useState('');
   const [usernameError, setUsernameError] = useState('');
@@ -103,6 +96,13 @@ export default function FirstLaunchOnboardingModal({
   const [selectedGrade, setSelectedGrade] = useState('');
   const [selectedStartingSubject, setSelectedStartingSubject] = useState('math');
   const inputRef = useRef(null);
+
+  // COPPA & Privacy Policy state
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [challenge, setChallenge] = useState(() => dynamicChallengeGenerator.generateChallenge());
+  const [selectedChallengeAnswer, setSelectedChallengeAnswer] = useState('');
+  const [consentAgreed, setConsentAgreed] = useState(false);
+  const [consentError, setConsentError] = useState('');
 
   // Pre-fill if username already set (e.g. returning to this screen)
   useEffect(() => {
@@ -153,7 +153,7 @@ export default function FirstLaunchOnboardingModal({
 
   const handleUsernameSubmit = async (e) => {
     e.preventDefault();
-    const error = validateUsername(usernameInput);
+    const error = validateSafeChildUsername(usernameInput);
     if (error) { setUsernameError(error); return; }
     const cleaned = usernameInput.trim();
     
@@ -191,15 +191,50 @@ export default function FirstLaunchOnboardingModal({
     setSelectedGrade(grade);
   };
 
-  const handleGradeConfirm = () => {
-    if (!selectedGrade) return;
+  const finalizeProfile = () => {
     const cleaned = usernameInput.trim();
-    // Save username + grade + starting rating together across all subjects
     storageService.saveUsername(cleaned, selectedGrade);
     storageService.setOnboarded(true);
     if (onUsernameSet) onUsernameSet(cleaned);
     soundFx.playVictory();
     setStep(3);
+  };
+
+  const handleGradeConfirm = () => {
+    if (!selectedGrade) return;
+    const coppaStatus = parentChildService.getCOPPAConsentStatus();
+    if (!coppaStatus.consented) {
+      setChallenge(dynamicChallengeGenerator.generateChallenge());
+      setSelectedChallengeAnswer('');
+      setConsentAgreed(false);
+      setConsentError('');
+      setStep('coppa_consent');
+      return;
+    }
+    finalizeProfile();
+  };
+
+  const handleConsentSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (!consentAgreed) {
+      setConsentError('Please check the box to confirm adult status and agree to COPPA consent.');
+      return;
+    }
+    if (!selectedChallengeAnswer) {
+      setConsentError('Please select an answer to the adult verification challenge.');
+      return;
+    }
+    if (String(selectedChallengeAnswer).trim() !== String(challenge.correctAnswer).trim()) {
+      setConsentError('Incorrect answer. Please solve the challenge to verify adult consent.');
+      setChallenge(dynamicChallengeGenerator.generateChallenge());
+      setSelectedChallengeAnswer('');
+      return;
+    }
+    // Record verifiable parental consent under COPPA
+    parentChildService.recordParentalConsent('knowledge_challenge', {
+      verifiedAt: new Date().toISOString()
+    });
+    finalizeProfile();
   };
 
   const handleStart = (subjectToStart = selectedStartingSubject) => {
@@ -304,13 +339,26 @@ export default function FirstLaunchOnboardingModal({
             </button>
           </form>
 
-          {onOpenParentZone && (
-            <button type="button" onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
-              className="text-xs font-bold text-purple-300 hover:text-white transition-colors">
-              {hasVisitedParentZone ? '🔒 Parent Zone' : '🔒 Parent Zone Setup'}
+          <div className="flex flex-col items-center gap-2 pt-1">
+            {onOpenParentZone && (
+              <button type="button" onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
+                className="text-xs font-bold text-purple-300 hover:text-white transition-colors cursor-pointer">
+                {hasVisitedParentZone ? '🔒 Parent Zone' : '🔒 Parent Zone Setup'}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+              className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+              <span>COPPA Notice & Privacy Policy</span>
             </button>
-          )}
+          </div>
         </div>
+        {showPrivacyModal && (
+          <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+        )}
       </div>
     );
   }
@@ -404,9 +452,142 @@ export default function FirstLaunchOnboardingModal({
                 : 'bg-slate-800 text-slate-600 border-slate-900 cursor-not-allowed'
             }`}
           >
-            Let's Climb! 🚀
+            Next: Parent Verification 🔒
           </button>
         </div>
+        {showPrivacyModal && (
+          <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+        )}
+      </div>
+    );
+  }
+
+  // ─── STEP: Verifiable Parental Consent (COPPA) ───────────────────────────
+  if (step === 'coppa_consent') {
+    return (
+      <div className="fixed inset-0 z-[1000] h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-3 sm:p-5 select-none animate-pop overflow-y-auto">
+        <div className="absolute w-96 h-96 rounded-full bg-purple-600/20 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
+
+        <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-3 text-center my-auto py-2">
+          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500 shrink-0">
+            <span className="text-slate-600">Step 1</span>
+            <span>/</span>
+            <span className="text-slate-600">Step 2</span>
+            <span>/</span>
+            <span className="text-amber-400">Parent Consent</span>
+          </div>
+
+          <div className="flex items-center justify-center gap-2 text-teal-300">
+            <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
+            <h2 className="text-lg sm:text-xl font-black tracking-tight">
+              Parental Verification & Consent (COPPA)
+            </h2>
+          </div>
+
+          <div className="bg-white/10 border border-white/20 rounded-2xl p-3.5 text-left space-y-2 text-xs text-slate-200">
+            <p className="font-medium leading-relaxed">
+              Under the Children's Online Privacy Protection Act (COPPA), verifiable consent from an adult parent or legal guardian is required before collecting any educational practice data or username for children under 13.
+            </p>
+            <div className="flex items-center justify-between pt-1">
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+                className="text-xs font-bold text-teal-300 hover:text-teal-200 underline cursor-pointer flex items-center gap-1"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" /> Read COPPA Privacy Policy
+              </button>
+            </div>
+          </div>
+
+          {/* Adult Knowledge-Based Verification Challenge */}
+          <div className="w-full bg-white/10 border-2 border-purple-400/40 rounded-2xl p-3.5 text-left space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black uppercase tracking-wider text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-md">
+                Adult Check: {challenge.title}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setChallenge(dynamicChallengeGenerator.generateChallenge());
+                  setSelectedChallengeAnswer('');
+                }}
+                className="text-slate-300 hover:text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <RefreshCw className="w-3 h-3" /> Refresh
+              </button>
+            </div>
+            <p className="text-xs text-slate-300 font-medium">{challenge.instruction}</p>
+            <div className="text-xl font-black text-white bg-white/15 border border-white/20 rounded-xl p-2.5 text-center">
+              {challenge.question}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              {challenge.options.map((opt, idx) => (
+                <button
+                  key={`${opt}-${idx}`}
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setSelectedChallengeAnswer(opt);
+                    setConsentError('');
+                  }}
+                  className={`py-2.5 px-3 rounded-xl border-2 font-black text-base transition-all cursor-pointer ${
+                    selectedChallengeAnswer === opt
+                      ? 'border-amber-400 bg-amber-400/30 text-white shadow-md'
+                      : 'border-white/15 bg-white/5 hover:bg-white/10 text-slate-200'
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Consent Checkbox */}
+          <label className="w-full flex items-start gap-2.5 text-left bg-white/5 border border-white/10 rounded-xl p-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={consentAgreed}
+              onChange={(e) => {
+                setConsentAgreed(e.target.checked);
+                setConsentError('');
+              }}
+              className="mt-0.5 w-4 h-4 rounded text-purple-600 focus:ring-purple-500 shrink-0 cursor-pointer"
+            />
+            <span className="text-xs text-slate-200 font-medium leading-tight">
+              I confirm I am an adult parent or legal guardian. I consent to the collection and use of educational practice progress and safe climber tag under Kibo Climb's Privacy Policy.
+            </span>
+          </label>
+
+          {consentError && (
+            <div className="w-full p-2.5 bg-rose-500/20 border border-rose-400 rounded-xl text-rose-300 text-xs font-bold flex items-center gap-1.5 text-left">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <span>{consentError}</span>
+            </div>
+          )}
+
+          <div className="w-full flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              className="flex-1 py-3 bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={handleConsentSubmit}
+              className="flex-2 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-sm rounded-xl shadow-lg shadow-amber-500/20 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Verify & Consent 🚀</span>
+            </button>
+          </div>
+        </div>
+        {showPrivacyModal && (
+          <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+        )}
       </div>
     );
   }

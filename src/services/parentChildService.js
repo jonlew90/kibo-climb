@@ -30,8 +30,14 @@ export function initParentChildSchema() {
     parentAccount = {
       id: parentId,
       email: 'parent@kiboclimb.com',
-      stripe_customer_id: 'cus_demo_kibo_climb',
-      is_coppa_verified: true,
+      is_coppa_verified: false,
+      coppa_consent: {
+        consented: false,
+        consentedAt: null,
+        method: null,
+        version: '2026-08-COPPA',
+        revokedAt: null
+      },
       createdAt: new Date().toISOString(),
       pin: storageService.getParentSettings().pin || null,
       child_ids: [defaultChildId]
@@ -236,5 +242,58 @@ export const parentChildService = {
    */
   lockParentGate() {
     sessionStorage.removeItem('kibo_parent_gate_session');
+  },
+
+  /**
+   * Retrieves verifiable parental consent status.
+   */
+  getCOPPAConsentStatus() {
+    const parentAccount = this.getParentAccount();
+    return parentAccount?.coppa_consent || {
+      consented: false,
+      consentedAt: null,
+      method: null,
+      version: '2026-08-COPPA',
+      revokedAt: null
+    };
+  },
+
+  /**
+   * Records verifiable parental consent (VPC).
+   * @param {'knowledge_challenge' | 'parent_pin' | 'biometric' | 'payment_transaction'} method
+   * @param {Object} details
+   */
+  recordParentalConsent(method = 'knowledge_challenge', details = {}) {
+    const { parentAccount } = initParentChildSchema();
+    const consentRecord = {
+      consented: true,
+      consentedAt: new Date().toISOString(),
+      method,
+      version: '2026-08-COPPA',
+      details,
+      revokedAt: null
+    };
+    parentAccount.is_coppa_verified = true;
+    parentAccount.coppa_consent = consentRecord;
+    saveParentAccount(parentAccount);
+    return consentRecord;
+  },
+
+  /**
+   * Revokes parental consent, terminating child cloud sync and data processing.
+   */
+  revokeParentalConsent() {
+    const { parentAccount } = initParentChildSchema();
+    parentAccount.is_coppa_verified = false;
+    parentAccount.coppa_consent = {
+      consented: false,
+      consentedAt: null,
+      method: null,
+      version: '2026-08-COPPA',
+      revokedAt: new Date().toISOString()
+    };
+    saveParentAccount(parentAccount);
+    sessionStorage.removeItem('kibo_parent_gate_session');
+    return parentAccount.coppa_consent;
   }
 };

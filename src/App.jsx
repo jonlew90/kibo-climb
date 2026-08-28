@@ -52,8 +52,9 @@ import ShareModal from './components/ShareModal';
 import ReferralRewardModal from './components/ReferralRewardModal';
 import NewsModal from './components/NewsModal';
 import { getNewsItems } from './utils/newsManager';
+import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from './config/firebase';
+import { db, auth } from './config/firebase';
 import TermsOfServiceScreen from './components/TermsOfServiceScreen';
 import LeaderboardIcon from './components/LeaderboardIcon';
 import LeaderboardScreen from './components/LeaderboardScreen';
@@ -304,24 +305,28 @@ export default function App() {
 
   // Check for pending referral rewards on load
   useEffect(() => {
-    const checkForRewards = async () => {
-      const currentUser = authService.getAuthState();
-      if (!currentUser || currentUser.isAnonymous || !currentUser.uid) return;
+    let isMounted = true;
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!isMounted || !currentUser || currentUser.isAnonymous || !currentUser.uid) return;
 
       try {
         const rewardsRef = collection(db, 'users', currentUser.uid, 'pendingRewards');
         const q = query(rewardsRef, where('status', '==', 'pending'));
         const snap = await getDocs(q);
 
-        if (!snap.empty) {
+        if (isMounted && !snap.empty) {
           const firstReward = snap.docs[0];
           setPendingReward({ id: firstReward.id, ...firstReward.data() });
         }
       } catch (e) {
         console.warn("Could not fetch rewards:", e);
       }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
     };
-    checkForRewards();
   }, [activeProfileId]);
 
   // Persistent Daily Streak
@@ -2896,8 +2901,26 @@ export default function App() {
                 nextUnlocked.push(id);
               }
             });
+            if (pack.id && !nextUnlocked.includes(pack.id)) {
+              nextUnlocked.push(pack.id);
+            }
             setUnlockedItems(nextUnlocked);
-            storageService.saveShopState({ unlockedItems: nextUnlocked });
+            storageService.saveShopState(equippedItems, nextUnlocked);
+          } else if (pack.realMoneyPrice && !pack.isSubscription && !pack.sparks && !pack.bundleItems && !pack.bundleConsumables) {
+            if (!nextUnlocked.includes(pack.id)) {
+              nextUnlocked.push(pack.id);
+            }
+            setUnlockedItems(nextUnlocked);
+            storageService.saveShopState(equippedItems, nextUnlocked);
+          }
+
+          if (pack.isSubscription) {
+            setIsKiboClub(true);
+            if (pack.isFamilyPlan) {
+              storageService.setFamilyPlanState(true);
+            } else {
+              storageService.saveUserData({ isKiboClub: true });
+            }
           }
 
           setSparks(newSparks);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShieldCheck, Sparkles, CheckCircle2, X, ArrowRight, Mail, Zap } from 'lucide-react';
 import { authService } from '../services/authService';
 import { storageService } from '../services/storageService';
+import PrivacyPolicyScreen from './PrivacyPolicyScreen';
 
 export default function AccountLinkModal({
   isOpen,
@@ -16,6 +17,7 @@ export default function AccountLinkModal({
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [conflictData, setConflictData] = useState(null);
+  const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -23,6 +25,9 @@ export default function AccountLinkModal({
       setEmailInput('');
       setShowEmailInput(false);
       setSuccessMessage('');
+      setErrorMessage('');
+      setConflictData(null);
+      setShowPrivacyPolicyModal(false);
       setErrorMessage('');
       setConflictData(null);
     }
@@ -258,12 +263,28 @@ export default function AccountLinkModal({
           </div>
         )}
 
-        {/* Security Footer Note */}
-        <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500 pt-2 border-t border-slate-100">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span>100% Passwordless Security • No Passwords Required</span>
+        {/* Security & COPPA Footer Note */}
+        <div className="space-y-1 pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>100% Passwordless Security • COPPA Compliant Cloud Sync</span>
+          </div>
+          <p className="text-[11px] text-slate-400 font-medium">
+            Account linking is for parent/guardian use. By linking, you consent to encrypted cloud backup under our{' '}
+            <button
+              type="button"
+              onClick={() => setShowPrivacyPolicyModal(true)}
+              className="text-purple-600 hover:text-purple-800 underline font-bold cursor-pointer"
+            >
+              COPPA Privacy Policy
+            </button>.
+          </p>
         </div>
       </div>
+
+      {showPrivacyPolicyModal && (
+        <PrivacyPolicyScreen onBack={() => setShowPrivacyPolicyModal(false)} />
+      )}
     </div>
   );
 }
