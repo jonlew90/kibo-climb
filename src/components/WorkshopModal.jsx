@@ -263,10 +263,14 @@ export default function WorkshopModal({
     };
   }, [isOpen, onClose, showPromoModal, selectedItemDetail, itemToSell]);
 
-  // Scroll to top of item list on filter/mode change
+  // Scroll to top of item list on filter/mode change and auto-reset preview slots when entering closet
   useEffect(() => {
     if (itemsContainerRef.current) {
       itemsContainerRef.current.scrollTop = 0;
+    }
+    if (viewMode === 'closet') {
+      setPreviewSlots(INITIAL_PREVIEW_SLOTS);
+      setSelectedItemDetail(null);
     }
   }, [viewMode, activeHub, selectedSlot, seasonalEventFilter]);
 
