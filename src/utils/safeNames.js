@@ -32,9 +32,26 @@ export const SAFE_NOUNS = [
   'Zenith', 'Titan', 'Stratos', 'Nova', 'Pulse', 'Vertex', 'Matrix', 'Nexus'
 ];
 
+// Curated compact list (<= 5 chars) for guaranteed mobile single-line fit on leaderboards
+export const SHORT_SAFE_ADJECTIVES = [
+  'Epic', 'Brave', 'Swift', 'Nova', 'Cool', 'Sunny', 'Star', 'Bold', 'Gold',
+  'Wise', 'Fast', 'Keen', 'Hero', 'Ruby', 'Apex', 'Wild', 'Calm', 'Pure',
+  'Neon', 'Zippy', 'Hyper', 'Super', 'Turbo', 'Quick', 'Frost', 'Spark',
+  'Grand', 'Noble', 'Sonic', 'Vivid', 'Crisp', 'Brisk', 'Kind', 'True',
+  'Stout', 'Lively', 'Agile', 'Merry', 'Jolly', 'Lucky', 'Warm', 'Cosmo'
+];
+
+export const SHORT_SAFE_NOUNS = [
+  'Fox', 'Lynx', 'Bear', 'Wolf', 'Hawk', 'Owl', 'Puma', 'Lion', 'Stag',
+  'Star', 'Comet', 'Seal', 'Orca', 'Gecko', 'Robin', 'Finch', 'Panda',
+  'Tiger', 'Koala', 'Eagle', 'Otter', 'Puffin', 'Bison', 'Must', 'Apex',
+  'Hero', 'Nova', 'Spark', 'Echo', 'Atlas', 'Titan', 'Pulse', 'Nexus',
+  'Dort', 'Rider', 'Scout', 'Ranger', 'Dart', 'Bolt', 'Ray', 'Gull', 'Wren'
+];
+
 /**
  * Generates a random COPPA-safe kid name.
- * 100+ Adjectives * 100+ Nouns * 9000 numbers (1000–9999) = 90,000,000+ combinations.
+ * 100+ Adjectives * 100+ Nouns * 900 numbers (100–999) = 9,000,000+ combinations.
  */
 export function generateSafeUsername() {
   const adj = SAFE_ADJECTIVES[Math.floor(Math.random() * SAFE_ADJECTIVES.length)];
@@ -45,12 +62,11 @@ export function generateSafeUsername() {
 }
 
 /**
- * Deterministically generates an anonymous alias from a string seed (e.g. uid or documentId).
- * This ensures the same player appears with the same anonymous alias on public leaderboards
- * without exposing their custom chosen username to strangers.
+ * Deterministically generates a compact, COPPA-safe anonymous alias from a string seed (e.g. uid or documentId).
+ * Guaranteed to be <= 12 characters (e.g. "BraveFox#42") to fit comfortably on 1 line across all mobile screens.
  */
 export function getDeterministicAnonymousName(seed = '') {
-  if (!seed) return 'Climber#1001';
+  if (!seed) return 'Fox#42';
   
   let hash1 = 0;
   let hash2 = 5381;
@@ -64,9 +80,9 @@ export function getDeterministicAnonymousName(seed = '') {
   const positiveHash1 = Math.abs(hash1);
   const positiveHash2 = Math.abs(hash2);
   
-  const adj = SAFE_ADJECTIVES[positiveHash1 % SAFE_ADJECTIVES.length];
-  const noun = SAFE_NOUNS[positiveHash2 % SAFE_NOUNS.length];
-  const num = (positiveHash1 % 9000) + 1000;
+  const adj = SHORT_SAFE_ADJECTIVES[positiveHash1 % SHORT_SAFE_ADJECTIVES.length];
+  const noun = SHORT_SAFE_NOUNS[positiveHash2 % SHORT_SAFE_NOUNS.length];
+  const num = (positiveHash1 % 90) + 10; // 2-digit number (10–99)
   
   return `${adj}${noun}#${num}`;
 }
