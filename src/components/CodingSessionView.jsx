@@ -228,7 +228,8 @@ export default function CodingSessionView({
       sessionAnswers,
       eliminatedOptions,
       revealedHint,
-      isClueActive
+      isClueActive,
+      isDoubleSparksActive
     };
     storageService.saveActiveClimbState(climbState, profileId, 'coding');
     setSavedClimbState(climbState);

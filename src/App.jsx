@@ -634,7 +634,13 @@ export default function App() {
 
 
   const [isShieldProtected, setIsShieldProtected] = useState(false);
-  const [isDoubleSparksActive, setIsDoubleSparksActive] = useState(false);
+  const [doubleSparksActiveBySubject, setDoubleSparksActiveBySubject] = useState({
+    math: false,
+    words: false,
+    world: false,
+    coding: false
+  });
+  const isDoubleSparksActive = Boolean(doubleSparksActiveBySubject[activeSubject]);
 
   const devState = useDevState(() => {
     const uData = storageService.getUserData(activeSubject);
@@ -694,7 +700,11 @@ export default function App() {
     }
     setHapticsEnabled(prefs.isHapticsEnabled);
     setPreferences(prefs);
-    setIsDoubleSparksActive(false);
+    const activeClimb = storageService.getActiveClimbState(currentPid, sub);
+    setDoubleSparksActiveBySubject(prev => ({
+      ...prev,
+      [sub]: Boolean(activeClimb?.isDoubleSparksActive || prev[sub])
+    }));
   };
 
   const handleSubjectChange = (newSubject) => {
@@ -908,7 +918,7 @@ export default function App() {
 
   const handleToggleDoubleSparksPotion = () => {
     if (isDoubleSparksActive) {
-      setIsDoubleSparksActive(false);
+      setDoubleSparksActiveBySubject(prev => ({ ...prev, [activeSubject]: false }));
     } else {
       const owned = consumables.doubleSparksPotionCount ?? consumables.doubleCoinPotionCount ?? 0;
       if (owned <= 0) return;
@@ -921,7 +931,7 @@ export default function App() {
       };
       setConsumables(nextConsumables);
       storageService.saveUserData({ consumables: nextConsumables });
-      setIsDoubleSparksActive(true);
+      setDoubleSparksActiveBySubject(prev => ({ ...prev, [activeSubject]: true }));
       analyticsService.logSpendVirtualCurrency('double_sparks_potion', 0);
       analyticsService.logSpendVirtualCurrency('double_sparks_potion', 0);
     }
@@ -2185,7 +2195,7 @@ export default function App() {
           onConsumeLetterSpyglass={handleConsumeLetterSpyglass}
           onConsumeLetterPruner={handleConsumeLetterPruner}
           onConsumeShield={handleConsumeShield}
-          onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
+          onResetDoubleSparks={() => setDoubleSparksActiveBySubject(prev => ({ ...prev, [activeSubject]: false }))}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onRecordDailyPractice={recordDailyPractice}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
@@ -2232,7 +2242,7 @@ export default function App() {
           onConsumeLetterSpyglass={handleConsumeLetterSpyglass}
           onConsumeLetterPruner={handleConsumeLetterPruner}
           onConsumeShield={handleConsumeShield}
-          onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
+          onResetDoubleSparks={() => setDoubleSparksActiveBySubject(prev => ({ ...prev, [activeSubject]: false }))}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onRecordDailyPractice={recordDailyPractice}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
@@ -2279,7 +2289,7 @@ export default function App() {
           onConsumeExplorerCompass={handleConsumeExplorerCompass}
           onConsumeLetterPruner={handleConsumeLetterPruner}
           onConsumeShield={handleConsumeShield}
-          onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
+          onResetDoubleSparks={() => setDoubleSparksActiveBySubject(prev => ({ ...prev, [activeSubject]: false }))}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onRecordDailyPractice={recordDailyPractice}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
@@ -2325,7 +2335,7 @@ export default function App() {
           onConsumeHintScroll={handleConsumeHintScroll}
           onConsumeExplorerCompass={handleConsumeExplorerCompass}
           onConsumeShield={handleConsumeShield}
-          onResetDoubleSparks={() => setIsDoubleSparksActive(false)}
+          onResetDoubleSparks={() => setDoubleSparksActiveBySubject(prev => ({ ...prev, [activeSubject]: false }))}
           onIncrementLifetimeProblems={handleIncrementLifetimeProblems}
           onRecordDailyPractice={recordDailyPractice}
           onUpdatePersonalRecords={(newRecords) => setPersonalRecords(newRecords)}
