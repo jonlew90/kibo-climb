@@ -253,12 +253,23 @@ export function calculateConceptBreakdown(sprintHistory = [], skipLogs = [], sub
 
   // Process skip logs
   (skipLogs || []).forEach((log) => {
-    const conceptName = log.concept || concepts[0]?.name || 'Fundamentals';
+    let conceptName = log.concept;
+    const matchedConcept = concepts.find(
+      (c) => c.name.toLowerCase() === (conceptName || '').toLowerCase() || c.id === conceptName
+    );
+
+    if (matchedConcept) {
+      conceptName = matchedConcept.name;
+    } else if (!conceptName) {
+      conceptName = concepts[0]?.name || 'Fundamentals';
+    }
+
     if (!breakdown[conceptName]) {
+      const safeId = matchedConcept?.id || `concept_${conceptName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
       breakdown[conceptName] = {
-        id: 'concept_custom',
+        id: safeId,
         name: conceptName,
-        icon: '🔢',
+        icon: matchedConcept?.icon || '🔢',
         correct: 0,
         incorrect: 0,
         skipped: 0,

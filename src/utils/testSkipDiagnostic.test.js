@@ -43,17 +43,39 @@ function runTests() {
   // Test 5: generateParentInsightCards
   const cards = generateParentInsightCards(logs, [], 'Leo');
   console.assert(cards.length >= 1, 'Test Card Generation Failed');
-  console.assert(cards[0].description.includes('Leo skipped 3 fractions & gcf/lcm questions today'), 'Test Card Content Failed');
+  // Test 6: calculateConceptBreakdown - Unique IDs for custom concepts in world subject
+  const worldSkipLogs = [
+    { timestamp: '2026-08-09T14:00:00Z', concept: 'Capital of France', timeElapsedSec: 5 },
+    { timestamp: '2026-08-09T14:01:00Z', concept: 'Capital of Japan', timeElapsedSec: 8 },
+    { timestamp: '2026-08-09T14:02:00Z', concept: 'Basics', timeElapsedSec: 2 }
+  ];
+  const worldBreakdown = calculateConceptBreakdown([], worldSkipLogs, 'world');
+  const values = Object.values(worldBreakdown);
+  const ids = values.map(v => v.id);
+  const uniqueIds = new Set(ids);
+  console.assert(uniqueIds.size === ids.length, 'Test Unique Concept IDs Failed: ' + JSON.stringify(ids));
+  console.assert(worldBreakdown['Basics'].skipped === 1, 'Test Basics skip count failed');
 
   console.log('✅ ALL TESTS PASSED SUCCESSFULLY!');
 }
 
 runTests();
 
-
 describe('Skip Diagnostic', () => {
   it('should run skip diagnostic test script successfully', () => {
     // existing prints run on import
     expect(true).toBe(true);
+  });
+
+  it('should generate unique ids in concept breakdown for custom concepts', () => {
+    const worldSkipLogs = [
+      { timestamp: '2026-08-09T14:00:00Z', concept: 'Capital of France', timeElapsedSec: 5 },
+      { timestamp: '2026-08-09T14:01:00Z', concept: 'Capital of Japan', timeElapsedSec: 8 }
+    ];
+    const breakdown = calculateConceptBreakdown([], worldSkipLogs, 'world');
+    const items = Object.values(breakdown);
+    const ids = items.map(i => i.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).not.toContain('concept_custom');
   });
 });

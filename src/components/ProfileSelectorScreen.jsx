@@ -329,7 +329,9 @@ export default function ProfileSelectorScreen({
   onSelectProfile,
   onOpenParentZone,
   canClose = false,
-  onClose
+  onClose,
+  onBuyFamilyPlan,
+  onBuySinglePlan
 }) {
   const [profiles, setProfiles] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -440,6 +442,50 @@ export default function ProfileSelectorScreen({
               {needsSelection ? 'Your subscription was changed. Choose which profile to keep active. Others will be locked.' : profiles.length === 1 ? 'Tap your card to continue your ascent' : 'Pick your profile to jump right back into your ascent'}
             </p>
           </div>
+
+          {/* Kibo Club / Family Plan Teaser Banner */}
+          <div className="w-full mt-2">
+            {hasFamilyPlan ? (
+              <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-300/80 rounded-2xl px-3.5 py-2 flex items-center justify-between text-left shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">✨</span>
+                  <div>
+                    <span className="text-[11px] font-black text-amber-900 block leading-tight">Kibo Club Family Plan Active</span>
+                    <span className="text-[10px] text-amber-700 font-bold">1.25x Sparks & Multi-profile access unlocked for all climbers</span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-black text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  6 Profiles
+                </span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setShowUpsell(true);
+                }}
+                className="w-full bg-gradient-to-r from-amber-400/20 via-orange-400/20 to-amber-400/20 hover:from-amber-400/30 hover:to-orange-400/30 border border-amber-300 rounded-2xl px-3.5 py-2 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform">
+                    <Sparkles className="w-3.5 h-3.5 fill-white" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-black text-amber-950 block leading-tight group-hover:text-amber-800 transition-colors">
+                      {hasSinglePlan ? 'Upgrade to Family Plan' : 'Unlock Kibo Club for the Whole Family'}
+                    </span>
+                    <span className="text-[10px] text-slate-600 font-bold">
+                      Add up to 6 sibling profiles + 1.25x Sparks for everyone
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-black text-amber-900 bg-amber-300 hover:bg-amber-400 px-2.5 py-1 rounded-xl shadow-2xs shrink-0 transition-transform group-hover:scale-105">
+                  Learn More →
+                </span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Middle Section: Profiles Grid OR Add Profile Panel */}
@@ -526,7 +572,12 @@ export default function ProfileSelectorScreen({
       <FamilyPlanUpgradeModal
         isOpen={showUpsell}
         onClose={() => setShowUpsell(false)}
-        onOpenParentZone={onOpenParentZone}
+        onOpenParentZone={(targetTab, targetHighlight) => {
+          setShowUpsell(false);
+          if (onOpenParentZone) {
+            onOpenParentZone(targetTab, targetHighlight);
+          }
+        }}
       />
     </div>
   );

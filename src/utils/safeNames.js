@@ -40,7 +40,8 @@ export function generateSafeUsername() {
   const adj = SAFE_ADJECTIVES[Math.floor(Math.random() * SAFE_ADJECTIVES.length)];
   const noun = SAFE_NOUNS[Math.floor(Math.random() * SAFE_NOUNS.length)];
   const num = Math.floor(Math.random() * 900) + 100;
-  return `${adj}${noun}${num}`;
+  const name = `${adj}${noun}${num}`;
+  return name.length > 20 ? `${adj.slice(0, 8)}${noun.slice(0, 8)}${num}`.slice(0, 20) : name;
 }
 
 /**

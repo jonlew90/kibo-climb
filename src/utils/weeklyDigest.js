@@ -41,8 +41,10 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
   const unlockedBadges = userData.unlockedBadges || [];
 
   const questState = questService.getQuests(profileId);
-  const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️' };
+  const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️', ascentTier: 1, ascentMode: { name: 'Sunny Trailhead' } };
   const questLevel = questLevelInfo.level || 1;
+  const questAscentTier = questLevelInfo.ascentTier || 1;
+  const questAscentName = questLevelInfo.ascentMode?.name || 'Sunny Trailhead';
   const questTitle = questLevelInfo.title || 'Basecamp Explorer';
   const questIcon = questLevelInfo.icon || '🏕️';
   const questTotalXp = questState?.totalXp || 0;
@@ -236,6 +238,8 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
     streak,
     sparks,
     questLevel,
+    questAscentTier,
+    questAscentName,
     questTitle,
     questIcon,
     questTotalXp,
@@ -269,7 +273,7 @@ export function formatWeeklyDigestText({ childName, digestData }) {
   text += `Hi there!\n\nHere is ${name}'s personalized learning progress summary for the week:\n\n`;
   text += `🔥 DAILY STREAK: ${data.streak} ${data.streak === 1 ? 'Day' : 'Days'}\n`;
   text += `⚡ Sparks Balance: ${data.sparks} ⚡\n`;
-  text += `🧭 Quest Expedition: Level ${data.questLevel} (${data.questTitle}) · ${data.questTotalXp} XP\n`;
+  text += `🧭 Quest Expedition: Ascent ${data.questAscentTier || 1} (${data.questAscentName || 'Sunny Trailhead'}) · Level ${data.questLevel} (${data.questTitle}) · ${data.questTotalXp} XP\n`;
   text += `🏆 Badges Won: ${data.unlockedBadgesCount} total\n`;
   text += `📈 Total Questions Completed This Week: ${data.totalProblemsThisWeek} (${data.totalProblemsAllTime} all-time)\n\n`;
 
@@ -508,8 +512,8 @@ export function formatWeeklyDigestHtml({ childName, digestData }) {
                   </td>
                   <td align="center" style="padding: 0 6px; border-right: 1px solid #e9d5ff;">
                     <span style="font-size: 20px;">${data.questIcon || '🧭'}</span>
-                    <div style="font-size: 16px; font-weight: 900; color: #4338ca;">Lvl ${data.questLevel}</div>
-                    <div style="font-size: 10px; font-weight: 700; color: #3730a3; text-transform: uppercase;">${data.questTotalXp} Quest XP</div>
+                    <div style="font-size: 14px; font-weight: 900; color: #4338ca;">Ascent ${data.questAscentTier || 1} · Lv ${data.questLevel}</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #3730a3; text-transform: uppercase;">${data.questTitle} · ${data.questTotalXp} XP</div>
                   </td>
                   <td align="center" style="padding: 0 6px;">
                     <span style="font-size: 20px;">🏆</span>

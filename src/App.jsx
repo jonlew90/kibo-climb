@@ -249,6 +249,7 @@ export default function App() {
   // Manual Profile Switcher State
   const [showManualProfileSwitcher, setShowManualProfileSwitcher] = useState(false);
   const [profileSwitcherOrigin, setProfileSwitcherOrigin] = useState(null);
+  const [familyUpgradeOrigin, setFamilyUpgradeOrigin] = useState(null);
 
   // Consecutive problem miss tracking for Micro-Hints
   const [consecutiveProblemMisses, setConsecutiveProblemMisses] = useState(0);
@@ -1326,6 +1327,11 @@ export default function App() {
     }
   }, [appState, activeProfileId, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher]);
 
+  const handleBuySparksPackage = (pack) => {
+    setPendingSparksPurchase(pack);
+    setShowPinGateModal(true);
+  };
+
   const closeAllNavModals = (except = null) => {
     if (except !== 'workshop') setIsWorkshopOpen(false);
     if (except !== 'badges') setShowBadgesModal(false);
@@ -1522,6 +1528,7 @@ export default function App() {
                             soundFx.playKeyTap();
                             if (isLocked) {
                               setShowProfileDropdown(false);
+                              setFamilyUpgradeOrigin({ appState });
                               setShowFamilyUpgradeModal(true);
                               return;
                             }
@@ -1584,6 +1591,30 @@ export default function App() {
                       <Users className="w-3.5 h-3.5 stroke-[2.5]" />
                     </div>
                     <span>Manage Profiles</span>
+                  </button>
+                </div>
+
+                <div className="h-px bg-slate-100 w-full" />
+
+                {/* Kibo Club / Membership Status in Dropdown */}
+                <div className="p-2 bg-amber-50/60 border-y border-amber-100/60">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowProfileDropdown(false);
+                      setFamilyUpgradeOrigin({ appState });
+                      setShowFamilyUpgradeModal(true);
+                    }}
+                    className="w-full flex items-center justify-between p-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-black text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 fill-white" />
+                      <span>{isKiboClub ? 'Kibo Club Active (1.25x)' : 'Join Kibo Club'}</span>
+                    </div>
+                    <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-md">
+                      {isKiboClub ? 'Perks' : 'Upgrade'}
+                    </span>
                   </button>
                 </div>
 
@@ -2376,9 +2407,9 @@ export default function App() {
             setAppState('adaptive_session');
             validateStreakForActiveProfile(targetSubject);
           }}
-          onOpenParentZone={(targetTab = 'overview') => {
+          onOpenParentZone={(targetTab = 'overview', targetHighlight = 'family_plan') => {
             setParentDashboardTab(targetTab);
-            setParentDashboardHighlight(null);
+            setParentDashboardHighlight(targetHighlight);
             setShowProfileSelector(false);
             setPinGateSource('profile_selector');
             setShowPinGateModal(true);
@@ -2414,9 +2445,9 @@ export default function App() {
             }
             setProfileSwitcherOrigin(null);
           }}
-          onOpenParentZone={(targetTab = 'overview') => {
+          onOpenParentZone={(targetTab = 'overview', targetHighlight = 'family_plan') => {
             setParentDashboardTab(targetTab);
-            setParentDashboardHighlight(null);
+            setParentDashboardHighlight(targetHighlight);
             setPinGateSource('manual_profile_switcher');
             setShowPinGateModal(true);
           }}
@@ -2505,10 +2536,9 @@ export default function App() {
         currentPin={parentPin}
         onUnlockSuccess={() => {
           setShowPinGateModal(false);
+          setShowProfileSelector(false);
           if (pinGateSource === 'manual_profile_switcher') {
             setShowManualProfileSwitcher(false);
-          } else if (pinGateSource === 'profile_selector') {
-            setShowProfileSelector(false);
           }
           setPinGateSource(null);
           if (pendingSparksPurchase) {
@@ -2565,6 +2595,40 @@ export default function App() {
             setSparks(newSparks);
           }
           syncAppStateWithStorage();
+        }}
+        onOpenSubscription={(planId) => {
+          if (planId === 'kibo_club_family') {
+            handleBuySparksPackage({
+              id: 'kibo_club_family',
+              name: 'Kibo Club Family',
+              realMoneyPrice: '$7.99/mo',
+              price: '$7.99/mo',
+              isSubscription: true,
+              isFamilyPlan: true,
+              description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
+            });
+          } else {
+            handleBuySparksPackage({
+              id: 'kibo_club_sub',
+              name: 'Kibo Club Individual',
+              realMoneyPrice: '$4.99/mo',
+              price: '$4.99/mo',
+              isSubscription: true,
+              isFamilyPlan: false,
+              description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!'
+            });
+          }
+        }}
+        onOpenFamilyUpgrade={() => {
+          handleBuySparksPackage({
+            id: 'kibo_club_family',
+            name: 'Kibo Club Family',
+            realMoneyPrice: '$7.99/mo',
+            price: '$7.99/mo',
+            isSubscription: true,
+            isFamilyPlan: true,
+            description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
+          });
         }}
       />
 
@@ -2835,10 +2899,21 @@ export default function App() {
       {/* Family Plan Upgrade Modal */}
       <FamilyPlanUpgradeModal
         isOpen={showFamilyUpgradeModal}
-        onClose={() => setShowFamilyUpgradeModal(false)}
-        onOpenParentZone={(targetTab = 'overview') => {
+        onClose={() => {
+          setShowFamilyUpgradeModal(false);
+          if (familyUpgradeOrigin) {
+            if (familyUpgradeOrigin.showParentDashboard) {
+              setShowParentDashboard(true);
+            }
+            if (familyUpgradeOrigin.appState) {
+              setAppState(familyUpgradeOrigin.appState);
+            }
+            setFamilyUpgradeOrigin(null);
+          }
+        }}
+        onOpenParentZone={(targetTab = 'verification', targetHighlight = 'family_plan') => {
           setParentDashboardTab(targetTab);
-          setParentDashboardHighlight(null);
+          setParentDashboardHighlight(targetHighlight);
           setShowFamilyUpgradeModal(false);
           setPinGateSource('profile_dropdown');
           setShowPinGateModal(true);

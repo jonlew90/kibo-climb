@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star, Compass } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star, Compass, Lock } from 'lucide-react';
 import { CURRICULUM_TIERS, getTierFromRating, GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { BADGES_CATALOG } from '../data/badges';
@@ -18,6 +18,7 @@ import { SUBJECTS_CONFIG } from '../config/subjects';
 import { generateWeeklyDigestData, formatWeeklyDigestText } from '../utils/weeklyDigest';
 import { requestAppReview } from '../utils/AppReview';
 import AccountLinkModal from './AccountLinkModal';
+import FamilyPlanUpgradeModal from './FamilyPlanUpgradeModal';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
@@ -52,7 +53,9 @@ export default function ParentDashboardModal({
   unlockedBadges = [],
   totalProblemsSolved = 0,
   personalRecords = {},
-  onAccountLinked
+  onAccountLinked,
+  onOpenSubscription,
+  onOpenFamilyUpgrade
 }) {
   const [activeTab, setActiveTab] = useState(initialTab || 'overview'); // 'overview' | 'schedule' | 'verification'
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
@@ -99,15 +102,27 @@ export default function ParentDashboardModal({
   };
 
   const [liveUserData, setLiveUserData] = useState(() => getProfileSubjectData(storageService.getActiveProfileId(), selectedSubject));
+  const [activeHighlight, setActiveHighlight] = useState(highlightSection);
   const realMoneySectionRef = useRef(null);
+  const familyPlanSectionRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen && activeTab === 'verification' && highlightSection === 'real_money_purchases' && realMoneySectionRef.current) {
-      setTimeout(() => {
-        realMoneySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+    setActiveHighlight(highlightSection);
+  }, [highlightSection]);
+
+  useEffect(() => {
+    if (isOpen && activeTab === 'verification') {
+      if (activeHighlight === 'real_money_purchases' && realMoneySectionRef.current) {
+        setTimeout(() => {
+          realMoneySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      } else if ((activeHighlight === 'family_plan' || activeHighlight === 'upgrade_plan') && familyPlanSectionRef.current) {
+        setTimeout(() => {
+          familyPlanSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
     }
-  }, [isOpen, activeTab, highlightSection]);
+  }, [isOpen, activeTab, activeHighlight]);
 
   useEffect(() => {
     setSelectedSubject(activeSubject || 'math');
@@ -131,6 +146,7 @@ export default function ParentDashboardModal({
   }
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editChildName, setEditChildName] = useState('');
+  const [showFamilyUpgradeModal, setShowFamilyUpgradeModal] = useState(false);
 
   // Data Privacy Confirmation States
   const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
@@ -139,6 +155,11 @@ export default function ParentDashboardModal({
 
   const handleSwitchProfile = (pId) => {
     soundFx.playKeyTap();
+    if (storageService.isProfileLocked(pId)) {
+      setActiveTab('verification');
+      setActiveHighlight('family_plan');
+      return;
+    }
     setViewingProfileId(pId);
     storageService.setActiveProfileId(pId);
     setLiveUserData(getProfileSubjectData(pId, selectedSubject));
@@ -350,74 +371,115 @@ export default function ParentDashboardModal({
       {/* CHILD PROFILE SELECTOR BAR */}
       <div className="w-full max-w-4xl mx-auto px-4 pt-3 pb-1 shrink-0">
         <div className="bg-white border-2 border-purple-200 rounded-2xl p-3 shadow-xs space-y-2 text-left">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 text-purple-800">
               <Users className="w-4 h-4 stroke-[2.5]" />
               <span className="text-xs font-black uppercase tracking-wider">Viewing Child Profile</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={handleOpenEditProfile}
-                className="text-xs font-extrabold text-slate-700 hover:text-purple-900 bg-slate-100 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-slate-200 flex items-center gap-1 transition-all"
-              >
-                ✏️ {showEditProfile ? 'Cancel Edit' : 'Rename / Edit'}
-              </button>
-            </div>
+            
+            {/* Child-level Global Badges: Streak & Quest Level */}
+            {(() => {
+              const currentProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+              const profileStreak = currentProf.userData?.streak ?? 0;
+              const questState = questService.getQuests(viewingProfileId);
+              const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️', ascentTier: 1, ascentMode: { name: 'Sunny Trailhead' } };
+              const ascentTier = questLevelInfo.ascentTier || 1;
+              const ascentName = questLevelInfo.ascentMode?.name || 'Sunny Trailhead';
+
+              return (
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-lg shadow-xs" title={`Daily streak: ${profileStreak} days across all subjects`}>
+                    <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    <span className="text-xs font-black text-amber-950">{profileStreak}d</span>
+                  </div>
+                  <div 
+                    className="flex items-center gap-1 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-lg shadow-xs" 
+                    title={`Quest Rank: Ascent ${ascentTier} (${ascentName}) • Level ${questLevelInfo.level} (${questLevelInfo.title}) • ${questState?.totalXp || 0} XP`}
+                  >
+                    <span className="text-xs">{questLevelInfo.icon || '🏕️'}</span>
+                    <span className="text-xs font-black text-indigo-950">
+                      Ascent {ascentTier} · Lv {questLevelInfo.level}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleOpenEditProfile}
+                    className="text-xs font-extrabold text-slate-700 hover:text-purple-900 bg-slate-100 hover:bg-purple-100 px-2 py-0.5 rounded-lg border border-slate-200 flex items-center gap-1 transition-all"
+                  >
+                    ✏️ {showEditProfile ? 'Cancel' : 'Edit'}
+                  </button>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Edit / Rename Active Profile Form */}
           {showEditProfile && (
-            <form onSubmit={handleSaveEditProfile} className="flex items-center gap-2 pt-2 border-t border-purple-100 bg-purple-50/60 p-2 rounded-xl">
-              <span className="text-xs font-black text-purple-900 shrink-0">Rename:</span>
-              <input
-                type="text"
-                value={editChildName}
-                onChange={(e) => setEditChildName(e.target.value)}
-                placeholder="Enter Child's Name (e.g. Leo)"
-                maxLength={20}
-                required
-                className="flex-1 px-3 py-1.5 bg-white border border-purple-300 rounded-xl text-xs font-bold focus:outline-none focus:border-purple-600"
-              />
-              <button type="submit" className="btn-3d-purple px-3.5 py-1.5 text-xs rounded-xl font-black">
-                Save Name
-              </button>
-              {profilesList.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => handleDeleteProfile(viewingProfileId)}
-                  className="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 font-extrabold text-xs rounded-xl border border-rose-300 transition-colors shrink-0"
-                  title="Delete this profile"
-                >
-                  🗑️ Delete
+            <form onSubmit={handleSaveEditProfile} className="flex flex-wrap items-center gap-2 pt-2 border-t border-purple-100 bg-purple-50/60 p-2.5 rounded-xl">
+              <div className="flex items-center gap-1.5 flex-1 min-w-[160px]">
+                <span className="text-xs font-black text-purple-900 shrink-0">Rename:</span>
+                <input
+                  type="text"
+                  value={editChildName}
+                  onChange={(e) => setEditChildName(e.target.value)}
+                  placeholder="Enter Child's Name (e.g. Leo)"
+                  maxLength={20}
+                  required
+                  className="w-full min-w-0 px-2.5 py-1.5 bg-white border border-purple-300 rounded-xl text-xs font-bold focus:outline-none focus:border-purple-600"
+                />
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                <button type="submit" className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-black shrink-0 cursor-pointer">
+                  Save Name
                 </button>
-              )}
+                {profilesList.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteProfile(viewingProfileId)}
+                    className="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 font-extrabold text-xs rounded-xl border border-rose-300 transition-colors shrink-0 cursor-pointer flex items-center gap-1"
+                    title="Delete this profile"
+                  >
+                    <span>🗑️</span>
+                    <span>Delete</span>
+                  </button>
+                )}
+              </div>
             </form>
           )}
 
           {/* Profile Selector Pills */}
           <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none touch-pan-x">
             {profilesList.map((p) => {
+              const isLocked = storageService.isProfileLocked(p.id);
               const isActive = p.id === viewingProfileId;
               const subData = p.userData?.subjects?.[selectedSubject] || (selectedSubject === 'math' ? p.userData : {}) || {};
               const childRating = subData.adaptiveCompetenceRating || subData.competenceRank || p.userData?.adaptiveCompetenceRating || 1000;
               const displayGrade = getGradeLevelForSubject(childRating, selectedSubject);
-              const profileStreak = p.userData?.streak ?? 0;
               return (
                 <button
                   key={p.id}
                   onClick={() => handleSwitchProfile(p.id)}
+                  title={isLocked ? `${p.name || 'Child'} (Locked - Family Plan required)` : `Switch to ${p.name || 'Child'}`}
                   className={`px-3.5 py-1.5 rounded-full border-2 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
-                    isActive
+                    isLocked
+                      ? 'bg-slate-100 text-slate-400 border-slate-300 opacity-75 hover:opacity-100 hover:border-amber-400 hover:bg-amber-50/50'
+                      : isActive
                       ? 'bg-purple-600 text-white border-purple-700 shadow-sm ring-2 ring-purple-400/30'
                       : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-purple-300'
                   }`}
                 >
+                  {isLocked && <Lock className="w-3 h-3 text-amber-600 shrink-0" />}
                   <span>{p.name || 'Child'}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-purple-800 text-purple-100' : 'bg-slate-200 text-slate-600'}`}>
-                    {displayGrade}
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    isLocked 
+                      ? 'bg-amber-100 text-amber-800' 
+                      : isActive 
+                      ? 'bg-purple-800 text-purple-100' 
+                      : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {isLocked ? '🔒 Upgrade' : displayGrade}
                   </span>
-                  {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
+                  {isActive && !isLocked && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
                 </button>
               );
             })}
@@ -426,45 +488,110 @@ export default function ParentDashboardModal({
       </div>
 
       {/* TAB SELECTOR HEADER */}
-      <div className="w-full max-w-4xl mx-auto px-4 pt-3 shrink-0">
+      <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 pt-2 sm:pt-3 shrink-0">
         <div className="flex bg-slate-200/80 p-1 rounded-2xl font-extrabold text-xs sm:text-sm shadow-inner gap-1">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
+            className={`flex-1 min-w-0 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'overview'
                 ? 'bg-white text-purple-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Layers className="w-4 h-4 stroke-[2.5]" />
-            <span className="truncate">Child Overview</span>
+            <Layers className="w-4 h-4 shrink-0 stroke-[2.5]" />
+            <span className="truncate">
+              <span className="hidden sm:inline">Child </span>Overview
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('schedule')}
-            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
+            className={`flex-1 min-w-0 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'schedule'
                 ? 'bg-white text-purple-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Calendar className="w-4 h-4 stroke-[2.5]" />
-            <span className="truncate">Schedule & Notifications</span>
+            <Calendar className="w-4 h-4 shrink-0 stroke-[2.5]" />
+            <span className="truncate">
+              <span className="hidden sm:inline">Schedule & Notifications</span>
+              <span className="sm:hidden">Schedule</span>
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('verification')}
-            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
+            className={`flex-1 min-w-0 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'verification'
                 ? 'bg-white text-purple-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
-            <span className="truncate">Verification & Controls</span>
+            <ShieldCheck className="w-4 h-4 shrink-0 stroke-[2.5]" />
+            <span className="truncate">
+              <span className="hidden sm:inline">Verification & Controls</span>
+              <span className="sm:hidden">Controls</span>
+            </span>
           </button>
         </div>
       </div>
+
+      {/* SUBJECT SELECTOR BAR (PINNED TO FIXED TOP SECTION WHEN IN OVERVIEW) */}
+      {activeTab === 'overview' && (
+        <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 pt-2 shrink-0">
+          <div className="bg-white border-2 border-purple-200 rounded-2xl p-2 sm:p-2.5 shadow-xs text-left">
+            <div className="flex items-center justify-between gap-2 mb-1.5 px-0.5">
+              <div className="flex items-center gap-1.5 text-purple-900">
+                <Layers className="w-4 h-4 stroke-[2.5] text-purple-600" />
+                <span className="text-xs font-black uppercase tracking-wider">Select Subject Focus</span>
+              </div>
+              <span className="text-[10px] font-extrabold text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                <span>↔</span> Swipe to explore
+              </span>
+            </div>
+
+            {/* Scrollable Subjects Container with Subtle Fade Hint on Mobile */}
+            <div className="relative group">
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1 px-0.5 scrollbar-thin scrollbar-thumb-purple-200 scrollbar-track-transparent touch-pan-x overscroll-x-contain">
+                {Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).map((subKey) => {
+                  const subConfig = SUBJECTS_CONFIG[subKey] || {};
+                  const isSelected = selectedSubject === subKey;
+                  const subData = getProfileSubjectData(viewingProfileId, subKey);
+                  const subRating = subData.adaptiveCompetenceRating || 1000;
+                  const subIcon = subConfig.icon || (subKey === 'words' ? '📚' : subKey === 'world' ? '🌍' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🔢')));
+
+                  return (
+                    <button
+                      key={subKey}
+                      type="button"
+                      onClick={() => handleSelectSubject(subKey)}
+                      className={`px-3 sm:px-3.5 py-1.5 rounded-xl border-2 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer select-none active:scale-95 ${
+                        isSelected
+                          ? (subKey === 'words' ? 'bg-teal-600 text-white border-teal-700 shadow-sm ring-2 ring-teal-400/30' : subKey === 'world' ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm ring-2 ring-emerald-400/30' : subKey === 'coding' ? 'bg-rose-600 text-white border-rose-700 shadow-sm ring-2 ring-rose-400/30' : 'bg-purple-600 text-white border-purple-700 shadow-sm ring-2 ring-purple-400/30')
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-purple-300 hover:bg-purple-50/50'
+                      }`}
+                      aria-pressed={isSelected}
+                      title={`Switch subject focus to ${subConfig.name || subKey}`}
+                    >
+                      <span className="text-sm">{subIcon}</span>
+                      <span>{subConfig.name || subKey}</span>
+                      <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-md ${
+                        isSelected
+                          ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : subKey === 'world' ? 'bg-emerald-800 text-emerald-100' : subKey === 'coding' ? 'bg-rose-800 text-rose-100' : 'bg-purple-800 text-purple-100')
+                          : 'bg-slate-200 text-slate-700'
+                      }`}>
+                        {subRating}
+                      </span>
+                      {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent rounded-r-2xl sm:hidden" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
       <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
@@ -473,157 +600,95 @@ export default function ParentDashboardModal({
         {activeTab === 'overview' && (
           <div className="flex-1 space-y-4 my-1">
 
-            {/* SUBJECT SELECTOR BAR (STICKY AT TOP OF OVERVIEW) */}
-            <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-xs py-1">
-              <div className="bg-white border-2 border-purple-200 rounded-2xl p-2.5 shadow-sm flex items-center justify-between gap-2 flex-wrap text-left">
-                <div className="flex items-center gap-1.5 text-purple-900">
-                  <Layers className="w-4 h-4 stroke-[2.5] text-purple-600" />
-                  <span className="text-xs font-black uppercase tracking-wider">Subject Focus</span>
-                </div>
-
-                {/* Subject Switcher Pills */}
-                <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none touch-pan-x">
-                  {Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).map((subKey) => {
-                    const subConfig = SUBJECTS_CONFIG[subKey] || {};
-                    const isSelected = selectedSubject === subKey;
-                    const subData = getProfileSubjectData(viewingProfileId, subKey);
-                    const subRating = subData.adaptiveCompetenceRating || 1000;
-                    const subIcon = subConfig.icon || (subKey === 'words' ? '📚' : subKey === 'world' ? '🌍' : (subKey === 'science' ? '🧪' : (subKey === 'coding' ? '💻' : '🔢')));
-
-                    return (
-                      <button
-                        key={subKey}
-                        type="button"
-                        onClick={() => handleSelectSubject(subKey)}
-                        className={`px-3.5 py-1.5 rounded-full border-2 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
-                          isSelected
-                            ? (subKey === 'words' ? 'bg-teal-600 text-white border-teal-700 shadow-sm ring-2 ring-teal-400/30' : subKey === 'world' ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm ring-2 ring-emerald-400/30' : subKey === 'coding' ? 'bg-rose-600 text-white border-rose-700 shadow-sm ring-2 ring-rose-400/30' : 'bg-purple-600 text-white border-purple-700 shadow-sm ring-2 ring-purple-400/30')
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-purple-300'
-                        }`}
-                      >
-                        <span>{subIcon}</span>
-                        <span>{subConfig.name || subKey}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? (subKey === 'words' ? 'bg-teal-800 text-teal-100' : subKey === 'world' ? 'bg-emerald-800 text-emerald-100' : subKey === 'coding' ? 'bg-rose-800 text-rose-100' : 'bg-purple-800 text-purple-100') : 'bg-slate-200 text-slate-600'}`}>
-                          {subRating}
-                        </span>
-                        {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* CHILD GLOBAL HABIT & QUEST EXPEDITION BANNERS */}
+            {/* KIBO CLUB MEMBERSHIP STATUS CARD */}
             {(() => {
-              const currentProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
-              const profileStreak = currentProf.userData?.streak ?? 0;
-              const childName = currentProf.name || 'Your Climber';
-              const questState = questService.getQuests(viewingProfileId);
-              const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️' };
-              const questTotalXp = questState?.totalXp || 0;
+              const hasFamily = storageService.hasFamilyPlan();
+              const hasSingle = storageService.hasSinglePlan(viewingProfileId);
+              const isSubscribed = hasFamily || hasSingle;
 
               return (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {/* Daily Practice Streak Banner */}
-                  <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-200/90 rounded-2xl p-3 flex items-center justify-between gap-3 text-left shadow-xs">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-sm shrink-0">
-                        <Flame className="w-6 h-6 fill-white stroke-[2.5]" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-black text-amber-950 uppercase tracking-wider">Daily Practice Streak</span>
-                          <span className="bg-amber-200/80 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">All Subjects</span>
-                        </div>
-                        <p className="text-xs text-slate-600 font-bold mt-0.5">
-                          {childName} has practiced for <strong className="text-amber-950 font-black">{pluralize(profileStreak, 'Day')}</strong> in a row.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-center shrink-0 bg-white/80 border border-amber-200 px-3 py-1.5 rounded-xl shadow-xs">
-                      <span className="text-xl font-black text-amber-600 tracking-tight leading-none block">{profileStreak}</span>
-                      <span className="text-xs font-black uppercase text-amber-800 tracking-wider block mt-0.5">{profileStreak === 1 ? 'Day' : 'Days'}</span>
-                    </div>
-                  </div>
-
-                  {/* Quest Expedition & Level Banner */}
-                  <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/5 border border-indigo-200/90 rounded-2xl p-3 flex items-center justify-between gap-3 text-left shadow-xs">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
-                        <span>{questLevelInfo.icon || '🏕️'}</span>
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-black text-indigo-950 uppercase tracking-wider truncate">Quest Rank: {questLevelInfo.title}</span>
-                          <span className="bg-indigo-200/80 text-indigo-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase shrink-0">Expedition</span>
-                        </div>
-                        <p className="text-xs text-slate-600 font-bold mt-0.5 truncate">
-                          {questTotalXp} Quest XP earned across daily & team climbs.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-center shrink-0 bg-white/80 border border-indigo-200 px-3 py-1.5 rounded-xl shadow-xs">
-                      <span className="text-xl font-black text-indigo-600 tracking-tight leading-none block">Lvl {questLevelInfo.level}</span>
-                      <span className="text-xs font-black uppercase text-indigo-800 tracking-wider block mt-0.5">{questTotalXp} XP</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* APP RATING PROMPT BANNER (PARENT ZONE EXCLUSIVE - STRICT 60-DAY COOLDOWN) */}
-            {(() => {
-              if (ratingPromptDismissed) return null;
-              if (appRatingStatus?.hasRated) return null;
-
-              const COOLDOWN_60_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
-              if (appRatingStatus?.lastDismissedAt && (Date.now() - appRatingStatus.lastDismissedAt) < COOLDOWN_60_DAYS_MS) {
-                return null;
-              }
-
-              // Trigger condition: Child streak >= 3 OR Fallback (Total solved >= 50 or Completed Climbs >= 3)
-              const currentProf = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
-              const profileStreak = currentProf.userData?.streak ?? 0;
-              const totalSolved = currentProf.userData?.totalProblemsSolved ?? 0;
-              const climbsCount = currentProf.userData?.completedClimbsCount ?? 0;
-
-              const meetsTrigger = profileStreak >= 3 || totalSolved >= 50 || climbsCount >= 3;
-              if (!meetsTrigger) return null;
-
-              return (
-                <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-amber-500/10 border-2 border-purple-300 rounded-2xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-left shadow-xs transition-all animate-fadeIn">
-                  <div className="flex items-start sm:items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-sm shrink-0 mt-0.5 sm:mt-0">
-                      <Star className="w-5 h-5 fill-amber-300 text-amber-300 stroke-[2]" />
-                    </div>
-                    <div>
+                <div className={`rounded-2xl p-4 border-2 shadow-sm text-left relative overflow-hidden transition-all ${
+                  hasFamily
+                    ? 'bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border-amber-300'
+                    : hasSingle
+                    ? 'bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-purple-500/10 border-purple-300'
+                    : 'bg-gradient-to-br from-amber-50 via-white to-orange-50/60 border-amber-200'
+                }`}>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-black text-purple-950 uppercase tracking-wider">Loving Kibo Climb?</span>
-                        <span className="bg-purple-200/80 text-purple-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Parent Feedback</span>
+                        <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
+                          hasFamily
+                            ? 'bg-amber-500 text-white shadow-xs'
+                            : hasSingle
+                            ? 'bg-purple-600 text-white shadow-xs'
+                            : 'bg-amber-100 text-amber-900 border border-amber-300'
+                        }`}>
+                          <Sparkles className="w-3 h-3 fill-current" />
+                          {hasFamily ? 'Kibo Club Family Plan' : hasSingle ? 'Kibo Club Member' : 'Kibo Club Membership'}
+                        </span>
+                        {isSubscribed && (
+                          <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Active
+                          </span>
+                        )}
                       </div>
-                      <p className="text-xs text-slate-700 font-bold mt-0.5 leading-snug">
-                        Your review helps us keep building wholesome, ad-free learning games for kids.
+
+                      <h4 className="text-sm sm:text-base font-black text-slate-900 leading-tight">
+                        {isSubscribed
+                          ? '1.25x Spark Multiplier & Premium Perks Active'
+                          : 'Accelerate learning with 1.25x Sparks & Multi-Profile Access'}
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-snug">
+                        {hasFamily
+                          ? 'All child profiles enjoy 1.25x Sparks on every climb, golden tags, and full multi-profile tracking.'
+                          : hasSingle
+                          ? 'This profile receives 1.25x Sparks and exclusive perks. Upgrade to Family to support up to 6 siblings!'
+                          : 'Unlock 1.25x Sparks on all climbs, up to 6 child profiles, and exclusive golden name tags.'}
                       </p>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                    <button
-                      type="button"
-                      onClick={handleDismissRatingPrompt}
-                      className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-black rounded-xl transition-all cursor-pointer active:scale-95"
-                    >
-                      Maybe Later
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleRequestRating}
-                      className="btn-3d-purple px-3.5 py-1.5 text-xs rounded-xl font-extrabold flex items-center gap-1.5 shadow-sm cursor-pointer"
-                    >
-                      <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                      <span>Rate App</span>
-                    </button>
+                    <div className="shrink-0 flex items-center gap-2 w-full sm:w-auto">
+                      {!isSubscribed ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            setActiveTab('verification');
+                            setActiveHighlight('family_plan');
+                          }}
+                          className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-black rounded-xl shadow-md transform active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 fill-white" />
+                          <span>View Membership Plans</span>
+                        </button>
+                      ) : !hasFamily ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            setActiveTab('verification');
+                            setActiveHighlight('family_plan');
+                          }}
+                          className="w-full sm:w-auto px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white text-xs font-black rounded-xl shadow-sm transform active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                        >
+                          <span>Manage / Upgrade</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            setActiveTab('verification');
+                            setActiveHighlight('family_plan');
+                          }}
+                          className="w-full sm:w-auto px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1 cursor-pointer"
+                        >
+                          <span>Manage Subscription</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -938,12 +1003,12 @@ export default function ParentDashboardModal({
 
               return (
                 <section className="bg-white rounded-2xl p-4 border-2 border-purple-200 text-left space-y-4 shadow-xs">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-purple-600 stroke-[2.5]" />
                       <h2 className="text-sm font-black text-slate-800">Parent Diagnostic Insights ({subjectConfig.name})</h2>
                     </div>
-                    <span className="text-xs font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+                    <span className="text-xs font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 text-center">
                       Adaptive Tracking
                     </span>
                   </div>
@@ -974,14 +1039,14 @@ export default function ParentDashboardModal({
                       {subjectConfig.name} Concept Breakdown (Correct vs. Incorrect vs. Skipped)
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {Object.values(conceptBreakdown).map((concept) => {
+                      {Object.values(conceptBreakdown).map((concept, idx) => {
                         const strand = Object.values(skillStrandBreakdown).find(s => s.id === concept.id) || skillStrandBreakdown[concept.name];
                         const isSkipped = strand?.status === 'Skipped' || (concept.total === 0 && strand?.status === 'Skipped');
                         const calculatedAcc = concept.total > 0 ? Math.round((concept.correct / concept.total) * 100) : (strand?.accuracy || 0);
                         const showAccuracy = strand?.status !== 'Skipped' && (concept.total > 0 || (strand?.accuracy && strand.accuracy > 0));
 
                         return (
-                          <div key={concept.id || concept.name} className="bg-slate-50 rounded-xl border border-slate-200 p-2.5 space-y-1.5">
+                          <div key={concept.id ? `${concept.id}_${concept.name || idx}` : (concept.name || `concept_${idx}`)} className="bg-slate-50 rounded-xl border border-slate-200 p-2.5 space-y-1.5">
                             <div className="flex items-center justify-between text-xs gap-2">
                               <div className="flex items-center gap-1.5 min-w-0">
                                 <span className="text-base shrink-0">{concept.icon}</span>
@@ -1094,7 +1159,7 @@ export default function ParentDashboardModal({
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs font-black bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 rounded-lg truncate max-w-[120px]">
+                  <span className="hidden sm:inline-block text-xs font-black bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 rounded-lg truncate max-w-[120px]">
                     {childName}
                   </span>
                 </div>
@@ -1164,7 +1229,7 @@ export default function ParentDashboardModal({
                     <button
                       type="button"
                       onClick={handleToggleChildReminder}
-                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 shrink-0 ${
                         childReminderEnabled ? 'bg-purple-600' : 'bg-slate-300'
                       }`}
                       title={`Toggle daily reminder for ${childName}`}
@@ -1196,17 +1261,18 @@ export default function ParentDashboardModal({
 
                 {/* Weekly Digest */}
                 <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-xl gap-2">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
                       <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary (Per Profile)</span>
                       <span className="text-xs text-slate-500 font-medium">Individual weekly mastery & topics digest sent per child</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleToggleNotifPref('weeklyDigestEnabled')}
-                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 shrink-0 ${
                         notifPrefs.weeklyDigestEnabled ? 'bg-purple-600' : 'bg-slate-300'
                       }`}
+                      title="Toggle weekly progress summary"
                     >
                       <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
                         notifPrefs.weeklyDigestEnabled ? 'translate-x-5' : 'translate-x-0'
@@ -1374,17 +1440,18 @@ export default function ParentDashboardModal({
 
                 {/* Struggle / Target Fact Alerts */}
                 <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
                       <span className="font-extrabold text-xs text-slate-800 block">Struggle & Review Alerts</span>
                       <span className="text-xs text-slate-500 font-medium">Real-time alerts when accuracy drops or frustration triggers</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleToggleNotifPref('struggleAlertsEnabled')}
-                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 shrink-0 ${
                         notifPrefs.struggleAlertsEnabled ? 'bg-purple-600' : 'bg-slate-300'
                       }`}
+                      title="Toggle struggle & review alerts"
                     >
                       <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
                         notifPrefs.struggleAlertsEnabled ? 'translate-x-5' : 'translate-x-0'
@@ -1419,11 +1486,154 @@ export default function ParentDashboardModal({
               </p>
             </div>
 
+            {/* Family Plan & Subscriptions Card */}
+            {(() => {
+              const hasFam = storageService.hasFamilyPlan();
+              const hasSingle = storageService.hasSinglePlan();
+              const isHighlight = activeHighlight === 'family_plan' || activeHighlight === 'upgrade_plan';
+
+              return (
+                <div
+                  ref={familyPlanSectionRef}
+                  className={`border-2 rounded-2xl p-4 space-y-4 text-left transition-all duration-300 ${
+                    isHighlight
+                      ? 'bg-amber-50/90 border-amber-500 ring-4 ring-amber-400/40 shadow-xl scale-[1.01]'
+                      : 'bg-slate-50 border-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-amber-600">
+                      <Sparkles className="w-5 h-5 stroke-[2.5]" />
+                      <h4 className="font-extrabold text-sm text-slate-800">Kibo Club & Subscriptions</h4>
+                    </div>
+                    <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                      hasFam
+                        ? 'bg-amber-500 text-white shadow-xs'
+                        : hasSingle
+                        ? 'bg-purple-600 text-white shadow-xs'
+                        : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {hasFam ? '👑 Family Plan Active' : hasSingle ? '⭐ Individual Member' : 'Free Starter Tier'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                    Choose or manage your membership below. Memberships unlock permanent Spark multipliers, sibling profiles, and exclusive cosmetic tags.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    {/* Individual Plan Card */}
+                    <div className={`bg-white border-2 rounded-2xl p-3.5 flex flex-col justify-between space-y-3 relative overflow-hidden transition-all ${
+                      hasSingle && !hasFam ? 'border-purple-500 bg-purple-50/30 ring-2 ring-purple-400/30' : 'border-slate-200 hover:border-purple-300'
+                    }`}>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
+                            Single Profile
+                          </span>
+                          <span className="text-sm font-black text-slate-900">$4.99/mo</span>
+                        </div>
+                        <h5 className="font-black text-sm text-slate-900">Kibo Club Individual</h5>
+                        <ul className="space-y-1 text-xs text-slate-600 font-bold">
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>1.25x Spark boost for 1 profile</span>
+                          </li>
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>Golden profile tag & VIP rewards</span>
+                          </li>
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>1 child profile supported</span>
+                          </li>
+                        </ul>
+                      </div>
+
+                      {hasSingle && !hasFam ? (
+                        <div className="w-full py-2 bg-purple-100 text-purple-900 font-black text-xs rounded-xl text-center border border-purple-200 flex items-center justify-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-purple-700" />
+                          <span>Current Active Plan</span>
+                        </div>
+                      ) : hasFam ? (
+                        <div className="w-full py-2 bg-slate-100 text-slate-500 font-bold text-xs rounded-xl text-center">
+                          Included in Family Plan
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            if (onOpenSubscription) {
+                              onOpenSubscription('kibo_club_sub');
+                            }
+                          }}
+                          className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl shadow-sm transform active:scale-95 transition-all cursor-pointer"
+                        >
+                          Select Individual ($4.99/mo)
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Family Plan Card */}
+                    <div className={`bg-white border-2 rounded-2xl p-3.5 flex flex-col justify-between space-y-3 relative overflow-hidden transition-all ${
+                      hasFam ? 'border-amber-500 bg-amber-50/30 ring-2 ring-amber-400/30' : 'border-amber-300 hover:border-amber-400 shadow-xs'
+                    }`}>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase text-amber-900 bg-amber-200 px-2 py-0.5 rounded-full">
+                            ⭐️ Best For Families
+                          </span>
+                          <span className="text-sm font-black text-amber-950">$7.99/mo</span>
+                        </div>
+                        <h5 className="font-black text-sm text-slate-900">Kibo Club Family</h5>
+                        <ul className="space-y-1 text-xs text-slate-600 font-bold">
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>Up to 6 sibling profiles</span>
+                          </li>
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>1.25x Spark boost for ALL children</span>
+                          </li>
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>Golden tags for everyone</span>
+                          </li>
+                        </ul>
+                      </div>
+
+                      {hasFam ? (
+                        <div className="w-full py-2 bg-amber-100 text-amber-900 font-black text-xs rounded-xl text-center border border-amber-200 flex items-center justify-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-amber-700" />
+                          <span>Current Active Plan</span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            if (onOpenSubscription) {
+                              onOpenSubscription('kibo_club_family');
+                            }
+                          }}
+                          className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs rounded-xl shadow-md transform active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 fill-white" />
+                          <span>{hasSingle ? 'Upgrade to Family ($7.99/mo)' : 'Select Family ($7.99/mo)'}</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* In-App Purchases & Real-Money Security */}
             <div
               ref={realMoneySectionRef}
               className={`border-2 rounded-2xl p-3.5 space-y-3 text-left transition-all duration-300 ${
-                highlightSection === 'real_money_purchases'
+                activeHighlight === 'real_money_purchases'
                   ? 'bg-purple-50/90 border-purple-500 ring-4 ring-purple-400/40 shadow-xl scale-[1.01]'
                   : 'bg-slate-50 border-slate-200'
               }`}
@@ -1433,7 +1643,7 @@ export default function ParentDashboardModal({
                   <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
                   <h4 className="font-extrabold text-sm text-slate-800">In-App Purchase Verification</h4>
                 </div>
-                {highlightSection === 'real_money_purchases' && (
+                {activeHighlight === 'real_money_purchases' && (
                   <span className="bg-purple-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse shadow-sm">
                     Enable Here
                   </span>
@@ -1444,7 +1654,7 @@ export default function ParentDashboardModal({
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-xs text-slate-800 block">Allow Real-Money Purchases</span>
-                    <span className="text-xs text-slate-500 font-medium">Allow kids to buy Sparks with real money</span>
+                    <span className="text-xs text-slate-500 font-medium">Allow kids to buy Sparks and items with real money</span>
                   </div>
                   <button
                     type="button"
@@ -1613,6 +1823,31 @@ export default function ParentDashboardModal({
                 </div>
               </div>
             </div>
+
+            {/* App Rating & Feedback Card */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
+              <div className="flex items-center gap-2 text-purple-700">
+                <Star className="w-5 h-5 stroke-[2.5]" />
+                <h4 className="font-extrabold text-sm text-slate-800">Support & Feedback</h4>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <span className="text-xs font-black text-slate-800 block">Loving Kibo Climb?</span>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Your rating helps us keep building wholesome, ad-free learning games for kids.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRequestRating}
+                  className="btn-3d-purple px-3.5 py-1.5 text-xs rounded-xl font-extrabold flex items-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                  <span>{appRatingStatus?.hasRated ? 'Rate Again' : 'Rate App'}</span>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1627,6 +1862,17 @@ export default function ParentDashboardModal({
           setShowAccountLinkModal(false);
           setLiveUserData(storageService.getUserData(activeSubject));
           if (onAccountLinked) onAccountLinked(user, newSparks);
+        }}
+      />
+
+      {/* Family Plan Upgrade Modal */}
+      <FamilyPlanUpgradeModal
+        isOpen={showFamilyUpgradeModal}
+        onClose={() => setShowFamilyUpgradeModal(false)}
+        onOpenParentZone={(targetTab = 'verification', targetHighlight = 'family_plan') => {
+          setShowFamilyUpgradeModal(false);
+          setActiveTab(targetTab);
+          setActiveHighlight(targetHighlight);
         }}
       />
     </div>

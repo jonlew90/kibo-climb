@@ -1090,18 +1090,8 @@ export default function WorkshopModal({
                   {/* Individual Plan */}
                   <div
                     onClick={() => {
-                      if (allowRealMoneyPurchases) {
-                        onBuySparksPackage({
-                          id: 'kibo_club_sub',
-                          name: 'Kibo Club Individual',
-                          realMoneyPrice: '$4.99/mo',
-                          price: '$4.99/mo',
-                          isSubscription: true,
-                          isFamilyPlan: false,
-                          description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!'
-                        });
-                      } else if (onOpenParentZone) {
-                        onOpenParentZone('verification', 'real_money_purchases');
+                      if (onOpenParentZone) {
+                        onOpenParentZone('verification', 'family_plan');
                       }
                     }}
                     className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white rounded-2xl p-3.5 sm:p-4 shadow-sm hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex flex-col justify-between space-y-2.5"
@@ -1122,26 +1112,16 @@ export default function WorkshopModal({
                       type="button"
                       className="w-full bg-white text-indigo-950 font-black text-xs py-2 rounded-xl shadow-xs flex items-center justify-center gap-1"
                     >
-                      {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-indigo-900" />}
-                      <span>{allowRealMoneyPurchases ? 'Subscribe Now' : 'Enable in Parent Zone'}</span>
+                      <Lock className="w-3 h-3 text-indigo-900" />
+                      <span>Choose Plan in Parent Zone</span>
                     </button>
                   </div>
 
                   {/* Family Plan */}
                   <div
                     onClick={() => {
-                      if (allowRealMoneyPurchases) {
-                        onBuySparksPackage({
-                          id: 'kibo_club_family',
-                          name: 'Kibo Club Family',
-                          realMoneyPrice: '$7.99/mo',
-                          price: '$7.99/mo',
-                          isSubscription: true,
-                          isFamilyPlan: true,
-                          description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
-                        });
-                      } else if (onOpenParentZone) {
-                        onOpenParentZone('verification', 'real_money_purchases');
+                      if (onOpenParentZone) {
+                        onOpenParentZone('verification', 'family_plan');
                       }
                     }}
                     className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-2xl p-3.5 sm:p-4 shadow-sm hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex flex-col justify-between space-y-2.5"
@@ -1162,8 +1142,8 @@ export default function WorkshopModal({
                       type="button"
                       className="w-full bg-white text-orange-950 font-black text-xs py-2 rounded-xl shadow-xs flex items-center justify-center gap-1"
                     >
-                      {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-orange-900" />}
-                      <span>{allowRealMoneyPurchases ? 'Subscribe Family' : 'Enable in Parent Zone'}</span>
+                      <Lock className="w-3 h-3 text-orange-900" />
+                      <span>Choose Plan in Parent Zone</span>
                     </button>
                   </div>
                 </div>
