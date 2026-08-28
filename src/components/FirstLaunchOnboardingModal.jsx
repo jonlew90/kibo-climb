@@ -529,9 +529,14 @@ export default function FirstLaunchOnboardingModal({
             </button>
           )}
 
-          <span className="text-xs sm:text-sm font-extrabold text-slate-500 block text-center">
-            Kibo Climb • Multi-Subject Daily Climbs • Math, Words & World
-          </span>
+          <div className="text-center space-y-0.5">
+            <span className="text-xs sm:text-sm font-extrabold text-slate-500 block">
+              Kibo Climb • Multi-Subject Daily Climbs • Math, Words & World
+            </span>
+            <span className="text-[10px] sm:text-xs font-bold text-slate-400 block">
+              💡 Fun fact: "Kibo" (KEE-boh) is the highest peak of Mount Kilimanjaro!
+            </span>
+          </div>
         </div>
       </div>
     </div>
