@@ -1885,6 +1885,9 @@ export function getActiveSeasonalEvents(currentDate = new Date()) {
   });
 }
 
+let cachedHolidaySaleKey = null;
+let cachedHolidaySaleEvent = null;
+
 /**
  * Returns the primary active seasonal/holiday event for store sales & banner styling, if any.
  * Prioritizes active holidays (shorter special events) over broad quarterly seasons.
@@ -1892,8 +1895,18 @@ export function getActiveSeasonalEvents(currentDate = new Date()) {
  * @returns {object|null}
  */
 export function getActiveHolidayOrSeasonalSaleEvent(currentDate = new Date()) {
+  const d = currentDate instanceof Date ? currentDate : new Date(currentDate);
+  const cacheKey = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  if (cachedHolidaySaleKey === cacheKey) {
+    return cachedHolidaySaleEvent;
+  }
+
   const activeEvents = getActiveSeasonalEvents(currentDate);
-  if (activeEvents.length === 0) return null;
+  if (activeEvents.length === 0) {
+    cachedHolidaySaleKey = cacheKey;
+    cachedHolidaySaleEvent = null;
+    return null;
+  }
 
   // Check if any active event is a specific holiday event (e.g. holiday_season, halloween, 4th of july, etc.)
   const holidayEvent = activeEvents.find((event) => {
@@ -1901,10 +1914,10 @@ export function getActiveHolidayOrSeasonalSaleEvent(currentDate = new Date()) {
     return sampleItem?.seasonType === 'holiday';
   });
 
-  if (holidayEvent) return holidayEvent;
-
-  // Otherwise return the active general season (e.g., Summer, Autumn, etc.)
-  return activeEvents[0];
+  const res = holidayEvent || activeEvents[0] || null;
+  cachedHolidaySaleKey = cacheKey;
+  cachedHolidaySaleEvent = res;
+  return res;
 }
 
 /**
@@ -1930,6 +1943,9 @@ function getWeekNumber(d) {
   return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
 }
 
+let cachedSalesKey = null;
+let cachedSalesMap = null;
+
 /**
  * Generates the active sales for the current date.
  * Weekly items get 1 item. Daily items get 2 items.
@@ -1942,6 +1958,11 @@ export function getActiveSales(currentDate = new Date()) {
   const month = d.getMonth() + 1;
   const day = d.getDate();
   const week = getWeekNumber(d);
+  const cacheKey = `${year}-${month}-${day}-${week}`;
+
+  if (cachedSalesKey === cacheKey && cachedSalesMap) {
+    return cachedSalesMap;
+  }
 
   const salesMap = new Map();
   const eligibleItems = WORKSHOP_ITEMS.filter(i => !i.isPremium && i.category !== 'seasonal' && i.category !== 'promo' && i.cost > 0);
@@ -1987,6 +2008,8 @@ export function getActiveSales(currentDate = new Date()) {
     salesMap.set(eligibleItems[idx].id, { type: 'daily', percent: dailyDiscount });
   }
 
+  cachedSalesKey = cacheKey;
+  cachedSalesMap = salesMap;
   return salesMap;
 }
 

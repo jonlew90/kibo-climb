@@ -59,19 +59,20 @@ describe('Shop & Closet Redesign Unit Tests', () => {
     }
   });
 
-  it('should sort equipped items first, then unlocked items, then by rarity and price', () => {
+  it('should sort unowned items first in shop mode, and equipped items first in closet mode', () => {
     const mockItems = [
       { id: 'item_a', name: 'Item A', cost: 100, rarity: 'common' },
       { id: 'item_b', name: 'Item B', cost: 50, rarity: 'epic' },
       { id: 'item_c', name: 'Item C', cost: 200, rarity: 'legendary' }
     ];
 
-    // Case 1: item_b is equipped -> should come first
-    const sorted1 = sortShopItems(mockItems, 500, ['item_b', 'item_c'], ['item_b']);
-    expect(sorted1[0].id).toBe('item_b');
+    // In Shop Mode: unowned items (item_a) should appear BEFORE owned items (item_c)
+    const shopSorted = sortShopItems(mockItems, 500, ['item_c'], [], new Date(), 'shop');
+    expect(shopSorted[0].id).not.toBe('item_c'); // unowned first
+    expect(shopSorted[shopSorted.length - 1].id).toBe('item_c'); // owned demoted to bottom
 
-    // Case 2: item_c is unlocked (not equipped) -> should come before item_a (unowned)
-    const sorted2 = sortShopItems(mockItems, 500, ['item_c'], []);
-    expect(sorted2[0].id).toBe('item_c');
+    // In Closet Mode: equipped items (item_b) should appear FIRST
+    const closetSorted = sortShopItems(mockItems, 500, ['item_b', 'item_c'], ['item_b'], new Date(), 'closet');
+    expect(closetSorted[0].id).toBe('item_b');
   });
 });
