@@ -252,7 +252,7 @@ describe('Modal Outside Click Behavior', () => {
       // Find backdrop and modal content for upsell modal
       const backdrop = container.querySelector('.bg-slate-900\\/60');
       expect(backdrop).not.toBeNull();
-      expect(backdrop.textContent).toContain('Unlock Family Plan');
+      expect(backdrop.textContent).toContain('Kibo Club');
 
       const modalContent = backdrop.querySelector('.rounded-3xl');
       expect(modalContent).not.toBeNull();

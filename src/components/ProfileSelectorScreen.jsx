@@ -444,46 +444,61 @@ export default function ProfileSelectorScreen({
           </div>
 
           {/* Kibo Club / Family Plan Teaser Banner */}
-          <div className="w-full mt-2">
+          <div className="w-full mt-4 max-w-2xl mx-auto">
             {hasFamilyPlan ? (
-              <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-300/80 rounded-2xl px-3.5 py-2 flex items-center justify-between text-left shadow-2xs">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">✨</span>
+              <div className="bg-gradient-to-r from-purple-900/10 via-indigo-900/10 to-amber-500/10 border border-amber-300/80 rounded-2xl px-4 py-3 flex items-center justify-between text-left shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4 text-amber-600 fill-amber-500" />
+                  </div>
                   <div>
-                    <span className="text-[11px] font-black text-amber-900 block leading-tight">Kibo Club Family Plan Active</span>
-                    <span className="text-[10px] text-amber-700 font-bold">1.25x Sparks & Multi-profile access unlocked for all climbers</span>
+                    <span className="text-xs font-black text-slate-800 block leading-tight">Kibo Club Family Plan Active</span>
+                    <span className="text-[11px] text-slate-600 font-bold">1.25x Sparks & Multi-profile access unlocked for all climbers</span>
                   </div>
                 </div>
-                <span className="text-[10px] font-black text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="text-[10px] font-black text-amber-900 bg-amber-200/90 border border-amber-300 px-2.5 py-1 rounded-full uppercase tracking-wider shadow-2xs shrink-0">
                   6 Profiles
                 </span>
               </div>
             ) : (
-              <button
-                type="button"
+              <div
                 onClick={() => {
                   soundFx.playKeyTap();
                   setShowUpsell(true);
                 }}
-                className="w-full bg-gradient-to-r from-amber-400/20 via-orange-400/20 to-amber-400/20 hover:from-amber-400/30 hover:to-orange-400/30 border border-amber-300 rounded-2xl px-3.5 py-2 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
+                className="bg-gradient-to-r from-purple-700 via-indigo-700 to-amber-600 text-white rounded-2xl p-3 sm:p-4 shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer relative overflow-hidden group border-2 border-amber-300/40"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform">
-                    <Sparkles className="w-3.5 h-3.5 fill-white" />
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl group-hover:scale-110 transition-transform duration-500 pointer-events-none" />
+
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 fill-amber-950" /> Kibo Club
+                      </span>
+                      <span className="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                        {hasSinglePlan ? 'Upgrade to Family Plan' : 'Family Plan'}
+                      </span>
+                    </div>
+                    <h3 className="text-xs sm:text-sm font-black tracking-tight text-white drop-shadow-xs">
+                      {hasSinglePlan ? 'Upgrade to Multi-Profile Family Access' : 'Unlock Kibo Club for the Whole Family'}
+                    </h3>
+                    <p className="text-[11px] text-indigo-100 font-medium leading-snug">
+                      Add up to 6 child profiles + 1.25x Sparks multiplier for everyone!
+                    </p>
                   </div>
-                  <div>
-                    <span className="text-[11px] font-black text-amber-950 block leading-tight group-hover:text-amber-800 transition-colors">
-                      {hasSinglePlan ? 'Upgrade to Family Plan' : 'Unlock Kibo Club for the Whole Family'}
-                    </span>
-                    <span className="text-[10px] text-slate-600 font-bold">
-                      Add up to 6 sibling profiles + 1.25x Sparks for everyone
-                    </span>
+
+                  <div className="shrink-0 flex items-center">
+                    <button
+                      type="button"
+                      className="w-full sm:w-auto bg-white text-indigo-950 group-hover:bg-amber-50 font-black text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center justify-center gap-1 transition-all group-hover:shadow-md cursor-pointer"
+                    >
+                      <span>{hasSinglePlan ? 'Upgrade' : 'Learn More'}</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-indigo-900" />
+                    </button>
                   </div>
                 </div>
-                <span className="text-[10px] font-black text-amber-900 bg-amber-300 hover:bg-amber-400 px-2.5 py-1 rounded-xl shadow-2xs shrink-0 transition-transform group-hover:scale-105">
-                  Learn More →
-                </span>
-              </button>
+              </div>
             )}
           </div>
         </div>
