@@ -520,7 +520,7 @@ class QuestService {
 
   getTimeUntilDailyReset() {
     const now = new Date();
-    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
     const diffMs = tomorrow - now;
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
     const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
@@ -531,10 +531,14 @@ class QuestService {
     const now = new Date();
     const day = now.getDay(); // 0 is Sunday, 1 is Monday...
     const daysUntilNextMonday = ((7 - day + 1) % 7) || 7;
-    const nextMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilNextMonday);
+    const nextMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilNextMonday, 0, 0, 0, 0);
     const diffMs = nextMonday - now;
     const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    if (days === 0) {
+      return `${hours}h ${mins}m`;
+    }
     return `${days}d ${hours}h`;
   }
 }

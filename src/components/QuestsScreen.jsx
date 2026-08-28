@@ -268,20 +268,30 @@ export default function QuestsScreen({
             </div>
 
             {/* Timers Panel */}
-            <div className="flex flex-row sm:flex-col gap-2 bg-black/20 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 border border-white/10 shrink-0">
+            <div className="flex flex-row sm:flex-col gap-2 bg-black/35 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 border border-white/20 shrink-0 shadow-xs">
               <div className="flex items-center gap-2 text-xs">
-                <Clock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                <div className="w-6 h-6 rounded-lg bg-amber-400/20 border border-amber-300/40 flex items-center justify-center shrink-0">
+                  <Clock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                </div>
                 <div>
-                  <span className="text-[10px] text-purple-200 block leading-tight">Daily Reset</span>
-                  <span className="font-black text-white">{dailyCountdown}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-purple-200 font-bold block leading-tight">Daily Quests</span>
+                    <span className="text-[9px] text-amber-300/90 font-semibold">(Midnight)</span>
+                  </div>
+                  <span className="font-black text-white text-xs sm:text-sm tracking-tight">{dailyCountdown}</span>
                 </div>
               </div>
-              <div className="h-full w-px bg-white/10 sm:w-full sm:h-px my-0.5" />
+              <div className="h-full w-px bg-white/15 sm:w-full sm:h-px my-0.5" />
               <div className="flex items-center gap-2 text-xs">
-                <Mountain className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                <div className="w-6 h-6 rounded-lg bg-emerald-400/20 border border-emerald-300/40 flex items-center justify-center shrink-0">
+                  <Mountain className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                </div>
                 <div>
-                  <span className="text-[10px] text-purple-200 block leading-tight">Weekly Reset</span>
-                  <span className="font-black text-white">{weeklyCountdown}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-purple-200 font-bold block leading-tight">Weekly & Team</span>
+                    <span className="text-[9px] text-emerald-300/90 font-semibold">(Monday)</span>
+                  </div>
+                  <span className="font-black text-white text-xs sm:text-sm tracking-tight">{weeklyCountdown}</span>
                 </div>
               </div>
             </div>
@@ -396,7 +406,7 @@ export default function QuestsScreen({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar pb-2 mb-4">
+        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar pb-2 mb-3">
           {[
             {
               id: 'daily',
@@ -462,6 +472,107 @@ export default function QuestsScreen({
           })}
         </div>
 
+        {/* Active Tab Schedule & Reset Banner */}
+        {activeTab === 'daily' && (
+          <div className="bg-gradient-to-r from-amber-500/10 via-sky-500/10 to-purple-500/10 border-2 border-amber-200/90 rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs mb-1">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-100 border border-amber-300 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs">
+                <Zap className="w-4 h-4 stroke-[2.5]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-black text-slate-800">Daily Expeditions</span>
+                  <span className="px-1.5 py-0.2 rounded-md bg-amber-200/80 text-amber-950 text-[10px] font-black uppercase tracking-wide">
+                    Resets Daily at Midnight
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium leading-tight mt-0.5">
+                  Complete 3 fresh solo objectives every day to earn elevation XP and Sparks!
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-amber-200 shadow-2xs shrink-0 text-amber-950 font-black text-xs self-start sm:self-auto">
+              <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+              <span>Resets in: {dailyCountdown}</span>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'weekly' && (
+          <div className="bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-sky-500/10 border-2 border-purple-200/90 rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs mb-1">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-purple-100 border border-purple-300 text-purple-700 flex items-center justify-center shrink-0 shadow-2xs">
+                <Mountain className="w-4 h-4 stroke-[2.5]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-black text-slate-800">Weekly Ascents</span>
+                  <span className="px-1.5 py-0.2 rounded-md bg-purple-200/80 text-purple-950 text-[10px] font-black uppercase tracking-wide">
+                    Resets Every Monday
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium leading-tight mt-0.5">
+                  High-reward weekly milestones! Complete all 3 before next Monday's reset for big rewards.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-purple-200 shadow-2xs shrink-0 text-purple-950 font-black text-xs self-start sm:self-auto">
+              <Clock className="w-3.5 h-3.5 text-purple-600 animate-pulse" />
+              <span>Resets in: {weeklyCountdown}</span>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'team2' && (
+          <div className="bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-teal-500/10 border-2 border-sky-200/90 rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs mb-1">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-sky-100 border border-sky-300 text-sky-700 flex items-center justify-center shrink-0 shadow-2xs">
+                <Users className="w-4 h-4 stroke-[2.5]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-black text-slate-800">2-Person Tandem Quests</span>
+                  <span className="px-1.5 py-0.2 rounded-md bg-sky-200/80 text-sky-950 text-[10px] font-black uppercase tracking-wide">
+                    Weekly Rotation • Resets Mondays
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium leading-tight mt-0.5">
+                  New 2-Player Co-op Quests rotate every Monday! Climb with friends or AI companions. Switch partners anytime.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-sky-200 shadow-2xs shrink-0 text-sky-950 font-black text-xs self-start sm:self-auto">
+              <Clock className="w-3.5 h-3.5 text-sky-600 animate-pulse" />
+              <span>New Quests in: {weeklyCountdown}</span>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'team3' && (
+          <div className="bg-gradient-to-r from-teal-500/10 via-emerald-500/10 to-purple-500/10 border-2 border-teal-200/90 rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs mb-1">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-teal-100 border border-teal-300 text-teal-700 flex items-center justify-center shrink-0 shadow-2xs">
+                <Compass className="w-4 h-4 stroke-[2.5]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-black text-slate-800">3-Person Squad Quests</span>
+                  <span className="px-1.5 py-0.2 rounded-md bg-teal-200/80 text-teal-950 text-[10px] font-black uppercase tracking-wide">
+                    Weekly Rotation • Resets Mondays
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium leading-tight mt-0.5">
+                  New 3-Player Squad Quests rotate every Monday! Work together across all subjects for massive rewards.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-teal-200 shadow-2xs shrink-0 text-teal-950 font-black text-xs self-start sm:self-auto">
+              <Clock className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
+              <span>New Quests in: {weeklyCountdown}</span>
+            </div>
+          </div>
+        )}
+
         {/* Quest List */}
         <div className="flex flex-col gap-3">
           {filteredQuests.map((quest) => {
@@ -521,6 +632,24 @@ export default function QuestsScreen({
                             Streak
                           </span>
                         )}
+
+                        {/* Reset / Rotation Timer Pill */}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                          quest.type === 'daily'
+                            ? 'bg-amber-50 text-amber-800 border border-amber-200/80'
+                            : (isTeam2 || isTeam3)
+                            ? 'bg-indigo-50 text-indigo-800 border border-indigo-200/80'
+                            : 'bg-purple-50 text-purple-800 border border-purple-200/80'
+                        }`}>
+                          <Clock className="w-2.5 h-2.5" />
+                          <span>
+                            {quest.type === 'daily'
+                              ? `Daily • ${dailyCountdown}`
+                              : (isTeam2 || isTeam3)
+                              ? `Weekly Co-op • ${weeklyCountdown}`
+                              : `Weekly • ${weeklyCountdown}`}
+                          </span>
+                        </span>
                       </div>
 
                       <h3 className="text-base font-black text-slate-900 leading-snug">
@@ -986,10 +1115,15 @@ export default function QuestsScreen({
               })}
             </div>
 
+            <div className="mt-3 px-3 py-2 bg-indigo-50/70 border border-indigo-100 rounded-xl text-[11px] text-indigo-900 flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+              <span>Team quests rotate every Monday ({weeklyCountdown} remaining in current week). You can change teammates anytime!</span>
+            </div>
+
             <button
               type="button"
               onClick={() => setShowTeammatePicker(null)}
-              className="mt-4 w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+              className="mt-3 w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
             >
               Cancel
             </button>

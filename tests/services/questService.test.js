@@ -181,5 +181,16 @@ describe('Quest Service', () => {
     expect(hasAny).toBe(true);
     expect(hasSubjectSpecific).toBe(true);
   });
+
+  it('calculates valid string countdowns for daily and weekly resets', () => {
+    const dailyStr = questService.getTimeUntilDailyReset();
+    const weeklyStr = questService.getTimeUntilWeeklyReset();
+
+    expect(typeof dailyStr).toBe('string');
+    expect(dailyStr).toMatch(/\d+h \d+m/);
+
+    expect(typeof weeklyStr).toBe('string');
+    expect(weeklyStr).toMatch(/(\d+d \d+h|\d+h \d+m)/);
+  });
 });
 

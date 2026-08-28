@@ -11,6 +11,7 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
     streak = 0,
     sparks = 0,
     purchasedItemsCount = 0,
+    shopPurchasesCount = 0,
     purchasedRarities = [],
     hasBoughtGemsWithRealMoney = false,
     hasSetPersonalRecord = false,
@@ -512,12 +513,24 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
       // ==========================================
       // 5. Shop Purchases & Rarities
       // ==========================================
-      case 'shop_buyer_1':
-        unlocked = purchasedItemsCount >= 1;
+      case 'shop_buyer_1': {
+        const totalPurchases = Math.max(Number(purchasedItemsCount) || 0, Number(shopPurchasesCount) || 0);
+        unlocked =
+          totalPurchases >= 1 ||
+          (Array.isArray(purchasedRarities) && purchasedRarities.length > 0) ||
+          purchasedRarities.includes('rare') ||
+          purchasedRarities.includes('epic') ||
+          purchasedRarities.includes('legendary') ||
+          currentUnlocked.has('rare_collector') ||
+          currentUnlocked.has('epic_collector') ||
+          currentUnlocked.has('legendary_collector');
         break;
-      case 'shop_buyer_5':
-        unlocked = purchasedItemsCount >= 5;
+      }
+      case 'shop_buyer_5': {
+        const totalPurchases = Math.max(Number(purchasedItemsCount) || 0, Number(shopPurchasesCount) || 0);
+        unlocked = totalPurchases >= 5;
         break;
+      }
       case 'rare_collector':
         unlocked = purchasedRarities.includes('rare');
         break;

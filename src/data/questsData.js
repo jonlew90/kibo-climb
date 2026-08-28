@@ -32,6 +32,17 @@ export const DAILY_QUEST_POOL = [
     reward: { sparks: 55, altitude: 110 }
   },
   {
+    id: 'd_solve_20',
+    title: 'Peak Pioneer',
+    description: 'Solve 20 problems across any subject',
+    icon: 'Mountain',
+    category: 'daily',
+    subject: 'any',
+    target: 20,
+    unit: 'problems',
+    reward: { sparks: 70, altitude: 140 }
+  },
+  {
     id: 'd_math_8',
     title: 'Peak Number Cruncher',
     description: 'Solve 8 Math problems correctly',
@@ -41,6 +52,17 @@ export const DAILY_QUEST_POOL = [
     target: 8,
     unit: 'correct',
     reward: { sparks: 50, altitude: 100 }
+  },
+  {
+    id: 'd_math_12',
+    title: 'Arithmetic Ascender',
+    description: 'Solve 12 Math problems correctly',
+    icon: 'Calculator',
+    category: 'daily',
+    subject: 'math',
+    target: 12,
+    unit: 'correct',
+    reward: { sparks: 65, altitude: 130 }
   },
   {
     id: 'd_words_8',
@@ -54,6 +76,17 @@ export const DAILY_QUEST_POOL = [
     reward: { sparks: 50, altitude: 100 }
   },
   {
+    id: 'd_words_12',
+    title: 'Lexicon Climber',
+    description: 'Solve 12 Words problems correctly',
+    icon: 'BookOpen',
+    category: 'daily',
+    subject: 'words',
+    target: 12,
+    unit: 'correct',
+    reward: { sparks: 65, altitude: 130 }
+  },
+  {
     id: 'd_world_8',
     title: 'Global Explorer',
     description: 'Identify 8 World locations or flags correctly',
@@ -63,6 +96,17 @@ export const DAILY_QUEST_POOL = [
     target: 8,
     unit: 'correct',
     reward: { sparks: 50, altitude: 100 }
+  },
+  {
+    id: 'd_world_12',
+    title: 'Atlas Pathfinder',
+    description: 'Identify 12 World flags or countries correctly',
+    icon: 'Globe',
+    category: 'daily',
+    subject: 'world',
+    target: 12,
+    unit: 'correct',
+    reward: { sparks: 65, altitude: 130 }
   },
   {
     id: 'd_coding_8',
@@ -76,15 +120,37 @@ export const DAILY_QUEST_POOL = [
     reward: { sparks: 50, altitude: 100 }
   },
   {
-    id: 'd_streak_5',
-    title: 'Precision Climber',
-    description: 'Achieve a 5-question correct answer streak',
+    id: 'd_coding_12',
+    title: 'Logic Architect',
+    description: 'Solve 12 Coding logic challenges correctly',
+    icon: 'Code',
+    category: 'daily',
+    subject: 'coding',
+    target: 12,
+    unit: 'correct',
+    reward: { sparks: 65, altitude: 130 }
+  },
+  {
+    id: 'd_streak_4',
+    title: 'Steady Foothold',
+    description: 'Achieve a 4-question correct answer streak',
     icon: 'Flame',
     category: 'daily',
     subject: 'any',
-    target: 5,
+    target: 4,
     unit: 'streak',
-    reward: { sparks: 45, altitude: 90 }
+    reward: { sparks: 35, altitude: 70 }
+  },
+  {
+    id: 'd_streak_6',
+    title: 'Precision Climber',
+    description: 'Achieve a 6-question correct answer streak',
+    icon: 'Flame',
+    category: 'daily',
+    subject: 'any',
+    target: 6,
+    unit: 'streak',
+    reward: { sparks: 50, altitude: 100 }
   },
   {
     id: 'd_streak_8',
@@ -98,15 +164,15 @@ export const DAILY_QUEST_POOL = [
     reward: { sparks: 60, altitude: 120 }
   },
   {
-    id: 'd_speed_10',
-    title: 'Rapid Ascent',
-    description: 'Solve 10 problems quickly across any subject',
-    icon: 'Zap',
+    id: 'd_streak_10',
+    title: 'Summit Flow',
+    description: 'Achieve a 10-question correct answer streak',
+    icon: 'Flame',
     category: 'daily',
     subject: 'any',
     target: 10,
-    unit: 'problems',
-    reward: { sparks: 45, altitude: 95 }
+    unit: 'streak',
+    reward: { sparks: 75, altitude: 150 }
   },
   {
     id: 'd_dual_subject',
@@ -118,6 +184,72 @@ export const DAILY_QUEST_POOL = [
     target: 12,
     unit: 'problems',
     reward: { sparks: 50, altitude: 105 }
+  },
+  {
+    id: 'd_tri_subject',
+    title: 'Triple Ridge Master',
+    description: 'Solve 18 problems across different subjects',
+    icon: 'Compass',
+    category: 'daily',
+    subject: 'any',
+    target: 18,
+    unit: 'problems',
+    reward: { sparks: 65, altitude: 130 }
+  },
+  {
+    id: 'd_rapid_burst',
+    title: 'Rapid Ascent Sprint',
+    description: 'Solve 10 problems quickly across any subject',
+    icon: 'Zap',
+    category: 'daily',
+    subject: 'any',
+    target: 10,
+    unit: 'problems',
+    reward: { sparks: 45, altitude: 95 }
+  },
+  {
+    id: 'd_math_quick',
+    title: 'Quick Calculate',
+    description: 'Solve 6 Math problems correctly',
+    icon: 'Calculator',
+    category: 'daily',
+    subject: 'math',
+    target: 6,
+    unit: 'correct',
+    reward: { sparks: 40, altitude: 80 }
+  },
+  {
+    id: 'd_words_quick',
+    title: 'Quick Lexicon',
+    description: 'Solve 6 Words problems correctly',
+    icon: 'BookOpen',
+    category: 'daily',
+    subject: 'words',
+    target: 6,
+    unit: 'correct',
+    reward: { sparks: 40, altitude: 80 }
+  },
+  {
+    id: 'd_world_quick',
+    title: 'Quick Atlas',
+    description: 'Identify 6 World locations or flags correctly',
+    icon: 'Globe',
+    category: 'daily',
+    subject: 'world',
+    target: 6,
+    unit: 'correct',
+    reward: { sparks: 40, altitude: 80 }
+  },
+  {
+    id: 'd_coding_quick',
+    title: 'Quick Logic',
+    description: 'Solve 6 Coding challenges correctly',
+    icon: 'Code',
+    category: 'daily',
+    subject: 'coding',
+    target: 6,
+    unit: 'correct',
+    reward: { sparks: 40, altitude: 80 }
   }
 ];
 
@@ -145,6 +277,17 @@ export const WEEKLY_QUEST_POOL = [
     reward: { sparks: 300, altitude: 600, shields: 1 }
   },
   {
+    id: 'w_total_100',
+    title: 'Everest Ridge Push',
+    description: 'Solve 100 total problems this week',
+    icon: 'Mountain',
+    category: 'weekly',
+    subject: 'any',
+    target: 100,
+    unit: 'problems',
+    reward: { sparks: 380, altitude: 760, shields: 2 }
+  },
+  {
     id: 'w_all_subjects',
     title: 'Polymath Mountaineer',
     description: 'Solve 40 problems across multiple disciplines',
@@ -154,6 +297,17 @@ export const WEEKLY_QUEST_POOL = [
     target: 40,
     unit: 'problems',
     reward: { sparks: 220, altitude: 440, shields: 1 }
+  },
+  {
+    id: 'w_quad_master',
+    title: 'Four Peaks Master',
+    description: 'Solve 60 problems across all 4 subjects this week',
+    icon: 'Compass',
+    category: 'weekly',
+    subject: 'any',
+    target: 60,
+    unit: 'problems',
+    reward: { sparks: 280, altitude: 560, shields: 1 }
   },
   {
     id: 'w_math_master',
@@ -167,6 +321,17 @@ export const WEEKLY_QUEST_POOL = [
     reward: { sparks: 180, altitude: 380, shields: 1 }
   },
   {
+    id: 'w_math_grandmaster',
+    title: 'Grandmaster Number Cruncher',
+    description: 'Solve 45 Math problems correctly this week',
+    icon: 'Calculator',
+    category: 'weekly',
+    subject: 'math',
+    target: 45,
+    unit: 'correct',
+    reward: { sparks: 260, altitude: 520, shields: 1 }
+  },
+  {
     id: 'w_words_master',
     title: 'Lexicon Voyager',
     description: 'Solve 30 Words problems correctly',
@@ -176,6 +341,17 @@ export const WEEKLY_QUEST_POOL = [
     target: 30,
     unit: 'correct',
     reward: { sparks: 180, altitude: 380, shields: 1 }
+  },
+  {
+    id: 'w_words_grandmaster',
+    title: 'Master of Vocabulary',
+    description: 'Solve 45 Words problems correctly this week',
+    icon: 'BookOpen',
+    category: 'weekly',
+    subject: 'words',
+    target: 45,
+    unit: 'correct',
+    reward: { sparks: 260, altitude: 520, shields: 1 }
   },
   {
     id: 'w_world_master',
@@ -189,6 +365,17 @@ export const WEEKLY_QUEST_POOL = [
     reward: { sparks: 180, altitude: 380, shields: 1 }
   },
   {
+    id: 'w_world_grandmaster',
+    title: 'Continental Pathfinder',
+    description: 'Solve 45 World geography questions correctly',
+    icon: 'Globe',
+    category: 'weekly',
+    subject: 'world',
+    target: 45,
+    unit: 'correct',
+    reward: { sparks: 260, altitude: 520, shields: 1 }
+  },
+  {
     id: 'w_coding_master',
     title: 'Logic Trailblazer',
     description: 'Solve 30 Coding problems correctly',
@@ -198,6 +385,17 @@ export const WEEKLY_QUEST_POOL = [
     target: 30,
     unit: 'correct',
     reward: { sparks: 180, altitude: 380, shields: 1 }
+  },
+  {
+    id: 'w_coding_grandmaster',
+    title: 'Algorithm Vanguard',
+    description: 'Solve 45 Coding logic challenges correctly',
+    icon: 'Code',
+    category: 'weekly',
+    subject: 'coding',
+    target: 45,
+    unit: 'correct',
+    reward: { sparks: 260, altitude: 520, shields: 1 }
   },
   {
     id: 'w_accuracy_high',
@@ -220,6 +418,17 @@ export const WEEKLY_QUEST_POOL = [
     target: 18,
     unit: 'streak',
     reward: { sparks: 240, altitude: 480, shields: 1 }
+  },
+  {
+    id: 'w_iron_climber',
+    title: 'Iron Climber Milestone',
+    description: 'Reach a 22-question correct answer streak',
+    icon: 'Flame',
+    category: 'weekly',
+    subject: 'any',
+    target: 22,
+    unit: 'streak',
+    reward: { sparks: 300, altitude: 600, shields: 2 }
   }
 ];
 
@@ -237,6 +446,18 @@ export const TEAM_2P_QUEST_POOL = [
     defaultPartner: 'buddy_asha'
   },
   {
+    id: 't2_duo_endurance',
+    title: 'Twin Peak Marathon',
+    description: 'Solve 60 problems combined with your partner',
+    icon: 'Users',
+    category: 'team2',
+    teamSize: 2,
+    target: 60,
+    unit: 'problems',
+    reward: { sparks: 250, altitude: 500, shields: 1 },
+    defaultPartner: 'buddy_maya'
+  },
+  {
     id: 't2_math_tandem',
     title: 'Tandem Math Expedition',
     description: 'Solve 30 Math problems together with your partner',
@@ -246,6 +467,18 @@ export const TEAM_2P_QUEST_POOL = [
     target: 30,
     unit: 'problems',
     reward: { sparks: 160, altitude: 320 },
+    defaultPartner: 'buddy_leo'
+  },
+  {
+    id: 't2_math_surge',
+    title: 'Double Formula Climb',
+    description: 'Solve 45 Math problems collaboratively with your partner',
+    icon: 'Calculator',
+    category: 'team2',
+    teamSize: 2,
+    target: 45,
+    unit: 'problems',
+    reward: { sparks: 220, altitude: 440, shields: 1 },
     defaultPartner: 'buddy_leo'
   },
   {
@@ -261,6 +494,18 @@ export const TEAM_2P_QUEST_POOL = [
     defaultPartner: 'buddy_maya'
   },
   {
+    id: 't2_world_odyssey',
+    title: 'Global Tandem Odyssey',
+    description: 'Identify 45 World locations together with your partner',
+    icon: 'Globe',
+    category: 'team2',
+    teamSize: 2,
+    target: 45,
+    unit: 'problems',
+    reward: { sparks: 220, altitude: 440, shields: 1 },
+    defaultPartner: 'buddy_asha'
+  },
+  {
     id: 't2_words_collab',
     title: 'Word Climber Duo',
     description: 'Solve 30 Words problems collaboratively with your partner',
@@ -270,6 +515,18 @@ export const TEAM_2P_QUEST_POOL = [
     target: 30,
     unit: 'problems',
     reward: { sparks: 160, altitude: 320 },
+    defaultPartner: 'buddy_sora'
+  },
+  {
+    id: 't2_words_summit',
+    title: 'Bilingual Ridge Pair',
+    description: 'Solve 45 Words problems together with your partner',
+    icon: 'BookOpen',
+    category: 'team2',
+    teamSize: 2,
+    target: 45,
+    unit: 'problems',
+    reward: { sparks: 220, altitude: 440, shields: 1 },
     defaultPartner: 'buddy_sora'
   },
   {
@@ -283,6 +540,30 @@ export const TEAM_2P_QUEST_POOL = [
     unit: 'problems',
     reward: { sparks: 160, altitude: 320 },
     defaultPartner: 'buddy_tenzing'
+  },
+  {
+    id: 't2_coding_relay',
+    title: 'Code Hackathon Duo',
+    description: 'Solve 45 Coding logic problems together with your partner',
+    icon: 'Code',
+    category: 'team2',
+    teamSize: 2,
+    target: 45,
+    unit: 'problems',
+    reward: { sparks: 220, altitude: 440, shields: 1 },
+    defaultPartner: 'buddy_tenzing'
+  },
+  {
+    id: 't2_cross_climb',
+    title: 'Two-Climber Synergy',
+    description: 'Solve 50 questions across all subjects with your partner',
+    icon: 'Compass',
+    category: 'team2',
+    teamSize: 2,
+    target: 50,
+    unit: 'problems',
+    reward: { sparks: 210, altitude: 420 },
+    defaultPartner: 'buddy_asha'
   }
 ];
 
@@ -334,6 +615,54 @@ export const TEAM_3P_QUEST_POOL = [
     unit: 'problems',
     reward: { sparks: 380, altitude: 760, shields: 2 },
     defaultPartners: ['buddy_asha', 'buddy_sora']
+  },
+  {
+    id: 't3_century_push',
+    title: 'Century Ridge Trio',
+    description: 'Solve 100 problems combined across all 3 squad members',
+    icon: 'Mountain',
+    category: 'team3',
+    teamSize: 3,
+    target: 100,
+    unit: 'problems',
+    reward: { sparks: 480, altitude: 960, shields: 2 },
+    defaultPartners: ['buddy_maya', 'buddy_tenzing']
+  },
+  {
+    id: 't3_blitz_squad',
+    title: 'High-Altitude Strike Team',
+    description: 'Solve 70 problems across subjects with your 3-player squad',
+    icon: 'Zap',
+    category: 'team3',
+    teamSize: 3,
+    target: 70,
+    unit: 'problems',
+    reward: { sparks: 320, altitude: 640, shields: 1 },
+    defaultPartners: ['buddy_leo', 'buddy_sora']
+  },
+  {
+    id: 't3_apex_conquest',
+    title: 'Apex Tri-Summit Conquest',
+    description: 'Conquer 120 problems combined as a powerhouse trio',
+    icon: 'Award',
+    category: 'team3',
+    teamSize: 3,
+    target: 120,
+    unit: 'problems',
+    reward: { sparks: 550, altitude: 1100, shields: 3 },
+    defaultPartners: ['buddy_asha', 'buddy_maya']
+  },
+  {
+    id: 't3_logic_nexus',
+    title: 'Trio Knowledge Crucible',
+    description: 'Solve 85 problems across multiple disciplines together',
+    icon: 'Compass',
+    category: 'team3',
+    teamSize: 3,
+    target: 85,
+    unit: 'problems',
+    reward: { sparks: 400, altitude: 800, shields: 2 },
+    defaultPartners: ['buddy_leo', 'buddy_tenzing']
   }
 ];
 

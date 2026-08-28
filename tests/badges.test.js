@@ -236,5 +236,23 @@ describe('Badges System & Expansion Tests', () => {
       expect(res.updatedUnlocked).toContain('sparks_500');
       expect(res.updatedUnlocked).toContain('sparks_1000');
     });
+
+    it('unlocks First Haul (shop_buyer_1) simultaneously when buying a rare item', () => {
+      const res = evaluateBadges({
+        purchasedRarities: ['rare'],
+        unlockedBadges: []
+      });
+
+      expect(res.updatedUnlocked).toContain('rare_collector');
+      expect(res.updatedUnlocked).toContain('shop_buyer_1');
+    });
+
+    it('retroactively unlocks First Haul if rare finder is already unlocked', () => {
+      const res = evaluateBadges({
+        unlockedBadges: ['rare_collector']
+      });
+
+      expect(res.updatedUnlocked).toContain('shop_buyer_1');
+    });
   });
 });
