@@ -250,6 +250,7 @@ export default function App() {
   const [showManualProfileSwitcher, setShowManualProfileSwitcher] = useState(false);
   const [profileSwitcherOrigin, setProfileSwitcherOrigin] = useState(null);
   const [familyUpgradeOrigin, setFamilyUpgradeOrigin] = useState(null);
+  const [parentDashboardOrigin, setParentDashboardOrigin] = useState(null);
 
   // Consecutive problem miss tracking for Micro-Hints
   const [consecutiveProblemMisses, setConsecutiveProblemMisses] = useState(0);
@@ -2411,6 +2412,7 @@ export default function App() {
             setParentDashboardTab(targetTab);
             setParentDashboardHighlight(targetHighlight);
             setShowProfileSelector(false);
+            setParentDashboardOrigin({ showProfileSelector: true });
             setPinGateSource('profile_selector');
             setShowPinGateModal(true);
           }}
@@ -2448,6 +2450,7 @@ export default function App() {
           onOpenParentZone={(targetTab = 'overview', targetHighlight = 'family_plan') => {
             setParentDashboardTab(targetTab);
             setParentDashboardHighlight(targetHighlight);
+            setParentDashboardOrigin({ showManualProfileSwitcher: true });
             setPinGateSource('manual_profile_switcher');
             setShowPinGateModal(true);
           }}
@@ -2469,6 +2472,7 @@ export default function App() {
           localStorage.setItem('kibo_math_has_onboarded', 'true');
           setParentDashboardTab(targetTab);
           setParentDashboardHighlight(null);
+          setParentDashboardOrigin({ showFirstLaunchOnboardingModal: true });
           setPinGateSource('onboarding');
           setShowPinGateModal(true);
         }}
@@ -2572,6 +2576,16 @@ export default function App() {
           setShowParentDashboard(false);
           setParentDashboardTab('overview');
           setParentDashboardHighlight(null);
+          if (parentDashboardOrigin) {
+            if (parentDashboardOrigin.showProfileSelector) {
+              setShowProfileSelector(true);
+            } else if (parentDashboardOrigin.showManualProfileSwitcher) {
+              setShowManualProfileSwitcher(true);
+            } else if (parentDashboardOrigin.showFirstLaunchOnboardingModal) {
+              setShowFirstLaunchOnboardingModal(true);
+            }
+            setParentDashboardOrigin(null);
+          }
         }}
         currentPin={parentPin}
         onUpdatePin={handleUpdatePin}

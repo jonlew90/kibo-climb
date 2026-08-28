@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
+import FamilyPlanUpgradeModal from './FamilyPlanUpgradeModal';
 import {
   ITEM_CATEGORIES,
   CATEGORY_HUBS,
@@ -187,6 +188,9 @@ export default function WorkshopModal({
   const [promoFeedback, setPromoFeedback] = useState(null);
   const [isRedeeming, setIsRedeeming] = useState(false);
 
+  // Family Plan Modal State
+  const [showFamilyPlanModal, setShowFamilyPlanModal] = useState(false);
+
   const itemsContainerRef = useRef(null);
   const hubScrollRef = useRef(null);
   const slotScrollRef = useRef(null);
@@ -247,6 +251,8 @@ export default function WorkshopModal({
       if (e.key === 'Escape') {
         if (selectedItemDetail) {
           setSelectedItemDetail(null);
+        } else if (showFamilyPlanModal) {
+          setShowFamilyPlanModal(false);
         } else if (showPromoModal) {
           setShowPromoModal(false);
         } else if (itemToSell) {
@@ -261,7 +267,7 @@ export default function WorkshopModal({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose, showPromoModal, selectedItemDetail, itemToSell]);
+  }, [isOpen, onClose, showPromoModal, showFamilyPlanModal, selectedItemDetail, itemToSell]);
 
   // Scroll to top of item list on filter/mode change and auto-reset preview slots when entering closet
   useEffect(() => {
@@ -1086,65 +1092,46 @@ export default function WorkshopModal({
             {/* Sparks & Subscription Packages Hub */}
             {viewMode === 'shop' && activeHub === 'sparks' ? (
               <div className="space-y-3 max-w-3xl mx-auto pb-24 sm:pb-16">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
-                  {/* Individual Plan */}
-                  <div
-                    onClick={() => {
-                      if (onOpenParentZone) {
-                        onOpenParentZone('verification', 'family_plan');
-                      }
-                    }}
-                    className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white rounded-2xl p-3.5 sm:p-4 shadow-sm hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex flex-col justify-between space-y-2.5"
-                  >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="bg-white/20 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full">
-                          ⭐ Monthly Club
+                {/* Consolidated Kibo Club Hero Banner */}
+                <div
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setShowFamilyPlanModal(true);
+                  }}
+                  className="bg-gradient-to-r from-purple-700 via-indigo-700 to-amber-600 text-white rounded-3xl p-4 sm:p-5 shadow-md hover:scale-[1.01] active:scale-98 transition-all cursor-pointer relative overflow-hidden group border-2 border-amber-300/40"
+                >
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-110 transition-transform duration-500 pointer-events-none" />
+                  
+                  <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+                    <div className="space-y-1.5 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 fill-amber-950" /> Kibo Club
                         </span>
-                        <span className="text-xs font-black text-amber-300">$4.99/mo</span>
-                      </div>
-                      <h3 className="text-sm sm:text-base font-black">Join Kibo Club</h3>
-                      <p className="text-[11px] text-indigo-100 leading-snug">
-                        1.25x Sparks Forever on all climbs + exclusive golden profile tag!
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      className="w-full bg-white text-indigo-950 font-black text-xs py-2 rounded-xl shadow-xs flex items-center justify-center gap-1"
-                    >
-                      <Lock className="w-3 h-3 text-indigo-900" />
-                      <span>Choose Plan in Parent Zone</span>
-                    </button>
-                  </div>
-
-                  {/* Family Plan */}
-                  <div
-                    onClick={() => {
-                      if (onOpenParentZone) {
-                        onOpenParentZone('verification', 'family_plan');
-                      }
-                    }}
-                    className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-2xl p-3.5 sm:p-4 shadow-sm hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex flex-col justify-between space-y-2.5"
-                  >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
+                        <span className="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                          Individual & Family Plans
+                        </span>
                         <span className="bg-emerald-500 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-2xs">
-                          Save 20% • Whole Family
+                          From $4.99/mo
                         </span>
-                        <span className="text-xs font-black text-yellow-200">$7.99/mo</span>
                       </div>
-                      <h3 className="text-sm sm:text-base font-black">Kibo Club Family</h3>
-                      <p className="text-[11px] text-orange-100 leading-snug">
-                        All benefits unlocked for EVERY profile on your account!
+                      <h3 className="text-base sm:text-lg font-black tracking-tight text-white drop-shadow-xs">
+                        Unlock 1.25x Sparks Forever & Premium Benefits
+                      </h3>
+                      <p className="text-xs text-indigo-100 font-medium leading-snug max-w-xl">
+                        Supercharge every climb with Spark Multipliers, golden tags, daily bonuses, and support for up to 6 child profiles on the Family Plan!
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      className="w-full bg-white text-orange-950 font-black text-xs py-2 rounded-xl shadow-xs flex items-center justify-center gap-1"
-                    >
-                      <Lock className="w-3 h-3 text-orange-900" />
-                      <span>Choose Plan in Parent Zone</span>
-                    </button>
+
+                    <div className="shrink-0 flex items-center">
+                      <button
+                        type="button"
+                        className="w-full sm:w-auto bg-white text-indigo-950 hover:bg-amber-50 font-black text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all group-hover:shadow-lg"
+                      >
+                        <span>View Plans & Details</span>
+                        <ChevronRight className="w-4 h-4 text-indigo-900" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1741,6 +1728,13 @@ export default function WorkshopModal({
           </div>
         </div>
       )}
+
+      {/* 5. FAMILY PLAN UPGRADE MODAL */}
+      <FamilyPlanUpgradeModal
+        isOpen={showFamilyPlanModal}
+        onClose={() => setShowFamilyPlanModal(false)}
+        onOpenParentZone={onOpenParentZone}
+      />
 
       {/* 6. BOTTOM NAVIGATION FOOTER */}
       {renderFooter ? renderFooter() : null}
