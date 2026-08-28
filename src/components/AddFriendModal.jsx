@@ -281,10 +281,7 @@ export default function AddFriendModal({
         {/* Your Unique Climber Code Banner */}
         <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-700 rounded-2xl p-3 text-white shadow-md flex items-center justify-between gap-3 mb-3 shrink-0">
           <div>
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] uppercase font-black tracking-wider text-purple-200 block">Your Climber Code</span>
-              <span className="text-[9px] bg-emerald-400 text-emerald-950 font-black px-1.5 py-0.2 rounded-full">🔒 COPPA Safe</span>
-            </div>
+            <span className="text-[10px] uppercase font-black tracking-wider text-purple-200 block">Your Climber Code</span>
             <span className="text-lg font-black tracking-wider font-mono text-amber-300">{climberCode}</span>
           </div>
           <button
