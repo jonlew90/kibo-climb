@@ -1683,18 +1683,52 @@ export default function App() {
                   soundFx.playKeyTap();
                   setShowStatsDropdown(!showStatsDropdown);
                 }}
-                className="flex items-center gap-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-2 border-amber-300 px-2.5 py-1 rounded-full text-xs font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
-                title="Climber Stats"
+                className="flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2.5 py-1 rounded-full text-xs font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
+                title={`Climber Stats (Rank: ${liveCompetenceRating} pts)`}
                 aria-expanded={showStatsDropdown}
               >
-                <Trophy className="w-3.5 h-3.5 text-amber-900 fill-amber-300 stroke-[2.5]" />
-                <span className="text-[11px] font-black">{streak}d</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-amber-900 transition-transform duration-200 ${showStatsDropdown ? 'rotate-180' : ''}`} />
+                <Star className="w-3.5 h-3.5 text-purple-700 fill-purple-300 stroke-[2] shrink-0" />
+                <span className="text-[11px] font-black">{liveCompetenceRating}</span>
+                <ChevronDown className={`w-3.5 h-3.5 text-purple-900 transition-transform duration-200 ${showStatsDropdown ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Mobile Stats Roll-down Menu */}
               {showStatsDropdown && (
                 <div className="absolute top-full right-0 mt-2 w-56 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                  {/* Competence / Rank Item */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowStatsDropdown(false);
+                      setShowBadgesModal(true);
+                    }}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-purple-600 fill-purple-300 stroke-[2] shrink-0" />
+                      <span>Rank ({getCompetenceRankTier(liveCompetenceRating, activeSubject)})</span>
+                    </div>
+                    <span className="font-black">{liveCompetenceRating} pts</span>
+                  </button>
+
+                  {/* Sparks Item */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowStatsDropdown(false);
+                      handleOpenWorkshop('adaptive_session');
+                    }}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Zap className={`w-4 h-4 text-amber-600 fill-amber-500 stroke-[2.5] shrink-0 ${isSparksBouncing ? 'animate-bounce' : ''}`} />
+                      <span>Sparks</span>
+                    </div>
+                    <span className="font-black">{sparks}</span>
+                  </button>
+
                   {/* Streak Item */}
                   <button
                     type="button"
@@ -1717,44 +1751,11 @@ export default function App() {
                     </div>
                   </button>
 
-                  {/* Sparks Item */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      setShowStatsDropdown(false);
-                      handleOpenWorkshop('adaptive_session');
-                    }}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Zap className={`w-4 h-4 text-amber-600 fill-amber-500 stroke-[2.5] shrink-0 ${isSparksBouncing ? 'animate-bounce' : ''}`} />
-                      <span>Sparks</span>
-                    </div>
-                    <span className="font-black">{sparks}</span>
-                  </button>
-
-                  {/* Competence / Rank Item */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      setShowStatsDropdown(false);
-                      setShowBadgesModal(true);
-                    }}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-purple-600 fill-purple-300 stroke-[2] shrink-0" />
-                      <span>Rank ({getCompetenceRankTier(liveCompetenceRating, activeSubject)})</span>
-                    </div>
-                    <span className="font-black">{liveCompetenceRating} pts</span>
-                  </button>
-
                   {/* Quest Rank & Level Item */}
                   {(() => {
                     const questState = questService.getQuests(activeProfileId);
-                    const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer' };
+                    const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', ascentTier: 1 };
+                    const ascentTier = questLevelInfo.ascentTier || 1;
                     return (
                       <button
                         type="button"
@@ -1769,7 +1770,7 @@ export default function App() {
                           <Compass className="w-4 h-4 text-indigo-600 shrink-0" />
                           <span>Quest ({questLevelInfo.title})</span>
                         </div>
-                        <span className="font-black">Lvl {questLevelInfo.level} · {questState?.totalXp || 0} XP</span>
+                        <span className="font-black">Tier {ascentTier} · Lv {questLevelInfo.level}</span>
                       </button>
                     );
                   })()}
