@@ -374,7 +374,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   return (
     <div
       onClick={handleMascotTap}
-      className={`relative select-none cursor-pointer aspect-square shrink-0 transition-all duration-300 ${
+      className={`relative select-none cursor-pointer aspect-square shrink-0 transition-opacity duration-300 ${
         isTapped
           ? 'animate-mascot-squash'
           : isTwirling

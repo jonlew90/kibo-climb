@@ -226,16 +226,6 @@ export default function QuestsScreen({
             />
           </div>
 
-          <button
-            type="button"
-            onClick={handleOpenQuestLeaderboard}
-            className="flex items-center gap-1 px-2.5 py-1 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white rounded-full text-xs font-black shadow-xs cursor-pointer transition-all border border-purple-700"
-            title="View Mountain Quest Standings"
-          >
-            <Trophy className="w-3.5 h-3.5" />
-            <span>Leaderboard</span>
-          </button>
-
           {unclaimedCount > 0 && (
             <button
               type="button"
