@@ -196,6 +196,7 @@ export default function FirstLaunchOnboardingModal({
     const cleaned = usernameInput.trim();
     // Save username + grade + starting rating together across all subjects
     storageService.saveUsername(cleaned, selectedGrade);
+    storageService.setOnboarded(true);
     if (onUsernameSet) onUsernameSet(cleaned);
     soundFx.playVictory();
     setStep(3);
@@ -203,6 +204,7 @@ export default function FirstLaunchOnboardingModal({
 
   const handleStart = (subjectToStart = selectedStartingSubject) => {
     soundFx.playVictory();
+    storageService.setOnboarded(true);
     if (typeof onStartAdaptiveClimb === 'function') onStartAdaptiveClimb(subjectToStart);
     else if (typeof onStartAtTier1 === 'function') onStartAtTier1();
     else if (typeof onStartPlacementTest === 'function') onStartPlacementTest();

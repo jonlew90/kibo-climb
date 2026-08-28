@@ -235,15 +235,14 @@ export default function App() {
   const [newsItems, setNewsItems] = useState([]);
 
   const [showFirstLaunchOnboardingModal, setShowFirstLaunchOnboardingModal] = useState(() => {
-    return !localStorage.getItem('kibo_math_has_onboarded') && !localStorage.getItem('kibo_math_tier');
+    return !storageService.isOnboarded();
   });
 
   // Profile Selector — shown on every launch so players can pick who's climbing
   // and parents always have a discoverable path to add a new profile.
   const [showProfileSelector, setShowProfileSelector] = useState(() => {
     // Skip only during the very first-ever launch (onboarding takes precedence)
-    const hasOnboarded = !!localStorage.getItem('kibo_math_has_onboarded') || !!localStorage.getItem('kibo_math_tier');
-    return hasOnboarded;
+    return storageService.isOnboarded();
   });
 
   // Manual Profile Switcher State
@@ -1021,7 +1020,7 @@ export default function App() {
   const handleStartAtTier1FromOnboarding = () => {
     setTier(1);
     setUnlockedTiers([1]);
-    localStorage.setItem('kibo_math_has_onboarded', 'true');
+    storageService.setOnboarded(true);
     localStorage.setItem('kibo_math_tier', '1');
     localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify([1]));
     syncAppStateWithStorage();
@@ -1029,7 +1028,7 @@ export default function App() {
   };
 
   const handleStartPlacementFromOnboarding = () => {
-    localStorage.setItem('kibo_math_has_onboarded', 'true');
+    storageService.setOnboarded(true);
     syncAppStateWithStorage();
     setShowFirstLaunchOnboardingModal(false);
     startPlacementDiagnostic();
@@ -1045,7 +1044,7 @@ export default function App() {
     setUnlockedTiers(newUnlocked);
     setSparks(updatedSparks);
 
-    localStorage.setItem('kibo_math_has_onboarded', 'true');
+    storageService.setOnboarded(true);
     localStorage.setItem('kibo_math_tier', placedTier.toString());
     localStorage.setItem('kibo_math_unlocked_tiers', JSON.stringify(newUnlocked));
     localStorage.setItem('kibo_math_sparks', updatedSparks.toString());
@@ -2469,7 +2468,7 @@ export default function App() {
         onOpenParentZone={(targetTab = 'overview') => {
           syncAppStateWithStorage();
           setShowFirstLaunchOnboardingModal(false);
-          localStorage.setItem('kibo_math_has_onboarded', 'true');
+          storageService.setOnboarded(true);
           setParentDashboardTab(targetTab);
           setParentDashboardHighlight(null);
           setParentDashboardOrigin({ showFirstLaunchOnboardingModal: true });

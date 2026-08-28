@@ -13,7 +13,8 @@ const KEYS = {
   PRACTICE_DAYS: 'kibo_practice_days',
   GATE_FAILED_ATTEMPTS: 'kibo_parent_gate_failed_attempts',
   GATE_LOCKOUT_UNTIL: 'kibo_parent_gate_lockout_until',
-  APP_RATING_STATUS: 'kibo_app_rating_status'
+  APP_RATING_STATUS: 'kibo_app_rating_status',
+  HAS_ONBOARDED: 'kibo_has_onboarded'
 };
 
 const DEFAULT_PROFILE_ID = 'default_child';
@@ -1671,6 +1672,22 @@ export const storageService = {
       const fUser = (f.username || f.name || '').trim().toLowerCase();
       return fId === target || fUser === target;
     });
+  },
+
+  isOnboarded() {
+    return !!localStorage.getItem(KEYS.HAS_ONBOARDED) ||
+      !!localStorage.getItem('kibo_math_has_onboarded') ||
+      !!localStorage.getItem('kibo_math_tier');
+  },
+
+  setOnboarded(value = true) {
+    if (value) {
+      localStorage.setItem(KEYS.HAS_ONBOARDED, 'true');
+      localStorage.setItem('kibo_math_has_onboarded', 'true');
+    } else {
+      localStorage.removeItem(KEYS.HAS_ONBOARDED);
+      localStorage.removeItem('kibo_math_has_onboarded');
+    }
   }
 };
 
