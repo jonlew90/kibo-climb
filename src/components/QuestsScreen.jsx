@@ -29,12 +29,14 @@ import { soundFx } from '../utils/audio';
 import { questService } from '../services/questService';
 import { COMPANION_BUDDIES, ASCENT_MODES, ASCENT_RANKS, QUEST_RANKS } from '../data/questsData';
 import { storageService } from '../services/storageService';
+import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
 import AddFriendModal from './AddFriendModal';
 import Mascot from './Mascot';
 
 export default function QuestsScreen({
   activeSubject = 'math',
+  sparks,
   userState = {},
   onNavigate,
   onBack,
@@ -45,6 +47,7 @@ export default function QuestsScreen({
   const activeProfile = storageService.getActiveProfile();
   const profileId = activeProfile?.id || 'default_child';
   const userEquippedItems = activeProfile?.shopState?.equippedItems || userState?.equippedItems || [];
+  const currentSparks = typeof sparks === 'number' ? sparks : (storageService.getUserData(activeSubject).sparks || 0);
 
   const [activeTab, setActiveTab] = useState('daily'); // 'daily' | 'weekly' | 'team2' | 'team3'
   const [questState, setQuestState] = useState(() => questService.getQuests(profileId));
@@ -84,17 +87,23 @@ export default function QuestsScreen({
       
       const totalSparksEarned = (result.reward?.sparks || 0) + (result.leveledUp?.reward?.sparks || 0);
       const totalShieldsEarned = (result.reward?.shields || 0) + (result.leveledUp?.reward?.shields || 0);
+      const totalAltitudeEarned = result.reward?.altitude || result.earnedXp || 0;
 
       setCelebrationReward({
         ...result.reward,
         sparks: totalSparksEarned,
         shields: totalShieldsEarned,
+        altitude: totalAltitudeEarned,
         leveledUp: result.leveledUp,
         newlyUnlockedBadges: result.newlyUnlockedBadges,
-        earnedXp: result.earnedXp
+        earnedXp: totalAltitudeEarned
       });
       if (onAwardReward) {
-        onAwardReward({ sparks: totalSparksEarned, shields: totalShieldsEarned });
+        onAwardReward({
+          sparks: totalSparksEarned,
+          shields: totalShieldsEarned,
+          newlyUnlockedBadges: result.newlyUnlockedBadges
+        });
       } else if (onAwardSparks && totalSparksEarned > 0) {
         onAwardSparks(totalSparksEarned);
       }
@@ -197,6 +206,19 @@ export default function QuestsScreen({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Sparks Counter */}
+          <div
+            className="flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2.5 py-1 rounded-full text-xs font-black shadow-xs shrink-0"
+            title={`Sparks Balance: ${currentSparks} ⚡`}
+          >
+            <RollingNumberTicker
+              value={currentSparks}
+              icon={<Zap className="w-3.5 h-3.5 text-amber-800 fill-amber-500 stroke-[2.5]" />}
+              profileId={profileId}
+              subjectId={activeSubject}
+            />
+          </div>
+
           <button
             type="button"
             onClick={handleOpenQuestLeaderboard}
@@ -1245,22 +1267,22 @@ export default function QuestsScreen({
             )}
 
             <div className="flex items-center justify-center gap-2 mb-5 flex-wrap">
-              {celebrationReward.sparks && (
+              {celebrationReward.sparks > 0 && (
                 <div className="px-3 py-1.5 rounded-xl bg-amber-100 text-amber-900 font-black text-sm flex items-center gap-1 border border-amber-300">
                   <Sparkles className="w-4 h-4 text-amber-600 fill-amber-500" />
                   <span>+{celebrationReward.sparks} Sparks</span>
                 </div>
               )}
-              {celebrationReward.altitude && (
+              {celebrationReward.altitude > 0 && (
                 <div className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 font-black text-sm flex items-center gap-1 border border-emerald-300">
                   <Mountain className="w-4 h-4 text-emerald-600" />
                   <span>+{celebrationReward.altitude} XP</span>
                 </div>
               )}
-              {celebrationReward.shields && (
+              {celebrationReward.shields > 0 && (
                 <div className="px-3 py-1.5 rounded-xl bg-indigo-100 text-indigo-900 font-black text-sm flex items-center gap-1 border border-indigo-300">
                   <Shield className="w-4 h-4 text-indigo-600" />
-                  <span>+{celebrationReward.shields} Shield</span>
+                  <span>+{celebrationReward.shields} Shield{celebrationReward.shields > 1 ? 's' : ''}</span>
                 </div>
               )}
             </div>

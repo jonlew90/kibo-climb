@@ -86,12 +86,12 @@ function generateTier1Problem() {
     return {
       tier: 1,
       concept: 'Numeric Sequences',
-      displayString: `Find the next number in the pattern:\n${seq.join(', ')}, ?`,
+      displayString: `What number comes next?\n${seq.join(', ')}, ?`,
       codeSnippet: `pattern = [${seq.join(', ')}, ?]\n# Rule: +${step} each step`,
       options,
       answer,
       answerString: answer,
-      hint: `Each number increases by ${step}. Add ${step} to ${seq[3]}!`,
+      hint: `Each number increases by ${step}. Add ${step} to ${seq[3]}.`,
       type: 'coding'
     };
   }
@@ -111,12 +111,12 @@ function generateTier1Problem() {
     return {
       tier: 1,
       concept: 'Doubling Patterns',
-      displayString: `What number comes next in the doubling sequence?\n${seq.join(', ')}, ?`,
+      displayString: `What number comes next in the sequence?\n${seq.join(', ')}, ?`,
       codeSnippet: `sequence = [${seq.join(', ')}, ?]\n# Rule: multiply by 2`,
       options,
       answer,
       answerString: answer,
-      hint: `Every step multiplies the previous number by 2! Double ${seq[3]}.`,
+      hint: `Each number doubles. Multiply ${seq[3]} by 2.`,
       type: 'coding'
     };
   }
@@ -133,12 +133,12 @@ function generateTier1Problem() {
     return {
       tier: 1,
       concept: 'Repeating Patterns',
-      displayString: `Which shape comes next in the sequence?\n${seq} [ ? ]`,
+      displayString: `What shape comes next?\n${seq} [ ? ]`,
       codeSnippet: `repeat_pattern = "${seq} ?"\n# Pattern: A - B - A - B...`,
       options,
       answer,
       answerString: answer,
-      hint: `Notice how the shapes alternate: ${s1} then ${s2}!`,
+      hint: `The shapes alternate: ${s1}, then ${s2}.`,
       type: 'coding'
     };
   }
@@ -159,12 +159,12 @@ function generateTier1Problem() {
   return {
     tier: 1,
     concept: 'Step-by-Step Execution',
-    displayString: `Follow the instructions in order:\n1. Start with ${startVal}\n2. Add ${addVal}\nWhat is the result?`,
+    displayString: `Follow the steps in order:\n1. Start with ${startVal}\n2. Add ${addVal}\nWhat is the result?`,
     codeSnippet: `val = ${startVal}\nval = val + ${addVal}`,
     options,
     answer,
     answerString: answer,
-    hint: `Execute step 1 first (${startVal}), then apply step 2 (+${addVal})!`,
+    hint: `Start with ${startVal}, then add ${addVal}.`,
     type: 'coding'
   };
 }
@@ -194,12 +194,12 @@ function generateTier2Problem() {
     return {
       tier: 2,
       concept: 'Grid Coordinates',
-      displayString: `Kibo starts at (${startX}, ${startY}).\nMoves Right ${right} steps, then Up ${up} steps.\nWhere does Kibo land?`,
-      codeSnippet: `x, y = ${startX}, ${startY}\nx += ${right}  # Move Right\ny += ${up}     # Move Up`,
+      displayString: `Kibo starts at (${startX}, ${startY}).\nMove right ${right}, then up ${up}.\nWhere does Kibo land?`,
+      codeSnippet: `x, y = ${startX}, ${startY}\nx += ${right}  # Move right\ny += ${up}     # Move up`,
       options,
       answer,
       answerString: answer,
-      hint: `Moving Right adds to X: ${startX} + ${right} = ${finalX}. Moving Up adds to Y: ${startY} + ${up} = ${finalY}!`,
+      hint: `Right increases x (${startX} + ${right} = ${finalX}). Up increases y (${startY} + ${up} = ${finalY}).`,
       type: 'coding'
     };
   }
@@ -219,12 +219,12 @@ function generateTier2Problem() {
     return {
       tier: 2,
       concept: 'Repeat Loops',
-      displayString: `Which loop command replaces this repeated sequence?\n[ ${expanded} ]`,
+      displayString: `Which loop replaces this sequence?\n[ ${expanded} ]`,
       codeSnippet: `# Long code:\n${Array(count).fill(`robot.${action.toLowerCase().replace(' ', '_')}()`).join('\n')}`,
       options,
       answer,
       answerString: answer,
-      hint: `Count how many times ${action} is repeated: exactly ${count} times!`,
+      hint: `${action} appears ${count} times in a row.`,
       type: 'coding'
     };
   }
@@ -243,12 +243,12 @@ function generateTier2Problem() {
   return {
     tier: 2,
     concept: 'Loop Iteration Count',
-    displayString: `A loop repeats ${outer} times. Inside it, Kibo takes ${inner} steps each time.\nHow many total steps are taken?`,
+    displayString: `A loop runs ${outer} times. Inside, Kibo takes ${inner} steps each time.\nHow many total steps are taken?`,
     codeSnippet: `for round in 1..${outer}:\n    repeat ${inner} [Step Forward]`,
     options,
     answer,
     answerString: answer,
-    hint: `Multiply the outer rounds (${outer}) by the inner steps per round (${inner}): ${outer} × ${inner}!`,
+    hint: `Multiply rounds by steps per round: ${outer} × ${inner}.`,
     type: 'coding'
   };
 }
@@ -270,12 +270,12 @@ function generateTier3Problem() {
     return {
       tier: 3,
       concept: 'Boolean Gates',
-      displayString: `Evaluate this Boolean logic expression:\n${a} ${op} ${b}`,
+      displayString: `What is the value of this expression?\n${a} ${op} ${b}`,
       codeSnippet: `result = ${a} ${op.toLowerCase()} ${b}\nprint(result)`,
       options,
       answer,
       answerString: answer,
-      hint: op === 'AND' ? 'AND is true ONLY when BOTH values are true.' : 'OR is true if AT LEAST ONE value is true.',
+      hint: op === 'AND' ? 'AND is true only when both values are true.' : 'OR is true when at least one value is true.',
       type: 'coding'
     };
   }
@@ -293,7 +293,7 @@ function generateTier3Problem() {
       options: ['true', 'false'],
       answer,
       answerString: answer,
-      hint: 'The NOT operator flips true to false and false to true!',
+      hint: 'The NOT operator flips true to false and false to true.',
       type: 'coding'
     };
   }
@@ -311,12 +311,12 @@ function generateTier3Problem() {
     return {
       tier: 3,
       concept: 'Comparison Operators',
-      displayString: `Evaluate the comparison:\n${n1} ${op} ${n2}`,
+      displayString: `Is this comparison true or false?\n${n1} ${op} ${n2}`,
       codeSnippet: `test = (${n1} ${op} ${n2})\nprint(test)`,
       options: ['true', 'false'],
       answer,
       answerString: answer,
-      hint: `Compare the two numbers: Is ${n1} ${op === '>' ? 'greater than' : op === '<' ? 'less than' : 'equal to'} ${n2}?`,
+      hint: `Check if ${n1} is ${op === '>' ? 'greater than' : op === '<' ? 'less than' : 'equal to'} ${n2}.`,
       type: 'coding'
     };
   }
@@ -332,12 +332,12 @@ function generateTier3Problem() {
   return {
     tier: 3,
     concept: 'Compound Booleans',
-    displayString: `Evaluate the compound condition:\n(${leftNum1} > ${leftNum2}) AND (${rightNum1} == ${rightNum2})`,
+    displayString: `What is the value of this expression?\n(${leftNum1} > ${leftNum2}) AND (${rightNum1} == ${rightNum2})`,
     codeSnippet: `cond = (${leftNum1} > ${leftNum2}) and (${rightNum1} == ${rightNum2})\n# Left: ${leftVal} | Right: ${rightVal}`,
     options: ['true', 'false'],
     answer,
     answerString: answer,
-    hint: `Left is true, but right (${rightNum1} == ${rightNum2}) is false. true AND false = false!`,
+    hint: `The left side is true, but the right side is false. true AND false is false.`,
     type: 'coding'
   };
 }
@@ -364,12 +364,12 @@ function generateTier4Problem() {
     return {
       tier: 4,
       concept: 'Variable State Tracing',
-      displayString: `What is the final value of variable x?`,
+      displayString: `What is the final value of x?`,
       codeSnippet: `x = ${initial}\nx = x + ${add}\nx = x * ${mult}`,
       options,
       answer,
       answerString: answer,
-      hint: `Step 1: x is ${initial}. Step 2: x becomes ${initial} + ${add} = ${initial + add}. Step 3: ${initial + add} * ${mult} = ${answer}!`,
+      hint: `Start at ${initial}, add ${add} (${initial + add}), then multiply by ${mult} (${answer}).`,
       type: 'coding'
     };
   }
@@ -394,12 +394,12 @@ function generateTier4Problem() {
     return {
       tier: 4,
       concept: 'Binary Conversion',
-      displayString: `Convert the 4-bit binary number ${binStr} to base-10 decimal:`,
+      displayString: `Convert the 4-bit binary number ${binStr} to decimal:`,
       codeSnippet: `# Bit weights: [8] [4] [2] [1]\n# Binary:      [${finalB3}]  [${b2}]  [${b1}]  [${b0}]`,
       options,
       answer,
       answerString: answer,
-      hint: `Add the active bit places: (${finalB3}×8) + (${b2}×4) + (${b1}×2) + (${b0}×1) = ${decVal}!`,
+      hint: `Add active bit values: (${finalB3}×8) + (${b2}×4) + (${b1}×2) + (${b0}×1) = ${decVal}.`,
       type: 'coding'
     };
   }
@@ -417,7 +417,7 @@ function generateTier4Problem() {
     options,
     answer,
     answerString: answer,
-    hint: `temp saved a's original value (${aVal}). Then b was assigned temp (${aVal})!`,
+    hint: `temp stores a (${aVal}). Then b is assigned temp (${aVal}).`,
     type: 'coding'
   };
 }
@@ -437,12 +437,12 @@ function generateTier5Problem() {
     return {
       tier: 5,
       concept: 'If / Else Branching',
-      displayString: `What will this program output?`,
+      displayString: `What does this code output?`,
       codeSnippet: `score = ${testScore}\n\nif score >= ${threshold}:\n    status = "PASS"\nelse:\n    status = "RETRY"\n\nprint(status)`,
       options: ['PASS', 'RETRY'],
       answer,
       answerString: answer,
-      hint: `Since score (${testScore}) is ${isPass ? '>=' : '<'} ${threshold}, the ${isPass ? 'if' : 'else'} branch executes!`,
+      hint: `score (${testScore}) is ${isPass ? '>=' : '<'} ${threshold}, so the ${isPass ? 'if' : 'else'} branch runs.`,
       type: 'coding'
     };
   }
@@ -458,12 +458,12 @@ function generateTier5Problem() {
     return {
       tier: 5,
       concept: 'Spot the Bug',
-      displayString: `A developer wants a loop to print exactly 5 times. What is the bug?`,
+      displayString: `This loop is intended to print exactly 5 times. What is the bug?`,
       codeSnippet: `# Goal: print 5 times\nfor i in range(0, 6):\n    print("Climb!")`,
       options,
       answer,
       answerString: answer,
-      hint: `range(0, 6) generates numbers [0, 1, 2, 3, 4, 5], which is 6 iterations, not 5!`,
+      hint: `range(0, 6) produces 6 values (0 through 5), so it runs 6 times.`,
       type: 'coding'
     };
   }
@@ -481,7 +481,7 @@ function generateTier5Problem() {
     options,
     answer,
     answerString: answer,
-    hint: `is_weekend is True, so enter the outer block. Inside, is_sunny is False, so choose the else branch ("Read a Book")!`,
+    hint: `is_weekend is True and is_sunny is False, so the inner else branch ("Read a Book") runs.`,
     type: 'coding'
   };
 }
@@ -512,7 +512,7 @@ function generateTier6Problem() {
       options,
       answer,
       answerString: answer,
-      hint: `Sum the values: ${Array.from({ length: n }, (_, i) => i + 1).join(' + ')} = ${expectedSum}!`,
+      hint: `Add the numbers from 1 to ${n}: ${Array.from({ length: n }, (_, i) => i + 1).join(' + ')} = ${expectedSum}.`,
       type: 'coding'
     };
   }
@@ -537,12 +537,12 @@ function generateTier6Problem() {
     return {
       tier: 6,
       concept: 'While Loops',
-      displayString: `What is the final value of x when the while loop terminates?`,
+      displayString: `What is the final value of x when the loop terminates?`,
       codeSnippet: `x = 1\nwhile x < ${maxVal}:\n    x = x * 2\nprint(x)`,
       options,
       answer,
       answerString: answer,
-      hint: `Trace x: 1 -> 2 -> 4 -> 8 -> ... stops as soon as x is NOT less than ${maxVal}!`,
+      hint: `x doubles each step until it is no longer less than ${maxVal}.`,
       type: 'coding'
     };
   }
@@ -554,12 +554,12 @@ function generateTier6Problem() {
   return {
     tier: 6,
     concept: 'Array Iteration',
-    displayString: `How many times does the print statement execute?`,
+    displayString: `How many times does the print statement run?`,
     codeSnippet: `backpack = [${items.join(', ')}]\n\nfor item in backpack:\n    print("Found " + item)`,
     options,
     answer,
     answerString: answer,
-    hint: `There are 4 elements in the backpack array, so the loop iterates 4 times!`,
+    hint: `The backpack list has 4 items, so the loop runs 4 times.`,
     type: 'coding'
   };
 }
@@ -586,12 +586,12 @@ function generateTier7Problem() {
     return {
       tier: 7,
       concept: 'Function Returns',
-      displayString: `What does the function call evaluate to?`,
+      displayString: `What does this function call return?`,
       codeSnippet: `def calculate(a, b):\n    return (a + b) * ${mult}\n\nresult = calculate(${p1}, ${p2})\nprint(result)`,
       options,
       answer,
       answerString: answer,
-      hint: `Substitute a=${p1}, b=${p2}: (${p1} + ${p2}) * ${mult} = ${p1 + p2} * ${mult} = ${answer}!`,
+      hint: `Substitute a=${p1} and b=${p2}: (${p1} + ${p2}) * ${mult} = ${ansNum}.`,
       type: 'coding'
     };
   }
@@ -608,7 +608,7 @@ function generateTier7Problem() {
       options,
       answer,
       answerString: answer,
-      hint: `Push 4, push 9 -> pop removes 9. Then push 7 -> 7 is now on top!`,
+      hint: `Push 4, push 9, then pop removes 9. Push 7 leaves 7 on top.`,
       type: 'coding'
     };
   }
@@ -619,12 +619,12 @@ function generateTier7Problem() {
   return {
     tier: 7,
     concept: 'Queue (FIFO)',
-    displayString: `Which item is dequeued (removed first) from the queue?`,
+    displayString: `Which item is removed first by dequeue()?`,
     codeSnippet: `queue = []\nqueue.enqueue("Alpha")\nqueue.enqueue("Beta")\nqueue.enqueue("Gamma")\n\nfirst_out = queue.dequeue()\nprint(first_out)`,
     options,
     answer,
     answerString: answer,
-    hint: `A Queue is First-In First-Out (FIFO). "Alpha" was added first, so it leaves first!`,
+    hint: `A queue is First-In, First-Out (FIFO). "Alpha" was added first, so it is removed first.`,
     type: 'coding'
   };
 }
@@ -643,12 +643,12 @@ function generateTier8Problem() {
     return {
       tier: 8,
       concept: 'Recursion',
-      displayString: `What is the return value of factorial(4)?`,
+      displayString: `What does factorial(4) return?`,
       codeSnippet: `def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(4))`,
       options,
       answer,
       answerString: answer,
-      hint: `factorial(4) = 4 * 3 * 2 * 1 = 24!`,
+      hint: `factorial(4) = 4 × 3 × 2 × 1 = 24.`,
       type: 'coding'
     };
   }
@@ -669,7 +669,7 @@ function generateTier8Problem() {
       options,
       answer,
       answerString: answer,
-      hint: `Accessing an array directly by index happens in one immediate step: O(1) Constant Time!`,
+      hint: `Direct array index lookup takes constant time: O(1).`,
       type: 'coding'
     };
   }
@@ -680,12 +680,12 @@ function generateTier8Problem() {
   return {
     tier: 8,
     concept: 'Binary Search',
-    displayString: `Searching sorted numbers 1 to 100 with Binary Search. What is the first midpoint checked?`,
+    displayString: `Searching sorted numbers 1 to 100 with binary search, what is the first midpoint checked?`,
     codeSnippet: `low = 1, high = 100\nmid = (1 + 100) // 2\n# First probe at mid`,
     options,
     answer,
     answerString: answer,
-    hint: `Binary search checks the exact midpoint between 1 and 100: (1 + 100) // 2 = 50!`,
+    hint: `The midpoint between 1 and 100 is (1 + 100) // 2 = 50.`,
     type: 'coding'
   };
 }

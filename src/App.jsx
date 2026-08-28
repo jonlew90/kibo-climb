@@ -2122,6 +2122,7 @@ export default function App() {
       {appState === 'quests' && (
         <QuestsScreen
           activeSubject={activeSubject}
+          sparks={sparks}
           userState={{
             competenceRank: liveCompetenceRating,
             adaptiveCompetenceRating: liveCompetenceRating,
@@ -2148,6 +2149,11 @@ export default function App() {
               };
               setConsumables(nextConsumables);
               storageService.saveUserData({ consumables: nextConsumables }, activeSubject);
+            }
+            if (reward.newlyUnlockedBadges && reward.newlyUnlockedBadges.length > 0) {
+              const newBadgeIds = reward.newlyUnlockedBadges.map(b => (typeof b === 'string' ? b : b.id)).filter(Boolean);
+              setUnlockedBadges(prev => Array.from(new Set([...(prev || []), ...newBadgeIds])));
+              setNewlyUnlockedBadges(reward.newlyUnlockedBadges);
             }
           }}
           onAwardSparks={(earned) => {

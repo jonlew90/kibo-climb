@@ -440,7 +440,11 @@ class QuestService {
       // Evaluate quest-related badges
       let badgeResult = { newlyUnlocked: [] };
       try {
+        const activeSub = 'math';
+        const userData = storageService.getUserData(activeSub);
         badgeResult = evaluateBadges({
+          ...userData,
+          subjectId: activeSub,
           questElevation: state.totalXp,
           questLevel: newLevelInfo.level,
           ascentTier: newLevelInfo.ascentTier,
