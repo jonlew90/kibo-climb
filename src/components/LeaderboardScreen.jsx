@@ -42,6 +42,8 @@ export default function LeaderboardScreen({
     storageService.getFriendRequests().filter(r => r.type === 'received').length
   );
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [selectedPlayerForModal, setSelectedPlayerForModal] = useState(null);
+  const [friendActionFeedback, setFriendActionFeedback] = useState('');
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [cohortId, setCohortId] = useState(null);
   const [isLoadingCohort, setIsLoadingCohort] = useState(false);
@@ -995,9 +997,18 @@ export default function LeaderboardScreen({
           <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
 
             {/* 2nd Place */}
+            {/* 2nd Place */}
             {top3[1] && (
-              <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-4 relative z-10 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setSelectedPlayerForModal(top3[1]);
+                }}
+                className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-4 relative z-10 animate-fade-in-up text-left group cursor-pointer"
+                style={{ animationDelay: '100ms' }}
+              >
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 transition-transform group-hover:scale-105 ${
                   top3[1].isCurrentUser ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40' : 'bg-slate-200 border-slate-300'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
@@ -1005,14 +1016,14 @@ export default function LeaderboardScreen({
                   </div>
                 </div>
                 <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[1].name}>
-                  <span className="font-bold text-xs truncate min-w-0 text-center">
+                  <span className="font-bold text-xs text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[1].name}
                   </span>
                   {top3[1].isCurrentUser ? (
-                    <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
+                    <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[1].isFriend ? (
                     <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
-                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" /> Friend
+                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" />
                     </span>
                   ) : null}
                 </div>
@@ -1026,16 +1037,23 @@ export default function LeaderboardScreen({
                 <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                   <span className="text-xl font-black text-slate-500 drop-shadow-sm">2</span>
                 </div>
-              </div>
+              </button>
             )}
 
             {/* 1st Place */}
             {top3[0] && (
-              <div className="flex flex-col items-center flex-1 min-w-0 max-w-[145px] sm:max-w-[175px] relative z-20 animate-fade-in-up">
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setSelectedPlayerForModal(top3[0]);
+                }}
+                className="flex flex-col items-center flex-1 min-w-0 max-w-[145px] sm:max-w-[175px] relative z-20 animate-fade-in-up text-left group cursor-pointer"
+              >
                 <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
                   <Crown className="w-6 h-6 fill-amber-400" />
                 </div>
-                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 transition-transform group-hover:scale-105 ${
                   top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.88] sm:scale-95">
@@ -1043,14 +1061,14 @@ export default function LeaderboardScreen({
                   </div>
                 </div>
                 <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[0].name}>
-                  <span className="font-black text-sm text-amber-900 truncate min-w-0 text-center">
+                  <span className="font-black text-sm text-amber-900 text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[0].name}
                   </span>
                   {top3[0].isCurrentUser ? (
-                    <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
+                    <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[0].isFriend ? (
                     <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
-                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" /> Friend
+                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" />
                     </span>
                   ) : null}
                 </div>
@@ -1065,13 +1083,21 @@ export default function LeaderboardScreen({
                   <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
                   <span className="text-3xl font-black text-amber-700 drop-shadow-md">1</span>
                 </div>
-              </div>
+              </button>
             )}
 
             {/* 3rd Place */}
             {top3[2] && (
-              <div className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-8 relative z-10 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 ${
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setSelectedPlayerForModal(top3[2]);
+                }}
+                className="flex flex-col items-center flex-1 min-w-0 max-w-[125px] sm:max-w-[155px] mb-8 relative z-10 animate-fade-in-up text-left group cursor-pointer"
+                style={{ animationDelay: '200ms' }}
+              >
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 transition-transform group-hover:scale-105 ${
                   top3[2].isCurrentUser ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40' : 'bg-orange-100 border-orange-300'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
@@ -1079,14 +1105,14 @@ export default function LeaderboardScreen({
                   </div>
                 </div>
                 <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[2].name}>
-                  <span className="font-bold text-xs truncate min-w-0 text-center">
+                  <span className="font-bold text-xs text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[2].name}
                   </span>
                   {top3[2].isCurrentUser ? (
-                    <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full font-black shrink-0">YOU</span>
+                    <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[2].isFriend ? (
                     <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
-                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" /> Friend
+                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" />
                     </span>
                   ) : null}
                 </div>
@@ -1100,7 +1126,7 @@ export default function LeaderboardScreen({
                 <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
                   <span className="text-lg font-black text-orange-700 drop-shadow-sm">3</span>
                 </div>
-              </div>
+              </button>
             )}
           </div>
         )}
@@ -1110,7 +1136,11 @@ export default function LeaderboardScreen({
           {others.map((player) => (
             <div
               key={player.isCurrentUser ? 'current-user-row' : `${player.id || player.name}-${player.rank}`}
-              className={`rounded-2xl p-3 flex items-center gap-3 transition-all ${
+              onClick={() => {
+                soundFx.playKeyTap();
+                setSelectedPlayerForModal(player);
+              }}
+              className={`rounded-2xl p-3 flex items-center gap-3 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] ${
                 player.isCurrentUser
                   ? 'bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border-2 border-indigo-500 shadow-md ring-2 ring-indigo-400/30'
                   : player.isFriend
@@ -1133,9 +1163,11 @@ export default function LeaderboardScreen({
               </div>
 
               {/* Player Info */}
-              <div className="flex-1 min-w-0 flex flex-col">
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-bold text-sm text-slate-800 truncate">{player.name}</span>
+                  <span className="font-bold text-sm text-slate-800 break-words line-clamp-2" title={player.name}>
+                    {player.name}
+                  </span>
                   {player.isCurrentUser && (
                     <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
                       YOU
@@ -1148,12 +1180,12 @@ export default function LeaderboardScreen({
                   )}
                 </div>
                 {viewMode === 'quests' ? (
-                  <span className="text-xs text-purple-700 font-medium truncate flex items-center gap-1">
+                  <span className="text-xs text-purple-700 font-medium truncate flex items-center gap-1 mt-0.5">
                     <Mountain className="w-3.5 h-3.5 text-purple-500 shrink-0" />
-                    <span>[Ascent {player.ascentTier || 1}] Lv. {player.level || 1} • {player.title || 'Basecamp Explorer'}</span>
+                    <span className="truncate">[Ascent {player.ascentTier || 1}] Lv. {player.level || 1} • {player.title || 'Basecamp Explorer'}</span>
                   </span>
                 ) : (
-                  <span className="text-xs text-slate-500 font-medium truncate flex items-center gap-1">
+                  <span className="text-xs text-slate-500 font-medium truncate flex items-center gap-1 mt-0.5">
                     <Activity className="w-3.5 h-3.5 text-slate-400" />
                     {player.subjectsMastered} Skills Mastered
                   </span>
@@ -1328,6 +1360,116 @@ export default function LeaderboardScreen({
               className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-2xl font-black text-sm shadow-md transition-all flex items-center justify-center cursor-pointer"
             >
               Got it!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* PLAYER INSPECTOR MODAL */}
+      {selectedPlayerForModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Climber Details"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+          onClick={() => setSelectedPlayerForModal(null)}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border-2 border-indigo-100 flex flex-col items-center gap-4 relative animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setSelectedPlayerForModal(null);
+                setFriendActionFeedback('');
+              }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Mascot Avatar */}
+            <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 flex items-center justify-center overflow-hidden relative shadow-md mt-1 ${
+              selectedPlayerForModal.isCurrentUser
+                ? 'bg-indigo-100 border-indigo-400 ring-4 ring-indigo-300/40'
+                : selectedPlayerForModal.isFriend
+                ? 'bg-rose-50 border-rose-300 ring-4 ring-rose-200/50'
+                : 'bg-slate-100 border-slate-300'
+            }`}>
+              <div className="absolute inset-0 flex items-center justify-center scale-95">
+                <Mascot size={72} mood="excited" equipped={selectedPlayerForModal.equipped || []} className="w-full h-full" />
+              </div>
+            </div>
+
+            {/* Full Username & Badges */}
+            <div className="text-center w-full px-2">
+              <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                <h3 className="font-black text-lg sm:text-xl text-slate-800 break-all select-all">
+                  {selectedPlayerForModal.name}
+                </h3>
+                {selectedPlayerForModal.isCurrentUser ? (
+                  <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0">
+                    YOU
+                  </span>
+                ) : selectedPlayerForModal.isFriend ? (
+                  <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-xs px-2 py-0.5 rounded-full font-black flex items-center gap-1 shrink-0">
+                    <Heart className="w-3 h-3 fill-rose-500 text-rose-500" /> Friend
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-xs text-slate-500 font-medium mt-1">
+                Leaderboard Rank #{selectedPlayerForModal.rank || '—'}
+              </p>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col items-center justify-center">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  {viewMode === 'global' ? 'Rating' : viewMode === 'weekly' ? 'Sparks' : 'Total XP'}
+                </span>
+                <span className="text-base font-black text-indigo-700 mt-0.5">
+                  {viewMode === 'global'
+                    ? selectedPlayerForModal.score
+                    : viewMode === 'weekly'
+                    ? (selectedPlayerForModal.sparks || 0)
+                    : (selectedPlayerForModal.totalXp ?? selectedPlayerForModal.score ?? 0).toLocaleString()}
+                </span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col items-center justify-center">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  {viewMode === 'quests' ? 'Ascent Tier' : 'Mastered'}
+                </span>
+                <span className="text-base font-black text-purple-700 mt-0.5 truncate max-w-full">
+                  {viewMode === 'quests'
+                    ? `Ascent ${selectedPlayerForModal.ascentTier || 1}`
+                    : `${selectedPlayerForModal.subjectsMastered || 0} Skills`}
+                </span>
+              </div>
+            </div>
+
+            {/* Feedback Message */}
+            {friendActionFeedback && (
+              <div className="w-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold py-2 px-3 rounded-xl text-center animate-fade-in">
+                {friendActionFeedback}
+              </div>
+            )}
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setSelectedPlayerForModal(null);
+                setFriendActionFeedback('');
+              }}
+              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-2xl font-black text-sm shadow-md transition-all cursor-pointer"
+            >
+              Close
             </button>
           </div>
         </div>
