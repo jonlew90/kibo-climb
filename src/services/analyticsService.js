@@ -162,5 +162,41 @@ export const analyticsService = {
    */
   logCustomEvent: (eventName, params) => {
     safeLogEvent(eventName, params);
+  },
+
+  /**
+   * Log an error, exception, or crash securely without violating COPPA rules.
+   * Ensures PII like emails and phone numbers are redacted.
+   * @param {Error|string} error - The error object or string message.
+   * @param {Object} [additionalParams] - Optional additional context.
+   */
+  logError: (error, additionalParams = {}) => {
+    let errorMessage = '';
+
+    if (error instanceof Error) {
+      errorMessage = error.message || String(error);
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    } else {
+      try {
+        errorMessage = JSON.stringify(error);
+      } catch (e) {
+        errorMessage = 'Unknown error type';
+      }
+    }
+
+    if (typeof errorMessage !== 'string') {
+      errorMessage = String(errorMessage);
+    }
+
+    // Redact potential PII (emails and phone numbers) to ensure COPPA compliance
+    let redactedMessage = errorMessage
+      .replace(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi, '[REDACTED_EMAIL]')
+      .replace(/(\+?\d{1,2}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g, '[REDACTED_PHONE]');
+
+    safeLogEvent('exception', {
+      description: redactedMessage.substring(0, 100),
+      fatal: additionalParams.fatal === true
+    });
   }
 };
