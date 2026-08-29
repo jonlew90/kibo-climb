@@ -9,7 +9,7 @@ import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { Dices, ShieldCheck, RefreshCw, AlertCircle, Lock } from 'lucide-react';
 import { parentChildService } from '../services/parentChildService';
-import { dynamicChallengeGenerator } from '../utils/dynamicChallengeGenerator';
+import PinGateModal from './PinGateModal';
 import PrivacyPolicyScreen from './PrivacyPolicyScreen';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
@@ -100,8 +100,7 @@ export default function FirstLaunchOnboardingModal({
 
   // COPPA & Privacy Policy state
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
-  const [challenge, setChallenge] = useState(() => dynamicChallengeGenerator.generateChallenge());
-  const [selectedChallengeAnswer, setSelectedChallengeAnswer] = useState('');
+  const [showPinGateModal, setShowPinGateModal] = useState(false);
   const [consentAgreed, setConsentAgreed] = useState(false);
   const [consentError, setConsentError] = useState('');
 
@@ -205,8 +204,6 @@ export default function FirstLaunchOnboardingModal({
     if (!selectedGrade) return;
     const coppaStatus = parentChildService.getCOPPAConsentStatus();
     if (!coppaStatus.consented) {
-      setChallenge(dynamicChallengeGenerator.generateChallenge());
-      setSelectedChallengeAnswer('');
       setConsentAgreed(false);
       setConsentError('');
       setStep('coppa_consent');
@@ -221,18 +218,14 @@ export default function FirstLaunchOnboardingModal({
       setConsentError('Please check the box to confirm adult status and agree to COPPA consent.');
       return;
     }
-    if (!selectedChallengeAnswer) {
-      setConsentError('Please select an answer to the adult verification challenge.');
-      return;
-    }
-    if (String(selectedChallengeAnswer).trim() !== String(challenge.correctAnswer).trim()) {
-      setConsentError('Incorrect answer. Please solve the challenge to verify adult consent.');
-      setChallenge(dynamicChallengeGenerator.generateChallenge());
-      setSelectedChallengeAnswer('');
-      return;
-    }
-    // Record verifiable parental consent under COPPA
-    parentChildService.recordParentalConsent('knowledge_challenge', {
+    setConsentError('');
+    soundFx.playKeyTap();
+    setShowPinGateModal(true);
+  };
+
+  const handlePinGateSuccess = () => {
+    setShowPinGateModal(false);
+    parentChildService.recordParentalConsent('parent_gate', {
       verifiedAt: new Date().toISOString()
     });
     finalizeProfile();
@@ -278,8 +271,8 @@ export default function FirstLaunchOnboardingModal({
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
               What should we<br />call you, Climber?
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
-              Pick your climber tag for <strong className="text-amber-400">Math, Words & World</strong> leaderboards & friends.
+            <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed">
+              Choose a fun nickname for your climber profile.
             </p>
           </div>
 
@@ -312,7 +305,7 @@ export default function FirstLaunchOnboardingModal({
             <button
               type="button"
               onClick={handleGenerateSafeName}
-              className="w-full py-2 px-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 rounded-xl text-purple-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
+              className="w-full py-2.5 px-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 rounded-xl text-purple-200 text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
             >
               <Dices className="w-4 h-4 text-amber-300" />
               <span>🎲 Generate Kid-Safe Tag</span>
@@ -320,7 +313,7 @@ export default function FirstLaunchOnboardingModal({
 
             {usernameError && <p className="text-xs font-bold text-rose-400 text-left px-1">{usernameError}</p>}
             
-            <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 font-medium">
+            <div className="flex items-center justify-between text-xs text-slate-400 px-1 font-medium">
               <span>3–20 characters · No spaces</span>
               <span className="flex items-center gap-1 text-emerald-400">
                 <ShieldCheck className="w-3.5 h-3.5" /> Kid Safe
@@ -400,10 +393,10 @@ export default function FirstLaunchOnboardingModal({
                 Multi-Subject Grade Level
               </span>
             </div>
-            <h1 className="text-lg sm:text-2xl font-black tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-tight">
               What grade is<br />{usernameInput || 'the climber'} in?
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xs mx-auto">
+            <p className="text-sm sm:text-base text-slate-300 font-medium max-w-xs mx-auto">
               Calibrates starting difficulty for <strong className="text-amber-300">Math, Words & World</strong> so challenges feel just right.
             </p>
           </div>
@@ -431,7 +424,7 @@ export default function FirstLaunchOnboardingModal({
                   </div>
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center justify-between gap-1">
-                      <span className="text-xs sm:text-sm font-black text-white truncate">{grade}</span>
+                      <span className="text-sm sm:text-base font-black text-white truncate">{grade}</span>
                       {isSelected && (
                         <span className="text-xs font-black uppercase text-amber-400 bg-amber-400/20 px-1.5 py-0.5 rounded-md">
                           Selected
@@ -458,18 +451,30 @@ export default function FirstLaunchOnboardingModal({
             })}
           </div>
 
-          <button
-            type="button"
-            onClick={handleGradeConfirm}
-            disabled={!selectedGrade}
-            className={`w-full h-12 sm:h-13 font-black text-sm sm:text-base rounded-2xl border-b-4 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 shrink-0 ${
-              selectedGrade
-                ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/30 border-orange-700 cursor-pointer'
-                : 'bg-slate-800 text-slate-600 border-slate-900 cursor-not-allowed'
-            }`}
-          >
-            Next: Parent Verification 🔒
-          </button>
+          <div className="w-full flex items-center gap-2 pt-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setStep(1);
+              }}
+              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-sm rounded-xl shrink-0 transition-all cursor-pointer"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={handleGradeConfirm}
+              disabled={!selectedGrade}
+              className={`flex-1 py-3 font-black text-sm rounded-xl border-b-4 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1.5 ${
+                selectedGrade
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/30 border-orange-700 cursor-pointer'
+                  : 'bg-slate-800 text-slate-600 border-slate-900 cursor-not-allowed'
+              }`}
+            >
+              Parent Verification 🔒
+            </button>
+          </div>
         </div>
         {showPrivacyModal && (
           <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
@@ -495,12 +500,12 @@ export default function FirstLaunchOnboardingModal({
 
           <div className="flex items-center justify-center gap-2 text-teal-300">
             <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
-            <h2 className="text-lg sm:text-xl font-black tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight">
               Parental Verification & Consent (COPPA)
             </h2>
           </div>
 
-          <div className="bg-white/10 border border-white/20 rounded-2xl p-3.5 text-left space-y-2 text-xs text-slate-200">
+          <div className="bg-white/10 border border-white/20 rounded-2xl p-3.5 text-left space-y-2 text-xs sm:text-sm text-slate-200">
             <p className="font-medium leading-relaxed">
               Under the Children's Online Privacy Protection Act (COPPA), verifiable consent from an adult parent or legal guardian is required before collecting any educational practice data or username for children under 13.
             </p>
@@ -508,60 +513,30 @@ export default function FirstLaunchOnboardingModal({
               <button
                 type="button"
                 onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
-                className="text-xs font-bold text-teal-300 hover:text-teal-200 underline cursor-pointer flex items-center gap-1"
+                className="text-xs sm:text-sm font-bold text-teal-300 hover:text-teal-200 underline cursor-pointer flex items-center gap-1"
               >
                 <ShieldCheck className="w-3.5 h-3.5" /> Read COPPA Privacy Policy
               </button>
             </div>
           </div>
 
-          {/* Adult Knowledge-Based Verification Challenge */}
-          <div className="w-full bg-white/10 border-2 border-purple-400/40 rounded-2xl p-3.5 text-left space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black uppercase tracking-wider text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-md">
-                Adult Check: {challenge.title}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  soundFx.playKeyTap();
-                  setChallenge(dynamicChallengeGenerator.generateChallenge());
-                  setSelectedChallengeAnswer('');
-                }}
-                className="text-slate-300 hover:text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-              >
-                <RefreshCw className="w-3 h-3" /> Refresh
-              </button>
+          {/* Adult Verification Info Card */}
+          <div className="w-full bg-white/5 border border-purple-400/30 rounded-2xl p-3.5 sm:p-4 text-left flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center shrink-0 text-purple-300 mt-0.5">
+              <Lock className="w-5 h-5" />
             </div>
-            <p className="text-xs text-slate-300 font-medium">{challenge.instruction}</p>
-            <div className="text-xl font-black text-white bg-white/15 border border-white/20 rounded-xl p-2.5 text-center">
-              {challenge.question}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              {challenge.options.map((opt, idx) => (
-                <button
-                  key={`${opt}-${idx}`}
-                  type="button"
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    setSelectedChallengeAnswer(opt);
-                    setConsentError('');
-                  }}
-                  className={`py-2.5 px-3 rounded-xl border-2 font-black text-base transition-all cursor-pointer ${
-                    selectedChallengeAnswer === opt
-                      ? 'border-amber-400 bg-amber-400/30 text-white shadow-md'
-                      : 'border-white/15 bg-white/5 hover:bg-white/10 text-slate-200'
-                  }`}
-                >
-                  {opt}
-                </button>
-              ))}
+            <div className="space-y-1 min-w-0">
+              <h3 className="text-sm sm:text-base font-black text-white">
+                Parental Gate Verification
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
+                Verify adulthood via <strong>Face ID / Touch ID</strong>, device PIN, or dynamic adult challenge.
+              </p>
             </div>
           </div>
 
           {/* Consent Checkbox */}
-          <label className="w-full flex items-start gap-2.5 text-left bg-white/5 border border-white/10 rounded-xl p-3 cursor-pointer select-none">
+          <label className="w-full flex items-start gap-2.5 text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-3 cursor-pointer select-none transition-colors">
             <input
               type="checkbox"
               checked={consentAgreed}
@@ -571,7 +546,7 @@ export default function FirstLaunchOnboardingModal({
               }}
               className="mt-0.5 w-4 h-4 rounded text-purple-600 focus:ring-purple-500 shrink-0 cursor-pointer"
             />
-            <span className="text-xs text-slate-200 font-medium leading-tight">
+            <span className="text-xs sm:text-sm text-slate-200 font-medium leading-normal">
               I confirm I am an adult parent or legal guardian. I consent to the collection and use of educational practice progress and safe climber tag under Kibo Climb's Privacy Policy.
             </span>
           </label>
@@ -583,27 +558,37 @@ export default function FirstLaunchOnboardingModal({
             </div>
           )}
 
-          <div className="w-full flex gap-2 pt-1">
+          <div className="w-full flex items-center gap-2 pt-1">
             <button
               type="button"
-              onClick={() => setStep(2)}
-              className="flex-1 py-3 bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setStep(2);
+              }}
+              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-sm rounded-xl shrink-0 transition-all cursor-pointer"
             >
               Back
             </button>
             <button
               type="button"
               onClick={handleConsentSubmit}
-              className="flex-2 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-sm rounded-xl shadow-lg shadow-amber-500/20 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-sm rounded-xl shadow-lg shadow-amber-500/20 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all cursor-pointer flex items-center justify-center gap-1.5"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Verify & Consent 🚀</span>
+              <Lock className="w-4 h-4" />
+              <span>Verify as Parent 🚀</span>
             </button>
           </div>
         </div>
         {showPrivacyModal && (
           <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
         )}
+        <PinGateModal
+          isOpen={showPinGateModal}
+          onClose={() => setShowPinGateModal(false)}
+          onUnlockSuccess={handlePinGateSuccess}
+          title="Parental Verification"
+          subtitle="Verify adult status to provide COPPA consent."
+        />
       </div>
     );
   }

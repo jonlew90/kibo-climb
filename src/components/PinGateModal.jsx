@@ -11,7 +11,9 @@ const PARENT_VISITED_KEY = 'kibo_parent_visited';
 export default function PinGateModal({
   isOpen,
   onClose,
-  onUnlockSuccess
+  onUnlockSuccess,
+  title = 'Parent Verification',
+  subtitle = 'Parental verification required to access restricted area.'
 }) {
   const [activeTab, setActiveTab] = useState(() => {
     const prefs = storageService.getNotificationSettings();
@@ -235,7 +237,7 @@ export default function PinGateModal({
   return (
     <div
       onClick={handleCloseModal}
-      className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-purple-50 via-slate-50 to-indigo-50 text-slate-800 flex flex-col justify-center items-center p-4 sm:p-6 overflow-hidden select-none animate-pop cursor-pointer"
+      className="fixed inset-0 z-[1100] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-purple-50 via-slate-50 to-indigo-50 text-slate-800 flex flex-col justify-center items-center p-4 sm:p-6 overflow-hidden select-none animate-pop cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -261,9 +263,9 @@ export default function PinGateModal({
         </div>
 
         <div className="space-y-1 mb-4">
-          <h3 className="text-2xl font-black text-slate-800 tracking-tight">Parent Verification</h3>
+          <h3 className="text-2xl font-black text-slate-800 tracking-tight">{title}</h3>
           <p className="text-xs text-slate-500 font-semibold">
-            Parental verification required to access restricted area.
+            {subtitle}
           </p>
         </div>
 
