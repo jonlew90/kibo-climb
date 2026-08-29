@@ -86,6 +86,7 @@ export default function FirstLaunchOnboardingModal({
   onStartAtTier1,
   onUsernameSet,
   hasVisitedParentZone = false,
+  onRequestLogin
 }) {
   // step: 1 = username, 2 = grade selection, 'coppa_consent' = parent consent, 3 = welcome splash
   const [step, setStep] = useState(1);
@@ -340,6 +341,21 @@ export default function FirstLaunchOnboardingModal({
           </form>
 
           <div className="flex flex-col items-center gap-2 pt-1">
+            {onRequestLogin && (
+              <p className="text-xs text-slate-300 font-medium">
+                Already have a Kibo account?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    onRequestLogin();
+                  }}
+                  className="font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer"
+                >
+                  Log In
+                </button>
+              </p>
+            )}
             {onOpenParentZone && (
               <button type="button" onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
                 className="text-xs font-bold text-purple-300 hover:text-white transition-colors cursor-pointer">

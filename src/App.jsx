@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass } from 'lucide-react';
+import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass, LogOut } from 'lucide-react';
 import Mascot from './components/Mascot';
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
@@ -197,6 +197,7 @@ export default function App() {
     storageService.getFriendRequests(activeProfileId).filter(r => r.type === 'received').length
   );
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
+  const [showLogoutConfirmModal, setShowLogoutConfirmModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
 
@@ -1656,6 +1657,21 @@ export default function App() {
                     <Settings className="w-3.5 h-3.5 text-slate-600 stroke-[2.5]" />
                     <span>Settings</span>
                   </button>
+
+                  {!authService.getAuthState().isAnonymous && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setShowProfileDropdown(false);
+                        setShowLogoutConfirmModal(true);
+                      }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-rose-50 text-rose-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-rose-600 stroke-[2.5]" />
+                      <span>Log Out</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -2421,6 +2437,10 @@ export default function App() {
             setPinGateSource('profile_selector');
             setShowPinGateModal(true);
           }}
+          onRequestLogin={() => {
+            setLinkModalMilestone('Account Sync');
+            setShowAccountLinkModal(true);
+          }}
         />
       )}
 
@@ -2436,6 +2456,10 @@ export default function App() {
             setShowManualProfileSwitcher(false);
             setAppState('adaptive_session');
             validateStreakForActiveProfile(targetSubject);
+          }}
+          onRequestLogin={() => {
+            setLinkModalMilestone('Account Sync');
+            setShowAccountLinkModal(true);
           }}
           onClose={() => {
             setShowManualProfileSwitcher(false);
@@ -2488,6 +2512,10 @@ export default function App() {
           syncAppStateWithStorage(validSubject);
           setShowFirstLaunchOnboardingModal(false);
           setAppState('adaptive_session');
+        }}
+        onRequestLogin={() => {
+          setLinkModalMilestone('Restore Account');
+          setShowAccountLinkModal(true);
         }}
       />
 
@@ -3018,6 +3046,53 @@ export default function App() {
           }
         }}
       />
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirmModal && (
+        <div
+          onClick={() => setShowLogoutConfirmModal(false)}
+          className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-white border-2 border-slate-300 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-pop cursor-default"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center mx-auto text-amber-800">
+              <LogOut className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-black text-slate-900">Log Out of Account?</h3>
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                {authService.getAuthState().email ? (
+                  <>You are signed in as <strong className="text-slate-800">{authService.getAuthState().email}</strong>. Your climber profiles and progress will remain safe in the cloud.</>
+                ) : (
+                  <>Your climber profiles and progress will remain safe in the cloud.</>
+                )}
+              </p>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirmModal(false)}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  soundFx.playKeyTap();
+                  setShowLogoutConfirmModal(false);
+                  await authService.unlinkAccount();
+                }}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black text-xs transition-colors shadow-xs cursor-pointer"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* DEV CONTROL PANEL (TRIGGERED BY SECRET KEYSTROKE CODE 'kibodev') */}
       <DevControlPanel

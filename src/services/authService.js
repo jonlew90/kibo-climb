@@ -5,6 +5,9 @@ import {
   linkWithRedirect,
   getRedirectResult,
   signInWithCredential,
+  signInAnonymously,
+  GoogleAuthProvider,
+  OAuthProvider,
   unlink, 
   signOut,
   onAuthStateChanged,
@@ -542,27 +545,24 @@ export const authService = {
       }
 
       // Ensure we get a brand new anonymous session
-      await signInAnonymously(auth);
+      try {
+        await signInAnonymously(auth);
+      } catch (anonErr) {
+        console.warn('Anonymous re-auth during unlink fallback:', anonErr);
+      }
       const newFirebaseUser = auth.currentUser;
       const guestUid = newFirebaseUser ? newFirebaseUser.uid : `guest_${Date.now()}`;
 
-      // Wipe local data so shared devices act as fresh install after unlink
-      localStorage.removeItem('kibo_profiles_data');
-      localStorage.removeItem('kibo_parent_pin');
-      localStorage.removeItem('kibo_parent_notif_prefs');
-      localStorage.removeItem('kibo_practice_days');
-
-      const accountData = {
-        cloudUid: guestUid,
-        isAnonymous: true,
-        authProvider: 'anonymous',
-        email: null,
-        accountLinkedAt: null,
-        promptedLinkMilestones: [],
-        lastPromptedLinkAt: null
-      };
-
-      storageService.setGlobalAccountLinkedState(accountData);
+      // Wipe all local storage keys starting with 'kibo_' so the device returns to a completely fresh 2-step onboarding install state
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('kibo_')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      sessionStorage.removeItem('kibo_parent_gate_session');
 
       // Reload page to re-initialize app state cleanly
       window.location.reload();

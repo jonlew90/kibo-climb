@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, ChevronRight, Flame, Star, Zap, CheckCircle2, User, X, Sparkles, BookOpen, GraduationCap, ArrowLeft, Lock } from 'lucide-react';
+import { Plus, ChevronRight, Flame, Star, Zap, CheckCircle2, User, X, Sparkles, BookOpen, GraduationCap, ArrowLeft, Lock, LogIn, LogOut } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
+import { authService } from '../services/authService';
 import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { GRADE_CURRICULUM_DETAILS } from './FirstLaunchOnboardingModal';
@@ -331,11 +332,14 @@ export default function ProfileSelectorScreen({
   canClose = false,
   onClose,
   onBuyFamilyPlan,
-  onBuySinglePlan
+  onBuySinglePlan,
+  onRequestLogin
 }) {
   const [profiles, setProfiles] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const [authState, setAuthState] = useState(() => authService.getAuthState());
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const loadProfiles = () => {
     const list = storageService.getAllProfiles();
@@ -353,6 +357,13 @@ export default function ProfileSelectorScreen({
   useEffect(() => {
     loadProfiles();
     analyticsService.logScreenView('ProfileSelector');
+    const unsub = authService.subscribeAuthState?.(() => {
+      setAuthState(authService.getAuthState());
+      loadProfiles();
+    });
+    return () => {
+      if (unsub) unsub();
+    };
   }, []);
 
   const handleSelect = (profile) => {
@@ -422,6 +433,43 @@ export default function ProfileSelectorScreen({
             <span className="text-lg">🏔️</span>
             <h2 className="text-base sm:text-lg font-black tracking-tight">Select Climber Profile</h2>
           </div>
+        </div>
+
+        {/* Right Header: Log In / Account & Log Out */}
+        <div className="flex items-center gap-2">
+          {authState.isAnonymous ? (
+            onRequestLogin && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  onRequestLogin();
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 hover:text-indigo-800 border border-indigo-200 rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer shadow-2xs"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Log In</span>
+              </button>
+            )
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline-block text-xs font-bold text-slate-500 max-w-[150px] truncate" title={authState.email || ''}>
+                {authState.email || 'Cloud Synced'}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setShowLogoutConfirm(true);
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 border border-slate-300 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer"
+                title="Log Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">Log Out</span>
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -565,8 +613,8 @@ export default function ProfileSelectorScreen({
         </div>
 
         {/* Footer info */}
-        <div className="w-full shrink-0 pb-1">
-          <p className="text-xs text-slate-500 font-medium text-center">
+        <div className="w-full shrink-0 pb-1 flex flex-col items-center gap-1 text-center">
+          <p className="text-xs text-slate-500 font-medium">
             Manage profiles, schedule, and settings in the{' '}
             {onOpenParentZone ? (
               <button
@@ -580,6 +628,18 @@ export default function ProfileSelectorScreen({
               <span className="font-bold text-slate-700">Parent Zone</span>
             )}.
           </p>
+          {authState.isAnonymous && onRequestLogin && (
+            <p className="text-xs text-slate-500 font-medium">
+              Already have a Kibo account?{' '}
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); onRequestLogin(); }}
+                className="font-bold text-indigo-600 hover:text-indigo-800 underline cursor-pointer"
+              >
+                Log in to restore climbers
+              </button>
+            </p>
+          )}
         </div>
       </main>
 
@@ -594,6 +654,54 @@ export default function ProfileSelectorScreen({
           }
         }}
       />
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div
+          onClick={() => setShowLogoutConfirm(false)}
+          className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-white border-2 border-slate-300 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-pop cursor-default"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center mx-auto text-amber-800">
+              <LogOut className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-black text-slate-900">Log Out of Account?</h3>
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                {authState.email ? (
+                  <>You are signed in as <strong className="text-slate-800">{authState.email}</strong>. Your climber profiles and progress will remain safe in the cloud.</>
+                ) : (
+                  <>Your climber profiles and progress will remain safe in the cloud.</>
+                )}
+              </p>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  soundFx.playKeyTap();
+                  setShowLogoutConfirm(false);
+                  await authService.unlinkAccount();
+                  window.location.reload();
+                }}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black text-xs transition-colors shadow-xs cursor-pointer"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
