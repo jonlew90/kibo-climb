@@ -15,7 +15,7 @@ export default function FamilyPlanUpgradeModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in"
     >
       <div
         className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative border-4 border-amber-200 animate-pop cursor-default"

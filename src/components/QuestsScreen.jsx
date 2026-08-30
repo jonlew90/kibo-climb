@@ -844,7 +844,7 @@ export default function QuestsScreen({
       {showTeammatePicker && (
         <div
           onClick={() => setShowTeammatePicker(null)}
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer animate-in fade-in duration-150"
+          className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer animate-in fade-in duration-150"
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -1041,7 +1041,7 @@ export default function QuestsScreen({
       {celebrationReward && (
         <div
           onClick={() => setCelebrationReward(null)}
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer"
+          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer"
         >
           <div
             onClick={(e) => e.stopPropagation()}

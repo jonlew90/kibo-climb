@@ -75,7 +75,7 @@ export default function ShareModal({ isOpen, onClose }) {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in cursor-pointer"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}

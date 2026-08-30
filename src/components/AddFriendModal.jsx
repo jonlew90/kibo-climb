@@ -251,7 +251,7 @@ export default function AddFriendModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in select-none cursor-pointer"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in select-none cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}

@@ -30,7 +30,7 @@ export default function StreakSavedModal({ isOpen, onClose, streak, remainingShi
   return (
     <div
       onClick={handleClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop cursor-pointer"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-pop cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}

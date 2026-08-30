@@ -44,14 +44,14 @@ export default function AscentRoadmapModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer animate-fade-in text-slate-800"
+      className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer animate-fade-in text-slate-800"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-purple-200 overflow-hidden cursor-default flex flex-col max-h-[85vh] sm:max-h-[80vh] animate-scaleIn"
+        className="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-emerald-200 overflow-hidden cursor-default flex flex-col max-h-[85vh] sm:max-h-[80vh] animate-scaleIn"
       >
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-700 p-4 text-white flex items-center justify-between">
+        <div className="bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 p-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
               <Mountain className="w-4 h-4 text-amber-300" />
@@ -60,7 +60,7 @@ export default function AscentRoadmapModal({
               <h3 className="text-base font-black tracking-tight leading-tight">
                 Expedition Ascents & Level Roadmap
               </h3>
-              <p className="text-[11px] text-purple-200">
+              <p className="text-[11px] text-teal-100">
                 Conquer 10 levels per Ascent to unlock harder weather & permanent perks!
               </p>
             </div>
@@ -75,7 +75,7 @@ export default function AscentRoadmapModal({
         </div>
 
         {/* Segmented Tab Switcher */}
-        <div className="bg-purple-100/70 p-1.5 flex items-center gap-1 border-b border-purple-200">
+        <div className="bg-emerald-100/70 p-1.5 flex items-center gap-1 border-b border-emerald-200">
           <button
             type="button"
             onClick={() => {
@@ -84,8 +84,8 @@ export default function AscentRoadmapModal({
             }}
             className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               levelRoadmapTab === 'levels'
-                ? 'bg-white text-purple-950 shadow-xs ring-1 ring-purple-300'
-                : 'text-purple-700 hover:bg-white/40'
+                ? 'bg-white text-teal-950 shadow-xs ring-1 ring-emerald-300'
+                : 'text-teal-800 hover:bg-white/40'
             }`}
           >
             <span>🧗</span>
@@ -100,8 +100,8 @@ export default function AscentRoadmapModal({
             }}
             className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               levelRoadmapTab === 'tiers'
-                ? 'bg-white text-purple-950 shadow-xs ring-1 ring-purple-300'
-                : 'text-purple-700 hover:bg-white/40'
+                ? 'bg-white text-teal-950 shadow-xs ring-1 ring-emerald-300'
+                : 'text-teal-800 hover:bg-white/40'
             }`}
           >
             <span>🏔️</span>
@@ -116,7 +116,7 @@ export default function AscentRoadmapModal({
           {levelRoadmapTab === 'levels' && (
             <div className="space-y-3.5 animate-in fade-in duration-150">
               {/* Top Hero Card */}
-              <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-violet-700 rounded-3xl p-4 sm:p-5 text-white shadow-md relative overflow-hidden text-left">
+              <div className="bg-gradient-to-br from-teal-600 via-emerald-600 to-teal-700 rounded-3xl p-4 sm:p-5 text-white shadow-md relative overflow-hidden text-left">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 text-[10px] sm:text-xs font-black uppercase tracking-wider shadow-2xs flex items-center gap-1">
@@ -140,7 +140,7 @@ export default function AscentRoadmapModal({
                       <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
                         {levelInfo.title}
                       </h3>
-                      <p className="text-purple-100 text-xs sm:text-sm font-bold">
+                      <p className="text-teal-100 text-xs sm:text-sm font-bold">
                         {currentTotalXp}m Total Mountain Altitude XP
                       </p>
                     </div>
@@ -155,7 +155,7 @@ export default function AscentRoadmapModal({
                       style={{ width: `${levelInfo.progressPct || 0}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[10px] sm:text-xs font-black text-purple-100">
+                  <div className="flex justify-between text-[10px] sm:text-xs font-black text-teal-100">
                     <span>{levelInfo.xpIntoLevel || 0}m / {levelInfo.xpRequiredForLevel || 150}m in Level {levelInfo.level}</span>
                     <span>{levelInfo.progressPct || 0}% to Lv. {(levelInfo.level || 1) + 1} ({levelInfo.nextRankTitle || 'Next Rank'})</span>
                   </div>
@@ -227,7 +227,7 @@ export default function AscentRoadmapModal({
           {/* TAB 2: Ascent Difficulty Tiers Section */}
           {levelRoadmapTab === 'tiers' && (
             <div className="space-y-2 animate-in fade-in duration-150">
-              <div className="p-2.5 rounded-2xl bg-indigo-50 border border-indigo-200 text-left text-xs text-indigo-950 font-medium">
+              <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-left text-xs text-emerald-950 font-medium">
                 Each Ascent features 10 levels. Completing Level 10 unlocks the next Ascent weather zone with permanent Spark boosts!
               </div>
 
@@ -288,7 +288,7 @@ export default function AscentRoadmapModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl shadow-xs cursor-pointer transition-all active:scale-98"
+            className="w-full py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-xs rounded-xl shadow-xs cursor-pointer transition-all active:scale-98"
           >
             Got It!
           </button>

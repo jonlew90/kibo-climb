@@ -44,7 +44,7 @@ export default function PerfectMonthProgressModal({ isOpen, onClose, currentMont
   return (
     <div
       onClick={handleClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm cursor-pointer"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm cursor-pointer"
     >
       {isPerfectMonth && <ConfettiCanvas />}
       <div

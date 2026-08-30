@@ -2917,7 +2917,7 @@ export default function App() {
       {showSpeedInfoModal && (
         <div
           onClick={() => setShowSpeedInfoModal(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -2970,7 +2970,7 @@ export default function App() {
       {showLevelUpModal && (
         <div
           onClick={() => setShowLevelUpModal(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop cursor-pointer"
         >
           <div
             onClick={(e) => e.stopPropagation()}

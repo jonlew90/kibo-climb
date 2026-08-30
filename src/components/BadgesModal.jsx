@@ -178,11 +178,7 @@ export default function BadgesModal({
               type="button"
               onClick={() => {
                 soundFx.playKeyTap();
-                if (onOpenAscentRoadmap) {
-                  onOpenAscentRoadmap();
-                } else {
-                  setShowAscentRoadmapModal(true);
-                }
+                setShowAscentRoadmapModal(true);
               }}
               className="px-3.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 active:scale-95 text-xs font-black text-white border border-white/30 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
             >
