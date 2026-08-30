@@ -76,6 +76,9 @@ export default function App() {
 
   const [showCinematicSplash, setShowCinematicSplash] = useState(() => {
     try {
+      if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE === 'test') {
+        return false;
+      }
       if (typeof window !== 'undefined' && window.sessionStorage) {
         return !window.sessionStorage.getItem('kibo_splash_shown');
       }
