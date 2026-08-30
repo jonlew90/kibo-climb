@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { analyticsService } from '../services/analyticsService';
 import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame } from 'lucide-react';
 import Mascot from './Mascot';
@@ -148,6 +149,24 @@ export default function MathSessionView({
   const [showBreakOverlay, setShowBreakOverlay] = useState(false);
   const [showFrustrationCard, setShowFrustrationCard] = useState(false);
   const [celebrationEvent, setCelebrationEvent] = useState(null);
+
+  // Freeze background interaction and handle dismiss keys when celebration modal is active
+  useEffect(() => {
+    if (!celebrationEvent) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleModalKeyDown = (e) => {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setCelebrationEvent(null);
+      }
+    };
+    window.addEventListener('keydown', handleModalKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleModalKeyDown);
+    };
+  }, [celebrationEvent]);
   const [incorrectReviewData, setIncorrectReviewData] = useState(null);
 
   const isMathProblem = (p) => {
@@ -1524,10 +1543,10 @@ export default function MathSessionView({
       <div className="w-full h-full flex flex-col items-center justify-between sm:justify-end pb-1 sm:pb-2 pt-1 px-1.5 sm:px-3 max-w-4xl mx-auto relative overflow-visible flex-1 min-h-0">
 
       {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
-      {!isPaused && celebrationEvent && (
+      {!isPaused && celebrationEvent && typeof document !== 'undefined' && createPortal(
         <div
           onClick={() => setCelebrationEvent(null)}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-pop cursor-pointer"
+          className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-pop cursor-pointer"
         >
           <ConfettiCanvas />
           <div
@@ -1558,12 +1577,13 @@ export default function MathSessionView({
 
             <button
               onClick={() => setCelebrationEvent(null)}
-              className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-sm sm:text-base py-3 px-6 rounded-2xl shadow-md border-b-4 border-amber-700 active:translate-y-0.5 active:border-b-0 transition-all"
+              className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-sm sm:text-base py-3 px-6 rounded-2xl shadow-md border-b-4 border-amber-700 active:translate-y-0.5 active:border-b-0 transition-all cursor-pointer"
             >
               Keep Climbing 🚀
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MECHANICAL TRANSIENT FEEDBACK TOAST (SLIDES DOWN FROM TOP HUD) */}
