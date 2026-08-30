@@ -248,6 +248,16 @@ export default function WorkshopModal({
     };
   }, [isOpen, initialViewMode, initialHub]);
 
+  // Ensure active category hub is scrolled into view in the top navigation strip
+  useEffect(() => {
+    if (isOpen && viewMode === 'shop' && hubScrollRef.current) {
+      const activeEl = hubScrollRef.current.querySelector(`[data-hub="${activeHub}"]`);
+      if (activeEl && typeof activeEl.scrollIntoView === 'function') {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+  }, [isOpen, viewMode, activeHub]);
+
   // Handle Escape key listener
   useEffect(() => {
     if (!isOpen) return;
@@ -860,6 +870,7 @@ export default function WorkshopModal({
                       return (
                         <button
                           key={hub.id}
+                          data-hub={hub.id}
                           onClick={() => {
                             soundFx.playKeyTap();
                             setActiveHub(hub.id);

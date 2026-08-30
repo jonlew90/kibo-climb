@@ -2014,7 +2014,7 @@ export default function App() {
               type="button"
               onClick={() => {
                 soundFx.playKeyTap();
-                handleOpenWorkshop('adaptive_session');
+                handleOpenWorkshop('adaptive_session', 'sparks', 'shop');
               }}
               className="flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all relative shrink-0 overflow-visible cursor-pointer"
               title="Open Kibo Workshop"
