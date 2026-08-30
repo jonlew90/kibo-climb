@@ -97,6 +97,52 @@ export default function FirstLaunchOnboardingModal({
   const [selectedGrade, setSelectedGrade] = useState('');
   const [selectedStartingSubject, setSelectedStartingSubject] = useState('math');
   const inputRef = useRef(null);
+  const checkedUsernameRef = useRef('');
+  const inFlightPromiseRef = useRef(null);
+
+  // Background cloud claim / availability pre-check
+  const verifyUsernameWithCloud = async (name) => {
+    const trimmed = name.trim();
+    if (!trimmed) return { success: false, error: 'Please enter a username.' };
+    const err = validateSafeChildUsername(trimmed);
+    if (err) return { success: false, error: err };
+    if (checkedUsernameRef.current === trimmed.toLowerCase()) {
+      return { success: true, username: trimmed };
+    }
+
+    const promise = (async () => {
+      try {
+        const res = await leaderboardService.claimUsername(trimmed, storageService.getActiveProfileId());
+        if (res.success) {
+          checkedUsernameRef.current = trimmed.toLowerCase();
+        }
+        return res;
+      } catch (err) {
+        return { success: true, username: trimmed, isFallback: true };
+      }
+    })();
+
+    inFlightPromiseRef.current = promise;
+    const res = await promise;
+    if (inFlightPromiseRef.current === promise) {
+      inFlightPromiseRef.current = null;
+    }
+    return res;
+  };
+
+  // Debounced cloud check while typing
+  useEffect(() => {
+    const trimmed = usernameInput.trim();
+    const validationErr = validateSafeChildUsername(trimmed);
+    if (!trimmed || validationErr) return;
+    if (checkedUsernameRef.current === trimmed.toLowerCase()) return;
+
+    const timer = setTimeout(() => {
+      verifyUsernameWithCloud(trimmed);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [usernameInput]);
 
   // COPPA & Privacy Policy state
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
@@ -109,6 +155,7 @@ export default function FirstLaunchOnboardingModal({
     const existing = storageService.getUsername();
     if (existing) {
       setUsernameInput(existing);
+      checkedUsernameRef.current = existing.trim().toLowerCase();
       const existingGrade = storageService.getActiveProfile()?.gradeLevel;
       if (existingGrade) {
         setSelectedGrade(existingGrade);
@@ -149,6 +196,8 @@ export default function FirstLaunchOnboardingModal({
     const safeName = generateSafeUsername();
     setUsernameInput(safeName);
     setUsernameError('');
+    // Pre-verify immediately on generation
+    verifyUsernameWithCloud(safeName);
   };
 
   const handleUsernameSubmit = async (e) => {
@@ -156,33 +205,36 @@ export default function FirstLaunchOnboardingModal({
     const error = validateSafeChildUsername(usernameInput);
     if (error) { setUsernameError(error); return; }
     const cleaned = usernameInput.trim();
-    
+    const normalized = cleaned.toLowerCase();
+
+    // If already verified with the cloud, proceed immediately
+    if (checkedUsernameRef.current === normalized) {
+      soundFx.playVictory();
+      setStep(2);
+      return;
+    }
+
     setIsCheckingUsername(true);
     setUsernameError('');
 
     try {
-      const res = await leaderboardService.claimUsername(cleaned, storageService.getActiveProfileId());
+      const res = inFlightPromiseRef.current
+        ? await inFlightPromiseRef.current
+        : await verifyUsernameWithCloud(cleaned);
+
       if (!res.success) {
         setUsernameError(res.error || 'This username is already taken. Please choose another one.');
         setIsCheckingUsername(false);
         return;
       }
       soundFx.playVictory();
-      setUsernameConfirmed(true);
-      setTimeout(() => {
-        setUsernameConfirmed(false);
-        setIsCheckingUsername(false);
-        setStep(2);
-      }, 500);
+      setIsCheckingUsername(false);
+      setStep(2);
     } catch (err) {
       console.warn('Username claim error', err);
       soundFx.playVictory();
-      setUsernameConfirmed(true);
-      setTimeout(() => {
-        setUsernameConfirmed(false);
-        setIsCheckingUsername(false);
-        setStep(2);
-      }, 500);
+      setIsCheckingUsername(false);
+      setStep(2);
     }
   };
 
