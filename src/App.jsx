@@ -1434,7 +1434,7 @@ export default function App() {
           onClick={() => {
             soundFx.playKeyTap();
             closeAllNavModals();
-            handleNavigateTo('/quests', 'quests');
+            setAppState('quests');
           }}
           className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] relative ${
             !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'quests' ? 'ring-2 ring-purple-500 scale-[1.02] sm:scale-105 font-bold' : ''

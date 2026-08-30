@@ -375,10 +375,10 @@ export default function FirstLaunchOnboardingModal({
   // ─── STEP 2: Grade Selection ──────────────────────────────────────────────
   if (step === 2) {
     return (
-      <div className="fixed inset-0 z-[1000] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-3 sm:p-5 select-none animate-pop overflow-hidden">
+      <div className="fixed inset-0 z-[1000] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-4 sm:p-6 select-none animate-pop overflow-hidden">
         <div className="absolute w-96 h-96 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
 
-        <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-2.5 sm:gap-3 text-center max-h-[96dvh] overflow-hidden py-1 sm:py-2">
+        <div className="relative z-10 w-full max-w-sm sm:max-w-md flex flex-col items-center gap-3.5 sm:gap-4.5 text-center max-h-[96dvh] overflow-hidden py-1 sm:py-2">
           {/* Step indicator */}
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500 shrink-0">
             <span className="text-slate-600">Step 1</span>
@@ -386,23 +386,23 @@ export default function FirstLaunchOnboardingModal({
             <span className="text-amber-400">Step 2</span>
           </div>
 
-          <div className="space-y-1 shrink-0">
+          <div className="space-y-1.5 shrink-0">
             <div className="flex items-center justify-center gap-2 text-amber-400">
               <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
               <span className="text-xs font-black uppercase tracking-widest bg-amber-400/10 border border-amber-400/30 px-3 py-0.5 rounded-full">
                 Multi-Subject Grade Level
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
               What grade is<br />{usernameInput || 'the climber'} in?
             </h1>
-            <p className="text-sm sm:text-base text-slate-300 font-medium max-w-xs mx-auto">
+            <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed">
               Calibrates starting difficulty for <strong className="text-amber-300">Math, Words & World</strong> so challenges feel just right.
             </p>
           </div>
 
           {/* Bounded Vertically Scrollable Grade Option Tiles */}
-          <div className="w-full max-h-48 sm:max-h-56 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar shrink">
+          <div className="w-full max-h-[48dvh] sm:max-h-[52dvh] overflow-y-auto space-y-2 pr-1 custom-scrollbar shrink">
             {GRADE_OPTIONS.map((grade) => {
               const details = GRADE_CURRICULUM_DETAILS[grade] || { math: '', words: '', world: '', summary: '' };
               const isSelected = selectedGrade === grade;
@@ -411,7 +411,7 @@ export default function FirstLaunchOnboardingModal({
                   key={grade}
                   type="button"
                   onClick={() => handleGradeSelect(grade)}
-                  className={`w-full flex items-start gap-2.5 px-3 py-2 sm:py-2.5 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
+                  className={`w-full flex items-start gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
                     isSelected
                       ? 'border-amber-400 bg-amber-400/15 shadow-md shadow-amber-500/10'
                       : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10'
@@ -458,7 +458,7 @@ export default function FirstLaunchOnboardingModal({
                 soundFx.playKeyTap();
                 setStep(1);
               }}
-              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-sm rounded-xl shrink-0 transition-all cursor-pointer"
+              className="px-4 py-3 sm:py-3.5 bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-sm sm:text-base rounded-2xl shrink-0 transition-all cursor-pointer"
             >
               Back
             </button>
@@ -466,7 +466,7 @@ export default function FirstLaunchOnboardingModal({
               type="button"
               onClick={handleGradeConfirm}
               disabled={!selectedGrade}
-              className={`flex-1 py-3 font-black text-sm rounded-xl border-b-4 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-3 sm:py-3.5 font-black text-sm sm:text-base rounded-2xl border-b-4 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1.5 ${
                 selectedGrade
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/30 border-orange-700 cursor-pointer'
                   : 'bg-slate-800 text-slate-600 border-slate-900 cursor-not-allowed'
