@@ -88,8 +88,8 @@ export default function FirstLaunchOnboardingModal({
   hasVisitedParentZone = false,
   onRequestLogin
 }) {
-  // step: 1 = username, 2 = grade selection, 'coppa_consent' = parent consent, 3 = welcome splash
-  const [step, setStep] = useState(1);
+  // step: 0 = welcome/about, 1 = username, 2 = grade selection, 'coppa_consent' = parent consent, 3 = welcome splash
+  const [step, setStep] = useState(0);
   const [usernameInput, setUsernameInput] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [usernameConfirmed, setUsernameConfirmed] = useState(false);
@@ -291,6 +291,119 @@ export default function FirstLaunchOnboardingModal({
     else if (typeof onStartPlacementTest === 'function') onStartPlacementTest();
   };
 
+  // ─── STEP 0: Welcome & Overview ──────────────────────────────────────────
+  if (step === 0) {
+    return (
+      <div className="fixed inset-0 z-[1000] h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-4 sm:p-6 select-none animate-pop overflow-y-auto">
+        <div className="absolute w-96 h-96 rounded-full bg-purple-600/20 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
+
+        <div className="relative z-10 w-full max-w-sm sm:max-w-md flex flex-col items-center gap-4 sm:gap-5 text-center my-auto py-2">
+          {/* Badge with Pronunciation */}
+          <div className="flex items-center justify-center gap-1.5 flex-wrap">
+            <span className="text-xs font-black uppercase tracking-wider text-amber-400 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full inline-flex items-center gap-1.5 shadow-sm">
+              🏔️ Meet Kibo <span className="text-amber-200/90 font-bold lowercase tracking-normal text-[11px] sm:text-xs">(pronounced KEE-boh)</span>
+            </span>
+          </div>
+
+          {/* Mascot Animation */}
+          <div className="relative flex justify-center p-1 overflow-visible">
+            <div className="absolute w-32 h-32 rounded-full bg-amber-400/20 blur-2xl animate-pulse pointer-events-none" />
+            <Mascot mood="happy" state="idle" equipped={equippedItems}
+              className="w-24 h-24 sm:w-28 sm:h-28 aspect-square filter drop-shadow-xl animate-bounce relative z-10" />
+          </div>
+
+          {/* Value Prop & Headline */}
+          <div className="space-y-1.5">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+              The Daily Climb<br />to Mastery
+            </h1>
+            <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed max-w-xs sm:max-w-sm mx-auto">
+              Bite-sized daily challenges that adapt to every learner — building confidence one peak at a time.
+            </p>
+          </div>
+
+          {/* 3 Core Subjects Card */}
+          <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-2.5 sm:p-3 grid grid-cols-3 gap-2 text-center">
+            <div className="flex flex-col items-center">
+              <span className="text-xl sm:text-2xl mb-0.5">🔢</span>
+              <span className="text-xs sm:text-sm font-black text-amber-300">Math</span>
+              <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-tight">Numbers & logic</span>
+            </div>
+            <div className="flex flex-col items-center border-x border-white/10 px-1">
+              <span className="text-xl sm:text-2xl mb-0.5">📚</span>
+              <span className="text-xs sm:text-sm font-black text-teal-300">Words</span>
+              <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-tight">Reading & vocab</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-xl sm:text-2xl mb-0.5">🌍</span>
+              <span className="text-xs sm:text-sm font-black text-emerald-300">World</span>
+              <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-tight">Maps & capitals</span>
+            </div>
+          </div>
+
+          {/* Pronunciation & Kilimanjaro Fun Fact */}
+          <div className="text-[11px] sm:text-xs text-slate-400 font-medium flex items-center justify-center gap-1.5 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 w-full">
+            <span>💡</span>
+            <span>Fun fact: <strong>Kibo</strong> (KEE-boh) is the summit of Mt. Kilimanjaro!</span>
+          </div>
+
+          {/* Primary CTA */}
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setStep(1);
+            }}
+            className="w-full h-13 sm:h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>Start Adventure</span>
+            <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+          </button>
+
+          {/* Secondary Actions */}
+          <div className="flex flex-col items-center gap-2 pt-0.5">
+            {onRequestLogin && (
+              <p className="text-xs text-slate-300 font-medium">
+                Already have a Kibo account?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    onRequestLogin();
+                  }}
+                  className="font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer"
+                >
+                  Log In
+                </button>
+              </p>
+            )}
+            {onOpenParentZone && (
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
+                className="text-xs font-bold text-purple-300 hover:text-white transition-colors cursor-pointer"
+              >
+                {hasVisitedParentZone ? '🔒 Parent Zone' : '🔒 Parent Zone Setup'}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+              className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+              <span>COPPA Notice & Privacy Policy</span>
+            </button>
+          </div>
+        </div>
+
+        {showPrivacyModal && (
+          <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+        )}
+      </div>
+    );
+  }
+
   // ─── STEP 1: Username ─────────────────────────────────────────────────────
   if (step === 1) {
     return (
@@ -298,11 +411,24 @@ export default function FirstLaunchOnboardingModal({
         <div className="absolute w-96 h-96 rounded-full bg-purple-600/20 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
 
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-4 sm:gap-5 text-center">
-          {/* Step indicator */}
-          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500">
-            <span className="text-amber-400">Step 1</span>
-            <span>/</span>
-            <span>2</span>
+          {/* Step indicator with back button */}
+          <div className="flex items-center justify-between w-full text-xs font-black uppercase tracking-widest text-slate-500">
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setStep(0);
+              }}
+              className="text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1 font-bold text-xs"
+            >
+              ← Back
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-amber-400">Step 1</span>
+              <span>/</span>
+              <span>2</span>
+            </div>
+            <div className="w-12" aria-hidden="true" />
           </div>
 
           <div className="relative flex justify-center p-1 overflow-visible">
