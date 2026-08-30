@@ -961,39 +961,67 @@ export default function WorkshopModal({
               {/* Search Toggle Button */}
               <button
                 type="button"
-                onClick={() => setShowSearch((prev) => !prev)}
+                onClick={() => {
+                  if (showSearch) {
+                    setShowSearch(false);
+                    setSearchQuery('');
+                  } else {
+                    setShowSearch(true);
+                  }
+                }}
                 className={`p-1.5 rounded-xl border transition-all shrink-0 ${
                   showSearch || searchQuery
                     ? 'bg-amber-100 text-amber-900 border-amber-300'
                     : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'
                 }`}
-                title="Toggle Search"
+                title={showSearch ? "Close Search" : "Open Search"}
+                aria-label={showSearch ? "Close search" : "Open search"}
               >
-                <Search className="w-3.5 h-3.5" />
+                {showSearch ? <X className="w-3.5 h-3.5" /> : <Search className="w-3.5 h-3.5" />}
               </button>
             </div>
 
             {/* Row 2: Secondary Filters (Wearables sub-slots OR Seasonal events OR Search) */}
             {showSearch && (
-              <div className="relative animate-fade-in">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  autoFocus
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={viewMode === 'closet' ? 'Search owned items...' : 'Search gear, pets, boosters...'}
-                  className="w-full pl-8 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-hidden focus:bg-white focus:border-amber-400 transition-all"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-black text-xs"
-                  >
-                    ✕
-                  </button>
-                )}
+              <div className="flex items-center gap-1.5 animate-fade-in">
+                <div className="relative flex-1">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    autoFocus
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setShowSearch(false);
+                        setSearchQuery('');
+                      }
+                    }}
+                    placeholder={viewMode === 'closet' ? 'Search owned items...' : 'Search gear, pets, boosters...'}
+                    className="w-full pl-8 pr-7 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-hidden focus:bg-white focus:border-amber-400 transition-all"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs"
+                      title="Clear search text"
+                      aria-label="Clear search text"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSearch(false);
+                    setSearchQuery('');
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 text-xs font-bold transition-all shrink-0"
+                >
+                  Cancel
+                </button>
               </div>
             )}
 
