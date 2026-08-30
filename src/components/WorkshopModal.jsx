@@ -606,7 +606,7 @@ export default function WorkshopModal({
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       
       {/* 1. TOP COMPACT FIXED-HEIGHT HEADER BAR */}
-      <header className="bg-white border-b-2 border-slate-200 px-2 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between gap-1.5 sm:gap-3 shadow-xs shrink-0 z-20 h-12 sm:h-14">
+      <header className="bg-white border-b-2 border-slate-200 px-2 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-3 shadow-xs shrink-0 z-20">
         {/* Title & Brand + Back Button */}
         <div className="flex items-center gap-1.5 shrink-0 min-w-0">
           {onClose && (
@@ -626,7 +626,7 @@ export default function WorkshopModal({
           <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-orange-100 border border-orange-300 flex items-center justify-center shrink-0 shadow-2xs">
             <ShoppingBag className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
           </div>
-          <h2 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 leading-tight truncate">
+          <h2 className="text-sm sm:text-base font-black tracking-tight text-slate-900 leading-tight truncate">
             Kibo's Corner
           </h2>
         </div>

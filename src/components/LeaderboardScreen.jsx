@@ -557,7 +557,7 @@ export default function LeaderboardScreen({
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-slate-50 via-stone-50 to-slate-100 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
 
       {/* STICKY TOP HEADER BAR */}
-      <header className="bg-white border-b-2 border-slate-200 px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
+      <header className="bg-white border-b-2 border-slate-200 px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between shadow-xs shrink-0 z-10">
         <div className="flex items-center gap-2 text-slate-800 min-w-0">
           {onBack && (
             <button

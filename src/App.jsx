@@ -1586,7 +1586,7 @@ export default function App() {
         </div>
       )}
       {/* Sticky Top HUD Header Bar */}
-      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between shadow-xs shrink-0">
+      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between shadow-xs shrink-0">
         {/* Brand Logo, User Profile & Stats */}
         <div className="flex items-center gap-2 w-full justify-between max-w-4xl mx-auto min-w-0">
           {/* 1. Active Profile Username / Avatar Dropdown (Top Left) */}
