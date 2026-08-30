@@ -909,6 +909,65 @@ export default function ParentDashboardModal({
               );
             })()}
 
+            {/* GLOBAL CLIMBER ASCENT & MULTI-SUBJECT BALANCE CARD */}
+            {(() => {
+              const questState = questService.getQuests(viewingProfileId);
+              const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️', ascentTier: 1, progressPct: 0, currentXp: 0, nextLevelXp: 150 };
+              const dailySubjects = questService.getDailySubjectsCompleted(viewingProfileId);
+              const isMultiClaimed = questService.isDailyMultiSubjectBonusClaimed(viewingProfileId);
+
+              return (
+                <div className="bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-50 border-2 border-teal-200 rounded-2xl p-4 text-left space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{questLevelInfo.icon || '🏕️'}</span>
+                      <div>
+                        <h3 className="text-sm font-black text-teal-950">
+                          Global Climber Progression: Ascent {questLevelInfo.ascentTier} • Lv. {questLevelInfo.level}
+                        </h3>
+                        <span className="text-xs text-teal-700 font-bold">
+                          {questLevelInfo.title} • {questState?.totalXp || 0}m Total Altitude XP
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-black bg-teal-600 text-white px-2.5 py-1 rounded-full shadow-2xs">
+                      {questLevelInfo.progressPct || 0}% to Level {(questLevelInfo.level || 1) + 1}
+                    </span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full h-2.5 bg-teal-200/80 rounded-full overflow-hidden border border-teal-300/50">
+                    <div
+                      className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-500"
+                      style={{ width: `${questLevelInfo.progressPct || 0}%` }}
+                    />
+                  </div>
+
+                  {/* Multi-Subject Daily Balance */}
+                  <div className="flex items-center justify-between flex-wrap sm:flex-nowrap gap-1.5 pt-1 border-t border-teal-200/60 text-[11px] sm:text-xs font-black">
+                    <div className="flex items-center gap-1 text-teal-900 truncate">
+                      <span>🌟</span>
+                      <span className="hidden sm:inline">Today's Exploration:</span>
+                      <span className="font-extrabold text-teal-700 truncate">
+                        {dailySubjects.length > 0 ? dailySubjects.map(s => (SUBJECTS_CONFIG[s]?.name || s)).join(', ') : 'No climbs yet today'}
+                      </span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs shrink-0 whitespace-nowrap ${
+                      isMultiClaimed || dailySubjects.length >= 2
+                        ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                        : 'bg-teal-100 text-teal-800'
+                    }`}>
+                      {isMultiClaimed
+                        ? '✅ Bonus Claimed (+75 ⚡)'
+                        : dailySubjects.length === 1
+                        ? '1/2 subjects (play 1 more for +75 ⚡)'
+                        : 'Play 2 subjects for +75 ⚡'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* RECENT ACTIVITY LOG */}
             {(() => {
               const activeUserData = getProfileSubjectData(viewingProfileId, selectedSubject);

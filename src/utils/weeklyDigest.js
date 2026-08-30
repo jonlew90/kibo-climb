@@ -245,6 +245,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
     questTotalXp,
     questProgressPct,
     questNextRankTitle,
+    multiSubjectBonusClaimsCount: questState?.multiSubjectBonusClaimsCount || 0,
     unlockedBadgesCount: unlockedBadges.length,
     unlockedBadges,
     totalProblemsThisWeek,

@@ -325,8 +325,156 @@ class QuestService {
       }
     });
 
+    // 4. Direct Base Altitude XP gain per problem attempt
+    const earnedAltitudeXp = typeof event.earnedXp === 'number' ? event.earnedXp : (isCorrect ? 10 : 2);
+    const previousXp = state.totalXp || 0;
+    const previousLevelInfo = getQuestLevelInfo(previousXp);
+    state.totalXp = previousXp + earnedAltitudeXp;
+    const newLevelInfo = getQuestLevelInfo(state.totalXp);
+    state.levelInfo = newLevelInfo;
+
+    let leveledUp = null;
+    if (newLevelInfo.ascentTier > previousLevelInfo.ascentTier) {
+      leveledUp = {
+        isSummit: true,
+        oldTier: previousLevelInfo.ascentTier,
+        newTier: newLevelInfo.ascentTier,
+        oldAscentMode: previousLevelInfo.ascentMode,
+        newAscentMode: newLevelInfo.ascentMode,
+        level: newLevelInfo.level,
+        reward: previousLevelInfo.ascentMode?.summitReward || { sparks: 500, shields: 3 }
+      };
+    } else if (newLevelInfo.level > previousLevelInfo.level) {
+      leveledUp = {
+        isSummit: false,
+        oldLevel: previousLevelInfo.level,
+        newLevel: newLevelInfo.level,
+        ascentTier: newLevelInfo.ascentTier,
+        rank: newLevelInfo,
+        reward: { sparks: 50 + newLevelInfo.level * 15 }
+      };
+    }
+
     this.saveRawState(profileId, state);
-    return state;
+
+    return {
+      ...state,
+      earnedAltitudeXp,
+      leveledUp
+    };
+  }
+
+  getDailySubjectsCompleted(profileId) {
+    const state = this.getQuests(profileId);
+    const today = getTodayDateKey();
+    return (state.dailySubjectsCompleted && state.dailySubjectsCompleted[today]) || [];
+  }
+
+  isDailyMultiSubjectBonusClaimed(profileId) {
+    const state = this.getQuests(profileId);
+    const today = getTodayDateKey();
+    return Boolean(state.multiSubjectBonusClaimed && state.multiSubjectBonusClaimed[today]);
+  }
+
+  recordDailySubjectClimb(profileId, subjectId) {
+    const state = this.getQuests(profileId);
+    const today = getTodayDateKey();
+    if (!state.dailySubjectsCompleted || typeof state.dailySubjectsCompleted !== 'object') {
+      state.dailySubjectsCompleted = {};
+    }
+    if (!Array.isArray(state.dailySubjectsCompleted[today])) {
+      state.dailySubjectsCompleted[today] = [];
+    }
+    if (subjectId && !state.dailySubjectsCompleted[today].includes(subjectId)) {
+      state.dailySubjectsCompleted[today].push(subjectId);
+    }
+    this.saveRawState(profileId, state);
+    return this.checkDailyMultiSubjectBonus(profileId);
+  }
+
+  checkDailyMultiSubjectBonus(profileId) {
+    const state = this.getQuests(profileId);
+    const today = getTodayDateKey();
+    const completed = (state.dailySubjectsCompleted && state.dailySubjectsCompleted[today]) || [];
+    if (!state.multiSubjectBonusClaimed || typeof state.multiSubjectBonusClaimed !== 'object') {
+      state.multiSubjectBonusClaimed = {};
+    }
+
+    const isClaimed = Boolean(state.multiSubjectBonusClaimed[today]);
+    const isEligible = completed.length >= 2;
+
+    if (isEligible && !isClaimed) {
+      state.multiSubjectBonusClaimed[today] = true;
+      const bonusSparks = 75;
+      const bonusAltitude = 100;
+      const previousXp = state.totalXp || 0;
+      const previousLevelInfo = getQuestLevelInfo(previousXp);
+      state.totalXp = previousXp + bonusAltitude;
+      state.multiSubjectBonusClaimsCount = (state.multiSubjectBonusClaimsCount || 0) + 1;
+      const newLevelInfo = getQuestLevelInfo(state.totalXp);
+      state.levelInfo = newLevelInfo;
+
+      let leveledUp = null;
+      if (newLevelInfo.ascentTier > previousLevelInfo.ascentTier) {
+        leveledUp = {
+          isSummit: true,
+          oldTier: previousLevelInfo.ascentTier,
+          newTier: newLevelInfo.ascentTier,
+          oldAscentMode: previousLevelInfo.ascentMode,
+          newAscentMode: newLevelInfo.ascentMode,
+          level: newLevelInfo.level,
+          reward: previousLevelInfo.ascentMode?.summitReward || { sparks: 500, shields: 3 }
+        };
+      } else if (newLevelInfo.level > previousLevelInfo.level) {
+        leveledUp = {
+          isSummit: false,
+          oldLevel: previousLevelInfo.level,
+          newLevel: newLevelInfo.level,
+          ascentTier: newLevelInfo.ascentTier,
+          rank: newLevelInfo,
+          reward: { sparks: 50 + newLevelInfo.level * 15 }
+        };
+      }
+
+      this.saveRawState(profileId, state);
+
+      try {
+        const activeProf = storageService.getActiveProfile();
+        const profName = activeProf?.username || activeProf?.name || 'Climber';
+        const equipped = activeProf?.shopState?.equippedItems || [];
+        leaderboardService.syncQuestScore({
+          profileId,
+          name: profName,
+          totalXp: state.totalXp,
+          level: newLevelInfo.level,
+          ascentTier: newLevelInfo.ascentTier,
+          ascentName: newLevelInfo.ascentMode?.name || 'Sunny Trailhead',
+          title: newLevelInfo.title,
+          claimsCount: state.claimsCount,
+          equipped
+        });
+      } catch (e) {
+        // offline
+      }
+
+      return {
+        awarded: true,
+        claimed: true,
+        bonus: { sparks: bonusSparks, altitude: bonusAltitude },
+        completedSubjects: completed,
+        multiSubjectBonusClaimsCount: state.multiSubjectBonusClaimsCount,
+        leveledUp,
+        state
+      };
+    }
+
+    return {
+      awarded: false,
+      claimed: isClaimed,
+      completedSubjects: completed,
+      multiSubjectBonusClaimsCount: state.multiSubjectBonusClaimsCount || 0,
+      state
+    };
   }
 
   claimReward(profileId, questId) {

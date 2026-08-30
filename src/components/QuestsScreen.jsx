@@ -28,6 +28,7 @@ import {
 import { soundFx } from '../utils/audio';
 import { questService } from '../services/questService';
 import { COMPANION_BUDDIES, ASCENT_MODES, ASCENT_RANKS, QUEST_RANKS } from '../data/questsData';
+import AscentRoadmapModal from './AscentRoadmapModal';
 import { storageService } from '../services/storageService';
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
@@ -56,18 +57,9 @@ export default function QuestsScreen({
   const [celebrationReward, setCelebrationReward] = useState(null);
   const [showTeammatePicker, setShowTeammatePicker] = useState(null); // { questId, teamType, slotIndex }
   const [showLevelInfoModal, setShowLevelInfoModal] = useState(false);
+  const [levelModalTab, setLevelModalTab] = useState('tiers');
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [friendsList, setFriendsList] = useState(() => storageService.getFriends());
-
-  const handleOpenQuestLeaderboard = () => {
-    soundFx.playKeyTap();
-    try {
-      localStorage.setItem('kibo_leaderboard_initial_view', 'quests');
-    } catch (e) {}
-    if (onNavigate) {
-      onNavigate('/leaderboard', 'leaderboard');
-    }
-  };
 
   // Update countdown timers periodically and refresh quests on date/week rollover
   useEffect(() => {
@@ -114,6 +106,16 @@ export default function QuestsScreen({
       } else if (onAwardSparks && totalSparksEarned > 0) {
         onAwardSparks(totalSparksEarned);
       }
+    }
+  };
+
+  const handleOpenQuestLeaderboard = () => {
+    soundFx.playKeyTap();
+    try {
+      localStorage.setItem('kibo_leaderboard_initial_view', 'quests');
+    } catch (e) {}
+    if (onNavigate) {
+      onNavigate('/leaderboard', 'leaderboard');
     }
   };
 
@@ -243,131 +245,45 @@ export default function QuestsScreen({
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
       <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-5">
-
-        {/* Hero Card */}
-        <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-violet-700 rounded-3xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden mb-5">
-          <div className="absolute -right-8 -bottom-8 opacity-15 pointer-events-none">
-            <Compass className="w-48 h-48 text-white" />
-          </div>
-          
-          <div className="relative z-10">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-black uppercase tracking-wider mb-2">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>Expedition Headquarters</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-xs">
-                Climber Milestones & Quests
-              </h1>
-              <p className="text-purple-100 text-xs sm:text-sm mt-1 max-w-md">
-                Complete daily objectives, weekly milestones, and team ascents to gain XP, level up your Quest Rank, and earn Sparks & Shields!
-              </p>
+        {/* Streamlined Expedition Board Header */}
+        <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 rounded-3xl p-4 sm:p-5 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative overflow-hidden mb-3">
+          <div className="space-y-1 relative z-10">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] sm:text-[11px] font-black uppercase tracking-wider">
+              <Scroll className="w-3.5 h-3.5 text-amber-300" />
+              <span>Expedition Board</span>
             </div>
+            <h1 className="text-xl sm:text-2xl font-black text-white leading-tight">
+              Daily, Weekly & Team Quests
+            </h1>
+            <p className="text-purple-100 text-xs font-medium">
+              Complete objectives to earn massive Altitude XP, Sparks & Shields!
+            </p>
           </div>
 
-          {/* Quest Rank & XP Level Bar */}
+          {/* Quick Actions */}
           {(() => {
-            const levelInfo = questState?.levelInfo || {
-              ascentTier: 1,
-              ascentMode: ASCENT_MODES[0],
-              level: 1,
-              title: 'Basecamp Explorer',
-              icon: '🏕️',
-              currentXp: 0,
-              xpIntoLevel: 0,
-              xpRequiredForLevel: 150,
-              progressPct: 0,
-              sparkBonusPct: 0
-            };
-
+            const levelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️', ascentTier: 1, sparkBonusPct: 0 };
             const ascentMode = levelInfo.ascentMode || ASCENT_MODES[0];
-
             return (
-              <div className="relative z-10 mt-5 pt-4 border-t border-white/15">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-2xl drop-shadow-xs">{levelInfo.icon}</span>
-                    <div>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {/* Ascent Mode Tag */}
-                        <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 text-[10px] font-black uppercase tracking-wider shadow-2xs flex items-center gap-1">
-                          <span>{ascentMode.icon}</span>
-                          <span>Ascent {levelInfo.ascentTier}: {ascentMode.name}</span>
-                        </span>
-
-                        {/* Level Tag */}
-                        <span className="px-2 py-0.5 rounded-md bg-white/25 text-white text-[10px] font-black uppercase tracking-wider">
-                          Lv. {levelInfo.level}
-                        </span>
-
-                        <span className="font-black text-sm text-white tracking-wide">
-                          {levelInfo.title}
-                        </span>
-
-                        {/* Permanent Spark Boost Tag */}
-                        {levelInfo.sparkBonusPct > 0 && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-emerald-400 text-emerald-950 text-[10px] font-black uppercase tracking-wider flex items-center gap-0.5">
-                            <Sparkles className="w-2.5 h-2.5" />
-                            +{levelInfo.sparkBonusPct}% Sparks
-                          </span>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            soundFx.playKeyTap();
-                            setShowLevelInfoModal(true);
-                          }}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 hover:bg-white/30 active:scale-95 text-[11px] font-bold text-amber-200 border border-amber-300/40 cursor-pointer transition-all shadow-xs"
-                          title="View all level XP requirements"
-                        >
-                          <Info className="w-3 h-3 text-amber-300" />
-                          <span>All Levels XP</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handleOpenQuestLeaderboard}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 hover:bg-white/30 active:scale-95 text-[11px] font-bold text-amber-200 border border-amber-300/40 cursor-pointer transition-all shadow-xs"
-                          title="View Mountain Quest Standings"
-                        >
-                          <Trophy className="w-3 h-3 text-amber-300" />
-                          <span>Standings</span>
-                        </button>
-                      </div>
-                      <span className="text-[11px] text-purple-200 block mt-0.5">
-                        Total XP: <strong className="text-emerald-300 font-black">{levelInfo.currentXp.toLocaleString()} XP</strong>
-                        <span className="text-purple-300/80 ml-1.5 font-medium">({ascentMode.weather})</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-1 pt-1 sm:pt-0 border-t sm:border-t-0 border-white/10">
-                    <span className="text-xs font-black text-white block">
-                      {levelInfo.xpIntoLevel} / {levelInfo.xpRequiredForLevel} XP <span className="text-purple-200 font-normal">({levelInfo.progressPct}%)</span>
-                    </span>
-                    {levelInfo.nextRankTitle && (
-                      <span className="text-[11px] text-purple-200">
-                        Next: <span className="font-bold text-white">{levelInfo.nextRankTitle}</span>
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Level Progress Bar */}
-                <div 
+              <div className="flex items-center gap-2 relative z-10 shrink-0 w-full sm:w-auto">
+                <button
+                  type="button"
                   onClick={() => {
                     soundFx.playKeyTap();
+                    setLevelModalTab('tiers');
                     setShowLevelInfoModal(true);
                   }}
-                  className="w-full h-3 bg-black/30 rounded-full overflow-hidden p-0.5 border border-white/20 cursor-pointer hover:border-amber-300/60 transition-colors"
-                  title="Click to view all level XP requirements"
+                  className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                  title={`View Ascent ${levelInfo.ascentTier} (${ascentMode.name}) weather roadmap & permanent Spark perks`}
                 >
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-300 transition-all duration-700 shadow-inner"
-                    style={{ width: `${levelInfo.progressPct}%` }}
-                  />
-                </div>
+                  <span>{ascentMode.icon || '🏕️'}</span>
+                  <span>Lv. {levelInfo.level} • Ascent {levelInfo.ascentTier} Perks</span>
+                  {levelInfo.sparkBonusPct > 0 && (
+                    <span className="text-[10px] bg-emerald-200 text-emerald-950 px-1.5 py-0.5 rounded-full font-black ml-0.5">
+                      +{levelInfo.sparkBonusPct}% ⚡
+                    </span>
+                  )}
+                </button>
               </div>
             );
           })()}
@@ -1100,203 +1016,12 @@ export default function QuestsScreen({
       )}
 
       {/* Level XP Roadmap Modal */}
-      {showLevelInfoModal && (
-        <div
-          onClick={() => setShowLevelInfoModal(false)}
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer animate-fade-in"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-purple-200 overflow-hidden cursor-default flex flex-col max-h-[70vh] sm:max-h-[75vh] animate-scaleIn"
-          >
-            {/* Modal Header */}
-            <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-700 p-4 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <Mountain className="w-4 h-4 text-amber-300" />
-                </div>
-                <div>
-                  <h3 className="text-base font-black tracking-tight leading-tight">
-                    Expedition Ascents & Level Roadmap
-                  </h3>
-                  <p className="text-[11px] text-purple-200">
-                    Conquer 10 levels per Ascent to unlock harder weather & permanent perks!
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowLevelInfoModal(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Current Player Status Banner */}
-            {(() => {
-              const currentLvl = questState?.levelInfo?.level || 1;
-              const currentTier = questState?.levelInfo?.ascentTier || 1;
-              const currentAscent = questState?.levelInfo?.ascentMode || ASCENT_MODES[0];
-              const currentXp = questState?.levelInfo?.currentXp || 0;
-              const sparkBonus = questState?.levelInfo?.sparkBonusPct || 0;
-
-              return (
-                <div className="bg-purple-50 px-4 py-2.5 border-b border-purple-100 flex items-center justify-between text-xs flex-wrap gap-2">
-                  <div>
-                    <span className="font-bold text-purple-900 block">
-                      Total Elevation XP: <strong className="text-purple-700 font-black">{currentXp.toLocaleString()} XP</strong>
-                    </span>
-                    <span className="text-[10px] text-purple-600 font-semibold">
-                      Current Boost: <strong className="text-emerald-600 font-black">+{sparkBonus}% Sparks</strong>
-                    </span>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-purple-200 text-purple-900 font-black text-[11px] flex items-center gap-1">
-                    <span>{currentAscent.icon}</span>
-                    <span>Ascent {currentTier} • Lv. {currentLvl}</span>
-                  </span>
-                </div>
-              );
-            })()}
-
-            {/* Modal Body: Ascent Modes & 10 Ranks */}
-            <div className="p-4 overflow-y-auto space-y-3.5 custom-scrollbar flex-1">
-              
-              {/* 1. Ascent Difficulty Tiers Section */}
-              <div>
-                <h4 className="text-[11px] font-black uppercase text-slate-400 tracking-wider mb-2">
-                  Mountain Ascent Difficulty Tiers
-                </h4>
-                <div className="grid grid-cols-1 gap-1.5">
-                  {ASCENT_MODES.map((mode) => {
-                    const currentTier = questState?.levelInfo?.ascentTier || 1;
-                    const isCurrentTier = currentTier === mode.tier;
-                    const isUnlocked = currentTier >= mode.tier;
-
-                    return (
-                      <div
-                        key={mode.tier}
-                        className={`p-2.5 rounded-2xl border transition-all flex items-center justify-between gap-2 ${
-                          isCurrentTier
-                            ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
-                            : isUnlocked
-                            ? 'bg-emerald-50/60 border-emerald-200'
-                            : 'bg-slate-50 border-slate-200 opacity-75'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-2xl">{mode.icon}</span>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-black text-xs text-slate-800">
-                                Ascent {mode.tier}: {mode.name}
-                              </span>
-                              {isCurrentTier && (
-                                <span className="px-1.5 py-0.5 rounded-full bg-amber-200 text-amber-950 text-[10px] font-black uppercase">
-                                  Current
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[10px] text-slate-500 block">
-                              {mode.subtitle} • {mode.weather}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="text-right shrink-0">
-                          <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md block">
-                            +{mode.sparkBonusPct}% Sparks
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-bold block mt-0.5">
-                            {mode.minXp.toLocaleString()} XP
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 2. The 10 Core Mountain Levels per Ascent */}
-              <div>
-                <h4 className="text-[11px] font-black uppercase text-slate-400 tracking-wider mb-2">
-                  10 Mountain Levels in Current Ascent
-                </h4>
-                <div className="space-y-1.5">
-                  {ASCENT_RANKS.map((rank) => {
-                    const currentLvl = questState?.levelInfo?.level || 1;
-                    const isCurrent = currentLvl === rank.level;
-                    const isReached = currentLvl >= rank.level;
-
-                    return (
-                      <div
-                        key={rank.level}
-                        className={`p-2.5 rounded-2xl border transition-all flex items-center justify-between gap-2 ${
-                          isCurrent
-                            ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
-                            : isReached
-                            ? 'bg-emerald-50/50 border-emerald-200'
-                            : 'bg-slate-50/70 border-slate-200'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-xl">{rank.icon}</span>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-black ${
-                                isCurrent ? 'bg-amber-400 text-amber-950' : isReached ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-200 text-slate-700'
-                              }`}>
-                                Lv. {rank.level}
-                              </span>
-                              <span className="font-black text-xs text-slate-800">
-                                {rank.title}
-                              </span>
-                            </div>
-
-                            {rank.reward?.sparks && (
-                              <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded-md inline-flex items-center gap-0.5 mt-0.5">
-                                <Sparkles className="w-2.5 h-2.5 text-amber-600" />
-                                +{rank.reward.sparks} Sparks
-                                {rank.reward.shields ? ` • +${rank.reward.shields} Shield` : ''}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {isCurrent ? (
-                          <span className="text-[10px] font-black text-amber-800 bg-amber-200 px-2 py-0.5 rounded-full">
-                            Active Level
-                          </span>
-                        ) : isReached ? (
-                          <span className="text-emerald-600 text-[10px] font-bold flex items-center gap-0.5">
-                            <Check className="w-3 h-3 stroke-[3]" /> Conquered
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 text-[10px] font-medium">
-                            Locked
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-3 bg-slate-50 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowLevelInfoModal(false)}
-                className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl shadow-xs cursor-pointer transition-all active:scale-98"
-              >
-                Got It!
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AscentRoadmapModal
+        isOpen={showLevelInfoModal}
+        onClose={() => setShowLevelInfoModal(false)}
+        profileId={profileId}
+        initialTab={levelModalTab}
+      />
 
       {/* Celebration Modal */}
       {celebrationReward && (

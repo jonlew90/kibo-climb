@@ -1462,6 +1462,8 @@ export default function MathSessionView({
         blockTimeSec={completedBlockStats.blockTimeSec}
         isNewSpeedRecord={completedBlockStats.isNewSpeedRecord}
         isNewStreakRecord={completedBlockStats.isNewStreakRecord}
+        profileId={profileId}
+        activeSubject="math"
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
           if (onResetDoubleSparks) onResetDoubleSparks();

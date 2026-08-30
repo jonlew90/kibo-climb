@@ -1370,6 +1370,8 @@ export default function WorldSessionView({
         blockTimeSec={completedBlockStats.blockTimeSec}
         isNewSpeedRecord={completedBlockStats.isNewSpeedRecord}
         isNewStreakRecord={completedBlockStats.isNewStreakRecord}
+        profileId={profileId}
+        activeSubject="world"
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
           if (onResetDoubleSparks) onResetDoubleSparks();

@@ -3,6 +3,8 @@ import { ShoppingBag, Play, Trophy, Zap, Flame, TrendingUp, CheckCircle2, Shield
 import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import RollingNumberTicker from './RollingNumberTicker';
+import { questService } from '../services/questService';
+import { storageService } from '../services/storageService';
 
 export default function KiboBreakOverlay({
   correctCount = 12,
@@ -16,12 +18,20 @@ export default function KiboBreakOverlay({
   blockTimeSec = null,
   isNewSpeedRecord = false,
   isNewStreakRecord = false,
+  profileId,
+  activeSubject = 'math',
   onOpenWorkshop,
   onResumeClimb
 }) {
   const displayCorrect = Math.min(12, Math.max(0, correctCount));
   const accuracyPct = Math.round((displayCorrect / Math.max(1, totalCount)) * 100);
   const isPerfectBlock = displayCorrect === totalCount && shieldsUsed === 0;
+  const activeProfileId = profileId || storageService.getActiveProfileId();
+  const questState = questService.getQuests(activeProfileId);
+  const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️', ascentTier: 1, progressPct: 0 };
+  const dailySubjects = questService.getDailySubjectsCompleted(activeProfileId);
+  const isMultiSubjectClaimed = questService.isDailyMultiSubjectBonusClaimed(activeProfileId);
+  const altitudeEarned = (displayCorrect * 10) + (Math.max(0, totalCount - displayCorrect) * 2);
 
   return (
     <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-hidden select-none animate-pop border-none">
@@ -130,12 +140,51 @@ export default function KiboBreakOverlay({
           </div>
 
           {/* Competence Rank Banner */}
-          <div className="bg-gradient-to-r from-amber-100 via-yellow-100 to-purple-100 border border-amber-300 rounded-2xl p-3 px-4 flex items-center justify-between shadow-xs shrink-0">
+          <div className="bg-gradient-to-r from-amber-100 via-yellow-100 to-purple-100 border border-amber-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex items-center justify-between shadow-xs shrink-0">
             <span className="text-xs sm:text-sm font-black text-purple-900 flex items-center gap-1.5 uppercase">
               <Trophy className="w-4 h-4 text-amber-600 fill-amber-400 stroke-[2.5]" /> Competence Rank
             </span>
-            <span className="text-base sm:text-lg font-black text-purple-950 bg-white px-3 py-1 rounded-xl border border-purple-200 shadow-inner">
+            <span className="text-sm sm:text-base font-black text-purple-950 bg-white px-2.5 py-0.5 sm:py-1 rounded-xl border border-purple-200 shadow-inner">
               <RollingNumberTicker value={competenceRating} showDeltaBadge={false} suffix=" ⭐" />
+            </span>
+          </div>
+
+          {/* Global Climber Ascent & Altitude XP Progress */}
+          <div className="bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-100 border border-teal-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex flex-col gap-1.5 shadow-xs shrink-0 text-left">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="text-base">{questLevelInfo.icon || '🏕️'}</span>
+                <span className="text-xs sm:text-sm font-black text-teal-950">
+                  Ascent {questLevelInfo.ascentTier} • Lv. {questLevelInfo.level} ({questLevelInfo.title})
+                </span>
+              </div>
+              <span className="text-xs font-extrabold text-teal-700 bg-white/80 px-2 py-0.5 rounded-full border border-teal-200">
+                +{altitudeEarned}m Altitude
+              </span>
+            </div>
+            <div className="w-full h-2 bg-teal-200/80 rounded-full overflow-hidden border border-teal-300/50">
+              <div
+                className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-500"
+                style={{ width: `${questLevelInfo.progressPct || 0}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Multi-Subject Daily Bonus Status */}
+          <div className={`rounded-xl py-2 px-3 border text-xs font-black flex items-center justify-center shrink-0 gap-1.5 whitespace-nowrap overflow-hidden shadow-2xs ${
+            isMultiSubjectClaimed || dailySubjects.length >= 2
+              ? 'bg-amber-100/90 border-amber-300 text-amber-950'
+              : 'bg-slate-100/90 border-slate-200 text-slate-700'
+          }`}>
+            <span className="text-xs shrink-0">🌟</span>
+            <span className="font-extrabold truncate">
+              {isMultiSubjectClaimed
+                ? 'Bonus Claimed (+75 ⚡)'
+                : dailySubjects.length === 1
+                ? '1/2 subjects (play another for +75 ⚡)'
+                : dailySubjects.length >= 2
+                ? '2/2 ready to claim!'
+                : '0/2 subjects (play 2 for +75 ⚡)'}
             </span>
           </div>
         </div>

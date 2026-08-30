@@ -98,10 +98,26 @@ export const BADGES_CATALOG = [
   {
     id: 'multi_subject_5',
     title: 'Universal Genius',
-    description: 'Completed a climb in 5 different subjects!',
+    description: 'Completed climbs across all 5 subject disciplines!',
     category: 'consistency',
-    icon: '🌌',
+    icon: '👑',
     reqText: 'Play 5 different subjects'
+  },
+  {
+    id: 'daily_multi_subject_first',
+    title: 'Cross-Subject Explorer',
+    description: 'Practiced 2+ different subjects in a single day and unlocked the Multi-Subject Daily Bonus Chest!',
+    category: 'consistency',
+    icon: '🌟',
+    reqText: 'Claim 1 Multi-Subject Daily Bonus'
+  },
+  {
+    id: 'daily_multi_subject_5',
+    title: 'Renaissance Master',
+    description: 'Unlocked the Multi-Subject Daily Bonus 5 times by exploring multiple subjects!',
+    category: 'consistency',
+    icon: '🏆',
+    reqText: 'Claim 5 Multi-Subject Daily Bonuses'
   },
 
 

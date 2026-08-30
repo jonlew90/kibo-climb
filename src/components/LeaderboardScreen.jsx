@@ -688,10 +688,10 @@ export default function LeaderboardScreen({
                   <Mountain className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-xs font-black text-purple-950 block truncate">
+                  <span className="text-xs font-black text-purple-950 block">
                     Mountain Expedition Elevation
                   </span>
-                  <span className="text-[10px] text-purple-700 font-medium block truncate">
+                  <span className="text-[10px] text-purple-700 font-medium block leading-tight">
                     Earn XP across Daily, Weekly, and Squad Quests to conquer Ascent summits
                   </span>
                 </div>

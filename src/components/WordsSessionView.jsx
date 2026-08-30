@@ -1419,6 +1419,8 @@ export default function WordsSessionView({
         blockTimeSec={completedBlockStats.blockTimeSec}
         isNewSpeedRecord={completedBlockStats.isNewSpeedRecord}
         isNewStreakRecord={completedBlockStats.isNewStreakRecord}
+        profileId={profileId}
+        activeSubject="words"
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
           if (onResetDoubleSparks) onResetDoubleSparks();

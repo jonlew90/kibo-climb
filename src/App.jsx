@@ -15,6 +15,7 @@ import WordsSessionView from './components/WordsSessionView';
 import WorldSessionView from './components/WorldSessionView';
 import CodingSessionView from './components/CodingSessionView';
 import BadgesModal from './components/BadgesModal';
+import AscentRoadmapModal from './components/AscentRoadmapModal';
 import DevControlPanel from './components/DevControlPanel';
 import RollingNumberTicker from './components/RollingNumberTicker';
 import { checkAndPromptLinkAccount } from './utils/linkPromptLogic';
@@ -182,21 +183,16 @@ export default function App() {
   const [parentDashboardTab, setParentDashboardTab] = useState('overview');
   const [parentDashboardHighlight, setParentDashboardHighlight] = useState(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [showStatsDropdown, setShowStatsDropdown] = useState(false);
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [pendingReward, setPendingReward] = useState(null);
   const profileDropdownRef = useRef(null);
-  const statsDropdownRef = useRef(null);
   const subjectDropdownRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
-      }
-      if (statsDropdownRef.current && !statsDropdownRef.current.contains(event.target)) {
-        setShowStatsDropdown(false);
       }
       if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
         setShowSubjectDropdown(false);
@@ -214,8 +210,12 @@ export default function App() {
   const [showFamilyUpgradeModal, setShowFamilyUpgradeModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showDailyStreakIncreasedModal, setShowDailyStreakIncreasedModal] = useState(false);
+  const [showMultiSubjectBonusModal, setShowMultiSubjectBonusModal] = useState(false);
+  const [multiSubjectBonusData, setMultiSubjectBonusData] = useState(null);
+  const [globalAscentLevelUpEvent, setGlobalAscentLevelUpEvent] = useState(null);
   const [perfectMonthData, setPerfectMonthData] = useState(null);
   const [showBadgesModal, setShowBadgesModal] = useState(false);
+  const [showAscentRoadmapModal, setShowAscentRoadmapModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsCount, setFriendsCount] = useState(() => storageService.getFriends(activeProfileId).length);
   const [pendingFriendRequestsCount, setPendingFriendRequestsCount] = useState(() =>
@@ -558,6 +558,31 @@ export default function App() {
       lastSprintTimestamp: new Date().toISOString(),
       lastSprintTimezone: getCurrentTimezone()
     }, activeSubject);
+
+    // Record subject climb for Multi-Subject Daily Bonus
+    const multiBonusRes = questService.recordDailySubjectClimb(activeProfileId, activeSubject);
+    if (multiBonusRes?.awarded) {
+      const bonusSparks = multiBonusRes.bonus?.sparks || 75;
+      const currentSparks = storageService.getUserData(activeSubject).sparks || 0;
+      const updatedSparks = currentSparks + bonusSparks;
+      setSparks(updatedSparks);
+      storageService.saveUserData({ sparks: updatedSparks }, activeSubject);
+      setMultiSubjectBonusData(multiBonusRes);
+      setShowMultiSubjectBonusModal(true);
+      soundFx.playVictory?.();
+
+      // Evaluate badges
+      const activeUserData = storageService.getUserData(activeSubject);
+      const evalRes = evaluateBadges({
+        ...activeUserData,
+        subjectId: activeSubject,
+        multiSubjectBonusClaimsCount: multiBonusRes.multiSubjectBonusClaimsCount || 1
+      });
+      if (evalRes.newlyUnlocked && evalRes.newlyUnlocked.length > 0) {
+        setNewlyUnlockedBadges(evalRes.newlyUnlocked);
+        setUnlockedBadges(evalRes.updatedUnlocked);
+      }
+    }
   };
 
   const handleIncrementLifetimeProblems = (isCorrect = true) => {
@@ -578,12 +603,6 @@ export default function App() {
     
     let extraSparks = 0;
     analyticsService.logQuestionAnswered(activeSubject, isCorrect, currentRating, 'unknown');
-    analyticsService.logQuestionAnswered(activeSubject, isCorrect, currentRating, 'unknown');
-
-    analyticsService.logQuestionAnswered(activeSubject, isCorrect, uData.competenceRank || 1000, 'unknown');
-
-
-    analyticsService.logQuestionAnswered(activeSubject, isCorrect, uData.competenceRank || 1000, 'unknown');
 
     let newBaseline = uData.baselineRating;
     let newlyCalibrated = uData.isCalibrated || false;
@@ -596,11 +615,16 @@ export default function App() {
       soundFx.playVictory();
     }
 
-    questService.recordProgress(activeProfileId, {
+    const questProg = questService.recordProgress(activeProfileId, {
       subject: activeSubject,
       isCorrect,
       streak: nextStreak
     });
+
+    if (questProg?.leveledUp) {
+      soundFx.playVictory?.();
+      setGlobalAscentLevelUpEvent(questProg.leveledUp);
+    }
 
     storageService.saveUserData({
       totalProblemsSolved: nextTotal,
@@ -1335,7 +1359,7 @@ export default function App() {
   const activeProfile = storageService.getActiveProfile();
   const allProfiles = storageService.getAllProfiles();
 
-  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showFamilyUpgradeModal || showStreakSavedModal || showDailyStreakIncreasedModal || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal || showNewsModal;
+  const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showFamilyUpgradeModal || showStreakSavedModal || showDailyStreakIncreasedModal || showMultiSubjectBonusModal || !!globalAscentLevelUpEvent || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal || showNewsModal;
 
   // Check for News (Scoped per active profile)
   useEffect(() => {
@@ -1366,6 +1390,7 @@ export default function App() {
   const closeAllNavModals = (except = null) => {
     if (except !== 'workshop') setIsWorkshopOpen(false);
     if (except !== 'badges') setShowBadgesModal(false);
+    if (except !== 'ascentRoadmap') setShowAscentRoadmapModal(false);
     setShowNewsModal(false);
     if (except !== 'profile') setShowManualProfileSwitcher(false);
     if (except !== 'profileDropdown') setShowProfileDropdown(false);
@@ -1413,24 +1438,25 @@ export default function App() {
           <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Shop</span>
         </button>
 
-        {/* 2. Records Button: Golden Yellow */}
+        {/* 2. Passport Button: Golden Yellow */}
         <button
           type="button"
           onClick={handleOpenBadgesModal}
           className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100 text-yellow-950 border-2 border-yellow-400 rounded-xl hover:from-yellow-200 hover:to-yellow-100 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] relative ${
             showBadgesModal ? 'ring-2 ring-yellow-500 scale-[1.02] sm:scale-105 font-bold' : ''
           }`}
-          title="View Records"
+          title="View Climber Passport & Mountain Records"
+          aria-label="Climber Passport"
         >
           <div className="relative">
-            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 stroke-[2.5]" />
+            <Compass className="w-4 h-4 sm:w-5 sm:h-5 text-amber-700 stroke-[2.5]" />
             {unseenBadgesCount > 0 && (
               <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-amber-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none shadow-xs">
                 {unseenBadgesCount}
               </span>
             )}
           </div>
-          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Records</span>
+          <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Passport</span>
         </button>
 
         {/* 3. Leaderboard Button: Sapphire Blue */}
@@ -1714,121 +1740,87 @@ export default function App() {
               closeAllNavModals();
               setAppState('adaptive_session');
             }}
-            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1 rounded-full hover:bg-slate-100/80 active:scale-95 transition-all cursor-pointer group select-none shrink-0"
+            className="flex items-center px-1.5 sm:px-2.5 py-1 rounded-full hover:bg-slate-100/80 active:scale-95 transition-all cursor-pointer group select-none shrink-0"
             title="Kibo Climb Home"
           >
-            <img src="/favicon.svg" alt="Kibo Climb Logo" className="w-6 h-6 sm:w-7 sm:h-7 object-contain group-hover:scale-110 transition-transform shrink-0 drop-shadow-xs" />
-            <span className="font-black text-sm sm:text-base tracking-normal text-slate-800 group-hover:text-amber-600 transition-colors uppercase truncate">
-              {BRAND_CONFIG.rootBrand}
+            <span className="flex items-center font-black text-base sm:text-lg tracking-tight text-slate-800 group-hover:text-amber-600 transition-colors uppercase">
+              KIB
+              <img
+                src="/favicon.svg"
+                alt="O"
+                className="w-5 h-5 sm:w-6 sm:h-6 mx-0.5 object-contain group-hover:scale-110 transition-transform drop-shadow-xs inline-block"
+              />
+              <span className="hidden sm:inline ml-1">CLIMB</span>
             </span>
           </button>
 
           {/* 3. Right HUD Stats & Shortcuts */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            {/* Mobile Rolled Stats Button (< sm) */}
-            <div className="relative sm:hidden" ref={statsDropdownRef}>
-              <button
-                type="button"
-                onClick={() => {
-                  soundFx.playKeyTap();
-                  setShowStatsDropdown(!showStatsDropdown);
-                }}
-                className="flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2.5 py-1 rounded-full text-xs font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
-                title={`Climber Stats (Rank: ${liveCompetenceRating} pts)`}
-                aria-expanded={showStatsDropdown}
-              >
-                <Star className="w-3.5 h-3.5 text-purple-700 fill-purple-300 stroke-[2] shrink-0" />
-                <span className="text-[11px] font-black">{liveCompetenceRating}</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-purple-900 transition-transform duration-200 ${showStatsDropdown ? 'rotate-180' : ''}`} />
-              </button>
+            {/* Global Climber Ascent & Level Button (Visible on all devices) */}
+            {(() => {
+              const questState = questService.getQuests(activeProfileId);
+              const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️', ascentTier: 1, progressPct: 0 };
+              return (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    closeAllNavModals();
+                    setShowAscentRoadmapModal(true);
+                  }}
+                  className="flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600 text-white border-2 border-teal-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
+                  title={`Expedition Level Roadmap: Ascent ${questLevelInfo.ascentTier} • Lv. ${questLevelInfo.level} (${questLevelInfo.title}) • ${questLevelInfo.progressPct || 0}% to next level`}
+                >
+                  <span className="text-xs sm:text-sm leading-none select-none">{questLevelInfo.icon || '🏕️'}</span>
+                  <span className="font-black truncate">Lv. {questLevelInfo.level}</span>
+                  <div className="hidden sm:block w-8 sm:w-10 h-1.5 bg-black/25 rounded-full overflow-hidden shrink-0 border border-white/20">
+                    <div
+                      className="h-full bg-amber-300 rounded-full transition-all duration-500"
+                      style={{ width: `${questLevelInfo.progressPct || 0}%` }}
+                    />
+                  </div>
+                </button>
+              );
+            })()}
 
-              {/* Mobile Stats Roll-down Menu */}
-              {showStatsDropdown && (
-                <div className="absolute top-full right-0 mt-2 w-56 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-150">
-                  {/* Competence / Rank Item */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      setShowStatsDropdown(false);
-                      setShowBadgesModal(true);
-                    }}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-purple-600 fill-purple-300 stroke-[2] shrink-0" />
-                      <span>Rank ({getCompetenceRankTier(liveCompetenceRating, activeSubject)})</span>
-                    </div>
-                    <span className="font-black">{liveCompetenceRating} pts</span>
-                  </button>
+            {/* Competence Rank Button (Visible on all devices) */}
+            {(() => {
+              const rankTitle = getCompetenceRankTier(liveCompetenceRating, activeSubject);
+              return (
+                <button
+                  type="button"
+                  onClick={handleOpenBadgesModal}
+                  className="flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
+                  title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
+                >
+                  <RollingNumberTicker
+                    value={liveCompetenceRating}
+                    profileId={activeProfileId}
+                    subjectId={activeSubject}
+                    icon={<Star className="w-3.5 h-3.5 text-purple-700 fill-purple-300 stroke-[2]" />}
+                  />
+                </button>
+              );
+            })()}
 
-                  {/* Sparks Item */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      setShowStatsDropdown(false);
-                      handleOpenWorkshop('adaptive_session');
-                    }}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Zap className={`w-4 h-4 text-amber-600 fill-amber-500 stroke-[2.5] shrink-0 ${isSparksBouncing ? 'animate-bounce' : ''}`} />
-                      <span>Sparks</span>
-                    </div>
-                    <span className="font-black">{sparks}</span>
-                  </button>
+            {/* Sparks Counter Button (Visible on all devices) */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                handleOpenWorkshop('adaptive_session');
+              }}
+              className="flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all relative shrink-0 overflow-visible cursor-pointer"
+              title="Open Kibo Workshop"
+            >
+              <RollingNumberTicker
+                value={sparks}
+                icon={<Zap className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-800 fill-amber-500 stroke-[2.5] ${isSparksBouncing ? 'animate-bounce' : ''}`} />}
+                profileId={activeProfileId}
+                subjectId={activeSubject}
+              />
+            </button>
 
-                  {/* Streak Item */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      setShowStatsDropdown(false);
-                      setShowBadgesModal(true);
-                    }}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Flame className={`w-4 h-4 text-rose-500 fill-rose-500 shrink-0 ${!isStreakCompletedToday ? 'animate-pulse' : ''}`} />
-                      <span>Daily Streak</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="font-black">{streak}d</span>
-                      {((consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0) && (
-                        <span className="text-xs">🛡️</span>
-                      )}
-                    </div>
-                  </button>
-
-                  {/* Quest Rank & Level Item */}
-                  {(() => {
-                    const questState = questService.getQuests(activeProfileId);
-                    const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', ascentTier: 1 };
-                    const ascentTier = questLevelInfo.ascentTier || 1;
-                    return (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          soundFx.playKeyTap();
-                          setShowStatsDropdown(false);
-                          setAppState('quests');
-                        }}
-                        className="flex items-center justify-between px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-950 font-black text-xs transition-colors cursor-pointer w-full text-left"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Compass className="w-4 h-4 text-indigo-600 shrink-0" />
-                          <span>Quest ({questLevelInfo.title})</span>
-                        </div>
-                        <span className="font-black">Tier {ascentTier} · Lv {questLevelInfo.level}</span>
-                      </button>
-                    );
-                  })()}
-                </div>
-              )}
-            </div>
-
-            {/* Desktop / Tablet Stats Icons (>= sm) */}
             {/* Streak Badge Button */}
             <button
               type="button"
@@ -1852,44 +1844,6 @@ export default function App() {
                 </span>
               )}
             </button>
-
-            {/* Sparks Counter Button */}
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                handleOpenWorkshop('adaptive_session');
-              }}
-              className="hidden sm:flex items-center gap-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 border-2 border-yellow-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all relative shrink-0 overflow-visible cursor-pointer"
-              title="Open Kibo Workshop"
-            >
-              <RollingNumberTicker
-                value={sparks}
-                icon={<Zap className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-800 fill-amber-500 stroke-[2.5] ${isSparksBouncing ? 'animate-bounce' : ''}`} />}
-                profileId={activeProfileId}
-                subjectId={activeSubject}
-              />
-            </button>
-
-            {/* Competence Rank Button */}
-            {(() => {
-              const rankTitle = getCompetenceRankTier(liveCompetenceRating, activeSubject);
-              return (
-                <button
-                  type="button"
-                  onClick={handleOpenBadgesModal}
-                  className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
-                  title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
-                >
-                  <RollingNumberTicker
-                    value={liveCompetenceRating}
-                    profileId={activeProfileId}
-                    subjectId={activeSubject}
-                    icon={<Star className="w-3.5 h-3.5 text-purple-700 fill-purple-300 stroke-[2]" />}
-                  />
-                </button>
-              );
-            })()}
 
             {/* Friends Button (Available on all screen sizes) */}
             <button
@@ -2558,10 +2512,113 @@ export default function App() {
 
       {/* DAILY STREAK INCREASED MODAL */}
       <DailyStreakIncreasedModal
-        isOpen={showDailyStreakIncreasedModal && !perfectMonthData}
+        isOpen={showDailyStreakIncreasedModal && !perfectMonthData && !showMultiSubjectBonusModal}
         onClose={() => setShowDailyStreakIncreasedModal(false)}
         streak={streak}
       />
+
+      {/* MULTI-SUBJECT DAILY BONUS CHEST MODAL */}
+      {showMultiSubjectBonusModal && (
+        <div
+          onClick={() => setShowMultiSubjectBonusModal(false)}
+          className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-pop cursor-pointer"
+        >
+          <ConfettiCanvas />
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-gradient-to-b from-amber-50 via-white to-yellow-50 border-4 border-amber-400 rounded-3xl p-6 text-center shadow-2xl space-y-4 relative overflow-hidden text-slate-800 cursor-default"
+          >
+            <div className="space-y-1">
+              <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 inline-block shadow-xs">
+                🌟 Multi-Subject Daily Bonus!
+              </span>
+              <h3 className="text-2xl font-black text-slate-900">Well-Rounded Explorer!</h3>
+              <p className="text-xs sm:text-sm text-slate-600 font-bold leading-relaxed">
+                You conquered climbs across 2+ different subjects today! Mount Kibo rewards your broad curiosity.
+              </p>
+            </div>
+
+            <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-b from-amber-300 via-yellow-400 to-amber-500 border-2 border-amber-600 flex items-center justify-center text-4xl shadow-md animate-bounce">
+              🎁
+            </div>
+
+            <div className="space-y-2">
+              <div className="bg-amber-100 border-2 border-amber-300 rounded-2xl p-2.5 flex items-center justify-center gap-2 text-amber-950 font-black text-sm shadow-xs">
+                <Zap className="w-5 h-5 text-amber-600 fill-amber-400 stroke-[2.5]" />
+                <span>+{multiSubjectBonusData?.bonus?.sparks || 75} Bonus Sparks! ⚡</span>
+              </div>
+              <div className="bg-teal-100 border-2 border-teal-300 rounded-2xl p-2.5 flex items-center justify-center gap-2 text-teal-950 font-black text-sm shadow-xs">
+                <span>🏔️ +{multiSubjectBonusData?.bonus?.altitude || 100}m Altitude XP!</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowMultiSubjectBonusModal(false)}
+              className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-base py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-amber-700 active:translate-y-0.5 active:border-b-0 transition-all cursor-pointer"
+            >
+              Claim Daily Chest! 🚀
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* GLOBAL ASCENT LEVEL UP MODAL */}
+      {globalAscentLevelUpEvent && (
+        <div
+          onClick={() => setGlobalAscentLevelUpEvent(null)}
+          className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-pop cursor-pointer"
+        >
+          <ConfettiCanvas />
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-gradient-to-b from-teal-50 via-white to-emerald-50 border-4 border-teal-400 rounded-3xl p-6 text-center shadow-2xl space-y-4 relative overflow-hidden text-slate-800 cursor-default"
+          >
+            <div className="space-y-1">
+              <span className="text-xs font-black uppercase text-teal-950 bg-teal-200 px-3 py-1 rounded-full border border-teal-400 inline-block shadow-xs">
+                {globalAscentLevelUpEvent.isSummit ? '👑 Summit Promotion!' : '🏔️ Climber Level Up!'}
+              </span>
+              <h3 className="text-2xl font-black text-slate-900">
+                {globalAscentLevelUpEvent.isSummit
+                  ? `Ascent ${globalAscentLevelUpEvent.newTier}: ${globalAscentLevelUpEvent.newAscentMode?.name || 'Summit'}!`
+                  : `Level ${globalAscentLevelUpEvent.newLevel} Reached!`}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 font-bold leading-relaxed">
+                {globalAscentLevelUpEvent.isSummit
+                  ? 'Incredible milestone! You conquered the summit and promoted to a higher Ascent tier with increased Spark multipliers!'
+                  : `Congratulations! You reached ${globalAscentLevelUpEvent.rank?.title || 'a new mountain rank'}!`}
+              </p>
+            </div>
+
+            <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-b from-teal-400 via-emerald-400 to-teal-500 border-2 border-teal-600 flex items-center justify-center text-4xl shadow-md animate-bounce">
+              {globalAscentLevelUpEvent.rank?.icon || (globalAscentLevelUpEvent.isSummit ? '👑' : '🧗')}
+            </div>
+
+            {globalAscentLevelUpEvent.reward && (
+              <div className="bg-amber-100 border-2 border-amber-300 rounded-2xl p-2.5 flex items-center justify-center gap-2 text-amber-950 font-black text-sm shadow-xs">
+                <Zap className="w-5 h-5 text-amber-600 fill-amber-400 stroke-[2.5]" />
+                <span>+{globalAscentLevelUpEvent.reward.sparks || 50} Sparks Awarded! ⚡</span>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                if (globalAscentLevelUpEvent.reward?.sparks) {
+                  const currentSparks = storageService.getUserData(activeSubject).sparks || 0;
+                  const updatedSparks = currentSparks + globalAscentLevelUpEvent.reward.sparks;
+                  setSparks(updatedSparks);
+                  storageService.saveUserData({ sparks: updatedSparks }, activeSubject);
+                }
+                setGlobalAscentLevelUpEvent(null);
+              }}
+              className="w-full bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-black text-base py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-teal-700 active:translate-y-0.5 active:border-b-0 transition-all cursor-pointer"
+            >
+              Keep Climbing! 🏔️
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* PERFECT MONTH PROGRESS MODAL */}
       <PerfectMonthProgressModal
@@ -2731,6 +2788,13 @@ export default function App() {
           };
         })()}
         renderFooter={renderNavigationFooter}
+      />
+
+      {/* EXPEDITION ASCENTS & LEVEL ROADMAP MODAL */}
+      <AscentRoadmapModal
+        isOpen={showAscentRoadmapModal}
+        onClose={() => setShowAscentRoadmapModal(false)}
+        profileId={activeProfileId}
       />
 
       {/* PARENT SPEED INFO MODAL (ℹ️) */}

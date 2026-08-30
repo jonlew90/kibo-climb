@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Lock, Sparkles, CheckCircle2, Trophy, Flame, Zap, Target, Compass, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Lock, Sparkles, CheckCircle2, Trophy, Flame, Zap, Target, Compass, ChevronLeft, ChevronRight, Star, Mountain, Award } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { questService } from '../services/questService';
+import { ASCENT_MODES, ASCENT_RANKS } from '../data/questsData';
+import AscentRoadmapModal from './AscentRoadmapModal';
 
 export default function BadgesModal({
   activeSubject = 'math',
@@ -19,6 +21,7 @@ export default function BadgesModal({
   const [activeCategory, setActiveCategory] = useState(
     BADGE_CATEGORIES[activeSubject] ? activeSubject : Object.keys(BADGE_CATEGORIES)[0]
   );
+  const [showAscentRoadmapModal, setShowAscentRoadmapModal] = useState(false);
 
   const categoryScrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -86,15 +89,27 @@ export default function BadgesModal({
 
   const activeProfileId = storageService.getActiveProfileId();
   const questState = questService.getQuests(activeProfileId);
-  const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️' };
+  const questLevelInfo = questState?.levelInfo || {
+    ascentTier: 1,
+    ascentMode: ASCENT_MODES[0],
+    level: 1,
+    title: 'Basecamp Explorer',
+    icon: '🏕️',
+    progressPct: 0,
+    currentXp: 0,
+    xpIntoLevel: 0,
+    xpRequiredForLevel: 150,
+    sparkBonusPct: 0
+  };
+  const ascentTier = questLevelInfo.ascentTier || 1;
+  const ascentMode = questLevelInfo.ascentMode || ASCENT_MODES[0];
   const questTotalXp = questState?.totalXp || 0;
+  const multiSubjectClaims = questState?.multiSubjectBonusClaimsCount || 0;
 
   const userRating = userState.competenceRank || userState.adaptiveCompetenceRating || 1000;
   const bestStreak = personalRecords?.highestCorrectStreak || userState.cumulativeCorrectStreak || 0;
   const fastestTime = personalRecords?.fastest12QuestionsTime || personalRecords?.fastest10QuestionsTime || null;
   const perfectRuns = personalRecords?.mostPerfectSessions || 0;
-
-  const recentUnlockedBadges = BADGES_CATALOG.filter((b) => unlockedSet.has(b.id)).slice(-3).reverse();
 
   const filteredBadges = BADGES_CATALOG.filter((b) => b.category === activeCategory);
 
@@ -103,37 +118,133 @@ export default function BadgesModal({
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
         <div className="flex items-center gap-2 text-slate-800">
-          <Trophy className="w-5 h-5 text-amber-500 stroke-[2.5]" />
-          <h2 className="text-base sm:text-lg font-black tracking-tight">My Trophies & Records</h2>
+          <Compass className="w-5 h-5 text-teal-600 stroke-[2.5]" />
+          <h2 className="text-base sm:text-lg font-black tracking-tight">Climber Passport & Mountain Records</h2>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-1.5 rounded-xl hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-slate-600 transition-all font-black text-sm cursor-pointer"
+        >
+          ✕
+        </button>
       </header>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
       <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-        {/* Personal Bests & Mountain Stats Grid */}
+        
+        {/* 1. GLOBAL CLIMBER PASSPORT & ASCENT HERO CARD */}
+        <div className="bg-gradient-to-br from-teal-600 via-emerald-600 to-teal-700 rounded-3xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden text-left">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 text-[10px] sm:text-xs font-black uppercase tracking-wider shadow-2xs flex items-center gap-1">
+                  <span>{ascentMode.icon}</span>
+                  <span>Ascent {ascentTier}: {ascentMode.name}</span>
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] sm:text-xs font-black uppercase tracking-wider">
+                  Lv. {questLevelInfo.level}
+                </span>
+                {questLevelInfo.sparkBonusPct > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-emerald-950 text-[10px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" />
+                    +{questLevelInfo.sparkBonusPct}% Permanent Sparks
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2.5 pt-1.5">
+                <span className="text-3xl sm:text-4xl drop-shadow-xs">{questLevelInfo.icon || '🏕️'}</span>
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
+                    {questLevelInfo.title}
+                  </h3>
+                  <p className="text-teal-100 text-xs sm:text-sm font-bold">
+                    {questTotalXp}m Total Mountain Altitude XP
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowAscentRoadmapModal(true);
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 active:scale-95 text-xs font-black text-white border border-white/30 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+            >
+              <span>🗺️</span>
+              <span>Ascent Roadmap & Perks</span>
+            </button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mt-4 space-y-1.5">
+            <div className="w-full bg-black/25 h-3.5 rounded-full overflow-hidden border border-white/20">
+              <div
+                className="bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-400 h-full rounded-full transition-all duration-500"
+                style={{ width: `${questLevelInfo.progressPct || 0}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] sm:text-xs font-black text-teal-100">
+              <span>{questLevelInfo.xpIntoLevel || 0}m / {questLevelInfo.xpRequiredForLevel || 150}m in Level {questLevelInfo.level}</span>
+              <span>{questLevelInfo.progressPct || 0}% to Lv. {(questLevelInfo.level || 1) + 1} ({questLevelInfo.nextRankTitle || 'Next Rank'})</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. SUBJECT COMPETENCE & MASTERY RATINGS */}
         <div className="bg-white border-2 border-purple-200 rounded-3xl p-4 space-y-3 shrink-0 text-left shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs sm:text-sm font-black text-purple-950 flex items-center gap-1.5 uppercase tracking-wider">
-              <Trophy className="w-4 h-4 text-purple-600 stroke-[2.5]" />
+              <Star className="w-4 h-4 text-purple-600 fill-purple-300 stroke-[2]" />
+              Subject Competence & Skill Mastery
+            </span>
+            <span className="text-[10px] font-bold text-slate-500">Adaptive Competence Ratings</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {Object.keys(SUBJECTS_CONFIG).map((subKey) => {
+              const cfg = SUBJECTS_CONFIG[subKey];
+              const subData = storageService.getUserData(subKey);
+              const subRating = subData.adaptiveCompetenceRating || subData.competenceRank || 1000;
+              const rankName = getCompetenceRankTier(subRating, subKey);
+              const isCurrentActive = subKey === activeSubject;
+
+              return (
+                <div
+                  key={subKey}
+                  className={`p-3 rounded-2xl border-2 text-left space-y-1 transition-all ${
+                    isCurrentActive
+                      ? 'bg-purple-50/80 border-purple-300 shadow-xs ring-2 ring-purple-400/20'
+                      : 'bg-slate-50/80 border-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl">{cfg.icon}</span>
+                    <span className="text-xs font-black text-purple-950 bg-white px-2 py-0.5 rounded-md border border-purple-200 shadow-2xs">
+                      {subRating} pts
+                    </span>
+                  </div>
+                  <div className="font-extrabold text-xs text-slate-900 leading-tight">{cfg.name}</div>
+                  <div className="text-[11px] font-black text-purple-700 truncate">{rankName}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 3. PERSONAL BESTS & MOUNTAIN STATS GRID */}
+        <div className="bg-white border-2 border-slate-200 rounded-3xl p-4 space-y-3 shrink-0 text-left shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5 uppercase tracking-wider">
+              <Trophy className="w-4 h-4 text-amber-500 stroke-[2.5]" />
               Personal Bests & Mountain Stats
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-center">
-            {/* Quest Expedition Rank & XP */}
-            <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between items-center shadow-2xs min-w-0">
-              <div className="flex items-center justify-center gap-1 text-indigo-900 text-[10.5px] sm:text-xs font-black uppercase leading-tight text-center">
-                <Compass className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5] shrink-0" />
-                <span>Quest Rank</span>
-              </div>
-              <span className="text-xl font-black text-indigo-700 my-1">
-                Lvl {questLevelInfo.level}
-              </span>
-              <span className="text-[10px] font-bold text-indigo-800/80 truncate max-w-full" title={`${questLevelInfo.title} (${questTotalXp} XP)`}>
-                {questTotalXp} XP
-              </span>
-            </div>
-
             {/* Best Question Streak */}
             <div className="bg-orange-50/80 border border-orange-200 rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between items-center shadow-2xs min-w-0">
               <div className="flex items-center justify-center gap-1 text-orange-900 text-[10.5px] sm:text-xs font-black uppercase leading-tight text-center">
@@ -185,7 +296,7 @@ export default function BadgesModal({
             {/* Summits Reached */}
             <div className="bg-teal-50/80 border border-teal-200 rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between items-center shadow-2xs min-w-0">
               <div className="flex items-center justify-center gap-1 text-teal-900 text-[10.5px] sm:text-xs font-black uppercase leading-tight text-center">
-                <span className="shrink-0">🏔️</span>
+                <Mountain className="w-3.5 h-3.5 text-teal-600 shrink-0" />
                 <span>Summits</span>
               </div>
               <span className="text-xl font-black text-teal-700 my-1">
@@ -193,10 +304,22 @@ export default function BadgesModal({
               </span>
               <span className="text-[10px] font-bold text-teal-800/80 truncate max-w-full">Completed blocks</span>
             </div>
+
+            {/* Cross-Subject Explorer Bonuses */}
+            <div className="bg-purple-50/80 border border-purple-200 rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between items-center shadow-2xs min-w-0">
+              <div className="flex items-center justify-center gap-1 text-purple-900 text-[10.5px] sm:text-xs font-black uppercase leading-tight text-center">
+                <Award className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                <span>Explorer Days</span>
+              </div>
+              <span className="text-xl font-black text-purple-700 my-1">
+                {multiSubjectClaims}
+              </span>
+              <span className="text-[10px] font-bold text-purple-800/80 truncate max-w-full">Multi-subject days</span>
+            </div>
           </div>
         </div>
 
-        {/* Compact rating + progress bar */}
+        {/* 4. TRAIL BADGES HEADER & PROGRESS */}
         <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-300 rounded-3xl p-4 space-y-3 shrink-0 text-left">
           <div className="flex items-center justify-between text-xs sm:text-sm font-black text-amber-950">
             <span className="flex items-center gap-1.5">
@@ -213,40 +336,6 @@ export default function BadgesModal({
               className="bg-gradient-to-r from-amber-400 to-yellow-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
-          </div>
-
-          {/* Multi-Subject Competence Ranks & Quest Rank */}
-          <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            {/* Quest Rank Pill */}
-            <span
-              className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-full border border-indigo-200/90 bg-indigo-50/90 text-indigo-900 shadow-2xs transition-all"
-              title={`Quest Expedition: Level ${questLevelInfo.level} (${questLevelInfo.title}) · ${questTotalXp} XP`}
-            >
-              <span>{questLevelInfo.icon || '🏕️'}</span>
-              <span className="text-indigo-950 font-extrabold">Quest Rank:</span>
-              <span className="text-indigo-800 font-bold">{questLevelInfo.title} (Lvl {questLevelInfo.level})</span>
-              <span className="text-[10px] sm:text-[11px] text-indigo-600 font-bold">· {questTotalXp} XP</span>
-            </span>
-
-            {Object.keys(SUBJECTS_CONFIG).map((subKey) => {
-              const cfg = SUBJECTS_CONFIG[subKey];
-              const subData = storageService.getUserData(subKey);
-              const subRating = subData.adaptiveCompetenceRating || subData.competenceRank || 1000;
-              const rankName = getCompetenceRankTier(subRating, subKey);
-
-              return (
-                <span
-                  key={subKey}
-                  className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-full border border-amber-200/90 bg-white/90 text-slate-800 shadow-2xs transition-all"
-                  title={`${cfg.name} Competence Rank: ${subRating} pts (${rankName})`}
-                >
-                  <span>{cfg.icon}</span>
-                  <span className="text-slate-900 font-extrabold">{cfg.name}:</span>
-                  <span className="text-purple-900 font-bold">{rankName}</span>
-                  <span className="text-[10px] sm:text-[11px] text-slate-500 font-bold">({subRating})</span>
-                </span>
-              );
-            })}
           </div>
         </div>
 
@@ -356,6 +445,13 @@ export default function BadgesModal({
           })}
         </div>
       </main>
+
+      {/* Unified Ascent Roadmap & Level Perks Modal */}
+      <AscentRoadmapModal
+        isOpen={showAscentRoadmapModal}
+        onClose={() => setShowAscentRoadmapModal(false)}
+        profileId={activeProfileId}
+      />
 
       {/* STICKY BOTTOM NAVIGATION FOOTER */}
       {renderFooter ? renderFooter() : null}

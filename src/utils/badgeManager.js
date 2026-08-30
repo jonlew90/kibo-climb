@@ -30,7 +30,8 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
     ascentTier = 1,
     questClaimsCount = 0,
     teamQuestsClaimedCount = 0,
-    friendCoopClaimsCount = 0
+    friendCoopClaimsCount = 0,
+    multiSubjectBonusClaimsCount = 0
   } = userState;
 
   const currentRating = Math.max(
@@ -226,6 +227,12 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         break;
       case 'multi_subject_5':
         unlocked = playedSubjectsCount >= 5;
+        break;
+      case 'daily_multi_subject_first':
+        unlocked = Number(multiSubjectBonusClaimsCount) >= 1;
+        break;
+      case 'daily_multi_subject_5':
+        unlocked = Number(multiSubjectBonusClaimsCount) >= 5;
         break;
 
       // ==========================================

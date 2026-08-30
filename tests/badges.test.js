@@ -254,5 +254,21 @@ describe('Badges System & Expansion Tests', () => {
 
       expect(res.updatedUnlocked).toContain('shop_buyer_1');
     });
+
+    it('evaluates multi-subject daily bonus badges properly', () => {
+      const res1 = evaluateBadges({
+        multiSubjectBonusClaimsCount: 1,
+        unlockedBadges: []
+      });
+      expect(res1.updatedUnlocked).toContain('daily_multi_subject_first');
+      expect(res1.updatedUnlocked).not.toContain('daily_multi_subject_5');
+
+      const res2 = evaluateBadges({
+        multiSubjectBonusClaimsCount: 5,
+        unlockedBadges: []
+      });
+      expect(res2.updatedUnlocked).toContain('daily_multi_subject_first');
+      expect(res2.updatedUnlocked).toContain('daily_multi_subject_5');
+    });
   });
 });

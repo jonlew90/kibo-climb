@@ -182,6 +182,63 @@ describe('Quest Service', () => {
     expect(hasSubjectSpecific).toBe(true);
   });
 
+  it('awards base Altitude XP directly on problem solving', () => {
+    const freshProfile = 'test_altitude_xp_profile';
+    const state = questService.getQuests(freshProfile);
+    expect(state.totalXp).toBe(0);
+
+    // Correct answer -> +10 Altitude XP
+    const res1 = questService.recordProgress(freshProfile, {
+      subject: 'math',
+      isCorrect: true,
+      streak: 1
+    });
+    expect(res1.earnedAltitudeXp).toBe(10);
+    expect(res1.totalXp).toBe(10);
+
+    // Incorrect answer -> +2 Altitude XP
+    const res2 = questService.recordProgress(freshProfile, {
+      subject: 'math',
+      isCorrect: false,
+      streak: 0
+    });
+    expect(res2.earnedAltitudeXp).toBe(2);
+    expect(res2.totalXp).toBe(12);
+  });
+
+  it('tracks daily multi-subject climbs and unlocks the Multi-Subject Daily Bonus Chest', () => {
+    const multiProfile = 'test_multi_subject_profile';
+    expect(questService.getDailySubjectsCompleted(multiProfile)).toEqual([]);
+    expect(questService.isDailyMultiSubjectBonusClaimed(multiProfile)).toBe(false);
+
+    // 1st subject climb completed -> recorded, but not yet eligible (< 2 subjects)
+    const climb1 = questService.recordDailySubjectClimb(multiProfile, 'math');
+    expect(climb1.awarded).toBe(false);
+    expect(climb1.claimed).toBe(false);
+    expect(climb1.completedSubjects).toEqual(['math']);
+    expect(questService.isDailyMultiSubjectBonusClaimed(multiProfile)).toBe(false);
+
+    // Same subject again -> remains 1 subject
+    questService.recordDailySubjectClimb(multiProfile, 'math');
+    expect(questService.getDailySubjectsCompleted(multiProfile)).toEqual(['math']);
+
+    // 2nd subject climb completed -> triggers Multi-Subject Daily Bonus!
+    const climb2 = questService.recordDailySubjectClimb(multiProfile, 'words');
+    expect(climb2.awarded).toBe(true);
+    expect(climb2.claimed).toBe(true);
+    expect(climb2.bonus.sparks).toBe(75);
+    expect(climb2.bonus.altitude).toBe(100);
+    expect(climb2.completedSubjects).toContain('math');
+    expect(climb2.completedSubjects).toContain('words');
+    expect(questService.isDailyMultiSubjectBonusClaimed(multiProfile)).toBe(true);
+
+    // 3rd subject on same day -> already claimed, no duplicate bonus
+    const climb3 = questService.recordDailySubjectClimb(multiProfile, 'world');
+    expect(climb3.awarded).toBe(false);
+    expect(climb3.claimed).toBe(true);
+    expect(climb3.completedSubjects.length).toBe(3);
+  });
+
   it('calculates valid string countdowns for daily and weekly resets', () => {
     const dailyStr = questService.getTimeUntilDailyReset();
     const weeklyStr = questService.getTimeUntilWeeklyReset();

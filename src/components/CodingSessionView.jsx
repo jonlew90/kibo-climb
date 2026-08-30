@@ -631,6 +631,8 @@ export default function CodingSessionView({
         blockTimeSec={completedBlockStats.blockTimeSec}
         isNewSpeedRecord={completedBlockStats.isNewSpeedRecord}
         isNewStreakRecord={completedBlockStats.isNewStreakRecord}
+        profileId={profileId}
+        activeSubject="coding"
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
           if (onResetDoubleSparks) onResetDoubleSparks();
