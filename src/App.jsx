@@ -62,6 +62,7 @@ import QuestsScreen from './components/QuestsScreen';
 import FeedbackModal from './components/FeedbackModal';
 import AddFriendModal from './components/AddFriendModal';
 import SubjectWallpaper from './components/SubjectWallpaper';
+import CinematicSplash from './components/CinematicSplash';
 import { setHapticsEnabled } from './utils/audio';
 
 export default function App() {
@@ -72,6 +73,27 @@ export default function App() {
   const [activeSubject, setActiveSubject] = useState(() => {
     return storageService.getLastActiveSubject();
   });
+
+  const [showCinematicSplash, setShowCinematicSplash] = useState(() => {
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        return !window.sessionStorage.getItem('kibo_splash_shown');
+      }
+    } catch (e) {
+      // Fallback
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.setItem('kibo_splash_shown', 'true');
+      }
+    } catch (e) {
+      // Fallback
+    }
+  }, []);
 
   const [isOffline, setIsOffline] = useState(() => !navigator.onLine);
 
@@ -1455,6 +1477,10 @@ export default function App() {
       </div>
     </footer>
   );
+
+  if (showCinematicSplash) {
+    return <CinematicSplash onComplete={() => setShowCinematicSplash(false)} />;
+  }
 
   return (
     <div className="app-viewport-root w-full h-full relative bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col">

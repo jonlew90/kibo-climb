@@ -257,6 +257,55 @@ class SoundSystem {
       osc.stop(now + n.time + n.duration);
     });
   }
+
+  // Play cinematic brand intro sonic chord
+  playBrandIntroChime() {
+    triggerHaptic([30, 40, 50]);
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    
+    // Warm low sub-bass pad
+    const subOsc = this.ctx.createOscillator();
+    const subGain = this.ctx.createGain();
+    subOsc.type = 'sine';
+    subOsc.frequency.setValueAtTime(110, now); // A2
+    subOsc.frequency.exponentialRampToValueAtTime(55, now + 1.4); // A1 drop
+    subGain.gain.setValueAtTime(0.35, now);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+    subOsc.connect(subGain);
+    subGain.connect(this.ctx.destination);
+    subOsc.start(now);
+    subOsc.stop(now + 1.5);
+
+    // Resonant crystalline summit chord (A major 9)
+    const chordNotes = [
+      { freq: 220.00, delay: 0.05, dur: 1.3 }, // A3
+      { freq: 277.18, delay: 0.12, dur: 1.2 }, // C#4
+      { freq: 329.63, delay: 0.18, dur: 1.2 }, // E4
+      { freq: 440.00, delay: 0.25, dur: 1.1 }, // A4
+      { freq: 554.37, delay: 0.32, dur: 1.0 }, // C#5
+      { freq: 659.25, delay: 0.38, dur: 0.9 }  // E5
+    ];
+
+    chordNotes.forEach(note => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(note.freq, now + note.delay);
+
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.setValueAtTime(0.18, now + note.delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + note.delay + note.dur);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now + note.delay);
+      osc.stop(now + note.delay + note.dur);
+    });
+  }
 }
 
 export const soundFx = new SoundSystem();
