@@ -10,9 +10,10 @@ export default function AddFriendModal({
   isOpen,
   onClose,
   activeSubject = 'math',
+  initialTab = 'friends',
   onFriendAdded = () => {}
 }) {
-  const [activeTab, setActiveTab] = useState('friends'); // 'friends' | 'requests' | 'search'
+  const [activeTab, setActiveTab] = useState(initialTab); // 'friends' | 'requests' | 'search'
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
@@ -36,6 +37,7 @@ export default function AddFriendModal({
 
   useEffect(() => {
     if (isOpen) {
+      setActiveTab(initialTab);
       refreshData();
       setSearchQuery('');
       setSearchResults([]);

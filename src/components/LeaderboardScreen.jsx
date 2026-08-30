@@ -42,6 +42,7 @@ export default function LeaderboardScreen({
     storageService.getFriendRequests().filter(r => r.type === 'received').length
   );
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [friendModalTab, setFriendModalTab] = useState('friends');
   const [selectedPlayerForModal, setSelectedPlayerForModal] = useState(null);
   const [friendActionFeedback, setFriendActionFeedback] = useState('');
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
@@ -586,6 +587,7 @@ export default function LeaderboardScreen({
               type="button"
               onClick={() => {
                 soundFx.playKeyTap();
+                setFriendModalTab(pendingRequestsCount > 0 ? 'requests' : 'friends');
                 setShowAddFriendModal(true);
               }}
               className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-black rounded-full shadow-xs flex items-center gap-1 cursor-pointer transition-all relative border border-indigo-700"
@@ -973,6 +975,7 @@ export default function LeaderboardScreen({
               type="button"
               onClick={() => {
                 soundFx.playKeyTap();
+                setFriendModalTab('search');
                 setShowAddFriendModal(true);
               }}
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-black rounded-xl shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
@@ -1342,13 +1345,30 @@ export default function LeaderboardScreen({
             </div>
 
             <p className="text-xs text-slate-500 font-medium text-center px-1">
-              {viewMode === 'global'
-                ? '💡 Keep climbing and answering accurately to raise your rank tier!'
-                : viewMode === 'weekly'
-                ? '💡 Sparks reset every week at midnight Sunday UTC. Climb every day to stay on top!'
-                : viewMode === 'quests'
-                ? '💡 Complete team quests with real friends to earn +25% Synergy Sparks and climb faster!'
-                : '💡 Add up to 25 friends using their unique climber tags to follow each other\'s climb!'}
+              {viewMode === 'global' ? (
+                '💡 Keep climbing and answering accurately to raise your rank tier!'
+              ) : viewMode === 'weekly' ? (
+                '💡 Sparks reset every week at midnight Sunday UTC. Climb every day to stay on top!'
+              ) : viewMode === 'quests' ? (
+                '💡 Complete team quests with real friends to earn +25% Synergy Sparks and climb faster!'
+              ) : (
+                <span>
+                  💡{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowInfoModal(false);
+                      setFriendModalTab('search');
+                      setShowAddFriendModal(true);
+                    }}
+                    className="underline font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 cursor-pointer"
+                  >
+                    Add up to 25 friends
+                  </button>{' '}
+                  using their unique climber tags to follow each other's climb!
+                </span>
+              )}
             </p>
 
             <button
@@ -1480,6 +1500,7 @@ export default function LeaderboardScreen({
         isOpen={showAddFriendModal}
         onClose={() => setShowAddFriendModal(false)}
         activeSubject={selectedSubject}
+        initialTab={friendModalTab}
         onFriendAdded={refreshFriendsStandings}
       />
 

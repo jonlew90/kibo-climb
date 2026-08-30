@@ -256,7 +256,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
     links: {
       playUrl: `${baseUrl}/?action=play&profile=${encodeURIComponent(profileId)}`,
       parentSettingsUrl: `${baseUrl}/?action=parent-settings&profile=${encodeURIComponent(profileId)}`,
-      feedbackUrl: `mailto:feedback@kiboclimb.com?subject=Parent%20Feedback%20for%20${encodeURIComponent(childName)}`,
+      feedbackUrl: `${baseUrl}/?action=feedback&profile=${encodeURIComponent(profileId)}`,
       notificationsUrl: `${baseUrl}/?action=notifications&profile=${encodeURIComponent(profileId)}`
     },
     generatedAt: now.toISOString()

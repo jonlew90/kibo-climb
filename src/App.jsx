@@ -122,6 +122,57 @@ export default function App() {
     return 'adaptive_session';
   });
 
+  const processDeepLink = (search = window.location.search) => {
+    if (!search) return;
+    try {
+      const params = new URLSearchParams(search);
+      const action = params.get('action');
+      const profile = params.get('profile');
+      const subject = params.get('subject');
+      const tab = params.get('tab');
+
+      if (profile) {
+        const allProfiles = storageService.getAllProfiles();
+        if (allProfiles && allProfiles.some(p => p.id === profile)) {
+          storageService.setActiveProfileId(profile);
+          setActiveProfileId(profile);
+        }
+      }
+
+      if (subject && ['math', 'words', 'world', 'coding'].includes(subject)) {
+        setActiveSubject(subject);
+        storageService.setLastActiveSubject(subject);
+      }
+
+      if (action === 'parent-settings' || action === 'parent-dashboard') {
+        setParentDashboardTab(tab || 'overview');
+        setParentDashboardHighlight(null);
+        setPinGateSource('deep_link');
+        setShowPinGateModal(true);
+      } else if (action === 'settings') {
+        setAppState('settings');
+      } else if (action === 'leaderboard') {
+        setAppState('leaderboard');
+      } else if (action === 'quests') {
+        setAppState('quests');
+      } else if (action === 'badges') {
+        setShowBadgesModal(true);
+      } else if (action === 'ascent' || action === 'roadmap') {
+        setShowAscentRoadmapModal(true);
+      } else if (action === 'feedback') {
+        setShowFeedbackModal(true);
+      } else if (action === 'play') {
+        setAppState('adaptive_session');
+      }
+    } catch (e) {
+      // Ignore deep link parse errors
+    }
+  };
+
+  useEffect(() => {
+    processDeepLink();
+  }, []);
+
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
@@ -138,6 +189,7 @@ export default function App() {
       } else {
         setAppState('adaptive_session');
       }
+      processDeepLink();
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
