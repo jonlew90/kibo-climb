@@ -511,8 +511,8 @@ export const authService = {
 
   getAuthState() {
     const firebaseUser = auth.currentUser;
-    const data = storageService.getUserData('math');
-    const isGlobalLinked = storageService.isAccountGloballyLinked();
+    const data = typeof storageService?.getUserData === 'function' ? storageService.getUserData('math') : null;
+    const isGlobalLinked = typeof storageService?.isAccountGloballyLinked === 'function' ? storageService.isAccountGloballyLinked() : false;
 
     // Account is linked if saved in localStorage as non-anonymous OR if firebaseUser is non-anonymous
     const isAnonymous = (isGlobalLinked || (data && data.isAnonymous === false)) 
