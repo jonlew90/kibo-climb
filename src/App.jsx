@@ -65,6 +65,7 @@ import AddFriendModal from './components/AddFriendModal';
 import SubjectWallpaper from './components/SubjectWallpaper';
 import CinematicSplash from './components/CinematicSplash';
 import { setHapticsEnabled } from './utils/audio';
+import { navigationHistory, VIEWS, VIEW_TYPES, getPathForId } from './utils/navigationHistory';
 
 export default function App() {
   // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms' | 'leaderboard'
@@ -113,7 +114,7 @@ export default function App() {
   }, []);
 
   const [appState, setAppState] = useState(() => {
-    const path = window.location.pathname;
+    const path = typeof window !== 'undefined' ? window.location.pathname : '/';
     if (path === '/privacy' || path === '/privacy/') return 'privacy';
     if (path === '/terms' || path === '/terms/') return 'terms';
     if (path === '/settings' || path === '/settings/') return 'settings';
@@ -123,121 +124,8 @@ export default function App() {
   });
 
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
-  const [workshopOriginState, setWorkshopOriginState] = useState('adaptive_session');
   const [workshopHub, setWorkshopHub] = useState('wearables');
   const [workshopViewMode, setWorkshopViewMode] = useState('shop');
-
-  const processDeepLink = (search = window.location.search) => {
-    if (!search) return;
-    try {
-      const params = new URLSearchParams(search);
-      const action = params.get('action');
-      const profile = params.get('profile');
-      const subject = params.get('subject');
-      const tab = params.get('tab');
-      const hub = params.get('hub');
-      const mode = params.get('mode');
-
-      if (profile) {
-        const allProfiles = storageService.getAllProfiles();
-        if (allProfiles && allProfiles.some(p => p.id === profile)) {
-          storageService.setActiveProfileId(profile);
-          setActiveProfileId(profile);
-        }
-      }
-
-      if (subject && ['math', 'words', 'world', 'coding'].includes(subject)) {
-        setActiveSubject(subject);
-        storageService.setLastActiveSubject(subject);
-      }
-
-      if (action === 'shop' || action === 'workshop' || action === 'store' || action === 'closet') {
-        const targetMode = mode || (action === 'closet' ? 'closet' : 'shop');
-        const targetHub = hub || tab || 'wearables';
-        setWorkshopViewMode(targetMode);
-        setWorkshopHub(targetHub);
-        setIsWorkshopOpen(true);
-      } else if (action === 'parent-settings' || action === 'parent-dashboard') {
-        setParentDashboardTab(tab || 'overview');
-        setParentDashboardHighlight(null);
-        setPinGateSource('deep_link');
-        setShowPinGateModal(true);
-      } else if (action === 'settings') {
-        setAppState('settings');
-      } else if (action === 'leaderboard') {
-        setAppState('leaderboard');
-      } else if (action === 'quests') {
-        setAppState('quests');
-      } else if (action === 'badges') {
-        setShowBadgesModal(true);
-      } else if (action === 'ascent' || action === 'roadmap') {
-        setShowAscentRoadmapModal(true);
-      } else if (action === 'feedback') {
-        setShowFeedbackModal(true);
-      } else if (action === 'play') {
-        setAppState('adaptive_session');
-      }
-    } catch (e) {
-      // Ignore deep link parse errors
-    }
-  };
-
-  useEffect(() => {
-    processDeepLink();
-  }, []);
-
-  useEffect(() => {
-    const handlePopState = () => {
-      const path = window.location.pathname;
-      if (path === '/privacy' || path === '/privacy/') {
-        setAppState('privacy');
-      } else if (path === '/terms' || path === '/terms/') {
-        setAppState('terms');
-      } else if (path === '/settings' || path === '/settings/') {
-        setAppState('settings');
-      } else if (path === '/leaderboard' || path === '/leaderboard/') {
-        setAppState('leaderboard');
-      } else if (path === '/quests' || path === '/quests/') {
-        setAppState('quests');
-      } else {
-        setAppState('adaptive_session');
-      }
-      processDeepLink();
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  const handleNavigateTo = (path, stateName) => {
-    window.history.pushState({}, '', path);
-    setAppState(stateName);
-    window.scrollTo(0, 0);
-
-    // Log screen view to Analytics
-    let screenName = 'Home';
-    if (stateName === 'settings') screenName = 'Settings';
-    else if (stateName === 'privacy') screenName = 'PrivacyPolicy';
-    else if (stateName === 'terms') screenName = 'TermsOfService';
-    else if (stateName === 'leaderboard') screenName = 'Leaderboard';
-    else if (stateName === 'quests') screenName = 'Quests';
-
-    analyticsService.logScreenView(screenName);
-  };
-
-  const handleOpenWorkshop = (overrideOrigin = null, initialHubParam = 'wearables', initialViewModeParam = 'shop') => {
-    soundFx.playKeyTap();
-    setWorkshopOriginState(overrideOrigin || appState);
-    setWorkshopHub(initialHubParam);
-    setWorkshopViewMode(initialViewModeParam);
-    setIsWorkshopOpen(true);
-  };
-
-  const handleCloseWorkshop = () => {
-    setIsWorkshopOpen(false);
-    if (workshopOriginState) {
-      setAppState(workshopOriginState);
-    }
-  };
 
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [showSpeedInfoModal, setShowSpeedInfoModal] = useState(false);
@@ -268,6 +156,7 @@ export default function App() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
   const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStripeCheckoutModal, setShowStripeCheckoutModal] = useState(false);
@@ -310,17 +199,6 @@ export default function App() {
     }
   }, [activeSubject]);
 
-  const handleOpenBadgesModal = () => {
-    soundFx.playKeyTap();
-    closeAllNavModals('badges');
-    setShowBadgesModal(true);
-    const currentUnlockedIds = (unlockedBadges || []).map((b) => (typeof b === 'string' ? b : b?.id)).filter(Boolean);
-    if (currentUnlockedIds.length > 0) {
-      storageService.markBadgesAsSeen(currentUnlockedIds, activeProfileId);
-      setSeenBadges(storageService.getSeenBadges(activeProfileId));
-    }
-  };
-
   // First-Time User Onboarding Modal State
   const [showNewsModal, setShowNewsModal] = useState(false);
   const [newsItems, setNewsItems] = useState([]);
@@ -329,18 +207,297 @@ export default function App() {
     return !storageService.isOnboarded();
   });
 
-  // Profile Selector — shown on every launch so players can pick who's climbing
-  // and parents always have a discoverable path to add a new profile.
   const [showProfileSelector, setShowProfileSelector] = useState(() => {
-    // Skip only during the very first-ever launch (onboarding takes precedence)
     return storageService.isOnboarded();
   });
 
-  // Manual Profile Switcher State
   const [showManualProfileSwitcher, setShowManualProfileSwitcher] = useState(false);
-  const [profileSwitcherOrigin, setProfileSwitcherOrigin] = useState(null);
-  const [familyUpgradeOrigin, setFamilyUpgradeOrigin] = useState(null);
-  const [parentDashboardOrigin, setParentDashboardOrigin] = useState(null);
+
+  const applyNavState = (current, stack, baseRoute) => {
+    if (!current) return;
+    const targetRoute = baseRoute?.id || 'adaptive_session';
+    setAppState(targetRoute);
+
+    if (current.type === VIEW_TYPES.MODAL) {
+      const modalId = current.id;
+      const params = current.params || {};
+
+      setIsWorkshopOpen(modalId === VIEWS.WORKSHOP);
+      if (modalId === VIEWS.WORKSHOP) {
+        if (params.hub) setWorkshopHub(params.hub);
+        if (params.viewMode) setWorkshopViewMode(params.viewMode);
+      }
+
+      setShowBadgesModal(modalId === VIEWS.BADGES);
+      setShowAscentRoadmapModal(modalId === VIEWS.ASCENT_ROADMAP);
+
+      setShowParentDashboard(modalId === VIEWS.PARENT_DASHBOARD);
+      if (modalId === VIEWS.PARENT_DASHBOARD) {
+        if (params.tab) setParentDashboardTab(params.tab);
+        if (params.highlight !== undefined) setParentDashboardHighlight(params.highlight);
+      }
+
+      setShowPinGateModal(modalId === VIEWS.PIN_GATE);
+      if (modalId === VIEWS.PIN_GATE) {
+        if (params.source) setPinGateSource(params.source);
+      }
+
+      setShowManualProfileSwitcher(modalId === VIEWS.PROFILE_SWITCHER);
+      setShowFeedbackModal(modalId === VIEWS.FEEDBACK);
+      setShowNewsModal(modalId === VIEWS.NEWS);
+      setShowFriendsModal(modalId === VIEWS.FRIENDS);
+      setShowFamilyUpgradeModal(modalId === VIEWS.FAMILY_UPGRADE);
+      setShowAccountLinkModal(modalId === VIEWS.ACCOUNT_LINK);
+      if (modalId === VIEWS.ACCOUNT_LINK && params.milestone) {
+        setLinkModalMilestone(params.milestone);
+      }
+      setShowMockCheckoutModal(modalId === VIEWS.MOCK_CHECKOUT);
+      setShowStripeCheckoutModal(modalId === VIEWS.STRIPE_CHECKOUT);
+      setShowShareModal(modalId === VIEWS.SHARE);
+    } else {
+      setIsWorkshopOpen(false);
+      setShowBadgesModal(false);
+      setShowAscentRoadmapModal(false);
+      setShowParentDashboard(false);
+      setShowPinGateModal(false);
+      setShowManualProfileSwitcher(false);
+      setShowFeedbackModal(false);
+      setShowNewsModal(false);
+      setShowFriendsModal(false);
+      setShowFamilyUpgradeModal(false);
+      setShowAccountLinkModal(false);
+      setShowMockCheckoutModal(false);
+      setShowStripeCheckoutModal(false);
+      setShowShareModal(false);
+
+      if (typeof window !== 'undefined' && window.location.pathname !== current.path) {
+        window.history.pushState({}, '', current.path);
+      }
+
+      let screenName = 'Home';
+      if (current.id === 'settings') screenName = 'Settings';
+      else if (current.id === 'privacy') screenName = 'PrivacyPolicy';
+      else if (current.id === 'terms') screenName = 'TermsOfService';
+      else if (current.id === 'leaderboard') screenName = 'Leaderboard';
+      else if (current.id === 'quests') screenName = 'Quests';
+      analyticsService?.logScreenView?.(screenName);
+    }
+  };
+
+  const handleGoBack = () => {
+    soundFx.playKeyTap();
+    const nextEntry = navigationHistory.pop();
+    applyNavState(nextEntry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+  };
+
+  const handleNavigateTo = (path, stateName) => {
+    soundFx.playKeyTap();
+    setShowProfileDropdown(false);
+    setShowSubjectDropdown(false);
+    const entry = navigationHistory.push({
+      type: VIEW_TYPES.ROUTE,
+      id: stateName || VIEWS.ADAPTIVE_SESSION,
+      path: path || getPathForId(stateName || VIEWS.ADAPTIVE_SESSION)
+    });
+    applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handleOpenWorkshop = (overrideOrigin = null, initialHubParam = 'wearables', initialViewModeParam = 'shop') => {
+    soundFx.playKeyTap();
+    setShowProfileDropdown(false);
+    setShowSubjectDropdown(false);
+    const entry = navigationHistory.push({
+      type: VIEW_TYPES.MODAL,
+      id: VIEWS.WORKSHOP,
+      params: { hub: initialHubParam, viewMode: initialViewModeParam }
+    });
+    applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+  };
+
+  const handleCloseWorkshop = () => {
+    handleGoBack();
+  };
+
+  const handleOpenBadgesModal = () => {
+    soundFx.playKeyTap();
+    setShowProfileDropdown(false);
+    setShowSubjectDropdown(false);
+    const entry = navigationHistory.push({
+      type: VIEW_TYPES.MODAL,
+      id: VIEWS.BADGES
+    });
+    applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+    const currentUnlockedIds = (unlockedBadges || []).map((b) => (typeof b === 'string' ? b : b?.id)).filter(Boolean);
+    if (currentUnlockedIds.length > 0) {
+      storageService.markBadgesAsSeen(currentUnlockedIds, activeProfileId);
+      setSeenBadges(storageService.getSeenBadges(activeProfileId));
+    }
+  };
+
+  const handleOpenAscentRoadmapModal = () => {
+    soundFx.playKeyTap();
+    setShowProfileDropdown(false);
+    setShowSubjectDropdown(false);
+    const entry = navigationHistory.push({
+      type: VIEW_TYPES.MODAL,
+      id: VIEWS.ASCENT_ROADMAP
+    });
+    applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+  };
+
+  const handleOpenPinGate = (source = null, tab = 'overview', highlight = null) => {
+    soundFx.playKeyTap();
+    setShowProfileDropdown(false);
+    setShowSubjectDropdown(false);
+    setParentDashboardTab(tab);
+    setParentDashboardHighlight(highlight);
+    const entry = navigationHistory.push({
+      type: VIEW_TYPES.MODAL,
+      id: VIEWS.PIN_GATE,
+      params: { source, tab, highlight }
+    });
+    applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+  };
+
+  const handlePinUnlockSuccess = () => {
+    setShowPinGateModal(false);
+    setShowProfileSelector(false);
+    setPinGateSource(null);
+
+    if (pendingSparksPurchase) {
+      if (authService.getAuthState().isAnonymous) {
+        setLinkModalMilestone('Real-Money Purchase Backup');
+        const entry = navigationHistory.replace({
+          type: VIEW_TYPES.MODAL,
+          id: VIEWS.ACCOUNT_LINK,
+          params: { milestone: 'Real-Money Purchase Backup' }
+        });
+        applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+      } else {
+        const checkoutId = pendingSparksPurchase.realMoneyPrice ? VIEWS.STRIPE_CHECKOUT : VIEWS.MOCK_CHECKOUT;
+        const entry = navigationHistory.replace({
+          type: VIEW_TYPES.MODAL,
+          id: checkoutId
+        });
+        applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+      }
+    } else {
+      const entry = navigationHistory.replace({
+        type: VIEW_TYPES.MODAL,
+        id: VIEWS.PARENT_DASHBOARD,
+        params: { tab: parentDashboardTab, highlight: parentDashboardHighlight }
+      });
+      applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+      if (!hasVisitedParentZone) {
+        setHasVisitedParentZone(true);
+        storageService.saveUserData({ hasVisitedParentZone: true });
+      }
+    }
+  };
+
+  const handleOpenModal = (modalId, params = {}) => {
+    soundFx.playKeyTap();
+    setShowProfileDropdown(false);
+    setShowSubjectDropdown(false);
+    const entry = navigationHistory.push({
+      type: VIEW_TYPES.MODAL,
+      id: modalId,
+      params
+    });
+    applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+  };
+
+  const processDeepLink = (search = typeof window !== 'undefined' ? window.location.search : '') => {
+    if (!search) return;
+    try {
+      const params = new URLSearchParams(search);
+      const action = params.get('action');
+      const profile = params.get('profile');
+      const subject = params.get('subject');
+      const tab = params.get('tab');
+      const hub = params.get('hub');
+      const mode = params.get('mode');
+
+      if (profile) {
+        const allProfiles = storageService.getAllProfiles();
+        if (allProfiles && allProfiles.some(p => p.id === profile)) {
+          storageService.setActiveProfileId(profile);
+          setActiveProfileId(profile);
+        }
+      }
+
+      if (subject && ['math', 'words', 'world', 'coding'].includes(subject)) {
+        setActiveSubject(subject);
+        storageService.setLastActiveSubject(subject);
+      }
+
+      if (action === 'shop' || action === 'workshop' || action === 'store' || action === 'closet') {
+        const targetMode = mode || (action === 'closet' ? 'closet' : 'shop');
+        const targetHub = hub || tab || 'wearables';
+        handleOpenWorkshop(null, targetHub, targetMode);
+      } else if (action === 'parent-settings' || action === 'parent-dashboard') {
+        handleOpenPinGate('deep_link', tab || 'overview', null);
+      } else if (action === 'settings') {
+        handleNavigateTo('/settings', 'settings');
+      } else if (action === 'leaderboard') {
+        handleNavigateTo('/leaderboard', 'leaderboard');
+      } else if (action === 'quests') {
+        handleNavigateTo('/quests', 'quests');
+      } else if (action === 'badges') {
+        handleOpenBadgesModal();
+      } else if (action === 'ascent' || action === 'roadmap') {
+        handleOpenAscentRoadmapModal();
+      } else if (action === 'feedback') {
+        handleOpenModal(VIEWS.FEEDBACK);
+      } else if (action === 'play') {
+        handleNavigateTo('/', 'adaptive_session');
+      }
+    } catch (e) {
+      // Ignore deep link parse errors
+    }
+  };
+
+  useEffect(() => {
+    const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+    let initialRoute = VIEWS.ADAPTIVE_SESSION;
+    if (path === '/privacy' || path === '/privacy/') initialRoute = VIEWS.PRIVACY;
+    else if (path === '/terms' || path === '/terms/') initialRoute = VIEWS.TERMS;
+    else if (path === '/settings' || path === '/settings/') initialRoute = VIEWS.SETTINGS;
+    else if (path === '/leaderboard' || path === '/leaderboard/') initialRoute = VIEWS.LEADERBOARD;
+    else if (path === '/quests' || path === '/quests/') initialRoute = VIEWS.QUESTS;
+
+    navigationHistory.reset({
+      type: VIEW_TYPES.ROUTE,
+      id: initialRoute,
+      path: getPathForId(initialRoute)
+    });
+    applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
+    processDeepLink();
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (navigationHistory.getStack().length > 1) {
+        handleGoBack();
+      } else {
+        const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+        let targetRoute = VIEWS.ADAPTIVE_SESSION;
+        if (path === '/privacy' || path === '/privacy/') targetRoute = VIEWS.PRIVACY;
+        else if (path === '/terms' || path === '/terms/') targetRoute = VIEWS.TERMS;
+        else if (path === '/settings' || path === '/settings/') targetRoute = VIEWS.SETTINGS;
+        else if (path === '/leaderboard' || path === '/leaderboard/') targetRoute = VIEWS.LEADERBOARD;
+        else if (path === '/quests' || path === '/quests/') targetRoute = VIEWS.QUESTS;
+        handleNavigateTo(path, targetRoute);
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('popstate', handlePopState);
+      return () => window.removeEventListener('popstate', handlePopState);
+    }
+  }, []);
 
   // Consecutive problem miss tracking for Micro-Hints
   const [consecutiveProblemMisses, setConsecutiveProblemMisses] = useState(0);
@@ -1441,26 +1598,29 @@ export default function App() {
       if (unseenNews.length > 0) {
         setNewsItems(unseenNews);
         storageService.markNewsAsSeen(unseenNews.map(n => n.id), currentPid);
-        setShowNewsModal(true);
+        handleOpenModal(VIEWS.NEWS);
       }
     }
   }, [appState, activeProfileId, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher]);
 
   const handleBuySparksPackage = (pack) => {
     setPendingSparksPurchase(pack);
-    setShowPinGateModal(true);
+    handleOpenPinGate('buy_sparks');
   };
 
   const closeAllNavModals = (except = null) => {
-    if (except !== 'workshop') setIsWorkshopOpen(false);
-    if (except !== 'badges') setShowBadgesModal(false);
-    if (except !== 'ascentRoadmap') setShowAscentRoadmapModal(false);
-    setShowNewsModal(false);
-    if (except !== 'profile') setShowManualProfileSwitcher(false);
-    if (except !== 'profileDropdown') setShowProfileDropdown(false);
-    if (except !== 'parents') {
-      setShowPinGateModal(false);
-      setShowParentDashboard(false);
+    if (!except) {
+      handleNavigateTo('/', 'adaptive_session');
+    } else if (except === 'workshop') {
+      handleOpenWorkshop();
+    } else if (except === 'badges') {
+      handleOpenBadgesModal();
+    } else if (except === 'ascentRoadmap') {
+      handleOpenAscentRoadmapModal();
+    } else if (except === 'parents') {
+      handleOpenPinGate();
+    } else if (except === 'profile') {
+      handleOpenModal(VIEWS.PROFILE_SWITCHER);
     }
   };
 
@@ -1472,8 +1632,7 @@ export default function App() {
           type="button"
           onClick={() => {
             soundFx.playKeyTap();
-            closeAllNavModals();
-            setAppState('adaptive_session');
+            handleNavigateTo('/', 'adaptive_session');
           }}
           className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-100 text-emerald-950 border-2 border-emerald-400 rounded-xl hover:from-emerald-200 hover:to-teal-200 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] ${
             !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'adaptive_session' ? 'ring-2 ring-emerald-500 scale-[1.02] sm:scale-105 font-bold' : ''
@@ -1489,7 +1648,6 @@ export default function App() {
         <button
           type="button"
           onClick={() => {
-            closeAllNavModals('workshop');
             handleOpenWorkshop();
           }}
           className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-orange-100 via-orange-50 to-orange-100 text-orange-950 border-2 border-orange-400 rounded-xl hover:from-orange-200 hover:to-orange-100 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] ${
@@ -1528,8 +1686,7 @@ export default function App() {
           type="button"
           onClick={() => {
             soundFx.playKeyTap();
-            closeAllNavModals();
-            setAppState('leaderboard');
+            handleNavigateTo('/leaderboard', 'leaderboard');
           }}
           className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-indigo-100 via-blue-50 to-indigo-100 text-indigo-950 border-2 border-indigo-400 rounded-xl hover:from-indigo-200 hover:to-blue-200 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] relative ${
             !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'leaderboard' ? 'ring-2 ring-indigo-500 scale-[1.02] sm:scale-105 font-bold' : ''
@@ -1548,8 +1705,7 @@ export default function App() {
           type="button"
           onClick={() => {
             soundFx.playKeyTap();
-            closeAllNavModals();
-            setAppState('quests');
+            handleNavigateTo('/quests', 'quests');
           }}
           className={`flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-purple-100 via-fuchsia-50 to-purple-100 text-purple-950 border-2 border-purple-400 rounded-xl hover:from-purple-200 hover:to-fuchsia-200 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] relative ${
             !isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'quests' ? 'ring-2 ring-purple-500 scale-[1.02] sm:scale-105 font-bold' : ''
@@ -1653,8 +1809,7 @@ export default function App() {
                             soundFx.playKeyTap();
                             if (isLocked) {
                               setShowProfileDropdown(false);
-                              setFamilyUpgradeOrigin({ appState });
-                              setShowFamilyUpgradeModal(true);
+                              handleOpenModal(VIEWS.FAMILY_UPGRADE);
                               return;
                             }
                             storageService.setActiveProfileId(profile.id);
@@ -1664,7 +1819,8 @@ export default function App() {
                             setActiveSubject(targetSubject);
                             syncAppStateWithStorage(targetSubject);
                             setShowProfileDropdown(false);
-                            setAppState('adaptive_session');
+                            navigationHistory.reset({ type: VIEW_TYPES.ROUTE, id: VIEWS.ADAPTIVE_SESSION, path: '/' });
+                            applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
                           }}
                           className={`flex items-center justify-between px-2.5 py-2 rounded-xl transition-colors text-left cursor-pointer group w-full ${
                             isLocked
@@ -1705,10 +1861,8 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => {
-                      soundFx.playKeyTap();
                       setShowProfileDropdown(false);
-                      setProfileSwitcherOrigin({ appState });
-                      setShowManualProfileSwitcher(true);
+                      handleOpenModal(VIEWS.PROFILE_SWITCHER);
                     }}
                     className="flex items-center gap-2 px-2.5 py-2 rounded-xl hover:bg-amber-50 text-amber-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
                   >
@@ -1726,10 +1880,8 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => {
-                      soundFx.playKeyTap();
                       setShowProfileDropdown(false);
-                      setFamilyUpgradeOrigin({ appState });
-                      setShowFamilyUpgradeModal(true);
+                      handleOpenModal(VIEWS.FAMILY_UPGRADE);
                     }}
                     className="w-full flex items-center justify-between p-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-black text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
                   >
@@ -1750,12 +1902,8 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => {
-                      soundFx.playKeyTap();
                       setShowProfileDropdown(false);
-                      setParentDashboardTab('overview');
-                      setParentDashboardHighlight(null);
-                      setPinGateSource('profile_dropdown');
-                      setShowPinGateModal(true);
+                      handleOpenPinGate('profile_dropdown', 'overview', null);
                     }}
                     className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-purple-50 text-purple-800 font-black text-xs transition-colors cursor-pointer w-full text-left"
                   >
@@ -1766,10 +1914,8 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => {
-                      soundFx.playKeyTap();
                       setShowProfileDropdown(false);
-                      closeAllNavModals();
-                      setAppState('settings');
+                      handleNavigateTo('/settings', 'settings');
                     }}
                     className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-slate-200/70 text-slate-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
                   >
@@ -1800,9 +1946,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => {
-              soundFx.playKeyTap();
-              closeAllNavModals();
-              setAppState('adaptive_session');
+              handleNavigateTo('/', 'adaptive_session');
             }}
             className="flex items-center px-1.5 sm:px-2.5 py-1 rounded-full hover:bg-slate-100/80 active:scale-95 transition-all cursor-pointer group select-none shrink-0"
             title="Kibo Climb Home"
@@ -1828,9 +1972,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => {
-                    soundFx.playKeyTap();
-                    closeAllNavModals();
-                    setShowAscentRoadmapModal(true);
+                    handleOpenAscentRoadmapModal();
                   }}
                   className="flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600 text-white border-2 border-teal-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
                   title={`Expedition Level Roadmap: Ascent ${questLevelInfo.ascentTier} • Lv. ${questLevelInfo.level} (${questLevelInfo.title}) • ${questLevelInfo.progressPct || 0}% to next level`}
@@ -1890,10 +2032,7 @@ export default function App() {
               type="button"
               className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 text-white border-2 border-rose-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer"
               title={(consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0 ? "Daily Streak & Shield Active! 🛡️" : `Daily Streak: ${streak} ${streak === 1 ? 'day' : 'days'}`}
-              onClick={() => {
-                soundFx.playKeyTap();
-                setShowBadgesModal(true);
-              }}
+              onClick={handleOpenBadgesModal}
             >
               <RollingNumberTicker
                 value={streak}
@@ -1913,8 +2052,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => {
-                soundFx.playKeyTap();
-                setShowFriendsModal(true);
+                handleOpenModal(VIEWS.FRIENDS);
               }}
               className="flex items-center gap-1 bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 text-white border-2 border-sky-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer relative mr-1 sm:mr-0"
               title={`Friends (${friendsCount})${pendingFriendRequestsCount > 0 ? ` • ${pendingFriendRequestsCount} pending request${pendingFriendRequestsCount > 1 ? 's' : ''}` : ''}`}
@@ -2180,17 +2318,13 @@ export default function App() {
           onUpdatePreferences={handleUpdatePreferences}
           renderFooter={renderNavigationFooter}
           onNavigate={handleNavigateTo}
-          onBack={() => handleNavigateTo('/', 'adaptive_session')}
-          onOpenFeedback={() => setShowFeedbackModal(true)}
+          onBack={handleGoBack}
+          onOpenFeedback={() => handleOpenModal(VIEWS.FEEDBACK)}
           onOpenParentZone={(targetTab = 'overview') => {
-            setParentDashboardTab(targetTab);
-            setParentDashboardHighlight(null);
-            setPinGateSource('settings_screen');
-            setShowPinGateModal(true);
+            handleOpenPinGate('settings_screen', targetTab, null);
           }}
           onSwitchProfile={() => {
-            setProfileSwitcherOrigin({ appState: 'settings' });
-            setShowManualProfileSwitcher(true);
+            handleOpenModal(VIEWS.PROFILE_SWITCHER);
           }}
         />
       )}
@@ -2198,7 +2332,7 @@ export default function App() {
       {/* PRIVACY POLICY SCREEN */}
       {appState === 'privacy' && (
         <PrivacyPolicyScreen
-          onBack={() => handleNavigateTo('/settings', 'settings')}
+          onBack={handleGoBack}
           renderFooter={renderNavigationFooter}
         />
       )}
@@ -2206,7 +2340,7 @@ export default function App() {
       {/* TERMS OF SERVICE SCREEN */}
       {appState === 'terms' && (
         <TermsOfServiceScreen
-          onBack={() => handleNavigateTo('/settings', 'settings')}
+          onBack={handleGoBack}
           renderFooter={renderNavigationFooter}
         />
       )}
@@ -2225,7 +2359,7 @@ export default function App() {
           }}
           renderFooter={renderNavigationFooter}
           equippedItems={equippedItems}
-          onBack={() => handleNavigateTo('/', 'adaptive_session')}
+          onBack={handleGoBack}
         />
       )}
 
@@ -2243,7 +2377,7 @@ export default function App() {
             cumulativeCorrectStreak: cumulativeCorrectStreak
           }}
           onNavigate={handleNavigateTo}
-          onBack={() => handleNavigateTo('/', 'adaptive_session')}
+          onBack={handleGoBack}
           renderFooter={renderNavigationFooter}
           onAwardReward={(reward = {}) => {
             if (reward.sparks) {
@@ -2474,20 +2608,15 @@ export default function App() {
             setActiveSubject(targetSubject);
             syncAppStateWithStorage(targetSubject);
             setShowProfileSelector(false);
-            setAppState('adaptive_session');
+            navigationHistory.reset({ type: VIEW_TYPES.ROUTE, id: VIEWS.ADAPTIVE_SESSION, path: '/' });
+            applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
             validateStreakForActiveProfile(targetSubject);
           }}
           onOpenParentZone={(targetTab = 'overview', targetHighlight = 'family_plan') => {
-            setParentDashboardTab(targetTab);
-            setParentDashboardHighlight(targetHighlight);
-            setShowProfileSelector(false);
-            setParentDashboardOrigin({ showProfileSelector: true });
-            setPinGateSource('profile_selector');
-            setShowPinGateModal(true);
+            handleOpenPinGate('profile_selector', targetTab, targetHighlight);
           }}
           onRequestLogin={() => {
-            setLinkModalMilestone('Account Sync');
-            setShowAccountLinkModal(true);
+            handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Account Sync' });
           }}
         />
       )}
@@ -2501,35 +2630,16 @@ export default function App() {
             storageService.setLastActiveSubject(targetSubject, profile?.id);
             setActiveSubject(targetSubject);
             syncAppStateWithStorage(targetSubject);
-            setShowManualProfileSwitcher(false);
-            setAppState('adaptive_session');
+            navigationHistory.reset({ type: VIEW_TYPES.ROUTE, id: VIEWS.ADAPTIVE_SESSION, path: '/' });
+            applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
             validateStreakForActiveProfile(targetSubject);
           }}
           onRequestLogin={() => {
-            setLinkModalMilestone('Account Sync');
-            setShowAccountLinkModal(true);
+            handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Account Sync' });
           }}
-          onClose={() => {
-            setShowManualProfileSwitcher(false);
-            if (profileSwitcherOrigin) {
-              if (profileSwitcherOrigin.showBadgesModal) {
-                setShowBadgesModal(true);
-              } else if (profileSwitcherOrigin.isWorkshopOpen) {
-                setIsWorkshopOpen(true);
-              } else if (profileSwitcherOrigin.showParentDashboard) {
-                setShowParentDashboard(true);
-              } else if (profileSwitcherOrigin.appState) {
-                setAppState(profileSwitcherOrigin.appState);
-              }
-            }
-            setProfileSwitcherOrigin(null);
-          }}
+          onClose={handleGoBack}
           onOpenParentZone={(targetTab = 'overview', targetHighlight = 'family_plan') => {
-            setParentDashboardTab(targetTab);
-            setParentDashboardHighlight(targetHighlight);
-            setParentDashboardOrigin({ showManualProfileSwitcher: true });
-            setPinGateSource('manual_profile_switcher');
-            setShowPinGateModal(true);
+            handleOpenPinGate('manual_profile_switcher', targetTab, targetHighlight);
           }}
         />
       )}
@@ -2545,25 +2655,19 @@ export default function App() {
         }}
         onOpenParentZone={(targetTab = 'overview') => {
           syncAppStateWithStorage();
-          setShowFirstLaunchOnboardingModal(false);
           storageService.setOnboarded(true);
-          setParentDashboardTab(targetTab);
-          setParentDashboardHighlight(null);
-          setParentDashboardOrigin({ showFirstLaunchOnboardingModal: true });
-          setPinGateSource('onboarding');
-          setShowPinGateModal(true);
+          handleOpenPinGate('onboarding', targetTab, null);
         }}
         onStartAdaptiveClimb={(startingSubject = 'math') => {
           const validSubject = (startingSubject === 'words' || startingSubject === 'math' || startingSubject === 'world' || startingSubject === 'coding') ? startingSubject : 'math';
           storageService.setLastActiveSubject(validSubject);
           setActiveSubject(validSubject);
           syncAppStateWithStorage(validSubject);
-          setShowFirstLaunchOnboardingModal(false);
-          setAppState('adaptive_session');
+          navigationHistory.reset({ type: VIEW_TYPES.ROUTE, id: VIEWS.ADAPTIVE_SESSION, path: '/' });
+          applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
         }}
         onRequestLogin={() => {
-          setLinkModalMilestone('Restore Account');
-          setShowAccountLinkModal(true);
+          handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Restore Account' });
         }}
       />
 
@@ -2699,55 +2803,11 @@ export default function App() {
       <PinGateModal
         isOpen={showPinGateModal}
         onClose={() => {
-          setShowPinGateModal(false);
           setPendingSparksPurchase(null);
-          if (pinGateSource === 'profile_selector') {
-            setShowProfileSelector(true);
-          } else if (pinGateSource === 'manual_profile_switcher') {
-            setShowManualProfileSwitcher(true);
-          } else if (pinGateSource === 'onboarding') {
-            setShowFirstLaunchOnboardingModal(true);
-          } else if (pinGateSource === 'settings_menu' && profileSwitcherOrigin) {
-            if (profileSwitcherOrigin.showBadgesModal) {
-              setShowBadgesModal(true);
-            } else if (profileSwitcherOrigin.isWorkshopOpen) {
-              setIsWorkshopOpen(true);
-            } else if (profileSwitcherOrigin.showParentDashboard) {
-              setShowParentDashboard(true);
-            } else if (profileSwitcherOrigin.appState) {
-              setAppState(profileSwitcherOrigin.appState);
-            }
-            setProfileSwitcherOrigin(null);
-          }
-          setPinGateSource(null);
+          handleGoBack();
         }}
         currentPin={parentPin}
-        onUnlockSuccess={() => {
-          setShowPinGateModal(false);
-          setShowProfileSelector(false);
-          if (pinGateSource === 'manual_profile_switcher') {
-            setShowManualProfileSwitcher(false);
-          }
-          setPinGateSource(null);
-          if (pendingSparksPurchase) {
-            if (authService.getAuthState().isAnonymous) {
-              setLinkModalMilestone('Real-Money Purchase Backup');
-              setShowAccountLinkModal(true);
-            } else {
-              if (pendingSparksPurchase.realMoneyPrice) {
-                setShowStripeCheckoutModal(true);
-              } else {
-                setShowMockCheckoutModal(true);
-              }
-            }
-          } else {
-            setShowParentDashboard(true);
-            if (!hasVisitedParentZone) {
-              setHasVisitedParentZone(true);
-              storageService.saveUserData({ hasVisitedParentZone: true });
-            }
-          }
-        }}
+        onUnlockSuccess={handlePinUnlockSuccess}
       />
 
       {/* PARENT DASHBOARD MODAL */}
@@ -2757,19 +2817,9 @@ export default function App() {
         activeSubject={activeSubject}
         isOpen={showParentDashboard}
         onClose={() => {
-          setShowParentDashboard(false);
           setParentDashboardTab('overview');
           setParentDashboardHighlight(null);
-          if (parentDashboardOrigin) {
-            if (parentDashboardOrigin.showProfileSelector) {
-              setShowProfileSelector(true);
-            } else if (parentDashboardOrigin.showManualProfileSwitcher) {
-              setShowManualProfileSwitcher(true);
-            } else if (parentDashboardOrigin.showFirstLaunchOnboardingModal) {
-              setShowFirstLaunchOnboardingModal(true);
-            }
-            setParentDashboardOrigin(null);
-          }
+          handleGoBack();
         }}
         currentPin={parentPin}
         onUpdatePin={handleUpdatePin}
@@ -2834,7 +2884,7 @@ export default function App() {
       <BadgesModal
         activeSubject={activeSubject}
         isOpen={showBadgesModal}
-        onClose={() => setShowBadgesModal(false)}
+        onClose={handleGoBack}
         unlockedBadges={unlockedBadges}
         personalRecords={personalRecords}
         userState={(() => {
@@ -2853,12 +2903,13 @@ export default function App() {
           };
         })()}
         renderFooter={renderNavigationFooter}
+        onOpenAscentRoadmap={handleOpenAscentRoadmapModal}
       />
 
       {/* EXPEDITION ASCENTS & LEVEL ROADMAP MODAL */}
       <AscentRoadmapModal
         isOpen={showAscentRoadmapModal}
-        onClose={() => setShowAscentRoadmapModal(false)}
+        onClose={handleGoBack}
         profileId={activeProfileId}
       />
 
@@ -2963,7 +3014,7 @@ export default function App() {
       {/* Workshop Modal */}
       <WorkshopModal
         isOpen={isWorkshopOpen}
-        onClose={handleCloseWorkshop}
+        onClose={handleGoBack}
         sparks={sparks}
         streakShields={streakShields}
         consumables={consumables}
@@ -2978,18 +3029,14 @@ export default function App() {
         initialHub={workshopHub}
         initialViewMode={workshopViewMode}
         onOpenParentZone={(targetTab = 'verification', highlight = 'real_money_purchases') => {
-          setParentDashboardTab(targetTab);
-          setParentDashboardHighlight(highlight);
-          setPinGateSource('shop');
-          setShowPinGateModal(true);
+          handleOpenPinGate('shop', targetTab, highlight);
         }}
         onBuySparksPackage={(pack) => {
           setPendingSparksPurchase(pack);
-          setShowPinGateModal(true);
+          handleOpenPinGate('shop');
         }}
         onRequestAccountLink={() => {
-          setLinkModalMilestone('Shop Rewards');
-          setShowAccountLinkModal(true);
+          handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Shop Rewards' });
         }}
         renderFooter={renderNavigationFooter}
       />
@@ -2997,8 +3044,8 @@ export default function App() {
       <MockCheckoutModal
         isOpen={showMockCheckoutModal}
         onClose={() => {
-          setShowMockCheckoutModal(false);
           setPendingSparksPurchase(null);
+          handleGoBack();
         }}
         packageInfo={pendingSparksPurchase}
         onConfirm={(pack) => {
@@ -3053,16 +3100,16 @@ export default function App() {
           localStorage.setItem('kibo_math_sparks', newSparks.toString());
 
           soundFx.playSparkCollect();
-          setShowMockCheckoutModal(false);
           setPendingSparksPurchase(null);
+          handleGoBack();
         }}
       />
 
       <StripeCheckoutModal
         isOpen={showStripeCheckoutModal}
         onClose={() => {
-          setShowStripeCheckoutModal(false);
           setPendingSparksPurchase(null);
+          handleGoBack();
         }}
         packageInfo={pendingSparksPurchase}
         onConfirm={(pack) => {
@@ -3116,56 +3163,41 @@ export default function App() {
           localStorage.setItem('kibo_math_sparks', newSparks.toString());
 
           soundFx.playSparkCollect();
-          setShowStripeCheckoutModal(false);
           setPendingSparksPurchase(null);
+          handleGoBack();
         }}
       />
 
       {/* Family Plan Upgrade Modal */}
       <FamilyPlanUpgradeModal
         isOpen={showFamilyUpgradeModal}
-        onClose={() => {
-          setShowFamilyUpgradeModal(false);
-          if (familyUpgradeOrigin) {
-            if (familyUpgradeOrigin.showParentDashboard) {
-              setShowParentDashboard(true);
-            }
-            if (familyUpgradeOrigin.appState) {
-              setAppState(familyUpgradeOrigin.appState);
-            }
-            setFamilyUpgradeOrigin(null);
-          }
-        }}
+        onClose={handleGoBack}
         onOpenParentZone={(targetTab = 'verification', targetHighlight = 'family_plan') => {
-          setParentDashboardTab(targetTab);
-          setParentDashboardHighlight(targetHighlight);
-          setShowFamilyUpgradeModal(false);
-          setPinGateSource('profile_dropdown');
-          setShowPinGateModal(true);
+          handleOpenPinGate('family_plan', targetTab, targetHighlight);
         }}
       />
 
       {/* News Modal */}
       <NewsModal
         isOpen={showNewsModal}
-        onClose={() => setShowNewsModal(false)}
+        onClose={handleGoBack}
         newsItems={newsItems}
       />
 
       {/* Feedback Modal */}
       <FeedbackModal
         isOpen={showFeedbackModal}
-        onClose={() => setShowFeedbackModal(false)}
+        onClose={handleGoBack}
       />
 
       {/* Friends Modal */}
       <AddFriendModal
         isOpen={showFriendsModal}
         onClose={() => {
-          setShowFriendsModal(false);
           const currentPid = storageService.getActiveProfileId();
           setFriendsCount(storageService.getFriends(currentPid).length);
           setPendingFriendRequestsCount(storageService.getFriendRequests(currentPid).filter(r => r.type === 'received').length);
+          handleGoBack();
         }}
         activeSubject={activeSubject}
         onFriendAdded={() => {
@@ -3178,17 +3210,17 @@ export default function App() {
       {/* Share Modal */}
       <ShareModal
         isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
+        onClose={handleGoBack}
       />
 
       {/* Account Link Modal */}
       <AccountLinkModal
         isOpen={showAccountLinkModal}
         onClose={() => {
-          setShowAccountLinkModal(false);
           if (pendingSparksPurchase) {
             setPendingSparksPurchase(null);
           }
+          handleGoBack();
         }}
         triggerMilestone={linkModalMilestone}
         onAccountLinked={(user, newSparks) => {
@@ -3196,13 +3228,22 @@ export default function App() {
             setSparks(newSparks);
           }
           syncAppStateWithStorage();
-          setShowAccountLinkModal(false);
           if (pendingSparksPurchase) {
             if (pendingSparksPurchase.realMoneyPrice) {
-              setShowStripeCheckoutModal(true);
+              const entry = navigationHistory.replace({
+                type: VIEW_TYPES.MODAL,
+                id: VIEWS.STRIPE_CHECKOUT
+              });
+              applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
             } else {
-              setShowMockCheckoutModal(true);
+              const entry = navigationHistory.replace({
+                type: VIEW_TYPES.MODAL,
+                id: VIEWS.MOCK_CHECKOUT
+              });
+              applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
             }
+          } else {
+            handleGoBack();
           }
         }}
       />
