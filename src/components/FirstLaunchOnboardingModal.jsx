@@ -627,7 +627,7 @@ export default function FirstLaunchOnboardingModal({
               className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-sm rounded-xl shadow-lg shadow-amber-500/20 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all cursor-pointer flex items-center justify-center gap-1.5"
             >
               <Lock className="w-4 h-4" />
-              <span>Verify as Parent 🚀</span>
+              <span>Verify as Parent</span>
             </button>
           </div>
         </div>

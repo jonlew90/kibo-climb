@@ -391,62 +391,70 @@ class LeaderboardService {
     const cleanCode = (friendCode || storageService.getFriendCode(profileId) || '').trim().toUpperCase();
 
     try {
-      const claimFn = httpsCallable(functions, 'claimUsername');
-      const res = await claimFn({ username: trimmed, profileId, friendCode: cleanCode });
-      return { success: true, username: res.data?.username || trimmed, friendCode: res.data?.friendCode || cleanCode };
+      let user = this.getCurrentUser();
+      if (!user) {
+        try {
+          const userCred = await signInAnonymously(auth);
+          user = userCred.user;
+          this.currentUser = user;
+        } catch (authErr) {
+          console.warn('LeaderboardService: anonymous auth failed', authErr);
+        }
+      }
+
+      if (!user || !user.uid) {
+        return { success: false, error: 'Unable to authenticate user session.' };
+      }
+
+      const uid = user.uid;
+      const usernameRef = doc(db, 'usernames', normalized);
+      const codeRef = cleanCode ? doc(db, 'friend_codes', cleanCode) : null;
+
+      // Check if username is already taken by another UID
+      const existingSnap = await getDoc(usernameRef);
+      if (existingSnap.exists()) {
+        const data = existingSnap.data();
+        if (data.uid && data.uid !== uid) {
+          return { success: false, error: 'This username is already taken. Please choose another one.' };
+        }
+      }
+
+      if (codeRef) {
+        const existingCodeSnap = await getDoc(codeRef);
+        if (existingCodeSnap.exists()) {
+          const codeData = existingCodeSnap.data();
+          if (codeData.uid && codeData.uid !== uid) {
+            return { success: false, error: 'This climber code is already in use.' };
+          }
+        }
+      }
+
+      const payload = {
+        username: trimmed,
+        normalized,
+        uid,
+        profileId: profileId || 'default_child',
+        claimedAt: serverTimestamp()
+      };
+      if (cleanCode) payload.friendCode = cleanCode;
+
+      await setDoc(usernameRef, payload, { merge: true });
+
+      if (codeRef) {
+        await setDoc(codeRef, {
+          friendCode: cleanCode,
+          username: trimmed,
+          normalized,
+          uid,
+          profileId: profileId || 'default_child',
+          claimedAt: serverTimestamp()
+        }, { merge: true });
+      }
+
+      return { success: true, username: trimmed, friendCode: cleanCode };
     } catch (error) {
-      // If error is already-exists, surface human-readable message
-      if (error?.code === 'functions/already-exists' || error?.message?.includes('already taken')) {
-        return { success: false, error: 'This username is already taken. Please choose another one.' };
-      }
-      
-      console.warn('LeaderboardService: claimUsername network fallback to direct Firestore', error);
-      
-      try {
-        let user = this.getCurrentUser();
-        if (!user) {
-          try {
-            const userCred = await signInAnonymously(auth);
-            user = userCred.user;
-            this.currentUser = user;
-          } catch (authErr) {}
-        }
-
-        if (user && user.uid) {
-          const usernameRef = doc(db, 'usernames', normalized);
-          const existingSnap = await getDoc(usernameRef);
-          if (existingSnap.exists()) {
-            const data = existingSnap.data();
-            if (data.uid && data.uid !== user.uid) {
-              return { success: false, error: 'This username is already taken. Please choose another one.' };
-            }
-          }
-          await setDoc(usernameRef, {
-            username: trimmed,
-            normalized,
-            friendCode: cleanCode,
-            uid: user.uid,
-            profileId: profileId || 'default_child',
-            claimedAt: serverTimestamp()
-          }, { merge: true });
-
-          if (cleanCode) {
-            const codeRef = doc(db, 'friend_codes', cleanCode);
-            await setDoc(codeRef, {
-              friendCode: cleanCode,
-              username: trimmed,
-              normalized,
-              uid: user.uid,
-              profileId: profileId || 'default_child',
-              claimedAt: serverTimestamp()
-            }, { merge: true });
-          }
-        }
-      } catch (firestoreErr) {
-        console.warn('LeaderboardService: direct Firestore claim error', firestoreErr);
-      }
-
-      return { success: true, username: trimmed, friendCode: cleanCode, isOfflineFallback: true };
+      console.warn('LeaderboardService: direct Firestore claim error', error);
+      return { success: false, error: error.message || 'Failed to claim username.' };
     }
   }
 
