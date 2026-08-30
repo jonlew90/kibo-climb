@@ -142,6 +142,8 @@ export default function WorkshopModal({
   onBuySparksPackage,
   onOpenParentZone,
   onRequestAccountLink,
+  initialHub = 'wearables',
+  initialViewMode = 'shop',
   renderFooter
 }) {
   const INITIAL_PREVIEW_SLOTS = {
@@ -233,6 +235,8 @@ export default function WorkshopModal({
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setPreviewSlots(INITIAL_PREVIEW_SLOTS);
+      if (initialViewMode) setViewMode(initialViewMode);
+      if (initialHub) setActiveHub(initialHub);
       if (itemsContainerRef.current) {
         itemsContainerRef.current.scrollTop = 0;
       }
@@ -241,7 +245,7 @@ export default function WorkshopModal({
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, initialViewMode, initialHub]);
 
   // Handle Escape key listener
   useEffect(() => {

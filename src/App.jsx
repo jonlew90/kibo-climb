@@ -122,6 +122,11 @@ export default function App() {
     return 'adaptive_session';
   });
 
+  const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
+  const [workshopOriginState, setWorkshopOriginState] = useState('adaptive_session');
+  const [workshopHub, setWorkshopHub] = useState('wearables');
+  const [workshopViewMode, setWorkshopViewMode] = useState('shop');
+
   const processDeepLink = (search = window.location.search) => {
     if (!search) return;
     try {
@@ -130,6 +135,8 @@ export default function App() {
       const profile = params.get('profile');
       const subject = params.get('subject');
       const tab = params.get('tab');
+      const hub = params.get('hub');
+      const mode = params.get('mode');
 
       if (profile) {
         const allProfiles = storageService.getAllProfiles();
@@ -144,7 +151,13 @@ export default function App() {
         storageService.setLastActiveSubject(subject);
       }
 
-      if (action === 'parent-settings' || action === 'parent-dashboard') {
+      if (action === 'shop' || action === 'workshop' || action === 'store' || action === 'closet') {
+        const targetMode = mode || (action === 'closet' ? 'closet' : 'shop');
+        const targetHub = hub || tab || 'wearables';
+        setWorkshopViewMode(targetMode);
+        setWorkshopHub(targetHub);
+        setIsWorkshopOpen(true);
+      } else if (action === 'parent-settings' || action === 'parent-dashboard') {
         setParentDashboardTab(tab || 'overview');
         setParentDashboardHighlight(null);
         setPinGateSource('deep_link');
@@ -211,12 +224,11 @@ export default function App() {
     analyticsService.logScreenView(screenName);
   };
 
-  const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
-  const [workshopOriginState, setWorkshopOriginState] = useState('adaptive_session');
-
-  const handleOpenWorkshop = (overrideOrigin = null) => {
+  const handleOpenWorkshop = (overrideOrigin = null, initialHubParam = 'wearables', initialViewModeParam = 'shop') => {
     soundFx.playKeyTap();
     setWorkshopOriginState(overrideOrigin || appState);
+    setWorkshopHub(initialHubParam);
+    setWorkshopViewMode(initialViewModeParam);
     setIsWorkshopOpen(true);
   };
 
@@ -2962,6 +2974,8 @@ export default function App() {
         onToggleEquip={handleToggleEquip}
         onRedeemPromoCode={handleRedeemPromoCode}
         allowRealMoneyPurchases={notifPrefs.allowRealMoneyPurchases}
+        initialHub={workshopHub}
+        initialViewMode={workshopViewMode}
         onOpenParentZone={(targetTab = 'verification', highlight = 'real_money_purchases') => {
           setParentDashboardTab(targetTab);
           setParentDashboardHighlight(highlight);
