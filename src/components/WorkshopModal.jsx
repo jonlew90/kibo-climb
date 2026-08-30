@@ -8,6 +8,7 @@ import {
   X,
   RotateCcw,
   ShieldCheck,
+  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   User,
@@ -606,8 +607,22 @@ export default function WorkshopModal({
       
       {/* 1. TOP COMPACT FIXED-HEIGHT HEADER BAR */}
       <header className="bg-white border-b-2 border-slate-200 px-2 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between gap-1.5 sm:gap-3 shadow-xs shrink-0 z-20 h-12 sm:h-14">
-        {/* Title & Brand */}
+        {/* Title & Brand + Back Button */}
         <div className="flex items-center gap-1.5 shrink-0 min-w-0">
+          {onClose && (
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                onClose();
+              }}
+              className="p-1 sm:p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg sm:rounded-xl border border-slate-300 transition-colors active:scale-95 cursor-pointer flex items-center justify-center shrink-0"
+              aria-label="Back"
+              title="Back"
+            >
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
+            </button>
+          )}
           <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-orange-100 border border-orange-300 flex items-center justify-center shrink-0 shadow-2xs">
             <ShoppingBag className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
           </div>
@@ -658,10 +673,11 @@ export default function WorkshopModal({
 
         {/* Right: Currency & Actions */}
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          {/* Redeem Promo Code button hidden for now */}
           <button
             type="button"
             onClick={() => openPromoDialogWithCode()}
-            className="flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-amber-100 hover:bg-amber-200 text-amber-950 font-black text-[11px] sm:text-xs rounded-full border border-amber-300 active:scale-95 transition-all cursor-pointer shadow-2xs"
+            className="hidden items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-amber-100 hover:bg-amber-200 text-amber-950 font-black text-[11px] sm:text-xs rounded-full border border-amber-300 active:scale-95 transition-all cursor-pointer shadow-2xs"
             title="Redeem Promo Code"
           >
             <Ticket className="w-3 h-3 text-amber-700 stroke-[2.5]" />

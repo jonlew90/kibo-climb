@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Lock, Sparkles, CheckCircle2, Trophy, Flame, Zap, Target, Compass, ChevronLeft, ChevronRight, Star, Mountain, Award } from 'lucide-react';
+import { Lock, Sparkles, CheckCircle2, Trophy, Flame, Zap, Target, Compass, ChevronLeft, ChevronRight, Star, Mountain, Award, ArrowLeft } from 'lucide-react';
 import { BADGES_CATALOG, BADGE_CATEGORIES } from '../data/badges';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { SUBJECTS_CONFIG } from '../config/subjects';
@@ -116,18 +116,25 @@ export default function BadgesModal({
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       {/* STICKY TOP HEADER BAR */}
-      <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
-        <div className="flex items-center gap-2 text-slate-800">
-          <Compass className="w-5 h-5 text-teal-600 stroke-[2.5]" />
-          <h2 className="text-base sm:text-lg font-black tracking-tight">Climber Passport & Mountain Records</h2>
+      <header className="bg-white border-b-2 border-slate-200 px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
+        <div className="flex items-center gap-2 text-slate-800 min-w-0">
+          {onClose && (
+            <button
+              type="button"
+              onClick={() => {
+                soundFx?.playKeyTap?.();
+                onClose();
+              }}
+              className="p-1 sm:p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg sm:rounded-xl border border-slate-300 transition-colors active:scale-95 cursor-pointer flex items-center justify-center shrink-0"
+              aria-label="Back"
+              title="Back"
+            >
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
+            </button>
+          )}
+          <Compass className="w-5 h-5 text-teal-600 stroke-[2.5] shrink-0" />
+          <h2 className="text-base sm:text-lg font-black tracking-tight truncate">Climber Passport & Mountain Records</h2>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="p-1.5 rounded-xl hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-slate-600 transition-all font-black text-sm cursor-pointer"
-        >
-          ✕
-        </button>
       </header>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}

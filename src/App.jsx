@@ -2225,6 +2225,7 @@ export default function App() {
           }}
           renderFooter={renderNavigationFooter}
           equippedItems={equippedItems}
+          onBack={() => handleNavigateTo('/', 'adaptive_session')}
         />
       )}
 
