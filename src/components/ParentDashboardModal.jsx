@@ -1591,13 +1591,13 @@ export default function ParentDashboardModal({
                       : 'bg-slate-50 border-slate-200'
                   }`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-amber-600">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+                    <div className="flex items-center justify-center sm:justify-start gap-2 text-amber-600 w-full sm:w-auto">
                       <Sparkles className="w-5 h-5 stroke-[2.5]" />
                       <h4 className="font-extrabold text-sm text-slate-800">Kibo Club & Subscriptions</h4>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center justify-center w-full sm:w-auto">
                       {/* Monthly / Annual Toggle Switch */}
                       <div className="bg-slate-200/80 p-0.5 rounded-xl flex items-center gap-1 border border-slate-300">
                         <button
@@ -1626,20 +1626,6 @@ export default function ParentDashboardModal({
                           </span>
                         </button>
                       </div>
-
-                      <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                        hasFam
-                          ? 'bg-amber-500 text-white shadow-xs'
-                          : hasSingle
-                          ? 'bg-purple-600 text-white shadow-xs'
-                          : 'bg-slate-200 text-slate-700'
-                      }`}>
-                        {hasFam
-                          ? `👑 Family Plan Active (${activeCycle === 'annual' ? 'Annual' : 'Monthly'})`
-                          : hasSingle
-                          ? `⭐ Individual Member (${activeCycle === 'annual' ? 'Annual' : 'Monthly'})`
-                          : 'Free Starter Tier'}
-                      </span>
                     </div>
                   </div>
 

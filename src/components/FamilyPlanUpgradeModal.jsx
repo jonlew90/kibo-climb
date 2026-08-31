@@ -45,7 +45,7 @@ export default function FamilyPlanUpgradeModal({
           </p>
 
           {/* Monthly / Annual Toggle Switch */}
-          <div className="mt-3 bg-amber-950/30 p-1 rounded-xl flex items-center gap-1 border border-amber-200/40">
+          <div className="mt-3 bg-amber-950/30 p-1 rounded-xl flex items-center justify-center gap-1 border border-amber-200/40 mx-auto">
             <button
               type="button"
               onClick={() => setBillingCycle('monthly')}
