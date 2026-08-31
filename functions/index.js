@@ -32,7 +32,8 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
  */
 exports.sendParentEmail = onCall(
   {
-    cors: true
+    cors: true,
+    secrets: ["RESEND_API_KEY"]
   },
   async (request) => {
     if (!request.auth || !request.auth.uid) {
@@ -43,29 +44,37 @@ exports.sendParentEmail = onCall(
     const db = getFirestore();
 
     // Enforce per-user rate limit (maximum 5 emails per 10-minute window)
-    const rateLimitRef = db.collection("email_rate_limits").doc(uid);
-    const now = Date.now();
-    const WINDOW_MS = 10 * 60 * 1000;
-    const MAX_EMAILS_PER_WINDOW = 5;
+    try {
+      const rateLimitRef = db.collection("email_rate_limits").doc(uid);
+      const now = Date.now();
+      const WINDOW_MS = 10 * 60 * 1000;
+      const MAX_EMAILS_PER_WINDOW = 5;
 
-    await db.runTransaction(async (transaction) => {
-      const docSnap = await transaction.get(rateLimitRef);
-      if (docSnap.exists) {
-        const data = docSnap.data();
-        const windowStart = data.windowStart || 0;
-        const count = data.count || 0;
+      await db.runTransaction(async (transaction) => {
+        const docSnap = await transaction.get(rateLimitRef);
+        if (docSnap.exists) {
+          const data = docSnap.data();
+          const windowStart = data.windowStart || 0;
+          const count = data.count || 0;
 
-        if (now - windowStart < WINDOW_MS) {
-          if (count >= MAX_EMAILS_PER_WINDOW) {
-            throw new HttpsError(
-              "resource-exhausted",
-              "Too many notification requests. Please wait a few minutes before sending another update."
-            );
+          if (now - windowStart < WINDOW_MS) {
+            if (count >= MAX_EMAILS_PER_WINDOW) {
+              throw new HttpsError(
+                "resource-exhausted",
+                "Too many notification requests. Please wait a few minutes before sending another update."
+              );
+            }
+            transaction.update(rateLimitRef, {
+              count: count + 1,
+              lastSentAt: FieldValue.serverTimestamp()
+            });
+          } else {
+            transaction.set(rateLimitRef, {
+              windowStart: now,
+              count: 1,
+              lastSentAt: FieldValue.serverTimestamp()
+            });
           }
-          transaction.update(rateLimitRef, {
-            count: count + 1,
-            lastSentAt: FieldValue.serverTimestamp()
-          });
         } else {
           transaction.set(rateLimitRef, {
             windowStart: now,
@@ -73,14 +82,13 @@ exports.sendParentEmail = onCall(
             lastSentAt: FieldValue.serverTimestamp()
           });
         }
-      } else {
-        transaction.set(rateLimitRef, {
-          windowStart: now,
-          count: 1,
-          lastSentAt: FieldValue.serverTimestamp()
-        });
+      });
+    } catch (rateLimitErr) {
+      if (rateLimitErr instanceof HttpsError) {
+        throw rateLimitErr;
       }
-    });
+      console.warn("Could not check/update email rate limit in Firestore:", rateLimitErr.message || rateLimitErr);
+    }
 
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
@@ -126,7 +134,7 @@ exports.sendParentEmail = onCall(
 
       if (response.error) {
         console.error("Resend API returned an error:", response.error);
-        throw new HttpsError("internal", response.error.message || "Failed to send email.");
+        throw new HttpsError("internal", response.error.message || "Failed to send email.", response.error);
       }
 
       return {
@@ -137,7 +145,7 @@ exports.sendParentEmail = onCall(
     } catch (error) {
       console.error("Resend delivery failed:", error);
       if (error instanceof HttpsError) throw error;
-      throw new HttpsError("internal", error.message || "Failed to send email via Resend.");
+      throw new HttpsError("internal", error.message || "Failed to send email via Resend.", { message: error.message });
     }
   }
 );

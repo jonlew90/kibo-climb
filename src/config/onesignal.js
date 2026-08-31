@@ -26,7 +26,7 @@ const loadDependencies = async () => {
   }
 };
 
-const APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID || '';
+const APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID || 'd192b852-cda6-4a6b-897a-51b3831ab1af';
 
 // Internal state to track initialization
 let isInitialized = false;
