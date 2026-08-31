@@ -539,7 +539,10 @@ exports.getFriendScores = onCall(
  * Callable function to create a Stripe Checkout Session.
  */
 exports.createStripeCheckoutSession = onCall(
-  { secrets: [STRIPE_SECRET_KEY] },
+  {
+    cors: true,
+    secrets: [STRIPE_SECRET_KEY]
+  },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required.');
@@ -575,7 +578,6 @@ exports.createStripeCheckoutSession = onCall(
       }
 
       const sessionConfig = {
-        payment_method_types: ['card'],
         line_items: [
           {
             price_data: priceData,
@@ -591,6 +593,9 @@ exports.createStripeCheckoutSession = onCall(
           profileId: profileId || 'default_child',
           itemId,
           isSubscription: isSubscription ? 'true' : 'false'
+        },
+        managed_payments: {
+          enabled: false
         },
       };
 

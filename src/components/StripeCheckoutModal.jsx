@@ -3,7 +3,7 @@ import { X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import ItemThumbnail from "./ItemThumbnail";
 import { analyticsService } from "../services/analyticsService";
 import { httpsCallable } from "firebase/functions";
-import { functions } from "../config/firebase";
+import { functions, auth } from "../config/firebase";
 import { storageService } from "../services/storageService";
 
 // Simulates loading Stripe for real-money checkout
@@ -49,6 +49,12 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
 
       const activeProfile = storageService.getActiveProfile();
 
+      // Ensure user is signed in (anonymously if needed)
+      if (!auth.currentUser) {
+        const { signInAnonymously } = await import('firebase/auth');
+        await signInAnonymously(auth);
+      }
+
       const response = await createCheckoutSession({
         itemId: packageInfo.id,
         itemName: packageInfo.name,
@@ -59,14 +65,23 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
         cancelUrl: window.location.origin
       });
 
-      const sessionId = response.data?.sessionId;
+      const { sessionId, url } = response.data || {};
+
+      if (url) {
+        // Break out of any iframes / overlay contexts and navigate top window
+        if (window.top) {
+          window.top.location.href = url;
+        } else {
+          window.location.href = url;
+        }
+        return;
+      }
 
       if (!sessionId) {
         throw new Error("Failed to create checkout session");
       }
 
       // 2. Initialize Stripe and redirect to checkout
-      // Replace with your actual Stripe publishable key in a real app
       const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx');
 
       if (!stripe) {
@@ -80,7 +95,8 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
       }
     } catch (e) {
       console.error("Checkout failed:", e);
-      setError("Failed to initialize secure checkout. Please try again later.");
+      const msg = e?.message || e?.details || "Failed to initialize secure checkout. Please try again later.";
+      setError(msg);
       setLoading(false);
     }
   };

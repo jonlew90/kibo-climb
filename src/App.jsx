@@ -495,6 +495,8 @@ export default function App() {
       const sessionId = params.get('session_id');
       if (sessionId) {
         soundFx.playSparkCollect();
+        setShowStripeCheckoutModal(false);
+        setPendingSparksPurchase(null);
         // Clean URL to remove session_id
         if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
           const cleanUrl = window.location.pathname;

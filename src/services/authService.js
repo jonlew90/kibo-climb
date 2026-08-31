@@ -41,6 +41,8 @@ const _handleLinkCollision = async (linkedUser, authProviderName, email, provide
   const userDocRef = doc(db, 'users', linkedUser.uid);
   let requiresConflictResolution = false;
   let cloudProfiles = {};
+  let cloudHasFamilyPlan = false;
+  const hasFamilyPlan = storageService.hasFamilyPlan();
 
   try {
     const docSnap = await getDoc(userDocRef);
@@ -50,32 +52,14 @@ const _handleLinkCollision = async (linkedUser, authProviderName, email, provide
         cloudProfiles = cloudData.profiles;
         const profileCount = Object.keys(cloudProfiles).length;
 
-        // We need to check if they have a family plan on the cloud account
-        // Since we can't easily query RevenueCat here without user context,
-        // we'll rely on the storageService's current check (which might be local),
-        // OR we check if they already have > 1 profile. If they have > 1, they have a family plan.
-        const hasFamilyPlan = storageService.hasFamilyPlan();
-        // If the cloud account has 6 profiles, or 1 profile and no family plan -> Conflict
-        if (profileCount >= 6 || (profileCount >= 1 && !hasFamilyPlan && profileCount < 2)) {
-          // Note: profileCount < 2 is to handle the case where they have 2 profiles (so they must have family plan).
-          // But actually, just relying on profileCount >= 6 OR (profileCount === 1 && !hasFamilyPlan) is safer.
-          // Wait, hasFamilyPlan checks local storage, which might not reflect the cloud user yet!
-          // We can check if any profile in cloud has the sub, but that's complex.
-
-          // Better logic:
-          // If cloud has >= 6 profiles -> always full.
-          // If cloud has >= 1 profile -> assume full UNLESS we know they have family plan.
-          // Let's check cloud profiles for sub.
-          let cloudHasFamilyPlan = false;
-          Object.values(cloudProfiles).forEach(p => {
-             if (p.shopState && p.shopState.unlockedItems && p.shopState.unlockedItems.includes('kibo_club_family')) {
-                 cloudHasFamilyPlan = true;
-             }
-          });
-
-          if (profileCount >= 6 || (profileCount >= 1 && !cloudHasFamilyPlan && !hasFamilyPlan)) {
-             requiresConflictResolution = true;
+        Object.values(cloudProfiles).forEach(p => {
+          if (p.shopState && p.shopState.unlockedItems && p.shopState.unlockedItems.includes('kibo_club_family')) {
+            cloudHasFamilyPlan = true;
           }
+        });
+
+        if (profileCount >= 6 || (profileCount >= 1 && !cloudHasFamilyPlan && !hasFamilyPlan)) {
+          requiresConflictResolution = true;
         }
       }
     }
