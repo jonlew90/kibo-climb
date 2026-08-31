@@ -766,6 +766,94 @@ class LeaderboardService {
       return false;
     }
   }
+
+  /**
+   * Connects two climbers mutually via Climber Code (Direct QR scan / physical handshake).
+   * Automatically adds the target friend to the local profile, and writes an 'accepted' request
+   * record to Firestore so the other player's client auto-adds them in real-time.
+   */
+  async connectMutualFriendByCode(climberCode, currentProfile = null) {
+    try {
+      const cleanCode = (climberCode || '').trim().toUpperCase();
+      if (!cleanCode) return { success: false, error: 'Invalid climber code' };
+
+      const activeProfile = currentProfile || storageService.getActiveProfile();
+      const activePid = activeProfile?.id || storageService.getActiveProfileId();
+      const myClimberCode = storageService.getFriendCode(activePid);
+
+      if (cleanCode === myClimberCode) {
+        return { success: false, error: "That's your own Climber Code!" };
+      }
+
+      // Search for the friend by code
+      const { results } = await this.searchUsername(cleanCode);
+      if (!results || results.length === 0) {
+        return { success: false, error: `No climber found with code ${cleanCode}` };
+      }
+
+      const targetClimber = results[0];
+      const targetFriendId = targetClimber.id || targetClimber.uid || targetClimber.username;
+
+      // Add to local friends list immediately
+      storageService.addFriend({
+        id: targetFriendId,
+        uid: targetClimber.uid,
+        profileId: targetClimber.profileId || 'default_child',
+        username: targetClimber.username || targetClimber.name || 'Climber Friend',
+        name: targetClimber.name || targetClimber.username || 'Climber Friend',
+        score: targetClimber.score || 1000,
+        equipped: targetClimber.equipped || [],
+        subjectsMastered: targetClimber.subjectsMastered || 5
+      }, activePid);
+
+      // Write accepted mutual request to cloud for the other device
+      let user = this.getCurrentUser();
+      if (!user) {
+        try {
+          const userCred = await signInAnonymously(auth);
+          user = userCred.user;
+          this.currentUser = user;
+        } catch (e) {}
+      }
+
+      if (user && targetClimber.uid) {
+        const senderUid = user.uid;
+        const senderProfileId = activePid;
+        const senderUsername = activeProfile?.username || activeProfile?.name || 'Climber Friend';
+        const senderRating = activeProfile?.userData?.adaptiveCompetenceRating || 1000;
+        const senderEquipped = activeProfile?.shopState?.equippedItems || [];
+        const senderTricks = Object.keys(activeProfile?.userData?.masteredTricks || {}).length || 5;
+
+        // Auto-accepted 2-way friendship request doc
+        const mutualRequestId = `mutual_${senderUid}_${targetClimber.uid}_${Date.now()}`;
+        await setDoc(doc(db, 'friend_requests', mutualRequestId), {
+          id: mutualRequestId,
+          senderUid,
+          senderProfileId,
+          senderUsername,
+          senderScore: senderRating,
+          senderEquipped,
+          senderSubjectsMastered: senderTricks,
+          receiverUid: targetClimber.uid,
+          receiverProfileId: targetClimber.profileId || 'default_child',
+          receiverUsername: targetClimber.username || targetClimber.name,
+          status: 'accepted',
+          isDirectQrScan: true,
+          createdAt: serverTimestamp(),
+          respondedAt: serverTimestamp()
+        });
+      }
+
+      return {
+        success: true,
+        friend: targetClimber
+      };
+    } catch (err) {
+      console.warn('LeaderboardService: connectMutualFriendByCode error', err);
+      return { success: false, error: err.message || 'Failed to connect climber' };
+    }
+  }
 }
+
 
 export const leaderboardService = new LeaderboardService();

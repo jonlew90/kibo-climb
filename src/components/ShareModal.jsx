@@ -1,7 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { X, Copy, CheckCircle2, Share2, Gift } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { authService } from '../services/authService';
 import { soundFx } from '../utils/audio';
+import { getAppOrigin } from '../utils/qrProtocol';
+
 
 export default function ShareModal({ isOpen, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -12,8 +15,9 @@ export default function ShareModal({ isOpen, onClose }) {
 
   const currentUser = authService.getAuthState();
   const userId = currentUser?.uid || '';
-  const baseUrl = window.location.origin;
+  const baseUrl = getAppOrigin();
   const shareUrl = `${baseUrl}/?ref=${userId}`;
+
 
   const handleCopy = async () => {
     soundFx.playKeyTap();
@@ -100,10 +104,31 @@ export default function ShareModal({ isOpen, onClose }) {
           </p>
         </div>
         <div className="space-y-4">
+          {/* QR Code Presentation */}
+          <div className="p-3 bg-white rounded-2xl shadow-inner border-2 border-indigo-200 flex flex-col items-center justify-center">
+            <QRCodeSVG
+              value={shareUrl}
+              size={160}
+              level="H"
+              includeMargin={true}
+              bgColor="#ffffff"
+              fgColor="#1e1b4b"
+              imageSettings={{
+                src: '/favicon.png',
+                x: undefined,
+                y: undefined,
+                height: 32,
+                width: 32,
+                excavate: true
+              }}
+            />
+            <span className="text-[11px] font-bold text-indigo-700 mt-1">Scan with any phone camera</span>
+          </div>
+
           <div className="bg-slate-50 p-3 rounded-xl border-2 border-slate-200 flex items-center justify-between gap-2 overflow-hidden">
             <div className="text-xs font-mono text-slate-500 truncate select-all">{shareUrl}</div>
             <button onClick={handleCopy} className="p-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg shrink-0 cursor-pointer">
-              {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
             </button>
           </div>
           <button 
@@ -115,6 +140,7 @@ export default function ShareModal({ isOpen, onClose }) {
             {isSharing ? 'Sharing...' : 'Share Link'}
           </button>
         </div>
+
       </div>
     </div>
   );

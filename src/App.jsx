@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass, LogOut } from 'lucide-react';
+import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass, LogOut, Gift, Share2 } from 'lucide-react';
 import Mascot from './components/Mascot';
+
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
 import PinGateModal from './components/PinGateModal';
@@ -1040,6 +1041,42 @@ export default function App() {
       syncAppStateWithStorage();
       syncService.initBackgroundSync();
 
+      // Check URL query parameters for ?friend=KIBO-XXXX and ?ref=UID from QR scans or invite links
+      try {
+        if (typeof window !== 'undefined' && window.location.search) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const friendParam = urlParams.get('friend') || urlParams.get('code');
+          const refParam = urlParams.get('ref');
+
+          if (refParam) {
+            // Save referrer UID for pending welcome bonus processing
+            try {
+              if (!localStorage.getItem('kibo_applied_referral')) {
+                localStorage.setItem('kibo_pending_referral_uid', refParam.trim());
+              }
+            } catch (e) {}
+          }
+
+          if (friendParam) {
+            const cleanCode = friendParam.trim().toUpperCase();
+            const currentPid = storageService.getActiveProfileId();
+            const activeProf = storageService.getActiveProfile();
+            const myCode = storageService.getFriendCode(currentPid);
+
+            if (cleanCode && cleanCode !== myCode) {
+              leaderboardService.connectMutualFriendByCode(cleanCode, activeProf).then((res) => {
+                if (res.success) {
+                  soundFx.playVictory();
+                  setFriendsCount(storageService.getFriends(currentPid).length);
+                }
+              }).catch(() => {});
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('URL param parse error', e);
+      }
+
       // If returning from OAuth redirect flow, preserve and restore original route
       if (authRes && authRes.returnUrl && authRes.returnUrl !== window.location.pathname) {
         let targetState = 'adaptive_session';
@@ -1895,7 +1932,7 @@ export default function App() {
                 <div className="h-px bg-slate-100 w-full" />
 
                 {/* Kibo Club / Membership Status in Dropdown */}
-                <div className="p-2 bg-amber-50/60 border-y border-amber-100/60">
+                <div className="p-2 bg-amber-50/60 border-y border-amber-100/60 space-y-1.5">
                   <button
                     type="button"
                     onClick={() => {
@@ -1912,7 +1949,27 @@ export default function App() {
                       {isKiboClub ? 'Perks' : 'Upgrade'}
                     </span>
                   </button>
+
+                  {/* Share & Earn 500 Sparks Quick Link */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowProfileDropdown(false);
+                      handleOpenModal(VIEWS.SHARE);
+                    }}
+                    className="w-full flex items-center justify-between p-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 font-black text-xs transition-all active:scale-95 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Gift className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Share & Earn Sparks</span>
+                    </div>
+                    <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-black px-1.5 py-0.5 rounded-md">
+                      +500 ⚡
+                    </span>
+                  </button>
                 </div>
+
 
                 <div className="h-px bg-slate-100 w-full" />
 

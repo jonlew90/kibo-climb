@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, UserPlus, UserCheck, Trash2, Users, Sparkles, Star, Copy, CheckCircle2, Clock, Check, ShieldCheck } from 'lucide-react';
+import { X, Search, UserPlus, UserCheck, Trash2, Users, Sparkles, Star, Copy, CheckCircle2, Clock, Check, ShieldCheck, QrCode, Camera } from 'lucide-react';
 import Mascot from './Mascot';
+import QrCodeModal from './QrCodeModal';
+import QrScannerModal from './QrScannerModal';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
 import { authService } from '../services/authService';
+import { QR_TYPES } from '../utils/qrProtocol';
 
 export default function AddFriendModal({
   isOpen,
@@ -25,10 +28,16 @@ export default function AddFriendModal({
   const [confirmDeleteFriendId, setConfirmDeleteFriendId] = useState(null);
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
   const [actionErrorMsg, setActionErrorMsg] = useState('');
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [showScannerModal, setShowScannerModal] = useState(false);
 
   const activeProfile = storageService.getActiveProfile();
   const currentUsername = storageService.getUsername() || activeProfile?.username || 'You';
   const climberCode = storageService.getFriendCode(activeProfile?.id);
+  const equipped = activeProfile?.shopState?.equippedItems || [];
+  const currentUser = authService.getAuthState();
+  const referrerUid = currentUser?.uid || '';
+
 
   const refreshData = () => {
     setFriendsList(storageService.getFriends());
@@ -245,6 +254,42 @@ export default function AddFriendModal({
     }
   };
 
+  const handleScanFriendSuccess = async (parsed, rawText) => {
+    setShowScannerModal(false);
+    const targetCode = parsed?.friendCode || rawText;
+
+    if (!targetCode) {
+      setActionErrorMsg('Could not read a valid Climber Code from that QR code.');
+      setTimeout(() => setActionErrorMsg(''), 3500);
+      return;
+    }
+
+    setIsSearching(true);
+    setActionErrorMsg('');
+    setActionSuccessMsg('');
+
+    try {
+      const res = await leaderboardService.connectMutualFriendByCode(targetCode, activeProfile);
+      if (res.success) {
+        refreshData();
+        soundFx.playVictory();
+        setActionSuccessMsg(`Connected with ${res.friend.username || res.friend.name}! 🤝`);
+        setTimeout(() => setActionSuccessMsg(''), 4000);
+        onFriendAdded();
+      } else {
+        setActionErrorMsg(res.error || `Could not connect with code ${targetCode}`);
+        setTimeout(() => setActionErrorMsg(''), 4000);
+      }
+    } catch (err) {
+      console.warn('Scan friend error', err);
+      setActionErrorMsg('Failed to connect with friend.');
+      setTimeout(() => setActionErrorMsg(''), 3500);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+
   const receivedRequests = friendRequests.filter(r => r.type === 'received');
   const sentRequests = friendRequests.filter(r => r.type === 'sent');
 
@@ -286,15 +331,45 @@ export default function AddFriendModal({
             <span className="text-[10px] uppercase font-black tracking-wider text-purple-200 block">Your Climber Code</span>
             <span className="text-lg font-black tracking-wider font-mono text-amber-300">{climberCode}</span>
           </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowQrModal(true);
+              }}
+              className="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-black shrink-0 flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Show QR Code for a friend to scan"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>QR</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleCopyCode}
+              className="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-black shrink-0 flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95"
+            >
+              {copiedCode ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copiedCode ? 'Copied!' : 'Copy'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Action Buttons: Scan Friend QR Code */}
+        <div className="mb-3 shrink-0">
           <button
             type="button"
-            onClick={handleCopyCode}
-            className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-black shrink-0 flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95"
+            onClick={() => {
+              soundFx.playKeyTap();
+              setShowScannerModal(true);
+            }}
+            className="w-full py-2.5 px-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-2xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
           >
-            {copiedCode ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
+            <Camera className="w-4 h-4 text-amber-300" />
+            <span>Scan Friend's QR Code (Instant 2-Way Connect)</span>
           </button>
         </div>
+
 
         {/* Tab Selector */}
         <div className="flex bg-slate-100 p-1 rounded-xl mb-3 shrink-0">
@@ -656,7 +731,27 @@ export default function AddFriendModal({
 
         </div>
       </div>
+
+      {/* QR Code Presentation Modal */}
+      <QrCodeModal
+        isOpen={showQrModal}
+        onClose={() => setShowQrModal(false)}
+        climberCode={climberCode}
+        username={currentUsername}
+        equipped={equipped}
+        referrerUid={referrerUid}
+      />
+
+      {/* QR Camera Scanner Modal */}
+      <QrScannerModal
+        isOpen={showScannerModal}
+        onClose={() => setShowScannerModal(false)}
+        onScanSuccess={handleScanFriendSuccess}
+        title="Scan Friend's QR Code"
+        subtitle="Point your camera at your friend's screen to connect instantly!"
+      />
     </div>
   );
 }
+
 

@@ -350,6 +350,7 @@ export default function AccountLinkModal({
           </div>
         )}
 
+
         {/* Security & COPPA Footer Note */}
         <div className="space-y-1 pt-2 border-t border-slate-100">
           <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500">
