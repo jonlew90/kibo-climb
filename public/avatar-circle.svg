@@ -1,0 +1,72 @@
+<svg viewBox="0 0 512 512" width="512" height="512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle matching the Kibo orange theme -->
+  <rect width="512" height="512" fill="#FFF7ED" />
+  <circle cx="256" cy="256" r="256" fill="#F97316" />
+  
+  <!-- Scaled & Centered Mascot Face (Fits safely inside circular avatar cutouts) -->
+  <g transform="translate(64, 64) scale(0.75)">
+
+  <!-- === 100% FULL-BLEED KIBO FACE (Duolingo Style: Full Width, Transparent Outside Rounded Corners) === -->
+  <!-- Base Face Canvas filling 512x512 with smooth squircle corners -->
+  <rect x="0" y="0" width="512" height="512" rx="115" ry="115" fill="#F97316" />
+
+  <!-- EAR DETAILS (Integrated into top corners) -->
+  <!-- Left Ear Trim & Fluff -->
+  <path d="M 0 0 L 190 0 C 160 50, 110 110, 0 140 Z" fill="#C2410C" />
+  <path d="M 18 18 L 145 18 C 125 55, 90 95, 18 110 Z" fill="#FFF9F2" stroke="#FED7AA" stroke-width="4" />
+
+  <!-- Right Ear Trim & Fluff -->
+  <path d="M 512 0 L 322 0 C 352 50, 402 110, 512 140 Z" fill="#C2410C" />
+  <path d="M 494 18 L 367 18 C 387 55, 422 95, 494 110 Z" fill="#FFF9F2" stroke="#FED7AA" stroke-width="4" />
+
+  <!-- CHEEK FLUFF OVERLAYS (Full-bleed side tufts) -->
+  <!-- Left Cheek Accent -->
+  <path d="M 0 240 L 45 270 L 0 305 L 55 350 L 0 400 Z" fill="#C2410C" />
+  <!-- Right Cheek Accent -->
+  <path d="M 512 240 L 467 270 L 512 305 L 457 350 L 512 400 Z" fill="#C2410C" />
+
+  <!-- WHITE EYE MASK & MUZZLE PATCHES (Duolingo-scale: Big, Bold, Punchy) -->
+  <g id="face-markings">
+    <!-- Left Eye Mask -->
+    <ellipse cx="165" cy="270" rx="95" ry="115" fill="#FFFFFF" />
+    <!-- Right Eye Mask -->
+    <ellipse cx="347" cy="270" rx="95" ry="115" fill="#FFFFFF" />
+    <!-- Center Muzzle -->
+    <ellipse cx="256" cy="365" rx="115" ry="90" fill="#FFFFFF" />
+  </g>
+
+  <!-- ROSY BLUSH CHEEKS -->
+  <ellipse cx="105" cy="360" rx="42" ry="24" fill="#FF4D79" />
+  <ellipse cx="407" cy="360" rx="42" ry="24" fill="#FF4D79" />
+
+  <!-- WHISKERS (Crisp dark chocolate lines extending to the edges) -->
+  <path d="M 85 335 L 0 315 M 85 360 L 0 360 M 95 385 L 0 410" stroke="#3D1000" stroke-width="10" stroke-linecap="round" />
+  <path d="M 427 335 L 512 315 M 427 360 L 512 360 M 417 385 L 512 410" stroke="#3D1000" stroke-width="10" stroke-linecap="round" />
+
+  <!-- WHITE EYEBROW OVALS -->
+  <path d="M 140 160 C 130 148, 172 138, 185 152 C 192 165, 155 175, 142 162 Z" fill="#FFFFFF" stroke="#9A3412" stroke-width="3" />
+  <path d="M 372 160 C 382 148, 340 138, 327 152 C 320 165, 357 175, 370 162 Z" fill="#FFFFFF" stroke="#9A3412" stroke-width="3" />
+
+  <!-- GIANT EXPRESSIVE EYES (Huge glossy Duolingo-style pupils with bright shines) -->
+  <g id="eyes">
+    <!-- Left Eye -->
+    <ellipse cx="175" cy="265" rx="56" ry="68" fill="#1E0700" />
+    <circle cx="158" cy="236" r="22" fill="#FFFFFF" />
+    <circle cx="202" cy="256" r="11" fill="#FFFFFF" />
+    <circle cx="182" cy="302" r="8" fill="#FFFFFF" />
+
+    <!-- Right Eye -->
+    <ellipse cx="337" cy="265" rx="56" ry="68" fill="#1E0700" />
+    <circle cx="320" cy="236" r="22" fill="#FFFFFF" />
+    <circle cx="364" cy="256" r="11" fill="#FFFFFF" />
+    <circle cx="344" cy="302" r="8" fill="#FFFFFF" />
+  </g>
+
+  <!-- NOSE -->
+  <ellipse cx="256" cy="330" rx="26" ry="18" fill="#1E0700" />
+
+  <!-- HAPPY W-SMILE -->
+  <path d="M 222 355 C 230 380, 248 380, 256 360 C 264 380, 282 380, 290 355" stroke="#1E0700" stroke-width="13" stroke-linecap="round" fill="none" />
+
+  </g>
+</svg>

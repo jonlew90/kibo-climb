@@ -6,11 +6,17 @@ service cloud.firestore {
       // Allow anyone to read leaderboard entries
       allow read: if true;
 
-      // Allow authenticated users (including anonymous auth) to create or update their own score document or profile sub-document
+      // Allow authenticated users (including anonymous auth) to create or update their own score document
       allow create, update: if request.auth != null && (
         request.auth.uid == userId || 
         userId.matches('^' + request.auth.uid + '_.*') ||
         request.resource.data.uid == request.auth.uid
+      ) && (
+        !('score' in request.resource.data) || 
+        (request.resource.data.score is number && request.resource.data.score >= 0 && request.resource.data.score <= 20000)
+      ) && (
+        !('name' in request.resource.data) || 
+        (request.resource.data.name is string && request.resource.data.name.size() <= 40)
       );
 
       // Restrict deletion
@@ -21,18 +27,25 @@ service cloud.firestore {
       // Allow anyone to read weekly stats
       allow read: if true;
 
-      // Allow authenticated users to write their own weekly stats
+      // Allow authenticated users to write their own weekly stats with bounded values
       allow create, update: if request.auth != null && (
         request.auth.uid == docId ||
         docId.matches('^' + request.auth.uid + '_.*') ||
         request.resource.data.uid == request.auth.uid
+      ) && (
+        !('sparks' in request.resource.data) || 
+        (request.resource.data.sparks is number && request.resource.data.sparks >= 0 && request.resource.data.sparks <= 500000)
+      ) && (
+        !('maxStreak' in request.resource.data) || 
+        (request.resource.data.maxStreak is number && request.resource.data.maxStreak >= 0 && request.resource.data.maxStreak <= 1000)
       );
       allow delete: if false;
     }
 
     match /weekly_leagues/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      // League cohort assignments are strictly managed via trusted joinWeeklyLeague Cloud Function
+      allow write: if false;
     }
 
     match /users/{userId} {
@@ -52,20 +65,24 @@ service cloud.firestore {
     match /usernames/{usernameDoc} {
       // Allow authenticated users to read usernames for search/discovery
       allow read: if request.auth != null;
-      // Creation/modification allowed if user claims for themselves
+      // Creation/modification allowed if user claims for themselves with valid username length
       allow create, update: if request.auth != null && (
         request.resource.data.uid == request.auth.uid
-      );
+      ) && request.resource.data.username is string
+        && request.resource.data.username.size() >= 3
+        && request.resource.data.username.size() <= 20;
       allow delete: if false;
     }
 
     match /friend_codes/{codeDoc} {
       // Allow authenticated users to lookup friend codes
       allow read: if request.auth != null;
-      // Creation/modification allowed if user locks code for themselves
+      // Creation/modification allowed if user locks code for themselves with valid friendCode length
       allow create, update: if request.auth != null && (
         request.resource.data.uid == request.auth.uid
-      );
+      ) && request.resource.data.friendCode is string
+        && request.resource.data.friendCode.size() >= 3
+        && request.resource.data.friendCode.size() <= 20;
       allow delete: if false;
     }
 

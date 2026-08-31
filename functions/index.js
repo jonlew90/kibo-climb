@@ -35,9 +35,52 @@ exports.sendParentEmail = onCall(
     cors: true
   },
   async (request) => {
-    if (!request.auth) {
+    if (!request.auth || !request.auth.uid) {
       throw new HttpsError("unauthenticated", "Authentication required to send notifications.");
     }
+
+    const uid = request.auth.uid;
+    const db = admin.firestore();
+
+    // Enforce per-user rate limit (maximum 5 emails per 10-minute window)
+    const rateLimitRef = db.collection("email_rate_limits").doc(uid);
+    const now = Date.now();
+    const WINDOW_MS = 10 * 60 * 1000;
+    const MAX_EMAILS_PER_WINDOW = 5;
+
+    await db.runTransaction(async (transaction) => {
+      const docSnap = await transaction.get(rateLimitRef);
+      if (docSnap.exists) {
+        const data = docSnap.data();
+        const windowStart = data.windowStart || 0;
+        const count = data.count || 0;
+
+        if (now - windowStart < WINDOW_MS) {
+          if (count >= MAX_EMAILS_PER_WINDOW) {
+            throw new HttpsError(
+              "resource-exhausted",
+              "Too many notification requests. Please wait a few minutes before sending another update."
+            );
+          }
+          transaction.update(rateLimitRef, {
+            count: count + 1,
+            lastSentAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+        } else {
+          transaction.set(rateLimitRef, {
+            windowStart: now,
+            count: 1,
+            lastSentAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      } else {
+        transaction.set(rateLimitRef, {
+          windowStart: now,
+          count: 1,
+          lastSentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    });
 
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
@@ -279,8 +322,11 @@ exports.processReferralLinking = onCall(
 exports.claimUsername = onCall(
   { cors: true },
   async (request) => {
+    if (!request.auth || !request.auth.uid) {
+      throw new HttpsError('unauthenticated', 'Authentication required to claim a username.');
+    }
     const { username, profileId, friendCode } = request.data || {};
-    const uid = request.auth ? request.auth.uid : 'anonymous';
+    const uid = request.auth.uid;
 
     if (!username || typeof username !== 'string') {
       throw new HttpsError('invalid-argument', 'Please provide a valid username.');
