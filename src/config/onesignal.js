@@ -1,6 +1,30 @@
-import OneSignalReact from 'react-onesignal';
-import { Capacitor } from '@capacitor/core';
-import OneSignalCapacitor from '@onesignal/capacitor-plugin';
+let OneSignalReact = null;
+let OneSignalCapacitor = null;
+let Capacitor = null;
+
+// Dynamically load dependencies safely
+const loadDependencies = async () => {
+  try {
+    const capCore = await (typeof window !== 'undefined' ? import('@capacitor/core') : Promise.reject());
+    Capacitor = capCore?.Capacitor;
+  } catch (e) {
+    Capacitor = { isNativePlatform: () => false };
+  }
+
+  try {
+    if (Capacitor?.isNativePlatform()) {
+      const capPluginPkg = '@onesignal/capacitor-plugin';
+      const capPlugin = await import(/* @vite-ignore */ capPluginPkg);
+      OneSignalCapacitor = capPlugin.default || capPlugin.OneSignal;
+    } else {
+      const reactPluginPkg = 'react-onesignal';
+      const reactPlugin = await import(/* @vite-ignore */ reactPluginPkg);
+      OneSignalReact = reactPlugin.default || reactPlugin.OneSignal;
+    }
+  } catch (e) {
+    // SDKs not installed or running in test/mock environment
+  }
+};
 
 const APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID || '';
 
@@ -16,25 +40,21 @@ export const initOneSignal = async () => {
   if (isInitialized) return;
 
   try {
-    if (Capacitor.isNativePlatform()) {
-      // Initialize OneSignal for Capacitor (iOS/Android)
+    await loadDependencies();
+
+    if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
       OneSignalCapacitor.initialize(APP_ID);
-
-      // Request permission immediately for simplicity, or defer based on your UX
-      OneSignalCapacitor.Notifications.requestPermission(true);
-
+      OneSignalCapacitor.Notifications?.requestPermission(true);
       isInitialized = true;
       console.log('[OneSignal] Capacitor SDK initialized');
-    } else {
-      // Initialize OneSignal for Web
+    } else if (OneSignalReact) {
       await OneSignalReact.init({
         appId: APP_ID,
-        allowLocalhostAsSecureOrigin: true, // Useful for dev
+        allowLocalhostAsSecureOrigin: true,
         notifyButton: {
-          enable: false, // We'll manage prompting via custom UI
+          enable: false,
         },
       });
-
       isInitialized = true;
       console.log('[OneSignal] Web SDK initialized');
     }
@@ -50,9 +70,9 @@ export const loginToOneSignal = async (externalUserId) => {
   if (!isInitialized || !externalUserId) return;
 
   try {
-    if (Capacitor.isNativePlatform()) {
+    if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
       OneSignalCapacitor.login(externalUserId);
-    } else {
+    } else if (OneSignalReact) {
       await OneSignalReact.login(externalUserId);
     }
     console.log(`[OneSignal] Logged in user: ${externalUserId}`);
@@ -68,9 +88,9 @@ export const logoutFromOneSignal = async () => {
   if (!isInitialized) return;
 
   try {
-    if (Capacitor.isNativePlatform()) {
+    if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
       OneSignalCapacitor.logout();
-    } else {
+    } else if (OneSignalReact) {
       await OneSignalReact.logout();
     }
     console.log('[OneSignal] Logged out user');
@@ -86,14 +106,14 @@ export const promptForPushPermissions = async () => {
   if (!isInitialized) return false;
 
   try {
-    if (Capacitor.isNativePlatform()) {
-      const permission = await OneSignalCapacitor.Notifications.requestPermission(true);
+    if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
+      const permission = await OneSignalCapacitor.Notifications?.requestPermission(true);
       return permission;
-    } else {
-      // Slidedown prompt for web
+    } else if (OneSignalReact?.Slidedown) {
       await OneSignalReact.Slidedown.promptPush();
       return true;
     }
+    return false;
   } catch (error) {
     console.error('[OneSignal] Permission prompt error:', error);
     return false;

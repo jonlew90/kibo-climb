@@ -3,6 +3,12 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      'react-onesignal': 'react-onesignal',
+      '@onesignal/capacitor-plugin': '@onesignal/capacitor-plugin'
+    }
+  },
   test: {
     environment: "jsdom",
   },
@@ -10,7 +16,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg', 'favicon.png', 'geo/*.json'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg', 'favicon.png', 'OneSignalSDKWorker.js', 'geo/*.json'],
       manifest: false, // Use existing site.webmanifest
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
