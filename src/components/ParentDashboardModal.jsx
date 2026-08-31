@@ -6,6 +6,7 @@ import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
 import { pluralize, formatTime } from '../utils/formatters';
 import { getNotificationPrefs, saveNotificationPrefs, saveProfileReminderPrefs, requestNotificationPermission } from '../utils/notifications';
+import { promptForPushPermissions } from '../config/onesignal';
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { calculateConceptBreakdown, generateParentInsightCards } from '../utils/skipDiagnosticEngine';
 import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEconomyModel';
@@ -306,6 +307,7 @@ export default function ParentDashboardModal({
 
     if (updatedEnabled) {
       requestNotificationPermission();
+      promptForPushPermissions();
     }
   };
 
