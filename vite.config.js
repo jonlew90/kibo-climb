@@ -64,8 +64,11 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/functions'],
-          icons: ['lucide-react']
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/functions', 'firebase/analytics'],
+          icons: ['lucide-react'],
+          maps: ['react-simple-maps', 'd3-geo'],
+          qr: ['html5-qrcode', 'qrcode.react'],
+          stripe: ['@stripe/stripe-js']
         }
       }
     }

@@ -2,8 +2,9 @@
 // Real-time Cloud Firestore Sync Service for Kibo Climb
 // Supports multi-device bi-directional synchronization with offline fallback
 
-import { db, auth } from '../config/firebase';
+import { db, auth, functions } from '../config/firebase';
 import { doc, setDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { storageService } from './storageService';
 
 const USERS_COLLECTION = 'users';
@@ -105,9 +106,6 @@ class UserSyncService {
     if (!referredBy) return;
 
     try {
-      const { getFunctions, httpsCallable } = await import('firebase/functions');
-      const { app } = await import('../config/firebase');
-      const functions = getFunctions(app);
       const processReferral = httpsCallable(functions, 'processReferralLinking');
 
       await processReferral({ referrerId: referredBy, newUserId: authState.uid });

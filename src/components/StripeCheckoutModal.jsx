@@ -3,6 +3,7 @@ import { X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import ItemThumbnail from "./ItemThumbnail";
 import { analyticsService } from "../services/analyticsService";
 import { httpsCallable } from "firebase/functions";
+import { signInAnonymously } from "firebase/auth";
 import { functions, auth } from "../config/firebase";
 import { storageService } from "../services/storageService";
 
@@ -51,7 +52,6 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
 
       // Ensure user is signed in (anonymously if needed)
       if (!auth.currentUser) {
-        const { signInAnonymously } = await import('firebase/auth');
         await signInAnonymously(auth);
       }
 

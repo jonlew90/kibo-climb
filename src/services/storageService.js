@@ -4,6 +4,7 @@ import { getStartingRatingForGrade } from '../utils/mathCurriculum.js';
 import { getStartingRatingBadges } from '../utils/badgeManager.js';
 import { getWeekStr } from '../utils/dateUtils.js';
 import { leaderboardService } from './leaderboardService.js';
+import { userSyncService } from './userSyncService.js';
 import { SUBJECTS_CONFIG } from '../config/subjects.js';
 
 const KEYS = {
@@ -592,9 +593,7 @@ export const storageService = {
 
     // Sync profile to user's Cloud Firestore document for multi-device sync
     try {
-      import('./userSyncService.js').then(({ userSyncService }) => {
-        userSyncService.syncProfileToCloud(activeId);
-      }).catch((e) => {});
+      userSyncService.syncProfileToCloud(activeId);
     } catch (e) {
       console.warn('StorageService: userSyncService trigger failed', e);
     }

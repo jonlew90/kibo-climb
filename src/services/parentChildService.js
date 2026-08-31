@@ -2,6 +2,10 @@
 // Manages 1-to-Many Parent-Child Data Relational Structure & PIN Protected Route Challenges
 
 import { storageService } from './storageService';
+import { auth, db } from '../config/firebase';
+import { userSyncService } from './userSyncService';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { signOut, signInAnonymously } from 'firebase/auth';
 
 const PARENT_ACCOUNT_KEY = 'kibo_parent_account_schema';
 const CHILD_PROFILES_KEY = 'kibo_child_profiles_schema';
@@ -301,11 +305,6 @@ export const parentChildService = {
 
     // Purge remote records and disconnect cloud sync
     try {
-      const { auth, db } = await import('../config/firebase');
-      const { userSyncService } = await import('./userSyncService');
-      const { doc, deleteDoc } = await import('firebase/firestore');
-      const { signOut, signInAnonymously } = await import('firebase/auth');
-
       // Stop real-time listener
       userSyncService.stopSync();
 

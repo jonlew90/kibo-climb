@@ -16,9 +16,10 @@ import {
   linkWithCredential,
   EmailAuthProvider
 } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { storageService } from './storageService';
+import { userSyncService } from './userSyncService';
 import { loginToOneSignal, logoutFromOneSignal } from '../config/onesignal';
 
 const GUEST_ID_KEY = 'kibo_anonymous_guest_id';
@@ -480,8 +481,6 @@ export const authService = {
         return { success: true, reload: true };
       } else if (action === 'overwrite_cloud') {
         // We push current local state up, overwriting cloud profiles map entirely
-        const userSyncService = (await import('./userSyncService.js')).userSyncService;
-
         const mergedUserData = {
             ...storageService.getUserData('math'),
             cloudUid: linkedUser.uid,
@@ -634,7 +633,6 @@ export const authService = {
 
       // Stop cloud sync listener
       try {
-        const { userSyncService } = await import('./userSyncService');
         userSyncService.stopSync();
       } catch (syncErr) {
         console.warn('Could not stop sync service:', syncErr);
@@ -643,7 +641,6 @@ export const authService = {
       // Purge cloud Firestore user record if uid exists
       if (uid) {
         try {
-          const { deleteDoc, doc } = await import('firebase/firestore');
           const userDocRef = doc(db, 'users', uid);
           await deleteDoc(userDocRef);
         } catch (cloudErr) {
