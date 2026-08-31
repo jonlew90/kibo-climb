@@ -33,14 +33,15 @@ class CommunicationsService {
         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 540px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
           <!-- HEADER -->
           <tr>
-            <td style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 28px 32px; text-align: left;">
-              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <td style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 24px 32px; text-align: left;">
+              <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td>
-                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background-color: #f97316; border-radius: 10px; font-size: 24px;">
-                      🐾
-                    </div>
-                    <h1 style="margin: 10px 0 0 0; color: #ffffff; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Kibo Climb Progress</h1>
+                  <td style="vertical-align: middle; padding-right: 14px;" width="48">
+                    <!-- Official Kibo Mascot Icon -->
+                    <img src="https://kiboclimb.com/favicon.png" alt="Kibo Mascot" width="44" height="44" style="display: block; width: 44px; height: 44px; border-radius: 10px; border: 0;" />
+                  </td>
+                  <td style="vertical-align: middle;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">🐾 Kibo Climb Progress</h1>
                   </td>
                 </tr>
               </table>

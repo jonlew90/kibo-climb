@@ -132,11 +132,11 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
             If you have questions about these Terms of Service, please contact our support team:
           </p>
           <a
-            href="mailto:hello@kiboclimb.com?subject=Kibo%20Climb%20Terms%20Inquiry"
+            href="mailto:support@kiboclimb.com?subject=Kibo%20Climb%20Terms%20Inquiry"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl font-extrabold text-sm transition-colors"
           >
             <Mail className="w-4 h-4 stroke-[2.5]" />
-            hello@kiboclimb.com
+            support@kiboclimb.com
           </a>
         </section>
       </main>

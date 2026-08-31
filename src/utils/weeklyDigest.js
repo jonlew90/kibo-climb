@@ -14,13 +14,13 @@ import { calculateConceptBreakdown } from './skipDiagnosticEngine.js';
 import { questService } from '../services/questService.js';
 
 /**
- * Resolves the web app base URL for direct deep-linking in emails.
+ * Resolves the web app base URL for direct deep-linking in emails and static assets.
  */
 export function getAppBaseUrl() {
-  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+  if (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.includes('localhost')) {
     return window.location.origin;
   }
-  return 'https://kibo-climb.web.app';
+  return 'https://kiboclimb.com';
 }
 
 /**
@@ -331,7 +331,7 @@ export function formatWeeklyDigestText({ childName, digestData }) {
 /**
  * Formats multi-subject weekly digest data into clean, responsive HTML email.
  */
-export function formatWeeklyDigestHtml({ childName, digestData }) {
+export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digestData?.baseUrl || getAppBaseUrl() }) {
   const data = digestData;
   const name = childName || data.childName || 'Kibo Climber';
 
@@ -471,20 +471,22 @@ export function formatWeeklyDigestHtml({ childName, digestData }) {
           
           <!-- BRAND & MASCOT HEADER -->
           <tr>
-            <td style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); padding: 28px 32px; text-align: left;">
+            <td style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); padding: 24px 32px; text-align: left;">
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="vertical-align: middle;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                      <!-- Mascot Icon / Favicon Style Squircle -->
-                      <div style="width: 48px; height: 48px; background-color: #f97316; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 3px 8px rgba(249,115,22,0.4); text-align: center; line-height: 48px;">
-                        🐾
-                      </div>
-                      <div style="display: inline-block; vertical-align: middle; margin-left: 10px;">
-                        <h1 style="margin: 0; color: #ffffff; font-size: 21px; font-weight: 900; letter-spacing: -0.5px;">Kibo Climb</h1>
-                        <p style="margin: 2px 0 0 0; color: #a5b4fc; font-size: 13px; font-weight: 600;">Weekly Progress Summary for <strong>${name}</strong></p>
-                      </div>
-                    </div>
+                    <table border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="vertical-align: middle; padding-right: 14px;" width="52">
+                          <!-- Official Kibo Mascot Icon -->
+                          <img src="https://kiboclimb.com/favicon.png" alt="Kibo Mascot" width="48" height="48" style="display: block; width: 48px; height: 48px; border-radius: 12px; border: 0;" />
+                        </td>
+                        <td style="vertical-align: middle;">
+                          <h1 style="margin: 0; color: #ffffff; font-size: 21px; font-weight: 900; letter-spacing: -0.5px;">Kibo Climb</h1>
+                          <p style="margin: 2px 0 0 0; color: #a5b4fc; font-size: 13px; font-weight: 600;">Weekly Progress Summary for <strong>${name}</strong></p>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                   <td align="right" style="vertical-align: middle;">
                     <span style="background-color: rgba(255,255,255,0.12); color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">

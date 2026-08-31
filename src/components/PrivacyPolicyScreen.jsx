@@ -94,7 +94,7 @@ export default function PrivacyPolicyScreen({ onBack, renderFooter }) {
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1 text-amber-900">
               <h4 className="font-extrabold text-amber-800 text-xs uppercase tracking-wider">Information We Ask You Not to Provide</h4>
               <p className="text-xs font-medium leading-relaxed">
-                Kibo Climb is designed to operate without collecting personal identifying information from children. We ask that children and parents never submit full real names, postal addresses, phone numbers, precise location data, photos, or voice recordings. If you discover that your child has submitted personal details, please contact us immediately at hello@kiboclimb.com so we can remove it.
+                Kibo Climb is designed to operate without collecting personal identifying information from children. We ask that children and parents never submit full real names, postal addresses, phone numbers, precise location data, photos, or voice recordings. If you discover that your child has submitted personal details, please contact us immediately at privacy@kiboclimb.com so we can remove it.
               </p>
             </div>
           </div>
@@ -162,14 +162,14 @@ export default function PrivacyPolicyScreen({ onBack, renderFooter }) {
           </p>
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-semibold text-slate-700 space-y-1">
             <p><strong>App:</strong> Kibo Climb</p>
-            <p><strong>Support & Privacy Inquiries:</strong> hello@kiboclimb.com</p>
+            <p><strong>Privacy Inquiries:</strong> privacy@kiboclimb.com</p>
           </div>
           <a
-            href="mailto:hello@kiboclimb.com?subject=COPPA%20Child%20Privacy%20Inquiry"
+            href="mailto:privacy@kiboclimb.com?subject=COPPA%20Child%20Privacy%20Inquiry"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-xl font-extrabold text-sm transition-colors cursor-pointer"
           >
             <Mail className="w-4 h-4 stroke-[2.5]" />
-            Contact Support & Privacy (hello@kiboclimb.com)
+            Contact Privacy Team (privacy@kiboclimb.com)
           </a>
         </section>
       </main>
