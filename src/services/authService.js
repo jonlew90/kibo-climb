@@ -83,11 +83,15 @@ const _handleLinkCollision = async (linkedUser, authProviderName, email, provide
   }
 
   if (requiresConflictResolution) {
+    const localProfiles = storageService.getAllProfiles();
     return {
       success: false,
       requires_conflict_resolution: true,
       linkedUser,
-      cloudProfiles
+      cloudProfiles,
+      localProfiles,
+      cloudHasFamilyPlan,
+      localHasFamilyPlan: hasFamilyPlan
     };
   }
 
@@ -501,7 +505,7 @@ export const authService = {
         };
         storageService.setGlobalAccountLinkedState(mergedUserData);
 
-        await userSyncService.pushLocalToCloud(linkedUser.uid);
+        await userSyncService.pushLocalToCloud(linkedUser.uid, null, true);
         return { success: true };
       }
     } catch(e) {

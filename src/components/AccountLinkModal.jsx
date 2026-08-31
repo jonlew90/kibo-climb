@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Sparkles, CheckCircle2, X, ArrowRight, Mail, Zap } from 'lucide-react';
+import { ShieldCheck, Sparkles, CheckCircle2, X, ArrowRight, Mail, Zap, AlertTriangle, Lock, Cloud, Smartphone } from 'lucide-react';
 import { authService } from '../services/authService';
 import { storageService } from '../services/storageService';
 import PrivacyPolicyScreen from './PrivacyPolicyScreen';
+import PinGateModal from './PinGateModal';
+import FamilyPlanUpgradeModal from './FamilyPlanUpgradeModal';
 
 export default function AccountLinkModal({
   isOpen,
   onClose,
   onAccountLinked,
   triggerMilestone,
-  milestoneName
+  milestoneName,
+  onOpenFamilyPlan
 }) {
   const [loadingProvider, setLoadingProvider] = useState(null);
   const [emailInput, setEmailInput] = useState('');
@@ -18,6 +21,8 @@ export default function AccountLinkModal({
   const [errorMessage, setErrorMessage] = useState('');
   const [conflictData, setConflictData] = useState(null);
   const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
+  const [showPinGate, setShowPinGate] = useState(false);
+  const [showFamilyUpgrade, setShowFamilyUpgrade] = useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -28,8 +33,8 @@ export default function AccountLinkModal({
       setErrorMessage('');
       setConflictData(null);
       setShowPrivacyPolicyModal(false);
-      setErrorMessage('');
-      setConflictData(null);
+      setShowPinGate(false);
+      setShowFamilyUpgrade(false);
     }
   }, [isOpen]);
 
@@ -56,8 +61,14 @@ export default function AccountLinkModal({
         return; // Page will redirect to Google/Apple without COOP popups
       }
 
-            if (res.requires_conflict_resolution) {
-        setConflictData({ linkedUser: res.linkedUser });
+      if (res.requires_conflict_resolution) {
+        setConflictData({
+          linkedUser: res.linkedUser,
+          cloudProfiles: res.cloudProfiles || {},
+          localProfiles: res.localProfiles || [],
+          cloudHasFamilyPlan: res.cloudHasFamilyPlan,
+          localHasFamilyPlan: res.localHasFamilyPlan
+        });
         return;
       }
 
@@ -89,7 +100,7 @@ export default function AccountLinkModal({
     }
   };
 
-    const handleConflictResolution = async (action) => {
+  const handleConflictResolution = async (action) => {
     setLoadingProvider('resolving');
     try {
       const res = await authService.resolveLinkConflict(action, conflictData.linkedUser);
@@ -162,33 +173,109 @@ export default function AccountLinkModal({
           </div>
         )}
 
-                {/* Success Alert */}
+        {/* Success Alert */}
         {successMessage ? (
           <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-900 font-bold text-xs flex items-center justify-center gap-2 animate-pop">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             <span>{successMessage}</span>
           </div>
         ) : conflictData ? (
-          <div className="space-y-4 animate-pop">
-            <div className="bg-amber-100 text-amber-900 p-4 rounded-xl text-sm font-bold shadow-inner">
-              <p>This account is already full (no available profile slots).</p>
-              <p className="mt-2 text-xs font-medium text-amber-800">Do you want to load your existing cloud account to this device (wiping the current climber), or overwrite the cloud with the current climber?</p>
+          <div className="space-y-4 animate-pop text-left">
+            <div className="bg-amber-50 border border-amber-200 text-amber-950 p-3 rounded-2xl text-xs space-y-1">
+              <div className="flex items-center gap-1.5 font-black text-amber-900">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Save Conflict: Profile Limit Reached</span>
+              </div>
+              <p className="text-slate-600 font-medium">
+                This cloud account already has saved progress. Review the profiles on each side:
+              </p>
             </div>
-            <div className="space-y-2">
-               <button
-                  onClick={() => handleConflictResolution('keep_cloud')}
-                  disabled={!!loadingProvider}
-                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black text-sm transition-all"
-               >
-                 {loadingProvider === 'resolving' ? 'Syncing...' : 'Load Existing Cloud Account'}
-               </button>
-               <button
-                  onClick={() => handleConflictResolution('overwrite_cloud')}
-                  disabled={!!loadingProvider}
-                  className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-bold text-xs transition-all"
-               >
-                 Overwrite Cloud with Current Progress
-               </button>
+
+            {/* Side-by-Side Comparison */}
+            <div className="grid grid-cols-2 gap-2 text-left">
+              {/* Cloud Account Card */}
+              <div className="bg-slate-50 border-2 border-indigo-200 rounded-2xl p-2.5 space-y-2">
+                <div className="flex items-center gap-1.5 text-indigo-700 font-black text-[11px] uppercase tracking-wide">
+                  <Cloud className="w-3.5 h-3.5 shrink-0" />
+                  <span>Cloud Account</span>
+                </div>
+                <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                  {Object.values(conflictData.cloudProfiles || {}).map((p, idx) => (
+                    <div key={idx} className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
+                      <div className="font-black text-xs text-slate-800 truncate">{p.name || p.username || 'Climber'}</div>
+                      <div className="text-[10px] text-slate-500 font-bold">{p.gradeLevel || 'Grade 1–2'}</div>
+                      <div className="text-[10px] text-indigo-600 font-extrabold mt-0.5">
+                        ⚡ {p.userData?.sparks || 0} • Rating {p.userData?.adaptiveCompetenceRating || p.userData?.competenceRank || 1000}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* This Device Card */}
+              <div className="bg-slate-50 border-2 border-amber-200 rounded-2xl p-2.5 space-y-2">
+                <div className="flex items-center gap-1.5 text-amber-700 font-black text-[11px] uppercase tracking-wide">
+                  <Smartphone className="w-3.5 h-3.5 shrink-0" />
+                  <span>This Device</span>
+                </div>
+                <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                  {(conflictData.localProfiles && conflictData.localProfiles.length > 0
+                    ? conflictData.localProfiles
+                    : [storageService.getActiveProfile()]
+                  ).map((p, idx) => (
+                    <div key={idx} className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
+                      <div className="font-black text-xs text-slate-800 truncate">{p?.name || p?.username || 'Guest'}</div>
+                      <div className="text-[10px] text-slate-500 font-bold">{p?.gradeLevel || 'Grade 1–2'}</div>
+                      <div className="text-[10px] text-amber-600 font-extrabold mt-0.5">
+                        ⚡ {p?.userData?.sparks || 0} • Rating {p?.userData?.adaptiveCompetenceRating || p?.userData?.competenceRank || 1000}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-2 pt-1">
+              {/* 1. Safe Primary Action: Keep Cloud */}
+              <button
+                type="button"
+                onClick={() => handleConflictResolution('keep_cloud')}
+                disabled={!!loadingProvider}
+                className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <Cloud className="w-4 h-4 text-sky-400" />
+                <span>{loadingProvider === 'resolving' ? 'Syncing Cloud Account...' : 'Load Cloud Account (Recommended)'}</span>
+              </button>
+
+              {/* 2. Upgrade to Family Plan (Keep Both) */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenFamilyPlan) {
+                    onClose();
+                    onOpenFamilyPlan();
+                  } else {
+                    setShowFamilyUpgrade(true);
+                  }
+                }}
+                disabled={!!loadingProvider}
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <Sparkles className="w-4 h-4 fill-white" />
+                <span>Upgrade to Family Plan (Keep Both)</span>
+              </button>
+
+              {/* 3. Destructive Action (Parent PIN Gated) */}
+              <button
+                type="button"
+                onClick={() => setShowPinGate(true)}
+                disabled={!!loadingProvider}
+                className="w-full py-2 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>Overwrite Cloud with This Device (Parent PIN)</span>
+              </button>
             </div>
           </div>
         ) : (
@@ -285,6 +372,31 @@ export default function AccountLinkModal({
       {showPrivacyPolicyModal && (
         <PrivacyPolicyScreen onBack={() => setShowPrivacyPolicyModal(false)} />
       )}
+
+      {/* Parental PIN Gate for Destructive Cloud Overwrite */}
+      <PinGateModal
+        isOpen={showPinGate}
+        onClose={() => setShowPinGate(false)}
+        onUnlockSuccess={() => {
+          setShowPinGate(false);
+          handleConflictResolution('overwrite_cloud');
+        }}
+        title="Parent Verification"
+        subtitle="Parental verification required to permanently overwrite cloud progress."
+      />
+
+      {/* Family Plan Upgrade Flow to Keep Both Profiles */}
+      <FamilyPlanUpgradeModal
+        isOpen={showFamilyUpgrade}
+        onClose={() => setShowFamilyUpgrade(false)}
+        onOpenParentZone={(targetTab = 'verification', targetHighlight = 'family_plan') => {
+          setShowFamilyUpgrade(false);
+          if (onOpenFamilyPlan) {
+            onClose();
+            onOpenFamilyPlan(targetTab, targetHighlight);
+          }
+        }}
+      />
     </div>
   );
 }

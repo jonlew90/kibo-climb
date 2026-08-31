@@ -142,7 +142,7 @@ class UserSyncService {
   /**
    * Directly pushes local profiles state to Firestore.
    */
-  async pushLocalToCloud(uid, specificProfileId = null) {
+  async pushLocalToCloud(uid, specificProfileId = null, overwriteEntireDocument = false) {
     try {
       const currentUser = auth.currentUser;
       const targetUid = currentUser ? currentUser.uid : uid;
@@ -178,7 +178,11 @@ class UserSyncService {
         lastSyncedMillis: now
       };
 
-      await setDoc(userDocRef, payload, { merge: true });
+      if (overwriteEntireDocument) {
+        await setDoc(userDocRef, payload);
+      } else {
+        await setDoc(userDocRef, payload, { merge: true });
+      }
     } catch (error) {
       console.warn('UserSyncService: Cloud sync failed (will retry online)', error);
     }

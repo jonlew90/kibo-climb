@@ -3241,6 +3241,9 @@ export default function App() {
           }
           handleGoBack();
         }}
+        onOpenFamilyPlan={(targetTab = 'verification', targetHighlight = 'family_plan') => {
+          handleOpenPinGate('family_plan', targetTab, targetHighlight);
+        }}
         triggerMilestone={linkModalMilestone}
         onAccountLinked={(user, newSparks) => {
           if (newSparks !== undefined) {

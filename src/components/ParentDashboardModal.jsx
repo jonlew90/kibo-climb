@@ -2024,6 +2024,11 @@ export default function ParentDashboardModal({
       <AccountLinkModal
         isOpen={showAccountLinkModal}
         onClose={() => setShowAccountLinkModal(false)}
+        onOpenFamilyPlan={(targetTab = 'verification', targetHighlight = 'family_plan') => {
+          setShowAccountLinkModal(false);
+          setActiveTab(targetTab);
+          setActiveHighlight(targetHighlight);
+        }}
         milestoneName="Parent Zone Request"
         onAccountLinked={(user, newSparks) => {
           setShowAccountLinkModal(false);
