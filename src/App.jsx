@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass, LogIn, LogOut, Gift, Share2 } from 'lucide-react';
 import Mascot from './components/Mascot';
+import { initOneSignal } from './config/onesignal';
 
 import ConfettiCanvas from './components/ConfettiCanvas';
 import WorkshopModal from './components/WorkshopModal';
@@ -91,6 +92,10 @@ export default function App() {
     }
     return true;
   });
+
+  useEffect(() => {
+    initOneSignal();
+  }, []);
 
   useEffect(() => {
     try {

@@ -19,6 +19,7 @@ import {
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { storageService } from './storageService';
+import { loginToOneSignal, logoutFromOneSignal } from '../config/onesignal';
 
 const GUEST_ID_KEY = 'kibo_anonymous_guest_id';
 
@@ -426,7 +427,8 @@ export const authService = {
         };
         storageService.setGlobalAccountLinkedState(mergedUserData);
         const earnedSparks = storageService.grantAccountLinkSparksReward();
-        return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
+        if (linkedUser && linkedUser.uid) loginToOneSignal(linkedUser.uid);
+              return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
       }
       return { success: false, reason: 'No redirect result found' };
     } catch (e) {
@@ -453,6 +455,7 @@ export const authService = {
               };
               storageService.setGlobalAccountLinkedState(mergedUserData);
               const earnedSparks = storageService.grantAccountLinkSparksReward();
+              if (linkedUser && linkedUser.uid) loginToOneSignal(linkedUser.uid);
               return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
             }
           }
@@ -506,6 +509,7 @@ export const authService = {
         storageService.setGlobalAccountLinkedState(mergedUserData);
 
         await userSyncService.pushLocalToCloud(linkedUser.uid, null, true);
+        loginToOneSignal(linkedUser.uid);
         return { success: true };
       }
     } catch(e) {
@@ -545,6 +549,7 @@ export const authService = {
       const currentUser = auth.currentUser;
       if (currentUser && !currentUser.isAnonymous) {
         // ALWAYS sign out on unlink so the device returns to a fresh anonymous session
+        logoutFromOneSignal();
         await signOut(auth);
       }
 
@@ -585,6 +590,7 @@ export const authService = {
       if (user) {
         const isGlobalLinked = storageService.isAccountGloballyLinked();
         const isAnon = user.isAnonymous && !isGlobalLinked;
+        if (!isAnon) { loginToOneSignal(user.uid); }
         const currentData = storageService.getUserData('math');
         const updated = {
           ...currentData,
