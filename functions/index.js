@@ -1,6 +1,6 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { Resend } = require("resend");
-const admin = require("firebase-admin");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 const { getApps, initializeApp } = require("firebase-admin/app");
 
@@ -41,7 +41,7 @@ exports.sendParentEmail = onCall(
     }
 
     const uid = request.auth.uid;
-    const db = admin.firestore();
+    const db = getFirestore();
 
     // Enforce per-user rate limit (maximum 5 emails per 10-minute window)
     const rateLimitRef = db.collection("email_rate_limits").doc(uid);
@@ -65,20 +65,20 @@ exports.sendParentEmail = onCall(
           }
           transaction.update(rateLimitRef, {
             count: count + 1,
-            lastSentAt: admin.firestore.FieldValue.serverTimestamp()
+            lastSentAt: FieldValue.serverTimestamp()
           });
         } else {
           transaction.set(rateLimitRef, {
             windowStart: now,
             count: 1,
-            lastSentAt: admin.firestore.FieldValue.serverTimestamp()
+            lastSentAt: FieldValue.serverTimestamp()
           });
         }
       } else {
         transaction.set(rateLimitRef, {
           windowStart: now,
           count: 1,
-          lastSentAt: admin.firestore.FieldValue.serverTimestamp()
+          lastSentAt: FieldValue.serverTimestamp()
         });
       }
     });
@@ -162,7 +162,7 @@ exports.validatePromoCode = onCall(
     const normalizedCode = code.trim().replace(/^#/, '').toUpperCase();
 
     try {
-      const db = admin.firestore();
+      const db = getFirestore();
       const promoRef = db.collection('promoCodes').doc(normalizedCode);
       const promoSnap = await promoRef.get();
 
@@ -215,7 +215,7 @@ exports.joinWeeklyLeague = onCall(
       throw new HttpsError('invalid-argument', 'Invalid subject identifier.');
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const documentId = `${uid}_${profileId}`;
     const userStatsRef = db.collection('weekly_stats').doc(documentId);
 
@@ -255,7 +255,7 @@ exports.joinWeeklyLeague = onCall(
         transaction.set(leagueRef, {
           activeBucket: activeBucket,
           bucketCount: bucketCount + 1,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          updatedAt: FieldValue.serverTimestamp()
         }, { merge: true });
 
         // Update the user's assigned cohort
@@ -265,7 +265,7 @@ exports.joinWeeklyLeague = onCall(
           subject: subject,
           weekStr: weekStr,
           cohortId: newCohortId,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          updatedAt: FieldValue.serverTimestamp()
         }, { merge: true });
 
         return { cohortId: newCohortId };
@@ -302,11 +302,11 @@ exports.processReferralLinking = onCall(
     }
 
     try {
-      const rewardRef = admin.firestore().collection('users').doc(referrerId).collection('pendingRewards').doc(newUserId);
+      const rewardRef = getFirestore().collection('users').doc(referrerId).collection('pendingRewards').doc(newUserId);
       await rewardRef.set({
         referredUserId: newUserId,
         status: 'pending',
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
         type: 'referral_bonus'
       });
       return { success: true };
@@ -340,7 +340,7 @@ exports.claimUsername = onCall(
 
     const normalized = trimmed.toLowerCase();
     const cleanCode = (friendCode || '').trim().toUpperCase();
-    const db = admin.firestore();
+    const db = getFirestore();
     const usernameRef = db.collection('usernames').doc(normalized);
     const codeRef = cleanCode ? db.collection('friend_codes').doc(cleanCode) : null;
 
@@ -370,7 +370,7 @@ exports.claimUsername = onCall(
           normalized,
           uid,
           profileId: profileId || 'default_child',
-          claimedAt: admin.firestore.FieldValue.serverTimestamp()
+          claimedAt: FieldValue.serverTimestamp()
         };
         if (cleanCode) usernamePayload.friendCode = cleanCode;
 
@@ -383,7 +383,7 @@ exports.claimUsername = onCall(
             normalized,
             uid,
             profileId: profileId || 'default_child',
-            claimedAt: admin.firestore.FieldValue.serverTimestamp()
+            claimedAt: FieldValue.serverTimestamp()
           }, { merge: true });
         }
 
@@ -413,7 +413,7 @@ exports.searchUsername = onCall(
       return { results: [] };
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const cleanCode = query.trim().toUpperCase();
     try {
       // COPPA Safe: Exact match lookup by Climber Code only
@@ -482,7 +482,7 @@ exports.getFriendScores = onCall(
     }
 
     const safeFriendIds = friendIds.slice(0, 25);
-    const db = admin.firestore();
+    const db = getFirestore();
     const standings = [];
 
     try {

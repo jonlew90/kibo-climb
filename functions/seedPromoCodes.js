@@ -1,14 +1,15 @@
-const admin = require('firebase-admin');
+const { getFirestore } = require('firebase-admin/firestore');
+const { getApps, initializeApp } = require('firebase-admin/app');
 
 // Initialize Firebase Admin SDK
 // Assumes you have set the GOOGLE_APPLICATION_CREDENTIALS environment variable
 // or are running this in an environment where it's implicitly authenticated.
 // For local testing, you might need to use a service account key.
-if (!admin.apps.length) {
-  admin.initializeApp();
+if (!getApps().length) {
+  initializeApp();
 }
 
-const db = admin.firestore();
+const db = getFirestore();
 
 const PROMO_CODES_REGISTRY = {
   GOLDENKIBO: {
