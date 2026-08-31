@@ -490,6 +490,17 @@ export default function App() {
       } else if (action === 'play') {
         handleNavigateTo('/', 'adaptive_session');
       }
+
+      // Handle Stripe return redirect (session_id in URL)
+      const sessionId = params.get('session_id');
+      if (sessionId) {
+        soundFx.playSparkCollect();
+        // Clean URL to remove session_id
+        if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
+      }
     } catch (e) {
       // Ignore deep link parse errors
     }

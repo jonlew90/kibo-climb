@@ -547,7 +547,7 @@ exports.createStripeCheckoutSession = onCall(
 
     const { itemId, itemName, priceAmount, isSubscription, profileId, successUrl, cancelUrl } = request.data || {};
 
-    if (!itemId || !priceAmount) {
+    if (!itemId || priceAmount === undefined || priceAmount === null) {
       throw new HttpsError('invalid-argument', 'Missing required item details.');
     }
 
@@ -561,16 +561,16 @@ exports.createStripeCheckoutSession = onCall(
       const priceData = {
         currency: 'usd',
         product_data: {
-          name: itemName,
+          name: itemName || 'Kibo Item',
           metadata: { itemId }
         },
-        unit_amount: Math.round(priceAmount * 100), // Convert to cents
+        unit_amount: Math.max(50, Math.round(Number(priceAmount) * 100)), // Convert to cents
       };
 
       if (isSubscription) {
         // Assume monthly unless it contains 'yr' or 'annual'
         priceData.recurring = {
-          interval: itemName.toLowerCase().includes('annual') ? 'year' : 'month'
+          interval: (itemName || '').toLowerCase().includes('annual') || itemId.includes('annual') ? 'year' : 'month'
         };
       }
 
@@ -596,10 +596,10 @@ exports.createStripeCheckoutSession = onCall(
 
       const session = await stripeClient.checkout.sessions.create(sessionConfig);
 
-      return { sessionId: session.id };
+      return { sessionId: session.id, url: session.url };
     } catch (error) {
       console.error('Error creating Stripe Checkout session:', error);
-      throw new HttpsError('internal', 'Failed to create checkout session.', error.message);
+      throw new HttpsError('internal', error.message || 'Failed to create checkout session.');
     }
   }
 );
@@ -632,36 +632,66 @@ exports.stripeWebhook = onRequest(
       return;
     }
 
-    // Handle the checkout.session.completed event
+    // Handle checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-
       const { uid, profileId, itemId, isSubscription } = session.metadata || {};
 
       if (uid && itemId) {
         try {
           const db = getFirestore();
+          const userRef = db.collection('users').doc(uid);
+          const userSnap = await userRef.get();
+          const userData = userSnap.exists ? userSnap.data() : {};
+          const profiles = userData.profiles || {};
+
+          // Known sparks map
+          const sparksMap = {
+            sparks_pack_1: 500,
+            sparks_pack_2: 1200,
+            sparks_pack_3: 3000,
+            sparks_pack_4: 10000
+          };
+
+          const targetProfileId = profileId && profiles[profileId] ? profileId : (userData.activeProfileId || Object.keys(profiles)[0] || 'default_child');
 
           if (isSubscription === 'true') {
-             const userRef = db.collection('users').doc(uid);
-             await userRef.set({
-               entitlements: {
-                 isPremium: true,
-                 subscriptionTier: itemId,
-                 subscriptionActivatedAt: FieldValue.serverTimestamp(),
-                 lastVerifiedPlatform: 'stripe'
-               }
-             }, { merge: true });
-          } else {
-             // Example: Single purchase, record it
-             const txRef = db.collection('users').doc(uid).collection('transactions').doc(session.id);
-             await txRef.set({
-                itemId,
-                amount: session.amount_total,
-                status: 'completed',
-                timestamp: FieldValue.serverTimestamp()
-             });
+            await userRef.set({
+              entitlements: {
+                isPremium: true,
+                subscriptionTier: itemId,
+                subscriptionActivatedAt: FieldValue.serverTimestamp(),
+                lastVerifiedPlatform: 'stripe'
+              },
+              updatedAt: FieldValue.serverTimestamp()
+            }, { merge: true });
+          } else if (sparksMap[itemId] && profiles[targetProfileId]) {
+            const currentSparks = Number(profiles[targetProfileId]?.userData?.sparks || 0);
+            const addedSparks = sparksMap[itemId];
+            profiles[targetProfileId].userData = profiles[targetProfileId].userData || {};
+            profiles[targetProfileId].userData.sparks = currentSparks + addedSparks;
+            profiles[targetProfileId].updatedAtMillis = Date.now();
+
+            await userRef.set({
+              profiles,
+              updatedAt: FieldValue.serverTimestamp()
+            }, { merge: true });
           }
+
+          // Record transaction in audit log
+          const txRef = userRef.collection('transactions').doc(session.id);
+          await txRef.set({
+            sessionId: session.id,
+            itemId,
+            amount: session.amount_total,
+            currency: session.currency,
+            customer: session.customer,
+            status: 'completed',
+            profileId: targetProfileId,
+            isSubscription: isSubscription === 'true',
+            timestamp: FieldValue.serverTimestamp()
+          });
+
           console.log(`Successfully processed purchase for user ${uid}, item: ${itemId}`);
         } catch (e) {
           console.error('Error updating user purchase in Firestore', e);
