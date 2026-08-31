@@ -159,6 +159,23 @@ export default function App() {
     };
   }, []);
 
+  // Handle Stripe checkout return
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('session_id')) {
+        // The webhook handles granting the items/subscription securely in the background.
+        // We just clean up the URL to prevent re-triggering on reload.
+        urlParams.delete('session_id');
+        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+        window.history.replaceState({}, document.title, newUrl);
+
+        // Play a nice sound to welcome them back from a successful purchase
+        soundFx.playSparkCollect();
+      }
+    }
+  }, []);
+
   const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStripeCheckoutModal, setShowStripeCheckoutModal] = useState(false);

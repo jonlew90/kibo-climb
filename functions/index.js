@@ -3,10 +3,15 @@ const { Resend } = require("resend");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 const { getApps, initializeApp } = require("firebase-admin/app");
+const { onRequest } = require("firebase-functions/v2/https");
+const { defineSecret } = require("firebase-functions/params");
 
 if (!getApps().length) {
   initializeApp();
 }
+
+const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
+const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
 
 /**
  * Sanitizes HTML email content to prevent script injection and dangerous tags.
@@ -521,3 +526,141 @@ exports.getFriendScores = onCall(
   }
 );
 
+
+/**
+ * Callable function to create a Stripe Checkout Session.
+ */
+exports.createStripeCheckoutSession = onCall(
+  { secrets: [STRIPE_SECRET_KEY] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication required.');
+    }
+
+    const { itemId, itemName, priceAmount, isSubscription, profileId, successUrl, cancelUrl } = request.data || {};
+
+    if (!itemId || !priceAmount) {
+      throw new HttpsError('invalid-argument', 'Missing required item details.');
+    }
+
+    const stripeKey = STRIPE_SECRET_KEY.value() || process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+      throw new HttpsError('internal', 'Stripe secret key not configured.');
+    }
+    const stripeClient = require('stripe')(stripeKey);
+
+    try {
+      const priceData = {
+        currency: 'usd',
+        product_data: {
+          name: itemName,
+          metadata: { itemId }
+        },
+        unit_amount: Math.round(priceAmount * 100), // Convert to cents
+      };
+
+      if (isSubscription) {
+        // Assume monthly unless it contains 'yr' or 'annual'
+        priceData.recurring = {
+          interval: itemName.toLowerCase().includes('annual') ? 'year' : 'month'
+        };
+      }
+
+      const sessionConfig = {
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: priceData,
+            quantity: 1,
+          },
+        ],
+        mode: isSubscription ? 'subscription' : 'payment',
+        success_url: successUrl || 'https://kiboclimb.com/?session_id={CHECKOUT_SESSION_ID}',
+        cancel_url: cancelUrl || 'https://kiboclimb.com/',
+        client_reference_id: request.auth.uid,
+        metadata: {
+          uid: request.auth.uid,
+          profileId: profileId || 'default_child',
+          itemId,
+          isSubscription: isSubscription ? 'true' : 'false'
+        },
+      };
+
+      const session = await stripeClient.checkout.sessions.create(sessionConfig);
+
+      return { sessionId: session.id };
+    } catch (error) {
+      console.error('Error creating Stripe Checkout session:', error);
+      throw new HttpsError('internal', 'Failed to create checkout session.', error.message);
+    }
+  }
+);
+
+/**
+ * HTTP endpoint for Stripe Webhook events.
+ */
+exports.stripeWebhook = onRequest(
+  { secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET] },
+  async (request, response) => {
+    const stripeKey = STRIPE_SECRET_KEY.value() || process.env.STRIPE_SECRET_KEY;
+    const endpointSecret = STRIPE_WEBHOOK_SECRET.value() || process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!stripeKey || !endpointSecret) {
+      console.error('Stripe secrets not configured');
+      response.status(500).send('Internal Server Error');
+      return;
+    }
+
+    const stripeClient = require('stripe')(stripeKey);
+    const sig = request.headers['stripe-signature'];
+
+    let event;
+
+    try {
+      event = stripeClient.webhooks.constructEvent(request.rawBody, sig, endpointSecret);
+    } catch (err) {
+      console.error('Webhook signature verification failed.', err.message);
+      response.status(400).send(`Webhook Error: ${err.message}`);
+      return;
+    }
+
+    // Handle the checkout.session.completed event
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+
+      const { uid, profileId, itemId, isSubscription } = session.metadata || {};
+
+      if (uid && itemId) {
+        try {
+          const db = getFirestore();
+
+          if (isSubscription === 'true') {
+             const userRef = db.collection('users').doc(uid);
+             await userRef.set({
+               entitlements: {
+                 isPremium: true,
+                 subscriptionTier: itemId,
+                 subscriptionActivatedAt: FieldValue.serverTimestamp(),
+                 lastVerifiedPlatform: 'stripe'
+               }
+             }, { merge: true });
+          } else {
+             // Example: Single purchase, record it
+             const txRef = db.collection('users').doc(uid).collection('transactions').doc(session.id);
+             await txRef.set({
+                itemId,
+                amount: session.amount_total,
+                status: 'completed',
+                timestamp: FieldValue.serverTimestamp()
+             });
+          }
+          console.log(`Successfully processed purchase for user ${uid}, item: ${itemId}`);
+        } catch (e) {
+          console.error('Error updating user purchase in Firestore', e);
+        }
+      }
+    }
+
+    response.status(200).send({ received: true });
+  }
+);

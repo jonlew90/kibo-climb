@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import ItemThumbnail from "./ItemThumbnail";
 import { analyticsService } from "../services/analyticsService";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../config/firebase";
+import { storageService } from "../services/storageService";
 
 // Simulates loading Stripe for real-money checkout
 import { loadStripe } from '@stripe/stripe-js';
@@ -36,30 +39,45 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
     setLoading(true);
     setError(null);
     try {
-      // Initialize Stripe with a test publishable key (or inject from env vars later)
-      // For now, we mock the success flow since we don't have a backend to create checkout sessions
-      const stripe = await loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
+      // 1. Call Firebase Cloud Function to create a Checkout Session
+      const createCheckoutSession = httpsCallable(functions, 'createStripeCheckoutSession');
+
+      // Parse the price string (e.g., "$4.99/mo" or "$4.99") to a float amount
+      const priceString = packageInfo.realMoneyPrice || packageInfo.price || "0";
+      const match = priceString.match(/[\d.]+/);
+      const priceAmount = match ? parseFloat(match[0]) : 0;
+
+      const activeProfile = storageService.getActiveProfile();
+
+      const response = await createCheckoutSession({
+        itemId: packageInfo.id,
+        itemName: packageInfo.name,
+        priceAmount: priceAmount,
+        isSubscription: !!packageInfo.isSubscription || priceString.includes('/'),
+        profileId: activeProfile?.id,
+        successUrl: window.location.origin + '?session_id={CHECKOUT_SESSION_ID}',
+        cancelUrl: window.location.origin
+      });
+
+      const sessionId = response.data?.sessionId;
+
+      if (!sessionId) {
+        throw new Error("Failed to create checkout session");
+      }
+
+      // 2. Initialize Stripe and redirect to checkout
+      // Replace with your actual Stripe publishable key in a real app
+      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx');
+
       if (!stripe) {
         throw new Error("Stripe failed to load");
       }
 
-      // Simulate network request to backend for checkout session
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const { error: stripeError } = await stripe.redirectToCheckout({ sessionId });
 
-      // In a real implementation, we would redirect to Stripe Checkout here:
-      // await stripe.redirectToCheckout({ sessionId: "..." });
-
-      // For now, we immediately confirm success
-      if (packageInfo.isSubscription) {
-        analyticsService.logPurchase(packageInfo.id);
-      } else {
-        analyticsService.logCustomEvent('purchase_sparks', {
-          item_id: packageInfo.id,
-          item_name: packageInfo.name,
-          price: packageInfo.price
-        });
+      if (stripeError) {
+        throw stripeError;
       }
-      onConfirm(packageInfo);
     } catch (e) {
       console.error("Checkout failed:", e);
       setError("Failed to initialize secure checkout. Please try again later.");
