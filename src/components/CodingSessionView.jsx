@@ -65,7 +65,7 @@ export default function CodingSessionView({
   consumables = {},
   onToggleDoubleSparksPotion,
   onConsumeHintScroll,
-  onConsumeExplorerCompass,
+  onConsumeLetterPruner,
   onConsumeShield,
   onResetDoubleSparks
 }) {
@@ -75,6 +75,7 @@ export default function CodingSessionView({
   });
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [sessionQuestionIndex, setSessionQuestionIndex] = useState(1);
+  const [consecutiveSkips, setConsecutiveSkips] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [blockCorrectCount, setBlockCorrectCount] = useState(0);
   const [blockSparksEarned, setBlockSparksEarned] = useState(0);
@@ -227,6 +228,7 @@ export default function CodingSessionView({
       competenceRank,
       sessionAnswers,
       eliminatedOptions,
+      isLetterPrunerActive: Boolean(eliminatedOptions && eliminatedOptions.length > 0),
       revealedHint,
       isClueActive,
       isDoubleSparksActive
@@ -247,14 +249,15 @@ export default function CodingSessionView({
     setBlockSparksEarned(0);
     setSessionSparksEarned(0);
     setBlockRatingGain(0);
+    setBlockShieldsUsed(0);
     setMistakeCount(0);
-    setSessionAnswers([]);
-    const freshBatch = generateProblems(15, activeTier);
-    setProblemQueue(freshBatch);
     setCurrentProblemIndex(0);
     setEliminatedOptions([]);
     setRevealedHint(null);
     setIsClueActive(false);
+
+    const freshBatch = generateProblems(15, activeTier);
+    setProblemQueue(freshBatch);
     setProblemStartTime(Date.now());
     setHasStartedClimb(true);
   };
@@ -263,10 +266,10 @@ export default function CodingSessionView({
     soundFx.playKeyTap();
     setIsAutoPaused(false);
     const saved = storageService.getActiveClimbState(profileId, 'coding');
-    if (saved && saved.problemQueue && saved.problemQueue.length > 0) {
+    if (saved) {
       setProblemQueue(saved.problemQueue);
       setCurrentProblemIndex(saved.currentProblemIndex || 0);
-      setSessionQuestionIndex(saved.sessionQuestionIndex || (saved.currentProblemIndex ? saved.currentProblemIndex + 1 : 1));
+      setSessionQuestionIndex(saved.sessionQuestionIndex || 1);
       setQuestionsAnswered(saved.questionsAnswered || 0);
       setCorrectCount(saved.correctCount || 0);
       setBlockCorrectCount(saved.blockCorrectCount || 0);
@@ -274,8 +277,8 @@ export default function CodingSessionView({
       setSessionSparksEarned(saved.sessionSparksEarned || 0);
       setBlockRatingGain(saved.blockRatingGain || 0);
       setMistakeCount(saved.mistakeCount || 0);
-      if (saved.competenceRank) setCompetenceRank(saved.competenceRank);
-      if (Array.isArray(saved.sessionAnswers)) setSessionAnswers(saved.sessionAnswers);
+      setCompetenceRank(saved.competenceRank || 1000);
+      setSessionAnswers(saved.sessionAnswers || []);
       setEliminatedOptions(saved.eliminatedOptions || []);
       setRevealedHint(saved.revealedHint || null);
       setIsClueActive(Boolean(saved.isClueActive));
@@ -318,7 +321,11 @@ export default function CodingSessionView({
     blockRatingGain,
     mistakeCount,
     competenceRank,
-    sessionAnswers
+    sessionAnswers,
+    eliminatedOptions,
+    revealedHint,
+    isClueActive,
+    isDoubleSparksActive
   ]);
 
   // Handle modal pausing logic
@@ -565,13 +572,52 @@ export default function CodingSessionView({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentProblem, showBreakOverlay, eliminatedOptions, currentProblemIndex, problemStartTime, streak, mistakeCount, competenceRank, isDoubleSparksActive, blockCorrectCount, blockSparksEarned, blockRatingGain, blockShieldsUsed, sessionAnswers]);
 
-  // Use Compass / Letter Pruner Power-up (Eliminate 2 wrong answers)
+  // Pass / Skip question
+  const handlePassQuestion = () => {
+    if (consecutiveSkips >= 2) return;
+    soundFx.playKeyTap();
+    const nextSkips = consecutiveSkips + 1;
+    setConsecutiveSkips(nextSkips);
+
+    const timeElapsedSec = problemStartTime > 0 ? (Date.now() - problemStartTime) / 1000 : 1.0;
+
+    storageService.logSkipEvent({
+      problemId: currentProblem?.id || `coding_${currentProblemIndex}`,
+      concept: currentProblem?.concept || 'Logic',
+      timeElapsedSec: Number(timeElapsedSec.toFixed(1)),
+      consecutiveSkipCount: nextSkips
+    }, 'coding');
+
+    setFeedbackBanner({
+      type: 'success',
+      text: 'Trying another problem 🔄'
+    });
+
+    setQuestionsAnswered(prev => prev + 1);
+    setSessionQuestionIndex(prev => prev + 1);
+    setEliminatedOptions([]);
+    setRevealedHint(null);
+    setCurrentProblemIndex(prev => prev + 1);
+    setProblemStartTime(Date.now());
+  };
+
+  // Use 50:50 Distractor Pruner Power-up (Eliminate 2 wrong answers)
   const handleUsePruner = () => {
     if (!currentProblem || !currentProblem.options || currentProblem.options.length <= 2) return;
     if (eliminatedOptions.length > 0) return;
 
-    if (onConsumeExplorerCompass) {
-      onConsumeExplorerCompass();
+    const owned = consumables?.letterPrunerCount ?? 0;
+    if (owned <= 0) {
+      setFeedbackBanner({
+        type: 'info',
+        text: 'Out of 50:50 Pruners! Opening Shop... 🧪'
+      });
+      if (onOpenWorkshop) onOpenWorkshop();
+      return;
+    }
+
+    if (onConsumeLetterPruner) {
+      onConsumeLetterPruner();
     }
 
     const wrongOptions = currentProblem.options.filter(
@@ -580,17 +626,37 @@ export default function CodingSessionView({
     const toEliminate = shuffleArray(wrongOptions).slice(0, 2);
     setEliminatedOptions(toEliminate);
     soundFx.playSparkCollect();
+    setFeedbackBanner({
+      type: 'success',
+      text: '50:50 Distractors pruned! ✂️'
+    });
   };
 
-  // Use Wisdom Clue / Hint Scroll
+  // Use Wisdom Hint Scroll
   const handleUseHint = () => {
     if (!currentProblem) return;
+    if (revealedHint) return;
+
+    const owned = consumables?.hintScrollCount ?? 0;
+    if (owned <= 0) {
+      setFeedbackBanner({
+        type: 'info',
+        text: 'Out of Hint Scrolls! Opening Shop... 🧪'
+      });
+      if (onOpenWorkshop) onOpenWorkshop();
+      return;
+    }
+
     if (onConsumeHintScroll) {
       onConsumeHintScroll();
     }
     setRevealedHint(currentProblem.hint || 'Carefully step through each line of code.');
     setIsClueActive(true);
     soundFx.playPowerUp();
+    setFeedbackBanner({
+      type: 'success',
+      text: 'Logic Trace Hint Revealed! 💡'
+    });
   };
 
   // Continue climb after break
@@ -829,40 +895,108 @@ export default function CodingSessionView({
             /* ACTIVE CODING QUESTION CARD */
             currentProblem && (
               <div className={`w-full max-w-md shrink-0 flex flex-col justify-between bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-3 sm:p-4 text-center transition-all duration-300 space-y-2 relative shadow-lg ${streakConfig.cardGlow} ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : 'border-purple-200'}`}>
-                {/* Problem Header Badge */}
-                <div className="w-full flex flex-wrap items-center justify-between gap-1.5 mb-1">
-                  <div className="flex items-center gap-1.5 text-xs font-black text-purple-800 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
-                    <Terminal className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>{currentProblem.concept || 'Algorithmic Logic'}</span>
+                {/* TIER 1: MINIMAL CLIMB STATUS BAR (Single row, non-wrapping) */}
+                <div className="w-full flex items-center justify-between gap-1 sm:gap-2 px-1 py-0.5 text-xs">
+                  {/* Left: Question Counter */}
+                  <span className="font-black uppercase text-purple-700 bg-purple-50 px-2 sm:px-2.5 py-1 rounded-full border border-purple-200 shrink-0 shadow-2xs">
+                    🎯 Q #{sessionQuestionIndex}/12
+                  </span>
+
+                  {/* Center: Concept Tag / Streak Tier */}
+                  <div className="flex items-center gap-1.5 text-xs font-black text-purple-800 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200 truncate max-w-[130px] sm:max-w-none">
+                    <Terminal className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                    <span className="truncate">{currentProblem.concept || 'Logic Drill'}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {storageService?.hasClubMembership?.(profileId) ? (
+
+                  {/* Right: Consolidated Sparks & Shield Indicator */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span
+                      className={`font-black uppercase px-2 sm:px-2.5 py-1 rounded-full border shadow-2xs flex items-center gap-1 ${
+                        storageService?.hasClubMembership?.(profileId)
+                          ? 'text-amber-950 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300 border-amber-400'
+                          : 'text-amber-800 bg-amber-50 border-amber-200'
+                      }`}
+                      title={`Sparks earned per correct answer${isDoubleSparksActive ? ' (2x Active!)' : ''}${storageService?.hasClubMembership?.(profileId) ? ' (1.25x VIP)' : ''}`}
+                    >
+                      <span>+{Math.round((isDoubleSparksActive ? 4 : 2) * (streak >= 5 ? 1.5 : 1) * (storageService?.hasClubMembership?.(profileId) ? 1.25 : 1))} ⚡</span>
+                      {isDoubleSparksActive && (
+                        <span className="text-[10px] bg-amber-400 text-amber-950 px-1 rounded font-black leading-none">2x</span>
+                      )}
+                    </span>
+
+                    {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
                       <span
-                        className="text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300 px-2.5 py-1 rounded-full border border-amber-400 shrink-0 shadow-2xs flex items-center gap-1.5"
-                        title="Kibo Club 1.25x Multiplier Active on Sparks"
+                        className="font-black uppercase text-sky-950 bg-sky-100 px-1.5 sm:px-2 py-1 rounded-full border border-sky-300 shadow-2xs flex items-center gap-0.5 cursor-help"
+                        title="Kibo Shield Active: Streak protected!"
                       >
-                        <span className="line-through opacity-60 text-[10px] sm:text-xs">
-                          +{Math.round((isDoubleSparksActive ? 4 : 2) * (streak >= 5 ? 1.5 : 1))} ⚡
-                        </span>
-                        <span className="text-amber-900 font-black">
-                          +{Math.round((isDoubleSparksActive ? 4 : 2) * (streak >= 5 ? 1.5 : 1) * 1.25)} ⚡
-                        </span>
-                        <span className="text-[10px] bg-amber-400/80 text-amber-950 px-1 rounded font-black">
-                          1.25x
-                        </span>
-                      </span>
-                    ) : (
-                      <span
-                        className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 shrink-0 shadow-2xs flex items-center gap-1"
-                        title="Sparks earned per correct answer"
-                      >
-                        +{Math.round((isDoubleSparksActive ? 4 : 2) * (streak >= 5 ? 1.5 : 1))} ⚡
+                        🛡️ <span className="text-[10px] sm:text-xs">{consumables.shieldCount || consumables.streakSaverCount}</span>
                       </span>
                     )}
-                    <span className="text-xs font-black text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
-                      🎯 Q #{sessionQuestionIndex}/12
-                    </span>
                   </div>
+                </div>
+
+                {/* TIER 2: ACTION DOCK / POWER-UPS BAR */}
+                <div className="w-full flex items-center justify-center gap-1 sm:gap-2 py-0.5">
+                  {/* NON-PUNITIVE PASS BUTTON */}
+                  <button
+                    type="button"
+                    onClick={handlePassQuestion}
+                    disabled={consecutiveSkips >= 2}
+                    className={`text-[11px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                      consecutiveSkips >= 2
+                        ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
+                        : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
+                    }`}
+                    title={
+                      consecutiveSkips >= 2
+                        ? 'Cap of 2 consecutive skips reached. Give this question a try!'
+                        : 'Try another problem'
+                    }
+                  >
+                    {consecutiveSkips >= 2 ? '🔒 Attempt' : '🔄 Pass'}
+                  </button>
+
+                  {/* MANUAL WISDOM HINT BUTTON */}
+                  <button
+                    type="button"
+                    onClick={handleUseHint}
+                    className={`text-[11px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                      revealedHint
+                        ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
+                        : (consumables?.hintScrollCount ?? 0) > 0
+                        ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
+                        : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
+                    }`}
+                    title={
+                      (consumables?.hintScrollCount ?? 0) > 0
+                        ? 'Use Wisdom Scroll to reveal a logic clue!'
+                        : 'Out of Hint Scrolls • Tap to get in Shop!'
+                    }
+                  >
+                    💡 {revealedHint ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint +'}
+                  </button>
+
+                  {/* 50:50 DISTRACTOR PRUNER BUTTON */}
+                  <button
+                    type="button"
+                    onClick={handleUsePruner}
+                    className={`text-[11px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                      eliminatedOptions.length > 0
+                        ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
+                        : (consumables?.letterPrunerCount ?? 0) > 0
+                        ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
+                        : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
+                    }`}
+                    title={
+                      eliminatedOptions.length > 0
+                        ? '50:50 Distractors pruned for this problem!'
+                        : (consumables?.letterPrunerCount ?? 0) > 0
+                        ? 'Prune 2 wrong choices (50:50)!'
+                        : 'Out of 50:50 Pruners • Tap to get in Shop!'
+                    }
+                  >
+                    ✂️ {eliminatedOptions.length > 0 ? '50:50 Active' : (consumables?.letterPrunerCount ?? 0) > 0 ? `50:50 (${consumables.letterPrunerCount})` : '50:50 +'}
+                  </button>
                 </div>
 
                 {/* Question Display Text */}

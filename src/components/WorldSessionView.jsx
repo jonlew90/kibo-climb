@@ -362,6 +362,10 @@ export default function WorldSessionView({
         }, 1500);
       }
     } else if (onOpenWorkshop) {
+      triggerToastBanner({
+        type: 'info',
+        text: 'Out of Hint Scrolls! Opening Shop... 🧪'
+      }, 1400);
       onOpenWorkshop();
     }
   };
@@ -370,6 +374,10 @@ export default function WorldSessionView({
     if (isCompassActive) return;
     const owned = consumables?.explorerCompassCount ?? 0;
     if (owned <= 0) {
+      triggerToastBanner({
+        type: 'info',
+        text: 'Out of Compasses! Opening Shop... 🧪'
+      }, 1400);
       if (onOpenWorkshop) onOpenWorkshop();
       return;
     }
@@ -388,6 +396,10 @@ export default function WorldSessionView({
     if (isLetterPrunerActive) return;
     const owned = consumables?.letterPrunerCount ?? 0;
     if (owned <= 0) {
+      triggerToastBanner({
+        type: 'info',
+        text: 'Out of 50:50 Pruners! Opening Shop... 🧪'
+      }, 1400);
       if (onOpenWorkshop) onOpenWorkshop();
       return;
     }
@@ -1699,62 +1711,69 @@ export default function WorldSessionView({
                   </div>
                 )}
 
-                <div className="w-full flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 py-0.5">
-                  <span className="text-xs font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-purple-200 shrink-0 shadow-2xs">
+                {/* TIER 1: MINIMAL CLIMB STATUS BAR (Single row, non-wrapping) */}
+                <div className="w-full flex items-center justify-between gap-1 sm:gap-2 px-1 py-0.5 text-xs">
+                  {/* Left: Question Counter */}
+                  <span className="font-black uppercase text-purple-700 bg-purple-50 px-2 sm:px-2.5 py-1 rounded-full border border-purple-200 shrink-0 shadow-2xs">
                     🎯 Q #{currentQuestionNum}/12
                   </span>
-                  {isNearTierThreshold(competenceRank) && !currentProblem.isProbe && (
-                    <span className="text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-500 shrink-0 shadow-md animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
-                      ⚡ TIER GATEKEEPER
-                    </span>
-                  )}
-                  {currentProblem.isProbe && (
-                    <span className="text-xs font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-indigo-300 shrink-0 shadow-md animate-pulse flex items-center gap-1">
-                      🚀 SKILL PROBE (+120)
-                    </span>
-                  )}
-                  <span
-                    className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}
-                  >
-                    {streakCfg.label}
-                  </span>
 
-                  {storageService?.hasClubMembership?.(profileId) ? (
-                    <span
-                      className="text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-400 shrink-0 shadow-2xs flex items-center gap-1.5"
-                      title="Kibo Club 1.25x Multiplier Active on Sparks"
-                    >
-                      <span className="line-through opacity-60 text-[10px] sm:text-xs">
-                        +{Math.round((isDoubleSparksActive ? 4 : 2) * (inSessionStreak >= 5 ? 1.5 : 1))} ⚡
-                      </span>
-                      <span className="text-amber-900 font-black">
-                        +{Math.round((isDoubleSparksActive ? 4 : 2) * (inSessionStreak >= 5 ? 1.5 : 1) * 1.25)} ⚡
-                      </span>
-                      <span className="text-[10px] bg-amber-400/80 text-amber-950 px-1 rounded font-black">
-                        1.25x
-                      </span>
+                  {/* Center: Priority Status Badge (Probe > Gatekeeper > Streak) */}
+                  {currentProblem.isProbe ? (
+                    <span className="font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-1 rounded-full border border-indigo-300 shrink-0 shadow-xs animate-pulse flex items-center gap-1">
+                      🚀 PROBE (+120)
+                    </span>
+                  ) : isNearTierThreshold(competenceRank) ? (
+                    <span className="font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-1 rounded-full border border-amber-500 shrink-0 shadow-xs animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
+                      ⚡ GATEKEEPER
                     </span>
                   ) : (
-                    <span
-                      className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-200 shrink-0 shadow-2xs flex items-center gap-1"
-                      title="Sparks earned per correct answer"
-                    >
-                      +{Math.round((isDoubleSparksActive ? 4 : 2) * (inSessionStreak >= 5 ? 1.5 : 1))} ⚡
+                    <span className={`font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}>
+                      {streakCfg.label}
                     </span>
                   )}
 
+                  {/* Right: Consolidated Sparks & Shield Indicator */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span
+                      className={`font-black uppercase px-2 sm:px-2.5 py-1 rounded-full border shadow-2xs flex items-center gap-1 ${
+                        storageService?.hasClubMembership?.(profileId)
+                          ? 'text-amber-950 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300 border-amber-400'
+                          : 'text-amber-800 bg-amber-50 border-amber-200'
+                      }`}
+                      title={`Sparks earned per correct answer${isDoubleSparksActive ? ' (2x Active!)' : ''}${storageService?.hasClubMembership?.(profileId) ? ' (1.25x VIP)' : ''}`}
+                    >
+                      <span>+{Math.round((isDoubleSparksActive ? 4 : 2) * (inSessionStreak >= 5 ? 1.5 : 1) * (storageService?.hasClubMembership?.(profileId) ? 1.25 : 1))} ⚡</span>
+                      {isDoubleSparksActive && (
+                        <span className="text-[10px] bg-amber-400 text-amber-950 px-1 rounded font-black leading-none">2x</span>
+                      )}
+                    </span>
+
+                    {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
+                      <span
+                        className="font-black uppercase text-sky-950 bg-sky-100 px-1.5 sm:px-2 py-1 rounded-full border border-sky-300 shadow-2xs flex items-center gap-0.5 cursor-help"
+                        title="Kibo Shield Active: Streak protected!"
+                      >
+                        🛡️ <span className="text-[10px] sm:text-xs">{consumables.shieldCount || consumables.streakSaverCount}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* TIER 2: ACTION DOCK / POWER-UPS BAR */}
+                <div className="w-full flex items-center justify-center gap-1 sm:gap-1.5 py-0.5">
                   {incorrectReviewData ? (
-                    <span className="text-xs font-black uppercase text-rose-800 bg-rose-100 px-3 py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1">
+                    <span className="text-xs font-black uppercase text-rose-800 bg-rose-100 px-3 py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1 animate-pulse">
                       ❌ Reviewing Solution
                     </span>
                   ) : (
                     <>
-                      {/* NON-PUNITIVE PASS / TRY ANOTHER BUTTON */}
+                      {/* NON-PUNITIVE PASS BUTTON */}
                       <button
                         type="button"
                         onClick={handlePassQuestion}
                         disabled={consecutiveSkips >= 2}
-                        className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                        className={`text-[11px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                           consecutiveSkips >= 2
                             ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                             : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -1765,91 +1784,75 @@ export default function WorldSessionView({
                             : 'Try another problem'
                         }
                       >
-                        {consecutiveSkips >= 2 ? '🔒 Attempt Required' : '🔄 Pass'}
+                        {consecutiveSkips >= 2 ? '🔒 Attempt' : '🔄 Pass'}
                       </button>
 
                       {/* MANUAL WISDOM HINT SCROLL BUTTON */}
                       <button
                         type="button"
                         onClick={handleUseHintScroll}
-                        className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                        className={`text-[11px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                           showHintCard || showFrustrationCard
                             ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                             : shouldPulseHint
-                            ? 'bg-amber-300 text-amber-950 border-amber-500 animate-pulse ring-4 ring-amber-400/80 shadow-md scale-105'
+                            ? 'bg-amber-300 text-amber-950 border-amber-500 animate-pulse ring-2 ring-amber-400 shadow-md scale-105'
                             : (consumables?.hintScrollCount ?? 0) > 0
                             ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
-                            : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                            : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
                         }`}
                         title={
                           (consumables?.hintScrollCount ?? 0) > 0
                             ? 'Use Wisdom Scroll to reveal a geography clue!'
-                            : "Get Hint Scrolls in Kibo's Corner"
+                            : "Out of Hint Scrolls • Tap to get in Shop!"
                         }
                       >
-                        💡 {showHintCard || showFrustrationCard ? 'Hint Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
+                        💡 {showHintCard || showFrustrationCard ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint +'}
                       </button>
 
                       {/* EXPLORER'S COMPASS BUTTON (Kibo World Bespoke Item) */}
                       <button
                         type="button"
                         onClick={handleUseExplorerCompass}
-                        className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                        className={`text-[11px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                           isCompassActive
                             ? 'bg-amber-200 text-amber-950 border-amber-400'
                             : (consumables?.explorerCompassCount ?? 0) > 0
                             ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
-                            : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                            : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
                         }`}
                         title={
                           isCompassActive
                             ? 'Compass orientation clue active!'
                             : (consumables?.explorerCompassCount ?? 0) > 0
                             ? "Use Explorer's Compass to reveal regional orientation!"
-                            : "Get Explorer's Compasses in Kibo's Corner"
+                            : "Out of Compasses • Tap to get in Shop!"
                         }
                       >
-                        🧭 {isCompassActive ? 'Compass Active' : (consumables?.explorerCompassCount ?? 0) > 0 ? `Compass (${consumables.explorerCompassCount})` : 'Compass'}
+                        🧭 {isCompassActive ? 'Active' : (consumables?.explorerCompassCount ?? 0) > 0 ? `Compass (${consumables.explorerCompassCount})` : 'Compass +'}
                       </button>
 
                       {/* 50:50 DISTRACTOR PRUNER BUTTON */}
                       <button
                         type="button"
                         onClick={handleUseLetterPruner}
-                        className={`text-xs font-black uppercase px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                        className={`text-[11px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                           isLetterPrunerActive
                             ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
                             : (consumables?.letterPrunerCount ?? 0) > 0
                             ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
-                            : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                            : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
                         }`}
                         title={
                           isLetterPrunerActive
                             ? '50:50 Distractors pruned for this problem!'
                             : (consumables?.letterPrunerCount ?? 0) > 0
                             ? 'Prune 2 wrong choices (50:50)!'
-                            : "Get Pruners in Kibo's Corner"
+                            : "Out of 50:50 Pruners • Tap to get in Shop!"
                         }
                       >
-                        ✂️ {isLetterPrunerActive ? '50:50 Active' : (consumables?.letterPrunerCount ?? 0) > 0 ? `50:50 (${consumables.letterPrunerCount})` : '50:50'}
+                        ✂️ {isLetterPrunerActive ? '50:50 Active' : (consumables?.letterPrunerCount ?? 0) > 0 ? `50:50 (${consumables.letterPrunerCount})` : '50:50 +'}
                       </button>
                     </>
-                  )}
-
-                  {isDoubleSparksActive && (
-                    <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-400 animate-pulse shrink-0 shadow-xs flex items-center gap-1">
-                      ⚡ 2x Active!
-                    </span>
-                  )}
-
-                  {/* KIBO SHIELD ACTIVE PILL */}
-                  {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
-                    <span
-                      className="text-xs font-black uppercase text-sky-950 bg-sky-100 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-sky-300 shrink-0 shadow-2xs flex items-center gap-1 cursor-help"
-                      title="Kibo Shield Active: Your climb & streak are protected!"
-                    >
-                      🛡️ Shields ({consumables.shieldCount || consumables.streakSaverCount})
-                    </span>
                   )}
                 </div>
 

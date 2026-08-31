@@ -24,6 +24,7 @@ export default function DevControlPanel({
   const [successMessage, setSuccessMessage] = useState('');
   const [testEmail, setTestEmail] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailReportType, setEmailReportType] = useState('kibo_club'); // 'free' | 'kibo_club'
   const [customDateInput, setCustomDateInput] = useState('');
 
   const currentData = storageService.getUserData(selectedSubject);
@@ -385,8 +386,41 @@ export default function DevControlPanel({
             </span>
 
             <p className="text-xs text-slate-400 leading-snug">
-              Send a test weekly progress digest with mascot subject line (🐾 🏔️) and played topics breakdown.
+              Send a test weekly progress digest with mascot subject line (🐾 🏔️), played topics breakdown, and compare Free vs Kibo Club reports.
             </p>
+
+            {/* Free Report vs Kibo Club Report Selector */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                Email Report Type
+              </span>
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-950/70 border border-slate-700/70 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setEmailReportType('free')}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+                    emailReportType === 'free'
+                      ? 'bg-slate-700 text-white shadow-sm border border-slate-500'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  }`}
+                >
+                  <span>✉️</span>
+                  <span>Free Report</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEmailReportType('kibo_club')}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+                    emailReportType === 'kibo_club'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-sm border border-amber-300 font-black'
+                      : 'text-amber-400 hover:text-amber-200 hover:bg-amber-950/30'
+                  }`}
+                >
+                  <Crown className="w-3.5 h-3.5 fill-current" />
+                  <span>Kibo Club Report</span>
+                </button>
+              </div>
+            </div>
 
             <div className="flex flex-col gap-2">
               <input
@@ -402,21 +436,27 @@ export default function DevControlPanel({
                   onClick={async () => {
                     setIsSendingEmail(true);
                     const activeProf = storageService.getActiveProfile();
+                    const isClub = emailReportType === 'kibo_club';
                     const result = await communicationsService.sendWeeklyDigest({
                       email: testEmail,
-                      profile: activeProf
+                      profile: activeProf,
+                      isKiboClub: isClub
                     });
                     setIsSendingEmail(false);
 
                     if (result.success) {
-                      showToast(`Weekly Digest sent for ${activeProf.name || childName}!`);
+                      showToast(`${isClub ? '👑 Kibo Club' : '✉️ Free'} Digest sent for ${activeProf.name || childName}!`);
                     } else {
                       alert('Failed to send notification: ' + result.error);
                     }
                   }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 px-3 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-1.5"
+                  className={`flex-1 disabled:opacity-50 disabled:cursor-not-allowed font-extrabold text-xs py-2.5 px-3 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-1.5 ${
+                    emailReportType === 'kibo_club'
+                      ? 'bg-amber-500 hover:bg-amber-400 text-slate-950'
+                      : 'bg-blue-600 hover:bg-blue-500 text-white'
+                  }`}
                 >
-                  {isSendingEmail ? 'Sending...' : `Send for ${childName}`}
+                  {isSendingEmail ? 'Sending...' : `Send for ${childName} (${emailReportType === 'kibo_club' ? 'Club' : 'Free'})`}
                 </button>
 
                 <button
@@ -424,21 +464,23 @@ export default function DevControlPanel({
                   onClick={async () => {
                     setIsSendingEmail(true);
                     const allProfs = storageService.getAllProfiles();
+                    const isClub = emailReportType === 'kibo_club';
                     const result = await communicationsService.sendAllWeeklyDigests({
                       email: testEmail,
-                      profiles: allProfs
+                      profiles: allProfs,
+                      isKiboClub: isClub
                     });
                     setIsSendingEmail(false);
 
                     if (result.success) {
-                      showToast(`Dispatched ${result.totalSent} individual digests for all profiles!`);
+                      showToast(`Dispatched ${result.totalSent} ${isClub ? 'Kibo Club' : 'Free'} digests for all profiles!`);
                     } else {
                       alert('Failed to send notification: ' + result.error);
                     }
                   }}
                   className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 px-3 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-1.5"
                 >
-                  {isSendingEmail ? 'Sending...' : 'Send All Profiles'}
+                  {isSendingEmail ? 'Sending...' : `Send All (${emailReportType === 'kibo_club' ? 'Club' : 'Free'})`}
                 </button>
               </div>
             </div>

@@ -120,7 +120,11 @@ class CommunicationsService {
     } catch (error) {
       console.error('❌ [CommunicationsService] Failed to send email via Cloud Function:', error);
       
-      const errorMessage = error?.message || error?.details || 'Failed to dispatch email.';
+      const errorMessage =
+        (typeof error?.details === 'string' ? error.details : error?.details?.message) ||
+        error?.message ||
+        (error?.code ? `Firebase Functions error: ${error.code}` : 'Failed to dispatch email.');
+
       return {
         success: false,
         error: errorMessage,
@@ -139,16 +143,22 @@ class CommunicationsService {
    * @param {string} [params.baseUrl] - Web app base URL
    * @returns {Promise<Object>}
    */
-  async sendWeeklyDigest({ email, profile, subjectsConfig = SUBJECTS_CONFIG, baseUrl }) {
+  async sendWeeklyDigest({ email, profile, subjectsConfig = SUBJECTS_CONFIG, baseUrl, isKiboClub, options = {} }) {
     if (!profile) {
       return { success: false, error: 'Child profile is required to generate weekly digest.' };
     }
 
+    const mergedOptions = {
+      ...options,
+      ...(typeof isKiboClub === 'boolean' ? { isKiboClub } : {})
+    };
+
     const childName = profile.username || profile.name || 'Kibo Climber';
-    const digestData = generateWeeklyDigestData(profile, subjectsConfig, baseUrl);
+    const digestData = generateWeeklyDigestData(profile, subjectsConfig, baseUrl, mergedOptions);
     
-    // Subject line includes the Kibo Red Panda mascot icon 🐾 🏔️
-    const subjectLine = `🐾 🏔️ Kibo Weekly Progress for ${childName} | Topics & Mastery Summary`;
+    // Subject line includes the Kibo Red Panda mascot icon 🐾 🏔️ and VIP tag if Kibo Club
+    const clubBadge = digestData.isKiboClub ? ' 👑 [Kibo Club VIP]' : '';
+    const subjectLine = `🐾 🏔️ Kibo Weekly Progress for ${childName}${clubBadge} | Topics & Mastery Summary`;
     const textMessage = formatWeeklyDigestText({ childName, digestData });
     const htmlMessage = formatWeeklyDigestHtml({ childName, digestData });
 
@@ -169,9 +179,11 @@ class CommunicationsService {
    * @param {Array<Object>} params.profiles - Array of child profile objects
    * @param {Object} [params.subjectsConfig=SUBJECTS_CONFIG] - Active subjects configuration
    * @param {string} [params.baseUrl] - Web app base URL
+   * @param {boolean} [params.isKiboClub] - Optional override for Kibo Club membership status
+   * @param {Object} [params.options] - Optional custom options passed to generator
    * @returns {Promise<{ success: boolean, totalSent: number, results: Array<Object> }>}
    */
-  async sendAllWeeklyDigests({ email, profiles = [], subjectsConfig = SUBJECTS_CONFIG, baseUrl }) {
+  async sendAllWeeklyDigests({ email, profiles = [], subjectsConfig = SUBJECTS_CONFIG, baseUrl, isKiboClub, options = {} }) {
     if (!email) {
       return { success: false, totalSent: 0, error: 'Parent email address is required.' };
     }
@@ -181,7 +193,7 @@ class CommunicationsService {
     }
 
     const digestPromises = profiles.map(async (profile) => {
-      const res = await this.sendWeeklyDigest({ email, profile, subjectsConfig, baseUrl });
+      const res = await this.sendWeeklyDigest({ email, profile, subjectsConfig, baseUrl, isKiboClub, options });
       return {
         profileId: profile.id,
         profileName: profile.name || profile.username || 'Child',

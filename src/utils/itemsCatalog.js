@@ -97,7 +97,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'common',
     isConsumable: true,
     icon: '🧪',
-    supportedSubjects: ['math', 'words', 'world'],
+    supportedSubjects: ['math', 'words', 'world', 'coding'],
     subjectLabel: 'All Subjects',
     badgeTag: 'All Subjects',
     description: 'Costs 12 Sparks. Doubles all Sparks earned in your next climb session! (Works in all subjects)'
@@ -110,7 +110,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'common',
     isConsumable: true,
     icon: '📜',
-    supportedSubjects: ['math', 'words', 'world'],
+    supportedSubjects: ['math', 'words', 'world', 'coding'],
     subjectLabel: 'All Subjects',
     badgeTag: 'All Subjects',
     description: 'Costs 8 Sparks. Instantly reveals a helpful conceptual clue, phonics clue, or geography hint from Kibo! (Works in all subjects)'
@@ -149,10 +149,10 @@ export const WORKSHOP_ITEMS = [
     rarity: 'rare',
     isConsumable: true,
     icon: '✂️',
-    supportedSubjects: ['math', 'words', 'world'],
+    supportedSubjects: ['math', 'words', 'world', 'coding'],
     subjectLabel: 'All Subjects',
     badgeTag: 'All Subjects',
-    description: 'Costs 15 Sparks. Eliminates 2 distractor choices (50:50 in World) or non-solution keys (in Math & Words)! (Works in all subjects)'
+    description: 'Costs 15 Sparks. Eliminates 2 distractor choices (50:50 in World & Coding) or non-solution keys (in Math & Words)! (Works in all subjects)'
   },
   {
     id: 'kibo_shield',
@@ -162,7 +162,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'epic',
     isConsumable: true,
     icon: '🛡️',
-    supportedSubjects: ['math', 'words', 'world'],
+    supportedSubjects: ['math', 'words', 'world', 'coding'],
     subjectLabel: 'All Subjects',
     badgeTag: 'All Subjects',
     description: 'Costs 50 Sparks. Absorbs 1 incorrect answer to protect your in-session answer streak and multipliers (does not alter accuracy %). (Works in all subjects)'
@@ -175,7 +175,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'legendary',
     isConsumable: true,
     icon: '🔥',
-    supportedSubjects: ['math', 'words', 'world'],
+    supportedSubjects: ['math', 'words', 'world', 'coding'],
     subjectLabel: 'All Subjects',
     badgeTag: 'All Subjects',
     description: 'Costs 100 Sparks. Protects 1 missed calendar day of climbing from resetting your daily streak. (Works in all subjects)'

@@ -31,7 +31,7 @@ export function getAppBaseUrl() {
  * @param {string} [baseUrl] - Base URL for game deep links
  * @returns {Object} Compiled digest data with overall, per-subject breakdown, played topics, and unstarted subjects
  */
-export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONFIG, baseUrl = getAppBaseUrl()) {
+export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONFIG, baseUrl = getAppBaseUrl(), options = {}) {
   const userData = profile?.userData || {};
   const profileId = profile?.id || 'default';
   const childName = profile?.username || profile?.name || 'Kibo Climber';
@@ -39,6 +39,16 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
   const streak = userData.streak ?? 0;
   const sparks = userData.sparks ?? 0;
   const unlockedBadges = userData.unlockedBadges || [];
+
+  // Allow explicit override via options or fallback to profile data / unlockedItems
+  const isKiboClub = typeof options.isKiboClub === 'boolean'
+    ? options.isKiboClub
+    : Boolean(
+        userData.isKiboClub ||
+        profile?.isKiboClub ||
+        profile?.shopState?.unlockedItems?.includes('kibo_club_sub') ||
+        profile?.shopState?.unlockedItems?.includes('kibo_club_sub_annual')
+      );
 
   const questState = questService.getQuests(profileId);
   const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️', ascentTier: 1, ascentMode: { name: 'Sunny Trailhead' } };
@@ -251,6 +261,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
     totalProblemsThisWeek,
     totalProblemsAllTime,
     totalTimeSecThisWeek,
+    isKiboClub,
     subjects: playedSubjects,
     unstartedSubjects,
     links: {
@@ -269,9 +280,13 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
 export function formatWeeklyDigestText({ childName, digestData }) {
   const data = digestData;
   const name = childName || data.childName || 'Kibo Climber';
+  const clubTag = data.isKiboClub ? ' 👑 [KIBO CLUB VIP]' : '';
 
-  let text = `🐾 Kibo Climb Weekly Progress for ${name} 🏔️\n\n`;
+  let text = `🐾 Kibo Climb Weekly Progress for ${name}${clubTag} 🏔️\n\n`;
   text += `Hi there!\n\nHere is ${name}'s personalized learning progress summary for the week:\n\n`;
+  if (data.isKiboClub) {
+    text += `👑 KIBO CLUB VIP STATUS: Active (1.25x Spark Multiplier & VIP Access)\n`;
+  }
   text += `🔥 DAILY STREAK: ${data.streak} ${data.streak === 1 ? 'Day' : 'Days'}\n`;
   text += `⚡ Sparks Balance: ${data.sparks} ⚡\n`;
   text += `🧭 Quest Expedition: Ascent ${data.questAscentTier || 1} (${data.questAscentName || 'Sunny Trailhead'}) · Level ${data.questLevel} (${data.questTitle}) · ${data.questTotalXp} XP\n`;
@@ -489,9 +504,18 @@ export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digest
                     </table>
                   </td>
                   <td align="right" style="vertical-align: middle;">
-                    <span style="background-color: rgba(255,255,255,0.12); color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">
-                      ${data.childGrade}
-                    </span>
+                    <div style="text-align: right;">
+                      <span style="background-color: rgba(255,255,255,0.12); color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); display: inline-block; margin-bottom: ${data.isKiboClub ? '4px' : '0'};">
+                        ${data.childGrade}
+                      </span>
+                      ${data.isKiboClub ? `
+                        <div>
+                          <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #78350f; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 12px; border: 1px solid #fde68a; display: inline-block; box-shadow: 0 2px 6px rgba(217,119,6,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
+                            👑 Kibo Club VIP
+                          </span>
+                        </div>
+                      ` : ''}
+                    </div>
                   </td>
                 </tr>
               </table>
