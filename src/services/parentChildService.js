@@ -280,9 +280,13 @@ export const parentChildService = {
   },
 
   /**
-   * Revokes parental consent, terminating child cloud sync and data processing.
+   * Revokes parental consent under COPPA:
+   * - Sets local consent flags to revoked
+   * - Purges remote cloud sync documents (Firestore user document)
+   * - Stops active real-time sync listeners
+   * - Disconnects / signs out linked Firebase account while keeping local device progress intact
    */
-  revokeParentalConsent() {
+  async revokeParentalConsent() {
     const { parentAccount } = initParentChildSchema();
     parentAccount.is_coppa_verified = false;
     parentAccount.coppa_consent = {
@@ -294,6 +298,41 @@ export const parentChildService = {
     };
     saveParentAccount(parentAccount);
     sessionStorage.removeItem('kibo_parent_gate_session');
+
+    // Purge remote records and disconnect cloud sync
+    try {
+      const { auth, db } = await import('../config/firebase');
+      const { userSyncService } = await import('./userSyncService');
+      const { doc, deleteDoc } = await import('firebase/firestore');
+      const { signOut, signInAnonymously } = await import('firebase/auth');
+
+      // Stop real-time listener
+      userSyncService.stopSync();
+
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        // Delete user's Firestore cloud sync document under COPPA
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          await deleteDoc(userDocRef);
+        } catch (delErr) {
+          console.warn('parentChildService: Failed to delete remote user doc during COPPA revocation:', delErr);
+        }
+
+        // If authenticated non-anonymously, sign out and switch to anonymous guest
+        if (!currentUser.isAnonymous) {
+          await signOut(auth);
+          try {
+            await signInAnonymously(auth);
+          } catch (anonErr) {
+            console.warn('parentChildService: Anonymous sign-in fallback during revocation:', anonErr);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('parentChildService: Error during COPPA remote purge:', e);
+    }
+
     return parentAccount.coppa_consent;
   }
 };

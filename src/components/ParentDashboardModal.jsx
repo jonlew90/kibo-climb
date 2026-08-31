@@ -1786,7 +1786,7 @@ export default function ParentDashboardModal({
                 </div>
                 <p className="text-[11px] leading-relaxed">
                   {coppaStatus?.consented
-                    ? `Consent granted on ${coppaStatus.consentedAt ? new Date(coppaStatus.consentedAt).toLocaleDateString() : 'initial setup'} via adult verification (${coppaStatus.method || 'knowledge_challenge'}).`
+                    ? `Consent granted on ${coppaStatus.consentedAt ? new Date(coppaStatus.consentedAt).toLocaleDateString() : 'initial setup'} via adult verification.`
                     : 'Personal data synchronization is restricted. Practice operates in local offline mode only.'}
                 </p>
               </div>
@@ -1868,10 +1868,7 @@ export default function ParentDashboardModal({
                               type="button"
                               onClick={async () => {
                                 soundFx.playKeyTap();
-                                parentChildService.revokeParentalConsent();
-                                if (!authService.getAuthState().isAnonymous) {
-                                  await authService.unlinkAccount();
-                                }
+                                await parentChildService.revokeParentalConsent();
                                 setCoppaStatus(parentChildService.getCOPPAConsentStatus());
                                 setShowRevokeConsentConfirm(false);
                               }}

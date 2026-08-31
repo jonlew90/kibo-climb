@@ -121,6 +121,14 @@ class UserSyncService {
   syncProfileToCloud(profileId) {
     if (this.isSyncingFromCloud) return;
 
+    // Check COPPA consent before pushing child profile data to cloud
+    try {
+      const coppaConsent = JSON.parse(localStorage.getItem('kibo_parent_account_schema') || '{}')?.coppa_consent;
+      if (coppaConsent && coppaConsent.consented === false) {
+        return;
+      }
+    } catch (e) {}
+
     const currentUser = auth.currentUser;
     const uid = currentUser ? currentUser.uid : storageService.getUserData('math')?.cloudUid;
     if (!uid) return;
