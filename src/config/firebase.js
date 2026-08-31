@@ -20,12 +20,20 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const functions = getFunctions(app);
 
-// Initialize Analytics conditionally (it may not be supported in some environments like Node.js)
+// Initialize Analytics conditionally (only in production on kiboclimb.com)
 let analytics = null;
-isSupported().then((supported) => {
-  if (supported) {
-    analytics = getAnalytics(app);
-  }
-}).catch(console.error);
+const isProductionHost = typeof window !== 'undefined' && (
+  window.location.hostname === 'kiboclimb.com' ||
+  window.location.hostname === 'www.kiboclimb.com'
+);
+
+if (isProductionHost) {
+  isSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  }).catch(console.error);
+}
 
 export { analytics };
+

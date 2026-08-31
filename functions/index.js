@@ -32,7 +32,8 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
  */
 exports.sendParentEmail = onCall(
   {
-    cors: true
+    cors: true,
+    secrets: ["RESEND_API_KEY"]
   },
   async (request) => {
     if (!request.auth || !request.auth.uid) {
@@ -113,7 +114,7 @@ exports.sendParentEmail = onCall(
     const cleanHtml = htmlBody ? sanitizeEmailHtml(String(htmlBody)).slice(0, 150000) : undefined;
     const cleanText = textBody ? String(textBody).slice(0, 50000) : undefined;
 
-    const senderEmail = process.env.SENDER_EMAIL || "Kibo Climb <onboarding@resend.dev>";
+    const senderEmail = process.env.SENDER_EMAIL || "Kibo Climb <hello@kiboclimb.com>";
 
     try {
       const response = await resend.emails.send({

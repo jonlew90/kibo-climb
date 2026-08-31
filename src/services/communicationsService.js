@@ -118,7 +118,13 @@ class CommunicationsService {
         timestamp: data.timestamp || new Date().toISOString(),
       };
     } catch (error) {
-      console.error('❌ [CommunicationsService] Failed to send email via Cloud Function:', error);
+      console.error('❌ [CommunicationsService] Failed to send email via Cloud Function:', {
+        error,
+        code: error?.code,
+        message: error?.message,
+        details: error?.details,
+        customData: error?.customData,
+      });
       
       const errorMessage =
         (typeof error?.details === 'string' ? error.details : error?.details?.message) ||
