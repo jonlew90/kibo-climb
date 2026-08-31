@@ -1134,7 +1134,7 @@ export default function WordsSessionView({
       const isBlockComplete = (questionsAnswered + 1) % 12 === 0;
 
       if (isBlockComplete) {
-        analyticsService.logLevelUp('block_completed', blockCorrectCount + 1);
+        analyticsService.logLevelUp('words', blockCorrectCount + 1);
       }
 
       // Allow the user to see and review the correct spelling before moving on

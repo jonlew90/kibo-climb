@@ -1210,7 +1210,6 @@ export default function App() {
       storageService.saveUserData({ consumables: nextConsumables });
       setDoubleSparksActiveBySubject(prev => ({ ...prev, [activeSubject]: true }));
       analyticsService.logSpendVirtualCurrency('double_sparks_potion', 0);
-      analyticsService.logSpendVirtualCurrency('double_sparks_potion', 0);
     }
   };
 
@@ -1401,6 +1400,8 @@ export default function App() {
       console.warn('Purchase rejected by authoritative ledger:', res.reason);
       return;
     }
+
+    analyticsService.logSpendVirtualCurrency(item.id, item.cost || 0);
 
     setSparks(res.newSparks);
     setUnlockedItems(res.unlockedItems);

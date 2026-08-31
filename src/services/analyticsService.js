@@ -53,14 +53,18 @@ export const analyticsService = {
   /**
    * Log when a user begins the checkout process.
    * @param {string} planId - The subscription plan ID (e.g., 'kibo_club_sub', 'kibo_club_family').
+   * @param {number} [value] - Optional monetary price.
    */
-  logBeginCheckout: (planId) => {
+  logBeginCheckout: (planId, value) => {
     safeLogEvent('begin_checkout', {
+      currency: 'USD',
+      value: typeof value === 'number' ? value : undefined,
       items: [
         {
           item_id: planId,
           item_name: planId === 'kibo_club_family' ? 'Family Plan' : 'Single Plan',
-          item_category: 'Subscription'
+          item_category: 'Subscription',
+          price: typeof value === 'number' ? value : undefined
         }
       ]
     });
@@ -69,15 +73,20 @@ export const analyticsService = {
   /**
    * Log when a user successfully completes a purchase or subscription checkout.
    * @param {string} planId - The subscription plan ID.
+   * @param {number} [value] - Total transaction value.
+   * @param {string} [transactionId] - Unique transaction identifier.
    */
-  logPurchase: (planId) => {
+  logPurchase: (planId, value, transactionId) => {
     safeLogEvent('purchase', {
+      transaction_id: transactionId || `txn_${Date.now()}`,
+      value: typeof value === 'number' ? value : undefined,
       currency: 'USD',
       items: [
         {
           item_id: planId,
           item_name: planId === 'kibo_club_family' ? 'Family Plan' : 'Single Plan',
-          item_category: 'Subscription'
+          item_category: 'Subscription',
+          price: typeof value === 'number' ? value : undefined
         }
       ]
     });

@@ -487,6 +487,7 @@ export default function CodingSessionView({
     if (nextSessionQNum > 12 || nextIndex >= problemQueue.length) {
       storageService.clearActiveClimbState(profileId, 'coding');
       setSavedClimbState(null);
+      analyticsService.logLevelUp('coding', blockCorrectCount + (isCorrect ? 1 : 0));
       // Trigger Break Overlay
       setCompletedBlockStats({
         correctCount: blockCorrectCount + (isCorrect ? 1 : 0),

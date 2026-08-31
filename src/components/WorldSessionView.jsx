@@ -1202,7 +1202,7 @@ export default function WorldSessionView({
       const isBlockComplete = (questionsAnswered + 1) % 12 === 0;
 
       if (isBlockComplete) {
-        analyticsService.logLevelUp('block_completed', blockCorrectCount + 1);
+        analyticsService.logLevelUp('world', blockCorrectCount + 1);
       }
 
       // Allow the user to see and review the correct answer before moving on
