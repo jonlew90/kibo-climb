@@ -412,8 +412,8 @@ export const authService = {
         };
         storageService.setGlobalAccountLinkedState(mergedUserData);
         const earnedSparks = storageService.grantAccountLinkSparksReward();
-        if (linkedUser && linkedUser.uid) loginToOneSignal(linkedUser.uid);
-              return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
+        if (targetUser && targetUser.uid) loginToOneSignal(targetUser.uid);
+        return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
       }
       return { success: false, reason: 'No redirect result found' };
     } catch (e) {
@@ -440,7 +440,7 @@ export const authService = {
               };
               storageService.setGlobalAccountLinkedState(mergedUserData);
               const earnedSparks = storageService.grantAccountLinkSparksReward();
-              if (linkedUser && linkedUser.uid) loginToOneSignal(linkedUser.uid);
+              if (userCred.user && userCred.user.uid) loginToOneSignal(userCred.user.uid);
               return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
             }
           }

@@ -10,6 +10,9 @@ export function setHapticsEnabled(enabled) {
 export function triggerHaptic(pattern = 15) {
   if (!_hapticsEnabled) return;
   if (typeof window !== 'undefined' && 'navigator' in window && 'vibrate' in navigator) {
+    if (navigator.userActivation && navigator.userActivation.hasBeenActive === false) {
+      return;
+    }
     try {
       navigator.vibrate(pattern);
     } catch (e) {
@@ -29,14 +32,26 @@ class SoundSystem {
   }
 
   init() {
+    if (typeof navigator !== 'undefined' && navigator.userActivation && navigator.userActivation.hasBeenActive === false) {
+      return;
+    }
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
-        this.ctx = new AudioCtx();
+        try {
+          this.ctx = new AudioCtx();
+        } catch (e) {
+          return;
+        }
       }
     }
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      try {
+        const p = this.ctx.resume();
+        if (p && typeof p.catch === 'function') {
+          p.catch(() => {});
+        }
+      } catch (e) {}
     }
   }
 

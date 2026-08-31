@@ -164,23 +164,6 @@ export default function App() {
     };
   }, []);
 
-  // Handle Stripe checkout return
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('session_id')) {
-        // The webhook handles granting the items/subscription securely in the background.
-        // We just clean up the URL to prevent re-triggering on reload.
-        urlParams.delete('session_id');
-        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
-        window.history.replaceState({}, document.title, newUrl);
-
-        // Play a nice sound to welcome them back from a successful purchase
-        soundFx.playSparkCollect();
-      }
-    }
-  }, []);
-
   const [pendingSparksPurchase, setPendingSparksPurchase] = useState(null);
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStripeCheckoutModal, setShowStripeCheckoutModal] = useState(false);
@@ -446,15 +429,28 @@ export default function App() {
   };
 
   const processDeepLink = (search = typeof window !== 'undefined' ? window.location.search : '') => {
-    if (!search) return;
+    let savedContext = null;
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      try {
+        const savedStr = window.sessionStorage.getItem('kibo_stripe_return_context');
+        if (savedStr) {
+          savedContext = JSON.parse(savedStr);
+          window.sessionStorage.removeItem('kibo_stripe_return_context');
+        }
+      } catch (e) {}
+    }
+
+    if (!search && !savedContext) return;
     try {
-      const params = new URLSearchParams(search);
-      const action = params.get('action');
+      const params = new URLSearchParams(search || '');
+      const action = params.get('action') || savedContext?.action;
       const profile = params.get('profile');
       const subject = params.get('subject');
-      const tab = params.get('tab');
+      const tab = params.get('tab') || savedContext?.tab;
       const hub = params.get('hub');
       const mode = params.get('mode');
+      const highlight = params.get('highlight') || savedContext?.highlight;
+      const sessionId = params.get('session_id');
 
       if (profile) {
         const allProfiles = storageService.getAllProfiles();
@@ -474,7 +470,18 @@ export default function App() {
         const targetHub = hub || tab || 'wearables';
         handleOpenWorkshop(null, targetHub, targetMode);
       } else if (action === 'parent-settings' || action === 'parent-dashboard') {
-        handleOpenPinGate('deep_link', tab || 'overview', null);
+        if (sessionId) {
+          setParentDashboardTab(tab || 'verification');
+          setParentDashboardHighlight(highlight || 'family_plan');
+          const entry = navigationHistory.push({
+            type: VIEW_TYPES.MODAL,
+            id: VIEWS.PARENT_DASHBOARD,
+            params: { tab: tab || 'verification', highlight: highlight || 'family_plan' }
+          });
+          applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+        } else {
+          handleOpenPinGate('deep_link', tab || 'overview', highlight || null);
+        }
       } else if (action === 'settings') {
         handleNavigateTo('/settings', 'settings');
       } else if (action === 'leaderboard') {
@@ -492,12 +499,11 @@ export default function App() {
       }
 
       // Handle Stripe return redirect (session_id in URL)
-      const sessionId = params.get('session_id');
       if (sessionId) {
         soundFx.playSparkCollect();
         setShowStripeCheckoutModal(false);
         setPendingSparksPurchase(null);
-        // Clean URL to remove session_id
+        // Clean URL to remove query parameters without full page reload
         if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
           const cleanUrl = window.location.pathname;
           window.history.replaceState({}, document.title, cleanUrl);
@@ -3038,7 +3044,10 @@ export default function App() {
           if (item) {
             handleBuySparksPackage({
               ...item,
-              price: item.realMoneyPrice || item.price
+              price: item.realMoneyPrice || item.price,
+              source: 'parent_dashboard',
+              tab: parentDashboardTab || 'verification',
+              highlight: parentDashboardHighlight || 'family_plan'
             }, true);
           } else if (planId?.includes('family')) {
             handleBuySparksPackage({
@@ -3048,6 +3057,9 @@ export default function App() {
               price: planId.includes('annual') ? '$59.99/yr' : '$7.99/mo',
               isSubscription: true,
               isFamilyPlan: true,
+              source: 'parent_dashboard',
+              tab: parentDashboardTab || 'verification',
+              highlight: parentDashboardHighlight || 'family_plan',
               description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
             }, true);
           } else {
@@ -3058,6 +3070,9 @@ export default function App() {
               price: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
               isSubscription: true,
               isFamilyPlan: false,
+              source: 'parent_dashboard',
+              tab: parentDashboardTab || 'verification',
+              highlight: parentDashboardHighlight || 'family_plan',
               description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!'
             }, true);
           }
@@ -3070,6 +3085,9 @@ export default function App() {
             price: '$59.99/yr',
             isSubscription: true,
             isFamilyPlan: true,
+            source: 'parent_dashboard',
+            tab: 'verification',
+            highlight: 'family_plan',
             description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
           }, true);
         }}

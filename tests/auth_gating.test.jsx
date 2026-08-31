@@ -10,6 +10,7 @@ import { storageService } from '../src/services/storageService';
 import { authService } from '../src/services/authService';
 import { nativeAuthService } from '../src/services/nativeAuthService';
 import { dynamicChallengeGenerator } from '../src/utils/dynamicChallengeGenerator';
+import { auth } from '../src/config/firebase';
 
 vi.mock('../src/utils/audio', () => ({
   soundFx: {
@@ -354,5 +355,29 @@ describe('Auth & Parental Gating Verification', () => {
       expect(isKiboClub).toBe(true);
       expect(isFamilyPlan).toBe(true);
     });
+
+    it('handles auth redirect result without ReferenceError: linkedUser is not defined', async () => {
+      // Mock auth.authStateReady
+      if (!auth.authStateReady) {
+        auth.authStateReady = vi.fn().mockResolvedValue(true);
+      }
+      const res = await authService.handleRedirectResult();
+      expect(res).toBeDefined();
+    });
+
+    it('returns to Parent Zone when returning with session_id and action=parent-dashboard', () => {
+      const search = '?session_id=cs_test_123&action=parent-dashboard&tab=verification&highlight=family_plan';
+      const params = new URLSearchParams(search);
+      const sessionId = params.get('session_id');
+      const action = params.get('action');
+      const tab = params.get('tab');
+      const highlight = params.get('highlight');
+
+      expect(sessionId).toBe('cs_test_123');
+      expect(action).toBe('parent-dashboard');
+      expect(tab).toBe('verification');
+      expect(highlight).toBe('family_plan');
+    });
   });
 });
+

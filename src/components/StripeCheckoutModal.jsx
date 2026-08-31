@@ -55,14 +55,38 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
         await signInAnonymously(auth);
       }
 
+      const isParentOrigin = packageInfo.source === 'parent_dashboard' || packageInfo.isSubscription || packageInfo.isFamilyPlan || packageInfo.returnAction === 'parent-dashboard';
+      const returnAction = packageInfo.returnAction || (isParentOrigin ? 'parent-dashboard' : packageInfo.source === 'shop' ? 'shop' : '');
+      const returnTab = packageInfo.tab || (isParentOrigin ? 'verification' : '');
+      const returnHighlight = packageInfo.highlight || (isParentOrigin ? 'family_plan' : '');
+
+      const returnParams = new URLSearchParams();
+      if (returnAction) returnParams.set('action', returnAction);
+      if (returnTab) returnParams.set('tab', returnTab);
+      if (returnHighlight) returnParams.set('highlight', returnHighlight);
+
+      const queryStr = returnParams.toString();
+      const successUrl = `${window.location.origin}?session_id={CHECKOUT_SESSION_ID}${queryStr ? `&${queryStr}` : ''}`;
+      const cancelUrl = `${window.location.origin}${queryStr ? `?${queryStr}` : ''}`;
+
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        try {
+          window.sessionStorage.setItem('kibo_stripe_return_context', JSON.stringify({
+            action: returnAction,
+            tab: returnTab,
+            highlight: returnHighlight
+          }));
+        } catch (e) {}
+      }
+
       const response = await createCheckoutSession({
         itemId: packageInfo.id,
         itemName: packageInfo.name,
         priceAmount: priceAmount,
         isSubscription: !!packageInfo.isSubscription || priceString.includes('/'),
         profileId: activeProfile?.id,
-        successUrl: window.location.origin + '?session_id={CHECKOUT_SESSION_ID}',
-        cancelUrl: window.location.origin
+        successUrl,
+        cancelUrl
       });
 
       const { sessionId, url } = response.data || {};
