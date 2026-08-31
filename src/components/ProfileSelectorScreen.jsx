@@ -159,9 +159,6 @@ function ProfileCard({ profile, onSelect, isSelected, isLocked }) {
           <h3 className="text-sm sm:text-base font-black text-slate-800 tracking-tight leading-tight truncate">
             {displayName}
           </h3>
-          {storageService.hasClubMembership(profile.id) && (
-            <span className="text-xs shrink-0" title="Kibo Club Member">👑</span>
-          )}
         </div>
         {profile.gradeLevel && (
           <span

@@ -1664,9 +1664,28 @@ export default function App() {
     }
   }, [appState, activeProfileId, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher, showNewsModal]);
 
-  const handleBuySparksPackage = (pack) => {
+  const handleBuySparksPackage = (pack, skipPinGate = false) => {
     setPendingSparksPurchase(pack);
-    handleOpenPinGate('buy_sparks');
+    if (skipPinGate) {
+      if (authService.getAuthState().isAnonymous) {
+        setLinkModalMilestone('Real-Money Purchase Backup');
+        const entry = navigationHistory.push({
+          type: VIEW_TYPES.MODAL,
+          id: VIEWS.ACCOUNT_LINK,
+          params: { milestone: 'Real-Money Purchase Backup' }
+        });
+        applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+      } else {
+        const checkoutId = pack.realMoneyPrice ? VIEWS.STRIPE_CHECKOUT : VIEWS.MOCK_CHECKOUT;
+        const entry = navigationHistory.push({
+          type: VIEW_TYPES.MODAL,
+          id: checkoutId
+        });
+        applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+      }
+    } else {
+      handleOpenPinGate('buy_sparks');
+    }
   };
 
   const closeAllNavModals = (except = null) => {
@@ -1814,17 +1833,19 @@ export default function App() {
                 soundFx.playKeyTap();
                 setShowProfileDropdown(!showProfileDropdown);
               }}
-              className={`flex items-center gap-1 sm:gap-1.5 text-white border-2 p-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer group shrink-0 ${
+              className={`flex items-center gap-1 sm:gap-1.5 text-white border-2 p-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer group shrink-0 ${
                 isKiboClub
-                  ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 border-amber-300 ring-2 ring-amber-400/40'
-                  : 'bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 border-sky-300'
+                  ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 border-amber-200 ring-2 ring-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.45)] hover:shadow-[0_0_20px_rgba(245,158,11,0.65)] hover:scale-105 active:scale-95'
+                  : 'bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 border-sky-300 shadow-2xs hover:scale-105 active:scale-95'
               }`}
-              title={`Climber Profile: ${activeProfile?.username || activeProfile?.name || 'Climber'}${isKiboClub ? ' (Kibo Club Member 👑)' : ''}`}
+              title={`Climber Profile: ${activeProfile?.username || activeProfile?.name || 'Climber'}${isKiboClub ? ' (Kibo Club Member)' : ''}`}
               aria-expanded={showProfileDropdown}
             >
               <div className="relative">
                 <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-black shrink-0 text-white uppercase shadow-2xs ${
-                  isKiboClub ? 'bg-amber-400/40 border-amber-200' : 'bg-white/25 border-white/40'
+                  isKiboClub
+                    ? 'bg-gradient-to-tr from-amber-600 to-yellow-400 border-2 border-amber-100 ring-2 ring-amber-300/80 shadow-[0_0_8px_rgba(251,191,36,0.7)]'
+                    : 'bg-white/25 border-white/40'
                 }`}>
                   {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
                 </div>
@@ -1835,12 +1856,11 @@ export default function App() {
                   />
                 )}
               </div>
-              <span className="hidden md:inline truncate tracking-tight font-black max-w-[140px] lg:max-w-[180px]">
+              <span className={`hidden md:inline truncate tracking-tight font-black max-w-[140px] lg:max-w-[180px] ${
+                isKiboClub ? 'text-amber-50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]' : ''
+              }`}>
                 {activeProfile?.username || activeProfile?.name || 'Climber'}
               </span>
-              {isKiboClub && (
-                <span className="text-xs" title="Kibo Club Member">👑</span>
-              )}
               <ChevronDown className={`w-3 h-3 text-white/80 group-hover:text-white transition-transform duration-200 shrink-0 ${showProfileDropdown ? 'rotate-180' : ''}`} />
             </button>
 
@@ -1863,7 +1883,7 @@ export default function App() {
                         </span>
                         {isKiboClub && (
                           <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300">
-                            👑 CLUB
+                            CLUB
                           </span>
                         )}
                       </div>
@@ -2973,7 +2993,7 @@ export default function App() {
             handleBuySparksPackage({
               ...item,
               price: item.realMoneyPrice || item.price
-            });
+            }, true);
           } else if (planId?.includes('family')) {
             handleBuySparksPackage({
               id: planId,
@@ -2983,7 +3003,7 @@ export default function App() {
               isSubscription: true,
               isFamilyPlan: true,
               description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
-            });
+            }, true);
           } else {
             handleBuySparksPackage({
               id: planId || 'kibo_club_sub',
@@ -2993,7 +3013,7 @@ export default function App() {
               isSubscription: true,
               isFamilyPlan: false,
               description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!'
-            });
+            }, true);
           }
         }}
         onOpenFamilyUpgrade={() => {
@@ -3005,7 +3025,7 @@ export default function App() {
             isSubscription: true,
             isFamilyPlan: true,
             description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
-          });
+          }, true);
         }}
       />
 

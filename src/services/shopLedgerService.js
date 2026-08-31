@@ -183,5 +183,18 @@ export const shopLedgerService = {
     } catch (e) {
       console.error('shopLedgerService: error recording transaction ledger', e);
     }
+  },
+
+  /**
+   * Retrieves transaction ledger history.
+   */
+  getTransactionLedger() {
+    try {
+      const KEY = 'kibo_transaction_ledger_history';
+      const raw = localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
   }
 };

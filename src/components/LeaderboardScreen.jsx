@@ -1037,9 +1037,6 @@ export default function LeaderboardScreen({
                   <span className="font-bold text-xs text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[1].name}
                   </span>
-                  {((top3[1].isCurrentUser && storageService.hasClubMembership(activeProfile?.id)) || (top3[1].profileId && storageService.hasClubMembership(top3[1].profileId)) || top3[1].isClubMember) && (
-                    <span className="text-xs" title="Kibo Club VIP">👑</span>
-                  )}
                   {top3[1].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[1].isFriend ? (
@@ -1071,9 +1068,6 @@ export default function LeaderboardScreen({
                 }}
                 className="flex flex-col items-center flex-1 min-w-0 max-w-[145px] sm:max-w-[175px] relative z-20 animate-fade-in-up text-left group cursor-pointer"
               >
-                <div className="absolute -top-6 text-amber-500 z-30 animate-bounce">
-                  <Crown className="w-6 h-6 fill-amber-400" />
-                </div>
                 <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 transition-transform group-hover:scale-105 ${
                   top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
                 }`}>
@@ -1085,9 +1079,6 @@ export default function LeaderboardScreen({
                   <span className="font-black text-sm text-amber-900 text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[0].name}
                   </span>
-                  {((top3[0].isCurrentUser && storageService.hasClubMembership(activeProfile?.id)) || (top3[0].profileId && storageService.hasClubMembership(top3[0].profileId)) || top3[0].isClubMember) && (
-                    <span className="text-xs" title="Kibo Club VIP">👑</span>
-                  )}
                   {top3[0].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[0].isFriend ? (
@@ -1132,9 +1123,6 @@ export default function LeaderboardScreen({
                   <span className="font-bold text-xs text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[2].name}
                   </span>
-                  {((top3[2].isCurrentUser && storageService.hasClubMembership(activeProfile?.id)) || (top3[2].profileId && storageService.hasClubMembership(top3[2].profileId)) || top3[2].isClubMember) && (
-                    <span className="text-xs" title="Kibo Club VIP">👑</span>
-                  )}
                   {top3[2].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[2].isFriend ? (
@@ -1202,7 +1190,7 @@ export default function LeaderboardScreen({
                     </span>
                     {isMember && (
                       <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300" title="Kibo Club VIP">
-                        👑 CLUB
+                        CLUB
                       </span>
                     )}
                     {player.isCurrentUser && (
@@ -1277,7 +1265,7 @@ export default function LeaderboardScreen({
                 <span className="font-black text-white text-sm truncate">You ({username})</span>
                 {storageService.hasClubMembership(activeProfile?.id) && (
                   <span className="bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 text-xs font-black px-2 py-0.5 rounded-md shadow-xs border border-amber-300 flex items-center gap-1">
-                    👑 KIBO CLUB
+                    KIBO CLUB
                   </span>
                 )}
                 {viewMode === 'quests' ? (

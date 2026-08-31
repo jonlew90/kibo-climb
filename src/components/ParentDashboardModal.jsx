@@ -80,6 +80,9 @@ export default function ParentDashboardModal({
   const [isSendingTestDigest, setIsSendingTestDigest] = useState(false);
   const [digestStatusMsg, setDigestStatusMsg] = useState('');
   const [billingCycle, setBillingCycle] = useState('annual'); // 'monthly' | 'annual'
+  const [showCancelSubConfirm, setShowCancelSubConfirm] = useState(false);
+  const [subActionMsg, setSubActionMsg] = useState('');
+  const [subRefreshKey, setSubRefreshKey] = useState(0);
 
   // Helper to extract a profile's subject specific data
   const getProfileSubjectData = (profileId, subId) => {
@@ -489,7 +492,6 @@ export default function ParentDashboardModal({
                 >
                   {isLocked && <Lock className="w-3 h-3 text-amber-600 shrink-0" />}
                   <span>{p.name || 'Child'}</span>
-                  {isMember && !isLocked && <span className="text-xs" title="Kibo Club Member">👑</span>}
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     isLocked 
                       ? 'bg-amber-100 text-amber-800' 
@@ -662,10 +664,10 @@ export default function ParentDashboardModal({
                       </h4>
                       <p className="text-xs text-slate-600 leading-snug">
                         {hasFamily
-                          ? 'All child profiles enjoy 1.25x Sparks, 15% VIP store discounts, 3.3x Daily Vault bonuses, golden tags 👑, and multi-child tracking.'
+                          ? 'All child profiles enjoy 1.25x Sparks, 15% VIP store discounts, 3.3x Daily Vault bonuses, golden tags, and multi-child tracking.'
                           : hasSingle
-                          ? 'This profile receives 1.25x Sparks, 15% VIP store discounts, 3.3x Daily Vault bonuses, and golden tags 👑. Upgrade to Family for up to 6 siblings!'
-                          : 'Unlock 1.25x Sparks on all climbs, 15% VIP store discounts, 3.3x Daily Vault bonuses, up to 6 sibling profiles, and golden tags 👑.'}
+                          ? 'This profile receives 1.25x Sparks, 15% VIP store discounts, 3.3x Daily Vault bonuses, and golden tags. Upgrade to Family for up to 6 siblings!'
+                          : 'Unlock 1.25x Sparks on all climbs, 15% VIP store discounts, 3.3x Daily Vault bonuses, up to 6 sibling profiles, and golden tags.'}
                       </p>
                     </div>
 
@@ -1567,9 +1569,16 @@ export default function ParentDashboardModal({
 
             {/* Family Plan & Subscriptions Card */}
             {(() => {
-              const hasFam = storageService.hasFamilyPlan();
-              const hasSingle = storageService.hasSinglePlan();
+              const currentPlan = storageService.getSubscriptionPlan();
+              const hasFam = currentPlan?.tier === 'family';
+              const hasSingle = currentPlan?.tier === 'single';
+              const activeCycle = currentPlan?.cycle;
               const isHighlight = activeHighlight === 'family_plan' || activeHighlight === 'upgrade_plan';
+
+              const isCurrentPlanIndividual = hasSingle && !hasFam && billingCycle === activeCycle;
+              const isCurrentPlanFamily = hasFam && billingCycle === activeCycle;
+              const isSwitchCycleIndividual = hasSingle && !hasFam && billingCycle !== activeCycle;
+              const isSwitchCycleFamily = hasFam && billingCycle !== activeCycle;
 
               return (
                 <div
@@ -1623,7 +1632,11 @@ export default function ParentDashboardModal({
                           ? 'bg-purple-600 text-white shadow-xs'
                           : 'bg-slate-200 text-slate-700'
                       }`}>
-                        {hasFam ? '👑 Family Plan Active' : hasSingle ? '⭐ Individual Member' : 'Free Starter Tier'}
+                        {hasFam
+                          ? `👑 Family Plan Active (${activeCycle === 'annual' ? 'Annual' : 'Monthly'})`
+                          : hasSingle
+                          ? `⭐ Individual Member (${activeCycle === 'annual' ? 'Annual' : 'Monthly'})`
+                          : 'Free Starter Tier'}
                       </span>
                     </div>
                   </div>
@@ -1635,7 +1648,11 @@ export default function ParentDashboardModal({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                     {/* Individual Plan Card */}
                     <div className={`bg-white border-2 rounded-2xl p-3.5 flex flex-col justify-between space-y-3 relative overflow-hidden transition-all ${
-                      hasSingle && !hasFam ? 'border-purple-500 bg-purple-50/30 ring-2 ring-purple-400/30' : 'border-slate-200 hover:border-purple-300'
+                      isCurrentPlanIndividual
+                        ? 'border-purple-500 bg-purple-50/30 ring-2 ring-purple-400/30'
+                        : isSwitchCycleIndividual
+                        ? 'border-purple-400 bg-purple-50/10 hover:border-purple-500 shadow-xs'
+                        : 'border-slate-200 hover:border-purple-300'
                     }`}>
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
@@ -1661,16 +1678,30 @@ export default function ParentDashboardModal({
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>Golden profile tag 👑 & summit gear</span>
+                            <span>Golden profile tag & summit gear</span>
                           </li>
                         </ul>
                       </div>
 
-                      {hasSingle && !hasFam ? (
+                      {isCurrentPlanIndividual ? (
                         <div className="w-full py-2 bg-purple-100 text-purple-900 font-black text-xs rounded-xl text-center border border-purple-200 flex items-center justify-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5 text-purple-700" />
-                          <span>Current Active Plan</span>
+                          <span>Current Active Plan ({billingCycle === 'annual' ? 'Annual' : 'Monthly'})</span>
                         </div>
+                      ) : isSwitchCycleIndividual ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            if (onOpenSubscription) {
+                              onOpenSubscription(billingCycle === 'annual' ? 'kibo_club_sub_annual' : 'kibo_club_sub');
+                            }
+                          }}
+                          className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl shadow-md transform active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 fill-white" />
+                          <span>Switch to {billingCycle === 'annual' ? 'Annual ($39.99/yr)' : 'Monthly ($4.99/mo)'}</span>
+                        </button>
                       ) : hasFam ? (
                         <div className="w-full py-2 bg-slate-100 text-slate-500 font-bold text-xs rounded-xl text-center">
                           Included in Family Plan
@@ -1693,7 +1724,11 @@ export default function ParentDashboardModal({
 
                     {/* Family Plan Card */}
                     <div className={`bg-white border-2 rounded-2xl p-3.5 flex flex-col justify-between space-y-3 relative overflow-hidden transition-all ${
-                      hasFam ? 'border-amber-500 bg-amber-50/30 ring-2 ring-amber-400/30' : 'border-amber-300 hover:border-amber-400 shadow-xs'
+                      isCurrentPlanFamily
+                        ? 'border-amber-500 bg-amber-50/30 ring-2 ring-amber-400/30'
+                        : isSwitchCycleFamily
+                        ? 'border-amber-400 bg-amber-50/10 hover:border-amber-500 shadow-xs'
+                        : 'border-amber-300 hover:border-amber-400 shadow-xs'
                     }`}>
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
@@ -1719,16 +1754,30 @@ export default function ParentDashboardModal({
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>Daily Vault 3.3x rewards & golden tags 👑</span>
+                            <span>Daily Vault 3.3x rewards & golden tags</span>
                           </li>
                         </ul>
                       </div>
 
-                      {hasFam ? (
+                      {isCurrentPlanFamily ? (
                         <div className="w-full py-2 bg-amber-100 text-amber-900 font-black text-xs rounded-xl text-center border border-amber-200 flex items-center justify-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5 text-amber-700" />
-                          <span>Current Active Plan</span>
+                          <span>Current Active Plan ({billingCycle === 'annual' ? 'Annual' : 'Monthly'})</span>
                         </div>
+                      ) : isSwitchCycleFamily ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            if (onOpenSubscription) {
+                              onOpenSubscription(billingCycle === 'annual' ? 'kibo_club_family_annual' : 'kibo_club_family');
+                            }
+                          }}
+                          className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs rounded-xl shadow-md transform active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 fill-white" />
+                          <span>Switch to {billingCycle === 'annual' ? 'Annual ($59.99/yr)' : 'Monthly ($7.99/mo)'}</span>
+                        </button>
                       ) : (
                         <button
                           type="button"
@@ -1750,6 +1799,99 @@ export default function ParentDashboardModal({
                       )}
                     </div>
                   </div>
+
+                  {/* Cancellation & Retention Notice */}
+                  {currentPlan?.cancelAtPeriodEnd ? (
+                    <div className="bg-amber-500/10 border border-amber-400/60 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-amber-950">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5 font-black text-amber-900">
+                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                          <span>Subscription Scheduled to Cancel</span>
+                        </div>
+                        <p className="text-slate-700 font-medium leading-relaxed">
+                          Your membership will end on{' '}
+                          <span className="font-bold text-slate-900">
+                            {new Date(currentPlan.currentPeriodEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                          . Full perks and multipliers remain active until then with no further charges.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playKeyTap();
+                          storageService.reactivateSubscription();
+                          setSubActionMsg('Subscription resumed! Automatic renewal is re-enabled.');
+                          setSubRefreshKey(k => k + 1);
+                        }}
+                        className="shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold rounded-xl shadow-xs transition-transform active:scale-95 cursor-pointer"
+                      >
+                        Keep Membership
+                      </button>
+                    </div>
+                  ) : (hasFam || hasSingle) ? (
+                    <div className="pt-2 border-t border-slate-200/80">
+                      {!showCancelSubConfirm ? (
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-slate-500 font-medium">
+                            Auto-renews at end of period. Need to stop renewal?
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFx.playKeyTap();
+                              setShowCancelSubConfirm(true);
+                            }}
+                            className="text-xs text-rose-600 hover:text-rose-700 font-bold underline cursor-pointer"
+                          >
+                            Cancel Membership
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 space-y-2 text-xs">
+                          <div className="flex items-center gap-1.5 font-black text-rose-900">
+                            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                            <span>Confirm Subscription Cancellation</span>
+                          </div>
+                          <p className="text-slate-600 leading-relaxed font-medium">
+                            Per our Terms of Service, cancellations take effect at the conclusion of your active billing period ({currentPlan.currentPeriodEnd ? new Date(currentPlan.currentPeriodEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'current cycle'}). <strong>No prorated cash returns are issued for partial periods.</strong> You retain full VIP access until that date.
+                          </p>
+                          <div className="flex items-center gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                soundFx.playKeyTap();
+                                storageService.cancelSubscription(true);
+                                setShowCancelSubConfirm(false);
+                                setSubActionMsg('Membership scheduled to cancel at period end. Access remains active.');
+                                setSubRefreshKey(k => k + 1);
+                              }}
+                              className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-lg shadow-xs transition-transform active:scale-95 cursor-pointer"
+                            >
+                              Confirm Cancellation
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                soundFx.playKeyTap();
+                                setShowCancelSubConfirm(false);
+                              }}
+                              className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition-transform active:scale-95 cursor-pointer"
+                            >
+                              Never Mind
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+
+                  {subActionMsg && (
+                    <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>{subActionMsg}</span>
+                    </div>
+                  )}
                 </div>
               );
             })()}

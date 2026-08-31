@@ -475,9 +475,6 @@ export default function AddFriendModal({
                             <div className="overflow-hidden">
                               <div className="font-extrabold text-sm text-slate-800 truncate flex items-center gap-1">
                                 <span>{climber.username || climber.name}</span>
-                                {((climber.profileId && storageService.hasClubMembership(climber.profileId)) || climber.isClubMember || climber.equipped?.some(id => id === 'kibo_club_sub' || id === 'kibo_club_family')) && (
-                                  <span className="text-xs" title="Kibo Club VIP">👑</span>
-                                )}
                               </div>
                               <div className="text-[11px] text-slate-500 font-semibold flex items-center gap-1">
                                 ⭐ Rating: <span className="font-bold text-indigo-600">{climber.score || 1000}</span>
@@ -672,9 +669,6 @@ export default function AddFriendModal({
                         <div className="overflow-hidden">
                           <div className="font-extrabold text-sm text-slate-800 truncate flex items-center gap-1">
                             <span>{friend.username || friend.name}</span>
-                            {((friend.profileId && storageService.hasClubMembership(friend.profileId)) || friend.isClubMember || friend.equipped?.some(id => id === 'kibo_club_sub' || id === 'kibo_club_family')) && (
-                              <span className="text-xs" title="Kibo Club VIP">👑</span>
-                            )}
                           </div>
                           <div className="text-[11px] text-slate-500 font-semibold">
                             Mutual Climber Friend

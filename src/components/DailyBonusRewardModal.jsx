@@ -155,7 +155,7 @@ export default function DailyBonusRewardModal({
                     +{rewardData.sparks} Sparks
                   </span>
                   <span className="text-[10px] text-amber-200 font-bold block">
-                    {hasClub ? '👑 3.3x VIP Boost' : 'Daily Grant'}
+                    {hasClub ? '3.3x VIP Boost' : 'Daily Grant'}
                   </span>
                 </div>
               </div>

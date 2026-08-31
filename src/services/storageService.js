@@ -1042,27 +1042,71 @@ export const storageService = {
     safeSaveProfilesState(state);
   },
 
-  hasFamilyPlan() {
+  getSubscriptionPlan(profileId = null) {
     const state = safeGetProfilesState();
-    const hasProfileSub = Object.values(state.profiles).some(prof => {
-      const items = prof.shopState?.unlockedItems || [];
-      return items.includes('kibo_club_family') || items.includes('kibo_club_family_annual');
-    });
-    return hasProfileSub || !!state.isKiboClubFamily;
+    const pid = profileId || state.activeProfileId;
+    const allProfiles = Object.values(state.profiles || {});
+    const now = this.getSimulatedDate() || new Date();
+
+    // Check tracked subscription object first
+    if (state.subscription && state.subscription.planId) {
+      // Check if scheduled cancellation period has expired
+      if (state.subscription.cancelAtPeriodEnd && state.subscription.currentPeriodEnd) {
+        const periodEndDate = new Date(state.subscription.currentPeriodEnd);
+        if (now >= periodEndDate) {
+          state.subscription = null;
+          safeSaveProfilesState(state);
+          this.updateSubscriptionState('free', null, true);
+          return null;
+        }
+      }
+
+      return {
+        id: state.subscription.planId,
+        tier: state.subscription.tier,
+        cycle: state.subscription.cycle,
+        cancelAtPeriodEnd: !!state.subscription.cancelAtPeriodEnd,
+        currentPeriodEnd: state.subscription.currentPeriodEnd,
+        canceledAt: state.subscription.canceledAt || null
+      };
+    }
+
+    // Fallback: Check family plan first (annual or monthly)
+    const hasFamAnnual = allProfiles.some(p => p.shopState?.unlockedItems?.includes('kibo_club_family_annual'));
+    if (hasFamAnnual) return { id: 'kibo_club_family_annual', tier: 'family', cycle: 'annual', cancelAtPeriodEnd: false };
+
+    const hasFamMonthly = allProfiles.some(p => p.shopState?.unlockedItems?.includes('kibo_club_family'));
+    if (hasFamMonthly) return { id: 'kibo_club_family', tier: 'family', cycle: 'monthly', cancelAtPeriodEnd: false };
+
+    if (state.isKiboClubFamily) return { id: 'kibo_club_family_annual', tier: 'family', cycle: 'annual', cancelAtPeriodEnd: false };
+
+    // Check single plan
+    if (pid && state.profiles[pid]) {
+      const items = state.profiles[pid].shopState?.unlockedItems || [];
+      if (items.includes('kibo_club_sub_annual')) return { id: 'kibo_club_sub_annual', tier: 'single', cycle: 'annual', cancelAtPeriodEnd: false };
+      if (items.includes('kibo_club_sub')) return { id: 'kibo_club_sub', tier: 'single', cycle: 'monthly', cancelAtPeriodEnd: false };
+    }
+
+    // Check any profile if not found on active
+    const hasSingleAnnual = allProfiles.some(p => p.shopState?.unlockedItems?.includes('kibo_club_sub_annual'));
+    if (hasSingleAnnual) return { id: 'kibo_club_sub_annual', tier: 'single', cycle: 'annual', cancelAtPeriodEnd: false };
+
+    const hasSingleMonthly = allProfiles.some(p => p.shopState?.unlockedItems?.includes('kibo_club_sub'));
+    if (hasSingleMonthly) return { id: 'kibo_club_sub', tier: 'single', cycle: 'monthly', cancelAtPeriodEnd: false };
+
+    return null;
+  },
+
+  hasFamilyPlan() {
+    const plan = this.getSubscriptionPlan();
+    return plan?.tier === 'family';
   },
 
   hasSinglePlan(profileId = null) {
-    if (profileId) {
-      const prof = this.getProfileById(profileId);
-      const items = prof?.shopState?.unlockedItems || [];
-      return items.includes('kibo_club_sub') || items.includes('kibo_club_sub_annual');
-    }
-    const state = safeGetProfilesState();
-    return Object.values(state.profiles).some(prof => {
-      const items = prof.shopState?.unlockedItems || [];
-      return items.includes('kibo_club_sub') || items.includes('kibo_club_sub_annual');
-    });
+    const plan = this.getSubscriptionPlan(profileId);
+    return plan?.tier === 'single';
   },
+
 
   hasClubMembership(profileId = null) {
     if (this.hasFamilyPlan()) return true;
@@ -1109,6 +1153,7 @@ export const storageService = {
     const state = safeGetProfilesState();
     const allProfileIds = Object.keys(state.profiles);
     let activeProfilesCount = allProfileIds.length;
+    const now = this.getSimulatedDate() || new Date();
 
     // Remove existing premium subs from ALL profiles first
     const SUB_IDS = ['kibo_club_family', 'kibo_club_family_annual', 'kibo_club_sub', 'kibo_club_sub_annual'];
@@ -1137,6 +1182,22 @@ export const storageService = {
       }
       state.isKiboClubFamily = true;
       state.needsProfileDowngradeSelection = false;
+
+      const isAnnual = planType.includes('annual');
+      const periodEnd = new Date(now.getTime());
+      if (isAnnual) periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+      else periodEnd.setDate(periodEnd.getDate() + 30);
+
+      state.subscription = {
+        planId: planType,
+        tier: 'family',
+        cycle: isAnnual ? 'annual' : 'monthly',
+        status: 'active',
+        activatedAt: (state.subscription && state.subscription.planId === planType) ? (state.subscription.activatedAt || now.toISOString()) : now.toISOString(),
+        currentPeriodEnd: periodEnd.toISOString(),
+        cancelAtPeriodEnd: false,
+        canceledAt: null
+      };
     } else if (planType === 'kibo_club_sub' || planType === 'kibo_club_sub_annual') {
       const pidToUpgrade = targetProfileId || state.activeProfileId || allProfileIds[0];
       if (pidToUpgrade && state.profiles[pidToUpgrade]) {
@@ -1151,9 +1212,26 @@ export const storageService = {
       } else {
          state.needsProfileDowngradeSelection = false;
       }
+
+      const isAnnual = planType.includes('annual');
+      const periodEnd = new Date(now.getTime());
+      if (isAnnual) periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+      else periodEnd.setDate(periodEnd.getDate() + 30);
+
+      state.subscription = {
+        planId: planType,
+        tier: 'single',
+        cycle: isAnnual ? 'annual' : 'monthly',
+        status: 'active',
+        activatedAt: (state.subscription && state.subscription.planId === planType) ? (state.subscription.activatedAt || now.toISOString()) : now.toISOString(),
+        currentPeriodEnd: periodEnd.toISOString(),
+        cancelAtPeriodEnd: false,
+        canceledAt: null
+      };
     } else {
       // Free / none
       state.isKiboClubFamily = false;
+      state.subscription = null;
       if (activeProfilesCount > 1 && !isFinalResolution) {
          state.needsProfileDowngradeSelection = true;
       } else {
@@ -1162,6 +1240,188 @@ export const storageService = {
     }
 
     safeSaveProfilesState(state);
+  },
+
+  /**
+   * Enforces the "cancel at period end" policy.
+   * Keeps access until currentPeriodEnd without prorated refund.
+   * Checks for rapid cancellation abuse after purchasing discounted items.
+   */
+  cancelSubscription(cancelAtPeriodEnd = true) {
+    const state = safeGetProfilesState();
+    const currentPlan = this.getSubscriptionPlan();
+    if (!currentPlan) {
+      return { success: false, reason: 'No active subscription found' };
+    }
+
+    const now = this.getSimulatedDate() || new Date();
+
+    if (cancelAtPeriodEnd) {
+      if (!state.subscription) {
+        const isAnnual = currentPlan.cycle === 'annual';
+        const periodEnd = new Date(now.getTime());
+        if (isAnnual) periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+        else periodEnd.setDate(periodEnd.getDate() + 30);
+
+        state.subscription = {
+          planId: currentPlan.id,
+          tier: currentPlan.tier,
+          cycle: currentPlan.cycle,
+          status: 'canceling',
+          activatedAt: now.toISOString(),
+          currentPeriodEnd: periodEnd.toISOString(),
+          cancelAtPeriodEnd: true,
+          canceledAt: now.toISOString()
+        };
+      } else {
+        state.subscription.cancelAtPeriodEnd = true;
+        state.subscription.status = 'canceling';
+        state.subscription.canceledAt = now.toISOString();
+      }
+
+      // Check for rapid churn abuse
+      const abuseCheck = this.checkSubscriptionAbuse(state.subscription);
+      if (abuseCheck.flagged && abuseCheck.flag) {
+        state.accountRiskFlags = state.accountRiskFlags || [];
+        if (!state.accountRiskFlags.some(f => f.id === abuseCheck.flag.id)) {
+          state.accountRiskFlags.push(abuseCheck.flag);
+        }
+      }
+
+      safeSaveProfilesState(state);
+
+      this.recordLedgerEntry({
+        type: 'SUBSCRIPTION_CANCEL_SCHEDULED',
+        planId: currentPlan.id,
+        cancelAtPeriodEnd: true,
+        currentPeriodEnd: state.subscription.currentPeriodEnd,
+        isFlaggedAbuse: abuseCheck.flagged
+      });
+
+      return {
+        success: true,
+        cancelAtPeriodEnd: true,
+        currentPeriodEnd: state.subscription.currentPeriodEnd,
+        flagged: abuseCheck.flagged,
+        flagReason: abuseCheck.reason
+      };
+    } else {
+      this.updateSubscriptionState('free', null, true);
+      return { success: true, cancelAtPeriodEnd: false };
+    }
+  },
+
+  /**
+   * Resumes / un-cancels an active subscription that was set to cancel at period end.
+   */
+  reactivateSubscription() {
+    const state = safeGetProfilesState();
+    if (state.subscription && state.subscription.cancelAtPeriodEnd) {
+      state.subscription.cancelAtPeriodEnd = false;
+      state.subscription.status = 'active';
+      state.subscription.canceledAt = null;
+      safeSaveProfilesState(state);
+
+      this.recordLedgerEntry({
+        type: 'SUBSCRIPTION_REACTIVATED',
+        planId: state.subscription.planId
+      });
+
+      return { success: true };
+    }
+    return { success: false, reason: 'No pending cancellation found' };
+  },
+
+  /**
+   * Retrieves all account risk/fraud flags.
+   */
+  getAccountRiskFlags() {
+    const state = safeGetProfilesState();
+    return state.accountRiskFlags || [];
+  },
+
+  /**
+   * Flags the account for suspicious behavior / abuse.
+   */
+  flagAccount(flagDetails) {
+    const state = safeGetProfilesState();
+    state.accountRiskFlags = state.accountRiskFlags || [];
+    const record = {
+      id: `risk_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      timestamp: (this.getSimulatedDate() || new Date()).toISOString(),
+      ...flagDetails
+    };
+    state.accountRiskFlags.push(record);
+    safeSaveProfilesState(state);
+
+    this.recordLedgerEntry({
+      type: 'ACCOUNT_RISK_FLAGGED',
+      ...flagDetails
+    });
+
+    return record;
+  },
+
+  /**
+   * Detects rapid cancellation abuse following member-discounted purchases.
+   */
+  checkSubscriptionAbuse(subscription) {
+    if (!subscription) return { flagged: false };
+    const now = this.getSimulatedDate() || new Date();
+    const activatedAt = subscription.activatedAt ? new Date(subscription.activatedAt) : new Date(0);
+    const diffHours = (now.getTime() - activatedAt.getTime()) / (1000 * 60 * 60);
+
+    let transactions = [];
+    try {
+      const raw = localStorage.getItem('kibo_transaction_ledger_history');
+      transactions = raw ? JSON.parse(raw) : [];
+    } catch {}
+
+    const recentPurchases = transactions.filter(t => {
+      if (t.type !== 'SHOP_PURCHASE' && t.type !== 'REAL_MONEY_PURCHASE' && t.type !== 'IAP_PURCHASE') return false;
+      const tTime = new Date(t.timestamp);
+      return tTime >= activatedAt;
+    });
+
+    const userData = this.getUserData('math');
+    const hasBoughtDiscounts = userData.hasBoughtGemsWithRealMoney || recentPurchases.length > 0;
+
+    // Flag if user subscribed and canceled within 48 hours after buying items/currency
+    if (diffHours <= 48 && hasBoughtDiscounts) {
+      const flag = this.flagAccount({
+        flagType: 'RAPID_CANCEL_AFTER_DISCOUNT_PURCHASE',
+        severity: 'HIGH',
+        reason: `Subscription canceled ${diffHours.toFixed(1)} hours after activation with item/currency purchases. Potential discount arbitrage attempt.`,
+        metadata: {
+          activatedAt: subscription.activatedAt,
+          canceledAt: now.toISOString(),
+          hoursActive: Number(diffHours.toFixed(2)),
+          purchaseCount: recentPurchases.length
+        }
+      });
+      return { flagged: true, reason: flag.reason, flag };
+    }
+
+    return { flagged: false };
+  },
+
+  /**
+   * Direct ledger recorder helper avoiding circular imports.
+   */
+  recordLedgerEntry(details) {
+    try {
+      const KEY = 'kibo_transaction_ledger_history';
+      const raw = localStorage.getItem(KEY);
+      const ledger = raw ? JSON.parse(raw) : [];
+      ledger.push({
+        txId: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        timestamp: (this.getSimulatedDate() || new Date()).toISOString(),
+        ...details
+      });
+      localStorage.setItem(KEY, JSON.stringify(ledger.slice(-100)));
+    } catch (e) {
+      console.error('storageService: error recording ledger entry', e);
+    }
   },
 
   getSubjectRating(profileId, subjectId = 'math') {

@@ -1241,7 +1241,6 @@ export default function WorkshopModal({
                 {/* VIP Pricing & Savings Value Callout */}
                 <div className="bg-gradient-to-r from-amber-50 to-purple-50 border border-amber-200 rounded-2xl p-3 text-left space-y-0.5">
                   <div className="flex items-center gap-1.5 text-xs font-black text-amber-950">
-                    <span>👑</span>
                     <span>Kibo Club VIP Pricing: Save 15% on All Packs & Bundles</span>
                   </div>
                   <p className="text-[11px] text-slate-600 font-medium">
@@ -1276,7 +1275,7 @@ export default function WorkshopModal({
                                 )}
                                 {isMember && pack.clubRealMoneyPrice ? (
                                   <span className="text-[9px] font-black text-amber-900 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded">
-                                    👑 VIP {pack.clubRealMoneyPrice}
+                                    VIP {pack.clubRealMoneyPrice}
                                   </span>
                                 ) : pack.clubRealMoneyPrice ? (
                                   <span className="text-[9px] font-bold text-purple-700 bg-purple-50 px-1 py-0.2 rounded">
@@ -1393,7 +1392,7 @@ export default function WorkshopModal({
                           </span>
                           {isClubExclusive && (
                             <span className="text-[8px] sm:text-[9px] font-black uppercase px-1 py-0.2 rounded-md bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 border border-amber-300 shrink-0">
-                              👑 VIP
+                              VIP
                             </span>
                           )}
                           {!isUnlocked && priceInfo.isClubDiscount && (
@@ -1686,7 +1685,7 @@ export default function WorkshopModal({
                 >
                   {selectedItemDetail.requiresKiboClub && !isMember ? (
                     <span className="flex items-center justify-center gap-1">
-                      <span>👑 Join Club to Unlock</span>
+                      <span>Join Club to Unlock</span>
                       <span className="text-amber-300 font-black">({selectedItemDetail.cost}⚡)</span>
                     </span>
                   ) : selectedItemDetail.realMoneyPrice ? (
@@ -1846,7 +1845,7 @@ export default function WorkshopModal({
               </p>
               {isMember && (
                 <span className="text-[9px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.2 rounded-full inline-block mt-0.5">
-                  👑 VIP 65% Sell-Back Rate
+                  VIP 65% Sell-Back Rate
                 </span>
               )}
             </div>

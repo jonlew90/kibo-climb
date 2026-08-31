@@ -82,18 +82,36 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
         <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
           <div className="flex items-center gap-2.5 text-indigo-700">
             <Sparkles className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">3. Virtual Currency, Items & Subscriptions</h3>
+            <h3 className="text-base font-extrabold tracking-tight">3. Virtual Currency, Items, Subscriptions & Cancellation</h3>
           </div>
           <div className="space-y-2 text-sm text-slate-600 font-medium leading-relaxed">
             <p>
               In-game currencies ("Sparks"), mascot accessories, badges, and avatars earned during climbs are virtual items:
             </p>
             <ul className="list-disc list-inside space-y-1.5 pl-1 text-slate-600">
-              <li>Virtual items hold no real-world monetary value and cannot be exchanged for cash.</li>
+              <li>Virtual items hold no real-world monetary value and cannot be exchanged or redeemed for cash.</li>
               <li>Sparks earned through practice sessions are educational incentives designed to celebrate effort.</li>
               <li>Subscriptions (Kibo Club Individual and Family plans) and in-app purchases may only be authorized and purchased by an adult parent or legal guardian through the Parent Zone.</li>
               <li>We reserve the right to adjust virtual item balances in the event of software glitches or cheat prevention.</li>
             </ul>
+
+            <div className="pt-2 space-y-2">
+              <h4 className="text-xs font-black uppercase text-slate-800 tracking-wider">Cancellation & Refund Policy ("Cancel at Period End")</h4>
+              <ul className="list-disc list-inside space-y-1.5 pl-1 text-slate-600">
+                <li>
+                  <strong>Cancellation Takes Effect at Period End:</strong> Subscriptions automatically renew at the end of each billing cycle unless canceled prior to the renewal date. When you cancel a subscription, your cancellation takes effect at the conclusion of the current paid billing period ("cancel at period end"). You retain full access to all Kibo Club benefits and multipliers until that date.
+                </li>
+                <li>
+                  <strong>No Prorated Refunds:</strong> Membership payments are non-refundable. We do not provide prorated cash refunds, store credits, or reimbursements for unused days or partial subscription cycles upon cancellation.
+                </li>
+                <li>
+                  <strong>Digital Goods Are Final & Non-Returnable:</strong> All purchases of real-money bundles, cosmetic items, avatar equipment, and virtual currency—including any items acquired at VIP/Club member discount rates—are digital content delivered immediately upon purchase. All such purchases are final, non-returnable, and non-refundable.
+                </li>
+                <li>
+                  <strong>Anti-Arbitrage & Billing Abuse:</strong> Creating or activating a subscription solely to obtain discounted real-money items followed by initiating payment disputes, fraudulent chargebacks, or refund requests violates these Terms. Accounts engaging in billing arbitrage will be flagged for review, subject to revocation of discounted goods, and may face permanent suspension.
+                </li>
+              </ul>
+            </div>
           </div>
         </section>
 

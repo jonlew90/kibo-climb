@@ -119,7 +119,7 @@ export default function FamilyPlanUpgradeModal({
               </li>
               <li className="flex items-center gap-2 truncate">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="truncate">Golden tags 👑 & summit-exclusive gear</span>
+                <span className="truncate">Golden tags & summit-exclusive gear</span>
               </li>
               <li className="flex items-center gap-2 truncate">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
