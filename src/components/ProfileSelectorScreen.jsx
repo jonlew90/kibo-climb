@@ -492,7 +492,7 @@ export default function ProfileSelectorScreen({
           </div>
 
           {/* Kibo Club / Family Plan Teaser Banner */}
-          <div className="w-full mt-4 max-w-2xl mx-auto">
+          <div className="w-full my-auto py-2 max-w-2xl mx-auto">
             {hasFamilyPlan ? (
               <div className="bg-gradient-to-r from-purple-900/10 via-indigo-900/10 to-amber-500/10 border border-amber-300/80 rounded-2xl px-4 py-3 flex items-center justify-between text-left shadow-xs">
                 <div className="flex items-center gap-3">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail, Fingerprint, Lock, ShieldAlert, Calendar } from 'lucide-react';
+import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail, Fingerprint, Lock, ShieldAlert, Calendar, Crown } from 'lucide-react';
 import { storageService } from '../services/storageService';
 import { communicationsService } from '../services/communicationsService';
 import { nativeAuthService } from '../services/nativeAuthService';
@@ -228,6 +228,79 @@ export default function DevControlPanel({
             >
               🔓 Unlock All Workshop Accessories & Gear
             </button>
+          </div>
+
+          {/* SECTION 3.2: KIBO CLUB SUBSCRIPTION CONTROLS */}
+          <div className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-4 space-y-3">
+            <span className="text-xs font-extrabold text-amber-300 uppercase tracking-wider flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />
+                Kibo Club Membership
+              </span>
+              <span className="text-[10px] font-bold text-slate-400">
+                {storageService.hasFamilyPlan()
+                  ? 'Active: Family ⭐️'
+                  : storageService.hasSinglePlan()
+                  ? 'Active: Individual 👑'
+                  : 'Active: None (Free)'}
+              </span>
+            </span>
+
+            <p className="text-xs text-slate-400 leading-snug">
+              Toggle or switch Kibo Club status for testing 1.25x Spark Multipliers, golden tags, and profile permissions.
+            </p>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  const activeProfId = storageService.getActiveProfileId();
+                  storageService.updateSubscriptionState('kibo_club_sub', activeProfId, true);
+                  showToast('Enabled Kibo Club (Individual Plan)!');
+                  if (onStateRefresh) onStateRefresh();
+                }}
+                className={`py-2 px-2 rounded-xl border text-center font-bold text-xs transition-all active:scale-95 ${
+                  storageService.hasSinglePlan() && !storageService.hasFamilyPlan()
+                    ? 'bg-amber-500/30 border-amber-400 text-amber-200 font-extrabold shadow-sm'
+                    : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-300'
+                }`}
+              >
+                👑 Individual
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const activeProfId = storageService.getActiveProfileId();
+                  storageService.updateSubscriptionState('kibo_club_family', activeProfId, true);
+                  showToast('Enabled Kibo Club (Family Plan)!');
+                  if (onStateRefresh) onStateRefresh();
+                }}
+                className={`py-2 px-2 rounded-xl border text-center font-bold text-xs transition-all active:scale-95 ${
+                  storageService.hasFamilyPlan()
+                    ? 'bg-amber-500/30 border-amber-400 text-amber-200 font-extrabold shadow-sm'
+                    : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-300'
+                }`}
+              >
+                ⭐️ Family Plan
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  storageService.updateSubscriptionState('free', null, true);
+                  showToast('Disabled Kibo Club (Free Plan)');
+                  if (onStateRefresh) onStateRefresh();
+                }}
+                className={`py-2 px-2 rounded-xl border text-center font-bold text-xs transition-all active:scale-95 ${
+                  !storageService.hasFamilyPlan() && !storageService.hasSinglePlan()
+                    ? 'bg-slate-800 border-slate-600 text-slate-300 font-extrabold shadow-sm'
+                    : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-400'
+                }`}
+              >
+                Free / None
+              </button>
+            </div>
           </div>
 
           {/* SECTION 3.5: SEASON & HOLIDAY SIMULATOR */}
