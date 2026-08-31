@@ -635,11 +635,32 @@ export const authService = {
   },
 
   /**
-   * Deletes all local and cloud data, signing out of Firebase Auth completely.
+   * Deletes all local and cloud data, signing out of Firebase Auth completely under COPPA / CCPA.
    */
   async deleteAccount() {
     try {
       const currentUser = auth.currentUser;
+      const uid = currentUser ? currentUser.uid : storageService.getUserData('math')?.cloudUid;
+
+      // Stop cloud sync listener
+      try {
+        const { userSyncService } = await import('./userSyncService');
+        userSyncService.stopSync();
+      } catch (syncErr) {
+        console.warn('Could not stop sync service:', syncErr);
+      }
+
+      // Purge cloud Firestore user record if uid exists
+      if (uid) {
+        try {
+          const { deleteDoc, doc } = await import('firebase/firestore');
+          const userDocRef = doc(db, 'users', uid);
+          await deleteDoc(userDocRef);
+        } catch (cloudErr) {
+          console.warn('Could not delete remote Firestore document during account deletion:', cloudErr);
+        }
+      }
+
       if (currentUser) {
         try {
           await currentUser.delete();

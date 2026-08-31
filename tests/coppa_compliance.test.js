@@ -41,13 +41,13 @@ describe('COPPA Compliance & Operational Requirements', () => {
       expect(status.consented).toBe(true);
     });
 
-    it('revokes parental consent and records revocation timestamp', () => {
+    it('revokes parental consent and records revocation timestamp', async () => {
       // First grant consent
       parentChildService.recordParentalConsent('knowledge_challenge');
       expect(parentChildService.getCOPPAConsentStatus().consented).toBe(true);
 
       // Now revoke consent
-      const revoked = parentChildService.revokeParentalConsent();
+      const revoked = await parentChildService.revokeParentalConsent();
       expect(revoked.consented).toBe(false);
       expect(revoked.revokedAt).toBeTruthy();
 
