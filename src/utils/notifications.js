@@ -94,6 +94,37 @@ export function scheduleAllProfileReminders() {
   });
 }
 
+// Sets home screen app icon badge count / notification dot (Web Badging API & Capacitor/Native support)
+export async function updateAppBadge(count) {
+  try {
+    // 1. Native Capacitor Badge Plugin (if available on iOS/Android native wrapper)
+    if (typeof window !== 'undefined' && window.Capacitor?.Plugins?.Badge) {
+      if (count > 0) {
+        await window.Capacitor.Plugins.Badge.set({ count });
+      } else {
+        await window.Capacitor.Plugins.Badge.clear();
+      }
+      return;
+    }
+
+    // 2. Web App Badging API (PWA / Installed Mobile Web App on Android Chrome & iOS Safari 16.4+)
+    if (typeof navigator !== 'undefined') {
+      if (count > 0 && 'setAppBadge' in navigator) {
+        await navigator.setAppBadge(count);
+      } else if (count === 0 && 'clearAppBadge' in navigator) {
+        await navigator.clearAppBadge();
+      }
+    }
+  } catch (e) {
+    // Fail silently if unsupported or restricted
+  }
+}
+
+// Clears home screen app badge
+export async function clearAppBadge() {
+  await updateAppBadge(0);
+}
+
 // Backwards-compatible single reminder alias
 export function scheduleDailyStreakReminder(timeStr = '17:00') {
   const activeProfile = storageService.getActiveProfile();
@@ -103,3 +134,4 @@ export function scheduleDailyStreakReminder(timeStr = '17:00') {
     scheduleAllProfileReminders();
   }
 }
+

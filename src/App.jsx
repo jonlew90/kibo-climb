@@ -43,7 +43,7 @@ import { shopLedgerService } from './services/shopLedgerService';
 import { leaderboardService } from './services/leaderboardService';
 import { analyticsService } from './services/analyticsService';
 import AccountLinkModal from './components/AccountLinkModal';
-import { getNotificationPrefs, scheduleAllProfileReminders } from './utils/notifications';
+import { getNotificationPrefs, scheduleAllProfileReminders, updateAppBadge } from './utils/notifications';
 import MockCheckoutModal from './components/MockCheckoutModal';
 import StripeCheckoutModal from './components/StripeCheckoutModal';
 import FamilyPlanUpgradeModal from './components/FamilyPlanUpgradeModal';
@@ -198,6 +198,16 @@ export default function App() {
       setUnlockedBadges(evalRes.updatedUnlocked);
     }
   }, [activeSubject]);
+
+  // Sync outstanding alerts & notifications to mobile home screen app badge
+  useEffect(() => {
+    const unclaimedQuests = questService.getUnclaimedCount(activeProfileId) || 0;
+    const pendingFriendReqs = pendingFriendRequestsCount || 0;
+    const unseenBadges = unseenBadgesCount || 0;
+    const totalOutstanding = unclaimedQuests + pendingFriendReqs + unseenBadges;
+
+    updateAppBadge(totalOutstanding);
+  }, [activeProfileId, pendingFriendRequestsCount, unseenBadgesCount]);
 
   // First-Time User Onboarding Modal State
   const [showNewsModal, setShowNewsModal] = useState(false);
@@ -1758,8 +1768,16 @@ export default function App() {
               title={`Climber Profile: ${activeProfile?.username || activeProfile?.name || 'Climber'}`}
               aria-expanded={showProfileDropdown}
             >
-              <div className="w-6 h-6 rounded-full bg-white/25 border border-white/40 flex items-center justify-center text-xs font-black shrink-0 text-white uppercase shadow-2xs">
-                {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
+              <div className="relative">
+                <div className="w-6 h-6 rounded-full bg-white/25 border border-white/40 flex items-center justify-center text-xs font-black shrink-0 text-white uppercase shadow-2xs">
+                  {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
+                </div>
+                {pendingFriendRequestsCount > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white animate-pulse"
+                    title={`${pendingFriendRequestsCount} notification${pendingFriendRequestsCount > 1 ? 's' : ''}`}
+                  />
+                )}
               </div>
               <span className="hidden md:inline truncate tracking-tight font-black max-w-[140px] lg:max-w-[180px]">
                 {activeProfile?.username || activeProfile?.name || 'Climber'}
