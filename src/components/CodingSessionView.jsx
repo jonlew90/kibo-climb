@@ -830,14 +830,39 @@ export default function CodingSessionView({
             currentProblem && (
               <div className={`w-full max-w-md shrink-0 flex flex-col justify-between bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-3 sm:p-4 text-center transition-all duration-300 space-y-2 relative shadow-lg ${streakConfig.cardGlow} ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : 'border-purple-200'}`}>
                 {/* Problem Header Badge */}
-                <div className="w-full flex items-center justify-between mb-1">
+                <div className="w-full flex flex-wrap items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1.5 text-xs font-black text-purple-800 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
                     <Terminal className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>{currentProblem.concept || 'Algorithmic Logic'}</span>
                   </div>
-                  <span className="text-xs font-black text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
-                    🎯 Q #{sessionQuestionIndex}/12
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {storageService?.hasClubMembership?.(profileId) ? (
+                      <span
+                        className="text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300 px-2.5 py-1 rounded-full border border-amber-400 shrink-0 shadow-2xs flex items-center gap-1.5"
+                        title="Kibo Club 1.25x Multiplier Active on Sparks"
+                      >
+                        <span className="line-through opacity-60 text-[10px] sm:text-xs">
+                          +{Math.round((isDoubleSparksActive ? 4 : 2) * (streak >= 5 ? 1.5 : 1))} ⚡
+                        </span>
+                        <span className="text-amber-900 font-black">
+                          +{Math.round((isDoubleSparksActive ? 4 : 2) * (streak >= 5 ? 1.5 : 1) * 1.25)} ⚡
+                        </span>
+                        <span className="text-[10px] bg-amber-400/80 text-amber-950 px-1 rounded font-black">
+                          1.25x
+                        </span>
+                      </span>
+                    ) : (
+                      <span
+                        className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 shrink-0 shadow-2xs flex items-center gap-1"
+                        title="Sparks earned per correct answer"
+                      >
+                        +{Math.round((isDoubleSparksActive ? 4 : 2) * (streak >= 5 ? 1.5 : 1))} ⚡
+                      </span>
+                    )}
+                    <span className="text-xs font-black text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
+                      🎯 Q #{sessionQuestionIndex}/12
+                    </span>
+                  </div>
                 </div>
 
                 {/* Question Display Text */}

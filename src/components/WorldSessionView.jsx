@@ -1480,9 +1480,23 @@ export default function WorldSessionView({
               </p>
             </div>
 
-            <div className="bg-amber-100 border-2 border-amber-300 rounded-2xl p-2.5 flex items-center justify-center gap-2 text-amber-950 font-black text-xs sm:text-sm shadow-xs animate-pulse">
-              <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
-              <span>+{celebrationEvent.bonusSparks} Bonus Sparks Awarded! ⚡</span>
+            <div className="bg-amber-100 border-2 border-amber-300 rounded-2xl p-2.5 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-amber-950 font-black text-xs sm:text-sm shadow-xs animate-pulse">
+              <div className="flex items-center gap-1.5">
+                <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
+                {storageService?.hasClubMembership?.(profileId) ? (
+                  <span className="line-through text-amber-900/50 text-xs">
+                    +{celebrationEvent.bonusSparks} ⚡
+                  </span>
+                ) : null}
+                <span>
+                  +{storageService?.hasClubMembership?.(profileId) ? Math.round(celebrationEvent.bonusSparks * 1.25) : celebrationEvent.bonusSparks} Bonus Sparks Awarded! ⚡
+                </span>
+              </div>
+              {storageService?.hasClubMembership?.(profileId) && (
+                <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 px-1.5 py-0.2 rounded-md font-black border border-amber-300">
+                  👑 1.25x VIP
+                </span>
+              )}
             </div>
 
             <button
@@ -1704,6 +1718,30 @@ export default function WorldSessionView({
                   >
                     {streakCfg.label}
                   </span>
+
+                  {storageService?.hasClubMembership?.(profileId) ? (
+                    <span
+                      className="text-xs font-black uppercase text-amber-950 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-400 shrink-0 shadow-2xs flex items-center gap-1.5"
+                      title="Kibo Club 1.25x Multiplier Active on Sparks"
+                    >
+                      <span className="line-through opacity-60 text-[10px] sm:text-xs">
+                        +{Math.round((isDoubleSparksActive ? 4 : 2) * (inSessionStreak >= 5 ? 1.5 : 1))} ⚡
+                      </span>
+                      <span className="text-amber-900 font-black">
+                        +{Math.round((isDoubleSparksActive ? 4 : 2) * (inSessionStreak >= 5 ? 1.5 : 1) * 1.25)} ⚡
+                      </span>
+                      <span className="text-[10px] bg-amber-400/80 text-amber-950 px-1 rounded font-black">
+                        1.25x
+                      </span>
+                    </span>
+                  ) : (
+                    <span
+                      className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-200 shrink-0 shadow-2xs flex items-center gap-1"
+                      title="Sparks earned per correct answer"
+                    >
+                      +{Math.round((isDoubleSparksActive ? 4 : 2) * (inSessionStreak >= 5 ? 1.5 : 1))} ⚡
+                    </span>
+                  )}
 
                   {incorrectReviewData ? (
                     <span className="text-xs font-black uppercase text-rose-800 bg-rose-100 px-3 py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1">

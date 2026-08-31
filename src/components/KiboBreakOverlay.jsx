@@ -113,9 +113,23 @@ export default function KiboBreakOverlay({
               <span className="text-xs font-black uppercase text-amber-800 flex items-center justify-center gap-1">
                 <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400" /> Sparks Earned
               </span>
-              <div className="text-2xl sm:text-3xl font-black text-amber-700 flex items-center justify-center gap-1">
-                +{sparksEarned} ⚡
-              </div>
+              {storageService.hasClubMembership(activeProfileId) ? (
+                <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5">
+                  <span className="text-sm sm:text-base font-bold text-amber-900/50 line-through">
+                    +{Math.round(sparksEarned / 1.25)} ⚡
+                  </span>
+                  <div className="text-2xl sm:text-3xl font-black text-amber-700 flex items-center justify-center gap-1">
+                    +{sparksEarned} ⚡
+                  </div>
+                  <span className="text-[10px] sm:text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 px-1.5 py-0.2 rounded-md shadow-2xs border border-amber-300">
+                    👑 1.25x VIP
+                  </span>
+                </div>
+              ) : (
+                <div className="text-2xl sm:text-3xl font-black text-amber-700 flex items-center justify-center gap-1">
+                  +{sparksEarned} ⚡
+                </div>
+              )}
             </div>
 
             {/* Streak Boost Tile */}
