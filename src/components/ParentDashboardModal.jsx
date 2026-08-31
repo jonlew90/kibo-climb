@@ -1705,9 +1705,18 @@ export default function ParentDashboardModal({
                           <span>Switch to {billingCycle === 'annual' ? 'Annual ($39.99/yr)' : 'Monthly ($4.99/mo)'}</span>
                         </button>
                       ) : hasFam ? (
-                        <div className="w-full py-2 bg-slate-100 text-slate-500 font-bold text-xs rounded-xl text-center">
-                          Included in Family Plan
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            if (onOpenSubscription) {
+                              onOpenSubscription(billingCycle === 'annual' ? 'kibo_club_sub_annual' : 'kibo_club_sub');
+                            }
+                          }}
+                          className="w-full py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-black text-xs rounded-xl border border-purple-200 transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95"
+                        >
+                          <span>Downgrade to Individual ({billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'})</span>
+                        </button>
                       ) : (
                         <button
                           type="button"
