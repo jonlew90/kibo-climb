@@ -1632,7 +1632,7 @@ export default function App() {
 
   const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showFamilyUpgradeModal || showStreakSavedModal || showDailyStreakIncreasedModal || showMultiSubjectBonusModal || !!globalAscentLevelUpEvent || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal || showNewsModal;
 
-  // Check for News (Scoped per active profile)
+  // Check for News and Daily Spark Vault (Sequenced: News first, then Daily Vault on close or if no news)
   useEffect(() => {
     // Only check if we are on the main game screen and not in onboarding
     if (showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || appState !== 'adaptive_session') return;
@@ -1641,17 +1641,28 @@ export default function App() {
     if (!currentPid) return;
 
     const activeNews = getNewsItems(new Date());
+    let hasUnseenNews = false;
+
     if (activeNews && activeNews.length > 0) {
       const seenNewsIds = storageService.getSeenNews(currentPid);
       const unseenNews = activeNews.filter(item => !seenNewsIds.includes(item.id));
 
       if (unseenNews.length > 0) {
+        hasUnseenNews = true;
         setNewsItems(unseenNews);
         storageService.markNewsAsSeen(unseenNews.map(n => n.id), currentPid);
         handleOpenModal(VIEWS.NEWS);
       }
     }
-  }, [appState, activeProfileId, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher]);
+
+    // If no unseen news to show, check and auto-open Daily Spark Vault if available
+    if (!hasUnseenNews && !showNewsModal && storageService.canClaimDailyVault(currentPid)) {
+      const timer = setTimeout(() => {
+        setShowDailyBonusModal(true);
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [appState, activeProfileId, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher, showNewsModal]);
 
   const handleBuySparksPackage = (pack) => {
     setPendingSparksPurchase(pack);

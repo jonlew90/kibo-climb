@@ -1217,40 +1217,6 @@ export default function WorkshopModal({
                   </div>
                 </div>
 
-                {/* Daily Spark Vault Interactive Banner */}
-                <div
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    if (onOpenDailyVault) {
-                      onOpenDailyVault();
-                    }
-                  }}
-                  className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-amber-950 rounded-2xl p-3.5 sm:p-4 shadow-md hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex items-center justify-between gap-3 border-2 border-amber-300 relative overflow-hidden"
-                >
-                  <div className="flex items-center gap-3 min-w-0 z-10">
-                    <div className="w-11 h-11 rounded-2xl bg-amber-200 border-2 border-amber-400 flex items-center justify-center text-2xl shadow-inner shrink-0 animate-bounce">
-                      🎁
-                    </div>
-                    <div className="min-w-0 text-left">
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="text-sm sm:text-base font-black text-amber-950 truncate">Daily Spark Vault</h4>
-                        <span className="text-[9px] font-black bg-amber-950 text-amber-300 px-1.5 py-0.2 rounded-full uppercase">
-                          {isMember ? '👑 3.3x VIP' : 'Daily Free'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-amber-900 font-medium truncate">
-                        {isMember ? 'Claim +100 Sparks, Shields & Potions today!' : 'Claim +30 Sparks and power-ups today!'}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="z-10 bg-amber-950 hover:bg-black text-amber-300 font-black text-xs px-3.5 py-2 rounded-xl shadow-xs whitespace-nowrap shrink-0"
-                  >
-                    Open Vault
-                  </button>
-                </div>
-
                 {/* Account Link Reward Banner */}
                 {authService.getAuthState().isAnonymous && onRequestAccountLink && (
                   <div
