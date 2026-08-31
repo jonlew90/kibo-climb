@@ -464,7 +464,7 @@ export const storageService = {
       ...data,
       ...subjectData,
       streak: data.streak ?? 0,
-      isKiboClub: data.isKiboClub || globalState.isKiboClubFamily || false,
+      isKiboClub: data.isKiboClub || globalState.isKiboClubFamily || this.hasFamilyPlan() || (active?.shopState?.unlockedItems?.some(id => id === 'kibo_club_sub' || id === 'kibo_club_sub_annual')) || false,
       lastSprintDate: data.lastSprintDate ?? null,
       lastSprintTimestamp: data.lastSprintTimestamp ?? null,
       lastSprintTimezone: data.lastSprintTimezone ?? null
@@ -1044,20 +1044,33 @@ export const storageService = {
 
   hasFamilyPlan() {
     const state = safeGetProfilesState();
-    return Object.values(state.profiles).some(prof => {
-      return prof.shopState?.unlockedItems?.includes('kibo_club_family');
+    const hasProfileSub = Object.values(state.profiles).some(prof => {
+      const items = prof.shopState?.unlockedItems || [];
+      return items.includes('kibo_club_family') || items.includes('kibo_club_family_annual');
     });
+    return hasProfileSub || !!state.isKiboClubFamily;
   },
 
   hasSinglePlan(profileId = null) {
     if (profileId) {
       const prof = this.getProfileById(profileId);
-      return !!prof?.shopState?.unlockedItems?.includes('kibo_club_sub');
+      const items = prof?.shopState?.unlockedItems || [];
+      return items.includes('kibo_club_sub') || items.includes('kibo_club_sub_annual');
     }
     const state = safeGetProfilesState();
     return Object.values(state.profiles).some(prof => {
-      return prof.shopState?.unlockedItems?.includes('kibo_club_sub');
+      const items = prof.shopState?.unlockedItems || [];
+      return items.includes('kibo_club_sub') || items.includes('kibo_club_sub_annual');
     });
+  },
+
+  hasClubMembership(profileId = null) {
+    if (this.hasFamilyPlan()) return true;
+    return this.hasSinglePlan(profileId);
+  },
+
+  isKiboClubMember(profileId = null) {
+    return this.hasClubMembership(profileId);
   },
 
   isProfileLocked(profileId) {
@@ -1098,39 +1111,41 @@ export const storageService = {
     let activeProfilesCount = allProfileIds.length;
 
     // Remove existing premium subs from ALL profiles first
+    const SUB_IDS = ['kibo_club_family', 'kibo_club_family_annual', 'kibo_club_sub', 'kibo_club_sub_annual'];
     allProfileIds.forEach(pid => {
       const prof = state.profiles[pid];
       if (prof.shopState) {
         if (prof.shopState.unlockedItems) {
           prof.shopState.unlockedItems = prof.shopState.unlockedItems.filter(
-            id => id !== 'kibo_club_family' && id !== 'kibo_club_sub'
+            id => !SUB_IDS.includes(id)
           );
         }
         if (prof.shopState.equippedItems) {
           prof.shopState.equippedItems = prof.shopState.equippedItems.filter(
-            id => id !== 'kibo_club_family' && id !== 'kibo_club_sub'
+            id => !SUB_IDS.includes(id)
           );
         }
       }
     });
 
-    if (planType === 'kibo_club_family') {
+    if (planType === 'kibo_club_family' || planType === 'kibo_club_family_annual') {
       const pidToUpgrade = targetProfileId || state.activeProfileId || allProfileIds[0];
       if (pidToUpgrade && state.profiles[pidToUpgrade]) {
         state.profiles[pidToUpgrade].shopState = state.profiles[pidToUpgrade].shopState || {};
         state.profiles[pidToUpgrade].shopState.unlockedItems = state.profiles[pidToUpgrade].shopState.unlockedItems || [];
-        state.profiles[pidToUpgrade].shopState.unlockedItems.push('kibo_club_family');
+        state.profiles[pidToUpgrade].shopState.unlockedItems.push(planType);
       }
+      state.isKiboClubFamily = true;
       state.needsProfileDowngradeSelection = false;
-    } else if (planType === 'kibo_club_sub') {
+    } else if (planType === 'kibo_club_sub' || planType === 'kibo_club_sub_annual') {
       const pidToUpgrade = targetProfileId || state.activeProfileId || allProfileIds[0];
       if (pidToUpgrade && state.profiles[pidToUpgrade]) {
         state.profiles[pidToUpgrade].shopState = state.profiles[pidToUpgrade].shopState || {};
         state.profiles[pidToUpgrade].shopState.unlockedItems = state.profiles[pidToUpgrade].shopState.unlockedItems || [];
-        state.profiles[pidToUpgrade].shopState.unlockedItems.push('kibo_club_sub');
-        // Preemptively set primary profile id if not set, or update it
+        state.profiles[pidToUpgrade].shopState.unlockedItems.push(planType);
         state.primaryProfileId = pidToUpgrade;
       }
+      state.isKiboClubFamily = false;
       if (activeProfilesCount > 1 && !isFinalResolution) {
          state.needsProfileDowngradeSelection = true;
       } else {
@@ -1138,6 +1153,7 @@ export const storageService = {
       }
     } else {
       // Free / none
+      state.isKiboClubFamily = false;
       if (activeProfilesCount > 1 && !isFinalResolution) {
          state.needsProfileDowngradeSelection = true;
       } else {
@@ -1198,6 +1214,98 @@ export const storageService = {
 
   getCurrentDate() {
     return this.getSimulatedDate() || new Date();
+  },
+
+  getConsumables(profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const profile = this.getProfileById(pid);
+    const saved = profile?.userData?.consumables;
+    return {
+      shieldCount: saved?.shieldCount ?? 1,
+      streakSaverCount: saved?.streakSaverCount ?? 0,
+      doubleSparksPotionCount: saved?.doubleSparksPotionCount ?? saved?.doubleCoinPotionCount ?? 0,
+      hintScrollCount: saved?.hintScrollCount ?? 2,
+      letterSpyglassCount: saved?.letterSpyglassCount ?? 2,
+      letterPrunerCount: saved?.letterPrunerCount ?? 2,
+      explorerCompassCount: saved?.explorerCompassCount ?? 2
+    };
+  },
+
+  saveConsumables(consumables, profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const state = safeGetProfilesState();
+    if (state.profiles[pid]) {
+      state.profiles[pid].userData = state.profiles[pid].userData || {};
+      state.profiles[pid].userData.consumables = {
+        ...(state.profiles[pid].userData.consumables || {}),
+        ...consumables
+      };
+      safeSaveProfilesState(state);
+    }
+  },
+
+  // ─── Daily Bonus Vault Tracking ──────────────────────────────────────────
+  canClaimDailyVault(profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const profile = this.getProfileById(pid);
+    if (!profile) return false;
+    const now = this.getCurrentDate();
+    const todayStr = now.toISOString().slice(0, 10);
+    const lastClaim = profile.userData?.lastDailyVaultClaimDate || null;
+    return lastClaim !== todayStr;
+  },
+
+  claimDailyVault(profileId = null, isKiboClub = false) {
+    const pid = profileId || this.getActiveProfileId();
+    const profile = this.getProfileById(pid);
+    if (!profile) return null;
+
+    const now = this.getCurrentDate();
+    const todayStr = now.toISOString().slice(0, 10);
+
+    const hasClub = isKiboClub || this.hasClubMembership(pid);
+    
+    // Reward payloads: Free gets 30 sparks + 1 shield + 1 scroll, Club gets 100 sparks + 2 shields + 1 potion + 2 scrolls
+    const sparksGranted = hasClub ? 100 : 30;
+    const shieldsGranted = hasClub ? 2 : 1;
+    const potionsGranted = hasClub ? 1 : 0;
+    const scrollsGranted = hasClub ? 2 : 1;
+
+    // Update sparks
+    const currentSparks = profile.userData?.sparks ?? 0;
+    const newSparks = currentSparks + sparksGranted;
+
+    // Update consumables
+    const curConsumables = this.getConsumables(pid);
+    const nextConsumables = {
+      shieldCount: (curConsumables.shieldCount || 0) + shieldsGranted,
+      doubleSparksPotionCount: (curConsumables.doubleSparksPotionCount || 0) + potionsGranted,
+      hintScrollCount: (curConsumables.hintScrollCount || 0) + scrollsGranted,
+      streakSaverCount: curConsumables.streakSaverCount || 0
+    };
+    this.saveConsumables(nextConsumables, pid);
+
+    // Save profile state
+    const state = safeGetProfilesState();
+    if (state.profiles[pid]) {
+      state.profiles[pid].userData = state.profiles[pid].userData || {};
+      state.profiles[pid].userData.sparks = newSparks;
+      state.profiles[pid].userData.lastDailyVaultClaimDate = todayStr;
+      safeSaveProfilesState(state);
+    }
+
+    try {
+      localStorage.setItem('kibo_math_sparks', newSparks.toString());
+    } catch {}
+
+    return {
+      sparks: sparksGranted,
+      shields: shieldsGranted,
+      potions: potionsGranted,
+      scrolls: scrollsGranted,
+      isKiboClub: hasClub,
+      totalSparks: newSparks
+    };
   },
 
   // ─── Unlocked & Seen Badges Tracking ────────────────────────────────────

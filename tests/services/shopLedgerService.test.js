@@ -7,6 +7,7 @@ import * as itemsCatalog from '../../src/utils/itemsCatalog.js';
 describe('shopLedgerService', () => {
   beforeEach(() => {
     vi.spyOn(storageService, 'getUserData').mockReturnValue({ sparks: 1000 });
+    vi.spyOn(storageService, 'hasClubMembership').mockReturnValue(false);
     vi.spyOn(storageService, 'getShopState').mockReturnValue({
       unlockedItems: ['item1'],
       equippedItems: ['item1']
@@ -23,7 +24,7 @@ describe('shopLedgerService', () => {
   });
 
   describe('sellItem', () => {
-    it('sells an owned item and updates storage and ledger', () => {
+    it('sells an owned item and updates storage and ledger at standard 50% rate', () => {
       const res = shopLedgerService.sellItem('item1', 100);
       expect(res.success).toBe(true);
       expect(res.newSparks).toBe(1050); // 1000 + (100 * 0.5)
@@ -39,6 +40,13 @@ describe('shopLedgerService', () => {
       }));
     });
 
+    it('sells an owned item at 65% VIP rate for club members', () => {
+      vi.spyOn(storageService, 'hasClubMembership').mockReturnValue(true);
+      const res = shopLedgerService.sellItem('item1', 100);
+      expect(res.success).toBe(true);
+      expect(res.newSparks).toBe(1065); // 1000 + (100 * 0.65)
+    });
+
     it('fails if item is not owned', () => {
       const res = shopLedgerService.sellItem('item2', 100);
       expect(res.success).toBe(false);
@@ -50,7 +58,7 @@ describe('shopLedgerService', () => {
   describe('purchaseItem', () => {
     it('purchases a new item successfully', () => {
       vi.spyOn(itemsCatalog, 'getItemById').mockReturnValue({ id: 'item2', cost: 200 });
-      vi.spyOn(itemsCatalog, 'getItemSalePrice').mockReturnValue({ isSale: false, salePrice: 200 });
+      vi.spyOn(itemsCatalog, 'getItemEffectivePrice').mockReturnValue({ cost: 200, originalCost: 200, isDiscounted: false });
       vi.spyOn(antiCheatService, 'validateSparksTransaction').mockReturnValue({ valid: true });
 
       const res = shopLedgerService.purchaseItem('item2', 200);
@@ -65,6 +73,18 @@ describe('shopLedgerService', () => {
         itemId: 'item2',
         sparksCost: 200
       }));
+    });
+
+    it('purchases a new item with 15% VIP discount for club members', () => {
+      vi.spyOn(storageService, 'hasClubMembership').mockReturnValue(true);
+      vi.spyOn(itemsCatalog, 'getItemById').mockReturnValue({ id: 'item2', cost: 200 });
+      vi.spyOn(itemsCatalog, 'getItemEffectivePrice').mockReturnValue({ cost: 170, originalCost: 200, isDiscounted: true, isClubDiscount: true });
+      vi.spyOn(antiCheatService, 'validateSparksTransaction').mockReturnValue({ valid: true });
+
+      const res = shopLedgerService.purchaseItem('item2', 200);
+      expect(res.success).toBe(true);
+      expect(res.newSparks).toBe(830); // 1000 - 170
+      expect(res.unlockedItems).toContain('item2');
     });
 
     it('fails if item ID is invalid', () => {

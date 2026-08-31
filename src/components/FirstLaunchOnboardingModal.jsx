@@ -341,6 +341,15 @@ export default function FirstLaunchOnboardingModal({
             </div>
           </div>
 
+          {/* Feature Highlights: 100% Offline, Zero Ads */}
+          <div className="w-full bg-emerald-500/15 border border-emerald-400/30 rounded-xl px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-black text-emerald-300">
+            <span>✈️ 100% Offline-Ready</span>
+            <span className="text-white/30">•</span>
+            <span>🛡️ Zero Ads</span>
+            <span className="text-white/30">•</span>
+            <span>🔒 Kid-Safe</span>
+          </div>
+
           {/* Pronunciation & Kilimanjaro Fun Fact */}
           <div className="text-[11px] sm:text-xs text-slate-400 font-medium flex items-center justify-center gap-1.5 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 w-full">
             <span>💡</span>

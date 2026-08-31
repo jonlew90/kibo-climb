@@ -1037,6 +1037,9 @@ export default function LeaderboardScreen({
                   <span className="font-bold text-xs text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[1].name}
                   </span>
+                  {((top3[1].isCurrentUser && storageService.hasClubMembership(activeProfile?.id)) || (top3[1].profileId && storageService.hasClubMembership(top3[1].profileId)) || top3[1].isClubMember) && (
+                    <span className="text-xs" title="Kibo Club VIP">👑</span>
+                  )}
                   {top3[1].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[1].isFriend ? (
@@ -1082,6 +1085,9 @@ export default function LeaderboardScreen({
                   <span className="font-black text-sm text-amber-900 text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[0].name}
                   </span>
+                  {((top3[0].isCurrentUser && storageService.hasClubMembership(activeProfile?.id)) || (top3[0].profileId && storageService.hasClubMembership(top3[0].profileId)) || top3[0].isClubMember) && (
+                    <span className="text-xs" title="Kibo Club VIP">👑</span>
+                  )}
                   {top3[0].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[0].isFriend ? (
@@ -1126,6 +1132,9 @@ export default function LeaderboardScreen({
                   <span className="font-bold text-xs text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[2].name}
                   </span>
+                  {((top3[2].isCurrentUser && storageService.hasClubMembership(activeProfile?.id)) || (top3[2].profileId && storageService.hasClubMembership(top3[2].profileId)) || top3[2].isClubMember) && (
+                    <span className="text-xs" title="Kibo Club VIP">👑</span>
+                  )}
                   {top3[2].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[2].isFriend ? (
@@ -1151,84 +1160,95 @@ export default function LeaderboardScreen({
 
         {/* SCROLLABLE LIST (Ranks 4+) */}
         <div className="px-4 space-y-2 pb-6">
-          {others.map((player) => (
-            <div
-              key={player.isCurrentUser ? 'current-user-row' : `${player.id || player.name}-${player.rank}`}
-              onClick={() => {
-                soundFx.playKeyTap();
-                setSelectedPlayerForModal(player);
-              }}
-              className={`rounded-2xl p-3 flex items-center gap-3 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] ${
-                player.isCurrentUser
-                  ? 'bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border-2 border-indigo-500 shadow-md ring-2 ring-indigo-400/30'
-                  : player.isFriend
-                  ? 'bg-gradient-to-r from-rose-50/50 via-pink-50/30 to-white border border-rose-200 shadow-sm hover:shadow-md'
-                  : 'bg-white border border-slate-200 shadow-sm hover:shadow-md'
-              }`}
-            >
-              {/* Rank Number */}
-              <div className={`w-6 text-center font-black shrink-0 ${player.isCurrentUser ? 'text-indigo-700' : 'text-slate-400'}`}>
-                {player.rank}
-              </div>
+          {others.map((player) => {
+            const isMember = (player.isCurrentUser && storageService.hasClubMembership(activeProfile?.id)) ||
+              (player.profileId && storageService.hasClubMembership(player.profileId)) ||
+              player.isClubMember;
 
-              {/* Avatar Mascot */}
-              <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border flex items-center justify-center shrink-0 overflow-hidden relative ${
-                player.isCurrentUser ? 'bg-indigo-100 border-indigo-300 ring-2 ring-indigo-400/30' : player.isFriend ? 'bg-rose-50 border-rose-200 ring-2 ring-rose-300/40' : 'bg-slate-100 border-slate-200'
-              }`}>
-                <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
-                  <Mascot size={44} mood={player.isCurrentUser ? "happy" : "neutral"} equipped={player.equipped} className="w-full h-full" />
+            return (
+              <div
+                key={player.isCurrentUser ? 'current-user-row' : `${player.id || player.name}-${player.rank}`}
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setSelectedPlayerForModal(player);
+                }}
+                className={`rounded-2xl p-3 flex items-center gap-3 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] ${
+                  player.isCurrentUser
+                    ? 'bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border-2 border-indigo-500 shadow-md ring-2 ring-indigo-400/30'
+                    : player.isFriend
+                    ? 'bg-gradient-to-r from-rose-50/50 via-pink-50/30 to-white border border-rose-200 shadow-sm hover:shadow-md'
+                    : 'bg-white border border-slate-200 shadow-sm hover:shadow-md'
+                }`}
+              >
+                {/* Rank Number */}
+                <div className={`w-6 text-center font-black shrink-0 ${player.isCurrentUser ? 'text-indigo-700' : 'text-slate-400'}`}>
+                  {player.rank}
                 </div>
-              </div>
 
-              {/* Player Info */}
-              <div className="flex-1 min-w-0 flex flex-col justify-center">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-bold text-sm text-slate-800 break-words line-clamp-2" title={player.name}>
-                    {player.name}
-                  </span>
-                  {player.isCurrentUser && (
-                    <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
-                      YOU
+                {/* Avatar Mascot */}
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border flex items-center justify-center shrink-0 overflow-hidden relative ${
+                  player.isCurrentUser ? 'bg-indigo-100 border-indigo-300 ring-2 ring-indigo-400/30' : player.isFriend ? 'bg-rose-50 border-rose-200 ring-2 ring-rose-300/40' : 'bg-slate-100 border-slate-200'
+                }`}>
+                  <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
+                    <Mascot size={44} mood={player.isCurrentUser ? "happy" : "neutral"} equipped={player.equipped} className="w-full h-full" />
+                  </div>
+                </div>
+
+                {/* Player Info */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-sm text-slate-800 break-words line-clamp-2" title={player.name}>
+                      {player.name}
+                    </span>
+                    {isMember && (
+                      <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300" title="Kibo Club VIP">
+                        👑 CLUB
+                      </span>
+                    )}
+                    {player.isCurrentUser && (
+                      <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
+                        YOU
+                      </span>
+                    )}
+                    {player.isFriend && (
+                      <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0">
+                        <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" /> Friend
+                      </span>
+                    )}
+                  </div>
+                  {viewMode === 'quests' ? (
+                    <span className="text-xs text-purple-700 font-medium truncate flex items-center gap-1 mt-0.5">
+                      <Mountain className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                      <span className="truncate">[Ascent {player.ascentTier || 1}] Lv. {player.level || 1} • {player.title || 'Basecamp Explorer'}</span>
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-500 font-medium truncate flex items-center gap-1 mt-0.5">
+                      <Activity className="w-3.5 h-3.5 text-slate-400" />
+                      {player.subjectsMastered} Skills Mastered
                     </span>
                   )}
-                  {player.isFriend && (
-                    <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0">
-                      <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" /> Friend
-                    </span>
-                  )}
                 </div>
-                {viewMode === 'quests' ? (
-                  <span className="text-xs text-purple-700 font-medium truncate flex items-center gap-1 mt-0.5">
-                    <Mountain className="w-3.5 h-3.5 text-purple-500 shrink-0" />
-                    <span className="truncate">[Ascent {player.ascentTier || 1}] Lv. {player.level || 1} • {player.title || 'Basecamp Explorer'}</span>
-                  </span>
-                ) : (
-                  <span className="text-xs text-slate-500 font-medium truncate flex items-center gap-1 mt-0.5">
-                    <Activity className="w-3.5 h-3.5 text-slate-400" />
-                    {player.subjectsMastered} Skills Mastered
-                  </span>
-                )}
-              </div>
 
-              {/* Score / Rank Badge */}
-              <div className="flex flex-col items-end shrink-0">
-                <span className="font-black text-indigo-700 text-sm">
-                  {viewMode === 'global'
-                    ? player.score
-                    : viewMode === 'weekly'
-                    ? (player.sparks || 0)
-                    : (player.totalXp ?? player.score ?? 0).toLocaleString()}
-                </span>
-                <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
-                  {viewMode === 'global'
-                    ? getRankTitle(player.score)
-                    : viewMode === 'weekly'
-                    ? 'Sparks'
-                    : 'Elevation XP'}
-                </span>
+                {/* Score / Rank Badge */}
+                <div className="flex flex-col items-end shrink-0">
+                  <span className="font-black text-indigo-700 text-sm">
+                    {viewMode === 'global'
+                      ? player.score
+                      : viewMode === 'weekly'
+                      ? (player.sparks || 0)
+                      : (player.totalXp ?? player.score ?? 0).toLocaleString()}
+                  </span>
+                  <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
+                    {viewMode === 'global'
+                      ? getRankTitle(player.score)
+                      : viewMode === 'weekly'
+                      ? 'Sparks'
+                      : 'Elevation XP'}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -1255,6 +1275,11 @@ export default function LeaderboardScreen({
             <div className="flex-1 min-w-0 flex flex-col z-10">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-black text-white text-sm truncate">You ({username})</span>
+                {storageService.hasClubMembership(activeProfile?.id) && (
+                  <span className="bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 text-xs font-black px-2 py-0.5 rounded-md shadow-xs border border-amber-300 flex items-center gap-1">
+                    👑 KIBO CLUB
+                  </span>
+                )}
                 {viewMode === 'quests' ? (
                   <span className="bg-purple-600 text-purple-100 text-xs uppercase px-2 py-0.5 rounded font-bold tracking-wider">
                     [Ascent {userLevelInfo.ascentTier}] Lv. {userLevelInfo.level} • {userLevelInfo.title}

@@ -1354,6 +1354,7 @@ export const WORKSHOP_ITEMS = [
     rarity: 'epic',
     description: 'Includes 1000 Sparks, 5 Streak Savers, and the exclusive Explorer Fedora!',
     sparksIncluded: 1000,
+    clubRealMoneyPrice: '$3.99',
     bundleItems: ['explorer_hat'],
     bundleConsumables: { streakSaverCount: 5 }
   },
@@ -1363,6 +1364,7 @@ export const WORKSHOP_ITEMS = [
     category: 'premium',
     slot: 'pets',
     realMoneyPrice: '$2.99',
+    clubRealMoneyPrice: '$2.49',
     rarity: 'epic',
     description: 'A tiny fire-breathing dragon companion that flies beside Kibo. Real money exclusive.'
   },
@@ -1372,8 +1374,29 @@ export const WORKSHOP_ITEMS = [
     category: 'premium',
     slot: 'skins',
     realMoneyPrice: '$3.99',
+    clubRealMoneyPrice: '$3.29',
     rarity: 'legendary',
     description: 'An animated shimmering galaxy skin for Kibo! Real money exclusive.'
+  },
+  {
+    id: 'golden_summit_crown',
+    name: 'Golden Summit Crown',
+    category: 'headwear',
+    slot: 'headwear',
+    cost: 1200,
+    rarity: 'legendary',
+    requiresKiboClub: true,
+    description: 'Exclusive glistening gold crown awarded to prestigious Kibo Club summit climbers!'
+  },
+  {
+    id: 'celestial_trail',
+    name: 'Celestial Star Trail',
+    category: 'fx',
+    slot: 'fx',
+    cost: 1500,
+    rarity: 'legendary',
+    requiresKiboClub: true,
+    description: 'VIP aura of cosmic stardust floating behind Kibo during climbs. Kibo Club exclusive.'
   },
   {
     id: 'kibo_club_sub',
@@ -1381,10 +1404,24 @@ export const WORKSHOP_ITEMS = [
     category: 'premium',
     slot: 'fx',
     realMoneyPrice: '$4.99/mo',
+    billingPeriod: 'monthly',
     isSubscription: true,
     isFamilyPlan: false,
     rarity: 'legendary',
     description: 'Join the Kibo Club! Enjoy a permanent 1.25x Spark Multiplier, a golden username tag, and 100 daily Sparks for this profile.'
+  },
+  {
+    id: 'kibo_club_sub_annual',
+    name: 'Kibo Club Individual (Annual)',
+    category: 'premium',
+    slot: 'fx',
+    realMoneyPrice: '$39.99/yr',
+    monthlyEquivalent: '$3.33/mo',
+    billingPeriod: 'annual',
+    isSubscription: true,
+    isFamilyPlan: false,
+    rarity: 'legendary',
+    description: 'Annual Kibo Club for 1 profile! 1.25x Spark Multiplier, golden username tag, and 100 daily Sparks (Save 33%).'
   },
   {
     id: 'kibo_club_family',
@@ -1392,10 +1429,24 @@ export const WORKSHOP_ITEMS = [
     category: 'premium',
     slot: 'fx',
     realMoneyPrice: '$7.99/mo',
+    billingPeriod: 'monthly',
     isSubscription: true,
     isFamilyPlan: true,
     rarity: 'legendary',
     description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
+  },
+  {
+    id: 'kibo_club_family_annual',
+    name: 'Kibo Club Family (Annual)',
+    category: 'premium',
+    slot: 'fx',
+    realMoneyPrice: '$59.99/yr',
+    monthlyEquivalent: '$5.00/mo',
+    billingPeriod: 'annual',
+    isSubscription: true,
+    isFamilyPlan: true,
+    rarity: 'legendary',
+    description: 'Annual Kibo Club for up to 6 siblings! 1.25x Spark Multipliers, golden tags, and unified parent controls (Save 37%).'
   }
 ];
 
@@ -1406,6 +1457,7 @@ export const SPARKS_PACKAGES = [
     sparks: 500,
     price: '$1.99',
     realMoneyPrice: '$1.99',
+    clubRealMoneyPrice: '$1.69',
     rarity: 'common',
     description: 'A glowing handful of 500 Sparks to grab that special cosmetic or power-up!'
   },
@@ -1415,6 +1467,7 @@ export const SPARKS_PACKAGES = [
     sparks: 1200,
     price: '$3.99',
     realMoneyPrice: '$3.99',
+    clubRealMoneyPrice: '$3.39',
     rarity: 'rare',
     description: 'An adventurer coin pouch packed with 1,200 crackling Sparks for your journey!'
   },
@@ -1424,8 +1477,9 @@ export const SPARKS_PACKAGES = [
     sparks: 3000,
     price: '$7.99',
     realMoneyPrice: '$7.99',
+    clubRealMoneyPrice: '$6.79',
     rarity: 'epic',
-    description: 'A heavy treasure chest overflowing with 3,000 glowing Sparks & golden energy!'
+    description: 'A reinforced wooden treasure chest holding 3,000 dazzling Sparks for serious climbers!'
   },
   {
     id: 'sparks_pack_4',
@@ -1433,8 +1487,9 @@ export const SPARKS_PACKAGES = [
     sparks: 10000,
     price: '$19.99',
     realMoneyPrice: '$19.99',
+    clubRealMoneyPrice: '$16.49',
     rarity: 'legendary',
-    description: 'A colossal hoard vault of 10,000 Sparks to unlock everything on Mount Kibo!'
+    description: 'A mountain-sized summit hoard of 10,000 roaring Sparks to unlock anything in the workshop!'
   }
 ];
 
@@ -1465,9 +1520,17 @@ export function getRealMoneyItemSavings(item) {
     if (packSavings) return packSavings;
   }
 
-  // Starter Bundle: 1000 Sparks ($3.98) + 5 Streak Savers (500 Sparks = $1.99) + Explorer Fedora (25 Sparks = $0.10) => $6.07 value for $4.99
+  // Starter bundle savings: $2.99 vs standalone item values
   if (item.id === 'starter_bundle') {
     return 18;
+  }
+
+  // Annual subscriptions savings
+  if (item.id === 'kibo_club_sub_annual') {
+    return 33;
+  }
+  if (item.id === 'kibo_club_family_annual') {
+    return 37;
   }
 
   // Kibo Club Family: $7.99/mo covers all child profiles vs multiple individual subs ($4.99 * 2 = $9.98/mo min)
@@ -1476,6 +1539,52 @@ export function getRealMoneyItemSavings(item) {
   }
 
   return null;
+}
+
+export function getItemEffectivePrice(item, currentDate = new Date(), isKiboClub = false) {
+  if (!item) return { cost: 0, originalCost: 0, isDiscounted: false, discountPercent: 0 };
+  const saleInfo = getItemSalePrice(item, currentDate);
+  const baseCost = saleInfo.isSale ? saleInfo.salePrice : (item.cost || 0);
+
+  if (isKiboClub && !item.realMoneyPrice && baseCost > 0) {
+    const clubCost = Math.max(1, Math.round(baseCost * 0.85)); // 15% VIP discount
+    return {
+      cost: clubCost,
+      originalCost: baseCost,
+      isDiscounted: true,
+      discountPercent: 15,
+      isClubDiscount: true
+    };
+  }
+
+  return {
+    cost: baseCost,
+    originalCost: item.cost || baseCost,
+    isDiscounted: saleInfo.isSale,
+    discountPercent: saleInfo.discountPercent || 0,
+    isClubDiscount: false
+  };
+}
+
+export function getItemSellBackPrice(item, isKiboClub = false) {
+  if (!item || !item.cost) return 0;
+  const rate = isKiboClub ? 0.65 : 0.50; // 65% for Kibo Club, 50% standard
+  return Math.floor(item.cost * rate);
+}
+
+export function getRealMoneyItemClubPrice(item) {
+  if (!item) return null;
+  return item.clubRealMoneyPrice || null;
+}
+
+export function getRealMoneyItemClubSavings(item) {
+  if (!item || !item.realMoneyPrice || !item.clubRealMoneyPrice) return null;
+  const parsePrice = (p) => parseFloat(String(p).replace(/[^0-9.]/g, ''));
+  const reg = parsePrice(item.realMoneyPrice);
+  const club = parsePrice(item.clubRealMoneyPrice);
+  if (!reg || !club || reg <= club) return null;
+  const savings = (reg - club).toFixed(2);
+  return `$${savings}`;
 }
 
 export function getItemById(id) {
@@ -1495,7 +1604,7 @@ export function getItemSlot(item) {
     if (item.id === 'dragon_pet_premium') return 'pets';
     if (item.id === 'galaxy_skin_premium') return 'skins';
     if (item.id === 'starter_bundle') return 'headwear';
-    if (item.id === 'kibo_club_sub' || item.id === 'kibo_club_family') return 'fx';
+    if (item.id === 'kibo_club_sub' || item.id === 'kibo_club_sub_annual' || item.id === 'kibo_club_family' || item.id === 'kibo_club_family_annual') return 'fx';
   }
   return item.category;
 }

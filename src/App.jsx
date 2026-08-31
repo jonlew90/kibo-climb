@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass, LogOut, Gift, Share2 } from 'lucide-react';
+import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass, LogIn, LogOut, Gift, Share2 } from 'lucide-react';
 import Mascot from './components/Mascot';
 
 import ConfettiCanvas from './components/ConfettiCanvas';
@@ -48,6 +48,7 @@ import { getNotificationPrefs, scheduleAllProfileReminders, updateAppBadge } fro
 import MockCheckoutModal from './components/MockCheckoutModal';
 import StripeCheckoutModal from './components/StripeCheckoutModal';
 import FamilyPlanUpgradeModal from './components/FamilyPlanUpgradeModal';
+import DailyBonusRewardModal from './components/DailyBonusRewardModal';
 import SettingsScreen from './components/SettingsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import ShareModal from './components/ShareModal';
@@ -162,6 +163,7 @@ export default function App() {
   const [showMockCheckoutModal, setShowMockCheckoutModal] = useState(false);
   const [showStripeCheckoutModal, setShowStripeCheckoutModal] = useState(false);
   const [showFamilyUpgradeModal, setShowFamilyUpgradeModal] = useState(false);
+  const [showDailyBonusModal, setShowDailyBonusModal] = useState(false);
   const [showStreakSavedModal, setShowStreakSavedModal] = useState(false);
   const [showDailyStreakIncreasedModal, setShowDailyStreakIncreasedModal] = useState(false);
   const [showMultiSubjectBonusModal, setShowMultiSubjectBonusModal] = useState(false);
@@ -598,7 +600,7 @@ export default function App() {
   });
 
   const [isKiboClub, setIsKiboClub] = useState(() => {
-    return storageService.getUserData(activeSubject).isKiboClub || false;
+    return storageService.hasClubMembership(activeProfileId);
   });
 
   // Persistent Active Skill Tier (1 through 8)
@@ -1784,9 +1786,9 @@ export default function App() {
       {/* Subject Background Wallpaper */}
       <SubjectWallpaper activeSubject={activeSubject} />
       {isOffline && (
-        <div className="bg-amber-100 text-amber-900 border-b border-amber-200 px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-bold z-50">
+        <div className="bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 text-white border-b border-teal-800 px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-black z-50 shadow-xs">
           <WifiOff className="w-3.5 h-3.5 shrink-0" />
-          You are offline. Progress will sync when reconnected.
+          <span>✈️ Offline Practice Active: All climbs work without Wi-Fi. Progress will sync to cloud when connected.</span>
         </div>
       )}
       {/* Sticky Top HUD Header Bar */}
@@ -1801,12 +1803,18 @@ export default function App() {
                 soundFx.playKeyTap();
                 setShowProfileDropdown(!showProfileDropdown);
               }}
-              className="flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 text-white border-2 border-sky-300 p-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer group shrink-0"
-              title={`Climber Profile: ${activeProfile?.username || activeProfile?.name || 'Climber'}`}
+              className={`flex items-center gap-1 sm:gap-1.5 text-white border-2 p-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer group shrink-0 ${
+                isKiboClub
+                  ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 border-amber-300 ring-2 ring-amber-400/40'
+                  : 'bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 border-sky-300'
+              }`}
+              title={`Climber Profile: ${activeProfile?.username || activeProfile?.name || 'Climber'}${isKiboClub ? ' (Kibo Club Member 👑)' : ''}`}
               aria-expanded={showProfileDropdown}
             >
               <div className="relative">
-                <div className="w-6 h-6 rounded-full bg-white/25 border border-white/40 flex items-center justify-center text-xs font-black shrink-0 text-white uppercase shadow-2xs">
+                <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-black shrink-0 text-white uppercase shadow-2xs ${
+                  isKiboClub ? 'bg-amber-400/40 border-amber-200' : 'bg-white/25 border-white/40'
+                }`}>
                   {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
                 </div>
                 {pendingFriendRequestsCount > 0 && (
@@ -1819,21 +1827,35 @@ export default function App() {
               <span className="hidden md:inline truncate tracking-tight font-black max-w-[140px] lg:max-w-[180px]">
                 {activeProfile?.username || activeProfile?.name || 'Climber'}
               </span>
+              {isKiboClub && (
+                <span className="text-xs" title="Kibo Club Member">👑</span>
+              )}
               <ChevronDown className={`w-3 h-3 text-white/80 group-hover:text-white transition-transform duration-200 shrink-0 ${showProfileDropdown ? 'rotate-180' : ''}`} />
             </button>
 
             {showProfileDropdown && (
               <div className="absolute top-full left-0 mt-2 w-60 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-150">
                 {/* Current Active Profile Card */}
-                <div className="p-3 bg-gradient-to-br from-slate-50 to-sky-50/50 border-b border-slate-200">
+                <div className={`p-3 border-b border-slate-200 ${
+                  isKiboClub ? 'bg-gradient-to-br from-amber-50/70 to-orange-50/50' : 'bg-gradient-to-br from-slate-50 to-sky-50/50'
+                }`}>
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-base font-black shadow-xs border-2 border-white shrink-0">
+                    <div className={`w-10 h-10 rounded-full text-white flex items-center justify-center text-base font-black shadow-xs border-2 border-white shrink-0 ${
+                      isKiboClub ? 'bg-gradient-to-tr from-amber-500 to-orange-600' : 'bg-gradient-to-tr from-sky-500 to-indigo-600'
+                    }`}>
                       {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-sm font-black text-slate-800 truncate leading-tight" title={activeProfile?.username || activeProfile?.name || 'Kibo Climber'}>
-                        {activeProfile?.username || activeProfile?.name || 'Kibo Climber'}
-                      </span>
+                      <div className="flex items-center gap-1 min-w-0">
+                        <span className="text-sm font-black text-slate-800 truncate leading-tight" title={activeProfile?.username || activeProfile?.name || 'Kibo Climber'}>
+                          {activeProfile?.username || activeProfile?.name || 'Kibo Climber'}
+                        </span>
+                        {isKiboClub && (
+                          <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300">
+                            👑 CLUB
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span className="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200/80 px-1.5 py-0.2 rounded-md flex items-center gap-0.5 shrink-0">
                           <Star className="w-3 h-3 fill-sky-500 text-sky-500 inline shrink-0" />
@@ -1853,6 +1875,7 @@ export default function App() {
                     .filter((p) => p.id !== activeProfileId)
                     .map((profile) => {
                       const isLocked = storageService.isProfileLocked(profile.id);
+                      const isProfileMember = storageService.hasClubMembership(profile.id);
                       const pRating = profile.userData?.subjects?.[activeSubject]?.competenceRank ||
                         profile.userData?.competenceRank ||
                         1000;
@@ -1999,7 +2022,20 @@ export default function App() {
                     <span>Settings</span>
                   </button>
 
-                  {!authService.getAuthState().isAnonymous && (
+                  {authService.getAuthState().isAnonymous ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setShowProfileDropdown(false);
+                        handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Restore Account' });
+                      }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-indigo-50 text-indigo-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                    >
+                      <LogIn className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5]" />
+                      <span>Log In</span>
+                    </button>
+                  ) : (
                     <button
                       type="button"
                       onClick={() => {
@@ -2921,22 +2957,28 @@ export default function App() {
           syncAppStateWithStorage();
         }}
         onOpenSubscription={(planId) => {
-          if (planId === 'kibo_club_family') {
+          const item = getItemById(planId);
+          if (item) {
             handleBuySparksPackage({
-              id: 'kibo_club_family',
-              name: 'Kibo Club Family',
-              realMoneyPrice: '$7.99/mo',
-              price: '$7.99/mo',
+              ...item,
+              price: item.realMoneyPrice || item.price
+            });
+          } else if (planId?.includes('family')) {
+            handleBuySparksPackage({
+              id: planId,
+              name: planId.includes('annual') ? 'Kibo Club Family (Annual)' : 'Kibo Club Family',
+              realMoneyPrice: planId.includes('annual') ? '$59.99/yr' : '$7.99/mo',
+              price: planId.includes('annual') ? '$59.99/yr' : '$7.99/mo',
               isSubscription: true,
               isFamilyPlan: true,
               description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
             });
           } else {
             handleBuySparksPackage({
-              id: 'kibo_club_sub',
-              name: 'Kibo Club Individual',
-              realMoneyPrice: '$4.99/mo',
-              price: '$4.99/mo',
+              id: planId || 'kibo_club_sub',
+              name: planId?.includes('annual') ? 'Kibo Club Individual (Annual)' : 'Kibo Club Individual',
+              realMoneyPrice: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
+              price: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
               isSubscription: true,
               isFamilyPlan: false,
               description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!'
@@ -2945,10 +2987,10 @@ export default function App() {
         }}
         onOpenFamilyUpgrade={() => {
           handleBuySparksPackage({
-            id: 'kibo_club_family',
-            name: 'Kibo Club Family',
-            realMoneyPrice: '$7.99/mo',
-            price: '$7.99/mo',
+            id: 'kibo_club_family_annual',
+            name: 'Kibo Club Family (Annual)',
+            realMoneyPrice: '$59.99/yr',
+            price: '$59.99/yr',
             isSubscription: true,
             isFamilyPlan: true,
             description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
@@ -3104,6 +3146,9 @@ export default function App() {
         allowRealMoneyPurchases={notifPrefs.allowRealMoneyPurchases}
         initialHub={workshopHub}
         initialViewMode={workshopViewMode}
+        isKiboClub={isKiboClub}
+        activeProfileId={activeProfileId}
+        onOpenDailyVault={() => setShowDailyBonusModal(true)}
         onOpenParentZone={(targetTab = 'verification', highlight = 'real_money_purchases') => {
           handleOpenPinGate('shop', targetTab, highlight);
         }}
@@ -3164,11 +3209,9 @@ export default function App() {
 
           if (pack.isSubscription) {
              setIsKiboClub(true);
-             if (pack.isFamilyPlan) {
-               storageService.setFamilyPlanState(true);
-             } else {
-               storageService.saveUserData({ isKiboClub: true });
-             }
+             storageService.updateSubscriptionState(pack.id, activeProfileId, true);
+             const activeProf = storageService.getActiveProfile();
+             setUnlockedItems(activeProf?.shopState?.unlockedItems || []);
           }
 
           setSparks(newSparks);
@@ -3227,11 +3270,9 @@ export default function App() {
 
           if (pack.isSubscription) {
             setIsKiboClub(true);
-            if (pack.isFamilyPlan) {
-              storageService.setFamilyPlanState(true);
-            } else {
-              storageService.saveUserData({ isKiboClub: true });
-            }
+            storageService.updateSubscriptionState(pack.id, activeProfileId, true);
+            const activeProf = storageService.getActiveProfile();
+            setUnlockedItems(activeProf?.shopState?.unlockedItems || []);
           }
 
           setSparks(newSparks);
@@ -3241,6 +3282,24 @@ export default function App() {
           soundFx.playSparkCollect();
           setPendingSparksPurchase(null);
           handleGoBack();
+        }}
+      />
+
+      {/* Daily Bonus Reward Vault Modal */}
+      <DailyBonusRewardModal
+        isOpen={showDailyBonusModal}
+        onClose={() => setShowDailyBonusModal(false)}
+        activeProfileId={activeProfileId}
+        isKiboClub={isKiboClub}
+        onRewardClaimed={(claimResult) => {
+          if (claimResult && claimResult.totalSparks !== undefined) {
+            setSparks(claimResult.totalSparks);
+          }
+          const updatedConsumables = storageService.getConsumables(activeProfileId);
+          setConsumables(updatedConsumables);
+          if (updatedConsumables.shieldCount !== undefined) {
+            setStreakShields(updatedConsumables.shieldCount);
+          }
         }}
       />
 

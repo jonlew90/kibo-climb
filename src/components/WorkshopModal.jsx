@@ -48,6 +48,10 @@ import {
   getItemSalePrice,
   calculateSparksPackageSavings,
   getRealMoneyItemSavings,
+  getItemEffectivePrice,
+  getItemSellBackPrice,
+  getRealMoneyItemClubPrice,
+  getRealMoneyItemClubSavings,
   isWearableItem,
   getOwnedItems
 } from '../utils/itemsCatalog';
@@ -143,10 +147,15 @@ export default function WorkshopModal({
   onBuySparksPackage,
   onOpenParentZone,
   onRequestAccountLink,
+  onOpenDailyVault,
+  isKiboClub = false,
+  activeProfileId = null,
   initialHub = 'wearables',
   initialViewMode = 'shop',
   renderFooter
 }) {
+  const isMember = isKiboClub || storageService.hasClubMembership(activeProfileId);
+
   const INITIAL_PREVIEW_SLOTS = {
     headwear: null,
     gear: null,
@@ -441,18 +450,28 @@ export default function WorkshopModal({
       return;
     }
 
+    if (item.requiresKiboClub && !isMember) {
+      soundFx.playKeyTap();
+      setShowFamilyPlanModal(true);
+      return;
+    }
+
     if (item.realMoneyPrice) {
       soundFx.playKeyTap();
+      const packToBuy = (isMember && item.clubRealMoneyPrice)
+        ? { ...item, realMoneyPrice: item.clubRealMoneyPrice, price: item.clubRealMoneyPrice }
+        : item;
+
       if (allowRealMoneyPurchases) {
-        onBuySparksPackage(item);
+        onBuySparksPackage(packToBuy);
       } else if (onOpenParentZone) {
         onOpenParentZone('verification', 'real_money_purchases');
       }
       return;
     }
 
-    const saleInfo = getItemSalePrice(item, currentDate);
-    const effectiveCost = saleInfo.isSale ? saleInfo.salePrice : item.cost;
+    const priceInfo = getItemEffectivePrice(item, currentDate, isMember);
+    const effectiveCost = priceInfo.cost;
 
     if (sparks >= effectiveCost) {
       soundFx.playVictory();
@@ -1172,17 +1191,17 @@ export default function WorkshopModal({
                           <Sparkles className="w-3 h-3 fill-amber-950" /> Kibo Club
                         </span>
                         <span className="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-                          Individual & Family Plans
+                          Individual & Family (Save ~35% Annual)
                         </span>
                         <span className="bg-emerald-500 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-2xs">
-                          From $4.99/mo
+                          From $4.99/mo or $39.99/yr
                         </span>
                       </div>
                       <h3 className="text-base sm:text-lg font-black tracking-tight text-white drop-shadow-xs">
-                        Unlock 1.25x Sparks Forever & Premium Benefits
+                        Unlock 1.25x Sparks Forever, 15% VIP Store Discounts & Daily Vault
                       </h3>
                       <p className="text-xs text-indigo-100 font-medium leading-snug max-w-xl">
-                        Supercharge every climb with Spark Multipliers, golden tags, daily bonuses, and support for up to 6 child profiles on the Family Plan!
+                        Supercharge learning with 1.25x Sparks, 15% VIP discounts on gear & packs, 3.3x Daily Vault bonuses, golden tags 👑, and up to 6 siblings on Family Plan!
                       </p>
                     </div>
 
@@ -1196,6 +1215,40 @@ export default function WorkshopModal({
                       </button>
                     </div>
                   </div>
+                </div>
+
+                {/* Daily Spark Vault Interactive Banner */}
+                <div
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    if (onOpenDailyVault) {
+                      onOpenDailyVault();
+                    }
+                  }}
+                  className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-amber-950 rounded-2xl p-3.5 sm:p-4 shadow-md hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex items-center justify-between gap-3 border-2 border-amber-300 relative overflow-hidden"
+                >
+                  <div className="flex items-center gap-3 min-w-0 z-10">
+                    <div className="w-11 h-11 rounded-2xl bg-amber-200 border-2 border-amber-400 flex items-center justify-center text-2xl shadow-inner shrink-0 animate-bounce">
+                      🎁
+                    </div>
+                    <div className="min-w-0 text-left">
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-sm sm:text-base font-black text-amber-950 truncate">Daily Spark Vault</h4>
+                        <span className="text-[9px] font-black bg-amber-950 text-amber-300 px-1.5 py-0.2 rounded-full uppercase">
+                          {isMember ? '👑 3.3x VIP' : 'Daily Free'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-amber-900 font-medium truncate">
+                        {isMember ? 'Claim +100 Sparks, Shields & Potions today!' : 'Claim +30 Sparks and power-ups today!'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="z-10 bg-amber-950 hover:bg-black text-amber-300 font-black text-xs px-3.5 py-2 rounded-xl shadow-xs whitespace-nowrap shrink-0"
+                  >
+                    Open Vault
+                  </button>
                 </div>
 
                 {/* Account Link Reward Banner */}
@@ -1219,13 +1272,26 @@ export default function WorkshopModal({
                   </div>
                 )}
 
+                {/* VIP Pricing & Savings Value Callout */}
+                <div className="bg-gradient-to-r from-amber-50 to-purple-50 border border-amber-200 rounded-2xl p-3 text-left space-y-0.5">
+                  <div className="flex items-center gap-1.5 text-xs font-black text-amber-950">
+                    <span>👑</span>
+                    <span>Kibo Club VIP Pricing: Save 15% on All Packs & Bundles</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 font-medium">
+                    Your subscription pays for itself with everyday savings on Spark packs, bundles, and exclusive gear.
+                  </p>
+                </div>
+
                 {/* Sparks Packages Grid */}
                 <div className="space-y-1.5">
                   <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-500">Spark Bundles</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {SPARKS_PACKAGES.map((pack) => {
                       const savings = calculateSparksPackageSavings(pack);
-                      const displayPrice = pack.realMoneyPrice || pack.price;
+                      const displayPrice = isMember && pack.clubRealMoneyPrice ? pack.clubRealMoneyPrice : (pack.realMoneyPrice || pack.price);
+                      const clubSavings = getRealMoneyItemClubSavings(pack);
+
                       return (
                         <div
                           key={pack.id}
@@ -1235,13 +1301,22 @@ export default function WorkshopModal({
                             <ItemThumbnail itemId={pack.id} rarity={pack.rarity || 'legendary'} className="w-9 h-9 rounded-xl shrink-0 p-0.5" />
                             <div className="min-w-0">
                               <h5 className="font-extrabold text-xs sm:text-sm text-slate-800 truncate">{pack.name}</h5>
-                              <div className="flex items-center gap-1 mt-0.5">
+                              <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                                 <span className="text-xs font-black text-amber-600">⚡ {pack.sparks}</span>
                                 {savings !== null && (
                                   <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1 py-0.2 rounded">
                                     -{savings}%
                                   </span>
                                 )}
+                                {isMember && pack.clubRealMoneyPrice ? (
+                                  <span className="text-[9px] font-black text-amber-900 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded">
+                                    👑 VIP {pack.clubRealMoneyPrice}
+                                  </span>
+                                ) : pack.clubRealMoneyPrice ? (
+                                  <span className="text-[9px] font-bold text-purple-700 bg-purple-50 px-1 py-0.2 rounded">
+                                    Club: {pack.clubRealMoneyPrice}
+                                  </span>
+                                ) : null}
                               </div>
                             </div>
                           </div>
@@ -1249,8 +1324,11 @@ export default function WorkshopModal({
                           <button
                             type="button"
                             onClick={() => {
+                              const targetPack = (isMember && pack.clubRealMoneyPrice)
+                                ? { ...pack, realMoneyPrice: pack.clubRealMoneyPrice, price: pack.clubRealMoneyPrice }
+                                : pack;
                               if (allowRealMoneyPurchases) {
-                                onBuySparksPackage(pack);
+                                onBuySparksPackage(targetPack);
                               } else if (onOpenParentZone) {
                                 onOpenParentZone('verification', 'real_money_purchases');
                               }
@@ -1309,9 +1387,9 @@ export default function WorkshopModal({
                   const isEquippedInApp = equippedItems.includes(item.id);
                   const isPreviewedOnStage = stageEquippedItems.includes(item.id) || (item.bundleItems && item.bundleItems.some((id) => stageEquippedItems.includes(id)));
                   const isRealMoney = !!item.realMoneyPrice;
-
+                  const priceInfo = getItemEffectivePrice(item, currentDate, isMember);
+                  const activeCost = priceInfo.cost;
                   const saleInfo = getItemSalePrice(item, currentDate);
-                  const activeCost = saleInfo.isSale ? saleInfo.salePrice : item.cost;
                   const canAfford = isRealMoney ? true : sparks >= activeCost;
                   const rarityInfo = RARITY_TIERS[item.rarity] || RARITY_TIERS.common;
                   const availability = getItemAvailabilityStatus(item, currentDate);
@@ -1319,6 +1397,7 @@ export default function WorkshopModal({
                   const itemSlotId = getItemSlot(item);
                   const slotMeta = COSMETIC_SLOTS.find((s) => s.id === itemSlotId);
                   const showSlotTag = (selectedSlot === 'all' || activeHub === 'seasonal' || searchQuery.trim().length > 0) && slotMeta && slotMeta.id !== 'all';
+                  const isClubExclusive = !!item.requiresKiboClub;
 
                   return (
                     <div
@@ -1342,10 +1421,20 @@ export default function WorkshopModal({
                     >
                       {/* Top Row: Rarity Badge + Category Slot Tag (only in mixed views) + Equipped Indicator */}
                       <div className="w-full flex items-center justify-between gap-1 mb-1">
-                        <div className="flex items-center gap-1 min-w-0">
+                        <div className="flex items-center gap-1 min-w-0 flex-wrap">
                           <span className={`text-[8px] sm:text-[9px] uppercase font-black px-1.5 py-0.2 rounded-md border shrink-0 ${rarityInfo.badgeClass}`}>
                             {rarityInfo.label}
                           </span>
+                          {isClubExclusive && (
+                            <span className="text-[8px] sm:text-[9px] font-black uppercase px-1 py-0.2 rounded-md bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 border border-amber-300 shrink-0">
+                              👑 VIP
+                            </span>
+                          )}
+                          {!isUnlocked && priceInfo.isClubDiscount && (
+                            <span className="text-[8px] sm:text-[9px] font-black uppercase px-1 py-0.2 rounded-md bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
+                              -15% VIP
+                            </span>
+                          )}
                           {showSlotTag && (
                             <span className="text-[8px] sm:text-[9px] font-bold text-slate-500 bg-slate-100 px-1 py-0.2 rounded-md shrink-0 flex items-center gap-0.5 border border-slate-200" title={slotMeta.label}>
                               <span>{slotMeta.icon}</span>
@@ -1455,7 +1544,7 @@ export default function WorkshopModal({
                             className="w-full py-1 text-[11px] font-black rounded-lg btn-3d-purple shadow-2xs flex items-center justify-center gap-1 cursor-pointer"
                           >
                             {!allowRealMoneyPurchases && <Lock className="w-2.5 h-2.5 text-purple-200" />}
-                            <span>{item.realMoneyPrice}</span>
+                            <span>{isMember && item.clubRealMoneyPrice ? item.clubRealMoneyPrice : item.realMoneyPrice}</span>
                           </button>
                         ) : canAfford ? (
                           <button
@@ -1490,12 +1579,12 @@ export default function WorkshopModal({
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. INTERACTIVE TRY-ON & ITEM DETAILS DRAWER / MODAL */}
+      {/* 3. INTERACTIVE TRY-ON BOTTOM SHEET / DETAILS MODAL */}
       {/* ========================================================================= */}
       {selectedItemDetail && (
         <div
           onClick={() => setSelectedItemDetail(null)}
-          className="fixed inset-0 z-[65] bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in cursor-pointer"
+          className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in cursor-pointer"
         >
           <div
             className="bg-white rounded-t-3xl sm:rounded-3xl border-t-4 sm:border-3 border-amber-300 p-4 sm:p-5 w-full max-w-sm shadow-2xl space-y-3.5 animate-slide-up sm:animate-scale-in relative text-slate-800 cursor-default"
@@ -1603,7 +1692,7 @@ export default function WorkshopModal({
                     }}
                     className="py-2.5 px-3 bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 font-black text-xs rounded-xl transition-all cursor-pointer"
                   >
-                    Sell ({Math.floor((selectedItemDetail.cost || 0) * 0.5)}⚡)
+                    Sell ({getItemSellBackPrice(selectedItemDetail, isMember)}⚡)
                   </button>
                 </div>
               ) : selectedItemDetail.isConsumable ? (
@@ -1617,7 +1706,7 @@ export default function WorkshopModal({
                 >
                   <span>Buy for</span>
                   <span className="text-amber-300 font-black">
-                    {getItemSalePrice(selectedItemDetail, currentDate).salePrice || selectedItemDetail.cost}⚡
+                    {getItemEffectivePrice(selectedItemDetail, currentDate, isMember).cost}⚡
                   </span>
                 </button>
               ) : (
@@ -1629,10 +1718,31 @@ export default function WorkshopModal({
                   }}
                   className="w-full py-2.5 text-xs font-black rounded-xl btn-3d-purple flex items-center justify-center gap-1 cursor-pointer shadow-md active:scale-95"
                 >
-                  <span>Buy & Wear for</span>
-                  <span className="text-amber-300 font-black">
-                    {getItemSalePrice(selectedItemDetail, currentDate).salePrice || selectedItemDetail.cost}⚡
-                  </span>
+                  {selectedItemDetail.requiresKiboClub && !isMember ? (
+                    <span className="flex items-center justify-center gap-1">
+                      <span>👑 Join Club to Unlock</span>
+                      <span className="text-amber-300 font-black">({selectedItemDetail.cost}⚡)</span>
+                    </span>
+                  ) : selectedItemDetail.realMoneyPrice ? (
+                    <span className="flex items-center justify-center gap-1">
+                      <span>Buy for</span>
+                      <span className="text-amber-300 font-black">
+                        {isMember && selectedItemDetail.clubRealMoneyPrice ? selectedItemDetail.clubRealMoneyPrice : selectedItemDetail.realMoneyPrice}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-1">
+                      <span>Buy & Wear for</span>
+                      <span className="text-amber-300 font-black">
+                        {getItemEffectivePrice(selectedItemDetail, currentDate, isMember).cost}⚡
+                      </span>
+                      {getItemEffectivePrice(selectedItemDetail, currentDate, isMember).isClubDiscount && (
+                        <span className="text-[10px] text-amber-200 line-through">
+                          ({getItemEffectivePrice(selectedItemDetail, currentDate, isMember).originalCost}⚡)
+                        </span>
+                      )}
+                    </span>
+                  )}
                 </button>
               )}
             </div>
@@ -1766,8 +1876,13 @@ export default function WorkshopModal({
             <div className="space-y-1">
               <h3 className="text-base font-black text-slate-800">Sell Item</h3>
               <p className="text-xs font-bold text-slate-500 leading-tight">
-                Sell <span className="text-slate-700">{itemToSell.name}</span> for <span className="text-amber-600">{Math.floor((itemToSell.cost || 0) * 0.5)} ⚡</span>?
+                Sell <span className="text-slate-700">{itemToSell.name}</span> for <span className="text-amber-600">{getItemSellBackPrice(itemToSell, isMember)} ⚡</span>?
               </p>
+              {isMember && (
+                <span className="text-[9px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.2 rounded-full inline-block mt-0.5">
+                  👑 VIP 65% Sell-Back Rate
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2 pt-1">

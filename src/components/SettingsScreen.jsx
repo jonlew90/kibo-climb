@@ -164,6 +164,20 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${isHapticsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
             </div>
+
+            {/* 100% Offline Capability Highlight */}
+            <div className="p-4 bg-gradient-to-br from-teal-50 to-emerald-50 border-2 border-teal-200 rounded-2xl space-y-1 text-left shadow-2xs">
+              <div className="flex items-center gap-2 text-teal-800">
+                <span className="text-base">✈️</span>
+                <span className="font-black text-sm">100% Offline-Ready</span>
+                <span className="text-[10px] bg-emerald-600 text-white font-black px-2 py-0.2 rounded-full ml-auto">
+                  Always Active
+                </span>
+              </div>
+              <p className="text-xs text-teal-900 font-medium leading-relaxed">
+                All daily climbs (Math, Words, World, Coding) run directly on your device without needing Wi-Fi or cellular data. Your progress will automatically sync to the cloud when you reconnect.
+              </p>
+            </div>
           </div>
 
           {/* Links */}

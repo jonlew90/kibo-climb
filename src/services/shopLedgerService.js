@@ -3,11 +3,11 @@
 
 import { storageService } from './storageService.js';
 import { antiCheatService } from './antiCheatService.js';
-import { getItemById, getItemSalePrice } from '../utils/itemsCatalog.js';
+import { getItemById, getItemSalePrice, getItemEffectivePrice, getItemSellBackPrice } from '../utils/itemsCatalog.js';
 
 export const shopLedgerService = {
   /**
-   * Executes an item sale in Kibo's Corner, returning 50% of the original Sparks price.
+   * Executes an item sale in Kibo's Corner, returning 65% for Club members, 50% for standard climbers.
    * @param {string} itemId - The ID of the item being sold
    * @param {number} sparksPrice - Original price of the item in Sparks
    * @returns {Object} { success: boolean, newSparks: number, unlockedItems: Array, reason?: string }
@@ -17,7 +17,8 @@ export const shopLedgerService = {
     const shopState = storageService.getShopState();
     const currentSparks = userData.sparks || 0;
     const originalPrice = Number(sparksPrice) || 0;
-    const sellPrice = Math.floor(originalPrice * 0.5);
+    const hasClub = storageService.hasClubMembership();
+    const sellPrice = getItemSellBackPrice({ cost: originalPrice }, hasClub);
 
     const unlocked = Array.isArray(shopState.unlockedItems) ? [...shopState.unlockedItems] : [];
     if (!unlocked.includes(itemId)) {
@@ -74,8 +75,12 @@ export const shopLedgerService = {
     if (!item) {
        return { success: false, reason: 'Invalid item ID', newSparks: currentSparks, unlockedItems: shopState.unlockedItems || [] };
     }
-    const saleInfo = getItemSalePrice(item, new Date());
-    const authoritativePrice = saleInfo.isSale ? saleInfo.salePrice : (item.cost || 0);
+    const hasClub = storageService.hasClubMembership();
+    if (item.requiresKiboClub && !hasClub) {
+      return { success: false, reason: 'Kibo Club membership required for this item', newSparks: currentSparks, unlockedItems: shopState.unlockedItems || [] };
+    }
+    const effectivePriceInfo = getItemEffectivePrice(item, new Date(), hasClub);
+    const authoritativePrice = effectivePriceInfo.cost;
 
     // 1. Anti-Cheat & Balance Validation
     const price = authoritativePrice;

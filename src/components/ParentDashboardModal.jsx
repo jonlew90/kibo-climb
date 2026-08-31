@@ -76,10 +76,10 @@ export default function ParentDashboardModal({
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   const [overviewTimeframe, setOverviewTimeframe] = useState('7d'); // '7d' | '30d' | 'all'
 
-  // Weekly digest preview & test sending states
   const [showWeeklyPreview, setShowWeeklyPreview] = useState(false);
   const [isSendingTestDigest, setIsSendingTestDigest] = useState(false);
   const [digestStatusMsg, setDigestStatusMsg] = useState('');
+  const [billingCycle, setBillingCycle] = useState('annual'); // 'monthly' | 'annual'
 
   // Helper to extract a profile's subject specific data
   const getProfileSubjectData = (profileId, subId) => {
@@ -470,6 +470,7 @@ export default function ParentDashboardModal({
             {profilesList.map((p) => {
               const isLocked = storageService.isProfileLocked(p.id);
               const isActive = p.id === viewingProfileId;
+              const isMember = storageService.hasClubMembership(p.id);
               const subData = p.userData?.subjects?.[selectedSubject] || (selectedSubject === 'math' ? p.userData : {}) || {};
               const childRating = subData.adaptiveCompetenceRating || subData.competenceRank || p.userData?.adaptiveCompetenceRating || 1000;
               const displayGrade = getGradeLevelForSubject(childRating, selectedSubject);
@@ -477,7 +478,7 @@ export default function ParentDashboardModal({
                 <button
                   key={p.id}
                   onClick={() => handleSwitchProfile(p.id)}
-                  title={isLocked ? `${p.name || 'Child'} (Locked - Family Plan required)` : `Switch to ${p.name || 'Child'}`}
+                  title={isLocked ? `${p.name || 'Child'} (Locked - Family Plan required)` : `${p.name || 'Child'}${isMember ? ' (Kibo Club Member)' : ''}`}
                   className={`px-3.5 py-1.5 rounded-full border-2 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
                     isLocked
                       ? 'bg-slate-100 text-slate-400 border-slate-300 opacity-75 hover:opacity-100 hover:border-amber-400 hover:bg-amber-50/50'
@@ -488,6 +489,7 @@ export default function ParentDashboardModal({
                 >
                   {isLocked && <Lock className="w-3 h-3 text-amber-600 shrink-0" />}
                   <span>{p.name || 'Child'}</span>
+                  {isMember && !isLocked && <span className="text-xs" title="Kibo Club Member">👑</span>}
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     isLocked 
                       ? 'bg-amber-100 text-amber-800' 
@@ -655,15 +657,15 @@ export default function ParentDashboardModal({
 
                       <h4 className="text-sm sm:text-base font-black text-slate-900 leading-tight">
                         {isSubscribed
-                          ? '1.25x Spark Multiplier & Premium Perks Active'
+                          ? '1.25x Spark Multiplier & VIP Club Perks Active'
                           : 'Accelerate learning with 1.25x Sparks & Multi-Profile Access'}
                       </h4>
                       <p className="text-xs text-slate-600 leading-snug">
                         {hasFamily
-                          ? 'All child profiles enjoy 1.25x Sparks on every climb, golden tags, and full multi-profile tracking.'
+                          ? 'All child profiles enjoy 1.25x Sparks, 15% VIP store discounts, 3.3x Daily Vault bonuses, golden tags 👑, and multi-child tracking.'
                           : hasSingle
-                          ? 'This profile receives 1.25x Sparks and exclusive perks. Upgrade to Family to support up to 6 siblings!'
-                          : 'Unlock 1.25x Sparks on all climbs, up to 6 child profiles, and exclusive golden name tags.'}
+                          ? 'This profile receives 1.25x Sparks, 15% VIP store discounts, 3.3x Daily Vault bonuses, and golden tags 👑. Upgrade to Family for up to 6 siblings!'
+                          : 'Unlock 1.25x Sparks on all climbs, 15% VIP store discounts, 3.3x Daily Vault bonuses, up to 6 sibling profiles, and golden tags 👑.'}
                       </p>
                     </div>
 
@@ -1578,24 +1580,56 @@ export default function ParentDashboardModal({
                       : 'bg-slate-50 border-slate-200'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2 text-amber-600">
                       <Sparkles className="w-5 h-5 stroke-[2.5]" />
                       <h4 className="font-extrabold text-sm text-slate-800">Kibo Club & Subscriptions</h4>
                     </div>
-                    <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                      hasFam
-                        ? 'bg-amber-500 text-white shadow-xs'
-                        : hasSingle
-                        ? 'bg-purple-600 text-white shadow-xs'
-                        : 'bg-slate-200 text-slate-700'
-                    }`}>
-                      {hasFam ? '👑 Family Plan Active' : hasSingle ? '⭐ Individual Member' : 'Free Starter Tier'}
-                    </span>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Monthly / Annual Toggle Switch */}
+                      <div className="bg-slate-200/80 p-0.5 rounded-xl flex items-center gap-1 border border-slate-300">
+                        <button
+                          type="button"
+                          onClick={() => setBillingCycle('monthly')}
+                          className={`px-2.5 py-1 text-xs font-black rounded-lg transition-all cursor-pointer ${
+                            billingCycle === 'monthly'
+                              ? 'bg-white text-slate-900 shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          Monthly
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBillingCycle('annual')}
+                          className={`px-2.5 py-1 text-xs font-black rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                            billingCycle === 'annual'
+                              ? 'bg-white text-slate-900 shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          <span>Annual</span>
+                          <span className="text-[9px] bg-emerald-600 text-white px-1.5 py-0.2 rounded-full uppercase font-black">
+                            Save ~35%
+                          </span>
+                        </button>
+                      </div>
+
+                      <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                        hasFam
+                          ? 'bg-amber-500 text-white shadow-xs'
+                          : hasSingle
+                          ? 'bg-purple-600 text-white shadow-xs'
+                          : 'bg-slate-200 text-slate-700'
+                      }`}>
+                        {hasFam ? '👑 Family Plan Active' : hasSingle ? '⭐ Individual Member' : 'Free Starter Tier'}
+                      </span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                    Choose or manage your membership below. Memberships unlock permanent Spark multipliers, sibling profiles, and exclusive cosmetic tags.
+                    Choose or manage your membership below. Memberships unlock permanent 1.25x Spark multipliers, sibling profiles, golden tags, and 100% offline-ready practice.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
@@ -1608,21 +1642,26 @@ export default function ParentDashboardModal({
                           <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
                             Single Profile
                           </span>
-                          <span className="text-sm font-black text-slate-900">$4.99/mo</span>
+                          <span className="text-sm font-black text-slate-900">
+                            {billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'}
+                          </span>
                         </div>
                         <h5 className="font-black text-sm text-slate-900">Kibo Club Individual</h5>
+                        <span className="text-[10px] text-purple-700 font-extrabold block">
+                          {billingCycle === 'annual' ? 'Equivalent to $3.33/mo (Billed annually)' : 'Billed monthly • Cancel anytime'}
+                        </span>
                         <ul className="space-y-1 text-xs text-slate-600 font-bold">
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>1.25x Spark boost for 1 profile</span>
+                            <span>1.25x Sparks & 15% VIP store discounts</span>
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>Golden profile tag & VIP rewards</span>
+                            <span>Daily Vault 3.3x bonus Sparks & shields</span>
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>1 child profile supported</span>
+                            <span>Golden profile tag 👑 & summit gear</span>
                           </li>
                         </ul>
                       </div>
@@ -1642,12 +1681,12 @@ export default function ParentDashboardModal({
                           onClick={() => {
                             soundFx.playKeyTap();
                             if (onOpenSubscription) {
-                              onOpenSubscription('kibo_club_sub');
+                              onOpenSubscription(billingCycle === 'annual' ? 'kibo_club_sub_annual' : 'kibo_club_sub');
                             }
                           }}
                           className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl shadow-sm transform active:scale-95 transition-all cursor-pointer"
                         >
-                          Select Individual ($4.99/mo)
+                          Select Individual ({billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'})
                         </button>
                       )}
                     </div>
@@ -1661,9 +1700,14 @@ export default function ParentDashboardModal({
                           <span className="text-[10px] font-black uppercase text-amber-900 bg-amber-200 px-2 py-0.5 rounded-full">
                             ⭐️ Best For Families
                           </span>
-                          <span className="text-sm font-black text-amber-950">$7.99/mo</span>
+                          <span className="text-sm font-black text-amber-950">
+                            {billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'}
+                          </span>
                         </div>
                         <h5 className="font-black text-sm text-slate-900">Kibo Club Family</h5>
+                        <span className="text-[10px] text-amber-900 font-extrabold block">
+                          {billingCycle === 'annual' ? 'Equivalent to $5.00/mo (Billed annually)' : 'Billed monthly • Cancel anytime'}
+                        </span>
                         <ul className="space-y-1 text-xs text-slate-600 font-bold">
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
@@ -1671,11 +1715,11 @@ export default function ParentDashboardModal({
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>1.25x Spark boost for ALL children</span>
+                            <span>1.25x Sparks & 15% VIP discounts for ALL</span>
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>Golden tags for everyone</span>
+                            <span>Daily Vault 3.3x rewards & golden tags 👑</span>
                           </li>
                         </ul>
                       </div>
@@ -1691,13 +1735,17 @@ export default function ParentDashboardModal({
                           onClick={() => {
                             soundFx.playKeyTap();
                             if (onOpenSubscription) {
-                              onOpenSubscription('kibo_club_family');
+                              onOpenSubscription(billingCycle === 'annual' ? 'kibo_club_family_annual' : 'kibo_club_family');
                             }
                           }}
                           className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs rounded-xl shadow-md transform active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                         >
                           <Sparkles className="w-3.5 h-3.5 fill-white" />
-                          <span>{hasSingle ? 'Upgrade to Family ($7.99/mo)' : 'Select Family ($7.99/mo)'}</span>
+                          <span>
+                            {hasSingle
+                              ? `Upgrade to Family (${billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'})`
+                              : `Select Family (${billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'})`}
+                          </span>
                         </button>
                       )}
                     </div>
