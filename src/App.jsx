@@ -2841,6 +2841,7 @@ export default function App() {
         onOpenParentZone={(targetTab = 'overview') => {
           syncAppStateWithStorage();
           storageService.setOnboarded(true);
+          setShowFirstLaunchOnboardingModal(false);
           handleOpenPinGate('onboarding', targetTab, null);
         }}
         onStartAdaptiveClimb={(startingSubject = 'math') => {
@@ -2848,6 +2849,7 @@ export default function App() {
           storageService.setLastActiveSubject(validSubject);
           setActiveSubject(validSubject);
           syncAppStateWithStorage(validSubject);
+          setShowFirstLaunchOnboardingModal(false);
           navigationHistory.reset({ type: VIEW_TYPES.ROUTE, id: VIEWS.ADAPTIVE_SESSION, path: '/' });
           applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
         }}
