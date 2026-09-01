@@ -1,5 +1,5 @@
 // Badge Manager Engine for Kibo Math, Kibo Words & Kibo World
-import { BADGES_CATALOG } from '../data/badges';
+import { BADGES_CATALOG } from '../data/badges.js';
 import { storageService } from '../services/storageService';
 import { getDaysInMonth, CUTOFF_HOUR, getLogicalDate } from './dateUtils';
 

@@ -246,7 +246,7 @@ export default function App() {
   });
 
   const [showProfileSelector, setShowProfileSelector] = useState(() => {
-    return storageService.isOnboarded();
+    return storageService.isOnboarded() && (storageService.getAllProfiles().length >= 2);
   });
 
   const [showManualProfileSwitcher, setShowManualProfileSwitcher] = useState(false);

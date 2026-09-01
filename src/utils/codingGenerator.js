@@ -728,8 +728,12 @@ export function getNormalizedProblemKey(problem) {
 export function generateCodingSession(count = 15, targetTier = 1, history = [], seenKeys = new Set()) {
   const problems = [];
   const sessionSeen = new Set(seenKeys);
+  let attempts = 0;
+  const maxAttempts = count * 6;
 
-  while (problems.length < count) {
+  // Pass 1: Deduplicated unique problems
+  while (problems.length < count && attempts < maxAttempts) {
+    attempts++;
     const isProbe = problems.length > 0 && problems.length % 5 === 0;
     const prob = generateCodingProblem(targetTier, isProbe, sessionSeen);
     const key = getNormalizedProblemKey(prob);
@@ -738,6 +742,13 @@ export function generateCodingSession(count = 15, targetTier = 1, history = [], 
       sessionSeen.add(key);
       problems.push(prob);
     }
+  }
+
+  // Pass 2: Fallback to fill remaining problem count if template pool is smaller than count
+  while (problems.length < count) {
+    const isProbe = problems.length > 0 && problems.length % 5 === 0;
+    const prob = generateCodingProblem(targetTier, isProbe, sessionSeen);
+    problems.push(prob);
   }
 
   return problems;

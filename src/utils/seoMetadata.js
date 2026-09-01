@@ -81,24 +81,18 @@ export function updateDocumentSeo({ route, subject = 'math' } = {}) {
   document.title = title;
 
   // Helper to set or create meta tag
-  const setMeta = (selector, attr, val) => {
-    let el = document.querySelector(selector);
+  const setMeta = (attrName, attrValue, val) => {
+    let el = document.querySelector(`meta[${attrName}="${attrValue}"]`);
     if (!el) {
       el = document.createElement('meta');
-      const cleanSelector = selector.replace(/[\[\]']/g, '');
-      const eqIdx = cleanSelector.indexOf('=');
-      if (eqIdx !== -1) {
-        const key = cleanSelector.substring(0, eqIdx);
-        const name = cleanSelector.substring(eqIdx + 1);
-        el.setAttribute(key, name);
-      }
+      el.setAttribute(attrName, attrValue);
       document.head.appendChild(el);
     }
-    el.setAttribute(attr, val);
+    el.setAttribute('content', val);
   };
 
   // Standard Meta
-  setMeta('meta[name="description"]', 'content', description);
+  setMeta('name', 'description', description);
 
   // Canonical Link
   let canonicalEl = document.querySelector('link[rel="canonical"]');
@@ -111,11 +105,11 @@ export function updateDocumentSeo({ route, subject = 'math' } = {}) {
   canonicalEl.setAttribute('href', canonicalUrl);
 
   // Open Graph
-  setMeta('meta[property="og:title"]', 'content', title);
-  setMeta('meta[property="og:description"]', 'content', description);
-  setMeta('meta[property="og:url"]', 'content', canonicalUrl);
+  setMeta('property', 'og:title', title);
+  setMeta('property', 'og:description', description);
+  setMeta('property', 'og:url', canonicalUrl);
 
   // Twitter Card
-  setMeta('meta[name="twitter:title"]', 'content', title);
-  setMeta('meta[name="twitter:description"]', 'content', description);
-}
+  setMeta('name', 'twitter:title', title);
+  setMeta('name', 'twitter:description', description);
+};
