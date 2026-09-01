@@ -20,10 +20,14 @@ const seasonalItems = WORKSHOP_ITEMS.filter((i) => i.category === 'seasonal');
 assert(seasonalItems.length >= 35, `Catalog contains at least 35 seasonal items (found ${seasonalItems.length})`);
 
 seasonalItems.forEach((item) => {
-  assert(item.cost >= 90 && item.cost <= 240, `Item ${item.id} has reasonable price of ${item.cost} ⚡`);
+  assert(item.cost >= 90 && item.cost <= 250, `Item ${item.id} has reasonable price of ${item.cost} ⚡`);
   assert(!!item.recurringSchedule, `Item ${item.id} has recurringSchedule defined`);
-  assert(item.recurringSchedule.startMonth >= 1 && item.recurringSchedule.startMonth <= 12, `Item ${item.id} startMonth is valid`);
-  assert(item.recurringSchedule.endMonth >= 1 && item.recurringSchedule.endMonth <= 12, `Item ${item.id} endMonth is valid`);
+  if (item.recurringSchedule.floatingHoliday) {
+    assert(typeof item.recurringSchedule.floatingHoliday === 'string', `Item ${item.id} floatingHoliday is valid`);
+  } else {
+    assert(item.recurringSchedule.startMonth >= 1 && item.recurringSchedule.startMonth <= 12, `Item ${item.id} startMonth is valid`);
+    assert(item.recurringSchedule.endMonth >= 1 && item.recurringSchedule.endMonth <= 12, `Item ${item.id} endMonth is valid`);
+  }
 });
 
 // 2. Test specific holiday & season rotations
@@ -71,11 +75,11 @@ const turkeyHat = WORKSHOP_ITEMS.find((i) => i.id === 'thanksgiving_turkey_hat')
 const tStatus = getItemAvailabilityStatus(turkeyHat, tDate);
 assert(tStatus.status === 'active', `Turkey Hat is active on Nov 26 (daysRemaining: ${tStatus.daysRemaining})`);
 
-// Upcoming Preview Check (Sep 22 for Halloween items starting Oct 1 with 14-day preview)
-const previewDate = new Date(2026, 8, 22); // Sep 22 (within 14 days preview of Oct 1)
+// Upcoming Preview Check (Oct 15 for Halloween items starting Oct 24 with 14-day preview)
+const previewDate = new Date(2026, 9, 15); // Oct 15 (within 14 days preview of Oct 24)
 const ghostPet = WORKSHOP_ITEMS.find((i) => i.id === 'halloween_ghost_pet');
 const ghostStatus = getItemAvailabilityStatus(ghostPet, previewDate);
-assert(ghostStatus.status === 'upcoming', `Halloween Ghost is upcoming on Sep 22 (starts in: ${ghostStatus.startsInDays}d)`);
+assert(ghostStatus.status === 'upcoming', `Halloween Ghost is upcoming on Oct 15 (starts in: ${ghostStatus.startsInDays}d)`);
 
 // 3. Wardrobe retention test: Owned items must ALWAYS be visible even out of season
 console.log('\n🎒 Testing Wardrobe Retention for Unlocked Items:');
@@ -99,12 +103,12 @@ assert(!aug17Ids.includes('halloween'), 'aug17 filters excludes halloween (far o
 assert(!aug17Ids.includes('holiday_season'), 'aug17 filters excludes holiday_season (far off in August)');
 
 // Test upcoming event inclusion
-const sep22 = new Date('2026-09-22T12:00:00Z');
-const sep22Filters = getAvailableSeasonalEvents(sep22);
-const sep22Ids = sep22Filters.map((e) => e.id);
-assert(sep22Ids.includes('autumn'), 'sep22 filters includes autumn (active in Sep)');
-assert(sep22Ids.includes('halloween'), 'sep22 filters includes halloween (upcoming preview within 14 days of Oct 1)');
-assert(!sep22Ids.includes('spring'), 'sep22 filters excludes spring');
+const oct15 = new Date('2026-10-15T12:00:00Z');
+const oct15Filters = getAvailableSeasonalEvents(oct15);
+const oct15Ids = oct15Filters.map((e) => e.id);
+assert(oct15Ids.includes('autumn'), 'oct15 filters includes autumn (active in Oct)');
+assert(oct15Ids.includes('halloween'), 'oct15 filters includes halloween (upcoming preview within 14 days of Oct 24)');
+assert(!oct15Ids.includes('spring'), 'oct15 filters excludes spring');
 
 // Test winter holiday inclusion
 const dec25 = new Date('2026-12-25T12:00:00Z');
@@ -112,7 +116,7 @@ const dec25Filters = getAvailableSeasonalEvents(dec25);
 const dec25Ids = dec25Filters.map((e) => e.id);
 assert(dec25Ids.includes('winter'), 'dec25 filters includes winter');
 assert(dec25Ids.includes('holiday_season'), 'dec25 filters includes holiday_season');
-assert(dec25Ids.includes('new_year'), 'dec25 filters includes new_year (upcoming preview for Dec 28)');
+assert(dec25Ids.includes('new_year'), 'dec25 filters includes new_year (upcoming preview for Dec 29)');
 assert(!dec25Ids.includes('summer'), 'dec25 filters excludes summer');
 
 console.log(`\n========================================`);

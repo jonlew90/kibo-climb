@@ -1769,23 +1769,14 @@ export default function App() {
         <button
           type="button"
           onClick={() => {
-            if (appState === 'adaptive_session') {
-              handleOpenWorkshop('adaptive_session', 'powerups', 'shop');
-            } else {
-              handleOpenWorkshop();
-            }
+            handleOpenWorkshop(appState === 'adaptive_session' ? 'adaptive_session' : null);
           }}
           className={`relative flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-2 py-1 bg-gradient-to-b from-orange-100 via-orange-50 to-orange-100 text-orange-950 border-2 border-orange-400 rounded-xl hover:from-orange-200 hover:to-orange-100 hover:scale-[1.02] sm:hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer flex-1 min-w-0 max-w-[5rem] sm:max-w-[5.5rem] ${
             isWorkshopOpen ? 'ring-2 ring-orange-500 scale-[1.02] sm:scale-105 font-bold' : ''
           }`}
-          aria-label={appState === 'adaptive_session' ? "Open Power-Ups Shop" : "Open Kibo's Shop"}
-          title={appState === 'adaptive_session' ? "Power-Ups Shop • Stock up on Hints, Shields & Tools!" : "Kibo's Workshop & Shop"}
+          aria-label="Open Kibo's Shop"
+          title="Kibo's Workshop & Shop"
         >
-          {appState === 'adaptive_session' && (
-            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5" title="Power-Ups Available">
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-400 border border-white text-[8px] font-black items-center justify-center shadow-2xs">🧪</span>
-            </span>
-          )}
           <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 stroke-[2.5]" />
           <span className="text-[11px] sm:text-xs font-black tracking-wide truncate">Shop</span>
         </button>

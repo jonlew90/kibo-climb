@@ -813,7 +813,7 @@ export const WORKSHOP_ITEMS = [
     description: 'Gleaming steel ice skates with crimson laces for frozen summit lakes! (Winter Exclusive)'
   },
 
-  // 5. NEW YEAR CELEBRATION (December 28 – January 6)
+  // 5. NEW YEAR CELEBRATION (December 29 – January 3)
   {
     id: 'new_year_top_hat',
     name: 'Midnight Countdown Top Hat',
@@ -824,7 +824,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'new_year',
     seasonName: 'New Year Party',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 12, startDay: 28, endMonth: 1, endDay: 6, previewDays: 7 },
+    recurringSchedule: { startMonth: 12, startDay: 29, endMonth: 1, endDay: 3, previewDays: 7 },
     description: 'Sparkling midnight silk top hat with gold glitter ribbon for ringing in the new year! (New Year Exclusive)'
   },
   {
@@ -837,11 +837,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'new_year',
     seasonName: 'New Year Party',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 12, startDay: 28, endMonth: 1, endDay: 6, previewDays: 7 },
+    recurringSchedule: { startMonth: 12, startDay: 29, endMonth: 1, endDay: 3, previewDays: 7 },
     description: 'A crackling golden holiday sparkler wand shooting out celebration starbursts! (New Year Exclusive)'
   },
 
-  // 6. MARTIN LUTHER KING JR. DAY (January 10 – January 25)
+  // 6. MARTIN LUTHER KING JR. DAY (MLK Day +/- 3 days)
   {
     id: 'mlk_peace_dove_pet',
     name: 'Harmony Dove Companion',
@@ -852,7 +852,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'mlk_day',
     seasonName: 'MLK Day of Service',
     seasonType: 'holiday',
-    recurringSchedule: { floatingHoliday: 'mlk_day', daysBefore: 9, daysAfter: 6, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'mlk_day', daysBefore: 3, daysAfter: 3, previewDays: 7 },
     description: 'A peaceful white dove companion carrying a green olive branch! (MLK Day Exclusive)'
   },
   {
@@ -865,11 +865,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'mlk_day',
     seasonName: 'MLK Day of Service',
     seasonType: 'holiday',
-    recurringSchedule: { floatingHoliday: 'mlk_day', daysBefore: 9, daysAfter: 6, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'mlk_day', daysBefore: 3, daysAfter: 3, previewDays: 7 },
     description: 'Commemorative ribbon sash honoring dreams of equality and peace! (MLK Day Exclusive)'
   },
 
-  // 7. VALENTINE'S DAY (February 1 – February 18)
+  // 7. VALENTINE'S DAY (February 10 – February 16)
   {
     id: 'valentines_cupid_wings',
     name: 'Sweetheart Cupid Wings',
@@ -880,7 +880,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'valentines',
     seasonName: 'Valentine\'s Heart',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 2, startDay: 1, endMonth: 2, endDay: 18, previewDays: 7 },
+    recurringSchedule: { startMonth: 2, startDay: 10, endMonth: 2, endDay: 16, previewDays: 7 },
     description: 'Feathered pink and crimson cupid wings fluttering with sweet love! (Valentine\'s Exclusive)'
   },
   {
@@ -893,7 +893,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'valentines',
     seasonName: 'Valentine\'s Heart',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 2, startDay: 1, endMonth: 2, endDay: 18, previewDays: 7 },
+    recurringSchedule: { startMonth: 2, startDay: 10, endMonth: 2, endDay: 16, previewDays: 7 },
     description: 'Cute candy-pink heart shaped glasses with tinted lenses! (Valentine\'s Exclusive)'
   },
   {
@@ -906,11 +906,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'valentines',
     seasonName: 'Valentine\'s Heart',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 2, startDay: 1, endMonth: 2, endDay: 18, previewDays: 7 },
+    recurringSchedule: { startMonth: 2, startDay: 10, endMonth: 2, endDay: 16, previewDays: 7 },
     description: 'Glowing pastel pink & red hearts floating joyfully around Kibo! (Valentine\'s Exclusive)'
   },
 
-  // 8. PRESIDENTS' DAY (February 12 – February 26)
+  // 8. PRESIDENTS' DAY (Presidents\' Day +/- 3 days)
   {
     id: 'presidents_tricorne',
     name: 'Patriot Tricorne Hat',
@@ -921,7 +921,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'presidents_day',
     seasonName: 'Presidents\' Day',
     seasonType: 'holiday',
-    recurringSchedule: { floatingHoliday: 'presidents_day', daysBefore: 4, daysAfter: 10, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'presidents_day', daysBefore: 3, daysAfter: 3, previewDays: 7 },
     description: 'Distinguished colonial three-cornered hat with a golden cockade! (Presidents\' Day Exclusive)'
   },
   {
@@ -934,11 +934,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'presidents_day',
     seasonName: 'Presidents\' Day',
     seasonType: 'holiday',
-    recurringSchedule: { floatingHoliday: 'presidents_day', daysBefore: 4, daysAfter: 10, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'presidents_day', daysBefore: 3, daysAfter: 3, previewDays: 7 },
     description: 'Polished bronze buckler emblazoned with a proud golden eagle! (Presidents\' Day Exclusive)'
   },
 
-  // 9. ST. PATRICK'S DAY (March 8 – March 22)
+  // 9. ST. PATRICK'S DAY (March 14 – March 18)
   {
     id: 'st_patricks_leprechaun_hat',
     name: 'Lucky Clover Top Hat',
@@ -949,7 +949,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'st_patricks',
     seasonName: 'St. Patrick\'s Luck',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 3, startDay: 8, endMonth: 3, endDay: 22, previewDays: 7 },
+    recurringSchedule: { startMonth: 3, startDay: 14, endMonth: 3, endDay: 18, previewDays: 7 },
     description: 'Emerald green top hat with a golden buckle and lucky four-leaf clover! (St. Patrick\'s Exclusive)'
   },
   {
@@ -962,7 +962,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'st_patricks',
     seasonName: 'St. Patrick\'s Luck',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 3, startDay: 8, endMonth: 3, endDay: 22, previewDays: 7 },
+    recurringSchedule: { startMonth: 3, startDay: 14, endMonth: 3, endDay: 18, previewDays: 7 },
     description: 'A cast-iron cauldron overflowing with gleaming Sparks coins! (St. Patrick\'s Exclusive)'
   },
   {
@@ -975,11 +975,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'st_patricks',
     seasonName: 'St. Patrick\'s Luck',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 3, startDay: 8, endMonth: 3, endDay: 22, previewDays: 7 },
+    recurringSchedule: { startMonth: 3, startDay: 14, endMonth: 3, endDay: 18, previewDays: 7 },
     description: 'A vibrant full-spectrum rainbow arching behind Kibo with lucky shamrock sparkles! (St. Patrick\'s Exclusive)'
   },
 
-  // 10. EARTH DAY / ARBOR DAY (April 15 – April 30)
+  // 10. EARTH DAY / ARBOR DAY (April 20 – April 24)
   {
     id: 'earth_day_sprout_cap',
     name: 'Little Sprout Headband',
@@ -990,7 +990,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'earth_day',
     seasonName: 'Earth & Arbor Day',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 4, startDay: 15, endMonth: 4, endDay: 30, previewDays: 7 },
+    recurringSchedule: { startMonth: 4, startDay: 20, endMonth: 4, endDay: 24, previewDays: 7 },
     description: 'A fresh leafy green seedling budding from Kibo\'s head with morning dew! (Earth Day Exclusive)'
   },
   {
@@ -1003,11 +1003,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'earth_day',
     seasonName: 'Earth & Arbor Day',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 4, startDay: 15, endMonth: 4, endDay: 30, previewDays: 7 },
+    recurringSchedule: { startMonth: 4, startDay: 20, endMonth: 4, endDay: 24, previewDays: 7 },
     description: 'A floating blue-marble planet balloon tethered to Kibo\'s pack! (Earth Day Exclusive)'
   },
 
-  // 11. MEMORIAL DAY (May 20 – June 2)
+  // 11. MEMORIAL DAY (Memorial Day +/- 3 days)
   {
     id: 'memorial_poppy_wreath',
     name: 'Remembrance Poppy Pin',
@@ -1018,7 +1018,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'memorial_day',
     seasonName: 'Memorial Day',
     seasonType: 'holiday',
-    recurringSchedule: { floatingHoliday: 'memorial_day', daysBefore: 5, daysAfter: 8, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'memorial_day', daysBefore: 3, daysAfter: 3, previewDays: 7 },
     description: 'A vibrant crimson poppy flower pin honoring courageous climbers! (Memorial Day Exclusive)'
   },
   {
@@ -1031,11 +1031,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'memorial_day',
     seasonName: 'Memorial Day',
     seasonType: 'holiday',
-    recurringSchedule: { floatingHoliday: 'memorial_day', daysBefore: 5, daysAfter: 8, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'memorial_day', daysBefore: 3, daysAfter: 3, previewDays: 7 },
     description: 'A majestic navy and scarlet banner cape with golden stars! (Memorial Day Exclusive)'
   },
 
-  // 12. JUNETEENTH NATIONAL INDEPENDENCE DAY (June 12 – June 26)
+  // 12. JUNETEENTH NATIONAL INDEPENDENCE DAY (June 17 – June 21)
   {
     id: 'juneteenth_liberty_torch',
     name: 'Freedom Jubilee Torch',
@@ -1046,7 +1046,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'juneteenth',
     seasonName: 'Juneteenth Jubilee',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 6, startDay: 12, endMonth: 6, endDay: 26, previewDays: 7 },
+    recurringSchedule: { startMonth: 6, startDay: 17, endMonth: 6, endDay: 21, previewDays: 7 },
     description: 'A blazing celebratory torch with radiant red, yellow, and green flames! (Juneteenth Exclusive)'
   },
   {
@@ -1059,11 +1059,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'juneteenth',
     seasonName: 'Juneteenth Jubilee',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 6, startDay: 12, endMonth: 6, endDay: 26, previewDays: 7 },
+    recurringSchedule: { startMonth: 6, startDay: 17, endMonth: 6, endDay: 21, previewDays: 7 },
     description: 'A beautifully patterned heritage crown celebrating freedom and triumph! (Juneteenth Exclusive)'
   },
 
-  // 13. 4TH OF JULY / INDEPENDENCE DAY (June 28 – July 10)
+  // 13. 4TH OF JULY / INDEPENDENCE DAY (July 1 – July 6)
   {
     id: 'july4_uncle_sam_hat',
     name: 'Stars & Stripes Top Hat',
@@ -1074,7 +1074,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'independence_day',
     seasonName: '4th of July Jubilee',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 6, startDay: 28, endMonth: 7, endDay: 10, previewDays: 7 },
+    recurringSchedule: { startMonth: 7, startDay: 1, endMonth: 7, endDay: 6, previewDays: 7 },
     description: 'Patriotic red and white striped tall hat with a starry blue band! (4th of July Exclusive)'
   },
   {
@@ -1087,7 +1087,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'independence_day',
     seasonName: '4th of July Jubilee',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 6, startDay: 28, endMonth: 7, endDay: 10, previewDays: 7 },
+    recurringSchedule: { startMonth: 7, startDay: 1, endMonth: 7, endDay: 6, previewDays: 7 },
     description: 'Spectacular red, white, and blue firework rockets bursting over Kibo! (4th of July Exclusive)'
   },
   {
@@ -1100,11 +1100,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'independence_day',
     seasonName: '4th of July Jubilee',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 6, startDay: 28, endMonth: 7, endDay: 10, previewDays: 7 },
+    recurringSchedule: { startMonth: 7, startDay: 1, endMonth: 7, endDay: 6, previewDays: 7 },
     description: 'A whirling tri-color wind pinwheel spinning with sparkling glitter! (4th of July Exclusive)'
   },
 
-  // 14. LABOR DAY (August 25 – September 10)
+  // 14. LABOR DAY (Labor Day +/- 3 days)
   {
     id: 'laborday_builder_hardhat',
     name: 'Master Builder Hardhat',
@@ -1115,7 +1115,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'labor_day',
     seasonName: 'Labor Day',
     seasonType: 'holiday',
-    recurringSchedule: { floatingHoliday: 'labor_day', daysBefore: 13, daysAfter: 3, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'labor_day', daysBefore: 3, daysAfter: 3, previewDays: 7 },
     description: 'Canary yellow industrial hardhat with safety headlamp for mountain engineers! (Labor Day Exclusive)'
   },
   {
@@ -1128,11 +1128,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'labor_day',
     seasonName: 'Labor Day',
     seasonType: 'holiday',
-    recurringSchedule: { floatingHoliday: 'labor_day', daysBefore: 13, daysAfter: 3, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'labor_day', daysBefore: 3, daysAfter: 3, previewDays: 7 },
     description: 'Heavy-duty leather belt packed with miniature climbing wrenches and hammers! (Labor Day Exclusive)'
   },
 
-  // 15. HALLOWEEN / SPOOKY SUMMIT (October 1 – November 5)
+  // 15. HALLOWEEN / SPOOKY SUMMIT (October 24 – November 2)
   {
     id: 'pumpkin_hat',
     name: 'Jack-o\'-Lantern Head',
@@ -1143,7 +1143,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'halloween',
     seasonName: 'Spooky Summit',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 10, startDay: 1, endMonth: 11, endDay: 5, previewDays: 14 },
+    recurringSchedule: { startMonth: 10, startDay: 24, endMonth: 11, endDay: 2, previewDays: 14 },
     description: 'Spooky glowing pumpkin hat with warm candlelight smile! (Halloween Exclusive)'
   },
   {
@@ -1156,7 +1156,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'halloween',
     seasonName: 'Spooky Summit',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 10, startDay: 1, endMonth: 11, endDay: 5, previewDays: 14 },
+    recurringSchedule: { startMonth: 10, startDay: 24, endMonth: 11, endDay: 2, previewDays: 14 },
     description: 'Dark obsidian velvet cape with crimson silk lining and flared high collar! (Halloween Exclusive)'
   },
   {
@@ -1169,7 +1169,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'halloween',
     seasonName: 'Spooky Summit',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 10, startDay: 1, endMonth: 11, endDay: 5, previewDays: 14 },
+    recurringSchedule: { startMonth: 10, startDay: 24, endMonth: 11, endDay: 2, previewDays: 14 },
     description: 'A cute, friendly glowing ghost companion floating and waving by Kibo! (Halloween Exclusive)'
   },
   {
@@ -1182,11 +1182,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'halloween',
     seasonName: 'Spooky Summit',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 10, startDay: 1, endMonth: 11, endDay: 5, previewDays: 14 },
+    recurringSchedule: { startMonth: 10, startDay: 24, endMonth: 11, endDay: 2, previewDays: 14 },
     description: 'Flying witch broomstick with a glowing purple star ribbon and tail sparkles! (Halloween Exclusive)'
   },
 
-  // 16. VETERANS DAY (November 5 – November 18)
+  // 16. VETERANS DAY (November 9 – November 13)
   {
     id: 'veterans_valor_beret',
     name: 'Hero\'s Maroon Beret',
@@ -1197,7 +1197,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'veterans_day',
     seasonName: 'Veterans Day',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 11, startDay: 5, endMonth: 11, endDay: 18, previewDays: 7 },
+    recurringSchedule: { startMonth: 11, startDay: 9, endMonth: 11, endDay: 13, previewDays: 7 },
     description: 'Distinguished maroon paratrooper beret with an engraved golden star! (Veterans Day Exclusive)'
   },
   {
@@ -1210,11 +1210,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'veterans_day',
     seasonName: 'Veterans Day',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 11, startDay: 5, endMonth: 11, endDay: 18, previewDays: 7 },
+    recurringSchedule: { startMonth: 11, startDay: 9, endMonth: 11, endDay: 13, previewDays: 7 },
     description: 'Shining golden summit medallion pinned to a ribbon of honor! (Veterans Day Exclusive)'
   },
 
-  // 17. THANKSGIVING / HARVEST FEAST (November 12 – November 30)
+  // 17. THANKSGIVING / HARVEST FEAST (Thanksgiving -4 / +3 days)
   {
     id: 'thanksgiving_turkey_hat',
     name: 'Gobbler Feathered Cap',
@@ -1225,7 +1225,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'thanksgiving',
     seasonName: 'Harvest Feast',
     seasonType: 'holiday',
-    recurringSchedule: { floatingHoliday: 'thanksgiving', daysBefore: 14, daysAfter: 4, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'thanksgiving', daysBefore: 4, daysAfter: 3, previewDays: 7 },
     description: 'Fun autumn harvest hat decorated with colorful fan feathers! (Thanksgiving Exclusive)'
   },
   {
@@ -1238,11 +1238,11 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'thanksgiving',
     seasonName: 'Harvest Feast',
     seasonType: 'holiday',
-    recurringSchedule: { floatingHoliday: 'thanksgiving', daysBefore: 14, daysAfter: 4, previewDays: 7 },
+    recurringSchedule: { floatingHoliday: 'thanksgiving', daysBefore: 4, daysAfter: 3, previewDays: 7 },
     description: 'Woven horn of plenty filled to the brim with pumpkins, apples, and golden corn! (Thanksgiving Exclusive)'
   },
 
-  // 18. WINTER HOLIDAYS & CHRISTMAS (December 1 – January 3)
+  // 18. WINTER HOLIDAYS & CHRISTMAS (December 18 – December 27)
   {
     id: 'holiday_santa_hat',
     name: 'Festive Santa Cap',
@@ -1253,7 +1253,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'holiday_season',
     seasonName: 'Holiday Wonderland',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 1, endDay: 3, previewDays: 14 },
+    recurringSchedule: { startMonth: 12, startDay: 18, endMonth: 12, endDay: 27, previewDays: 14 },
     description: 'Plush crimson velvet hat with soft snowy white trim and a bouncy pom-pom! (Holiday Exclusive)'
   },
   {
@@ -1266,7 +1266,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'holiday_season',
     seasonName: 'Holiday Wonderland',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 1, endDay: 3, previewDays: 14 },
+    recurringSchedule: { startMonth: 12, startDay: 18, endMonth: 12, endDay: 27, previewDays: 14 },
     description: 'Cute velvety reindeer antlers decorated with little jingling golden bells! (Holiday Exclusive)'
   },
   {
@@ -1279,7 +1279,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'holiday_season',
     seasonName: 'Holiday Wonderland',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 1, endDay: 3, previewDays: 14 },
+    recurringSchedule: { startMonth: 12, startDay: 18, endMonth: 12, endDay: 27, previewDays: 14 },
     description: 'A sweet gingerbread friend iced with frosting and candy gumdrop buttons! (Holiday Exclusive)'
   },
   {
@@ -1292,7 +1292,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'holiday_season',
     seasonName: 'Holiday Wonderland',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 1, endDay: 3, previewDays: 14 },
+    recurringSchedule: { startMonth: 12, startDay: 18, endMonth: 12, endDay: 27, previewDays: 14 },
     description: 'Giant twisted red and white peppermint candy cane tied with a green holly bow! (Holiday Exclusive)'
   },
   {
@@ -1305,7 +1305,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'holiday_season',
     seasonName: 'Holiday Wonderland',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 1, endDay: 3, previewDays: 14 },
+    recurringSchedule: { startMonth: 12, startDay: 18, endMonth: 12, endDay: 27, previewDays: 14 },
     description: 'Glowing multi-colored festive holiday fairy lights twinkling around Kibo! (Holiday Exclusive)'
   },
   {
@@ -1318,7 +1318,7 @@ export const WORKSHOP_ITEMS = [
     seasonId: 'holiday_season',
     seasonName: 'Holiday Wonderland',
     seasonType: 'holiday',
-    recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 1, endDay: 3, previewDays: 14 },
+    recurringSchedule: { startMonth: 12, startDay: 18, endMonth: 12, endDay: 27, previewDays: 14 },
     description: 'A beautiful evergreen wreath border with red bows and holly! (Holiday Exclusive)'
   },
 
@@ -2023,7 +2023,7 @@ export function getActiveHolidayOrSeasonalSaleEvent(currentDate = new Date()) {
     return sampleItem?.seasonType === 'holiday';
   });
 
-  const res = holidayEvent || activeEvents[0] || null;
+  const res = holidayEvent || null;
   cachedHolidaySaleKey = cacheKey;
   cachedHolidaySaleEvent = res;
   return res;
