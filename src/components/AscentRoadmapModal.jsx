@@ -194,11 +194,20 @@ export default function AscentRoadmapModal({
                             </span>
                           </div>
 
-                          {rank.reward?.sparks && (
-                            <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded-md inline-flex items-center gap-0.5 mt-0.5">
-                              <Sparkles className="w-2.5 h-2.5 text-amber-600" />
-                              +{rank.reward.sparks} Sparks
-                              {rank.reward.shields ? ` • +${rank.reward.shields} Shield` : ''}
+                          {rank.reward && (
+                            <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded-md inline-flex items-center gap-1 mt-0.5 flex-wrap">
+                              {rank.reward.sparks && (
+                                <span className="inline-flex items-center gap-0.5">
+                                  <Sparkles className="w-2.5 h-2.5 text-amber-600" />
+                                  +{rank.reward.sparks}
+                                </span>
+                              )}
+                              {rank.reward.potions ? ` • 🧪+${rank.reward.potions}` : ''}
+                              {rank.reward.scrolls ? ` • 📜+${rank.reward.scrolls}` : ''}
+                              {rank.reward.spyglasses ? ` • 🔍+${rank.reward.spyglasses}` : ''}
+                              {rank.reward.pruners ? ` • ✂️+${rank.reward.pruners}` : ''}
+                              {rank.reward.compasses ? ` • 🧭+${rank.reward.compasses}` : ''}
+                              {rank.reward.shields ? ` • 🛡️+${rank.reward.shields}` : ''}
                             </span>
                           )}
                         </div>

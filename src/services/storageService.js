@@ -1529,22 +1529,40 @@ export const storageService = {
 
     const hasClub = isKiboClub || this.hasClubMembership(pid);
     
-    // Reward payloads: Free gets 30 sparks + 1 shield + 1 scroll, Club gets 100 sparks + 2 shields + 1 potion + 2 scrolls
-    const sparksGranted = hasClub ? 100 : 30;
-    const shieldsGranted = hasClub ? 2 : 1;
-    const potionsGranted = hasClub ? 1 : 0;
+    // Reward payloads: 
+    // Free gets: 35 sparks + 1 scroll + 1 spyglass + (1 shield if < 2 shields, otherwise 1 potion)
+    // VIP gets: 120 sparks + 1 potion + 2 scrolls + 1 spyglass + 1 pruner + (1 shield if < 2 shields, otherwise +1 potion)
+    const curConsumables = this.getConsumables(pid);
+    const currentShields = curConsumables.shieldCount ?? 1;
+
+    let shieldsGranted = 0;
+    let potionsGranted = hasClub ? 1 : 0;
     const scrollsGranted = hasClub ? 2 : 1;
+    const spyglassesGranted = 1;
+    const prunersGranted = hasClub ? 1 : 0;
+    const compassesGranted = hasClub ? 1 : 0;
+
+    if (currentShields < 2) {
+      shieldsGranted = 1;
+    } else {
+      // If already at max shields (2/2), convert shield grant into an extra Double Sparks Potion
+      potionsGranted += 1;
+    }
+
+    const sparksGranted = hasClub ? 120 : 35;
 
     // Update sparks
     const currentSparks = profile.userData?.sparks ?? 0;
     const newSparks = currentSparks + sparksGranted;
 
     // Update consumables
-    const curConsumables = this.getConsumables(pid);
     const nextConsumables = {
-      shieldCount: (curConsumables.shieldCount || 0) + shieldsGranted,
+      shieldCount: Math.min(2, (curConsumables.shieldCount || 0) + shieldsGranted),
       doubleSparksPotionCount: (curConsumables.doubleSparksPotionCount || 0) + potionsGranted,
       hintScrollCount: (curConsumables.hintScrollCount || 0) + scrollsGranted,
+      letterSpyglassCount: (curConsumables.letterSpyglassCount || 0) + spyglassesGranted,
+      letterPrunerCount: (curConsumables.letterPrunerCount || 0) + prunersGranted,
+      explorerCompassCount: (curConsumables.explorerCompassCount || 0) + compassesGranted,
       streakSaverCount: curConsumables.streakSaverCount || 0
     };
     this.saveConsumables(nextConsumables, pid);
@@ -1567,6 +1585,9 @@ export const storageService = {
       shields: shieldsGranted,
       potions: potionsGranted,
       scrolls: scrollsGranted,
+      spyglasses: spyglassesGranted,
+      pruners: prunersGranted,
+      compasses: compassesGranted,
       isKiboClub: hasClub,
       totalSparks: newSparks
     };

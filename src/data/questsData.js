@@ -263,7 +263,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'any',
     target: 50,
     unit: 'problems',
-    reward: { sparks: 220, altitude: 450, shields: 1 }
+    reward: { sparks: 220, altitude: 450, scrolls: 2 }
   },
   {
     id: 'w_total_75',
@@ -274,7 +274,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'any',
     target: 75,
     unit: 'problems',
-    reward: { sparks: 300, altitude: 600, shields: 1 }
+    reward: { sparks: 300, altitude: 600, potions: 1, scrolls: 1 }
   },
   {
     id: 'w_total_100',
@@ -285,7 +285,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'any',
     target: 100,
     unit: 'problems',
-    reward: { sparks: 380, altitude: 760, shields: 2 }
+    reward: { sparks: 380, altitude: 760, potions: 1, shields: 1, spyglasses: 1 }
   },
   {
     id: 'w_all_subjects',
@@ -296,7 +296,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'any',
     target: 40,
     unit: 'problems',
-    reward: { sparks: 220, altitude: 440, shields: 1 }
+    reward: { sparks: 220, altitude: 440, compasses: 2 }
   },
   {
     id: 'w_quad_master',
@@ -307,7 +307,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'any',
     target: 60,
     unit: 'problems',
-    reward: { sparks: 280, altitude: 560, shields: 1 }
+    reward: { sparks: 280, altitude: 560, potions: 1, scrolls: 2 }
   },
   {
     id: 'w_math_master',
@@ -318,7 +318,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'math',
     target: 30,
     unit: 'correct',
-    reward: { sparks: 180, altitude: 380, shields: 1 }
+    reward: { sparks: 180, altitude: 380, pruners: 2 }
   },
   {
     id: 'w_math_grandmaster',
@@ -329,7 +329,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'math',
     target: 45,
     unit: 'correct',
-    reward: { sparks: 260, altitude: 520, shields: 1 }
+    reward: { sparks: 260, altitude: 520, spyglasses: 2, potions: 1 }
   },
   {
     id: 'w_words_master',
@@ -340,7 +340,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'words',
     target: 30,
     unit: 'correct',
-    reward: { sparks: 180, altitude: 380, shields: 1 }
+    reward: { sparks: 180, altitude: 380, spyglasses: 2 }
   },
   {
     id: 'w_words_grandmaster',
@@ -351,7 +351,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'words',
     target: 45,
     unit: 'correct',
-    reward: { sparks: 260, altitude: 520, shields: 1 }
+    reward: { sparks: 260, altitude: 520, spyglasses: 1, scrolls: 2 }
   },
   {
     id: 'w_world_master',
@@ -362,7 +362,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'world',
     target: 30,
     unit: 'correct',
-    reward: { sparks: 180, altitude: 380, shields: 1 }
+    reward: { sparks: 180, altitude: 380, compasses: 2 }
   },
   {
     id: 'w_world_grandmaster',
@@ -373,7 +373,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'world',
     target: 45,
     unit: 'correct',
-    reward: { sparks: 260, altitude: 520, shields: 1 }
+    reward: { sparks: 260, altitude: 520, compasses: 2, potions: 1 }
   },
   {
     id: 'w_coding_master',
@@ -384,7 +384,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'coding',
     target: 30,
     unit: 'correct',
-    reward: { sparks: 180, altitude: 380, shields: 1 }
+    reward: { sparks: 180, altitude: 380, scrolls: 2 }
   },
   {
     id: 'w_coding_grandmaster',
@@ -395,7 +395,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'coding',
     target: 45,
     unit: 'correct',
-    reward: { sparks: 260, altitude: 520, shields: 1 }
+    reward: { sparks: 260, altitude: 520, pruners: 2, potions: 1 }
   },
   {
     id: 'w_accuracy_high',
@@ -406,7 +406,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'any',
     target: 12,
     unit: 'streak',
-    reward: { sparks: 180, altitude: 380 }
+    reward: { sparks: 180, altitude: 380, potions: 1 }
   },
   {
     id: 'w_endurance_streak',
@@ -417,7 +417,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'any',
     target: 18,
     unit: 'streak',
-    reward: { sparks: 240, altitude: 480, shields: 1 }
+    reward: { sparks: 240, altitude: 480, shields: 1, potions: 1 }
   },
   {
     id: 'w_iron_climber',
@@ -428,7 +428,7 @@ export const WEEKLY_QUEST_POOL = [
     subject: 'any',
     target: 22,
     unit: 'streak',
-    reward: { sparks: 300, altitude: 600, shields: 2 }
+    reward: { sparks: 300, altitude: 600, shields: 1, potions: 2, spyglasses: 1 }
   }
 ];
 
@@ -442,7 +442,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 40,
     unit: 'problems',
-    reward: { sparks: 180, altitude: 360 },
+    reward: { sparks: 180, altitude: 360, scrolls: 1 },
     defaultPartner: 'buddy_asha'
   },
   {
@@ -454,7 +454,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 60,
     unit: 'problems',
-    reward: { sparks: 250, altitude: 500, shields: 1 },
+    reward: { sparks: 250, altitude: 500, potions: 1, scrolls: 1 },
     defaultPartner: 'buddy_maya'
   },
   {
@@ -466,7 +466,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 30,
     unit: 'problems',
-    reward: { sparks: 160, altitude: 320 },
+    reward: { sparks: 160, altitude: 320, pruners: 1 },
     defaultPartner: 'buddy_leo'
   },
   {
@@ -478,7 +478,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 45,
     unit: 'problems',
-    reward: { sparks: 220, altitude: 440, shields: 1 },
+    reward: { sparks: 220, altitude: 440, spyglasses: 1, pruners: 1 },
     defaultPartner: 'buddy_leo'
   },
   {
@@ -490,7 +490,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 30,
     unit: 'problems',
-    reward: { sparks: 160, altitude: 320 },
+    reward: { sparks: 160, altitude: 320, compasses: 1 },
     defaultPartner: 'buddy_maya'
   },
   {
@@ -502,7 +502,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 45,
     unit: 'problems',
-    reward: { sparks: 220, altitude: 440, shields: 1 },
+    reward: { sparks: 220, altitude: 440, compasses: 2 },
     defaultPartner: 'buddy_asha'
   },
   {
@@ -514,7 +514,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 30,
     unit: 'problems',
-    reward: { sparks: 160, altitude: 320 },
+    reward: { sparks: 160, altitude: 320, spyglasses: 1 },
     defaultPartner: 'buddy_sora'
   },
   {
@@ -526,7 +526,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 45,
     unit: 'problems',
-    reward: { sparks: 220, altitude: 440, shields: 1 },
+    reward: { sparks: 220, altitude: 440, spyglasses: 1, scrolls: 1 },
     defaultPartner: 'buddy_sora'
   },
   {
@@ -538,7 +538,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 30,
     unit: 'problems',
-    reward: { sparks: 160, altitude: 320 },
+    reward: { sparks: 160, altitude: 320, scrolls: 1 },
     defaultPartner: 'buddy_tenzing'
   },
   {
@@ -550,7 +550,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 45,
     unit: 'problems',
-    reward: { sparks: 220, altitude: 440, shields: 1 },
+    reward: { sparks: 220, altitude: 440, pruners: 1, scrolls: 1 },
     defaultPartner: 'buddy_tenzing'
   },
   {
@@ -562,7 +562,7 @@ export const TEAM_2P_QUEST_POOL = [
     teamSize: 2,
     target: 50,
     unit: 'problems',
-    reward: { sparks: 210, altitude: 420 },
+    reward: { sparks: 210, altitude: 420, potions: 1 },
     defaultPartner: 'buddy_asha'
   }
 ];
@@ -577,7 +577,7 @@ export const TEAM_3P_QUEST_POOL = [
     teamSize: 3,
     target: 60,
     unit: 'problems',
-    reward: { sparks: 280, altitude: 560, shields: 1 },
+    reward: { sparks: 280, altitude: 560, potions: 1, scrolls: 1 },
     defaultPartners: ['buddy_maya', 'buddy_sora']
   },
   {
@@ -589,7 +589,7 @@ export const TEAM_3P_QUEST_POOL = [
     teamSize: 3,
     target: 75,
     unit: 'problems',
-    reward: { sparks: 340, altitude: 680, shields: 1 },
+    reward: { sparks: 340, altitude: 680, spyglasses: 1, scrolls: 2 },
     defaultPartners: ['buddy_asha', 'buddy_tenzing']
   },
   {
@@ -601,7 +601,7 @@ export const TEAM_3P_QUEST_POOL = [
     teamSize: 3,
     target: 90,
     unit: 'problems',
-    reward: { sparks: 420, altitude: 840, shields: 2 },
+    reward: { sparks: 420, altitude: 840, potions: 1, shields: 1, pruners: 1 },
     defaultPartners: ['buddy_leo', 'buddy_tenzing']
   },
   {
@@ -613,7 +613,7 @@ export const TEAM_3P_QUEST_POOL = [
     teamSize: 3,
     target: 80,
     unit: 'problems',
-    reward: { sparks: 380, altitude: 760, shields: 2 },
+    reward: { sparks: 380, altitude: 760, compasses: 2, potions: 1 },
     defaultPartners: ['buddy_asha', 'buddy_sora']
   },
   {
@@ -625,7 +625,7 @@ export const TEAM_3P_QUEST_POOL = [
     teamSize: 3,
     target: 100,
     unit: 'problems',
-    reward: { sparks: 480, altitude: 960, shields: 2 },
+    reward: { sparks: 480, altitude: 960, potions: 2, spyglasses: 2 },
     defaultPartners: ['buddy_maya', 'buddy_tenzing']
   },
   {
@@ -637,7 +637,7 @@ export const TEAM_3P_QUEST_POOL = [
     teamSize: 3,
     target: 70,
     unit: 'problems',
-    reward: { sparks: 320, altitude: 640, shields: 1 },
+    reward: { sparks: 320, altitude: 640, potions: 1, scrolls: 2 },
     defaultPartners: ['buddy_leo', 'buddy_sora']
   },
   {
@@ -649,7 +649,7 @@ export const TEAM_3P_QUEST_POOL = [
     teamSize: 3,
     target: 120,
     unit: 'problems',
-    reward: { sparks: 550, altitude: 1100, shields: 3 },
+    reward: { sparks: 550, altitude: 1100, potions: 2, shields: 1, spyglasses: 2, pruners: 2 },
     defaultPartners: ['buddy_asha', 'buddy_maya']
   },
   {
@@ -661,7 +661,7 @@ export const TEAM_3P_QUEST_POOL = [
     teamSize: 3,
     target: 85,
     unit: 'problems',
-    reward: { sparks: 400, altitude: 800, shields: 2 },
+    reward: { sparks: 400, altitude: 800, potions: 1, pruners: 2, scrolls: 2 },
     defaultPartners: ['buddy_leo', 'buddy_tenzing']
   }
 ];
@@ -677,7 +677,7 @@ export const ASCENT_MODES = [
     sparkBonusPct: 0,
     minXp: 0,
     maxXp: 5600,
-    summitReward: { sparks: 300, shields: 2 }
+    summitReward: { sparks: 300, potions: 1, scrolls: 2, shields: 1 }
   },
   {
     tier: 2,
@@ -689,7 +689,7 @@ export const ASCENT_MODES = [
     sparkBonusPct: 10,
     minXp: 5600,
     maxXp: 15000,
-    summitReward: { sparks: 500, shields: 3 }
+    summitReward: { sparks: 500, potions: 2, spyglasses: 2, scrolls: 2 }
   },
   {
     tier: 3,
@@ -701,7 +701,7 @@ export const ASCENT_MODES = [
     sparkBonusPct: 20,
     minXp: 15000,
     maxXp: 30000,
-    summitReward: { sparks: 750, shields: 3 }
+    summitReward: { sparks: 750, potions: 2, pruners: 2, spyglasses: 2, shields: 1 }
   },
   {
     tier: 4,
@@ -713,7 +713,7 @@ export const ASCENT_MODES = [
     sparkBonusPct: 30,
     minXp: 30000,
     maxXp: 55000,
-    summitReward: { sparks: 1000, shields: 4 }
+    summitReward: { sparks: 1000, potions: 3, spyglasses: 3, pruners: 3, compasses: 2 }
   },
   {
     tier: 5,
@@ -725,21 +725,21 @@ export const ASCENT_MODES = [
     sparkBonusPct: 50,
     minXp: 55000,
     maxXp: null,
-    summitReward: { sparks: 1500, shields: 5 }
+    summitReward: { sparks: 1500, potions: 4, spyglasses: 4, pruners: 4, compasses: 4, shields: 1 }
   }
 ];
 
 export const ASCENT_RANKS = [
   { level: 1, title: 'Basecamp Explorer', icon: '🏕️', reward: null },
-  { level: 2, title: 'Trailhead Scout', icon: '🥾', reward: { sparks: 50 } },
-  { level: 3, title: 'Forest Wanderer', icon: '🌲', reward: { sparks: 60 } },
-  { level: 4, title: 'Ridge Runner', icon: '🧗', reward: { sparks: 75, shields: 1 } },
-  { level: 5, title: 'Altitude Pioneer', icon: '⚡', reward: { sparks: 100, shields: 1 } },
-  { level: 6, title: 'Moorland Ranger', icon: '🌿', reward: { sparks: 120 } },
-  { level: 7, title: 'Highland Navigator', icon: '🧭', reward: { sparks: 140, shields: 1 } },
-  { level: 8, title: 'Plateau Pathfinder', icon: '🦅', reward: { sparks: 160 } },
-  { level: 9, title: 'Glacier Voyager', icon: '❄️', reward: { sparks: 180, shields: 1 } },
-  { level: 10, title: 'Summit Sovereign', icon: '👑', reward: { sparks: 250, shields: 2 } }
+  { level: 2, title: 'Trailhead Scout', icon: '🥾', reward: { sparks: 50, scrolls: 1 } },
+  { level: 3, title: 'Forest Wanderer', icon: '🌲', reward: { sparks: 60, spyglasses: 1 } },
+  { level: 4, title: 'Ridge Runner', icon: '🧗', reward: { sparks: 75, potions: 1 } },
+  { level: 5, title: 'Altitude Pioneer', icon: '⚡', reward: { sparks: 100, shields: 1, scrolls: 1 } },
+  { level: 6, title: 'Moorland Ranger', icon: '🌿', reward: { sparks: 120, pruners: 1 } },
+  { level: 7, title: 'Highland Navigator', icon: '🧭', reward: { sparks: 140, compasses: 2 } },
+  { level: 8, title: 'Plateau Pathfinder', icon: '🦅', reward: { sparks: 160, potions: 1, spyglasses: 1 } },
+  { level: 9, title: 'Glacier Voyager', icon: '❄️', reward: { sparks: 180, pruners: 2, scrolls: 2 } },
+  { level: 10, title: 'Summit Sovereign', icon: '👑', reward: { sparks: 250, potions: 2, shields: 1, spyglasses: 1 } }
 ];
 
 // Helper: Level XP curves per Ascent Mode

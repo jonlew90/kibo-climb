@@ -351,7 +351,7 @@ class QuestService {
         newLevel: newLevelInfo.level,
         ascentTier: newLevelInfo.ascentTier,
         rank: newLevelInfo,
-        reward: { sparks: 50 + newLevelInfo.level * 15 }
+        reward: newLevelInfo.reward || newLevelInfo.rank?.reward || { sparks: 50 + newLevelInfo.level * 15 }
       };
     }
 
@@ -432,7 +432,7 @@ class QuestService {
           newLevel: newLevelInfo.level,
           ascentTier: newLevelInfo.ascentTier,
           rank: newLevelInfo,
-          reward: { sparks: 50 + newLevelInfo.level * 15 }
+          reward: newLevelInfo.reward || newLevelInfo.rank?.reward || { sparks: 50 + newLevelInfo.level * 15 }
         };
       }
 
@@ -506,6 +506,11 @@ class QuestService {
       const baseSparks = targetQuest.reward?.sparks || 0;
       const earnedXp = targetQuest.reward?.altitude || targetQuest.reward?.xp || 0;
       const baseShields = targetQuest.reward?.shields || 0;
+      const basePotions = targetQuest.reward?.potions || 0;
+      const baseScrolls = targetQuest.reward?.scrolls || 0;
+      const baseSpyglasses = targetQuest.reward?.spyglasses || 0;
+      const basePruners = targetQuest.reward?.pruners || 0;
+      const baseCompasses = targetQuest.reward?.compasses || 0;
 
       // 1. Ascent Multiplier Boost
       const ascentBonusSparks = Math.round(baseSparks * ((previousLevelInfo.sparkBonusPct || 0) / 100));
@@ -559,7 +564,7 @@ class QuestService {
           newLevel: newLevelInfo.level,
           ascentTier: newLevelInfo.ascentTier,
           rank: newLevelInfo,
-          reward: { sparks: 50 + newLevelInfo.level * 15 }
+          reward: newLevelInfo.reward || newLevelInfo.rank?.reward || { sparks: 50 + newLevelInfo.level * 15 }
         };
       }
 
@@ -611,7 +616,12 @@ class QuestService {
         friendSynergySparks,
         hasRealFriend,
         altitude: earnedXp,
-        shields: baseShields
+        shields: baseShields,
+        potions: basePotions,
+        scrolls: baseScrolls,
+        spyglasses: baseSpyglasses,
+        pruners: basePruners,
+        compasses: baseCompasses
       };
 
       return {

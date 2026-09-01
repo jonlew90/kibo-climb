@@ -86,12 +86,22 @@ export default function QuestsScreen({
       
       const totalSparksEarned = (result.reward?.sparks || 0) + (result.leveledUp?.reward?.sparks || 0);
       const totalShieldsEarned = (result.reward?.shields || 0) + (result.leveledUp?.reward?.shields || 0);
+      const totalPotionsEarned = (result.reward?.potions || 0) + (result.leveledUp?.reward?.potions || 0);
+      const totalScrollsEarned = (result.reward?.scrolls || 0) + (result.leveledUp?.reward?.scrolls || 0);
+      const totalSpyglassesEarned = (result.reward?.spyglasses || 0) + (result.leveledUp?.reward?.spyglasses || 0);
+      const totalPrunersEarned = (result.reward?.pruners || 0) + (result.leveledUp?.reward?.pruners || 0);
+      const totalCompassesEarned = (result.reward?.compasses || 0) + (result.leveledUp?.reward?.compasses || 0);
       const totalAltitudeEarned = result.reward?.altitude || result.earnedXp || 0;
 
       setCelebrationReward({
         ...result.reward,
         sparks: totalSparksEarned,
         shields: totalShieldsEarned,
+        potions: totalPotionsEarned,
+        scrolls: totalScrollsEarned,
+        spyglasses: totalSpyglassesEarned,
+        pruners: totalPrunersEarned,
+        compasses: totalCompassesEarned,
         altitude: totalAltitudeEarned,
         leveledUp: result.leveledUp,
         newlyUnlockedBadges: result.newlyUnlockedBadges,
@@ -101,6 +111,11 @@ export default function QuestsScreen({
         onAwardReward({
           sparks: totalSparksEarned,
           shields: totalShieldsEarned,
+          potions: totalPotionsEarned,
+          scrolls: totalScrollsEarned,
+          spyglasses: totalSpyglassesEarned,
+          pruners: totalPrunersEarned,
+          compasses: totalCompassesEarned,
           newlyUnlockedBadges: result.newlyUnlockedBadges
         });
       } else if (onAwardSparks && totalSparksEarned > 0) {
@@ -803,8 +818,43 @@ export default function QuestsScreen({
                         </div>
                       )}
 
+                      {quest.reward?.potions && (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-purple-100 border border-purple-300 text-purple-900 font-black text-xs shadow-2xs" title="Double Sparks Potion">
+                          <span>🧪</span>
+                          <span>+{quest.reward.potions}</span>
+                        </div>
+                      )}
+
+                      {quest.reward?.scrolls && (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-teal-100 border border-teal-300 text-teal-900 font-black text-xs shadow-2xs" title="Wisdom Hint Scroll">
+                          <span>📜</span>
+                          <span>+{quest.reward.scrolls}</span>
+                        </div>
+                      )}
+
+                      {quest.reward?.spyglasses && (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-cyan-100 border border-cyan-300 text-cyan-900 font-black text-xs shadow-2xs" title="Climber Spyglass">
+                          <span>🔍</span>
+                          <span>+{quest.reward.spyglasses}</span>
+                        </div>
+                      )}
+
+                      {quest.reward?.pruners && (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-100 border border-rose-300 text-rose-900 font-black text-xs shadow-2xs" title="Climber Pruner">
+                          <span>✂️</span>
+                          <span>+{quest.reward.pruners}</span>
+                        </div>
+                      )}
+
+                      {quest.reward?.compasses && (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-900 font-black text-xs shadow-2xs" title="Explorer Compass">
+                          <span>🧭</span>
+                          <span>+{quest.reward.compasses}</span>
+                        </div>
+                      )}
+
                       {quest.reward?.shields && (
-                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-indigo-100 border border-indigo-300 text-indigo-900 font-black text-xs shadow-2xs">
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-indigo-100 border border-indigo-300 text-indigo-900 font-black text-xs shadow-2xs" title="Kibo Shield">
                           <Shield className="w-3.5 h-3.5 text-indigo-600" />
                           <span>+{quest.reward.shields}</span>
                         </div>
@@ -1118,6 +1168,36 @@ export default function QuestsScreen({
                 <div className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 font-black text-sm flex items-center gap-1 border border-emerald-300">
                   <Mountain className="w-4 h-4 text-emerald-600" />
                   <span>+{celebrationReward.altitude} XP</span>
+                </div>
+              )}
+              {celebrationReward.potions > 0 && (
+                <div className="px-3 py-1.5 rounded-xl bg-purple-100 text-purple-900 font-black text-sm flex items-center gap-1 border border-purple-300">
+                  <span>🧪</span>
+                  <span>+{celebrationReward.potions} Potion{celebrationReward.potions > 1 ? 's' : ''}</span>
+                </div>
+              )}
+              {celebrationReward.scrolls > 0 && (
+                <div className="px-3 py-1.5 rounded-xl bg-teal-100 text-teal-900 font-black text-sm flex items-center gap-1 border border-teal-300">
+                  <span>📜</span>
+                  <span>+{celebrationReward.scrolls} Scroll{celebrationReward.scrolls > 1 ? 's' : ''}</span>
+                </div>
+              )}
+              {celebrationReward.spyglasses > 0 && (
+                <div className="px-3 py-1.5 rounded-xl bg-cyan-100 text-cyan-900 font-black text-sm flex items-center gap-1 border border-cyan-300">
+                  <span>🔍</span>
+                  <span>+{celebrationReward.spyglasses} Spyglass{celebrationReward.spyglasses > 1 ? 'es' : ''}</span>
+                </div>
+              )}
+              {celebrationReward.pruners > 0 && (
+                <div className="px-3 py-1.5 rounded-xl bg-rose-100 text-rose-900 font-black text-sm flex items-center gap-1 border border-rose-300">
+                  <span>✂️</span>
+                  <span>+{celebrationReward.pruners} Pruner{celebrationReward.pruners > 1 ? 's' : ''}</span>
+                </div>
+              )}
+              {celebrationReward.compasses > 0 && (
+                <div className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 font-black text-sm flex items-center gap-1 border border-emerald-300">
+                  <span>🧭</span>
+                  <span>+{celebrationReward.compasses} Compass{celebrationReward.compasses > 1 ? 'es' : ''}</span>
                 </div>
               )}
               {celebrationReward.shields > 0 && (

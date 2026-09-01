@@ -2809,14 +2809,39 @@ export default function App() {
               setSparks(updated);
               storageService.saveUserData({ sparks: updated }, activeSubject);
             }
+            const curConsumables = consumables || storageService.getConsumables(activeProfileId);
+            let nextShieldCount = curConsumables.shieldCount ?? 1;
+            let overflowSparksBonus = 0;
             if (reward.shields) {
-              const nextConsumables = {
-                ...consumables,
-                shieldCount: (consumables.shieldCount || 0) + reward.shields
-              };
-              setConsumables(nextConsumables);
-              storageService.saveUserData({ consumables: nextConsumables }, activeSubject);
+              const totalShields = nextShieldCount + reward.shields;
+              if (totalShields > 2) {
+                const overflow = totalShields - 2;
+                nextShieldCount = 2;
+                overflowSparksBonus = overflow * 25; // Bonus sparks for overflow shields
+              } else {
+                nextShieldCount = totalShields;
+              }
             }
+            const nextConsumables = {
+              ...curConsumables,
+              shieldCount: nextShieldCount,
+              doubleSparksPotionCount: (curConsumables.doubleSparksPotionCount || 0) + (reward.potions || 0),
+              hintScrollCount: (curConsumables.hintScrollCount || 0) + (reward.scrolls || 0),
+              letterSpyglassCount: (curConsumables.letterSpyglassCount || 0) + (reward.spyglasses || 0),
+              letterPrunerCount: (curConsumables.letterPrunerCount || 0) + (reward.pruners || 0),
+              explorerCompassCount: (curConsumables.explorerCompassCount || 0) + (reward.compasses || 0)
+            };
+            setConsumables(nextConsumables);
+            setStreakShields(nextShieldCount);
+            storageService.saveConsumables(nextConsumables, activeProfileId);
+            storageService.saveUserData({ consumables: nextConsumables, streakShields: nextShieldCount }, activeSubject);
+
+            if (overflowSparksBonus > 0) {
+              const updatedSparks = (sparks || 0) + overflowSparksBonus;
+              setSparks(updatedSparks);
+              storageService.saveUserData({ sparks: updatedSparks }, activeSubject);
+            }
+
             if (reward.newlyUnlockedBadges && reward.newlyUnlockedBadges.length > 0) {
               const newBadgeIds = reward.newlyUnlockedBadges.map(b => (typeof b === 'string' ? b : b.id)).filter(Boolean);
               setUnlockedBadges(prev => Array.from(new Set([...(prev || []), ...newBadgeIds])));

@@ -160,46 +160,95 @@ export default function DailyBonusRewardModal({
                 </div>
               </div>
 
-              {/* Streak Shields Card */}
-              <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/10 border-2 border-blue-400 rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-md animate-scale-in" style={{ animationDelay: '100ms' }}>
-                <div className="w-10 h-10 rounded-xl bg-blue-400 text-blue-950 flex items-center justify-center font-black shrink-0 shadow-sm">
-                  <Shield className="w-6 h-6 fill-blue-950" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-sm sm:text-base font-black text-blue-300 block leading-tight">
-                    +{rewardData.shields} Shield{rewardData.shields > 1 ? 's' : ''}
-                  </span>
-                  <span className="text-[10px] text-blue-200 font-bold block">Streak Protection</span>
-                </div>
-              </div>
-
-              {/* Potion Card (If club member) */}
+              {/* Potion Card */}
               {rewardData.potions > 0 && (
-                <div className="bg-gradient-to-br from-purple-500/20 to-fuchsia-500/10 border-2 border-purple-400 rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-md animate-scale-in" style={{ animationDelay: '200ms' }}>
+                <div className="bg-gradient-to-br from-purple-500/20 to-fuchsia-500/10 border-2 border-purple-400 rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-md animate-scale-in" style={{ animationDelay: '100ms' }}>
                   <div className="w-10 h-10 rounded-xl bg-purple-400 text-purple-950 flex items-center justify-center font-black shrink-0 shadow-sm">
                     <FlaskConical className="w-6 h-6 fill-purple-950" />
                   </div>
                   <div className="min-w-0">
                     <span className="text-sm sm:text-base font-black text-purple-300 block leading-tight">
-                      +{rewardData.potions} 2x Potion
+                      +{rewardData.potions} 2x Potion{rewardData.potions > 1 ? 's' : ''}
                     </span>
                     <span className="text-[10px] text-purple-200 font-bold block">Double Sparks</span>
                   </div>
                 </div>
               )}
 
+              {/* Streak Shields Card (if granted) */}
+              {rewardData.shields > 0 && (
+                <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/10 border-2 border-blue-400 rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-md animate-scale-in" style={{ animationDelay: '150ms' }}>
+                  <div className="w-10 h-10 rounded-xl bg-blue-400 text-blue-950 flex items-center justify-center font-black shrink-0 shadow-sm">
+                    <Shield className="w-6 h-6 fill-blue-950" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-sm sm:text-base font-black text-blue-300 block leading-tight">
+                      +{rewardData.shields} Shield{rewardData.shields > 1 ? 's' : ''}
+                    </span>
+                    <span className="text-[10px] text-blue-200 font-bold block">Streak Protection</span>
+                  </div>
+                </div>
+              )}
+
               {/* Hint Scrolls */}
-              <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border-2 border-emerald-400 rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-md animate-scale-in" style={{ animationDelay: '300ms' }}>
-                <div className="w-10 h-10 rounded-xl bg-emerald-400 text-emerald-950 flex items-center justify-center font-black shrink-0 shadow-sm">
-                  <ScrollText className="w-6 h-6 text-emerald-950" />
+              {rewardData.scrolls > 0 && (
+                <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border-2 border-emerald-400 rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-md animate-scale-in" style={{ animationDelay: '200ms' }}>
+                  <div className="w-10 h-10 rounded-xl bg-emerald-400 text-emerald-950 flex items-center justify-center font-black shrink-0 shadow-sm">
+                    <ScrollText className="w-6 h-6 text-emerald-950" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-sm sm:text-base font-black text-emerald-300 block leading-tight">
+                      +{rewardData.scrolls} Hint Scroll{rewardData.scrolls > 1 ? 's' : ''}
+                    </span>
+                    <span className="text-[10px] text-emerald-200 font-bold block">Climb Assistance</span>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <span className="text-sm sm:text-base font-black text-emerald-300 block leading-tight">
-                    +{rewardData.scrolls} Hint Scroll{rewardData.scrolls > 1 ? 's' : ''}
-                  </span>
-                  <span className="text-[10px] text-emerald-200 font-bold block">Climb Assistance</span>
+              )}
+
+              {/* Climber Spyglass */}
+              {rewardData.spyglasses > 0 && (
+                <div className="bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border-2 border-cyan-400 rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-md animate-scale-in" style={{ animationDelay: '250ms' }}>
+                  <div className="w-10 h-10 rounded-xl bg-cyan-400 text-cyan-950 flex items-center justify-center font-black shrink-0 text-xl shadow-sm">
+                    🔍
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-sm sm:text-base font-black text-cyan-300 block leading-tight">
+                      +{rewardData.spyglasses} Spyglass{rewardData.spyglasses > 1 ? 'es' : ''}
+                    </span>
+                    <span className="text-[10px] text-cyan-200 font-bold block">Letter / Digit Reveal</span>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Climber Pruner */}
+              {rewardData.pruners > 0 && (
+                <div className="bg-gradient-to-br from-rose-500/20 to-pink-500/10 border-2 border-rose-400 rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-md animate-scale-in" style={{ animationDelay: '300ms' }}>
+                  <div className="w-10 h-10 rounded-xl bg-rose-400 text-rose-950 flex items-center justify-center font-black shrink-0 text-xl shadow-sm">
+                    ✂️
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-sm sm:text-base font-black text-rose-300 block leading-tight">
+                      +{rewardData.pruners} Pruner{rewardData.pruners > 1 ? 's' : ''}
+                    </span>
+                    <span className="text-[10px] text-rose-200 font-bold block">Eliminate Choices</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Explorer Compass */}
+              {rewardData.compasses > 0 && (
+                <div className="bg-gradient-to-br from-teal-500/20 to-emerald-500/10 border-2 border-teal-400 rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-md animate-scale-in" style={{ animationDelay: '350ms' }}>
+                  <div className="w-10 h-10 rounded-xl bg-teal-400 text-teal-950 flex items-center justify-center font-black shrink-0 text-xl shadow-sm">
+                    🧭
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-sm sm:text-base font-black text-teal-300 block leading-tight">
+                      +{rewardData.compasses} Compass{rewardData.compasses > 1 ? 'es' : ''}
+                    </span>
+                    <span className="text-[10px] text-teal-200 font-bold block">World Navigation</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
