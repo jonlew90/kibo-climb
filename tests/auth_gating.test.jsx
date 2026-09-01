@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import PinGateModal from '../src/components/PinGateModal';
 import FamilyPlanUpgradeModal from '../src/components/FamilyPlanUpgradeModal';
 import WorkshopModal from '../src/components/WorkshopModal';
+import ParentDashboardModal from '../src/components/ParentDashboardModal';
 import { parentChildService } from '../src/services/parentChildService';
 import { storageService } from '../src/services/storageService';
 import { authService } from '../src/services/authService';
@@ -177,6 +178,44 @@ describe('Auth & Parental Gating Verification', () => {
         expect(buySpy).not.toHaveBeenCalled();
         expect(parentZoneSpy).toHaveBeenCalledWith('verification', 'real_money_purchases');
       }
+    });
+
+    it('renders deep link back to sparks tab in Parent Zone when real-money purchases are enabled', () => {
+      const openWorkshopSpy = vi.fn();
+      const closeSpy = vi.fn();
+
+      act(() => {
+        root.render(
+          <ParentDashboardModal
+            isOpen={true}
+            initialTab="verification"
+            highlightSection="real_money_purchases"
+            onClose={closeSpy}
+            onOpenWorkshop={openWorkshopSpy}
+          />
+        );
+      });
+
+      // Find the toggle button specifically for Allow Real-Money Purchases
+      const allButtons = Array.from(container.querySelectorAll('button'));
+      const realMoneyCard = allButtons.find(b => b.closest('div')?.textContent?.includes('Allow Real-Money Purchases'));
+      expect(realMoneyCard).toBeDefined();
+
+      act(() => {
+        realMoneyCard.click();
+      });
+
+      // Check for the deep link return button
+      const allButtonsAfter = Array.from(container.querySelectorAll('button'));
+      const returnBtn = allButtonsAfter.find(b => b.textContent?.includes('Return to Sparks & Club Shop'));
+      expect(returnBtn).toBeDefined();
+
+      act(() => {
+        returnBtn.click();
+      });
+
+      expect(closeSpy).toHaveBeenCalled();
+      expect(openWorkshopSpy).toHaveBeenCalledWith('sparks', 'shop');
     });
 
     it('requires parent PIN gate and account authentication (non-anonymous) for purchases', () => {
@@ -365,19 +404,20 @@ describe('Auth & Parental Gating Verification', () => {
       expect(res).toBeDefined();
     });
 
-    it('returns to Parent Zone when returning with session_id and action=parent-dashboard', () => {
-      const search = '?session_id=cs_test_123&action=parent-dashboard&tab=verification&highlight=family_plan';
+    it('returns to Shop when returning with session_id and action=shop', () => {
+      const search = '?session_id=cs_test_sparks_456&action=shop&hub=sparks&mode=shop';
       const params = new URLSearchParams(search);
       const sessionId = params.get('session_id');
       const action = params.get('action');
-      const tab = params.get('tab');
-      const highlight = params.get('highlight');
+      const hub = params.get('hub');
+      const mode = params.get('mode');
 
-      expect(sessionId).toBe('cs_test_123');
-      expect(action).toBe('parent-dashboard');
-      expect(tab).toBe('verification');
-      expect(highlight).toBe('family_plan');
+      expect(sessionId).toBe('cs_test_sparks_456');
+      expect(action).toBe('shop');
+      expect(hub).toBe('sparks');
+      expect(mode).toBe('shop');
     });
   });
 });
+
 

@@ -430,12 +430,13 @@ export default function App() {
 
   const processDeepLink = (search = typeof window !== 'undefined' ? window.location.search : '') => {
     let savedContext = null;
-    if (typeof window !== 'undefined' && window.sessionStorage) {
+    if (typeof window !== 'undefined') {
       try {
-        const savedStr = window.sessionStorage.getItem('kibo_stripe_return_context');
+        const savedStr = window.sessionStorage?.getItem('kibo_stripe_return_context') || window.localStorage?.getItem('kibo_pending_stripe_return');
         if (savedStr) {
           savedContext = JSON.parse(savedStr);
-          window.sessionStorage.removeItem('kibo_stripe_return_context');
+          window.sessionStorage?.removeItem('kibo_stripe_return_context');
+          window.localStorage?.removeItem('kibo_pending_stripe_return');
         }
       } catch (e) {}
     }
@@ -447,8 +448,8 @@ export default function App() {
       const profile = params.get('profile');
       const subject = params.get('subject');
       const tab = params.get('tab') || savedContext?.tab;
-      const hub = params.get('hub');
-      const mode = params.get('mode');
+      const hub = params.get('hub') || savedContext?.hub;
+      const mode = params.get('mode') || savedContext?.mode;
       const highlight = params.get('highlight') || savedContext?.highlight;
       const sessionId = params.get('session_id');
 
@@ -482,6 +483,9 @@ export default function App() {
         } else {
           handleOpenPinGate('deep_link', tab || 'overview', highlight || null);
         }
+      } else if (sessionId && !action) {
+        // Fallback for returning from Stripe session if action parameter was not retained
+        handleOpenWorkshop(null, 'sparks', 'shop');
       } else if (action === 'settings') {
         handleNavigateTo('/settings', 'settings');
       } else if (action === 'leaderboard') {
@@ -1705,8 +1709,14 @@ export default function App() {
     }
   }, [appState, activeProfileId, showFirstLaunchOnboardingModal, showProfileSelector, showManualProfileSwitcher, showNewsModal]);
 
-  const handleBuySparksPackage = (pack, skipPinGate = false) => {
-    setPendingSparksPurchase(pack);
+  const handleBuySparksPackage = (pack, skipPinGate = false, source = 'shop') => {
+    const enrichedPack = {
+      ...pack,
+      source: pack.source || (pack.isSubscription ? 'parent_dashboard' : source),
+      hub: pack.hub || (pack.source === 'shop' || source === 'shop' ? 'sparks' : undefined),
+      mode: pack.mode || 'shop'
+    };
+    setPendingSparksPurchase(enrichedPack);
     if (skipPinGate) {
       if (authService.getAuthState().isAnonymous) {
         setLinkModalMilestone('Real-Money Purchase Backup');
@@ -1717,7 +1727,7 @@ export default function App() {
         });
         applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
       } else {
-        const checkoutId = pack.realMoneyPrice ? VIEWS.STRIPE_CHECKOUT : VIEWS.MOCK_CHECKOUT;
+        const checkoutId = enrichedPack.realMoneyPrice ? VIEWS.STRIPE_CHECKOUT : VIEWS.MOCK_CHECKOUT;
         const entry = navigationHistory.push({
           type: VIEW_TYPES.MODAL,
           id: checkoutId
@@ -1725,7 +1735,7 @@ export default function App() {
         applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
       }
     } else {
-      handleOpenPinGate('buy_sparks');
+      handleOpenPinGate(source || 'buy_sparks');
     }
   };
 
@@ -3082,6 +3092,9 @@ export default function App() {
             description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
           }, true);
         }}
+        onOpenWorkshop={(targetHub = 'wearables', targetMode = 'shop') => {
+          handleOpenWorkshop(null, targetHub, targetMode);
+        }}
       />
 
       {/* TRAIL BADGES SHOWCASE MODAL */}
@@ -3239,8 +3252,7 @@ export default function App() {
           handleOpenPinGate('shop', targetTab, highlight);
         }}
         onBuySparksPackage={(pack) => {
-          setPendingSparksPurchase(pack);
-          handleOpenPinGate('shop');
+          handleBuySparksPackage({ ...pack, source: 'shop', hub: 'sparks', mode: 'shop' }, false, 'shop');
         }}
         onRequestAccountLink={() => {
           handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Shop Rewards' });

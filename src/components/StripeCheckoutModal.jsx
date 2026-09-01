@@ -55,27 +55,35 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
         await signInAnonymously(auth);
       }
 
-      const isParentOrigin = packageInfo.source === 'parent_dashboard' || packageInfo.isSubscription || packageInfo.isFamilyPlan || packageInfo.returnAction === 'parent-dashboard';
-      const returnAction = packageInfo.returnAction || (isParentOrigin ? 'parent-dashboard' : packageInfo.source === 'shop' ? 'shop' : '');
-      const returnTab = packageInfo.tab || (isParentOrigin ? 'verification' : '');
+      const isParentOrigin = packageInfo.source === 'parent_dashboard' || packageInfo.isSubscription || packageInfo.isFamilyPlan || packageInfo.returnAction === 'parent-dashboard' || packageInfo.id?.startsWith('kibo_club');
+      const returnAction = packageInfo.returnAction || (isParentOrigin ? 'parent-dashboard' : 'shop');
+      const returnTab = packageInfo.tab || (isParentOrigin ? 'verification' : (packageInfo.hub || 'sparks'));
       const returnHighlight = packageInfo.highlight || (isParentOrigin ? 'family_plan' : '');
+      const returnHub = packageInfo.hub || (!isParentOrigin ? 'sparks' : '');
+      const returnMode = packageInfo.mode || (!isParentOrigin ? 'shop' : '');
 
       const returnParams = new URLSearchParams();
       if (returnAction) returnParams.set('action', returnAction);
       if (returnTab) returnParams.set('tab', returnTab);
       if (returnHighlight) returnParams.set('highlight', returnHighlight);
+      if (returnHub) returnParams.set('hub', returnHub);
+      if (returnMode) returnParams.set('mode', returnMode);
 
       const queryStr = returnParams.toString();
       const successUrl = `${window.location.origin}?session_id={CHECKOUT_SESSION_ID}${queryStr ? `&${queryStr}` : ''}`;
       const cancelUrl = `${window.location.origin}${queryStr ? `?${queryStr}` : ''}`;
 
-      if (typeof window !== 'undefined' && window.sessionStorage) {
+      if (typeof window !== 'undefined') {
+        const returnContext = {
+          action: returnAction,
+          tab: returnTab,
+          highlight: returnHighlight,
+          hub: returnHub,
+          mode: returnMode
+        };
         try {
-          window.sessionStorage.setItem('kibo_stripe_return_context', JSON.stringify({
-            action: returnAction,
-            tab: returnTab,
-            highlight: returnHighlight
-          }));
+          if (window.sessionStorage) window.sessionStorage.setItem('kibo_stripe_return_context', JSON.stringify(returnContext));
+          if (window.localStorage) window.localStorage.setItem('kibo_pending_stripe_return', JSON.stringify(returnContext));
         } catch (e) {}
       }
 

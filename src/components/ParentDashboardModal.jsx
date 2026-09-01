@@ -59,7 +59,8 @@ export default function ParentDashboardModal({
   personalRecords = {},
   onAccountLinked,
   onOpenSubscription,
-  onOpenFamilyUpgrade
+  onOpenFamilyUpgrade,
+  onOpenWorkshop
 }) {
   const [activeTab, setActiveTab] = useState(initialTab || 'overview'); // 'overview' | 'schedule' | 'verification'
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
@@ -1933,9 +1934,25 @@ export default function ParentDashboardModal({
                   </button>
                 </div>
                 {notifPrefs.allowRealMoneyPurchases && (
-                  <p className="text-xs text-amber-900 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200 mt-1 leading-snug">
-                    ⚠️ <strong>Note:</strong> Biometric verification or dynamic challenges will be required before any actual payment can be processed.
-                  </p>
+                  <div className="bg-amber-50/90 border border-amber-200 rounded-xl p-2.5 mt-1 text-xs space-y-2">
+                    <p className="text-amber-900 font-medium leading-snug">
+                      ⚠️ <strong>Note:</strong> Biometric verification or dynamic challenges will be required before any actual payment can be processed.
+                    </p>
+                    {onOpenWorkshop && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playKeyTap();
+                          onClose();
+                          onOpenWorkshop('sparks', 'shop');
+                        }}
+                        className="w-full py-1.5 px-3 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-black text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Return to Sparks & Club Shop</span>
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
