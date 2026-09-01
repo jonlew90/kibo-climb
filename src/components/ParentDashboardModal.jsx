@@ -1302,11 +1302,16 @@ export default function ParentDashboardModal({
                 {/* Child-Specific Daily Streak Alarm */}
                 <div className="flex items-center justify-between bg-white border border-purple-100 p-2.5 rounded-xl shadow-xs">
                   <div>
-                    <span className="font-extrabold text-xs text-slate-800 block">
-                      Daily Streak Reminder for {childName}
-                    </span>
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className="font-extrabold text-xs text-slate-800 block">
+                        Daily Streak Reminder for {childName}
+                      </span>
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-md border border-purple-200">
+                        🔔 Push Notification
+                      </span>
+                    </div>
                     <span className="text-xs text-slate-500 font-medium">
-                      Alert child on device if daily practice is incomplete
+                      Sends a device push notification if daily practice is incomplete
                     </span>
                   </div>
 
@@ -1355,8 +1360,13 @@ export default function ParentDashboardModal({
                 <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-xl gap-2">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary (Per Profile)</span>
-                      <span className="text-xs text-slate-500 font-medium">Individual weekly mastery & topics digest sent per child</span>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="font-extrabold text-xs text-slate-800 block">Weekly Progress Summary (Per Profile)</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded-md border border-sky-200">
+                          ✉️ Email Report
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-500 font-medium">Individual weekly mastery & topics digest emailed to parent account</span>
                     </div>
                     <button
                       type="button"
@@ -1534,8 +1544,13 @@ export default function ParentDashboardModal({
                 <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <span className="font-extrabold text-xs text-slate-800 block">Struggle & Review Alerts</span>
-                      <span className="text-xs text-slate-500 font-medium">Real-time alerts when accuracy drops or frustration triggers</span>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="font-extrabold text-xs text-slate-800 block">Struggle & Review Alerts</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-md border border-slate-300">
+                          🔒 In-App Only
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-500 font-medium">Real-time alerts displayed in Parent Dashboard when accuracy drops</span>
                     </div>
                     <button
                       type="button"
@@ -1552,7 +1567,7 @@ export default function ParentDashboardModal({
                   </div>
                   {notifPrefs.struggleAlertsEnabled && (
                     <p className="text-xs text-purple-900 font-medium bg-purple-50/80 p-2 rounded-lg border border-purple-200 mt-1 leading-snug">
-                      🛡️ <strong>Child-Safe Privacy:</strong> Displayed exclusively inside <strong>🔒 Parent Zone Dashboard</strong> (never shown on child's screen!).<br />
+                      🛡️ <strong>Child-Safe Privacy:</strong> Displayed exclusively inside <strong>🔒 Parent Zone Dashboard</strong> (never shown on child's screen and never sent over public notifications).<br />
                       ⚠️ <strong>Triggers:</strong> Accuracy &lt; 65%, 3+ consecutive misses, or frustration triggers with actionable review tips.
                     </p>
                   )}
