@@ -1191,7 +1191,7 @@ export default function WorkshopModal({
                           <Sparkles className="w-3 h-3 fill-amber-950" /> Kibo Club
                         </span>
                         <span className="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-                          Individual & Family (Save ~35% Annual)
+                          Solo & Family (Save ~35% Annual)
                         </span>
                         <span className="bg-emerald-500 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-2xs">
                           From $4.99/mo or $39.99/yr
@@ -1241,10 +1241,16 @@ export default function WorkshopModal({
                 {/* VIP Pricing & Savings Value Callout */}
                 <div className="bg-gradient-to-r from-amber-50 to-purple-50 border border-amber-200 rounded-2xl p-3 text-left space-y-0.5">
                   <div className="flex items-center gap-1.5 text-xs font-black text-amber-950">
-                    <span>Kibo Club VIP Pricing: Save 15% on All Packs & Bundles</span>
+                    <span>
+                      {storageService.hasFamilyPlan()
+                        ? 'Kibo Club Family VIP Pricing: Save 20% on All Spark Bundles'
+                        : 'Kibo Club VIP Pricing: Save 15% on All Packs & Bundles'}
+                    </span>
                   </div>
                   <p className="text-[11px] text-slate-600 font-medium">
-                    Your subscription pays for itself with everyday savings on Spark packs, bundles, and exclusive gear.
+                    {storageService.hasFamilyPlan()
+                      ? 'Your Family membership provides our maximum 20% discount on Spark top-ups to outfit all sibling profiles.'
+                      : 'Your subscription pays for itself with everyday savings on Spark packs, bundles, and exclusive gear.'}
                   </p>
                 </div>
 
@@ -1254,8 +1260,10 @@ export default function WorkshopModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {SPARKS_PACKAGES.map((pack) => {
                       const savings = calculateSparksPackageSavings(pack);
-                      const displayPrice = isMember && pack.clubRealMoneyPrice ? pack.clubRealMoneyPrice : (pack.realMoneyPrice || pack.price);
-                      const clubSavings = getRealMoneyItemClubSavings(pack);
+                      const isFam = storageService.hasFamilyPlan();
+                      const clubPrice = getRealMoneyItemClubPrice(pack, isFam);
+                      const displayPrice = isMember && clubPrice ? clubPrice : (pack.realMoneyPrice || pack.price);
+                      const clubSavings = getRealMoneyItemClubSavings(pack, isFam);
 
                       return (
                         <div
@@ -1280,21 +1288,21 @@ export default function WorkshopModal({
                           <div className="flex items-center gap-1.5 shrink-0">
                             {isMember ? (
                               <>
-                                {pack.realMoneyPrice && pack.clubRealMoneyPrice && (
+                                {pack.realMoneyPrice && clubPrice && (
                                   <div className="flex flex-col items-end justify-center leading-none pr-0.5">
                                     <span className="text-[10px] text-slate-400 line-through font-bold">
                                       {pack.realMoneyPrice}
                                     </span>
                                     <span className="text-[9px] font-black text-amber-600 uppercase tracking-wider flex items-center gap-0.5 mt-0.5">
-                                      <Sparkles className="w-2.5 h-2.5 fill-amber-500 text-amber-500" /> VIP
+                                      <Sparkles className="w-2.5 h-2.5 fill-amber-500 text-amber-500" /> {isFam ? '20% VIP' : 'VIP'}
                                     </span>
                                   </div>
                                 )}
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const targetPack = pack.clubRealMoneyPrice
-                                      ? { ...pack, realMoneyPrice: pack.clubRealMoneyPrice, price: pack.clubRealMoneyPrice }
+                                    const targetPack = clubPrice
+                                      ? { ...pack, realMoneyPrice: clubPrice, price: clubPrice }
                                       : pack;
                                     if (allowRealMoneyPurchases) {
                                       onBuySparksPackage(targetPack);
@@ -1305,7 +1313,7 @@ export default function WorkshopModal({
                                   className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-2xs whitespace-nowrap active:scale-95 transition-all flex items-center gap-1 cursor-pointer border border-amber-400"
                                 >
                                   {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-amber-100" />}
-                                  <span>{pack.clubRealMoneyPrice || pack.realMoneyPrice || pack.price}</span>
+                                  <span>{clubPrice || pack.realMoneyPrice || pack.price}</span>
                                 </button>
                               </>
                             ) : (

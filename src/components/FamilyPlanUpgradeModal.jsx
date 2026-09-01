@@ -78,7 +78,7 @@ export default function FamilyPlanUpgradeModal({
           {/* Plan Comparison Summary */}
           <div className="grid grid-cols-2 gap-2 text-left">
             <div className="bg-white border border-slate-200 rounded-xl p-2.5 space-y-1 shadow-2xs">
-              <span className="text-[10px] font-black uppercase text-purple-700 block">Individual</span>
+              <span className="text-[10px] font-black uppercase text-purple-700 block">Solo</span>
               <div className="text-sm font-black text-slate-900 leading-none">
                 {billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'}
               </div>
@@ -103,27 +103,35 @@ export default function FamilyPlanUpgradeModal({
             </div>
           </div>
 
-          <div className="bg-white border-2 border-amber-100 rounded-xl p-3 text-left shadow-2xs">
+          <div className="bg-white border-2 border-amber-100 rounded-xl p-3 text-left shadow-2xs space-y-2">
+            <div className="text-[11px] font-extrabold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-600 shrink-0" />
+              <span>Everything in Solo, plus:</span>
+            </div>
             <ul className="space-y-1.5 text-xs font-bold text-slate-700">
-              <li className="flex items-center gap-2 truncate">
+              <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="truncate">Up to 6 sibling climber profiles</span>
+                <span><strong>Up to 6 sibling climber profiles</strong> (vs 1 on Solo)</span>
               </li>
-              <li className="flex items-center gap-2 truncate">
+              <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="truncate">1.25x Sparks & 15% VIP store discounts</span>
+                <span>1.25x Sparks & 15% VIP discounts for <strong>every child</strong></span>
               </li>
-              <li className="flex items-center gap-2 truncate">
+              <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="truncate">Daily Vault 3.3x bonus Sparks & shields</span>
+                <span><strong>Deeper 20% discount</strong> on Spark top-up packs</span>
               </li>
-              <li className="flex items-center gap-2 truncate">
+              <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="truncate">Golden tags & summit-exclusive gear</span>
+                <span>Daily Vault 3.3x bonus Sparks & shields for all</span>
               </li>
-              <li className="flex items-center gap-2 truncate">
+              <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="truncate">Unified multi-child parent reports 📊</span>
+                <span>Golden profile tags & summit-exclusive gear</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>Unified multi-child parent reports 📊</span>
               </li>
             </ul>
           </div>

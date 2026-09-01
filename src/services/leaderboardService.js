@@ -52,7 +52,7 @@ class LeaderboardService {
   }
 
   // Sync user score and equipped gear to Firestore
-  async syncUserScore({ profileId, name, score, subjectsMastered = 5, equipped = [], subject = 'math' }) {
+  async syncUserScore({ profileId, name, score, subjectsMastered = 5, equipped = [], subject = 'math', planTier }) {
     try {
       // Ensure user is authenticated before attempting sync
       let user = this.currentUser || auth.currentUser;
@@ -88,6 +88,7 @@ class LeaderboardService {
         score: Number(score) || 1000,
         subjectsMastered: Number(subjectsMastered) || 0,
         equipped: Array.isArray(equipped) ? equipped : [],
+        planTier: planTier || storageService.getPlanTier(safeProfileId),
         updatedAt: serverTimestamp()
       };
 
@@ -203,7 +204,7 @@ class LeaderboardService {
   }
 
   // Sync weekly effort stats (sparks and max streak) to Firestore
-  async syncWeeklyScore({ profileId, name, weekStr, cohortId, sparks = 0, maxStreak = 0, equipped = [], subject = 'math' }) {
+  async syncWeeklyScore({ profileId, name, weekStr, cohortId, sparks = 0, maxStreak = 0, equipped = [], subject = 'math', planTier }) {
     try {
       let user = this.currentUser || auth.currentUser;
       if (!user) {
@@ -237,6 +238,7 @@ class LeaderboardService {
         sparks: Number(sparks) || 0,
         maxStreak: Number(maxStreak) || 0,
         equipped: Array.isArray(equipped) ? equipped : [],
+        planTier: planTier || storageService.getPlanTier(safeProfileId),
         updatedAt: serverTimestamp()
       };
 
@@ -288,7 +290,7 @@ class LeaderboardService {
   }
 
   // Sync quest progress & elevation to Firestore
-  async syncQuestScore({ profileId, name, totalXp = 0, level = 1, ascentTier = 1, ascentName = 'Sunny Trailhead', title = 'Basecamp Explorer', claimsCount = 0, equipped = [] }) {
+  async syncQuestScore({ profileId, name, totalXp = 0, level = 1, ascentTier = 1, ascentName = 'Sunny Trailhead', title = 'Basecamp Explorer', claimsCount = 0, equipped = [], planTier }) {
     try {
       let user = this.currentUser || auth.currentUser;
       if (!user) {
@@ -321,6 +323,7 @@ class LeaderboardService {
         title: title || 'Basecamp Explorer',
         claimsCount: Number(claimsCount) || 0,
         equipped: Array.isArray(equipped) ? equipped : [],
+        planTier: planTier || storageService.getPlanTier(safeProfileId),
         updatedAt: serverTimestamp()
       };
 

@@ -1601,9 +1601,9 @@ export default function ParentDashboardModal({
               const activeCycle = currentPlan?.cycle;
               const isHighlight = activeHighlight === 'family_plan' || activeHighlight === 'upgrade_plan';
 
-              const isCurrentPlanIndividual = hasSingle && !hasFam && billingCycle === activeCycle;
+              const isCurrentPlanSolo = hasSingle && !hasFam && billingCycle === activeCycle;
               const isCurrentPlanFamily = hasFam && billingCycle === activeCycle;
-              const isSwitchCycleIndividual = hasSingle && !hasFam && billingCycle !== activeCycle;
+              const isSwitchCycleSolo = hasSingle && !hasFam && billingCycle !== activeCycle;
               const isSwitchCycleFamily = hasFam && billingCycle !== activeCycle;
 
               return (
@@ -1654,35 +1654,43 @@ export default function ParentDashboardModal({
                   </div>
 
                   <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                    Choose or manage your membership below. Memberships unlock permanent 1.25x Spark multipliers, sibling profiles, golden tags, and 100% offline-ready practice.
+                    Choose or manage your membership below. Memberships unlock permanent 1.25x Spark multipliers, VIP store discounts, golden tags, and 100% offline-ready practice.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                    {/* Individual Plan Card */}
+                    {/* Solo Plan Card */}
                     <div className={`bg-white border-2 rounded-2xl p-3.5 flex flex-col justify-between space-y-3 relative overflow-hidden transition-all ${
-                      isCurrentPlanIndividual
+                      isCurrentPlanSolo
                         ? 'border-purple-500 bg-purple-50/30 ring-2 ring-purple-400/30'
-                        : isSwitchCycleIndividual
+                        : isSwitchCycleSolo
                         ? 'border-purple-400 bg-purple-50/10 hover:border-purple-500 shadow-xs'
                         : 'border-slate-200 hover:border-purple-300'
                     }`}>
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
-                            Single Profile
+                            1 Child Profile
                           </span>
                           <span className="text-sm font-black text-slate-900">
                             {billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'}
                           </span>
                         </div>
-                        <h5 className="font-black text-sm text-slate-900">Kibo Club Individual</h5>
+                        <h5 className="font-black text-sm text-slate-900">Kibo Club Solo</h5>
                         <span className="text-[10px] text-purple-700 font-extrabold block">
                           {billingCycle === 'annual' ? 'Equivalent to $3.33/mo (Billed annually)' : 'Billed monthly • Cancel anytime'}
                         </span>
                         <ul className="space-y-1 text-xs text-slate-600 font-bold">
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>1.25x Sparks & 15% VIP store discounts</span>
+                            <span>1 active child climber profile</span>
+                          </li>
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>Permanent 1.25x Sparks multiplier</span>
+                          </li>
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>15% VIP store discount on gear & packs</span>
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
@@ -1690,17 +1698,17 @@ export default function ParentDashboardModal({
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>Golden profile tag & summit gear</span>
+                            <span>Golden profile tag 👑 & summit gear</span>
                           </li>
                         </ul>
                       </div>
 
-                      {isCurrentPlanIndividual ? (
+                      {isCurrentPlanSolo ? (
                         <div className="w-full py-2 bg-purple-100 text-purple-900 font-black text-xs rounded-xl text-center border border-purple-200 flex items-center justify-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5 text-purple-700" />
                           <span>Current Active Plan ({billingCycle === 'annual' ? 'Annual' : 'Monthly'})</span>
                         </div>
-                      ) : isSwitchCycleIndividual ? (
+                      ) : isSwitchCycleSolo ? (
                         <button
                           type="button"
                           onClick={() => {
@@ -1725,7 +1733,7 @@ export default function ParentDashboardModal({
                           }}
                           className="w-full py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-black text-xs rounded-xl border border-purple-200 transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95"
                         >
-                          <span>Downgrade to Individual ({billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'})</span>
+                          <span>Downgrade to Solo ({billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'})</span>
                         </button>
                       ) : (
                         <button
@@ -1738,7 +1746,7 @@ export default function ParentDashboardModal({
                           }}
                           className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl shadow-sm transform active:scale-95 transition-all cursor-pointer"
                         >
-                          Select Individual ({billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'})
+                          Select Solo ({billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'})
                         </button>
                       )}
                     </div>
@@ -1754,7 +1762,7 @@ export default function ParentDashboardModal({
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-black uppercase text-amber-900 bg-amber-200 px-2 py-0.5 rounded-full">
-                            ⭐️ Best For Families
+                            ⭐️ Best Value (Save 70%+)
                           </span>
                           <span className="text-sm font-black text-amber-950">
                             {billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'}
@@ -1764,18 +1772,29 @@ export default function ParentDashboardModal({
                         <span className="text-[10px] text-amber-900 font-extrabold block">
                           {billingCycle === 'annual' ? 'Equivalent to $5.00/mo (Billed annually)' : 'Billed monthly • Cancel anytime'}
                         </span>
+                        <div className="text-[11px] font-extrabold text-amber-800 bg-amber-100/70 border border-amber-200 rounded-lg px-2 py-1">
+                          ✨ Everything in Solo, plus:
+                        </div>
                         <ul className="space-y-1 text-xs text-slate-600 font-bold">
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>Up to 6 sibling profiles</span>
+                            <span><strong>Up to 6 sibling profiles</strong> (vs 1 on Solo)</span>
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>1.25x Sparks & 15% VIP discounts for ALL</span>
+                            <span>1.25x Sparks & 15% VIP discounts for <strong>every child</strong></span>
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>Daily Vault 3.3x rewards & golden tags</span>
+                            <span><strong>Deeper 20% discount</strong> on Spark top-up packs (save on gear!)</span>
+                          </li>
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>Daily Vault 3.3x rewards & golden tags for all profiles</span>
+                          </li>
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>Unified multi-child progress tracking & reports</span>
                           </li>
                         </ul>
                       </div>
@@ -1808,14 +1827,11 @@ export default function ParentDashboardModal({
                               onOpenSubscription(billingCycle === 'annual' ? 'kibo_club_family_annual' : 'kibo_club_family');
                             }
                           }}
-                          className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs rounded-xl shadow-md transform active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                          className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs rounded-xl shadow-sm transform active:scale-95 transition-all cursor-pointer"
                         >
-                          <Sparkles className="w-3.5 h-3.5 fill-white" />
-                          <span>
-                            {hasSingle
-                              ? `Upgrade to Family (${billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'})`
-                              : `Select Family (${billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'})`}
-                          </span>
+                          {hasSingle
+                            ? `Upgrade to Family (${billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'})`
+                            : `Select Family (${billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'})`}
                         </button>
                       )}
                     </div>

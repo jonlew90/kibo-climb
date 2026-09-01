@@ -1400,7 +1400,7 @@ export const WORKSHOP_ITEMS = [
   },
   {
     id: 'kibo_club_sub',
-    name: 'Kibo Club Individual',
+    name: 'Kibo Club Solo',
     category: 'premium',
     slot: 'fx',
     realMoneyPrice: '$4.99/mo',
@@ -1412,7 +1412,7 @@ export const WORKSHOP_ITEMS = [
   },
   {
     id: 'kibo_club_sub_annual',
-    name: 'Kibo Club Individual (Annual)',
+    name: 'Kibo Club Solo (Annual)',
     category: 'premium',
     slot: 'fx',
     realMoneyPrice: '$39.99/yr',
@@ -1458,6 +1458,7 @@ export const SPARKS_PACKAGES = [
     price: '$1.99',
     realMoneyPrice: '$1.99',
     clubRealMoneyPrice: '$1.69',
+    familyClubRealMoneyPrice: '$1.59',
     rarity: 'common',
     description: 'A glowing handful of 500 Sparks to grab that special cosmetic or power-up!'
   },
@@ -1468,6 +1469,7 @@ export const SPARKS_PACKAGES = [
     price: '$3.99',
     realMoneyPrice: '$3.99',
     clubRealMoneyPrice: '$3.39',
+    familyClubRealMoneyPrice: '$3.19',
     rarity: 'rare',
     description: 'An adventurer coin pouch packed with 1,200 crackling Sparks for your journey!'
   },
@@ -1478,6 +1480,7 @@ export const SPARKS_PACKAGES = [
     price: '$7.99',
     realMoneyPrice: '$7.99',
     clubRealMoneyPrice: '$6.79',
+    familyClubRealMoneyPrice: '$6.39',
     rarity: 'epic',
     description: 'A reinforced wooden treasure chest holding 3,000 dazzling Sparks for serious climbers!'
   },
@@ -1488,6 +1491,7 @@ export const SPARKS_PACKAGES = [
     price: '$19.99',
     realMoneyPrice: '$19.99',
     clubRealMoneyPrice: '$16.49',
+    familyClubRealMoneyPrice: '$15.99',
     rarity: 'legendary',
     description: 'A mountain-sized summit hoard of 10,000 roaring Sparks to unlock anything in the workshop!'
   }
@@ -1572,16 +1576,18 @@ export function getItemSellBackPrice(item, isKiboClub = false) {
   return Math.floor(item.cost * rate);
 }
 
-export function getRealMoneyItemClubPrice(item) {
+export function getRealMoneyItemClubPrice(item, isFamily = false) {
   if (!item) return null;
+  if (isFamily && item.familyClubRealMoneyPrice) return item.familyClubRealMoneyPrice;
   return item.clubRealMoneyPrice || null;
 }
 
-export function getRealMoneyItemClubSavings(item) {
-  if (!item || !item.realMoneyPrice || !item.clubRealMoneyPrice) return null;
+export function getRealMoneyItemClubSavings(item, isFamily = false) {
+  const clubPrice = getRealMoneyItemClubPrice(item, isFamily);
+  if (!item || !item.realMoneyPrice || !clubPrice) return null;
   const parsePrice = (p) => parseFloat(String(p).replace(/[^0-9.]/g, ''));
   const reg = parsePrice(item.realMoneyPrice);
-  const club = parsePrice(item.clubRealMoneyPrice);
+  const club = parsePrice(clubPrice);
   if (!reg || !club || reg <= club) return null;
   const savings = (reg - club).toFixed(2);
   return `$${savings}`;

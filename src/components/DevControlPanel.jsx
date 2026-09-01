@@ -242,7 +242,7 @@ export default function DevControlPanel({
                 {storageService.hasFamilyPlan()
                   ? 'Active: Family ⭐️'
                   : storageService.hasSinglePlan()
-                  ? 'Active: Individual 👑'
+                  ? 'Active: Solo 👑'
                   : 'Active: None (Free)'}
               </span>
             </span>
@@ -257,7 +257,7 @@ export default function DevControlPanel({
                 onClick={() => {
                   const activeProfId = storageService.getActiveProfileId();
                   storageService.updateSubscriptionState('kibo_club_sub', activeProfId, true);
-                  showToast('Enabled Kibo Club (Individual Plan)!');
+                  showToast('Enabled Kibo Club (Solo Plan)!');
                   if (onStateRefresh) onStateRefresh();
                 }}
                 className={`py-2 px-2 rounded-xl border text-center font-bold text-xs transition-all active:scale-95 ${
@@ -266,7 +266,7 @@ export default function DevControlPanel({
                     : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-300'
                 }`}
               >
-                👑 Individual
+                👑 Solo
               </button>
 
               <button

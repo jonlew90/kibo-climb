@@ -91,7 +91,7 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
             <ul className="list-disc list-inside space-y-1.5 pl-1 text-slate-600">
               <li>Virtual items hold no real-world monetary value and cannot be exchanged or redeemed for cash.</li>
               <li>Sparks earned through practice sessions are educational incentives designed to celebrate effort.</li>
-              <li>Subscriptions (Kibo Club Individual and Family plans) and in-app purchases may only be authorized and purchased by an adult parent or legal guardian through the Parent Zone.</li>
+              <li>Subscriptions (Kibo Club Solo and Family plans) and in-app purchases may only be authorized and purchased by an adult parent or legal guardian through the Parent Zone.</li>
               <li>We reserve the right to adjust virtual item balances in the event of software glitches or cheat prevention.</li>
             </ul>
 

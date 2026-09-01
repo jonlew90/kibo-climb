@@ -331,7 +331,7 @@ describe('Auth & Parental Gating Verification', () => {
         } else {
           handleBuySparksPackage({
             id: 'kibo_club_sub',
-            name: 'Kibo Club Individual',
+            name: 'Kibo Club Solo',
             realMoneyPrice: '$4.99/mo',
             price: '$4.99/mo',
             isSubscription: true,

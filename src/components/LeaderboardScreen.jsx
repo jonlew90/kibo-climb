@@ -112,6 +112,7 @@ export default function LeaderboardScreen({
       score: pScore,
       subjectsMastered: pSubjects,
       equipped: pEquipped,
+      planTier: storageService.getPlanTier(p.id),
       subject: selectedSubject
     };
   });
@@ -207,7 +208,8 @@ export default function LeaderboardScreen({
             cohortId,
             sparks,
             maxStreak,
-            equipped: p.equipped
+            equipped: p.equipped,
+            planTier: p.planTier || storageService.getPlanTier(p.id)
          });
       }
     });
@@ -247,7 +249,8 @@ export default function LeaderboardScreen({
         ascentName: pLevelInfo.ascentMode?.name || 'Sunny Trailhead',
         title: pLevelInfo.title,
         claimsCount: pClaims,
-        equipped: pEquipped
+        equipped: pEquipped,
+        planTier: storageService.getPlanTier(p.id)
       });
     });
 
@@ -273,7 +276,8 @@ export default function LeaderboardScreen({
         name: p.name,
         score: p.score,
         subjectsMastered: p.subjectsMastered,
-        equipped: p.equipped
+        equipped: p.equipped,
+        planTier: p.planTier || storageService.getPlanTier(p.id)
       });
     });
 
@@ -352,6 +356,7 @@ export default function LeaderboardScreen({
       score: Number(pSparks) || 0,
       subjectsMastered: pSubjects,
       equipped: pEquipped,
+      planTier: storageService.getPlanTier(p.id),
       subject: selectedSubject
     };
   });
@@ -506,10 +511,24 @@ export default function LeaderboardScreen({
       displayName = player.anonymousName || getDeterministicAnonymousName(player.id || player.uid || player.profileId || player.name || `seed_${index}`);
     }
 
+    let planTier = player.planTier;
+    if (!planTier) {
+      if (isCurrent || isAccountProf) {
+        planTier = storageService.getPlanTier(player.profileId || player.id);
+      } else if (player.equipped?.some(id => id.includes('family')) || player.isFamilyPlan) {
+        planTier = 'family';
+      } else if (player.equipped?.some(id => id.includes('kibo_club')) || player.isClubMember) {
+        planTier = 'solo';
+      } else {
+        planTier = 'free';
+      }
+    }
+
     return {
       ...player,
       name: displayName,
       isFriend,
+      planTier,
       rank: index + 1
     };
   });
@@ -1015,7 +1034,6 @@ export default function LeaderboardScreen({
           <div className="pt-8 pb-10 px-4 flex justify-center items-end gap-2 sm:gap-6 relative">
 
             {/* 2nd Place */}
-            {/* 2nd Place */}
             {top3[1] && (
               <button
                 type="button"
@@ -1027,7 +1045,13 @@ export default function LeaderboardScreen({
                 style={{ animationDelay: '100ms' }}
               >
                 <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 transition-transform group-hover:scale-105 ${
-                  top3[1].isCurrentUser ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40' : 'bg-slate-200 border-slate-300'
+                  top3[1].planTier === 'family'
+                    ? 'bg-purple-100 border-2 border-purple-400 ring-4 ring-purple-400/80 shadow-[0_0_20px_rgba(168,85,247,0.55),0_0_10px_rgba(245,158,11,0.4)]'
+                    : top3[1].planTier === 'solo'
+                    ? 'bg-amber-100 border-2 border-amber-400 ring-4 ring-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
+                    : top3[1].isCurrentUser
+                    ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40'
+                    : 'bg-slate-200 border-slate-300'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
                     <Mascot size={56} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} className="w-full h-full" />
@@ -1037,6 +1061,15 @@ export default function LeaderboardScreen({
                   <span className="font-bold text-xs text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[1].name}
                   </span>
+                  {top3[1].planTier === 'family' ? (
+                    <span className="text-[10px] bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 text-white font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-purple-300" title="Family VIP">
+                      👑 FAMILY
+                    </span>
+                  ) : top3[1].planTier === 'solo' ? (
+                    <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300" title="Kibo Club">
+                      ⭐ CLUB
+                    </span>
+                  ) : null}
                   {top3[1].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[1].isFriend ? (
@@ -1069,7 +1102,11 @@ export default function LeaderboardScreen({
                 className="flex flex-col items-center flex-1 min-w-0 max-w-[145px] sm:max-w-[175px] relative z-20 animate-fade-in-up text-left group cursor-pointer"
               >
                 <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 shadow-xl flex items-center justify-center mb-2 overflow-hidden relative shrink-0 transition-transform group-hover:scale-105 ${
-                  top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
+                  top3[0].planTier === 'family'
+                    ? 'bg-purple-100 border-amber-300 ring-4 ring-purple-500/80 shadow-[0_0_26px_rgba(168,85,247,0.65),0_0_15px_rgba(245,158,11,0.55)]'
+                    : top3[0].planTier === 'solo'
+                    ? 'bg-amber-100 border-amber-400 ring-4 ring-amber-400/70 shadow-[0_0_20px_rgba(245,158,11,0.55)]'
+                    : top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.88] sm:scale-95">
                     <Mascot size={72} mood="excited" equipped={top3[0].equipped} className="w-full h-full" />
@@ -1079,6 +1116,15 @@ export default function LeaderboardScreen({
                   <span className="font-black text-sm text-amber-900 text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[0].name}
                   </span>
+                  {top3[0].planTier === 'family' ? (
+                    <span className="text-[10px] bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 text-white font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-purple-300" title="Family VIP">
+                      👑 FAMILY
+                    </span>
+                  ) : top3[0].planTier === 'solo' ? (
+                    <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300" title="Kibo Club">
+                      ⭐ CLUB
+                    </span>
+                  ) : null}
                   {top3[0].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[0].isFriend ? (
@@ -1113,7 +1159,13 @@ export default function LeaderboardScreen({
                 style={{ animationDelay: '200ms' }}
               >
                 <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-inner flex items-center justify-center mb-2 overflow-hidden relative shrink-0 transition-transform group-hover:scale-105 ${
-                  top3[2].isCurrentUser ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40' : 'bg-orange-100 border-orange-300'
+                  top3[2].planTier === 'family'
+                    ? 'bg-purple-100 border-2 border-purple-400 ring-4 ring-purple-400/80 shadow-[0_0_20px_rgba(168,85,247,0.55),0_0_10px_rgba(245,158,11,0.4)]'
+                    : top3[2].planTier === 'solo'
+                    ? 'bg-amber-100 border-2 border-amber-400 ring-4 ring-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
+                    : top3[2].isCurrentUser
+                    ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40'
+                    : 'bg-orange-100 border-orange-300'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
                     <Mascot size={56} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} className="w-full h-full" />
@@ -1123,6 +1175,15 @@ export default function LeaderboardScreen({
                   <span className="font-bold text-xs text-center break-words line-clamp-2 max-w-full leading-tight">
                     {top3[2].name}
                   </span>
+                  {top3[2].planTier === 'family' ? (
+                    <span className="text-[10px] bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 text-white font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-purple-300" title="Family VIP">
+                      👑 FAMILY
+                    </span>
+                  ) : top3[2].planTier === 'solo' ? (
+                    <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300" title="Kibo Club">
+                      ⭐ CLUB
+                    </span>
+                  ) : null}
                   {top3[2].isCurrentUser ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[2].isFriend ? (
@@ -1149,9 +1210,7 @@ export default function LeaderboardScreen({
         {/* SCROLLABLE LIST (Ranks 4+) */}
         <div className="px-4 space-y-2 pb-6">
           {others.map((player) => {
-            const isMember = (player.isCurrentUser && storageService.hasClubMembership(activeProfile?.id)) ||
-              (player.profileId && storageService.hasClubMembership(player.profileId)) ||
-              player.isClubMember;
+            const playerPlanTier = player.planTier || 'free';
 
             return (
               <div
@@ -1161,7 +1220,15 @@ export default function LeaderboardScreen({
                   setSelectedPlayerForModal(player);
                 }}
                 className={`rounded-2xl p-3 flex items-center gap-3 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] ${
-                  player.isCurrentUser
+                  playerPlanTier === 'family'
+                    ? player.isCurrentUser
+                      ? 'bg-gradient-to-r from-purple-50 via-pink-50/40 to-amber-50/60 border-2 border-purple-400 ring-2 ring-purple-400/70 shadow-[0_0_20px_rgba(168,85,247,0.35),0_0_12px_rgba(245,158,11,0.25)]'
+                      : 'bg-gradient-to-r from-purple-50/40 via-white to-amber-50/30 border-2 border-purple-300/80 shadow-[0_0_15px_rgba(168,85,247,0.25)] hover:shadow-[0_0_20px_rgba(168,85,247,0.35)]'
+                    : playerPlanTier === 'solo'
+                    ? player.isCurrentUser
+                      ? 'bg-gradient-to-r from-amber-50/70 via-yellow-50/40 to-amber-50/70 border-2 border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
+                      : 'bg-gradient-to-r from-amber-50/30 via-white to-amber-50/20 border border-amber-300/80 shadow-[0_0_12px_rgba(245,158,11,0.2)] hover:shadow-[0_0_16px_rgba(245,158,11,0.3)]'
+                    : player.isCurrentUser
                     ? 'bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border-2 border-indigo-500 shadow-md ring-2 ring-indigo-400/30'
                     : player.isFriend
                     ? 'bg-gradient-to-r from-rose-50/50 via-pink-50/30 to-white border border-rose-200 shadow-sm hover:shadow-md'
@@ -1175,7 +1242,15 @@ export default function LeaderboardScreen({
 
                 {/* Avatar Mascot */}
                 <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border flex items-center justify-center shrink-0 overflow-hidden relative ${
-                  player.isCurrentUser ? 'bg-indigo-100 border-indigo-300 ring-2 ring-indigo-400/30' : player.isFriend ? 'bg-rose-50 border-rose-200 ring-2 ring-rose-300/40' : 'bg-slate-100 border-slate-200'
+                  playerPlanTier === 'family'
+                    ? 'bg-gradient-to-br from-purple-100 to-amber-100 border-2 border-purple-300 ring-2 ring-purple-400/80 shadow-[0_0_12px_rgba(168,85,247,0.5)]'
+                    : playerPlanTier === 'solo'
+                    ? 'bg-gradient-to-br from-amber-100 to-yellow-100 border-2 border-amber-300 ring-2 ring-amber-400/70 shadow-[0_0_10px_rgba(245,158,11,0.45)]'
+                    : player.isCurrentUser
+                    ? 'bg-indigo-100 border-indigo-300 ring-2 ring-indigo-400/30'
+                    : player.isFriend
+                    ? 'bg-rose-50 border-rose-200 ring-2 ring-rose-300/40'
+                    : 'bg-slate-100 border-slate-200'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
                     <Mascot size={44} mood={player.isCurrentUser ? "happy" : "neutral"} equipped={player.equipped} className="w-full h-full" />
@@ -1188,11 +1263,15 @@ export default function LeaderboardScreen({
                     <span className="font-bold text-sm text-slate-800 break-words line-clamp-2" title={player.name}>
                       {player.name}
                     </span>
-                    {isMember && (
-                      <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300" title="Kibo Club VIP">
-                        CLUB
+                    {playerPlanTier === 'family' ? (
+                      <span className="text-[10px] bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 text-white font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-purple-300" title="Family VIP">
+                        👑 FAMILY
                       </span>
-                    )}
+                    ) : playerPlanTier === 'solo' ? (
+                      <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300" title="Kibo Club VIP">
+                        ⭐ CLUB
+                      </span>
+                    ) : null}
                     {player.isCurrentUser && (
                       <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
                         YOU
@@ -1243,41 +1322,60 @@ export default function LeaderboardScreen({
       {/* PINNED CURRENT USER CARD */}
       <div className="shrink-0 px-3 py-2 bg-gradient-to-t from-slate-100 via-slate-100/90 to-transparent pt-3 z-30 border-t border-slate-200/60">
         <div className="max-w-4xl mx-auto w-full">
-          <div className="bg-indigo-900 border-2 border-indigo-500 rounded-2xl p-3 flex items-center gap-3 shadow-[0_10px_25px_rgba(67,56,202,0.3)] relative overflow-hidden">
-            {/* Subtle glow effect inside */}
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20" />
+          {(() => {
+            const userPlanTier = storageService.getPlanTier(activeProfile?.id);
+            return (
+              <div className={`rounded-2xl p-3 flex items-center gap-3 relative overflow-hidden transition-all ${
+                userPlanTier === 'family'
+                  ? 'bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 border-2 border-purple-400 ring-2 ring-purple-400/60 shadow-[0_0_28px_rgba(168,85,247,0.5),0_0_18px_rgba(245,158,11,0.35)]'
+                  : userPlanTier === 'solo'
+                  ? 'bg-gradient-to-r from-slate-900 via-amber-950/80 to-slate-900 border-2 border-amber-400 ring-2 ring-amber-400/50 shadow-[0_0_22px_rgba(245,158,11,0.45)]'
+                  : 'bg-indigo-900 border-2 border-indigo-500 shadow-[0_10px_25px_rgba(67,56,202,0.3)]'
+              }`}>
+                {/* Subtle glow effect inside */}
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20" />
 
-            {/* User Rank */}
-            <div className="w-8 h-8 rounded-full bg-indigo-800/80 border border-indigo-400 flex items-center justify-center font-black text-white shrink-0 shadow-inner z-10">
-              #{currentUserRank}
-            </div>
+                {/* User Rank */}
+                <div className="w-8 h-8 rounded-full bg-indigo-800/80 border border-indigo-400 flex items-center justify-center font-black text-white shrink-0 shadow-inner z-10">
+                  #{currentUserRank}
+                </div>
 
-            {/* User Avatar (Actual Mascot + Items) */}
-            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-white rounded-full border-2 border-indigo-300 flex items-center justify-center shrink-0 overflow-hidden z-10 relative">
-               <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
-                 <Mascot size={48} mood="happy" equipped={equippedItems} className="w-full h-full" />
-               </div>
-            </div>
+                {/* User Avatar (Actual Mascot + Items) */}
+                <div className={`w-13 h-13 sm:w-14 sm:h-14 bg-white rounded-full border-2 flex items-center justify-center shrink-0 overflow-hidden z-10 relative ${
+                  userPlanTier === 'family'
+                    ? 'border-purple-300 ring-2 ring-purple-400/80 shadow-[0_0_14px_rgba(168,85,247,0.6)]'
+                    : userPlanTier === 'solo'
+                    ? 'border-amber-300 ring-2 ring-amber-400/70 shadow-[0_0_10px_rgba(245,158,11,0.5)]'
+                    : 'border-indigo-300'
+                }`}>
+                   <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
+                     <Mascot size={48} mood="happy" equipped={equippedItems} className="w-full h-full" />
+                   </div>
+                </div>
 
-            {/* User Info & Progress */}
-            <div className="flex-1 min-w-0 flex flex-col z-10">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-black text-white text-sm truncate">You ({username})</span>
-                {storageService.hasClubMembership(activeProfile?.id) && (
-                  <span className="bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 text-xs font-black px-2 py-0.5 rounded-md shadow-xs border border-amber-300 flex items-center gap-1">
-                    KIBO CLUB
-                  </span>
-                )}
-                {viewMode === 'quests' ? (
-                  <span className="bg-purple-600 text-purple-100 text-xs uppercase px-2 py-0.5 rounded font-bold tracking-wider">
-                    [Ascent {userLevelInfo.ascentTier}] Lv. {userLevelInfo.level} • {userLevelInfo.title}
-                  </span>
-                ) : (
-                  <span className="bg-indigo-500 text-indigo-50 text-xs uppercase px-2 py-0.5 rounded font-bold tracking-wider">
-                    {getRankTitle(userScore)}
-                  </span>
-                )}
-              </div>
+                {/* User Info & Progress */}
+                <div className="flex-1 min-w-0 flex flex-col z-10">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-black text-white text-sm truncate">You ({username})</span>
+                    {userPlanTier === 'family' ? (
+                      <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 text-white text-xs font-black px-2 py-0.5 rounded-md shadow-xs border border-purple-300 flex items-center gap-1">
+                        👑 FAMILY VIP
+                      </span>
+                    ) : userPlanTier === 'solo' ? (
+                      <span className="bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 text-xs font-black px-2 py-0.5 rounded-md shadow-xs border border-amber-300 flex items-center gap-1">
+                        ⭐ KIBO CLUB
+                      </span>
+                    ) : null}
+                    {viewMode === 'quests' ? (
+                      <span className="bg-purple-600 text-purple-100 text-xs uppercase px-2 py-0.5 rounded font-bold tracking-wider">
+                        [Ascent {userLevelInfo.ascentTier}] Lv. {userLevelInfo.level} • {userLevelInfo.title}
+                      </span>
+                    ) : (
+                      <span className="bg-indigo-500 text-indigo-50 text-xs uppercase px-2 py-0.5 rounded font-bold tracking-wider">
+                        {getRankTitle(userScore)}
+                      </span>
+                    )}
+                  </div>
               <div className="flex items-center gap-1 mt-0.5">
                 {viewMode === 'quests' ? (
                   <Mountain className="w-3.5 h-3.5 text-amber-400" />
@@ -1299,6 +1397,8 @@ export default function LeaderboardScreen({
               </p>
             </div>
           </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -1442,7 +1542,11 @@ export default function LeaderboardScreen({
 
             {/* Mascot Avatar */}
             <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 flex items-center justify-center overflow-hidden relative shadow-md mt-1 ${
-              selectedPlayerForModal.isCurrentUser
+              selectedPlayerForModal.planTier === 'family'
+                ? 'bg-purple-100 border-purple-400 ring-4 ring-purple-400/80 shadow-[0_0_24px_rgba(168,85,247,0.55),0_0_12px_rgba(245,158,11,0.4)]'
+                : selectedPlayerForModal.planTier === 'solo'
+                ? 'bg-amber-100 border-amber-400 ring-4 ring-amber-400/60 shadow-[0_0_18px_rgba(245,158,11,0.5)]'
+                : selectedPlayerForModal.isCurrentUser
                 ? 'bg-indigo-100 border-indigo-400 ring-4 ring-indigo-300/40'
                 : selectedPlayerForModal.isFriend
                 ? 'bg-rose-50 border-rose-300 ring-4 ring-rose-200/50'
@@ -1459,6 +1563,15 @@ export default function LeaderboardScreen({
                 <h3 className="font-black text-lg sm:text-xl text-slate-800 break-all select-all">
                   {selectedPlayerForModal.name}
                 </h3>
+                {selectedPlayerForModal.planTier === 'family' ? (
+                  <span className="text-xs bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 text-white font-black px-2 py-0.5 rounded-md shadow-xs border border-purple-300 flex items-center gap-1 shrink-0">
+                    👑 FAMILY VIP
+                  </span>
+                ) : selectedPlayerForModal.planTier === 'solo' ? (
+                  <span className="text-xs bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-2 py-0.5 rounded-md shadow-xs border border-amber-300 flex items-center gap-1 shrink-0">
+                    ⭐ KIBO CLUB
+                  </span>
+                ) : null}
                 {selectedPlayerForModal.isCurrentUser ? (
                   <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0">
                     YOU

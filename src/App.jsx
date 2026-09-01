@@ -1960,75 +1960,105 @@ export default function App() {
         <div className="flex items-center gap-2 w-full justify-between max-w-4xl mx-auto min-w-0">
           {/* 1. Active Profile Username / Avatar Dropdown (Top Left) */}
           <div className="relative shrink-0" ref={profileDropdownRef}>
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setShowProfileDropdown(!showProfileDropdown);
-              }}
-              className={`flex items-center gap-1 sm:gap-1.5 text-white border-2 p-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer group shrink-0 ${
-                isKiboClub
-                  ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 border-amber-200 ring-2 ring-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.45)] hover:shadow-[0_0_20px_rgba(245,158,11,0.65)] hover:scale-105 active:scale-95'
-                  : 'bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 border-sky-300 shadow-2xs hover:scale-105 active:scale-95'
-              }`}
-              title={`Climber Profile: ${activeProfile?.username || activeProfile?.name || 'Climber'}${isKiboClub ? ' (Kibo Club Member)' : ''}`}
-              aria-expanded={showProfileDropdown}
-            >
-              <div className="relative">
-                <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-black shrink-0 text-white uppercase shadow-2xs ${
-                  isKiboClub
-                    ? 'bg-gradient-to-tr from-amber-600 to-yellow-400 border-2 border-amber-100 ring-2 ring-amber-300/80 shadow-[0_0_8px_rgba(251,191,36,0.7)]'
-                    : 'bg-white/25 border-white/40'
-                }`}>
-                  {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
-                </div>
-                {pendingFriendRequestsCount > 0 && (
-                  <span
-                    className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white animate-pulse"
-                    title={`${pendingFriendRequestsCount} notification${pendingFriendRequestsCount > 1 ? 's' : ''}`}
-                  />
-                )}
-              </div>
-              <span className={`hidden md:inline truncate tracking-tight font-black max-w-[140px] lg:max-w-[180px] ${
-                isKiboClub ? 'text-amber-50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]' : ''
-              }`}>
-                {activeProfile?.username || activeProfile?.name || 'Climber'}
-              </span>
-              <ChevronDown className={`w-3 h-3 text-white/80 group-hover:text-white transition-transform duration-200 shrink-0 ${showProfileDropdown ? 'rotate-180' : ''}`} />
-            </button>
+            {(() => {
+              const userPlanTier = storageService.getPlanTier(activeProfileId);
+              return (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setShowProfileDropdown(!showProfileDropdown);
+                  }}
+                  className={`flex items-center gap-1 sm:gap-1.5 text-white border-2 p-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer group shrink-0 ${
+                    userPlanTier === 'family'
+                      ? 'bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 border-amber-200 ring-2 ring-purple-400/80 shadow-[0_0_22px_rgba(245,158,11,0.6),0_0_35px_rgba(168,85,247,0.5)] hover:shadow-[0_0_30px_rgba(245,158,11,0.8),0_0_45px_rgba(168,85,247,0.7)] hover:scale-105 active:scale-95'
+                      : userPlanTier === 'solo'
+                      ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 border-amber-200 ring-2 ring-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.45)] hover:shadow-[0_0_20px_rgba(245,158,11,0.65)] hover:scale-105 active:scale-95'
+                      : 'bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 border-sky-300 shadow-2xs hover:scale-105 active:scale-95'
+                  }`}
+                  title={`Climber Profile: ${activeProfile?.username || activeProfile?.name || 'Climber'}${userPlanTier === 'family' ? ' (Kibo Club Family Plan)' : userPlanTier === 'solo' ? ' (Kibo Club Solo Plan)' : ' (Free Plan)'}`}
+                  aria-expanded={showProfileDropdown}
+                >
+                  <div className="relative">
+                    <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-black shrink-0 text-white uppercase shadow-2xs ${
+                      userPlanTier === 'family'
+                        ? 'bg-gradient-to-tr from-purple-700 via-pink-500 to-amber-300 border-2 border-amber-100 ring-2 ring-purple-300/90 shadow-[0_0_10px_rgba(236,72,153,0.8)]'
+                        : userPlanTier === 'solo'
+                        ? 'bg-gradient-to-tr from-amber-600 to-yellow-400 border-2 border-amber-100 ring-2 ring-amber-300/80 shadow-[0_0_8px_rgba(251,191,36,0.7)]'
+                        : 'bg-white/25 border-white/40'
+                    }`}>
+                      {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
+                    </div>
+                    {pendingFriendRequestsCount > 0 && (
+                      <span
+                        className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white animate-pulse"
+                        title={`${pendingFriendRequestsCount} notification${pendingFriendRequestsCount > 1 ? 's' : ''}`}
+                      />
+                    )}
+                  </div>
+                  <span className={`hidden md:inline truncate tracking-tight font-black max-w-[140px] lg:max-w-[180px] ${
+                    userPlanTier === 'family'
+                      ? 'text-yellow-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]'
+                      : userPlanTier === 'solo'
+                      ? 'text-amber-50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]'
+                      : ''
+                  }`}>
+                    {activeProfile?.username || activeProfile?.name || 'Climber'}
+                  </span>
+                  <ChevronDown className={`w-3 h-3 text-white/80 group-hover:text-white transition-transform duration-200 shrink-0 ${showProfileDropdown ? 'rotate-180' : ''}`} />
+                </button>
+              );
+            })()}
 
             {showProfileDropdown && (
               <div className="absolute top-full left-0 mt-2 w-60 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-150">
                 {/* Current Active Profile Card */}
-                <div className={`p-3 border-b border-slate-200 ${
-                  isKiboClub ? 'bg-gradient-to-br from-amber-50/70 to-orange-50/50' : 'bg-gradient-to-br from-slate-50 to-sky-50/50'
-                }`}>
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`w-10 h-10 rounded-full text-white flex items-center justify-center text-base font-black shadow-xs border-2 border-white shrink-0 ${
-                      isKiboClub ? 'bg-gradient-to-tr from-amber-500 to-orange-600' : 'bg-gradient-to-tr from-sky-500 to-indigo-600'
+                {(() => {
+                  const userPlanTier = storageService.getPlanTier(activeProfileId);
+                  return (
+                    <div className={`p-3 border-b border-slate-200 ${
+                      userPlanTier === 'family'
+                        ? 'bg-gradient-to-br from-purple-50/90 via-pink-50/50 to-amber-50/80 border-b-purple-200'
+                        : userPlanTier === 'solo'
+                        ? 'bg-gradient-to-br from-amber-50/70 to-orange-50/50'
+                        : 'bg-gradient-to-br from-slate-50 to-sky-50/50'
                     }`}>
-                      {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <div className="flex items-center gap-1 min-w-0">
-                        <span className="text-sm font-black text-slate-800 truncate leading-tight" title={activeProfile?.username || activeProfile?.name || 'Kibo Climber'}>
-                          {activeProfile?.username || activeProfile?.name || 'Kibo Climber'}
-                        </span>
-                        {isKiboClub && (
-                          <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300">
-                            CLUB
-                          </span>
-                        )}
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-10 h-10 rounded-full text-white flex items-center justify-center text-base font-black shadow-xs border-2 border-white shrink-0 ${
+                          userPlanTier === 'family'
+                            ? 'bg-gradient-to-tr from-purple-600 via-pink-500 to-amber-400 ring-2 ring-purple-300 shadow-[0_0_12px_rgba(236,72,153,0.6)]'
+                            : userPlanTier === 'solo'
+                            ? 'bg-gradient-to-tr from-amber-500 to-orange-600 ring-2 ring-amber-300/80 shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+                            : 'bg-gradient-to-tr from-sky-500 to-indigo-600'
+                        }`}>
+                          {(activeProfile?.username || activeProfile?.name || 'C')[0].toUpperCase()}
+                        </div>
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span className="text-sm font-black text-slate-800 truncate leading-tight" title={activeProfile?.username || activeProfile?.name || 'Kibo Climber'}>
+                              {activeProfile?.username || activeProfile?.name || 'Kibo Climber'}
+                            </span>
+                            {userPlanTier === 'family' ? (
+                              <span className="text-[10px] bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 text-white font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-purple-300">
+                                👑 FAMILY
+                              </span>
+                            ) : userPlanTier === 'solo' ? (
+                              <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300">
+                                ⭐ CLUB
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200/80 px-1.5 py-0.2 rounded-md flex items-center gap-0.5 shrink-0">
+                              <Star className="w-3 h-3 fill-sky-500 text-sky-500 inline shrink-0" />
+                              {liveCompetenceRating} pts
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200/80 px-1.5 py-0.2 rounded-md flex items-center gap-0.5 shrink-0">
-                          <Star className="w-3 h-3 fill-sky-500 text-sky-500 inline shrink-0" />
-                          {liveCompetenceRating} pts
-                        </span>
-                      </div>
                     </div>
-                  </div>
-                </div>
+                  );
+                })()}
 
                 {/* Switch Profiles List */}
                 <div className="p-2 flex flex-col gap-1 max-h-48 overflow-y-auto">
@@ -2039,7 +2069,7 @@ export default function App() {
                     .filter((p) => p.id !== activeProfileId)
                     .map((profile) => {
                       const isLocked = storageService.isProfileLocked(profile.id);
-                      const isProfileMember = storageService.hasClubMembership(profile.id);
+                      const profilePlanTier = storageService.getPlanTier(profile.id);
                       const pRating = profile.userData?.subjects?.[activeSubject]?.competenceRank ||
                         profile.userData?.competenceRank ||
                         1000;
@@ -2089,9 +2119,20 @@ export default function App() {
                               )}
                             </div>
                             <div className="flex flex-col min-w-0 flex-1">
-                              <span className="text-xs font-black text-slate-700 truncate group-hover:text-slate-900" title={pName}>
-                                {pName}
-                              </span>
+                              <div className="flex items-center gap-1 min-w-0">
+                                <span className="text-xs font-black text-slate-700 truncate group-hover:text-slate-900" title={pName}>
+                                  {pName}
+                                </span>
+                                {profilePlanTier === 'family' ? (
+                                  <span className="text-[9px] bg-gradient-to-r from-purple-600 to-pink-500 text-white font-black px-1 py-0.2 rounded shrink-0">
+                                    👑
+                                  </span>
+                                ) : profilePlanTier === 'solo' ? (
+                                  <span className="text-[9px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1 py-0.2 rounded shrink-0">
+                                    ⭐
+                                  </span>
+                                ) : null}
+                              </div>
                               <span className="text-[10px] text-slate-500 font-bold flex items-center gap-0.5 shrink-0">
                                 <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500 inline shrink-0" />
                                 {pRating} pts
@@ -2693,7 +2734,7 @@ export default function App() {
             } else {
               handleBuySparksPackage({
                 id: planId || 'kibo_club_sub',
-                name: planId?.includes('annual') ? 'Kibo Club Individual (Annual)' : 'Kibo Club Individual',
+                name: planId?.includes('annual') ? 'Kibo Club Solo (Annual)' : 'Kibo Club Solo',
                 realMoneyPrice: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
                 price: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
                 isSubscription: true,

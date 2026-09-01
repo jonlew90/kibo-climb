@@ -1106,6 +1106,11 @@ export const storageService = {
     return plan?.tier === 'single';
   },
 
+  getPlanTier(profileId = null) {
+    if (this.hasFamilyPlan()) return 'family';
+    if (this.hasSinglePlan(profileId)) return 'solo';
+    return 'free';
+  },
 
   hasClubMembership(profileId = null) {
     if (this.hasFamilyPlan()) return true;
