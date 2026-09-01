@@ -11,12 +11,12 @@ export const VIEWS = {
   TERMS: 'terms',
   LEADERBOARD: 'leaderboard',
   QUESTS: 'quests',
+  PARENT_DASHBOARD: 'parent_dashboard',
 
   // Modals
   WORKSHOP: 'workshop',
   BADGES: 'badges',
   ASCENT_ROADMAP: 'ascent_roadmap',
-  PARENT_DASHBOARD: 'parent_dashboard',
   PIN_GATE: 'pin_gate',
   PROFILE_SWITCHER: 'profile_switcher',
   FEEDBACK: 'feedback',
@@ -34,7 +34,6 @@ export const isModalView = (id) => {
     VIEWS.WORKSHOP,
     VIEWS.BADGES,
     VIEWS.ASCENT_ROADMAP,
-    VIEWS.PARENT_DASHBOARD,
     VIEWS.PIN_GATE,
     VIEWS.PROFILE_SWITCHER,
     VIEWS.FEEDBACK,
@@ -60,6 +59,8 @@ export const getPathForId = (id) => {
       return '/leaderboard';
     case VIEWS.QUESTS:
       return '/quests';
+    case VIEWS.PARENT_DASHBOARD:
+      return '/parent';
     case VIEWS.ADAPTIVE_SESSION:
     default:
       return '/';

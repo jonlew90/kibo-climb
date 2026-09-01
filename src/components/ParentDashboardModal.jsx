@@ -60,7 +60,9 @@ export default function ParentDashboardModal({
   onAccountLinked,
   onOpenSubscription,
   onOpenFamilyUpgrade,
-  onOpenWorkshop
+  onOpenWorkshop,
+  onBack,
+  renderFooter
 }) {
   const [activeTab, setActiveTab] = useState(initialTab || 'overview'); // 'overview' | 'schedule' | 'verification'
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
@@ -358,18 +360,24 @@ export default function ParentDashboardModal({
     setConfirmPinInput('');
   };
 
-  if (!isOpen) return null;
+  const handleClose = () => {
+    soundFx.playKeyTap();
+    if (onBack) {
+      onBack();
+    } else if (onClose) {
+      onClose();
+    }
+  };
+
+  if (isOpen === false) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-purple-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
+    <div className="fixed inset-0 z-50 w-vw h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-purple-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-purple-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => {
-              soundFx.playKeyTap();
-              onClose();
-            }}
+            onClick={handleClose}
             className="p-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl border border-purple-200 transition-colors active:scale-95 cursor-pointer flex items-center justify-center"
             aria-label="Exit Parent Zone"
             title="Exit Parent Zone"
@@ -2253,6 +2261,9 @@ export default function ParentDashboardModal({
       {showPrivacyPolicyModal && (
         <PrivacyPolicyScreen onBack={() => setShowPrivacyPolicyModal(false)} />
       )}
+
+      {/* STICKY BOTTOM NAVIGATION FOOTER */}
+      {renderFooter ? renderFooter() : null}
     </div>
   );
 }

@@ -38,12 +38,13 @@ describe('NavigationHistory System', () => {
     expect(getPathForId(VIEWS.TERMS)).toBe('/terms');
     expect(getPathForId(VIEWS.LEADERBOARD)).toBe('/leaderboard');
     expect(getPathForId(VIEWS.QUESTS)).toBe('/quests');
+    expect(getPathForId(VIEWS.PARENT_DASHBOARD)).toBe('/parent');
 
     expect(isModalView(VIEWS.WORKSHOP)).toBe(true);
     expect(isModalView(VIEWS.BADGES)).toBe(true);
     expect(isModalView(VIEWS.ASCENT_ROADMAP)).toBe(true);
     expect(isModalView(VIEWS.PIN_GATE)).toBe(true);
-    expect(isModalView(VIEWS.PARENT_DASHBOARD)).toBe(true);
+    expect(isModalView(VIEWS.PARENT_DASHBOARD)).toBe(false);
     expect(isModalView(VIEWS.ADAPTIVE_SESSION)).toBe(false);
     expect(isModalView(VIEWS.SETTINGS)).toBe(false);
   });

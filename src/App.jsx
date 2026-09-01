@@ -127,6 +127,7 @@ export default function App() {
     if (path === '/settings' || path === '/settings/') return 'settings';
     if (path === '/leaderboard' || path === '/leaderboard/') return 'leaderboard';
     if (path === '/quests' || path === '/quests/') return 'quests';
+    if (path === '/parent' || path === '/parent/' || path === '/parents' || path === '/parents/' || path === '/parent-dashboard' || path === '/parent-dashboard/') return 'parent_dashboard';
     return 'adaptive_session';
   });
 
@@ -249,12 +250,6 @@ export default function App() {
       setShowBadgesModal(modalId === VIEWS.BADGES);
       setShowAscentRoadmapModal(modalId === VIEWS.ASCENT_ROADMAP);
 
-      setShowParentDashboard(modalId === VIEWS.PARENT_DASHBOARD);
-      if (modalId === VIEWS.PARENT_DASHBOARD) {
-        if (params.tab) setParentDashboardTab(params.tab);
-        if (params.highlight !== undefined) setParentDashboardHighlight(params.highlight);
-      }
-
       setShowPinGateModal(modalId === VIEWS.PIN_GATE);
       if (modalId === VIEWS.PIN_GATE) {
         if (params.source) setPinGateSource(params.source);
@@ -276,7 +271,6 @@ export default function App() {
       setIsWorkshopOpen(false);
       setShowBadgesModal(false);
       setShowAscentRoadmapModal(false);
-      setShowParentDashboard(false);
       setShowPinGateModal(false);
       setShowManualProfileSwitcher(false);
       setShowFeedbackModal(false);
@@ -288,6 +282,12 @@ export default function App() {
       setShowStripeCheckoutModal(false);
       setShowShareModal(false);
 
+      if (current.id === VIEWS.PARENT_DASHBOARD || current.id === 'parent_dashboard') {
+        const params = current.params || {};
+        if (params.tab) setParentDashboardTab(params.tab);
+        if (params.highlight !== undefined) setParentDashboardHighlight(params.highlight);
+      }
+
       if (typeof window !== 'undefined' && window.location.pathname !== current.path) {
         window.history.pushState({}, '', current.path);
       }
@@ -298,6 +298,7 @@ export default function App() {
       else if (current.id === 'terms') screenName = 'TermsOfService';
       else if (current.id === 'leaderboard') screenName = 'Leaderboard';
       else if (current.id === 'quests') screenName = 'Quests';
+      else if (current.id === 'parent_dashboard' || current.id === VIEWS.PARENT_DASHBOARD) screenName = 'ParentDashboard';
       analyticsService?.logScreenView?.(screenName);
     }
   };
@@ -404,8 +405,9 @@ export default function App() {
       }
     } else {
       const entry = navigationHistory.replace({
-        type: VIEW_TYPES.MODAL,
+        type: VIEW_TYPES.ROUTE,
         id: VIEWS.PARENT_DASHBOARD,
+        path: '/parent',
         params: { tab: parentDashboardTab, highlight: parentDashboardHighlight }
       });
       applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
@@ -470,13 +472,14 @@ export default function App() {
         const targetMode = mode || (action === 'closet' ? 'closet' : 'shop');
         const targetHub = hub || tab || 'wearables';
         handleOpenWorkshop(null, targetHub, targetMode);
-      } else if (action === 'parent-settings' || action === 'parent-dashboard') {
+      } else if (action === 'parent-settings' || action === 'parent-dashboard' || action === 'parent' || action === 'parents') {
         if (sessionId) {
           setParentDashboardTab(tab || 'verification');
           setParentDashboardHighlight(highlight || 'family_plan');
           const entry = navigationHistory.push({
-            type: VIEW_TYPES.MODAL,
+            type: VIEW_TYPES.ROUTE,
             id: VIEWS.PARENT_DASHBOARD,
+            path: '/parent',
             params: { tab: tab || 'verification', highlight: highlight || 'family_plan' }
           });
           applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
@@ -526,6 +529,9 @@ export default function App() {
     else if (path === '/settings' || path === '/settings/') initialRoute = VIEWS.SETTINGS;
     else if (path === '/leaderboard' || path === '/leaderboard/') initialRoute = VIEWS.LEADERBOARD;
     else if (path === '/quests' || path === '/quests/') initialRoute = VIEWS.QUESTS;
+    else if (path === '/parent' || path === '/parent/' || path === '/parents' || path === '/parents/' || path === '/parent-dashboard' || path === '/parent-dashboard/') {
+      initialRoute = VIEWS.PARENT_DASHBOARD;
+    }
 
     navigationHistory.reset({
       type: VIEW_TYPES.ROUTE,
@@ -533,6 +539,11 @@ export default function App() {
       path: getPathForId(initialRoute)
     });
     applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
+
+    if (initialRoute === VIEWS.PARENT_DASHBOARD) {
+      handleOpenPinGate('direct_url', 'overview', null);
+    }
+
     processDeepLink();
   }, []);
 
@@ -548,6 +559,7 @@ export default function App() {
         else if (path === '/settings' || path === '/settings/') targetRoute = VIEWS.SETTINGS;
         else if (path === '/leaderboard' || path === '/leaderboard/') targetRoute = VIEWS.LEADERBOARD;
         else if (path === '/quests' || path === '/quests/') targetRoute = VIEWS.QUESTS;
+        else if (path === '/parent' || path === '/parent/' || path === '/parents' || path === '/parents/' || path === '/parent-dashboard' || path === '/parent-dashboard/') targetRoute = VIEWS.PARENT_DASHBOARD;
         handleNavigateTo(path, targetRoute);
       }
     };
@@ -2539,6 +2551,105 @@ export default function App() {
         />
       )}
 
+      {/* PARENT DASHBOARD SCREEN */}
+      {(appState === 'parent_dashboard' || appState === VIEWS.PARENT_DASHBOARD) && (
+        <ParentDashboardModal
+          initialTab={parentDashboardTab}
+          highlightSection={parentDashboardHighlight}
+          activeSubject={activeSubject}
+          isOpen={true}
+          onBack={() => {
+            setParentDashboardTab('overview');
+            setParentDashboardHighlight(null);
+            handleGoBack();
+          }}
+          onClose={() => {
+            setParentDashboardTab('overview');
+            setParentDashboardHighlight(null);
+            handleGoBack();
+          }}
+          currentPin={parentPin}
+          onUpdatePin={handleUpdatePin}
+          tier={tier}
+          onSetTier={handleSetTierManual}
+          streak={streak}
+          sparks={sparks}
+          practiceQueueCount={practiceQueue.length}
+          practiceQueue={practiceQueue}
+          sprintHistory={[]}
+          practiceDays={practiceDays}
+          onUpdatePracticeDays={handleUpdatePracticeDays}
+          onProfileSwitch={() => syncAppStateWithStorage()}
+          preferences={preferences}
+          onUpdatePreferences={handleUpdatePreferences}
+          unlockedBadges={unlockedBadges}
+          totalProblemsSolved={totalProblemsSolved}
+          personalRecords={personalRecords}
+          onAccountLinked={(user, newSparks) => {
+            if (newSparks !== undefined) {
+              setSparks(newSparks);
+            }
+            syncAppStateWithStorage();
+          }}
+          onOpenSubscription={(planId) => {
+            const item = getItemById(planId);
+            if (item) {
+              handleBuySparksPackage({
+                ...item,
+                price: item.realMoneyPrice || item.price,
+                source: 'parent_dashboard',
+                tab: parentDashboardTab || 'verification',
+                highlight: parentDashboardHighlight || 'family_plan'
+              }, true);
+            } else if (planId?.includes('family')) {
+              handleBuySparksPackage({
+                id: planId,
+                name: planId.includes('annual') ? 'Kibo Club Family (Annual)' : 'Kibo Club Family',
+                realMoneyPrice: planId.includes('annual') ? '$59.99/yr' : '$7.99/mo',
+                price: planId.includes('annual') ? '$59.99/yr' : '$7.99/mo',
+                isSubscription: true,
+                isFamilyPlan: true,
+                source: 'parent_dashboard',
+                tab: parentDashboardTab || 'verification',
+                highlight: parentDashboardHighlight || 'family_plan',
+                description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
+              }, true);
+            } else {
+              handleBuySparksPackage({
+                id: planId || 'kibo_club_sub',
+                name: planId?.includes('annual') ? 'Kibo Club Individual (Annual)' : 'Kibo Club Individual',
+                realMoneyPrice: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
+                price: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
+                isSubscription: true,
+                isFamilyPlan: false,
+                source: 'parent_dashboard',
+                tab: parentDashboardTab || 'verification',
+                highlight: parentDashboardHighlight || 'family_plan',
+                description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!'
+              }, true);
+            }
+          }}
+          onOpenFamilyUpgrade={() => {
+            handleBuySparksPackage({
+              id: 'kibo_club_family_annual',
+              name: 'Kibo Club Family (Annual)',
+              realMoneyPrice: '$59.99/yr',
+              price: '$59.99/yr',
+              isSubscription: true,
+              isFamilyPlan: true,
+              source: 'parent_dashboard',
+              tab: 'verification',
+              highlight: 'family_plan',
+              description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
+            }, true);
+          }}
+          onOpenWorkshop={(targetHub = 'wearables', targetMode = 'shop') => {
+            handleOpenWorkshop(null, targetHub, targetMode);
+          }}
+          renderFooter={renderNavigationFooter}
+        />
+      )}
+
       {/* LEADERBOARD SCREEN */}
       {appState === 'leaderboard' && (
         <LeaderboardScreen
@@ -3004,97 +3115,6 @@ export default function App() {
         }}
         currentPin={parentPin}
         onUnlockSuccess={handlePinUnlockSuccess}
-      />
-
-      {/* PARENT DASHBOARD MODAL */}
-      <ParentDashboardModal
-        initialTab={parentDashboardTab}
-        highlightSection={parentDashboardHighlight}
-        activeSubject={activeSubject}
-        isOpen={showParentDashboard}
-        onClose={() => {
-          setParentDashboardTab('overview');
-          setParentDashboardHighlight(null);
-          handleGoBack();
-        }}
-        currentPin={parentPin}
-        onUpdatePin={handleUpdatePin}
-        tier={tier}
-        onSetTier={handleSetTierManual}
-        streak={streak}
-        sparks={sparks}
-        practiceQueueCount={practiceQueue.length}
-        practiceQueue={practiceQueue}
-        sprintHistory={[]}
-        practiceDays={practiceDays}
-        onUpdatePracticeDays={handleUpdatePracticeDays}
-        onProfileSwitch={() => syncAppStateWithStorage()}
-        preferences={preferences}
-        onUpdatePreferences={handleUpdatePreferences}
-        unlockedBadges={unlockedBadges}
-        totalProblemsSolved={totalProblemsSolved}
-        personalRecords={personalRecords}
-        onAccountLinked={(user, newSparks) => {
-          if (newSparks !== undefined) {
-            setSparks(newSparks);
-          }
-          syncAppStateWithStorage();
-        }}
-        onOpenSubscription={(planId) => {
-          const item = getItemById(planId);
-          if (item) {
-            handleBuySparksPackage({
-              ...item,
-              price: item.realMoneyPrice || item.price,
-              source: 'parent_dashboard',
-              tab: parentDashboardTab || 'verification',
-              highlight: parentDashboardHighlight || 'family_plan'
-            }, true);
-          } else if (planId?.includes('family')) {
-            handleBuySparksPackage({
-              id: planId,
-              name: planId.includes('annual') ? 'Kibo Club Family (Annual)' : 'Kibo Club Family',
-              realMoneyPrice: planId.includes('annual') ? '$59.99/yr' : '$7.99/mo',
-              price: planId.includes('annual') ? '$59.99/yr' : '$7.99/mo',
-              isSubscription: true,
-              isFamilyPlan: true,
-              source: 'parent_dashboard',
-              tab: parentDashboardTab || 'verification',
-              highlight: parentDashboardHighlight || 'family_plan',
-              description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
-            }, true);
-          } else {
-            handleBuySparksPackage({
-              id: planId || 'kibo_club_sub',
-              name: planId?.includes('annual') ? 'Kibo Club Individual (Annual)' : 'Kibo Club Individual',
-              realMoneyPrice: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
-              price: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
-              isSubscription: true,
-              isFamilyPlan: false,
-              source: 'parent_dashboard',
-              tab: parentDashboardTab || 'verification',
-              highlight: parentDashboardHighlight || 'family_plan',
-              description: 'Permanent 1.25x Spark Multiplier + Exclusive Daily Rewards for this profile!'
-            }, true);
-          }
-        }}
-        onOpenFamilyUpgrade={() => {
-          handleBuySparksPackage({
-            id: 'kibo_club_family_annual',
-            name: 'Kibo Club Family (Annual)',
-            realMoneyPrice: '$59.99/yr',
-            price: '$59.99/yr',
-            isSubscription: true,
-            isFamilyPlan: true,
-            source: 'parent_dashboard',
-            tab: 'verification',
-            highlight: 'family_plan',
-            description: 'Kibo Club for the whole family! ALL child profiles get the 1.25x Spark Multiplier, golden tag, and 100 daily Sparks.'
-          }, true);
-        }}
-        onOpenWorkshop={(targetHub = 'wearables', targetMode = 'shop') => {
-          handleOpenWorkshop(null, targetHub, targetMode);
-        }}
       />
 
       {/* TRAIL BADGES SHOWCASE MODAL */}
