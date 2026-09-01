@@ -68,7 +68,8 @@ import AddFriendModal from './components/AddFriendModal';
 import SubjectWallpaper from './components/SubjectWallpaper';
 import CinematicSplash from './components/CinematicSplash';
 import { setHapticsEnabled } from './utils/audio';
-import { navigationHistory, VIEWS, VIEW_TYPES, getPathForId } from './utils/navigationHistory';
+import { navigationHistory, VIEWS, VIEW_TYPES, getPathForId, SUBJECT_ROUTES } from './utils/navigationHistory';
+import { updateDocumentSeo } from './utils/seoMetadata';
 
 export default function App() {
   // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms' | 'leaderboard'
@@ -76,6 +77,19 @@ export default function App() {
     return storageService.getActiveProfileId();
   });
   const [activeSubject, setActiveSubject] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const path = (window.location.pathname || '').replace(/^\/+|\/+$/g, '').toLowerCase();
+      if (['math', 'words', 'world', 'coding'].includes(path)) {
+        return path;
+      }
+      try {
+        const params = new URLSearchParams(window.location.search || '');
+        const sub = params.get('subject');
+        if (sub && ['math', 'words', 'world', 'coding'].includes(sub)) {
+          return sub;
+        }
+      } catch (e) {}
+    }
     return storageService.getLastActiveSubject();
   });
 
@@ -208,6 +222,11 @@ export default function App() {
     }
   }, [activeSubject]);
 
+  // Synchronize dynamic SEO meta tags and canonical URLs on route or subject change
+  useEffect(() => {
+    updateDocumentSeo({ route: appState, subject: activeSubject });
+  }, [appState, activeSubject]);
+
   // Sync outstanding alerts & notifications to mobile home screen app badge
   useEffect(() => {
     const unclaimedQuests = questService.getUnclaimedCount(activeProfileId) || 0;
@@ -299,6 +318,10 @@ export default function App() {
       else if (current.id === 'leaderboard') screenName = 'Leaderboard';
       else if (current.id === 'quests') screenName = 'Quests';
       else if (current.id === 'parent_dashboard' || current.id === VIEWS.PARENT_DASHBOARD) screenName = 'ParentDashboard';
+      else if (current.id === VIEWS.ADAPTIVE_SESSION || current.id === 'adaptive_session') {
+        const sub = current.params?.subject || activeSubject || 'math';
+        screenName = `Climb_${sub.charAt(0).toUpperCase() + sub.slice(1)}`;
+      }
       analyticsService?.logScreenView?.(screenName);
     }
   };
@@ -502,7 +525,15 @@ export default function App() {
       } else if (action === 'feedback') {
         handleOpenModal(VIEWS.FEEDBACK);
       } else if (action === 'play') {
-        handleNavigateTo('/', 'adaptive_session');
+        const targetSub = subject || activeSubject || 'math';
+        const targetPath = SUBJECT_ROUTES[targetSub] || `/${targetSub}`;
+        const entry = navigationHistory.replace({
+          type: VIEW_TYPES.ROUTE,
+          id: VIEWS.ADAPTIVE_SESSION,
+          path: targetPath,
+          params: { subject: targetSub }
+        });
+        applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
       }
 
       // Handle Stripe return redirect (session_id in URL)
@@ -522,21 +553,34 @@ export default function App() {
   };
 
   useEffect(() => {
-    const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+    const rawPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+    const path = rawPath.replace(/\/+$/, '') || '/';
+    const cleanSlug = path.replace(/^\//, '').toLowerCase();
+
     let initialRoute = VIEWS.ADAPTIVE_SESSION;
-    if (path === '/privacy' || path === '/privacy/') initialRoute = VIEWS.PRIVACY;
-    else if (path === '/terms' || path === '/terms/') initialRoute = VIEWS.TERMS;
-    else if (path === '/settings' || path === '/settings/') initialRoute = VIEWS.SETTINGS;
-    else if (path === '/leaderboard' || path === '/leaderboard/') initialRoute = VIEWS.LEADERBOARD;
-    else if (path === '/quests' || path === '/quests/') initialRoute = VIEWS.QUESTS;
-    else if (path === '/parent' || path === '/parent/' || path === '/parents' || path === '/parents/' || path === '/parent-dashboard' || path === '/parent-dashboard/') {
+    let initialSubject = activeSubject;
+
+    if (['math', 'words', 'world', 'coding'].includes(cleanSlug)) {
+      initialSubject = cleanSlug;
+      storageService.setLastActiveSubject(cleanSlug);
+      setActiveSubject(cleanSlug);
+      syncAppStateWithStorage(cleanSlug);
+      analyticsService?.logSubjectChange?.(cleanSlug);
+    } else if (path === '/privacy') initialRoute = VIEWS.PRIVACY;
+    else if (path === '/terms') initialRoute = VIEWS.TERMS;
+    else if (path === '/settings') initialRoute = VIEWS.SETTINGS;
+    else if (path === '/leaderboard') initialRoute = VIEWS.LEADERBOARD;
+    else if (path === '/quests') initialRoute = VIEWS.QUESTS;
+    else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') {
       initialRoute = VIEWS.PARENT_DASHBOARD;
     }
 
+    const routeParams = initialRoute === VIEWS.ADAPTIVE_SESSION ? { subject: initialSubject } : {};
     navigationHistory.reset({
       type: VIEW_TYPES.ROUTE,
       id: initialRoute,
-      path: getPathForId(initialRoute)
+      path: getPathForId(initialRoute, routeParams),
+      params: routeParams
     });
     applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
 
@@ -552,14 +596,30 @@ export default function App() {
       if (navigationHistory.getStack().length > 1) {
         handleGoBack();
       } else {
-        const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+        const rawPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+        const path = rawPath.replace(/\/+$/, '') || '/';
+        const cleanSlug = path.replace(/^\//, '').toLowerCase();
+
         let targetRoute = VIEWS.ADAPTIVE_SESSION;
-        if (path === '/privacy' || path === '/privacy/') targetRoute = VIEWS.PRIVACY;
-        else if (path === '/terms' || path === '/terms/') targetRoute = VIEWS.TERMS;
-        else if (path === '/settings' || path === '/settings/') targetRoute = VIEWS.SETTINGS;
-        else if (path === '/leaderboard' || path === '/leaderboard/') targetRoute = VIEWS.LEADERBOARD;
-        else if (path === '/quests' || path === '/quests/') targetRoute = VIEWS.QUESTS;
-        else if (path === '/parent' || path === '/parent/' || path === '/parents' || path === '/parents/' || path === '/parent-dashboard' || path === '/parent-dashboard/') targetRoute = VIEWS.PARENT_DASHBOARD;
+        if (['math', 'words', 'world', 'coding'].includes(cleanSlug)) {
+          storageService.setLastActiveSubject(cleanSlug);
+          setActiveSubject(cleanSlug);
+          syncAppStateWithStorage(cleanSlug);
+          analyticsService?.logSubjectChange?.(cleanSlug);
+          const entry = navigationHistory.replace({
+            type: VIEW_TYPES.ROUTE,
+            id: VIEWS.ADAPTIVE_SESSION,
+            path: SUBJECT_ROUTES[cleanSlug] || `/${cleanSlug}`,
+            params: { subject: cleanSlug }
+          });
+          applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+          return;
+        } else if (path === '/privacy') targetRoute = VIEWS.PRIVACY;
+        else if (path === '/terms') targetRoute = VIEWS.TERMS;
+        else if (path === '/settings') targetRoute = VIEWS.SETTINGS;
+        else if (path === '/leaderboard') targetRoute = VIEWS.LEADERBOARD;
+        else if (path === '/quests') targetRoute = VIEWS.QUESTS;
+        else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') targetRoute = VIEWS.PARENT_DASHBOARD;
         handleNavigateTo(path, targetRoute);
       }
     };
@@ -1060,6 +1120,16 @@ export default function App() {
     setActiveSubject(newSubject);
     setAppState('adaptive_session');
     syncAppStateWithStorage(newSubject);
+    analyticsService?.logSubjectChange?.(newSubject);
+
+    const targetPath = SUBJECT_ROUTES[newSubject] || `/${newSubject}`;
+    const entry = navigationHistory.replace({
+      type: VIEW_TYPES.ROUTE,
+      id: VIEWS.ADAPTIVE_SESSION,
+      path: targetPath,
+      params: { subject: newSubject }
+    });
+    applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
   };
 
   useEffect(() => {
@@ -1985,14 +2055,20 @@ export default function App() {
                               handleOpenModal(VIEWS.FAMILY_UPGRADE);
                               return;
                             }
-                            storageService.setActiveProfileId(profile.id);
                             const targetSubject = profile?.lastActiveSubject || storageService.getLastActiveSubject(profile.id) || 'math';
                             storageService.setLastActiveSubject(targetSubject, profile.id);
+                            storageService.setActiveProfileId(profile.id);
                             setActiveProfileId(profile.id);
                             setActiveSubject(targetSubject);
                             syncAppStateWithStorage(targetSubject);
                             setShowProfileDropdown(false);
-                            navigationHistory.reset({ type: VIEW_TYPES.ROUTE, id: VIEWS.ADAPTIVE_SESSION, path: '/' });
+                            const targetPath = SUBJECT_ROUTES[targetSubject] || `/${targetSubject}`;
+                            navigationHistory.reset({
+                              type: VIEW_TYPES.ROUTE,
+                              id: VIEWS.ADAPTIVE_SESSION,
+                              path: targetPath,
+                              params: { subject: targetSubject }
+                            });
                             applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
                           }}
                           className={`flex items-center justify-between px-2.5 py-2 rounded-xl transition-colors text-left cursor-pointer group w-full ${
@@ -2913,7 +2989,13 @@ export default function App() {
             setActiveSubject(targetSubject);
             syncAppStateWithStorage(targetSubject);
             setShowProfileSelector(false);
-            navigationHistory.reset({ type: VIEW_TYPES.ROUTE, id: VIEWS.ADAPTIVE_SESSION, path: '/' });
+            const targetPath = SUBJECT_ROUTES[targetSubject] || `/${targetSubject}`;
+            navigationHistory.reset({
+              type: VIEW_TYPES.ROUTE,
+              id: VIEWS.ADAPTIVE_SESSION,
+              path: targetPath,
+              params: { subject: targetSubject }
+            });
             applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
             validateStreakForActiveProfile(targetSubject);
           }}
@@ -2935,7 +3017,13 @@ export default function App() {
             storageService.setLastActiveSubject(targetSubject, profile?.id);
             setActiveSubject(targetSubject);
             syncAppStateWithStorage(targetSubject);
-            navigationHistory.reset({ type: VIEW_TYPES.ROUTE, id: VIEWS.ADAPTIVE_SESSION, path: '/' });
+            const targetPath = SUBJECT_ROUTES[targetSubject] || `/${targetSubject}`;
+            navigationHistory.reset({
+              type: VIEW_TYPES.ROUTE,
+              id: VIEWS.ADAPTIVE_SESSION,
+              path: targetPath,
+              params: { subject: targetSubject }
+            });
             applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
             validateStreakForActiveProfile(targetSubject);
           }}
@@ -2970,7 +3058,13 @@ export default function App() {
           setActiveSubject(validSubject);
           syncAppStateWithStorage(validSubject);
           setShowFirstLaunchOnboardingModal(false);
-          navigationHistory.reset({ type: VIEW_TYPES.ROUTE, id: VIEWS.ADAPTIVE_SESSION, path: '/' });
+          const targetPath = SUBJECT_ROUTES[validSubject] || `/${validSubject}`;
+          navigationHistory.reset({
+            type: VIEW_TYPES.ROUTE,
+            id: VIEWS.ADAPTIVE_SESSION,
+            path: targetPath,
+            params: { subject: validSubject }
+          });
           applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
         }}
         onRequestLogin={() => {

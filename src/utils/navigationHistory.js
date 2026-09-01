@@ -47,7 +47,14 @@ export const isModalView = (id) => {
   ].includes(id);
 };
 
-export const getPathForId = (id) => {
+export const SUBJECT_ROUTES = {
+  math: '/math',
+  words: '/words',
+  world: '/world',
+  coding: '/coding'
+};
+
+export const getPathForId = (id, params = {}) => {
   switch (id) {
     case VIEWS.SETTINGS:
       return '/settings';
@@ -63,6 +70,9 @@ export const getPathForId = (id) => {
       return '/parent';
     case VIEWS.ADAPTIVE_SESSION:
     default:
+      if (params?.subject && SUBJECT_ROUTES[params.subject]) {
+        return SUBJECT_ROUTES[params.subject];
+      }
       return '/';
   }
 };
@@ -73,11 +83,12 @@ export const normalizeEntry = (entry) => {
   }
   const id = entry?.id || VIEWS.ADAPTIVE_SESSION;
   const isModal = isModalView(id);
+  const params = entry?.params ? { ...entry.params } : {};
   return {
     type: entry?.type || (isModal ? VIEW_TYPES.MODAL : VIEW_TYPES.ROUTE),
     id,
-    path: entry?.path || getPathForId(id),
-    params: entry?.params ? { ...entry.params } : {}
+    path: entry?.path || getPathForId(id, params),
+    params
   };
 };
 

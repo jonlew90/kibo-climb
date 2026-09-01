@@ -94,7 +94,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
         description: subjectId === 'words'
           ? 'Build spelling fluency, vocabulary, and phonics climbing through Alphabet Meadow to Syntax Summit.'
           : (subjectId === 'math' ? 'Climb through foundational mental math, multiplication, and algebra.' : 'Explore new learning climbs!'),
-        playUrl: `${baseUrl}/?action=play&subject=${subjectId}&profile=${encodeURIComponent(profileId)}`
+        playUrl: `${baseUrl}/${subjectId}?profile=${encodeURIComponent(profileId)}`
       });
       return;
     }
@@ -237,7 +237,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
       practicingTopics,
       needsReviewTopics,
       conceptBreakdown,
-      playSubjectUrl: `${baseUrl}/?action=play&subject=${subjectId}&profile=${encodeURIComponent(profileId)}`
+      playSubjectUrl: `${baseUrl}/${subjectId}?profile=${encodeURIComponent(profileId)}`
     });
   });
 

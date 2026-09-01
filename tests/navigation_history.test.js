@@ -5,7 +5,8 @@ import {
   VIEW_TYPES,
   getPathForId,
   isModalView,
-  normalizeEntry
+  normalizeEntry,
+  SUBJECT_ROUTES
 } from '../src/utils/navigationHistory';
 
 describe('NavigationHistory System', () => {
@@ -33,6 +34,10 @@ describe('NavigationHistory System', () => {
 
   it('correctly maps route IDs to URL paths and distinguishes modal vs route views', () => {
     expect(getPathForId(VIEWS.ADAPTIVE_SESSION)).toBe('/');
+    expect(getPathForId(VIEWS.ADAPTIVE_SESSION, { subject: 'words' })).toBe('/words');
+    expect(getPathForId(VIEWS.ADAPTIVE_SESSION, { subject: 'world' })).toBe('/world');
+    expect(getPathForId(VIEWS.ADAPTIVE_SESSION, { subject: 'coding' })).toBe('/coding');
+    expect(getPathForId(VIEWS.ADAPTIVE_SESSION, { subject: 'math' })).toBe('/math');
     expect(getPathForId(VIEWS.SETTINGS)).toBe('/settings');
     expect(getPathForId(VIEWS.PRIVACY)).toBe('/privacy');
     expect(getPathForId(VIEWS.TERMS)).toBe('/terms');
