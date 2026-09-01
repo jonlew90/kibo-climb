@@ -1273,36 +1273,76 @@ export default function WorkshopModal({
                                     -{savings}%
                                   </span>
                                 )}
-                                {isMember && pack.clubRealMoneyPrice ? (
-                                  <span className="text-[9px] font-black text-amber-900 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded">
-                                    VIP {pack.clubRealMoneyPrice}
-                                  </span>
-                                ) : pack.clubRealMoneyPrice ? (
-                                  <span className="text-[9px] font-bold text-purple-700 bg-purple-50 px-1 py-0.2 rounded">
-                                    Club: {pack.clubRealMoneyPrice}
-                                  </span>
-                                ) : null}
                               </div>
                             </div>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const targetPack = (isMember && pack.clubRealMoneyPrice)
-                                ? { ...pack, realMoneyPrice: pack.clubRealMoneyPrice, price: pack.clubRealMoneyPrice }
-                                : pack;
-                              if (allowRealMoneyPurchases) {
-                                onBuySparksPackage(targetPack);
-                              } else if (onOpenParentZone) {
-                                onOpenParentZone('verification', 'real_money_purchases');
-                              }
-                            }}
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-2xs whitespace-nowrap shrink-0 active:scale-95 transition-all flex items-center gap-1"
-                          >
-                            {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-purple-200" />}
-                            <span>{displayPrice}</span>
-                          </button>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {isMember ? (
+                              <>
+                                {pack.realMoneyPrice && pack.clubRealMoneyPrice && (
+                                  <div className="flex flex-col items-end justify-center leading-none pr-0.5">
+                                    <span className="text-[10px] text-slate-400 line-through font-bold">
+                                      {pack.realMoneyPrice}
+                                    </span>
+                                    <span className="text-[9px] font-black text-amber-600 uppercase tracking-wider flex items-center gap-0.5 mt-0.5">
+                                      <Sparkles className="w-2.5 h-2.5 fill-amber-500 text-amber-500" /> VIP
+                                    </span>
+                                  </div>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const targetPack = pack.clubRealMoneyPrice
+                                      ? { ...pack, realMoneyPrice: pack.clubRealMoneyPrice, price: pack.clubRealMoneyPrice }
+                                      : pack;
+                                    if (allowRealMoneyPurchases) {
+                                      onBuySparksPackage(targetPack);
+                                    } else if (onOpenParentZone) {
+                                      onOpenParentZone('verification', 'real_money_purchases');
+                                    }
+                                  }}
+                                  className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-2xs whitespace-nowrap active:scale-95 transition-all flex items-center gap-1 cursor-pointer border border-amber-400"
+                                >
+                                  {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-amber-100" />}
+                                  <span>{pack.clubRealMoneyPrice || pack.realMoneyPrice || pack.price}</span>
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (allowRealMoneyPurchases) {
+                                      onBuySparksPackage(pack);
+                                    } else if (onOpenParentZone) {
+                                      onOpenParentZone('verification', 'real_money_purchases');
+                                    }
+                                  }}
+                                  className="bg-purple-600 hover:bg-purple-700 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-2xs whitespace-nowrap active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-purple-200" />}
+                                  <span>{pack.realMoneyPrice || pack.price}</span>
+                                </button>
+                                {pack.clubRealMoneyPrice && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      soundFx.playKeyTap();
+                                      setShowFamilyPlanModal(true);
+                                    }}
+                                    title={`Join Kibo Club to unlock VIP price ${pack.clubRealMoneyPrice}`}
+                                    className="group/club flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-50 to-purple-50 hover:from-amber-100 hover:to-purple-100 border border-amber-200 hover:border-amber-300 text-amber-950 font-bold text-xs shadow-2xs active:scale-95 transition-all cursor-pointer"
+                                  >
+                                    <Sparkles className="w-3 h-3 text-amber-500 fill-amber-400 group-hover/club:rotate-12 transition-transform shrink-0" />
+                                    <span className="text-[10px] uppercase font-black tracking-tight text-amber-800">Club</span>
+                                    <span className="font-black text-xs text-amber-950">{pack.clubRealMoneyPrice}</span>
+                                  </button>
+                                )}
+                              </>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
