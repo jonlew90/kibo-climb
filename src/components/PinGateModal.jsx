@@ -24,6 +24,7 @@ export default function PinGateModal({
 
   // Dynamic Challenge state
   const [challenge, setChallenge] = useState(() => dynamicChallengeGenerator.generateChallenge());
+  const [challengeInput, setChallengeInput] = useState('');
 
   // Custom PIN input state
   const [pinInput, setPinInput] = useState('');
@@ -38,6 +39,7 @@ export default function PinGateModal({
   // Reset challenge on view or fresh modal open
   const refreshChallenge = useCallback(() => {
     setChallenge(dynamicChallengeGenerator.generateChallenge());
+    setChallengeInput('');
   }, []);
 
   // Sync activeTab & state whenever modal opens
@@ -47,6 +49,7 @@ export default function PinGateModal({
       const preferred = prefs.primaryVerificationMethod === 'challenge' ? 'challenge' : 'native';
       setActiveTab(preferred);
       setPinInput('');
+      setChallengeInput('');
       setErrorMsg('');
       setIsShaking(false);
       setIsAuthenticating(false);
@@ -120,6 +123,20 @@ export default function PinGateModal({
         e.preventDefault();
         e.stopPropagation();
         handleCloseModal();
+      } else if (activeTab === 'challenge') {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          e.stopPropagation();
+          handleChallengeSubmit();
+        } else if (e.key === 'Backspace' || e.key === 'Delete') {
+          e.preventDefault();
+          e.stopPropagation();
+          handleChallengeDelete();
+        } else if (/^[0-9]$/.test(e.key)) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleChallengeDigitTap(e.key);
+        }
       } else if (activeTab === 'pin' && hasCustomPin) {
         if (e.key === 'Backspace' || e.key === 'Delete') {
           e.preventDefault();
@@ -142,7 +159,7 @@ export default function PinGateModal({
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [isOpen, activeTab, pinInput, hasCustomPin, onClose]);
+  }, [isOpen, activeTab, challengeInput, challenge.correctAnswer, pinInput, hasCustomPin, onClose]);
 
   if (!isOpen) return null;
 
@@ -159,11 +176,14 @@ export default function PinGateModal({
     onClose();
   };
 
-  // Handle Dynamic Challenge Answer selection
-  const handleChallengeAnswer = (selectedOption) => {
+  // Handle Dynamic Challenge Answer submission
+  const handleChallengeSubmit = (answerToVerify) => {
+    const val = (answerToVerify !== undefined ? answerToVerify : challengeInput).trim();
+    if (!val) return;
+
     soundFx.playKeyTap();
 
-    const res = parentChildService.verifyParentGateChallenge(selectedOption, challenge.correctAnswer);
+    const res = parentChildService.verifyParentGateChallenge(val, challenge.correctAnswer);
 
     if (res.granted) {
       soundFx.playVictory();
@@ -173,8 +193,9 @@ export default function PinGateModal({
     } else {
       soundFx.playIncorrect();
       setIsShaking(true);
-      setErrorMsg(res.reason || 'Incorrect answer.');
-      refreshChallenge(); // Generate fresh equation/order question with reshuffled options
+      setErrorMsg(res.reason || 'Incorrect answer. Please try again.');
+      setChallengeInput('');
+      refreshChallenge();
 
       if (res.isLocked) {
         setLockoutStatus({ isLocked: true, remainingSeconds: res.remainingSeconds });
@@ -185,6 +206,36 @@ export default function PinGateModal({
         setIsShaking(false);
       }, 450);
     }
+  };
+
+  const handleChallengeDigitTap = (digit) => {
+    soundFx.playKeyTap();
+    const maxLen = challenge.correctAnswer ? String(challenge.correctAnswer).length : 4;
+    if (challengeInput.length < maxLen + 1) {
+      const nextInput = challengeInput + digit;
+      setChallengeInput(nextInput);
+      setErrorMsg('');
+
+      // Auto-submit immediately if the typed digits match the correct answer
+      if (nextInput === String(challenge.correctAnswer)) {
+        handleChallengeSubmit(nextInput);
+      } else if (nextInput.length === maxLen) {
+        // Auto-check once user finishes entering expected number of digits
+        handleChallengeSubmit(nextInput);
+      }
+    }
+  };
+
+  const handleChallengeDelete = () => {
+    soundFx.playKeyTap();
+    setChallengeInput((prev) => prev.slice(0, -1));
+    setErrorMsg('');
+  };
+
+  const handleChallengeClear = () => {
+    soundFx.playKeyTap();
+    setChallengeInput('');
+    setErrorMsg('');
   };
 
   // Handle Custom PIN entry
@@ -313,7 +364,7 @@ export default function PinGateModal({
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Math Challenge</span>
+                <span>Challenge Question</span>
               </button>
             </div>
 
@@ -368,40 +419,88 @@ export default function PinGateModal({
 
             {/* TAB 2: SECONDARY GATE - DYNAMIC CHALLENGE */}
             {activeTab === 'challenge' && (
-              <div className="space-y-4 py-1 animate-fade-in">
-                <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-left relative">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs uppercase font-black tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
-                      {challenge.title}
+              <div className="space-y-3 py-1 animate-fade-in">
+                <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 relative text-center">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[11px] uppercase font-black tracking-wider text-purple-700 bg-purple-100 px-2.5 py-1 rounded-md">
+                      Challenge Question
                     </span>
                     <button
                       type="button"
                       onClick={refreshChallenge}
-                      className="text-slate-400 hover:text-purple-600 p-1 flex items-center gap-1 text-xs font-bold"
+                      className="text-slate-400 hover:text-purple-600 px-2 py-1 rounded-md hover:bg-slate-200/60 transition-colors flex items-center gap-1.5 text-xs font-bold shrink-0"
                       title="Generate new challenge"
                     >
-                      <RefreshCw className="w-3.5 h-3.5" /> Refresh
+                      <RefreshCw className="w-3.5 h-3.5" /> <span>Refresh</span>
                     </button>
                   </div>
 
-                  <p className="text-xs text-slate-500 font-bold mb-2">{challenge.instruction}</p>
+                  <p className="text-xs text-slate-500 font-bold mb-2.5 text-center">{challenge.instruction}</p>
 
-                  <div className="text-2xl font-black text-slate-900 bg-white border border-slate-200 rounded-xl p-3 text-center shadow-xs">
+                  <div className="text-base sm:text-lg font-bold text-slate-800 bg-white border border-slate-200 rounded-xl p-3 text-center shadow-xs min-h-[56px] flex items-center justify-center">
                     {challenge.question}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
-                  {challenge.options.map((option, idx) => (
+                {/* Input Answer Display */}
+                <div className="flex items-center justify-center gap-3">
+                  <div className="h-13 flex-1 bg-purple-50/50 border-2 border-purple-400 ring-2 ring-purple-200/60 rounded-xl px-4 flex items-center justify-center text-2xl font-black text-purple-900 tracking-widest shadow-inner relative transition-all">
+                    {challengeInput ? (
+                      <div className="flex items-center">
+                        <span>{challengeInput}</span>
+                        <span className="w-0.5 h-6 bg-purple-600 animate-pulse ml-1 inline-block" />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <span className="w-0.5 h-5 bg-purple-400 animate-pulse inline-block" />
+                        <span className="text-purple-300 font-bold text-base tracking-normal">Type answer...</span>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!challengeInput}
+                    onClick={() => handleChallengeSubmit()}
+                    className="h-13 px-5 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold text-sm rounded-xl border-b-4 border-purple-800 active:border-b-0 active:translate-y-1 shadow-sm transition-all shrink-0"
+                  >
+                    Submit
+                  </button>
+                </div>
+
+                {/* Numeric Keypad for direct answer entry */}
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                     <button
-                      key={`${option}-${idx}`}
+                      key={digit}
                       type="button"
-                      onClick={() => handleChallengeAnswer(option)}
-                      className="h-14 bg-slate-50 hover:bg-purple-50 active:bg-purple-100 text-slate-800 font-black text-xl rounded-xl border-2 border-slate-200 hover:border-purple-300 border-b-4 active:border-b-2 active:translate-y-0.5 transition-all flex items-center justify-center shadow-xs"
+                      onClick={() => handleChallengeDigitTap(digit)}
+                      className="h-11 bg-slate-50 hover:bg-purple-50 active:bg-purple-100 text-slate-800 font-extrabold text-lg rounded-xl border-2 border-slate-200 hover:border-purple-300 border-b-4 active:border-b-2 active:translate-y-0.5 transition-all flex items-center justify-center shadow-xs"
                     >
-                      {option}
+                      {digit}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={handleChallengeClear}
+                    className="h-11 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl border-2 border-slate-200 border-b-4 active:border-b-2 active:translate-y-0.5 transition-all flex items-center justify-center uppercase tracking-wider"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleChallengeDigitTap('0')}
+                    className="h-11 bg-slate-50 hover:bg-purple-50 active:bg-purple-100 text-slate-800 font-extrabold text-lg rounded-xl border-2 border-slate-200 hover:border-purple-300 border-b-4 active:border-b-2 active:translate-y-0.5 transition-all flex items-center justify-center shadow-xs"
+                  >
+                    0
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleChallengeDelete}
+                    className="h-11 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl border-2 border-slate-200 border-b-4 active:border-b-2 active:translate-y-0.5 transition-all flex items-center justify-center"
+                    aria-label="Delete last digit"
+                  >
+                    ⌫
+                  </button>
                 </div>
               </div>
             )}

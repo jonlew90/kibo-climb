@@ -39,6 +39,8 @@ import {
   SEASONAL_EVENTS,
   getAvailableSeasonalEvents,
   getActiveHolidayOrSeasonalSaleEvent,
+  getActiveRealMoneySaleEvent,
+  getEffectiveSparksPackage,
   isSeasonalEventAvailableOrUpcoming,
   getItemsByCategory,
   getItemById,
@@ -560,6 +562,7 @@ export default function WorkshopModal({
   };
 
   const activeSaleEvent = useMemo(() => getActiveHolidayOrSeasonalSaleEvent(currentDate), [currentDate]);
+  const activeRealMoneySale = useMemo(() => getActiveRealMoneySaleEvent(currentDate), [currentDate]);
 
   // Compute active equipped look details for slot HUD (used in My Closet)
   const activeSlotDetails = useMemo(() => {
@@ -700,29 +703,18 @@ export default function WorkshopModal({
           </button>
         </div>
 
-        {/* Right: Currency & Actions */}
+        {/* Right: Currency */}
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-          {/* Redeem Promo Code button hidden for now */}
-          <button
-            type="button"
-            onClick={() => openPromoDialogWithCode()}
-            className="hidden items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-amber-100 hover:bg-amber-200 text-amber-950 font-black text-[11px] sm:text-xs rounded-full border border-amber-300 active:scale-95 transition-all cursor-pointer shadow-2xs"
-            title="Redeem Promo Code"
-          >
-            <Ticket className="w-3 h-3 text-amber-700 stroke-[2.5]" />
-            <span className="hidden xs:inline">Code</span>
-          </button>
-
           <div
             onClick={() => {
               soundFx.playKeyTap();
               setViewMode('shop');
               setActiveHub('sparks');
             }}
-            className="flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-100 to-yellow-200 border border-amber-300 rounded-full text-amber-950 font-black text-[11px] sm:text-xs shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all shrink-0"
+            className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-100 to-yellow-200 border border-amber-300 rounded-full text-amber-950 font-black text-xs shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all shrink-0"
             title="Sparks Balance"
           >
-            <Zap className="w-3 h-3 text-amber-900 fill-amber-500 stroke-[2]" />
+            <Zap className="w-3.5 h-3.5 text-amber-900 fill-amber-500 stroke-[2]" />
             <span>{sparks}</span>
           </div>
         </div>
@@ -1243,6 +1235,24 @@ export default function WorkshopModal({
                   </div>
                 )}
 
+                {/* Active Real-Money Sale Event Banner */}
+                {activeRealMoneySale && (
+                  <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-purple-600 text-white p-3.5 rounded-2xl shadow-md space-y-1 text-left relative overflow-hidden">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 font-black text-xs sm:text-sm">
+                        <Sparkles className="w-4 h-4 fill-amber-300 text-amber-200 animate-pulse" />
+                        <span>{activeRealMoneySale.name} Active!</span>
+                      </div>
+                      <span className="text-[10px] bg-white/20 border border-white/30 backdrop-blur-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
+                        +{activeRealMoneySale.sparksBonusPercent}% Bonus Sparks
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-100 font-medium leading-relaxed">
+                      {activeRealMoneySale.description}
+                    </p>
+                  </div>
+                )}
+
                 {/* VIP Pricing & Savings Value Callout */}
                 <div className="bg-gradient-to-r from-amber-50 to-purple-50 border border-amber-200 rounded-2xl p-3 text-left space-y-0.5">
                   <div className="flex items-center gap-1.5 text-xs font-black text-amber-950">
@@ -1261,9 +1271,17 @@ export default function WorkshopModal({
 
                 {/* Sparks Packages Grid */}
                 <div className="space-y-1.5">
-                  <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-500">Spark Bundles</h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-500">Spark Bundles</h4>
+                    {activeRealMoneySale && (
+                      <span className="text-[10px] font-black text-amber-600 uppercase tracking-tight">
+                        ⚡ +{activeRealMoneySale.sparksBonusPercent}% Event Bonus Included
+                      </span>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {SPARKS_PACKAGES.map((pack) => {
+                    {SPARKS_PACKAGES.map((rawPack) => {
+                      const pack = getEffectiveSparksPackage(rawPack, currentDate);
                       const savings = calculateSparksPackageSavings(pack);
                       const isFam = storageService.hasFamilyPlan();
                       const clubPrice = getRealMoneyItemClubPrice(pack, isFam);
@@ -1280,8 +1298,13 @@ export default function WorkshopModal({
                             <div className="min-w-0">
                               <h5 className="font-extrabold text-xs sm:text-sm text-slate-800 truncate">{pack.name}</h5>
                               <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                                <span className="text-xs font-black text-amber-600">⚡ {pack.sparks}</span>
-                                {savings !== null && (
+                                <span className="text-xs font-black text-amber-600">⚡ {pack.totalSparks || pack.sparks}</span>
+                                {pack.hasBonus && (
+                                  <span className="text-[9px] font-black text-amber-800 bg-amber-200 border border-amber-300 px-1 py-0.2 rounded">
+                                    +{pack.bonusPercent}% Bonus ({pack.bonusSparks})
+                                  </span>
+                                )}
+                                {savings !== null && !pack.hasBonus && (
                                   <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1 py-0.2 rounded">
                                     -{savings}%
                                   </span>
@@ -1360,6 +1383,32 @@ export default function WorkshopModal({
                       );
                     })}
                   </div>
+                </div>
+
+                {/* Promo Code Redemption Card inside Sparks & Club Hub */}
+                <div
+                  onClick={() => openPromoDialogWithCode()}
+                  className="bg-gradient-to-r from-amber-100 via-amber-50 to-orange-100 border-2 border-dashed border-amber-300 hover:border-amber-400 rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-2xs cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all text-left group"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-amber-200 border border-amber-400 flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform">
+                      <Ticket className="w-5 h-5 text-amber-800 stroke-[2.5]" />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="text-xs sm:text-sm font-black text-amber-950 truncate flex items-center gap-1">
+                        <span>Have a Promo Code?</span>
+                      </h4>
+                      <p className="text-[11px] font-bold text-amber-800">
+                        Redeem creator, event, or gift codes for bonus Sparks & items
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="shrink-0 px-3 py-1.5 bg-amber-500 group-hover:bg-amber-600 text-white font-black text-xs rounded-xl shadow-xs transition-all pointer-events-none"
+                  >
+                    Enter Code
+                  </button>
                 </div>
               </div>
             ) : displayedItems.length === 0 ? (

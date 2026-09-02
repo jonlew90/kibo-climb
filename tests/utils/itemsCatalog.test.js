@@ -114,5 +114,65 @@ describe('itemsCatalog', () => {
     expect(window.startDate.toISOString().startsWith('2026-08-25')).toBe(true);
     expect(window.endDate.toISOString().startsWith('2026-09-10')).toBe(true);
   });
+
+  it('getActiveRealMoneySaleEvent detects active sale windows and returns null when no sale is active', () => {
+    // Aug 20, 2026 is inside Back to School sale (Aug 15 - Sep 15)
+    const backToSchoolDate = new Date('2026-08-20T12:00:00Z');
+    const btsEvent = itemsCatalog.getActiveRealMoneySaleEvent(backToSchoolDate);
+    expect(btsEvent).not.toBeNull();
+    expect(btsEvent.id).toBe('back_to_school_sale');
+    expect(btsEvent.sparksBonusPercent).toBe(30);
+
+    // Nov 25, 2026 is inside Black Friday / Cyber Week (Nov 20 - Dec 2)
+    const blackFridayDate = new Date('2026-11-25T12:00:00Z');
+    const bfEvent = itemsCatalog.getActiveRealMoneySaleEvent(blackFridayDate);
+    expect(bfEvent).not.toBeNull();
+    expect(bfEvent.id).toBe('black_friday_sale');
+    expect(bfEvent.sparksBonusPercent).toBe(50);
+
+    // May 10, 2026 has no scheduled real money sale
+    const offSeasonDate = new Date('2026-05-10T12:00:00Z');
+    expect(itemsCatalog.getActiveRealMoneySaleEvent(offSeasonDate)).toBeNull();
+  });
+
+  it('getEffectiveSparksPackage adds bonus sparks during active sale events and preserves base values outside sales', () => {
+    const rawPack = itemsCatalog.SPARKS_PACKAGES[3]; // Mountain of Sparks: 10,000 sparks @ $19.99
+
+    // During Black Friday (+50% bonus)
+    const blackFridayDate = new Date('2026-11-25T12:00:00Z');
+    const bfPack = itemsCatalog.getEffectiveSparksPackage(rawPack, blackFridayDate);
+    expect(bfPack.hasBonus).toBe(true);
+    expect(bfPack.bonusPercent).toBe(50);
+    expect(bfPack.bonusSparks).toBe(5000);
+    expect(bfPack.totalSparks).toBe(15000);
+    expect(bfPack.realMoneyPrice).toBe('$19.99'); // Price remains untouched
+
+    // Outside sale
+    const offSeasonDate = new Date('2026-05-10T12:00:00Z');
+    const standardPack = itemsCatalog.getEffectiveSparksPackage(rawPack, offSeasonDate);
+    expect(standardPack.hasBonus).toBe(false);
+    expect(standardPack.bonusSparks).toBe(0);
+    expect(standardPack.totalSparks).toBe(10000);
+  });
+
+  it('getEffectiveSubscriptionPricing computes promotional discounts on annual plans during sales', () => {
+    // Back to School: Annual Solo is $29.99/yr (-25%), Annual Family is $44.99/yr (-25%)
+    const btsDate = new Date('2026-08-20T12:00:00Z');
+    const soloPricing = itemsCatalog.getEffectiveSubscriptionPricing('kibo_club_sub_annual', btsDate);
+    expect(soloPricing.isDiscounted).toBe(true);
+    expect(soloPricing.price).toBe('$29.99/yr');
+    expect(soloPricing.originalPrice).toBe('$39.99/yr');
+    expect(soloPricing.discountPercent).toBe(25);
+
+    const familyPricing = itemsCatalog.getEffectiveSubscriptionPricing('kibo_club_family_annual', btsDate);
+    expect(familyPricing.isDiscounted).toBe(true);
+    expect(familyPricing.price).toBe('$44.99/yr');
+    expect(familyPricing.originalPrice).toBe('$59.99/yr');
+
+    // Monthly plans remain full price
+    const monthlyPricing = itemsCatalog.getEffectiveSubscriptionPricing('kibo_club_sub', btsDate);
+    expect(monthlyPricing.isDiscounted).toBe(false);
+    expect(monthlyPricing.price).toBe('$4.99/mo');
+  });
 });
 

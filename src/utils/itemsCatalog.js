@@ -1545,6 +1545,180 @@ export function getRealMoneyItemSavings(item) {
   return null;
 }
 
+/**
+ * Scheduled Real-Money Seasonal & Holiday Sale Windows.
+ * Sparks packages receive bonus Sparks (no price slashing).
+ * Annual subscriptions receive promotional pricing.
+ */
+export const REAL_MONEY_SALE_EVENTS = [
+  {
+    id: 'back_to_school_sale',
+    name: 'Back to School Sale',
+    badge: '🎒 Back to School',
+    description: 'Special school year kickoff! Get bonus Sparks on every pack and up to 25% off annual memberships.',
+    recurringSchedule: {
+      startMonth: 8,
+      startDay: 15,
+      endMonth: 9,
+      endDay: 15,
+      previewDays: 7
+    },
+    sparksBonusPercent: 30, // +30% bonus Sparks
+    subscriptionDiscounts: {
+      kibo_club_sub_annual: { promoPrice: '$29.99/yr', discountPercent: 25, monthlyEquivalent: '$2.50/mo' },
+      kibo_club_family_annual: { promoPrice: '$44.99/yr', discountPercent: 25, monthlyEquivalent: '$3.75/mo' }
+    }
+  },
+  {
+    id: 'black_friday_sale',
+    name: 'Cyber Week Mega Sale',
+    badge: '⚡ Cyber Week Sale',
+    description: 'Our biggest event of the year! +50% Bonus Sparks and 33% off all annual memberships.',
+    recurringSchedule: {
+      startMonth: 11,
+      startDay: 20,
+      endMonth: 12,
+      endDay: 2,
+      previewDays: 7
+    },
+    sparksBonusPercent: 50, // +50% bonus Sparks
+    subscriptionDiscounts: {
+      kibo_club_sub_annual: { promoPrice: '$26.99/yr', discountPercent: 33, monthlyEquivalent: '$2.25/mo' },
+      kibo_club_family_annual: { promoPrice: '$39.99/yr', discountPercent: 33, monthlyEquivalent: '$3.33/mo' }
+    }
+  },
+  {
+    id: 'new_year_sale',
+    name: 'New Year Learning Kickoff',
+    badge: '🎆 New Year Kickoff',
+    description: 'Start the year strong! +25% Bonus Sparks and 25% off annual memberships.',
+    recurringSchedule: {
+      startMonth: 12,
+      startDay: 26,
+      endMonth: 1,
+      endDay: 15,
+      previewDays: 5
+    },
+    sparksBonusPercent: 25, // +25% bonus Sparks
+    subscriptionDiscounts: {
+      kibo_club_sub_annual: { promoPrice: '$29.99/yr', discountPercent: 25, monthlyEquivalent: '$2.50/mo' },
+      kibo_club_family_annual: { promoPrice: '$44.99/yr', discountPercent: 25, monthlyEquivalent: '$3.75/mo' }
+    }
+  },
+  {
+    id: 'summer_kickoff_sale',
+    name: 'Summer Learning Kickoff',
+    badge: '☀️ Summer Learning Sale',
+    description: 'Prevent the summer slide! +25% Bonus Sparks and 20% off annual memberships.',
+    recurringSchedule: {
+      startMonth: 6,
+      startDay: 1,
+      endMonth: 6,
+      endDay: 30,
+      previewDays: 7
+    },
+    sparksBonusPercent: 25, // +25% bonus Sparks
+    subscriptionDiscounts: {
+      kibo_club_sub_annual: { promoPrice: '$31.99/yr', discountPercent: 20, monthlyEquivalent: '$2.67/mo' },
+      kibo_club_family_annual: { promoPrice: '$47.99/yr', discountPercent: 20, monthlyEquivalent: '$4.00/mo' }
+    }
+  }
+];
+
+/**
+ * Returns the currently active real-money sale event, if one is running.
+ * @param {Date|string|number} [currentDate=new Date()]
+ * @returns {object|null}
+ */
+export function getActiveRealMoneySaleEvent(currentDate = new Date()) {
+  const d = currentDate instanceof Date ? currentDate : new Date(currentDate);
+  for (const event of REAL_MONEY_SALE_EVENTS) {
+    if (event.recurringSchedule) {
+      const window = calculateRecurringWindow(event.recurringSchedule, d);
+      if (window && window.status === 'active') {
+        return {
+          ...event,
+          daysRemaining: window.daysRemaining,
+          endDate: window.endDate
+        };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Returns the effective sparks package details, including bonus sparks when a sale is active.
+ * Real-money prices remain untouched; bonus sparks are added to the reward.
+ * @param {object} pack
+ * @param {Date|string|number} [currentDate=new Date()]
+ * @returns {object}
+ */
+export function getEffectiveSparksPackage(pack, currentDate = new Date()) {
+  if (!pack || !pack.sparks) return pack;
+  const activeSale = getActiveRealMoneySaleEvent(currentDate);
+
+  if (!activeSale || !activeSale.sparksBonusPercent) {
+    return {
+      ...pack,
+      bonusSparks: 0,
+      totalSparks: pack.sparks,
+      hasBonus: false,
+      bonusPercent: 0
+    };
+  }
+
+  const bonusPercent = activeSale.sparksBonusPercent;
+  const bonusSparks = Math.round(pack.sparks * (bonusPercent / 100));
+  const totalSparks = pack.sparks + bonusSparks;
+
+  return {
+    ...pack,
+    bonusSparks,
+    totalSparks,
+    hasBonus: true,
+    bonusPercent,
+    saleEventName: activeSale.name,
+    saleEventBadge: activeSale.badge
+  };
+}
+
+/**
+ * Returns effective subscription plan pricing, including promotional discounts during active sale events.
+ * @param {string|object} planOrId
+ * @param {Date|string|number} [currentDate=new Date()]
+ * @returns {object}
+ */
+export function getEffectiveSubscriptionPricing(planOrId, currentDate = new Date()) {
+  const planId = typeof planOrId === 'string' ? planOrId : planOrId?.id;
+  const activeSale = getActiveRealMoneySaleEvent(currentDate);
+
+  const baseItems = {
+    kibo_club_sub: { price: '$4.99/mo', billingPeriod: 'monthly', isDiscounted: false },
+    kibo_club_sub_annual: { price: '$39.99/yr', monthlyEquivalent: '$3.33/mo', billingPeriod: 'annual', isDiscounted: false },
+    kibo_club_family: { price: '$7.99/mo', billingPeriod: 'monthly', isDiscounted: false },
+    kibo_club_family_annual: { price: '$59.99/yr', monthlyEquivalent: '$5.00/mo', billingPeriod: 'annual', isDiscounted: false }
+  };
+
+  const defaultPricing = baseItems[planId] || { price: '$4.99/mo', billingPeriod: 'monthly', isDiscounted: false };
+
+  if (activeSale && activeSale.subscriptionDiscounts && activeSale.subscriptionDiscounts[planId]) {
+    const promo = activeSale.subscriptionDiscounts[planId];
+    return {
+      ...defaultPricing,
+      price: promo.promoPrice,
+      originalPrice: defaultPricing.price,
+      monthlyEquivalent: promo.monthlyEquivalent || defaultPricing.monthlyEquivalent,
+      isDiscounted: true,
+      discountPercent: promo.discountPercent,
+      saleEventName: activeSale.name,
+      saleEventBadge: activeSale.badge
+    };
+  }
+
+  return defaultPricing;
+}
+
 export function getItemEffectivePrice(item, currentDate = new Date(), isKiboClub = false) {
   if (!item) return { cost: 0, originalCost: 0, isDiscounted: false, discountPercent: 0 };
   const saleInfo = getItemSalePrice(item, currentDate);

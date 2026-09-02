@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star, Compass, Lock } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star, Compass, Lock, Ticket } from 'lucide-react';
 import { CURRICULUM_TIERS, getTierFromRating, GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { BADGES_CATALOG } from '../data/badges';
@@ -15,6 +15,8 @@ import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
 import { communicationsService } from '../services/communicationsService';
 import { questService } from '../services/questService';
+import { promoCodeService } from '../services/promoCodeService';
+import { getActiveRealMoneySaleEvent, getEffectiveSubscriptionPricing } from '../utils/itemsCatalog';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { generateWeeklyDigestData, formatWeeklyDigestText } from '../utils/weeklyDigest';
 import { requestAppReview } from '../utils/AppReview';
@@ -61,6 +63,7 @@ export default function ParentDashboardModal({
   onOpenSubscription,
   onOpenFamilyUpgrade,
   onOpenWorkshop,
+  onRedeemPromoCode,
   onBack,
   renderFooter
 }) {
@@ -73,6 +76,11 @@ export default function ParentDashboardModal({
   const [confirmPinInput, setConfirmPinInput] = useState('');
   const [pinSuccessMsg, setPinSuccessMsg] = useState('');
   const [pinErrorMsg, setPinErrorMsg] = useState('');
+
+  // Parent Promo Code State
+  const [parentPromoInput, setParentPromoInput] = useState('');
+  const [parentPromoFeedback, setParentPromoFeedback] = useState(null);
+  const [isParentRedeeming, setIsParentRedeeming] = useState(false);
 
   const [showAccountLinkModal, setShowAccountLinkModal] = useState(false);
   const [profilesList, setProfilesList] = useState(() => storageService.getAllProfiles());
@@ -1603,6 +1611,10 @@ export default function ParentDashboardModal({
               const isSwitchCycleSolo = hasSingle && !hasFam && billingCycle !== activeCycle;
               const isSwitchCycleFamily = hasFam && billingCycle !== activeCycle;
 
+              const activeRealMoneySale = getActiveRealMoneySaleEvent(new Date());
+              const soloPricing = getEffectiveSubscriptionPricing(billingCycle === 'annual' ? 'kibo_club_sub_annual' : 'kibo_club_sub', new Date());
+              const familyPricing = getEffectiveSubscriptionPricing(billingCycle === 'annual' ? 'kibo_club_family_annual' : 'kibo_club_family', new Date());
+
               return (
                 <div
                   ref={familyPlanSectionRef}
@@ -1643,12 +1655,30 @@ export default function ParentDashboardModal({
                         >
                           <span>Annual</span>
                           <span className="text-[9px] bg-emerald-600 text-white px-1.5 py-0.2 rounded-full uppercase font-black">
-                            Save ~35%
+                            {familyPricing.isDiscounted ? `Save ${familyPricing.discountPercent + 30}%` : 'Save ~35%'}
                           </span>
                         </button>
                       </div>
                     </div>
                   </div>
+
+                  {/* Active Subscription Sale Event Banner */}
+                  {activeRealMoneySale && (
+                    <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-amber-600 text-white p-3 rounded-xl shadow-xs space-y-0.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 font-black text-xs">
+                          <Sparkles className="w-3.5 h-3.5 fill-amber-300 text-amber-200" />
+                          <span>{activeRealMoneySale.name} Active</span>
+                        </div>
+                        <span className="text-[10px] bg-white/20 px-2 py-0.2 rounded-full font-black uppercase tracking-wider">
+                          Special Offer
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-purple-100 font-medium leading-relaxed">
+                        {activeRealMoneySale.description}
+                      </p>
+                    </div>
+                  )}
 
                   <p className="text-xs text-slate-600 font-medium leading-relaxed">
                     Choose or manage your membership below. Memberships unlock permanent 1.25x Spark multipliers, VIP store discounts, golden tags, and 100% offline-ready practice.
@@ -1668,13 +1698,20 @@ export default function ParentDashboardModal({
                           <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
                             1 Child Profile
                           </span>
-                          <span className="text-sm font-black text-slate-900">
-                            {billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'}
-                          </span>
+                          <div className="text-right">
+                            {soloPricing.isDiscounted && (
+                              <span className="text-[10px] text-slate-400 line-through font-bold block leading-tight">
+                                {soloPricing.originalPrice}
+                              </span>
+                            )}
+                            <span className="text-sm font-black text-slate-900">
+                              {soloPricing.price}
+                            </span>
+                          </div>
                         </div>
                         <h5 className="font-black text-sm text-slate-900">Kibo Club Solo</h5>
                         <span className="text-[10px] text-purple-700 font-extrabold block">
-                          {billingCycle === 'annual' ? 'Equivalent to $3.33/mo (Billed annually)' : 'Billed monthly • Cancel anytime'}
+                          {billingCycle === 'annual' ? `Equivalent to ${soloPricing.monthlyEquivalent} (Billed annually)` : 'Billed monthly • Cancel anytime'}
                         </span>
                         <ul className="space-y-1 text-xs text-slate-600 font-bold">
                           <li className="flex items-center gap-1.5">
@@ -1717,7 +1754,7 @@ export default function ParentDashboardModal({
                           className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl shadow-md transform active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                         >
                           <Sparkles className="w-3.5 h-3.5 fill-white" />
-                          <span>Switch to {billingCycle === 'annual' ? 'Annual ($39.99/yr)' : 'Monthly ($4.99/mo)'}</span>
+                          <span>Switch to {billingCycle === 'annual' ? `Annual (${soloPricing.price})` : `Monthly (${soloPricing.price})`}</span>
                         </button>
                       ) : hasFam ? (
                         <button
@@ -1730,7 +1767,7 @@ export default function ParentDashboardModal({
                           }}
                           className="w-full py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-black text-xs rounded-xl border border-purple-200 transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95"
                         >
-                          <span>Downgrade to Solo ({billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'})</span>
+                          <span>Downgrade to Solo ({billingCycle === 'annual' ? soloPricing.price : soloPricing.price})</span>
                         </button>
                       ) : (
                         <button
@@ -1743,7 +1780,7 @@ export default function ParentDashboardModal({
                           }}
                           className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl shadow-sm transform active:scale-95 transition-all cursor-pointer"
                         >
-                          Select Solo ({billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'})
+                          Select Solo ({billingCycle === 'annual' ? soloPricing.price : soloPricing.price})
                         </button>
                       )}
                     </div>
@@ -1759,15 +1796,22 @@ export default function ParentDashboardModal({
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-black uppercase text-amber-900 bg-amber-200 px-2 py-0.5 rounded-full">
-                            ⭐️ Best Value (Save 70%+)
+                            {familyPricing.isDiscounted ? `⭐️ Event Deal (-${familyPricing.discountPercent}%)` : '⭐️ Best Value (Save 70%+)'}
                           </span>
-                          <span className="text-sm font-black text-amber-950">
-                            {billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'}
-                          </span>
+                          <div className="text-right">
+                            {familyPricing.isDiscounted && (
+                              <span className="text-[10px] text-slate-400 line-through font-bold block leading-tight">
+                                {familyPricing.originalPrice}
+                              </span>
+                            )}
+                            <span className="text-sm font-black text-amber-950">
+                              {familyPricing.price}
+                            </span>
+                          </div>
                         </div>
                         <h5 className="font-black text-sm text-slate-900">Kibo Club Family</h5>
                         <span className="text-[10px] text-amber-900 font-extrabold block">
-                          {billingCycle === 'annual' ? 'Equivalent to $5.00/mo (Billed annually)' : 'Billed monthly • Cancel anytime'}
+                          {billingCycle === 'annual' ? `Equivalent to ${familyPricing.monthlyEquivalent} (Billed annually)` : 'Billed monthly • Cancel anytime'}
                         </span>
                         <div className="text-[11px] font-extrabold text-amber-800 bg-amber-100/70 border border-amber-200 rounded-lg px-2 py-1">
                           ✨ Everything in Solo, plus:
@@ -1813,7 +1857,7 @@ export default function ParentDashboardModal({
                           className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs rounded-xl shadow-md transform active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                         >
                           <Sparkles className="w-3.5 h-3.5 fill-white" />
-                          <span>Switch to {billingCycle === 'annual' ? 'Annual ($59.99/yr)' : 'Monthly ($7.99/mo)'}</span>
+                          <span>Switch to {billingCycle === 'annual' ? `Annual (${familyPricing.price})` : `Monthly (${familyPricing.price})`}</span>
                         </button>
                       ) : (
                         <button
@@ -1827,8 +1871,8 @@ export default function ParentDashboardModal({
                           className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs rounded-xl shadow-sm transform active:scale-95 transition-all cursor-pointer"
                         >
                           {hasSingle
-                            ? `Upgrade to Family (${billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'})`
-                            : `Select Family (${billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'})`}
+                            ? `Upgrade to Family (${billingCycle === 'annual' ? familyPricing.price : familyPricing.price})`
+                            : `Select Family (${billingCycle === 'annual' ? familyPricing.price : familyPricing.price})`}
                         </button>
                       )}
                     </div>
@@ -1989,6 +2033,89 @@ export default function ParentDashboardModal({
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Promo & Gift Codes Card */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <Ticket className="w-5 h-5 stroke-[2.5]" />
+                  <h4 className="font-extrabold text-sm text-slate-800">Redeem Promo or Gift Code</h4>
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
+                  Instant Unlock
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                Have an educator coupon, winback promo code, or gift voucher? Enter it here to grant bonus Sparks, subscriptions, or exclusive items to your child's profile.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="ENTER PROMO CODE"
+                  value={parentPromoInput}
+                  onChange={(e) => setParentPromoInput(e.target.value.toUpperCase())}
+                  onKeyDown={async (e) => {
+                    if (e.key === 'Enter' && parentPromoInput.trim() && !isParentRedeeming) {
+                      soundFx.playKeyTap();
+                      setIsParentRedeeming(true);
+                      setParentPromoFeedback(null);
+                      const res = await promoCodeService.redeemCode(parentPromoInput);
+                      setIsParentRedeeming(false);
+                      if (res.success) {
+                        soundFx.playReward();
+                        setParentPromoFeedback({ type: 'success', message: res.message || 'Promo code redeemed successfully!' });
+                        setParentPromoInput('');
+                        if (onRedeemPromoCode) onRedeemPromoCode(res);
+                      } else {
+                        soundFx.playError();
+                        setParentPromoFeedback({ type: 'error', message: res.reason || 'Invalid promo code.' });
+                      }
+                    }
+                  }}
+                  className="w-full sm:flex-1 bg-white border-2 border-slate-200 focus:border-amber-400 rounded-xl px-3 py-2 text-xs font-black uppercase text-slate-800 tracking-wider outline-none transition-colors"
+                />
+                <button
+                  type="button"
+                  disabled={isParentRedeeming || !parentPromoInput.trim()}
+                  onClick={async () => {
+                    soundFx.playKeyTap();
+                    setIsParentRedeeming(true);
+                    setParentPromoFeedback(null);
+                    const res = await promoCodeService.redeemCode(parentPromoInput);
+                    setIsParentRedeeming(false);
+                    if (res.success) {
+                      soundFx.playReward();
+                      setParentPromoFeedback({ type: 'success', message: res.message || 'Promo code redeemed successfully!' });
+                      setParentPromoInput('');
+                      if (onRedeemPromoCode) onRedeemPromoCode(res);
+                    } else {
+                      soundFx.playError();
+                      setParentPromoFeedback({ type: 'error', message: res.reason || 'Invalid promo code.' });
+                    }
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 text-white font-black text-xs rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+                >
+                  {isParentRedeeming ? 'Validating...' : 'Apply Code'}
+                </button>
+              </div>
+
+              {parentPromoFeedback && (
+                <div className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 ${
+                  parentPromoFeedback.type === 'success'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                    : 'bg-rose-50 border-rose-200 text-rose-800'
+                }`}>
+                  {parentPromoFeedback.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  )}
+                  <span>{parentPromoFeedback.message}</span>
+                </div>
+              )}
             </div>
 
             {/* COPPA Parental Rights & Data Privacy Card */}

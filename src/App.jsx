@@ -25,7 +25,7 @@ import { useDevState } from './hooks/useDevState';
 import { evaluateBadges } from './utils/badgeManager';
 import { BADGES_CATALOG } from './data/badges';
 import { CURRICULUM_TIERS } from './utils/mathCurriculum';
-import { getItemById, getItemSlot } from './utils/itemsCatalog';
+import { getItemById, getItemSlot, getEffectiveSubscriptionPricing, getEffectiveSparksPackage } from './utils/itemsCatalog';
 import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
 import { pluralize } from './utils/formatters';
@@ -2728,10 +2728,14 @@ export default function App() {
           }}
           onOpenSubscription={(planId) => {
             const item = getItemById(planId);
+            const pricing = getEffectiveSubscriptionPricing(planId, new Date());
+            const activePrice = pricing.price;
+
             if (item) {
               handleBuySparksPackage({
                 ...item,
-                price: item.realMoneyPrice || item.price,
+                price: activePrice || item.realMoneyPrice || item.price,
+                realMoneyPrice: activePrice || item.realMoneyPrice || item.price,
                 source: 'parent_dashboard',
                 tab: parentDashboardTab || 'verification',
                 highlight: parentDashboardHighlight || 'family_plan'
@@ -2740,8 +2744,8 @@ export default function App() {
               handleBuySparksPackage({
                 id: planId,
                 name: planId.includes('annual') ? 'Kibo Club Family (Annual)' : 'Kibo Club Family',
-                realMoneyPrice: planId.includes('annual') ? '$59.99/yr' : '$7.99/mo',
-                price: planId.includes('annual') ? '$59.99/yr' : '$7.99/mo',
+                realMoneyPrice: activePrice || (planId.includes('annual') ? '$59.99/yr' : '$7.99/mo'),
+                price: activePrice || (planId.includes('annual') ? '$59.99/yr' : '$7.99/mo'),
                 isSubscription: true,
                 isFamilyPlan: true,
                 source: 'parent_dashboard',
@@ -2753,8 +2757,8 @@ export default function App() {
               handleBuySparksPackage({
                 id: planId || 'kibo_club_sub',
                 name: planId?.includes('annual') ? 'Kibo Club Solo (Annual)' : 'Kibo Club Solo',
-                realMoneyPrice: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
-                price: planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo',
+                realMoneyPrice: activePrice || (planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo'),
+                price: activePrice || (planId?.includes('annual') ? '$39.99/yr' : '$4.99/mo'),
                 isSubscription: true,
                 isFamilyPlan: false,
                 source: 'parent_dashboard',
@@ -2765,11 +2769,12 @@ export default function App() {
             }
           }}
           onOpenFamilyUpgrade={() => {
+            const pricing = getEffectiveSubscriptionPricing('kibo_club_family_annual', new Date());
             handleBuySparksPackage({
               id: 'kibo_club_family_annual',
               name: 'Kibo Club Family (Annual)',
-              realMoneyPrice: '$59.99/yr',
-              price: '$59.99/yr',
+              realMoneyPrice: pricing.price || '$59.99/yr',
+              price: pricing.price || '$59.99/yr',
               isSubscription: true,
               isFamilyPlan: true,
               source: 'parent_dashboard',
@@ -2781,6 +2786,7 @@ export default function App() {
           onOpenWorkshop={(targetHub = 'wearables', targetMode = 'shop') => {
             handleOpenWorkshop(null, targetHub, targetMode);
           }}
+          onRedeemPromoCode={handleRedeemPromoCode}
           renderFooter={renderNavigationFooter}
         />
       )}

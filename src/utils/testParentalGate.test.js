@@ -4,31 +4,27 @@ import { nativeAuthService } from '../services/nativeAuthService.js';
 
 console.log('=== TESTING PARENTAL GATE REFACTORING ===');
 
-// 1. Test Math Challenge Generation
-const mathChallenge = dynamicChallengeGenerator.generateMathChallenge();
-console.log('Math Challenge Generated:', mathChallenge.question);
-console.log('Options:', mathChallenge.options, 'Correct Answer:', mathChallenge.correctAnswer);
+// 1. Test Word Math Challenge Generation
+const mathChallenge = dynamicChallengeGenerator.generateWordMathChallenge();
+console.log('Word Math Challenge Generated:', mathChallenge.question);
+console.log('Correct Answer:', mathChallenge.correctAnswer);
 
-if (!mathChallenge.options.includes(mathChallenge.correctAnswer)) {
-  console.error('❌ FAIL: Options do not include correct answer!');
+if (!mathChallenge.question || !mathChallenge.correctAnswer) {
+  console.error('❌ FAIL: Word Math Challenge generation failed!');
   process.exit(1);
 }
-if (mathChallenge.options.length !== 4) {
-  console.error('❌ FAIL: Options array length must be 4!');
+console.log('✅ PASSED: Word Math Challenge generation verified!');
+
+// 2. Test Adult Literacy Challenge Generation
+const orderChallenge = dynamicChallengeGenerator.generateAdultLiteracyChallenge();
+console.log('\nAdult Literacy Challenge Generated:', orderChallenge.question);
+console.log('Correct Answer:', orderChallenge.correctAnswer);
+
+if (!orderChallenge.question || !orderChallenge.correctAnswer) {
+  console.error('❌ FAIL: Adult Literacy challenge generation failed!');
   process.exit(1);
 }
-console.log('✅ PASSED: Math Challenge generation and option shuffling verified!');
-
-// 2. Test Order Challenge Generation
-const orderChallenge = dynamicChallengeGenerator.generateOrderChallenge();
-console.log('\nOrder Challenge Generated:', orderChallenge.question);
-console.log('Options:', orderChallenge.options, 'Correct Answer:', orderChallenge.correctAnswer);
-
-if (!orderChallenge.options.includes(orderChallenge.correctAnswer)) {
-  console.error('❌ FAIL: Order challenge options do not include correct answer!');
-  process.exit(1);
-}
-console.log('✅ PASSED: Order Challenge generation verified!');
+console.log('✅ PASSED: Adult Literacy Challenge generation verified!');
 
 // 3. Test Mock Native Authentication Service
 console.log('\nTesting Native Auth Service...');
