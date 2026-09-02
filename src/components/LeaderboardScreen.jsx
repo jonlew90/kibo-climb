@@ -601,58 +601,6 @@ export default function LeaderboardScreen({
       totalXp: familySquadXp,
       icon: '🏔️',
       badge: allAccountProfiles.length > 1 ? 'Family Squad' : 'Ascent Squad'
-    },
-    {
-      id: 'squad_summit_pioneers',
-      name: 'Summit Pioneers Squad',
-      isCurrentUserSquad: false,
-      membersCount: 3,
-      memberNames: ['Leo', 'Maya', 'Tenzing'],
-      teamClaims: 6,
-      squadScore: 3250,
-      weeklySparks: 1850,
-      totalXp: 14000,
-      icon: '🦅',
-      badge: 'Expedition Team'
-    },
-    {
-      id: 'squad_alpine_trailblazers',
-      name: 'Alpine Trailblazers',
-      isCurrentUserSquad: false,
-      membersCount: 4,
-      memberNames: ['Asha', 'Sora', 'BraveOtter#312', 'QuickFox#884'],
-      teamClaims: 5,
-      squadScore: 2840,
-      weeklySparks: 1640,
-      totalXp: 12000,
-      icon: '🐆',
-      badge: 'Expedition Team'
-    },
-    {
-      id: 'squad_glacier_navigators',
-      name: 'Glacier Navigators',
-      isCurrentUserSquad: false,
-      membersCount: 3,
-      memberNames: ['SwiftHawk#102', 'CleverHare#551', 'SolarBear#920'],
-      teamClaims: 4,
-      squadScore: 2410,
-      weeklySparks: 1390,
-      totalXp: 10200,
-      icon: '🐻',
-      badge: 'Expedition Team'
-    },
-    {
-      id: 'squad_ridge_runners',
-      name: 'Ridge Runners League',
-      isCurrentUserSquad: false,
-      membersCount: 2,
-      memberNames: ['CosmicWolf#404', 'StarFalcon#711'],
-      teamClaims: 3,
-      squadScore: 1980,
-      weeklySparks: 1120,
-      totalXp: 8600,
-      icon: '🦊',
-      badge: 'Duo Squad'
     }
   ];
 
@@ -699,8 +647,9 @@ export default function LeaderboardScreen({
 
   // Assign ranks, resolved display names (COPPA safe), and friend indicators
   const rankedStandings = activeStandingsList.map((player, index) => {
-    const isCurrent = !!player.isCurrentUser;
+    const isCurrent = !!player.isCurrentUser || !!player.isCurrentUserSquad;
     const isAccountProf = !!player.isAccountProfile;
+    const isSquadItem = viewMode === 'squads';
     
     // Check if player is a confirmed friend
     const playerId = (player.id || '').trim().toLowerCase();
@@ -717,11 +666,11 @@ export default function LeaderboardScreen({
     );
 
     // COPPA Safe Display Name resolution:
-    // - Current user or same-account profiles: show their real chosen name
+    // - Current user, squads, or same-account profiles: show their real chosen name
     // - Confirmed friends: show their real chosen username
     // - Strangers: show deterministic kid-safe anonymous name (e.g. BraveOtter#482)
     let displayName = player.name || player.username || 'Climber';
-    if (!isCurrent && !isAccountProf && !isFriend) {
+    if (!isCurrent && !isAccountProf && !isFriend && !isSquadItem) {
       displayName = player.anonymousName || getDeterministicAnonymousName(player.id || player.uid || player.profileId || player.name || `seed_${index}`);
     }
 
