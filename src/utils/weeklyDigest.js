@@ -10,7 +10,7 @@ import { getTierFromRating, CURRICULUM_TIERS } from './mathCurriculum.js';
 import { getGradeLevelForSubject } from './SkillTreeConfig.js';
 import { WORDS_CURRICULUM_TIERS } from './wordsCurriculum.js';
 import { calculateAdaptiveCompetenceProfile, calculateDomainMastery } from './domainStats.js';
-import { calculateConceptBreakdown } from './skipDiagnosticEngine.js';
+import { calculateConceptBreakdown, generateParentInsightCards } from './skipDiagnosticEngine.js';
 import { questService } from '../services/questService.js';
 
 /**
@@ -219,6 +219,18 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
       }
     });
 
+    // Advanced Diagnostic Insights for Kibo Club VIPs
+    let clubInsights = null;
+    if (isKiboClub) {
+      const insightCards = generateParentInsightCards(skipLogs, sprintHistory, childName, subjectId);
+      clubInsights = {
+        insightCards,
+        hasBottlenecks: insightCards.some((c) => c.type === 'bottleneck'),
+        hasFatigueAlert: insightCards.some((c) => c.type === 'fatigue'),
+        totalSkipsLogged: skipLogs.length
+      };
+    }
+
     playedSubjects.push({
       subjectId,
       name: config.name || subjectId,
@@ -237,9 +249,12 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
       practicingTopics,
       needsReviewTopics,
       conceptBreakdown,
+      clubInsights,
       playSubjectUrl: `${baseUrl}/${subjectId}?profile=${encodeURIComponent(profileId)}`
     });
   });
+
+  const totalTimeMinThisWeek = Math.round(totalTimeSecThisWeek / 60);
 
   return {
     profileId,
@@ -261,7 +276,9 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
     totalProblemsThisWeek,
     totalProblemsAllTime,
     totalTimeSecThisWeek,
+    totalTimeMinThisWeek,
     isKiboClub,
+    hasAdvancedInsightsLocked: !isKiboClub,
     subjects: playedSubjects,
     unstartedSubjects,
     links: {
@@ -321,8 +338,20 @@ export function formatWeeklyDigestText({ childName, digestData }) {
         text += `  • Building initial fundamentals\n`;
       }
 
+      if (data.isKiboClub && sub.clubInsights?.insightCards && sub.clubInsights.insightCards.length > 0) {
+        text += `\n👑 KIBO CLUB DEEP DIAGNOSTIC INSIGHTS (${sub.name.toUpperCase()}):\n`;
+        sub.clubInsights.insightCards.forEach((card) => {
+          text += `  • [${card.badge}] ${card.title}: ${card.description}\n`;
+        });
+      }
+
       text += `\n`;
     });
+  }
+
+  if (!data.isKiboClub) {
+    text += `========================================\n`;
+    text += `👑 KIBO CLUB PREVIEW: Deep diagnostic bottleneck alerts, fatigue tracking, and actionable parent coaching insights are available with Kibo Club VIP!\n\n`;
   }
 
   if (data.unstartedSubjects && data.unstartedSubjects.length > 0) {
@@ -428,6 +457,33 @@ export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digest
           ${playedTopicsHtml}
         </div>
 
+        ${data.isKiboClub && sub.clubInsights?.insightCards && sub.clubInsights.insightCards.length > 0 ? `
+          <!-- KIBO CLUB VIP ADVANCED DIAGNOSTICS -->
+          <div style="background: linear-gradient(135deg, #fefce8 0%, #fffbeb 100%); border-radius: 12px; padding: 14px; margin-top: 12px; border: 1.5px solid #fef08a;">
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 14px; margin-right: 6px;">👑</span>
+              <strong style="font-size: 12px; color: #854d0e; text-transform: uppercase; letter-spacing: 0.5px;">
+                Kibo Club VIP Diagnostic Insights
+              </strong>
+            </div>
+            ${sub.clubInsights.insightCards.map((card) => `
+              <div style="background-color: #ffffff; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; border: 1px solid #fef08a;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="font-size: 12px; font-weight: 800; color: #1e293b;">
+                    ${card.icon || '🧩'} ${card.title}
+                  </span>
+                  <span style="font-size: 9px; font-weight: 800; text-transform: uppercase; padding: 2px 6px; border-radius: 6px; background-color: #fef3c7; color: #92400e;">
+                    ${card.badge}
+                  </span>
+                </div>
+                <p style="margin: 0; font-size: 11px; color: #475569; line-height: 1.4;">
+                  ${card.description}
+                </p>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
         <div style="text-align: right; margin-top: 12px;">
           <a href="${sub.playSubjectUrl}" style="display: inline-block; font-size: 12px; font-weight: 800; color: #7c3aed; text-decoration: none; padding: 6px 12px; background-color: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px;">
             Play ${sub.name} Climb →
@@ -437,6 +493,39 @@ export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digest
     `;
     })
     .join('');
+
+  // Non-club locked feature teaser banner (static blurred mockup, zero leakage of actual child analytics)
+  let clubTeaserHtml = '';
+  if (!data.isKiboClub) {
+    clubTeaserHtml = `
+      <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 16px; padding: 20px 24px; margin-top: 20px; color: #ffffff; text-align: left; box-shadow: 0 4px 14px rgba(30, 27, 75, 0.2); border: 1px solid #4338ca;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 20px;">👑</span>
+            <strong style="font-size: 15px; font-weight: 900; color: #fef08a; letter-spacing: -0.2px;">
+              Unlock Deep Diagnostic Insights with Kibo Club
+            </strong>
+          </div>
+          <span style="background-color: rgba(254, 240, 138, 0.2); color: #fef08a; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(254, 240, 138, 0.4); text-transform: uppercase;">
+            VIP Feature
+          </span>
+        </div>
+        <p style="margin: 0 0 12px 0; font-size: 12px; color: #c7d2fe; line-height: 1.5;">
+          Get automated topic bottleneck detection, fatigue alerts, and actionable parent coaching recommendations tailored to ${name}'s daily climbs.
+        </p>
+        <div style="background: rgba(255,255,255,0.08); border: 1px dashed rgba(255,255,255,0.25); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; filter: blur(0.2px);">
+          <div style="font-size: 11px; font-weight: 700; color: #e0e7ff; opacity: 0.85;">
+            🔒 Sample Bottleneck Alert: Immediate skip patterns (<3s) & prerequisite skill coaching suggestions...
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <a href="${data.links.parentSettingsUrl}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #78350f; font-size: 12px; font-weight: 900; text-decoration: none; padding: 8px 16px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+            👑 Upgrade to Kibo Club VIP →
+          </a>
+        </div>
+      </div>
+    `;
+  }
 
   // Unstarted Subjects Section
   let unstartedSectionHtml = '';
@@ -538,6 +627,11 @@ export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digest
                     <div style="font-size: 10px; font-weight: 700; color: #581c87; text-transform: uppercase;">Weekly Items</div>
                   </td>
                   <td align="center" style="padding: 0 6px; border-right: 1px solid #e9d5ff;">
+                    <span style="font-size: 20px;">⏱️</span>
+                    <div style="font-size: 16px; font-weight: 900; color: #059669;">${data.totalTimeMinThisWeek || Math.ceil(data.totalTimeSecThisWeek / 60) || 0}m</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #065f46; text-transform: uppercase;">Study Time</div>
+                  </td>
+                  <td align="center" style="padding: 0 6px; border-right: 1px solid #e9d5ff;">
                     <span style="font-size: 20px;">${data.questIcon || '🧭'}</span>
                     <div style="font-size: 14px; font-weight: 900; color: #4338ca;">Ascent ${data.questAscentTier || 1} · Lv ${data.questLevel}</div>
                     <div style="font-size: 10px; font-weight: 700; color: #3730a3; text-transform: uppercase;">${data.questTitle} · ${data.questTotalXp} XP</div>
@@ -559,6 +653,9 @@ export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digest
                 Multi-Subject Performance & Topics Played
               </h2>
               ${subjectsHtml}
+
+              <!-- Kibo Club Locked Teaser (for standard accounts) -->
+              ${clubTeaserHtml}
 
               <!-- Unstarted Subjects / Cross-Subject Discovery -->
               ${unstartedSectionHtml}

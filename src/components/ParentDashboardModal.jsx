@@ -2311,18 +2311,22 @@ export default function ParentDashboardModal({
               {/* Modal Body */}
               <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-left flex-1">
                 {/* Profile Overview Bar */}
-                <div className="grid grid-cols-3 gap-2 bg-purple-50/60 p-3 rounded-xl border border-purple-200/80 text-center">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-purple-50/60 p-3 rounded-xl border border-purple-200/80 text-center">
                   <div>
-                    <span className="block text-[11px] font-bold text-purple-600 uppercase tracking-wider">🔥 Active Streak</span>
+                    <span className="block text-[11px] font-bold text-purple-600 uppercase tracking-wider">🔥 Streak</span>
                     <strong className="text-sm sm:text-base font-black text-purple-950">{digest.streak} Days</strong>
                   </div>
                   <div>
-                    <span className="block text-[11px] font-bold text-purple-600 uppercase tracking-wider">🗺️ Quest Level</span>
-                    <strong className="text-sm sm:text-base font-black text-purple-950">Lvl {digest.questLevel || 1}</strong>
+                    <span className="block text-[11px] font-bold text-purple-600 uppercase tracking-wider">⚡ Items Solved</span>
+                    <strong className="text-sm sm:text-base font-black text-purple-950">{digest.totalProblemsThisWeek}</strong>
                   </div>
                   <div>
-                    <span className="block text-[11px] font-bold text-purple-600 uppercase tracking-wider">⚡ Total XP</span>
-                    <strong className="text-sm sm:text-base font-black text-purple-950">{digest.questTotalXp || 0} XP</strong>
+                    <span className="block text-[11px] font-bold text-purple-600 uppercase tracking-wider">⏱️ Study Time</span>
+                    <strong className="text-sm sm:text-base font-black text-purple-950">{digest.totalTimeMinThisWeek || Math.ceil(digest.totalTimeSecThisWeek / 60) || 0}m</strong>
+                  </div>
+                  <div>
+                    <span className="block text-[11px] font-bold text-purple-600 uppercase tracking-wider">🏆 Badges</span>
+                    <strong className="text-sm sm:text-base font-black text-purple-950">{digest.unlockedBadgesCount} Won</strong>
                   </div>
                 </div>
 
@@ -2370,8 +2374,66 @@ export default function ParentDashboardModal({
                           <p className="text-xs text-slate-400 italic">No activity logged for this subject yet.</p>
                         )}
                       </div>
+
+                      {/* KIBO CLUB VIP ADVANCED DIAGNOSTICS */}
+                      {digest.isKiboClub && sub.clubInsights?.insightCards && sub.clubInsights.insightCards.length > 0 && (
+                        <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 space-y-2 mt-2">
+                          <div className="flex items-center gap-1.5 text-xs font-black text-amber-900 uppercase tracking-wider">
+                            <span>👑</span> Kibo Club VIP Diagnostic Insights
+                          </div>
+                          <div className="space-y-1.5">
+                            {sub.clubInsights.insightCards.map((card) => (
+                              <div key={card.id || card.title} className="bg-white p-2.5 rounded-lg border border-amber-100 text-xs">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-extrabold text-slate-800 flex items-center gap-1">
+                                    <span>{card.icon || '🧩'}</span> {card.title}
+                                  </span>
+                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-black uppercase bg-amber-100 text-amber-900 border border-amber-200">
+                                    {card.badge}
+                                  </span>
+                                </div>
+                                <p className="text-slate-600 leading-snug">{card.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
+
+                  {/* Non-club VIP Locked Teaser */}
+                  {!digest.isKiboClub && (
+                    <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-xl p-4 border border-indigo-500/30 shadow-md">
+                      <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">👑</span>
+                          <strong className="text-xs sm:text-sm font-black text-amber-300">
+                            Unlock Deep Diagnostic Insights with Kibo Club
+                          </strong>
+                        </div>
+                        <span className="text-[10px] font-black text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          VIP Feature
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                        Identify specific math & reading bottlenecks, pacing fatigue, and targeted prerequisite coaching tips to support your child's climb.
+                      </p>
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowWeeklyReportModal(false);
+                            if (typeof onOpenSubscription === 'function') {
+                              onOpenSubscription();
+                            }
+                          }}
+                          className="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs rounded-xl shadow-md transition-transform active:scale-95 flex items-center gap-1.5"
+                        >
+                          <span>👑</span> Upgrade to Kibo Club VIP
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {digest.unstartedSubjects.length > 0 && (
                     <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-sky-900">
