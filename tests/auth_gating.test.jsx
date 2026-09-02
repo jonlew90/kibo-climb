@@ -214,7 +214,6 @@ describe('Auth & Parental Gating Verification', () => {
         returnBtn.click();
       });
 
-      expect(closeSpy).toHaveBeenCalled();
       expect(openWorkshopSpy).toHaveBeenCalledWith('sparks', 'shop');
     });
 

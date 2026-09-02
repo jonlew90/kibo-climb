@@ -13,7 +13,7 @@ export function getNewsItems(currentDate = new Date()) {
     if (!sampleItem) continue;
 
     const window = calculateRecurringWindow(sampleItem.recurringSchedule, currentDate);
-    if (!window) continue;
+    if (!window || !window.startTime) continue;
 
     const now = (currentDate instanceof Date ? currentDate : new Date(currentDate)).getTime();
     const daysSinceStart = Math.floor((now - window.startTime) / (1000 * 60 * 60 * 24));

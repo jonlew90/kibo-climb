@@ -389,10 +389,6 @@ export default function ParentDashboardModal({
             <h2 className="text-base sm:text-lg font-black tracking-tight leading-tight">Parent Dashboard</h2>
           </div>
         </div>
-
-        <span className="text-xs font-black bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full border border-purple-200">
-          🔒 PIN Protected
-        </span>
       </header>
 
       {/* CHILD PROFILE SELECTOR BAR */}
@@ -1222,7 +1218,7 @@ export default function ParentDashboardModal({
 
               {/* Scope Banner */}
               <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3 flex items-start gap-2.5 text-left">
-                <span className="text-xl shrink-0">✨</span>
+                <Sparkles className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black text-purple-900 block">Hybrid Schedule & Notifications</span>
@@ -1243,17 +1239,18 @@ export default function ParentDashboardModal({
                     <Calendar className="w-5 h-5 stroke-[2.5]" />
                     <div>
                       <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
-                        <span>👤</span>
-                        <span>{childName}'s Practice Schedule & Alarm</span>
+                        <span>Practice Schedule & Alarm</span>
                       </h4>
-                      <span className="text-xs text-purple-700 font-bold block">
-                        Child-Specific Setting
-                      </span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-xs font-bold text-purple-700">
+                          Child-Specific Setting
+                        </span>
+                        <span className="text-[10px] font-black bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 rounded-full truncate max-w-[120px]">
+                          👤 {childName}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <span className="hidden sm:inline-block text-xs font-black bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 rounded-lg truncate max-w-[120px]">
-                    {childName}
-                  </span>
                 </div>
 
                 {/* 7-Day Practice Schedule Matrix */}
@@ -1304,7 +1301,7 @@ export default function ParentDashboardModal({
                   <div>
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <span className="font-extrabold text-xs text-slate-800 block">
-                        Daily Streak Reminder for {childName}
+                        Daily Streak Reminder
                       </span>
                       <span className="text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-md border border-purple-200">
                         🔔 Push Notification
@@ -1398,7 +1395,7 @@ export default function ParentDashboardModal({
                           }}
                           className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 font-extrabold text-xs rounded-xl border border-purple-300 transition-all active:scale-95"
                         >
-                          {showWeeklyPreview ? 'Hide Preview' : `👁️ Preview Digest for ${childName}`}
+                          {showWeeklyPreview ? 'Hide Preview' : '👁️ Preview Digest'}
                         </button>
 
                         {authService.getAuthState().email && (
@@ -1428,7 +1425,7 @@ export default function ParentDashboardModal({
                               }}
                               className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 font-extrabold text-xs rounded-xl border border-sky-300 transition-all active:scale-95 disabled:opacity-50"
                             >
-                              {isSendingTestDigest ? 'Sending...' : `✉️ Send Test Digest for ${childName}`}
+                              {isSendingTestDigest ? 'Sending...' : '✉️ Send Test Digest'}
                             </button>
 
                             {profilesList.length > 1 && (
@@ -1958,7 +1955,6 @@ export default function ParentDashboardModal({
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-xs text-slate-800 block">Allow Real-Money Purchases</span>
-                    <span className="text-xs text-slate-500 font-medium">Allow kids to buy Sparks and items with real money</span>
                   </div>
                   <button
                     type="button"
@@ -1982,7 +1978,6 @@ export default function ParentDashboardModal({
                         type="button"
                         onClick={() => {
                           soundFx.playKeyTap();
-                          onClose();
                           onOpenWorkshop('sparks', 'shop');
                         }}
                         className="w-full py-1.5 px-3 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-black text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
@@ -2003,14 +1998,6 @@ export default function ParentDashboardModal({
                   <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
                   <h4 className="font-extrabold text-sm text-slate-800">COPPA Parental Rights & Data Privacy</h4>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => { soundFx.playKeyTap(); setShowPrivacyPolicyModal(true); }}
-                  className="text-xs font-bold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-2.5 py-1 rounded-xl transition-colors cursor-pointer flex items-center gap-1"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Privacy Policy</span>
-                </button>
               </div>
 
               {/* Consent Status Badge */}

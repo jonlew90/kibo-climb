@@ -328,8 +328,25 @@ export default function App() {
 
   const handleGoBack = () => {
     soundFx.playKeyTap();
+    const prevCurrent = navigationHistory.getCurrent();
     const nextEntry = navigationHistory.pop();
-    applyNavState(nextEntry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+    const stack = navigationHistory.getStack();
+    const baseRoute = navigationHistory.getBaseRoute();
+
+    // If navigating back to parent dashboard from a child-accessible modal, require PIN verification
+    if (
+      (nextEntry?.id === VIEWS.PARENT_DASHBOARD || baseRoute?.id === VIEWS.PARENT_DASHBOARD) &&
+      prevCurrent?.id !== VIEWS.PIN_GATE &&
+      prevCurrent?.id !== VIEWS.PARENT_DASHBOARD
+    ) {
+      applyNavState(nextEntry, stack, baseRoute);
+      const targetTab = nextEntry?.params?.tab || parentDashboardTab || 'overview';
+      const targetHighlight = nextEntry?.params?.highlight || parentDashboardHighlight || null;
+      handleOpenPinGate('back_navigation', targetTab, targetHighlight);
+      return;
+    }
+
+    applyNavState(nextEntry, stack, baseRoute);
   };
 
   const handleNavigateTo = (path, stateName) => {
@@ -2198,8 +2215,9 @@ export default function App() {
                       <Gift className="w-3.5 h-3.5 text-indigo-600" />
                       <span>Share & Earn Sparks</span>
                     </div>
-                    <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-black px-1.5 py-0.5 rounded-md">
-                      +500 ⚡
+                    <span className="flex items-center gap-0.5 text-[10px] bg-amber-500 text-amber-950 font-black px-1.5 py-0.5 rounded-md shadow-xs border border-amber-600">
+                      <span>+500</span>
+                      <Zap className="w-3 h-3 text-amber-950 fill-amber-300 stroke-[2.5]" />
                     </span>
                   </button>
                 </div>

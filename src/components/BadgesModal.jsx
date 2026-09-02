@@ -209,7 +209,6 @@ export default function BadgesModal({
               <Star className="w-4 h-4 text-purple-600 fill-purple-300 stroke-[2]" />
               Subject Competence & Skill Mastery
             </span>
-            <span className="text-[10px] font-bold text-slate-500">Adaptive Competence Ratings</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
