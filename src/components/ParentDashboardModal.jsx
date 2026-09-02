@@ -88,9 +88,7 @@ export default function ParentDashboardModal({
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   const [overviewTimeframe, setOverviewTimeframe] = useState('7d'); // '7d' | '30d' | 'all'
 
-  const [showWeeklyPreview, setShowWeeklyPreview] = useState(false);
-  const [isSendingTestDigest, setIsSendingTestDigest] = useState(false);
-  const [digestStatusMsg, setDigestStatusMsg] = useState('');
+  const [showWeeklyReportModal, setShowWeeklyReportModal] = useState(false);
   const [billingCycle, setBillingCycle] = useState('annual'); // 'monthly' | 'annual'
   const [showCancelSubConfirm, setShowCancelSubConfirm] = useState(false);
   const [subActionMsg, setSubActionMsg] = useState('');
@@ -1389,9 +1387,8 @@ export default function ParentDashboardModal({
                   {notifPrefs.weeklyDigestEnabled && (
                     <div className="space-y-2 pt-1 border-t border-slate-100">
                       <p className="text-xs text-purple-900 font-medium bg-purple-50/80 p-2.5 rounded-lg border border-purple-200 leading-snug">
-                        📅 <strong>Schedule:</strong> Sent every <strong>Sunday at 6:00 PM</strong>.<br />
-                        👤 <strong>Sent Per Profile:</strong> Each child profile receives a dedicated report with the <strong>🐾 Kibo mascot</strong> in the subject line.<br />
-                        📚 <strong>All Played Topics Included:</strong> Full list of all topics tackled across Math, Words, World, and active subjects with mastery status, accuracy, and links back to the game.
+                        📅 <strong>Schedule:</strong> Automated summary delivered every <strong>Sunday at 6:00 PM</strong>.<br />
+                        📊 <strong>Comprehensive Progress:</strong> Includes mastery breakdown across all subjects, active streaks, quest levels, and topics tackled.
                       </p>
 
                       <div className="flex items-center gap-2 flex-wrap pt-0.5">
@@ -1399,148 +1396,14 @@ export default function ParentDashboardModal({
                           type="button"
                           onClick={() => {
                             soundFx.playKeyTap();
-                            setShowWeeklyPreview((prev) => !prev);
+                            setShowWeeklyReportModal(true);
                           }}
-                          className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 font-extrabold text-xs rounded-xl border border-purple-300 transition-all active:scale-95"
+                          className="px-3.5 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 font-extrabold text-xs rounded-xl border border-purple-300 transition-all active:scale-95 flex items-center gap-1.5"
                         >
-                          {showWeeklyPreview ? 'Hide Preview' : '👁️ Preview Digest'}
+                          <span>📊</span>
+                          View Full Progress Report
                         </button>
-
-                        {authService.getAuthState().email && (
-                          <>
-                            <button
-                              type="button"
-                              disabled={isSendingTestDigest}
-                              onClick={async () => {
-                                soundFx.playKeyTap();
-                                setIsSendingTestDigest(true);
-                                setDigestStatusMsg('');
-                                const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
-                                const res = await communicationsService.sendWeeklyDigest({
-                                  email: authService.getAuthState().email,
-                                  profile: currentProf,
-                                  subjectsConfig: SUBJECTS_CONFIG
-                                });
-                                setIsSendingTestDigest(false);
-                                if (res.success) {
-                                  soundFx.playVictory();
-                                  setDigestStatusMsg(`Test weekly summary sent for ${currentProf.name || childName}! Check inbox.`);
-                                } else {
-                                  soundFx.playIncorrect();
-                                  setDigestStatusMsg(res.error || 'Failed to send test email.');
-                                }
-                                setTimeout(() => setDigestStatusMsg(''), 4000);
-                              }}
-                              className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 font-extrabold text-xs rounded-xl border border-sky-300 transition-all active:scale-95 disabled:opacity-50"
-                            >
-                              {isSendingTestDigest ? 'Sending...' : '✉️ Send Test Digest'}
-                            </button>
-
-                            {profilesList.length > 1 && (
-                              <button
-                                type="button"
-                                disabled={isSendingTestDigest}
-                                onClick={async () => {
-                                  soundFx.playKeyTap();
-                                  setIsSendingTestDigest(true);
-                                  setDigestStatusMsg('');
-                                  const allProfs = storageService.getAllProfiles();
-                                  const res = await communicationsService.sendAllWeeklyDigests({
-                                    email: authService.getAuthState().email,
-                                    profiles: allProfs,
-                                    subjectsConfig: SUBJECTS_CONFIG
-                                  });
-                                  setIsSendingTestDigest(false);
-                                  if (res.success) {
-                                    soundFx.playVictory();
-                                    setDigestStatusMsg(`Dispatched ${res.totalSent} individual weekly digests for all profiles!`);
-                                  } else {
-                                    soundFx.playIncorrect();
-                                    setDigestStatusMsg(res.error || 'Failed to dispatch digests.');
-                                  }
-                                  setTimeout(() => setDigestStatusMsg(''), 4000);
-                                }}
-                                className="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-extrabold text-xs rounded-xl border border-emerald-300 transition-all active:scale-95 disabled:opacity-50"
-                              >
-                                {isSendingTestDigest ? 'Sending All...' : `✉️ Send For All (${profilesList.length}) Profiles`}
-                              </button>
-                            )}
-                          </>
-                        )}
                       </div>
-
-                      {digestStatusMsg && (
-                        <p className="text-xs font-extrabold text-purple-700 animate-pop">
-                          {digestStatusMsg}
-                        </p>
-                      )}
-
-                      {/* Interactive Preview Drawer */}
-                      {showWeeklyPreview && (() => {
-                        const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
-                        const digest = generateWeeklyDigestData(currentProf, SUBJECTS_CONFIG);
-
-                        return (
-                          <div className="bg-slate-50 border border-purple-200 rounded-xl p-3 space-y-3 animate-pop text-left">
-                            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
-                              <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                                <span>🐾 🏔️</span> Summary Preview for {digest.childName} ({digest.childGrade})
-                              </span>
-                              <span className="text-xs font-bold text-slate-500">
-                                Streak: {digest.streak}d · Quest Lvl {digest.questLevel || 1} ({digest.questTotalXp || 0} XP) · {digest.totalProblemsThisWeek} items this week
-                              </span>
-                            </div>
-
-                            <div className="space-y-2">
-                              {digest.subjects.map((sub) => (
-                                <div key={sub.subjectId} className="bg-white border border-slate-200 rounded-lg p-2.5 space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-black text-slate-800 flex items-center gap-1">
-                                      <span>{sub.icon}</span> {sub.name} Progress
-                                    </span>
-                                    <span className="text-xs font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
-                                      Rating: {sub.rating} ({sub.rankTitle})
-                                    </span>
-                                  </div>
-                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 text-xs font-medium text-slate-600">
-                                    <div>Solved: <strong>{sub.solvedThisWeek}</strong> ({sub.totalSolved} total)</div>
-                                    <div>Accuracy: <strong>{sub.accuracyPct !== null ? `${sub.accuracyPct}%` : '—'}</strong></div>
-                                    <div>Avg Latency: <strong>{sub.avgLatencySec !== null ? `${sub.avgLatencySec}s` : '—'}</strong></div>
-                                    <div>Tier: <strong>Tier {sub.tier}</strong></div>
-                                  </div>
-
-                                  {/* Played Topics Pill List */}
-                                  <div className="text-xs text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 space-y-1">
-                                    <strong className="block text-slate-800 text-xs uppercase">
-                                      All Topics Played ({sub.allPlayedTopics.length}):
-                                    </strong>
-                                    <div className="flex flex-wrap gap-1 pt-0.5">
-                                      {sub.allPlayedTopics.map((t) => (
-                                        <span
-                                          key={t.id || t.name}
-                                          className={`px-1.5 py-0.5 rounded-md text-xs font-extrabold border ${
-                                            t.status === 'Mastered'
-                                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                              : (t.status === 'Needs Review' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-purple-50 text-purple-800 border-purple-200')
-                                          }`}
-                                        >
-                                          {t.status === 'Mastered' ? '✅' : '🎯'} {t.name} {t.accuracyPct !== null ? `(${t.accuracyPct}%)` : ''}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-
-                              {digest.unstartedSubjects.length > 0 && (
-                                <div className="bg-sky-50 border border-sky-200 rounded-lg p-2 text-xs text-sky-900">
-                                  <strong>🌟 Unstarted Subjects:</strong> {digest.unstartedSubjects.map(s => s.name).join(', ')} — included in email with invite to begin climb!
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })()}
                     </div>
                   )}
                 </div>
@@ -1594,7 +1457,7 @@ export default function ParentDashboardModal({
                 <h4 className="font-extrabold text-sm text-purple-950">Verification & Controls</h4>
               </div>
               <p className="text-xs text-purple-800 leading-snug">
-                Manage how parent verification is enforced across the app, including biometric authentication, dynamic challenges, and real-money purchase permissions.
+                Manage club memberships, real-money purchase permissions, promo code redemptions, COPPA data privacy settings, and app feedback.
               </p>
             </div>
 
@@ -2406,6 +2269,135 @@ export default function ParentDashboardModal({
       {showPrivacyPolicyModal && (
         <PrivacyPolicyScreen onBack={() => setShowPrivacyPolicyModal(false)} />
       )}
+
+      {/* Weekly Progress Report Modal */}
+      {showWeeklyReportModal && (() => {
+        const currentProf = storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+        const digest = generateWeeklyDigestData(currentProf, SUBJECTS_CONFIG);
+
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-sm animate-fade-in"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowWeeklyReportModal(false);
+            }}
+          >
+            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden animate-pop">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-purple-700 via-purple-800 to-indigo-800 text-white shadow-sm flex-shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">🐾</span>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-black tracking-tight leading-tight">
+                      Weekly Progress Report
+                    </h3>
+                    <p className="text-xs text-purple-200 font-medium">
+                      {digest.childName} ({digest.childGrade}) · {digest.totalProblemsThisWeek} items solved this week
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowWeeklyReportModal(false)}
+                  className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  aria-label="Close modal"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-left flex-1">
+                {/* Profile Overview Bar */}
+                <div className="grid grid-cols-3 gap-2 bg-purple-50/60 p-3 rounded-xl border border-purple-200/80 text-center">
+                  <div>
+                    <span className="block text-[11px] font-bold text-purple-600 uppercase tracking-wider">🔥 Active Streak</span>
+                    <strong className="text-sm sm:text-base font-black text-purple-950">{digest.streak} Days</strong>
+                  </div>
+                  <div>
+                    <span className="block text-[11px] font-bold text-purple-600 uppercase tracking-wider">🗺️ Quest Level</span>
+                    <strong className="text-sm sm:text-base font-black text-purple-950">Lvl {digest.questLevel || 1}</strong>
+                  </div>
+                  <div>
+                    <span className="block text-[11px] font-bold text-purple-600 uppercase tracking-wider">⚡ Total XP</span>
+                    <strong className="text-sm sm:text-base font-black text-purple-950">{digest.questTotalXp || 0} XP</strong>
+                  </div>
+                </div>
+
+                {/* Subject Cards */}
+                <div className="space-y-3">
+                  {digest.subjects.map((sub) => (
+                    <div key={sub.subjectId} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2.5 shadow-sm">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <span className="text-sm font-black text-slate-800 flex items-center gap-1.5">
+                          <span className="text-lg">{sub.icon}</span> {sub.name} Progress
+                        </span>
+                        <span className="text-xs font-black text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-lg border border-purple-200">
+                          Rating: {sub.rating} ({sub.rankTitle})
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-medium text-slate-600 bg-white p-2.5 rounded-lg border border-slate-100">
+                        <div>Solved: <strong className="text-slate-800">{sub.solvedThisWeek}</strong> <span className="text-[11px] text-slate-400">({sub.totalSolved} total)</span></div>
+                        <div>Accuracy: <strong className="text-slate-800">{sub.accuracyPct !== null ? `${sub.accuracyPct}%` : '—'}</strong></div>
+                        <div>Avg Speed: <strong className="text-slate-800">{sub.avgLatencySec !== null ? `${sub.avgLatencySec}s` : '—'}</strong></div>
+                        <div>Level Tier: <strong className="text-slate-800">Tier {sub.tier}</strong></div>
+                      </div>
+
+                      {/* Played Topics Pill List */}
+                      <div className="space-y-1.5">
+                        <span className="block text-slate-700 text-xs font-black uppercase tracking-wider">
+                          Topics Tackled ({sub.allPlayedTopics.length}):
+                        </span>
+                        {sub.allPlayedTopics.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {sub.allPlayedTopics.map((t) => (
+                              <span
+                                key={t.id || t.name}
+                                className={`px-2 py-1 rounded-lg text-xs font-extrabold border ${
+                                  t.status === 'Mastered'
+                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                    : (t.status === 'Needs Review' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-purple-50 text-purple-800 border-purple-200')
+                                }`}
+                              >
+                                {t.status === 'Mastered' ? '✅' : '🎯'} {t.name} {t.accuracyPct !== null ? `(${t.accuracyPct}%)` : ''}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-slate-400 italic">No activity logged for this subject yet.</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {digest.unstartedSubjects.length > 0 && (
+                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-sky-900">
+                      <strong>🌟 Ready to Explore:</strong> {digest.unstartedSubjects.map(s => s.name).join(', ')} — encourage your child to start a climb in these subjects!
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between flex-shrink-0">
+                <span className="text-[11px] text-slate-500 font-medium">
+                  Digest updates continuously as your child plays.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowWeeklyReportModal(false)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all active:scale-95"
+                >
+                  Close Report
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* STICKY BOTTOM NAVIGATION FOOTER */}
       {renderFooter ? renderFooter() : null}
