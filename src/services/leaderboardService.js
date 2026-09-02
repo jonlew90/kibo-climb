@@ -52,7 +52,7 @@ class LeaderboardService {
   }
 
   // Sync user score and equipped gear to Firestore
-  async syncUserScore({ profileId, name, score, subjectsMastered = 5, equipped = [], subject = 'math', planTier }) {
+  async syncUserScore({ profileId, name, score, subjectsMastered = 5, totalProblemsSolved = 0, equipped = [], subject = 'math', planTier }) {
     try {
       // Ensure user is authenticated before attempting sync
       let user = this.currentUser || auth.currentUser;
@@ -87,6 +87,7 @@ class LeaderboardService {
         anonymousName: anonymousName,
         score: Number(score) || 1000,
         subjectsMastered: Number(subjectsMastered) || 0,
+        totalProblemsSolved: Number(totalProblemsSolved) || 0,
         equipped: Array.isArray(equipped) ? equipped : [],
         planTier: planTier || storageService.getPlanTier(safeProfileId),
         updatedAt: serverTimestamp()

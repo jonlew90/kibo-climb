@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X, Users, UserPlus, ChevronDown, Heart, UserCheck, Scroll, Mountain, Compass, Award, Shield } from 'lucide-react';
+import { Trophy, ArrowLeft, Crown, Medal, User, Info, Activity, Zap, Sparkles, X, Users, UserPlus, ChevronDown, Heart, UserCheck, Scroll, Mountain, Compass, Award, Shield, Flame, Users2, Target, CheckCircle2, Gift } from 'lucide-react';
 import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
-import { getCompetenceRankTier } from '../utils/GameEconomyModel';
+import { getCompetenceRankTier, getCompetenceTierObj } from '../utils/GameEconomyModel';
 import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
 import { questService } from '../services/questService';
-import { getQuestLevelInfo, ASCENT_MODES } from '../data/questsData';
-import { getWeekStr } from '../utils/dateUtils';
+import { getQuestLevelInfo, ASCENT_MODES, COMPANION_BUDDIES } from '../data/questsData';
+import { getWeekStr, getPreviousWeekStr } from '../utils/dateUtils';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { getDeterministicAnonymousName } from '../utils/safeNames';
 import AddFriendModal from './AddFriendModal';
@@ -23,6 +23,8 @@ export default function LeaderboardScreen({
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const subjectDropdownRef = useRef(null);
+  const [selectedTier, setSelectedTier] = useState('all'); // 'all' | 'my_tier' | number (1..8)
+  const [weeklySubTab, setWeeklySubTab] = useState('sparks'); // 'sparks' | 'streaks'
   const [liveStandings, setLiveStandings] = useState([]);
   const [viewMode, setViewMode] = useState(() => {
     if (initialViewMode) return initialViewMode;
@@ -34,7 +36,7 @@ export default function LeaderboardScreen({
       }
     } catch (e) {}
     return 'global';
-  }); // 'global' | 'weekly' | 'quests' | 'friends'
+  }); // 'global' | 'weekly' | 'quests' | 'squads' | 'friends'
   const [weeklyStandings, setWeeklyStandings] = useState([]);
   const [questsStandings, setQuestsStandings] = useState([]);
   const [friendsStandings, setFriendsStandings] = useState([]);
@@ -50,6 +52,7 @@ export default function LeaderboardScreen({
   const [cohortId, setCohortId] = useState(null);
   const [isLoadingCohort, setIsLoadingCohort] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [weeklySettlementReward, setWeeklySettlementReward] = useState(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -89,6 +92,11 @@ export default function LeaderboardScreen({
     ?? Math.min(10, Math.max(1, Math.floor((userState?.totalProblemsSolved || 0) / 10)))
   ) || 5;
 
+  const userProblemsSolved = userState?.totalProblemsSolved
+    ?? activeProfile?.userData?.totalProblemsSolved
+    ?? activeProfile?.userData?.subjects?.[selectedSubject]?.totalProblemsSolved
+    ?? 0;
+
   const allAccountProfiles = storageService.getAllProfiles();
   const accountPlayers = allAccountProfiles.map(p => {
     const isCurrent = p.id === activeProfile?.id;
@@ -102,6 +110,23 @@ export default function LeaderboardScreen({
     const pSubjects = isCurrent
       ? (userSubjectsMastered || 5)
       : (p.userData?.subjectsMastered ?? Object.keys(p.userData?.masteredTricks || {}).length ?? 5);
+    const pProblemsSolved = isCurrent
+      ? userProblemsSolved
+      : (p.userData?.totalProblemsSolved ?? p.userData?.subjects?.[selectedSubject]?.totalProblemsSolved ?? 0);
+
+    const pStreak = isCurrent
+      ? (activeProfile?.userData?.streak || userState?.streak || 0)
+      : (p.userData?.streak || 0);
+
+    const pWeeklyMaxStreak = isCurrent
+      ? (activeProfile?.userData?.weeklyMaxStreak || activeProfile?.userData?.streak || userState?.streak || 0)
+      : (p.userData?.weeklyMaxStreak || p.userData?.streak || 0);
+
+    const pWeeklySparks = isCurrent
+      ? (activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0)
+      : (p.userData?.weeklySparks || p.userData?.sparks || 0);
+
+    const tierObj = getCompetenceTierObj(pScore, selectedSubject);
 
     return {
       id: p.id,
@@ -110,7 +135,13 @@ export default function LeaderboardScreen({
       isAccountProfile: true,
       name: pName,
       score: pScore,
+      tier: tierObj.tier,
+      tierName: tierObj.name,
       subjectsMastered: pSubjects,
+      totalProblemsSolved: pProblemsSolved,
+      streak: pStreak,
+      weeklyMaxStreak: pWeeklyMaxStreak,
+      sparks: Number(pWeeklySparks) || 0,
       equipped: pEquipped,
       planTier: storageService.getPlanTier(p.id),
       subject: selectedSubject
@@ -133,20 +164,45 @@ export default function LeaderboardScreen({
       if (res?.standings && res.standings.length > 0) {
         const merged = stored.map(f => {
           const remote = res.standings.find(r => r.id === f.id || r.name === f.username || r.uid === f.uid);
+          const fScore = remote ? (Number(remote.score) || 1000) : (Number(f.score) || 1000);
+          const fTierObj = getCompetenceTierObj(fScore, selectedSubject);
           return {
             ...f,
-            score: remote ? (Number(remote.score) || 1000) : (Number(f.score) || 1000),
+            score: fScore,
+            tier: fTierObj.tier,
+            tierName: fTierObj.name,
             equipped: (remote && remote.equipped?.length) ? remote.equipped : (f.equipped || []),
             subjectsMastered: remote ? (remote.subjectsMastered || 5) : (f.subjectsMastered || 5),
+            totalProblemsSolved: remote ? (remote.totalProblemsSolved || 0) : (f.totalProblemsSolved || 0),
             isFriend: true
           };
         });
         setFriendsStandings(merged);
       } else {
-        setFriendsStandings(stored.map(f => ({ ...f, isFriend: true })));
+        setFriendsStandings(stored.map(f => {
+          const fScore = Number(f.score) || 1000;
+          const fTierObj = getCompetenceTierObj(fScore, selectedSubject);
+          return {
+            ...f,
+            score: fScore,
+            tier: fTierObj.tier,
+            tierName: fTierObj.name,
+            isFriend: true
+          };
+        }));
       }
     } catch (err) {
-      setFriendsStandings(stored.map(f => ({ ...f, isFriend: true })));
+      setFriendsStandings(stored.map(f => {
+        const fScore = Number(f.score) || 1000;
+        const fTierObj = getCompetenceTierObj(fScore, selectedSubject);
+        return {
+          ...f,
+          score: fScore,
+          tier: fTierObj.tier,
+          tierName: fTierObj.name,
+          isFriend: true
+        };
+      }));
     } finally {
       setIsLoadingFriends(false);
     }
@@ -157,8 +213,6 @@ export default function LeaderboardScreen({
       refreshFriendsStandings();
     }
   }, [viewMode, selectedSubject]);
-
-
 
   useEffect(() => {
     if (viewMode !== 'weekly') return;
@@ -227,9 +281,37 @@ export default function LeaderboardScreen({
     };
   }, [viewMode, cohortId, selectedSubject]);
 
+  // Check and trigger end-of-week settlement rewards for previous completed week
+  useEffect(() => {
+    const prevWeek = getPreviousWeekStr();
+    const pid = activeProfile?.id;
+    if (!pid || !prevWeek) return;
+
+    const claimed = storageService.getClaimedWeeklyLeaderboardWeeks(pid);
+    const claimKey = `${prevWeek}_sparks`;
+    if (!claimed.includes(claimKey)) {
+      // Check if user had weekly activity from previous week or simulated rank
+      const prevSparks = activeProfile?.userData?.previousWeekSparks || activeProfile?.userData?.weeklySparks || 0;
+      if (prevSparks > 0) {
+        // Compute user placement (1..10) based on effort
+        const rank = prevSparks >= 400 ? 1 : prevSparks >= 200 ? 2 : prevSparks >= 100 ? 3 : prevSparks >= 50 ? 5 : 10;
+        const rewardResult = storageService.claimWeeklyLeaderboardReward({
+          weekStr: prevWeek,
+          rank,
+          category: 'sparks',
+          profileId: pid
+        });
+        if (rewardResult && rewardResult.success) {
+          soundFx.playCelebration?.();
+          setWeeklySettlementReward(rewardResult);
+        }
+      }
+    }
+  }, [activeProfile?.id]);
+
   // Subscribe to Firestore real-time updates for Mountain Quest Standings
   useEffect(() => {
-    if (viewMode !== 'quests') return;
+    if (viewMode !== 'quests' && viewMode !== 'squads') return;
 
     allAccountProfiles.forEach(p => {
       const pQuestState = questService.getQuests(p.id);
@@ -276,6 +358,7 @@ export default function LeaderboardScreen({
         name: p.name,
         score: p.score,
         subjectsMastered: p.subjectsMastered,
+        totalProblemsSolved: p.totalProblemsSolved,
         equipped: p.equipped,
         planTier: p.planTier || storageService.getPlanTier(p.id)
       });
@@ -309,17 +392,37 @@ export default function LeaderboardScreen({
     const normName = (p.name || '').trim().toLowerCase();
     if (accountNamesNormalized.has(normName)) return false;
     return true;
+  }).map(p => {
+    const tierObj = getCompetenceTierObj(p.score, selectedSubject);
+    return {
+      ...p,
+      tier: tierObj.tier,
+      tierName: tierObj.name
+    };
   });
 
   // Combine filtered remote standings with account profiles
   const mergedList = [...filteredRemote, ...accountPlayers];
 
+  // Comprehensive Tie-Breaker Comparator for Global Standings:
+  // 1. Primary: Score / Competence Rating (desc)
+  // 2. Secondary: Subjects / Tricks Mastered (desc)
+  // 3. Tertiary: Total Problems Solved (desc)
+  const compareGlobalRank = (a, b) => {
+    const scoreDiff = (Number(b.score) || 0) - (Number(a.score) || 0);
+    if (scoreDiff !== 0) return scoreDiff;
+
+    const tricksDiff = (Number(b.subjectsMastered) || 0) - (Number(a.subjectsMastered) || 0);
+    if (tricksDiff !== 0) return tricksDiff;
+
+    return (Number(b.totalProblemsSolved) || 0) - (Number(a.totalProblemsSolved) || 0);
+  };
+
+  mergedList.sort(compareGlobalRank);
+
   // Deduplicate merged standings so each player / profile appears once with their best score
   const seenPlayerKeys = new Set();
   const uniqueStandings = [];
-
-  // Sort descending by score before deduplication
-  mergedList.sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
 
   for (const player of mergedList) {
     const key = player.isCurrentUser
@@ -332,13 +435,27 @@ export default function LeaderboardScreen({
     }
   }
 
-  // Handle Weekly Standings merging with account profiles
+  // Filter by Mountain Tier Sub-Bracket if specified
+  const userCurrentTierObj = getCompetenceTierObj(userScore, selectedSubject);
+  const activeFilteredGlobalStandings = uniqueStandings.filter(player => {
+    if (selectedTier === 'all') return true;
+    if (selectedTier === 'my_tier') return (player.tier || 1) === userCurrentTierObj.tier;
+    return Number(player.tier || 1) === Number(selectedTier);
+  });
+
+  // Handle Weekly Standings (Sparks vs Consistency/Streak)
   const accountPlayersWeekly = allAccountProfiles.map(p => {
     const isCurrent = p.id === activeProfile?.id;
     const pName = isCurrent ? username : (p.username || p.name || 'Climber');
     const pSparks = isCurrent
       ? (activeProfile?.userData?.weeklySparks || activeProfile?.userData?.sparks || 0)
       : (p.userData?.weeklySparks || p.userData?.sparks || 0);
+    const pStreak = isCurrent
+      ? (activeProfile?.userData?.streak || userState?.streak || 0)
+      : (p.userData?.streak || 0);
+    const pMaxStreak = isCurrent
+      ? (activeProfile?.userData?.weeklyMaxStreak || activeProfile?.userData?.streak || userState?.streak || 0)
+      : (p.userData?.weeklyMaxStreak || p.userData?.streak || 0);
     const pEquipped = isCurrent 
       ? userEquippedItems 
       : (p.shopState?.equippedItems || []);
@@ -353,7 +470,9 @@ export default function LeaderboardScreen({
       isAccountProfile: true,
       name: pName,
       sparks: Number(pSparks) || 0,
-      score: Number(pSparks) || 0,
+      streak: Number(pStreak) || 0,
+      maxStreak: Number(pMaxStreak) || 0,
+      score: weeklySubTab === 'streaks' ? Number(pStreak) || 0 : Number(pSparks) || 0,
       subjectsMastered: pSubjects,
       equipped: pEquipped,
       planTier: storageService.getPlanTier(p.id),
@@ -371,7 +490,15 @@ export default function LeaderboardScreen({
   });
 
   const mergedWeeklyList = [...weeklyFilteredRemote, ...accountPlayersWeekly];
-  mergedWeeklyList.sort((a, b) => (Number(b.sparks) || 0) - (Number(a.sparks) || 0));
+  if (weeklySubTab === 'streaks') {
+    mergedWeeklyList.sort((a, b) => {
+      const streakDiff = (Number(b.streak ?? b.maxStreak) || 0) - (Number(a.streak ?? a.maxStreak) || 0);
+      if (streakDiff !== 0) return streakDiff;
+      return (Number(b.sparks) || 0) - (Number(a.sparks) || 0);
+    });
+  } else {
+    mergedWeeklyList.sort((a, b) => (Number(b.sparks) || 0) - (Number(a.sparks) || 0));
+  }
 
   const seenWeeklyKeys = new Set();
   const uniqueWeeklyStandings = [];
@@ -446,9 +573,94 @@ export default function LeaderboardScreen({
     }
   }
 
+  // Handle Expedition Squad & Family Team Standings
+  const userQuestData = questService.getQuests(activeProfile?.id);
+  const userTeamClaims = userQuestData?.teamClaimsCount || 0;
+  const userTeam2 = userQuestData?.team2 || [];
+  const userTeam3 = userQuestData?.team3 || [];
+  const activeSquadBuddies = [
+    ...(userTeam2[0]?.teammates || []),
+    ...(userTeam3[0]?.teammates || [])
+  ].filter((t, i, arr) => t && arr.findIndex(x => x.id === t.id) === i);
+
+  // Build team squads: User's Family/Buddy Squad + Archetype Squads
+  const familyProfilesList = allAccountProfiles.map(p => p.username || p.name || 'Climber');
+  const familySquadSparks = allAccountProfiles.reduce((sum, p) => sum + (p.userData?.weeklySparks || p.userData?.sparks || 0), 0);
+  const familySquadXp = allAccountProfiles.reduce((sum, p) => sum + (questService.getQuests(p.id)?.totalXp || 0), 0);
+
+  const squadStandingsList = [
+    {
+      id: 'my_family_squad',
+      name: allAccountProfiles.length > 1 ? `${username}'s Family Expedition` : `${username}'s Climbing Squad`,
+      isCurrentUserSquad: true,
+      membersCount: Math.max(allAccountProfiles.length, 1 + activeSquadBuddies.length),
+      memberNames: allAccountProfiles.length > 1 ? familyProfilesList : [username, ...activeSquadBuddies.map(b => b.name || 'Companion')],
+      teamClaims: userTeamClaims,
+      squadScore: familySquadSparks + Math.floor(familySquadXp / 10),
+      weeklySparks: familySquadSparks,
+      totalXp: familySquadXp,
+      icon: '🏔️',
+      badge: allAccountProfiles.length > 1 ? 'Family Squad' : 'Ascent Squad'
+    },
+    {
+      id: 'squad_summit_pioneers',
+      name: 'Summit Pioneers Squad',
+      isCurrentUserSquad: false,
+      membersCount: 3,
+      memberNames: ['Leo', 'Maya', 'Tenzing'],
+      teamClaims: 6,
+      squadScore: 3250,
+      weeklySparks: 1850,
+      totalXp: 14000,
+      icon: '🦅',
+      badge: 'Expedition Team'
+    },
+    {
+      id: 'squad_alpine_trailblazers',
+      name: 'Alpine Trailblazers',
+      isCurrentUserSquad: false,
+      membersCount: 4,
+      memberNames: ['Asha', 'Sora', 'BraveOtter#312', 'QuickFox#884'],
+      teamClaims: 5,
+      squadScore: 2840,
+      weeklySparks: 1640,
+      totalXp: 12000,
+      icon: '🐆',
+      badge: 'Expedition Team'
+    },
+    {
+      id: 'squad_glacier_navigators',
+      name: 'Glacier Navigators',
+      isCurrentUserSquad: false,
+      membersCount: 3,
+      memberNames: ['SwiftHawk#102', 'CleverHare#551', 'SolarBear#920'],
+      teamClaims: 4,
+      squadScore: 2410,
+      weeklySparks: 1390,
+      totalXp: 10200,
+      icon: '🐻',
+      badge: 'Expedition Team'
+    },
+    {
+      id: 'squad_ridge_runners',
+      name: 'Ridge Runners League',
+      isCurrentUserSquad: false,
+      membersCount: 2,
+      memberNames: ['CosmicWolf#404', 'StarFalcon#711'],
+      teamClaims: 3,
+      squadScore: 1980,
+      weeklySparks: 1120,
+      totalXp: 8600,
+      icon: '🦊',
+      badge: 'Duo Squad'
+    }
+  ];
+
+  squadStandingsList.sort((a, b) => b.squadScore - a.squadScore);
+
   // Handle Friends Standings merging with account profiles
   const mergedFriendsList = [...friendsStandings, ...accountPlayers];
-  mergedFriendsList.sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+  mergedFriendsList.sort(compareGlobalRank);
 
   const seenFriendsKeys = new Set();
   const uniqueFriendsStandings = [];
@@ -467,9 +679,11 @@ export default function LeaderboardScreen({
     ? uniqueWeeklyStandings 
     : viewMode === 'quests'
     ? uniqueQuestsStandings
+    : viewMode === 'squads'
+    ? squadStandingsList
     : viewMode === 'friends' 
     ? uniqueFriendsStandings 
-    : uniqueStandings;
+    : activeFilteredGlobalStandings;
 
   // Build lookup for active friends (by ID, UID, or username)
   const currentFriends = storageService.getFriends(activeProfile?.id) || [];
@@ -603,6 +817,21 @@ export default function LeaderboardScreen({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {/* Dynamic Reset / Permanent Status Badge in Header */}
+          <span className={`text-[10px] sm:text-xs font-black uppercase tracking-wider px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shadow-2xs whitespace-nowrap ${
+            viewMode === 'weekly'
+              ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+              : viewMode === 'squads'
+              ? 'bg-amber-100 text-amber-900 border-amber-300'
+              : viewMode === 'quests'
+              ? 'bg-purple-100 text-purple-900 border-purple-300'
+              : viewMode === 'friends'
+              ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+              : 'bg-slate-100 text-slate-800 border-slate-300'
+          }`}>
+            {viewMode === 'weekly' || viewMode === 'squads' ? '⏰ Resets Weekly' : '🔄 Permanent'}
+          </span>
+
           <button
             type="button"
             onClick={() => {
@@ -642,14 +871,14 @@ export default function LeaderboardScreen({
       <div className="bg-white/80 backdrop-blur-xs border-b border-slate-200 relative z-30 shrink-0 px-4 py-2 space-y-2 shadow-2xs">
 
         {/* VIEW MODE TABS */}
-        <div className="px-4 py-1.5 flex items-center gap-1.5 sm:gap-2 mb-1">
+        <div className="px-4 py-1.5 flex items-center gap-1.5 sm:gap-2 mb-1 overflow-x-auto hide-scrollbar">
           <button
             type="button"
             onClick={() => {
               soundFx.playKeyTap();
               setViewMode('global');
             }}
-            className={`flex-1 py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer ${
+            className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer shrink-0 ${
               viewMode === 'global'
                 ? 'bg-slate-800 text-white border-slate-900 shadow-xs ring-2 ring-slate-400/30'
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
@@ -665,7 +894,7 @@ export default function LeaderboardScreen({
               soundFx.playKeyTap();
               setViewMode('weekly');
             }}
-            className={`flex-1 py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer ${
+            className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer shrink-0 ${
               viewMode === 'weekly'
                 ? 'bg-emerald-500 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-400/30'
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
@@ -681,7 +910,7 @@ export default function LeaderboardScreen({
               soundFx.playKeyTap();
               setViewMode('quests');
             }}
-            className={`flex-1 py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer ${
+            className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer shrink-0 ${
               viewMode === 'quests'
                 ? 'bg-purple-600 text-white border-purple-700 shadow-xs ring-2 ring-purple-400/30'
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
@@ -695,9 +924,25 @@ export default function LeaderboardScreen({
             type="button"
             onClick={() => {
               soundFx.playKeyTap();
+              setViewMode('squads');
+            }}
+            className={`flex-1 min-w-[75px] py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer shrink-0 ${
+              viewMode === 'squads'
+                ? 'bg-amber-500 text-white border-amber-600 shadow-xs ring-2 ring-amber-400/30'
+                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
+            }`}
+          >
+            <Users2 className="w-3.5 h-3.5 shrink-0" />
+            <span>Squads</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
               setViewMode('friends');
             }}
-            className={`flex-1 py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer relative ${
+            className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer relative shrink-0 ${
               viewMode === 'friends'
                 ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs ring-2 ring-indigo-400/30'
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
@@ -715,6 +960,133 @@ export default function LeaderboardScreen({
           </button>
         </div>
 
+        {/* SUB-CONTROLS: WEEKLY SPARKS VS CONSISTENCY STREAK TOGGLE */}
+        {viewMode === 'weekly' && (
+          <div className="w-full px-4 pt-0.5 flex items-center justify-center gap-2">
+            <div className="bg-slate-100 p-0.5 rounded-xl flex items-center border border-slate-200 w-full max-w-xs shadow-inner">
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setWeeklySubTab('sparks');
+                }}
+                className={`flex-1 py-1 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                  weeklySubTab === 'sparks'
+                    ? 'bg-emerald-500 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Zap className="w-3 h-3 fill-current" />
+                <span>Sparks (Effort)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setWeeklySubTab('streaks');
+                }}
+                className={`flex-1 py-1 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                  weeklySubTab === 'streaks'
+                    ? 'bg-orange-500 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Flame className="w-3 h-3 fill-current text-amber-200" />
+                <span>Streak (Consistency)</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* SUB-CONTROLS: GLOBAL MOUNTAIN TIER SUB-BRACKETS */}
+        {viewMode === 'global' && (
+          <div className="w-full relative group">
+            <div className="w-full px-4 pt-0.5 flex items-center gap-1.5 overflow-x-auto scroll-smooth hide-scrollbar py-1">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider shrink-0 mr-0.5 flex items-center gap-1">
+                <span>Tier:</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setSelectedTier('all');
+                }}
+                className={`px-3 py-1 rounded-xl text-xs font-black transition-all cursor-pointer shrink-0 border-2 ${
+                  selectedTier === 'all'
+                    ? 'bg-slate-800 text-white border-slate-900 shadow-2xs'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                All Tiers
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setSelectedTier('my_tier');
+                }}
+                className={`px-3 py-1 rounded-xl text-xs font-black transition-all cursor-pointer shrink-0 border-2 flex items-center gap-1.5 ${
+                  selectedTier === 'my_tier'
+                    ? 'bg-indigo-600 text-white border-indigo-700 shadow-2xs ring-2 ring-indigo-400/40'
+                    : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                }`}
+              >
+                <span>⛰️ My Tier</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-200/80 text-indigo-900 font-extrabold">
+                  {userCurrentTierObj.name}
+                </span>
+              </button>
+              {(subjectConfig?.COMPETENCE_RANK_TIERS || []).map((t) => (
+                <button
+                  key={t.tier}
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setSelectedTier(t.tier);
+                  }}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-black transition-all cursor-pointer shrink-0 border-2 ${
+                    Number(selectedTier) === Number(t.tier)
+                      ? 'bg-indigo-700 text-white border-indigo-800 shadow-2xs'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title={`${t.name} (${t.min}-${t.max} pts)`}
+                >
+                  T{t.tier}: {t.name}
+                </button>
+              ))}
+            </div>
+            {/* Visual right scroll fade indicator */}
+            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-1 text-slate-400">
+              <span className="text-xs font-black opacity-60">›</span>
+            </div>
+          </div>
+        )}
+
+        {/* SQUADS BANNER */}
+        {viewMode === 'squads' && (
+          <div className="w-full px-4 pt-1 flex items-center justify-center shrink-0">
+            <div className="bg-gradient-to-r from-amber-100 via-orange-100 to-amber-50 border-2 border-amber-200 rounded-2xl px-4 py-2 flex items-center justify-between gap-3 w-full shadow-2xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                  <Users2 className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs font-black text-amber-950 block">
+                    Squad Standings
+                  </span>
+                  <span className="text-[10px] text-amber-700 font-medium block leading-tight mt-0.5">
+                    Team up with family and friends! Your team score grows as members complete practice quests and earn sparks together.
+                  </span>
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500 text-white font-black text-[11px] shrink-0 shadow-2xs">
+                <span>🏔️</span>
+                <span>{allAccountProfiles.length > 1 ? `${allAccountProfiles.length} Family Climbers` : `${1 + activeSquadBuddies.length} Squad Members`}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* SUBJECT SELECTION OR QUESTS BANNER */}
         {viewMode === 'quests' ? (
           <div className="w-full px-4 pt-1 flex items-center justify-center shrink-0">
@@ -727,7 +1099,7 @@ export default function LeaderboardScreen({
                   <span className="text-xs font-black text-purple-950 block">
                     Mountain Expedition Elevation
                   </span>
-                  <span className="text-[10px] text-purple-700 font-medium block leading-tight">
+                  <span className="text-[10px] text-purple-700 font-medium block leading-tight mt-0.5">
                     Earn XP across Daily, Weekly, and Squad Quests to conquer Ascent summits
                   </span>
                 </div>
@@ -738,7 +1110,7 @@ export default function LeaderboardScreen({
               </div>
             </div>
           </div>
-        ) : (
+        ) : viewMode !== 'squads' ? (
           <div className="w-full px-4 pt-1 flex items-center justify-center gap-2 shrink-0">
             {/* Mobile Subject Dropdown (< sm) */}
             <div className="relative sm:hidden w-48 max-w-[220px]" ref={subjectDropdownRef}>
@@ -985,7 +1357,7 @@ export default function LeaderboardScreen({
             </button>
           </div>
         </div>
-        )}
+        ) : null}
       </div>
 
       {/* MAIN CONTENT AREA */}
@@ -1049,12 +1421,16 @@ export default function LeaderboardScreen({
                     ? 'bg-purple-100 border-2 border-purple-400 ring-4 ring-purple-400/80 shadow-[0_0_20px_rgba(168,85,247,0.55),0_0_10px_rgba(245,158,11,0.4)]'
                     : top3[1].planTier === 'solo'
                     ? 'bg-amber-100 border-2 border-amber-400 ring-4 ring-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
-                    : top3[1].isCurrentUser
+                    : top3[1].isCurrentUser || top3[1].isCurrentUserSquad
                     ? 'bg-indigo-100 border-indigo-500 ring-4 ring-indigo-400/40'
                     : 'bg-slate-200 border-slate-300'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
-                    <Mascot size={56} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} className="w-full h-full" />
+                    {viewMode === 'squads' ? (
+                      <span className="text-3xl select-none">{top3[1].icon || '🦊'}</span>
+                    ) : (
+                      <Mascot size={56} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} className="w-full h-full" />
+                    )}
                   </div>
                 </div>
                 <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[1].name}>
@@ -1070,7 +1446,7 @@ export default function LeaderboardScreen({
                       ⭐ CLUB
                     </span>
                   ) : null}
-                  {top3[1].isCurrentUser ? (
+                  {top3[1].isCurrentUser || top3[1].isCurrentUserSquad ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[1].isFriend ? (
                     <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
@@ -1082,7 +1458,9 @@ export default function LeaderboardScreen({
                   {viewMode === 'global'
                     ? top3[1].score + ' pts'
                     : viewMode === 'weekly'
-                    ? (top3[1].sparks || 0) + ' sparks'
+                    ? (weeklySubTab === 'streaks' ? `${top3[1].streak || top3[1].maxStreak || 0} 🔥 days` : `${top3[1].sparks || 0} sparks`)
+                    : viewMode === 'squads'
+                    ? `${(top3[1].squadScore || 0).toLocaleString()} pts`
                     : (top3[1].totalXp ?? top3[1].score ?? 0).toLocaleString() + ' XP'}
                 </span>
                 <div className="w-full bg-gradient-to-t from-slate-300 to-slate-200 border-x border-t border-slate-400 rounded-t-lg h-24 flex justify-center pt-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
@@ -1106,10 +1484,14 @@ export default function LeaderboardScreen({
                     ? 'bg-purple-100 border-amber-300 ring-4 ring-purple-500/80 shadow-[0_0_26px_rgba(168,85,247,0.65),0_0_15px_rgba(245,158,11,0.55)]'
                     : top3[0].planTier === 'solo'
                     ? 'bg-amber-100 border-amber-400 ring-4 ring-amber-400/70 shadow-[0_0_20px_rgba(245,158,11,0.55)]'
-                    : top3[0].isCurrentUser ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
+                    : top3[0].isCurrentUser || top3[0].isCurrentUserSquad ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.88] sm:scale-95">
-                    <Mascot size={72} mood="excited" equipped={top3[0].equipped} className="w-full h-full" />
+                    {viewMode === 'squads' ? (
+                      <span className="text-4xl select-none">{top3[0].icon || '🏔️'}</span>
+                    ) : (
+                      <Mascot size={72} mood="excited" equipped={top3[0].equipped} className="w-full h-full" />
+                    )}
                   </div>
                 </div>
                 <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[0].name}>
@@ -1125,7 +1507,7 @@ export default function LeaderboardScreen({
                       ⭐ CLUB
                     </span>
                   ) : null}
-                  {top3[0].isCurrentUser ? (
+                  {top3[0].isCurrentUser || top3[0].isCurrentUserSquad ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[0].isFriend ? (
                     <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
@@ -1137,7 +1519,9 @@ export default function LeaderboardScreen({
                   {viewMode === 'global'
                     ? top3[0].score + ' pts'
                     : viewMode === 'weekly'
-                    ? (top3[0].sparks || 0) + ' sparks'
+                    ? (weeklySubTab === 'streaks' ? `${top3[0].streak || top3[0].maxStreak || 0} 🔥 days` : `${top3[0].sparks || 0} sparks`)
+                    : viewMode === 'squads'
+                    ? `${(top3[0].squadScore || 0).toLocaleString()} pts`
                     : (top3[0].totalXp ?? top3[0].score ?? 0).toLocaleString() + ' XP'}
                 </span>
                 <div className="w-full bg-gradient-to-t from-amber-400 to-yellow-300 border-x border-t border-amber-500 rounded-t-lg h-32 flex justify-center pt-3 shadow-[0_-10px_20px_rgba(251,191,36,0.2)] relative overflow-hidden">
@@ -1163,12 +1547,16 @@ export default function LeaderboardScreen({
                     ? 'bg-purple-100 border-2 border-purple-400 ring-4 ring-purple-400/80 shadow-[0_0_20px_rgba(168,85,247,0.55),0_0_10px_rgba(245,158,11,0.4)]'
                     : top3[2].planTier === 'solo'
                     ? 'bg-amber-100 border-2 border-amber-400 ring-4 ring-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
-                    : top3[2].isCurrentUser
+                    : top3[2].isCurrentUser || top3[2].isCurrentUserSquad
                     ? 'bg-orange-100 border-orange-400 ring-4 ring-indigo-400/40'
                     : 'bg-orange-100 border-orange-300'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
-                    <Mascot size={56} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} className="w-full h-full" />
+                    {viewMode === 'squads' ? (
+                      <span className="text-3xl select-none">{top3[2].icon || '🐻'}</span>
+                    ) : (
+                      <Mascot size={56} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} className="w-full h-full" />
+                    )}
                   </div>
                 </div>
                 <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[2].name}>
@@ -1184,7 +1572,7 @@ export default function LeaderboardScreen({
                       ⭐ CLUB
                     </span>
                   ) : null}
-                  {top3[2].isCurrentUser ? (
+                  {top3[2].isCurrentUser || top3[2].isCurrentUserSquad ? (
                     <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
                   ) : top3[2].isFriend ? (
                     <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
@@ -1196,7 +1584,9 @@ export default function LeaderboardScreen({
                   {viewMode === 'global'
                     ? top3[2].score + ' pts'
                     : viewMode === 'weekly'
-                    ? (top3[2].sparks || 0) + ' sparks'
+                    ? (weeklySubTab === 'streaks' ? `${top3[2].streak || top3[2].maxStreak || 0} 🔥 days` : `${top3[2].sparks || 0} sparks`)
+                    : viewMode === 'squads'
+                    ? `${(top3[2].squadScore || 0).toLocaleString()} pts`
                     : (top3[2].totalXp ?? top3[2].score ?? 0).toLocaleString() + ' XP'}
                 </span>
                 <div className="w-full bg-gradient-to-t from-orange-300 to-orange-200 border-x border-t border-orange-400 rounded-t-lg h-16 flex justify-center pt-1.5 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
@@ -1211,24 +1601,25 @@ export default function LeaderboardScreen({
         <div className="px-4 space-y-2 pb-6">
           {others.map((player) => {
             const playerPlanTier = player.planTier || 'free';
+            const isSquadMode = viewMode === 'squads';
 
             return (
               <div
-                key={player.isCurrentUser ? 'current-user-row' : `${player.id || player.name}-${player.rank}`}
+                key={player.isCurrentUser || player.isCurrentUserSquad ? 'current-user-row' : `${player.id || player.name}-${player.rank}`}
                 onClick={() => {
                   soundFx.playKeyTap();
                   setSelectedPlayerForModal(player);
                 }}
                 className={`rounded-2xl p-3 flex items-center gap-3 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] ${
                   playerPlanTier === 'family'
-                    ? player.isCurrentUser
+                    ? player.isCurrentUser || player.isCurrentUserSquad
                       ? 'bg-gradient-to-r from-purple-50 via-pink-50/40 to-amber-50/60 border-2 border-purple-400 ring-2 ring-purple-400/70 shadow-[0_0_20px_rgba(168,85,247,0.35),0_0_12px_rgba(245,158,11,0.25)]'
                       : 'bg-gradient-to-r from-purple-50/40 via-white to-amber-50/30 border-2 border-purple-300/80 shadow-[0_0_15px_rgba(168,85,247,0.25)] hover:shadow-[0_0_20px_rgba(168,85,247,0.35)]'
                     : playerPlanTier === 'solo'
-                    ? player.isCurrentUser
+                    ? player.isCurrentUser || player.isCurrentUserSquad
                       ? 'bg-gradient-to-r from-amber-50/70 via-yellow-50/40 to-amber-50/70 border-2 border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
                       : 'bg-gradient-to-r from-amber-50/30 via-white to-amber-50/20 border border-amber-300/80 shadow-[0_0_12px_rgba(245,158,11,0.2)] hover:shadow-[0_0_16px_rgba(245,158,11,0.3)]'
-                    : player.isCurrentUser
+                    : player.isCurrentUser || player.isCurrentUserSquad
                     ? 'bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border-2 border-indigo-500 shadow-md ring-2 ring-indigo-400/30'
                     : player.isFriend
                     ? 'bg-gradient-to-r from-rose-50/50 via-pink-50/30 to-white border border-rose-200 shadow-sm hover:shadow-md'
@@ -1236,13 +1627,15 @@ export default function LeaderboardScreen({
                 }`}
               >
                 {/* Rank Number */}
-                <div className={`w-6 text-center font-black shrink-0 ${player.isCurrentUser ? 'text-indigo-700' : 'text-slate-400'}`}>
+                <div className={`w-6 text-center font-black shrink-0 ${player.isCurrentUser || player.isCurrentUserSquad ? 'text-indigo-700' : 'text-slate-400'}`}>
                   {player.rank}
                 </div>
 
-                {/* Avatar Mascot */}
+                {/* Avatar Mascot or Squad Icon */}
                 <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border flex items-center justify-center shrink-0 overflow-hidden relative ${
-                  playerPlanTier === 'family'
+                  isSquadMode
+                    ? 'bg-amber-100 border-amber-300 text-2xl'
+                    : playerPlanTier === 'family'
                     ? 'bg-gradient-to-br from-purple-100 to-amber-100 border-2 border-purple-300 ring-2 ring-purple-400/80 shadow-[0_0_12px_rgba(168,85,247,0.5)]'
                     : playerPlanTier === 'solo'
                     ? 'bg-gradient-to-br from-amber-100 to-yellow-100 border-2 border-amber-300 ring-2 ring-amber-400/70 shadow-[0_0_10px_rgba(245,158,11,0.45)]'
@@ -1252,12 +1645,16 @@ export default function LeaderboardScreen({
                     ? 'bg-rose-50 border-rose-200 ring-2 ring-rose-300/40'
                     : 'bg-slate-100 border-slate-200'
                 }`}>
-                  <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
-                    <Mascot size={44} mood={player.isCurrentUser ? "happy" : "neutral"} equipped={player.equipped} className="w-full h-full" />
-                  </div>
+                  {isSquadMode ? (
+                    <span className="select-none">{player.icon || '🏔️'}</span>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
+                      <Mascot size={44} mood={player.isCurrentUser ? "happy" : "neutral"} equipped={player.equipped} className="w-full h-full" />
+                    </div>
+                  )}
                 </div>
 
-                {/* Player Info */}
+                {/* Player / Squad Info */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-bold text-sm text-slate-800 break-words line-clamp-2" title={player.name}>
@@ -1272,7 +1669,7 @@ export default function LeaderboardScreen({
                         ⭐ CLUB
                       </span>
                     ) : null}
-                    {player.isCurrentUser && (
+                    {(player.isCurrentUser || player.isCurrentUserSquad) && (
                       <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
                         YOU
                       </span>
@@ -1283,7 +1680,12 @@ export default function LeaderboardScreen({
                       </span>
                     )}
                   </div>
-                  {viewMode === 'quests' ? (
+                  {isSquadMode ? (
+                    <span className="text-xs text-amber-800 font-medium truncate flex items-center gap-1 mt-0.5">
+                      <Users className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      <span className="truncate">{player.membersCount} Climbers • {(player.memberNames || []).slice(0, 3).join(', ')}</span>
+                    </span>
+                  ) : viewMode === 'quests' ? (
                     <span className="text-xs text-purple-700 font-medium truncate flex items-center gap-1 mt-0.5">
                       <Mountain className="w-3.5 h-3.5 text-purple-500 shrink-0" />
                       <span className="truncate">[Ascent {player.ascentTier || 1}] Lv. {player.level || 1} • {player.title || 'Basecamp Explorer'}</span>
@@ -1292,6 +1694,11 @@ export default function LeaderboardScreen({
                     <span className="text-xs text-slate-500 font-medium truncate flex items-center gap-1 mt-0.5">
                       <Activity className="w-3.5 h-3.5 text-slate-400" />
                       {player.subjectsMastered} Skills Mastered
+                      {player.tier && (
+                        <span className="text-indigo-600 font-bold ml-1">
+                          • T{player.tier}
+                        </span>
+                      )}
                     </span>
                   )}
                 </div>
@@ -1302,14 +1709,18 @@ export default function LeaderboardScreen({
                     {viewMode === 'global'
                       ? player.score
                       : viewMode === 'weekly'
-                      ? (player.sparks || 0)
+                      ? (weeklySubTab === 'streaks' ? (player.streak || player.maxStreak || 0) : (player.sparks || 0))
+                      : isSquadMode
+                      ? (player.squadScore || 0).toLocaleString()
                       : (player.totalXp ?? player.score ?? 0).toLocaleString()}
                   </span>
                   <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
                     {viewMode === 'global'
                       ? getRankTitle(player.score)
                       : viewMode === 'weekly'
-                      ? 'Sparks'
+                      ? (weeklySubTab === 'streaks' ? 'Day Streak 🔥' : 'Sparks')
+                      : isSquadMode
+                      ? 'Squad Pts'
                       : 'Elevation XP'}
                   </span>
                 </div>
@@ -1319,11 +1730,14 @@ export default function LeaderboardScreen({
         </div>
       </div>
 
-      {/* PINNED CURRENT USER CARD */}
+      {/* PINNED CURRENT USER / SQUAD CARD */}
       <div className="shrink-0 px-3 py-2 bg-gradient-to-t from-slate-100 via-slate-100/90 to-transparent pt-3 z-30 border-t border-slate-200/60">
         <div className="max-w-4xl mx-auto w-full">
           {(() => {
             const userPlanTier = storageService.getPlanTier(activeProfile?.id);
+            const mySquad = squadStandingsList.find(s => s.isCurrentUserSquad);
+            const isSquadMode = viewMode === 'squads';
+
             return (
               <div className={`rounded-2xl p-3 flex items-center gap-3 relative overflow-hidden transition-all ${
                 userPlanTier === 'family'
@@ -1335,12 +1749,12 @@ export default function LeaderboardScreen({
                 {/* Subtle glow effect inside */}
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20" />
 
-                {/* User Rank */}
+                {/* User / Squad Rank */}
                 <div className="w-8 h-8 rounded-full bg-indigo-800/80 border border-indigo-400 flex items-center justify-center font-black text-white shrink-0 shadow-inner z-10">
-                  #{currentUserRank}
+                  #{isSquadMode ? (mySquad ? (squadStandingsList.indexOf(mySquad) + 1) : 1) : currentUserRank}
                 </div>
 
-                {/* User Avatar (Actual Mascot + Items) */}
+                {/* User / Squad Avatar */}
                 <div className={`w-13 h-13 sm:w-14 sm:h-14 bg-white rounded-full border-2 flex items-center justify-center shrink-0 overflow-hidden z-10 relative ${
                   userPlanTier === 'family'
                     ? 'border-purple-300 ring-2 ring-purple-400/80 shadow-[0_0_14px_rgba(168,85,247,0.6)]'
@@ -1348,15 +1762,21 @@ export default function LeaderboardScreen({
                     ? 'border-amber-300 ring-2 ring-amber-400/70 shadow-[0_0_10px_rgba(245,158,11,0.5)]'
                     : 'border-indigo-300'
                 }`}>
-                   <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
-                     <Mascot size={48} mood="happy" equipped={equippedItems} className="w-full h-full" />
-                   </div>
+                   {isSquadMode ? (
+                     <span className="text-2xl select-none">{mySquad?.icon || '🏔️'}</span>
+                   ) : (
+                     <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
+                       <Mascot size={48} mood="happy" equipped={equippedItems} className="w-full h-full" />
+                     </div>
+                   )}
                 </div>
 
-                {/* User Info & Progress */}
+                {/* User / Squad Info & Progress */}
                 <div className="flex-1 min-w-0 flex flex-col z-10">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-black text-white text-sm truncate">You ({username})</span>
+                    <span className="font-black text-white text-sm truncate">
+                      {isSquadMode ? (mySquad?.name || 'Your Squad') : `You (${username})`}
+                    </span>
                     {userPlanTier === 'family' ? (
                       <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 text-white text-xs font-black px-2 py-0.5 rounded-md shadow-xs border border-purple-300 flex items-center gap-1">
                         👑 FAMILY VIP
@@ -1366,7 +1786,11 @@ export default function LeaderboardScreen({
                         ⭐ KIBO CLUB
                       </span>
                     ) : null}
-                    {viewMode === 'quests' ? (
+                    {isSquadMode ? (
+                      <span className="bg-amber-500 text-amber-950 text-xs uppercase px-2 py-0.5 rounded font-black tracking-wider">
+                        {mySquad?.badge || 'Expedition Squad'}
+                      </span>
+                    ) : viewMode === 'quests' ? (
                       <span className="bg-purple-600 text-purple-100 text-xs uppercase px-2 py-0.5 rounded font-bold tracking-wider">
                         [Ascent {userLevelInfo.ascentTier}] Lv. {userLevelInfo.level} • {userLevelInfo.title}
                       </span>
@@ -1377,17 +1801,27 @@ export default function LeaderboardScreen({
                     )}
                   </div>
               <div className="flex items-center gap-1 mt-0.5">
-                {viewMode === 'quests' ? (
+                {isSquadMode ? (
+                  <Users2 className="w-3.5 h-3.5 text-amber-400" />
+                ) : viewMode === 'quests' ? (
                   <Mountain className="w-3.5 h-3.5 text-amber-400" />
                 ) : (
                   <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                 )}
-                <span className="text-indigo-200 font-bold text-xs">{pinnedScoreDisplay.toLocaleString()} {pinnedScoreLabel}</span>
+                <span className="text-indigo-200 font-bold text-xs">
+                  {isSquadMode
+                    ? `${(mySquad?.squadScore || 0).toLocaleString()} Squad Points`
+                    : viewMode === 'weekly' && weeklySubTab === 'streaks'
+                    ? `${userState?.streak || activeProfile?.userData?.streak || 0} Day Consistency Streak 🔥`
+                    : `${pinnedScoreDisplay.toLocaleString()} ${pinnedScoreLabel}`}
+                </span>
               </div>
 
               {/* Contextual progress message */}
               <p className="text-xs text-indigo-300 mt-1 leading-tight font-medium">
-                {currentUserRank > 1
+                {isSquadMode
+                  ? 'Play daily practice and squad quests together to raise your team score!'
+                  : currentUserRank > 1
                   ? (viewMode === 'quests'
                       ? `+${pointsNeeded.toLocaleString()} XP needed to rank up in Mountain Quests`
                       : `+${pointsNeeded} ${viewMode === 'global' ? 'pts' : 'sparks'} needed to rank up in ${subjectConfig.name}`)
@@ -1429,7 +1863,7 @@ export default function LeaderboardScreen({
 
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
-                viewMode === 'global' ? 'bg-indigo-100 text-indigo-600' : viewMode === 'weekly' ? 'bg-emerald-100 text-emerald-600' : viewMode === 'quests' ? 'bg-purple-100 text-purple-600' : 'bg-purple-100 text-purple-600'
+                viewMode === 'global' ? 'bg-indigo-100 text-indigo-600' : viewMode === 'weekly' ? 'bg-emerald-100 text-emerald-600' : viewMode === 'squads' ? 'bg-amber-100 text-amber-600' : 'bg-purple-100 text-purple-600'
               }`}>
                 {viewMode === 'global' ? (
                   <Trophy className="w-6 h-6 stroke-[2.5]" />
@@ -1437,48 +1871,64 @@ export default function LeaderboardScreen({
                   <Zap className="w-6 h-6 fill-current stroke-[2.5]" />
                 ) : viewMode === 'quests' ? (
                   <Scroll className="w-6 h-6 stroke-[2.5]" />
+                ) : viewMode === 'squads' ? (
+                  <Users2 className="w-6 h-6 stroke-[2.5]" />
                 ) : (
                   <Users className="w-6 h-6 stroke-[2.5]" />
                 )}
               </div>
               <div className="min-w-0 flex-1 pr-6">
                 <h3 className="text-lg font-black text-slate-900 leading-tight">
-                  {viewMode === 'global' ? `${subjectConfig.name} Competence` : viewMode === 'weekly' ? 'Weekly League' : viewMode === 'quests' ? 'Mountain Quest Standings' : 'Friends Standings'}
+                  {viewMode === 'global' ? `${subjectConfig.name} Competence & Divisions` : viewMode === 'weekly' ? 'Weekly League & Consistency' : viewMode === 'quests' ? 'Mountain Quest Standings' : viewMode === 'squads' ? 'Squad Standings' : 'Friends Standings'}
                 </h3>
                 <p className="text-xs font-semibold text-slate-500">
-                  {viewMode === 'global' ? 'How Global Standings Work' : viewMode === 'weekly' ? 'How Weekly League Works' : viewMode === 'quests' ? 'How Quest Standings Work' : 'How Friends Standings Work'}
+                  {viewMode === 'global' ? 'How Global Divisions Work' : viewMode === 'weekly' ? 'How Weekly Leagues Work' : viewMode === 'squads' ? 'How Squad Standings Work' : 'How Standings Work'}
                 </p>
               </div>
             </div>
 
             <div className={`rounded-2xl p-4 border text-xs sm:text-sm font-medium leading-relaxed ${
-              viewMode === 'global' ? 'bg-indigo-50/80 border-indigo-200 text-indigo-950' : viewMode === 'weekly' ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950' : viewMode === 'quests' ? 'bg-purple-50/80 border-purple-200 text-purple-950' : 'bg-purple-50/80 border-purple-200 text-purple-950'
+              viewMode === 'global' ? 'bg-indigo-50/80 border-indigo-200 text-indigo-950' : viewMode === 'weekly' ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950' : viewMode === 'squads' ? 'bg-amber-50/80 border-amber-200 text-amber-950' : 'bg-purple-50/80 border-purple-200 text-purple-950'
             }`}>
               <div className="flex items-start gap-2.5">
-                <Info className={`w-4 h-4 shrink-0 mt-0.5 ${viewMode === 'global' ? 'text-indigo-600' : viewMode === 'weekly' ? 'text-emerald-600' : 'text-purple-600'}`} />
-                <p>
-                  {viewMode === 'global'
-                    ? (selectedSubject === 'words'
-                       ? 'Words competence is dynamically measured based on spelling accuracy, vocabulary fluency, and speed.'
-                       : selectedSubject === 'world'
-                       ? 'World competence is dynamically measured based on geography accuracy, map recall, and speed.'
-                       : 'Math competence is dynamically measured based on problem accuracy, mental math fluency, and speed.')
-                    : viewMode === 'weekly'
-                    ? (`Compete in this week's cohort by earning Sparks! ${cohortId ? 'Group: ' + cohortId.split('_bucket_')[1] : ''}`)
-                    : viewMode === 'quests'
-                    ? ('Climbers earn XP Elevation by completing Daily Expeditions, Weekly Milestones, and Squad Quests. Leveling up advances your Ascent Tier (from Sunny Trailhead to Cosmic Apex) and unlocks permanent Spark boosts!')
-                    : (`Compare your ${subjectConfig.name} competence ratings and cosmetics directly against your added friends and classmates!`)}
-                </p>
+                <Info className={`w-4 h-4 shrink-0 mt-0.5 ${viewMode === 'global' ? 'text-indigo-600' : viewMode === 'weekly' ? 'text-emerald-600' : viewMode === 'squads' ? 'text-amber-600' : 'text-purple-600'}`} />
+                <div className="space-y-2">
+                  <p>
+                    {viewMode === 'global'
+                      ? 'Global rankings track your dynamic Elo skill rating across all time. Points update after each practice session.'
+                      : viewMode === 'weekly'
+                      ? 'Compete in weekly leagues by earning Sparks (effort) or building daily habit Streaks (consistency).'
+                      : viewMode === 'squads'
+                      ? 'Squads let you team up with family and climbing buddies. Every spark earned and squad quest completed adds points to your shared score.'
+                      : viewMode === 'quests'
+                      ? 'Climbers earn XP Elevation by completing Daily Expeditions, Weekly Milestones, and Squad Quests.'
+                      : `Compare your ${subjectConfig.name} competence ratings directly against your added friends and classmates.`}
+                  </p>
+                  <div className="pt-1 border-t border-slate-200/60 flex items-center gap-1.5 text-xs font-bold">
+                    <span className="text-slate-500 uppercase text-[10px] tracking-wider">Reset Schedule:</span>
+                    <span className="text-slate-900">
+                      {viewMode === 'global'
+                        ? '🔄 Never Resets (Continuous Elo Rating)'
+                        : viewMode === 'weekly'
+                        ? '⏰ Resets Every Sunday at 23:59 UTC'
+                        : viewMode === 'squads'
+                        ? '⏰ Resets Every Sunday at 23:59 UTC'
+                        : viewMode === 'quests'
+                        ? '🔄 Never Resets (Permanent Lifetime Elevation XP)'
+                        : '🔄 Never Resets (Live Friend Elo Ratings)'}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
             <p className="text-xs text-slate-500 font-medium text-center px-1">
               {viewMode === 'global' ? (
-                '💡 Keep climbing and answering accurately to raise your rank tier!'
+                '💡 Keep climbing and answering accurately to raise your division rank!'
               ) : viewMode === 'weekly' ? (
-                '💡 Sparks reset every week at midnight Sunday UTC. Climb every day to stay on top!'
-              ) : viewMode === 'quests' ? (
-                '💡 Complete team quests with real friends to earn +25% Synergy Sparks and climb faster!'
+                '💡 Climb every single day to hold the #1 consistency streak spot!'
+              ) : viewMode === 'squads' ? (
+                '💡 Complete buddy quests in the Quests tab to earn big team bonuses!'
               ) : (
                 <span>
                   💡{' '}
@@ -1540,21 +1990,25 @@ export default function LeaderboardScreen({
               <X className="w-5 h-5" />
             </button>
 
-            {/* Mascot Avatar */}
+            {/* Mascot / Squad Avatar */}
             <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 flex items-center justify-center overflow-hidden relative shadow-md mt-1 ${
               selectedPlayerForModal.planTier === 'family'
                 ? 'bg-purple-100 border-purple-400 ring-4 ring-purple-400/80 shadow-[0_0_24px_rgba(168,85,247,0.55),0_0_12px_rgba(245,158,11,0.4)]'
                 : selectedPlayerForModal.planTier === 'solo'
                 ? 'bg-amber-100 border-amber-400 ring-4 ring-amber-400/60 shadow-[0_0_18px_rgba(245,158,11,0.5)]'
-                : selectedPlayerForModal.isCurrentUser
+                : selectedPlayerForModal.isCurrentUser || selectedPlayerForModal.isCurrentUserSquad
                 ? 'bg-indigo-100 border-indigo-400 ring-4 ring-indigo-300/40'
                 : selectedPlayerForModal.isFriend
                 ? 'bg-rose-50 border-rose-300 ring-4 ring-rose-200/50'
                 : 'bg-slate-100 border-slate-300'
             }`}>
-              <div className="absolute inset-0 flex items-center justify-center scale-95">
-                <Mascot size={72} mood="excited" equipped={selectedPlayerForModal.equipped || []} className="w-full h-full" />
-              </div>
+              {viewMode === 'squads' ? (
+                <span className="text-4xl select-none">{selectedPlayerForModal.icon || '🏔️'}</span>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center scale-95">
+                  <Mascot size={72} mood="excited" equipped={selectedPlayerForModal.equipped || []} className="w-full h-full" />
+                </div>
+              )}
             </div>
 
             {/* Full Username & Badges */}
@@ -1572,7 +2026,7 @@ export default function LeaderboardScreen({
                     ⭐ KIBO CLUB
                   </span>
                 ) : null}
-                {selectedPlayerForModal.isCurrentUser ? (
+                {(selectedPlayerForModal.isCurrentUser || selectedPlayerForModal.isCurrentUserSquad) ? (
                   <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0">
                     YOU
                   </span>
@@ -1591,24 +2045,28 @@ export default function LeaderboardScreen({
             <div className="grid grid-cols-2 gap-2 w-full">
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col items-center justify-center">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  {viewMode === 'global' ? 'Rating' : viewMode === 'weekly' ? 'Sparks' : 'Total XP'}
+                  {viewMode === 'global' ? 'Rating' : viewMode === 'weekly' ? (weeklySubTab === 'streaks' ? 'Streak' : 'Sparks') : viewMode === 'squads' ? 'Squad Pts' : 'Total XP'}
                 </span>
                 <span className="text-base font-black text-indigo-700 mt-0.5">
                   {viewMode === 'global'
                     ? selectedPlayerForModal.score
                     : viewMode === 'weekly'
-                    ? (selectedPlayerForModal.sparks || 0)
+                    ? (weeklySubTab === 'streaks' ? `${selectedPlayerForModal.streak || selectedPlayerForModal.maxStreak || 0} 🔥` : (selectedPlayerForModal.sparks || 0))
+                    : viewMode === 'squads'
+                    ? (selectedPlayerForModal.squadScore || 0).toLocaleString()
                     : (selectedPlayerForModal.totalXp ?? selectedPlayerForModal.score ?? 0).toLocaleString()}
                 </span>
               </div>
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col items-center justify-center">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  {viewMode === 'quests' ? 'Ascent Tier' : 'Mastered'}
+                  {viewMode === 'quests' ? 'Ascent Tier' : viewMode === 'squads' ? 'Members' : 'Division'}
                 </span>
                 <span className="text-base font-black text-purple-700 mt-0.5 truncate max-w-full">
                   {viewMode === 'quests'
                     ? `Ascent ${selectedPlayerForModal.ascentTier || 1}`
-                    : `${selectedPlayerForModal.subjectsMastered || 0} Skills`}
+                    : viewMode === 'squads'
+                    ? `${selectedPlayerForModal.membersCount || 1} Climbers`
+                    : (selectedPlayerForModal.tierName || `Tier ${selectedPlayerForModal.tier || 1}`)}
                 </span>
               </div>
             </div>
@@ -1644,6 +2102,134 @@ export default function LeaderboardScreen({
         initialTab={friendModalTab}
         onFriendAdded={refreshFriendsStandings}
       />
+
+      {/* WEEKLY LEADERBOARD SETTLEMENT REWARD CELEBRATION MODAL */}
+      {weeklySettlementReward && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Weekly Leaderboard Rewards"
+          className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-fade-in"
+        >
+          <div
+            className="w-full max-w-sm bg-gradient-to-b from-amber-50 via-white to-amber-50/50 border-4 border-amber-400 rounded-3xl p-6 shadow-2xl space-y-4 relative overflow-hidden animate-pop flex flex-col items-center text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Sparkle Glow FX */}
+            <div className="absolute -top-12 -left-12 w-36 h-36 bg-amber-400/20 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-12 -right-12 w-36 h-36 bg-indigo-400/20 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-amber-300 flex items-center justify-center text-3xl shadow-inner animate-bounce">
+              {weeklySettlementReward.badgeIcon || '🏆'}
+            </div>
+
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300 inline-block mb-1">
+                Weekly League Finished! ({weeklySettlementReward.weekStr})
+              </span>
+              <h3 className="text-xl font-black text-slate-900 leading-tight">
+                {weeklySettlementReward.tierTitle}
+              </h3>
+              <p className="text-xs font-semibold text-slate-500 mt-1">
+                You finished Rank #{weeklySettlementReward.rank} in your cohort! Here are your rewards:
+              </p>
+            </div>
+
+            {/* Rewarded Items Grid */}
+            <div className="grid grid-cols-2 gap-2 w-full pt-1">
+              {/* Sparks Reward */}
+              <div className="bg-amber-100/70 border border-amber-300 rounded-2xl p-2.5 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-400 text-amber-950 flex items-center justify-center shrink-0 shadow-2xs font-black">
+                  ⚡
+                </div>
+                <div className="text-left min-w-0">
+                  <span className="text-xs font-black text-amber-950 block">
+                    +{weeklySettlementReward.sparksGranted}
+                  </span>
+                  <span className="text-[10px] text-amber-700 font-bold block">
+                    Sparks
+                  </span>
+                </div>
+              </div>
+
+              {/* Shields or Converted Bonus */}
+              {weeklySettlementReward.shieldsGranted > 0 ? (
+                <div className="bg-sky-100/70 border border-sky-300 rounded-2xl p-2.5 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-sky-400 text-sky-950 flex items-center justify-center shrink-0 shadow-2xs font-black">
+                    🛡️
+                  </div>
+                  <div className="text-left min-w-0">
+                    <span className="text-xs font-black text-sky-950 block">
+                      +{weeklySettlementReward.shieldsGranted}
+                    </span>
+                    <span className="text-[10px] text-sky-700 font-bold block">
+                      Streak Shield
+                    </span>
+                  </div>
+                </div>
+              ) : weeklySettlementReward.convertedShieldsToPowerUps > 0 ? (
+                <div className="bg-purple-100/70 border border-purple-300 rounded-2xl p-2.5 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-purple-400 text-purple-950 flex items-center justify-center shrink-0 shadow-2xs font-black">
+                    ✨
+                  </div>
+                  <div className="text-left min-w-0">
+                    <span className="text-xs font-black text-purple-950 block">
+                      +{weeklySettlementReward.convertedShieldsToPowerUps} (Max 2 🛡️)
+                    </span>
+                    <span className="text-[9px] text-purple-700 font-bold block leading-tight">
+                      Bonus Potion
+                    </span>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Rotating Power-Ups Display */}
+              {Object.entries(weeklySettlementReward.powerUpsGranted || {}).map(([key, count]) => {
+                if (!count) return null;
+                const powerUpName = key === 'doubleSparksPotionCount'
+                  ? 'Double Potion'
+                  : key === 'hintScrollCount'
+                  ? 'Hint Scroll'
+                  : key === 'letterSpyglassCount'
+                  ? 'Spyglass'
+                  : key === 'letterPrunerCount'
+                  ? 'Pruner'
+                  : 'Compass';
+                const powerUpIcon = key === 'doubleSparksPotionCount' ? '🧪' : key === 'hintScrollCount' ? '📜' : key === 'letterSpyglassCount' ? '🔍' : key === 'letterPrunerCount' ? '✂️' : '🧭';
+
+                return (
+                  <div key={key} className="bg-emerald-100/70 border border-emerald-300 rounded-2xl p-2.5 flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-400 text-emerald-950 flex items-center justify-center shrink-0 shadow-2xs text-sm">
+                      {powerUpIcon}
+                    </div>
+                    <div className="text-left min-w-0">
+                      <span className="text-xs font-black text-emerald-950 block">
+                        +{count}
+                      </span>
+                      <span className="text-[10px] text-emerald-700 font-bold block truncate">
+                        {powerUpName}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Claim / Close Button */}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setWeeklySettlementReward(null);
+              }}
+              className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 active:scale-95 text-white rounded-2xl font-black text-sm shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+            >
+              <Gift className="w-4 h-4" />
+              <span>Claim & Continue Climbing</span>
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

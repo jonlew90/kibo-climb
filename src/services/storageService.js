@@ -1593,6 +1593,141 @@ export const storageService = {
     };
   },
 
+  // ─── Weekly Leaderboard End-of-Week Rewards Settlement ──────────────────
+  getClaimedWeeklyLeaderboardWeeks(profileId = null) {
+    const pid = profileId || this.getActiveProfileId();
+    const profile = this.getProfileById(pid);
+    if (!profile || !profile.userData) return [];
+    return profile.userData.claimedWeeklyLeaderboardWeeks || [];
+  },
+
+  claimWeeklyLeaderboardReward({ weekStr, rank = 1, category = 'sparks', profileId = null }) {
+    const pid = profileId || this.getActiveProfileId();
+    const profile = this.getProfileById(pid);
+    if (!profile || !weekStr) return null;
+
+    const claimedWeeks = this.getClaimedWeeklyLeaderboardWeeks(pid);
+    const claimKey = `${weekStr}_${category}`;
+    if (claimedWeeks.includes(claimKey)) {
+      return { alreadyClaimed: true };
+    }
+
+    const hasClub = this.hasClubMembership(pid);
+    const curConsumables = this.getConsumables(pid);
+    const currentShields = curConsumables.shieldCount ?? 1;
+
+    // Determine rewards by placement tier
+    let sparksGranted = 50;
+    let shieldsToGrant = 0;
+    let powerUpsGranted = {
+      doubleSparksPotionCount: 0,
+      hintScrollCount: 0,
+      letterSpyglassCount: 0,
+      letterPrunerCount: 0,
+      explorerCompassCount: 0
+    };
+    let tierTitle = 'Weekly Top 10 Finisher';
+    let badgeIcon = '🏅';
+
+    // Rotating power-up pool keyed by week string
+    const rotatingPowerUps = [
+      'doubleSparksPotionCount',
+      'hintScrollCount',
+      'letterSpyglassCount',
+      'letterPrunerCount',
+      'explorerCompassCount'
+    ];
+    let weekHash = 0;
+    for (let i = 0; i < weekStr.length; i++) {
+      weekHash = (weekHash << 5) - weekHash + weekStr.charCodeAt(i);
+      weekHash |= 0;
+    }
+    const primaryPowerUp = rotatingPowerUps[Math.abs(weekHash) % rotatingPowerUps.length];
+    const secondaryPowerUp = rotatingPowerUps[(Math.abs(weekHash) + 2) % rotatingPowerUps.length];
+
+    if (rank === 1) {
+      sparksGranted = hasClub ? 400 : 300;
+      shieldsToGrant = 2;
+      powerUpsGranted[primaryPowerUp] = (powerUpsGranted[primaryPowerUp] || 0) + 2;
+      powerUpsGranted[secondaryPowerUp] = (powerUpsGranted[secondaryPowerUp] || 0) + 1;
+      tierTitle = '🥇 1st Place Podium Champion';
+      badgeIcon = '🏆';
+    } else if (rank <= 3) {
+      sparksGranted = hasClub ? 220 : 150;
+      shieldsToGrant = 1;
+      powerUpsGranted[primaryPowerUp] = (powerUpsGranted[primaryPowerUp] || 0) + 1;
+      powerUpsGranted[secondaryPowerUp] = (powerUpsGranted[secondaryPowerUp] || 0) + 1;
+      tierTitle = `${rank === 2 ? '🥈 2nd' : '🥉 3rd'} Place Podium Finisher`;
+      badgeIcon = rank === 2 ? '🥈' : '🥉';
+    } else if (rank <= 10) {
+      sparksGranted = hasClub ? 120 : 75;
+      powerUpsGranted[primaryPowerUp] = (powerUpsGranted[primaryPowerUp] || 0) + 1;
+      tierTitle = '⭐ Top 10 Climber';
+      badgeIcon = '⭐';
+    } else {
+      sparksGranted = hasClub ? 60 : 40;
+      tierTitle = 'Climber Participant';
+      badgeIcon = '🏔️';
+    }
+
+    // Shield Max Capacity rule: Max capacity is 2
+    let finalShieldsGranted = 0;
+    let convertedShieldsToPowerUps = 0;
+    for (let i = 0; i < shieldsToGrant; i++) {
+      if ((currentShields + finalShieldsGranted) < 2) {
+        finalShieldsGranted += 1;
+      } else {
+        // Overflow shield converts to rotating secondary power-up
+        convertedShieldsToPowerUps += 1;
+        powerUpsGranted[secondaryPowerUp] = (powerUpsGranted[secondaryPowerUp] || 0) + 1;
+      }
+    }
+
+    // Update sparks
+    const currentSparks = profile.userData?.sparks ?? 0;
+    const newSparks = currentSparks + sparksGranted;
+
+    // Update consumables
+    const nextConsumables = {
+      shieldCount: Math.min(2, (curConsumables.shieldCount || 0) + finalShieldsGranted),
+      doubleSparksPotionCount: (curConsumables.doubleSparksPotionCount || 0) + (powerUpsGranted.doubleSparksPotionCount || 0),
+      hintScrollCount: (curConsumables.hintScrollCount || 0) + (powerUpsGranted.hintScrollCount || 0),
+      letterSpyglassCount: (curConsumables.letterSpyglassCount || 0) + (powerUpsGranted.letterSpyglassCount || 0),
+      letterPrunerCount: (curConsumables.letterPrunerCount || 0) + (powerUpsGranted.letterPrunerCount || 0),
+      explorerCompassCount: (curConsumables.explorerCompassCount || 0) + (powerUpsGranted.explorerCompassCount || 0),
+      streakSaverCount: curConsumables.streakSaverCount || 0
+    };
+    this.saveConsumables(nextConsumables, pid);
+
+    // Save profile state with claimed week marker
+    const state = safeGetProfilesState();
+    if (state.profiles[pid]) {
+      state.profiles[pid].userData = state.profiles[pid].userData || {};
+      state.profiles[pid].userData.sparks = newSparks;
+      state.profiles[pid].userData.claimedWeeklyLeaderboardWeeks = [...claimedWeeks, claimKey];
+      safeSaveProfilesState(state);
+    }
+
+    try {
+      localStorage.setItem('kibo_math_sparks', newSparks.toString());
+    } catch {}
+
+    return {
+      success: true,
+      weekStr,
+      rank,
+      category,
+      tierTitle,
+      badgeIcon,
+      sparksGranted,
+      shieldsGranted: finalShieldsGranted,
+      convertedShieldsToPowerUps,
+      powerUpsGranted,
+      primaryPowerUp,
+      totalSparks: newSparks
+    };
+  },
+
   // ─── Unlocked & Seen Badges Tracking ────────────────────────────────────
   getSeenBadges(profileId = null) {
     const pid = profileId || this.getActiveProfileId();

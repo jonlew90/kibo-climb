@@ -3,13 +3,18 @@ import { SUBJECTS_CONFIG } from '../config/subjects.js';
 
 export const INITIAL_COMPETENCE_RATING = 1000;
 
-export function getCompetenceRankTier(rating = 1000, subjectId = 'math') {
+export function getCompetenceTierObj(rating = 1000, subjectId = 'math') {
   const numRating = Number(rating) || 1000;
   const config = SUBJECTS_CONFIG[subjectId] || SUBJECTS_CONFIG['math'];
   const tiers = config.COMPETENCE_RANK_TIERS;
 
   const tier = tiers.find(t => numRating >= t.min && numRating <= t.max);
-  return tier ? tier.name : tiers[0].name;
+  return tier || tiers[0];
+}
+
+export function getCompetenceRankTier(rating = 1000, subjectId = 'math') {
+  const tier = getCompetenceTierObj(rating, subjectId);
+  return tier ? tier.name : 'Meadow Scout';
 }
 
 export function getCompetenceDescription(rating = 1000, totalProblemsSolved = 0, subjectId = 'math') {
