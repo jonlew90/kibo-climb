@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { analyticsService } from '../services/analyticsService';
-import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame } from 'lucide-react';
+import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame, Flag } from 'lucide-react';
 import Mascot from './Mascot';
 import Keypad from './Keypad';
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
+import FeedbackModal from './FeedbackModal';
 import { generateProblems } from '../utils/mathGenerator';
 import { getTierFromRating, generateTierProblem, isNearTierThreshold } from '../utils/mathCurriculum';
 import { soundFx } from '../utils/audio';
@@ -97,6 +98,7 @@ export default function MathSessionView({
   const [isShaking, setIsShaking] = useState(false);
   const [feedbackBanner, setFeedbackBanner] = useState(null);
   const [sessionSparksEarned, setSessionSparksEarned] = useState(0);
+  const [showQuestionFeedback, setShowQuestionFeedback] = useState(false);
 
   // Character Animation & Audio State
   const [mascotState, setMascotState] = useState('idle');
@@ -1800,10 +1802,25 @@ export default function MathSessionView({
 
                 {/* TIER 1: MINIMAL CLIMB STATUS BAR (Single row, non-wrapping) */}
                 <div className="w-full flex items-center justify-between gap-1 sm:gap-2 px-1 py-0.5 text-xs">
-                  {/* Left: Question Counter */}
-                  <span className="font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200 shrink-0 shadow-2xs">
-                    🎯 Q #{currentQuestionNum}/12
-                  </span>
+                  {/* Left: Question Counter & Report Flag */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200 shadow-2xs">
+                      🎯 Q #{currentQuestionNum}/12
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setShowQuestionFeedback(true);
+                      }}
+                      className="p-1 sm:px-2 sm:py-1 rounded-full border bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border-slate-200 hover:border-rose-300 shadow-2xs transition-all active:scale-90 flex items-center gap-1 cursor-pointer"
+                      title="Report an issue with this question"
+                      aria-label="Report Question"
+                    >
+                      <Flag className="w-3 h-3 text-rose-500 fill-rose-100" />
+                      <span className="hidden md:inline text-[10px] font-black uppercase text-rose-600">Report</span>
+                    </button>
+                  </div>
 
                   {/* Center: Priority Status Badge (Probe > Gatekeeper > Streak) */}
                   {currentProblem.isProbe ? (
@@ -1847,10 +1864,10 @@ export default function MathSessionView({
                   </div>
                 </div>
 
-                {/* TIER 2: ACTION DOCK / POWER-UPS BAR */}
-                <div className="w-full flex items-center justify-center gap-1 sm:gap-1.5 py-0.5">
+                {/* TIER 2: ACTION DOCK / POWER-UPS BAR (Row 2, single non-wrapping row) */}
+                <div className="w-full flex items-center justify-center gap-1 sm:gap-1.5 py-0.5 max-w-full overflow-x-auto no-scrollbar">
                   {incorrectReviewData ? (
-                    <span className="text-xs font-black uppercase text-rose-800 bg-rose-100 px-3 py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1 animate-pulse">
+                    <span className="text-[10px] sm:text-xs font-black uppercase text-rose-800 bg-rose-100 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1 animate-pulse shrink-0">
                       ❌ Reviewing Solution
                     </span>
                   ) : (
@@ -1860,7 +1877,7 @@ export default function MathSessionView({
                         type="button"
                         onClick={handlePassQuestion}
                         disabled={consecutiveSkips >= 2}
-                        className={`text-[11px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                        className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                           consecutiveSkips >= 2
                             ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                             : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -1896,7 +1913,7 @@ export default function MathSessionView({
                             onOpenWorkshop();
                           }
                         }}
-                        className={`text-[11px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                        className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                           showFrustrationCard
                             ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                             : shouldPulseHint
@@ -1918,7 +1935,7 @@ export default function MathSessionView({
                       <button
                         type="button"
                         onClick={handleUseLetterSpyglass}
-                        className={`text-[11px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                        className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                           (consumables?.letterSpyglassCount ?? 0) > 0
                             ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
                             : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
@@ -1936,7 +1953,7 @@ export default function MathSessionView({
                       <button
                         type="button"
                         onClick={handleUseLetterPruner}
-                        className={`text-[11px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                        className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                           isLetterPrunerActive
                             ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
                             : (consumables?.letterPrunerCount ?? 0) > 0
@@ -2078,6 +2095,22 @@ export default function MathSessionView({
           )}
         </div>
       )}
+
+      {/* QUESTION SPECIFIC FEEDBACK MODAL */}
+      <FeedbackModal
+        isOpen={showQuestionFeedback}
+        onClose={() => setShowQuestionFeedback(false)}
+        questionContext={{
+          subject: 'math',
+          prompt: currentProblem?.displayString || currentProblem?.prompt || (currentProblem?.num1 !== undefined ? `${currentProblem.num1} ${currentProblem.operatorSymbol || '+'} ${currentProblem.num2}` : ''),
+          expectedAnswer: currentProblem?.answerString || currentProblem?.answer,
+          userAnswer: incorrectReviewData?.userAttempt || inputVal,
+          tier: currentProblem?.tier || userTier,
+          questionNumber: currentQuestionNum,
+          problemType: currentProblem?.type || 'math',
+          rawProblem: currentProblem
+        }}
+      />
       </div>
     </div>
   );

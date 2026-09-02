@@ -1,17 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, AlertCircle, CheckCircle2, MessageSquare, Bug, Lightbulb, FileText, ArrowLeft } from 'lucide-react';
+import { X, Send, AlertCircle, CheckCircle2, MessageSquare, Bug, Lightbulb, FileText, ArrowLeft, HelpCircle, XCircle, SpellCheck, Sparkles, Flag } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { db } from '../config/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-export default function FeedbackModal({ isOpen, onClose }) {
-  const [category, setCategory] = useState('bug');
+export default function FeedbackModal({ isOpen, onClose, questionContext = null }) {
+  const isQuestionFeedback = !!questionContext;
+  const [category, setCategory] = useState(isQuestionFeedback ? 'incorrect_answer' : 'bug');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const autoCloseTimerRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setCategory(questionContext ? 'incorrect_answer' : 'bug');
+      setMessage('');
+      setError('');
+      setSuccess(false);
+    }
+  }, [isOpen, questionContext]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -36,12 +46,21 @@ export default function FeedbackModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const categories = [
+  const generalCategories = [
     { id: 'bug', label: 'Bug Report', icon: Bug, color: 'text-rose-600', bg: 'bg-rose-100', border: 'border-rose-300', ring: 'ring-rose-400' },
     { id: 'idea', label: 'Feature Idea', icon: Lightbulb, color: 'text-amber-600', bg: 'bg-amber-100', border: 'border-amber-300', ring: 'ring-amber-400' },
     { id: 'general', label: 'General', icon: MessageSquare, color: 'text-indigo-600', bg: 'bg-indigo-100', border: 'border-indigo-300', ring: 'ring-indigo-400' },
     { id: 'other', label: 'Other', icon: FileText, color: 'text-slate-600', bg: 'bg-slate-100', border: 'border-slate-300', ring: 'ring-slate-400' }
   ];
+
+  const questionCategories = [
+    { id: 'incorrect_answer', label: 'Wrong Answer Key', icon: XCircle, color: 'text-rose-600', bg: 'bg-rose-100', border: 'border-rose-300', ring: 'ring-rose-400' },
+    { id: 'typo_formatting', label: 'Typo / Formatting', icon: SpellCheck, color: 'text-amber-600', bg: 'bg-amber-100', border: 'border-amber-300', ring: 'ring-amber-400' },
+    { id: 'unclear_question', label: 'Confusing / Unclear', icon: HelpCircle, color: 'text-indigo-600', bg: 'bg-indigo-100', border: 'border-indigo-300', ring: 'ring-indigo-400' },
+    { id: 'glitch', label: 'Display / Audio Bug', icon: Bug, color: 'text-purple-600', bg: 'bg-purple-100', border: 'border-purple-300', ring: 'ring-purple-400' }
+  ];
+
+  const categories = isQuestionFeedback ? questionCategories : generalCategories;
 
   const handleClose = () => {
     if (autoCloseTimerRef.current) {
@@ -53,14 +72,14 @@ export default function FeedbackModal({ isOpen, onClose }) {
     setTimeout(() => {
       setSuccess(false);
       setMessage('');
-      setCategory('bug');
+      setCategory(isQuestionFeedback ? 'incorrect_answer' : 'bug');
       setError('');
     }, 300);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!message.trim()) {
+    if (!message.trim() && !isQuestionFeedback) {
       setError('Please enter a message.');
       return;
     }
@@ -70,7 +89,8 @@ export default function FeedbackModal({ isOpen, onClose }) {
     setError('');
 
     try {
-      const userData = storageService.getUserData('math');
+      const activeSubject = questionContext?.subject || 'math';
+      const userData = storageService.getUserData(activeSubject);
       const deviceInfo = {
         userAgent: navigator.userAgent,
         platform: navigator.platform,
@@ -79,7 +99,8 @@ export default function FeedbackModal({ isOpen, onClose }) {
         screenHeight: window.innerHeight,
       };
 
-      await addDoc(collection(db, 'feedback'), {
+      const payload = {
+        type: isQuestionFeedback ? 'question_feedback' : 'general_feedback',
         category,
         message: message.trim(),
         userId: userData?.cloudUid || 'anonymous',
@@ -87,12 +108,27 @@ export default function FeedbackModal({ isOpen, onClose }) {
         deviceInfo,
         status: 'new',
         createdAt: serverTimestamp(),
-      });
+      };
+
+      if (isQuestionFeedback && questionContext) {
+        payload.questionContext = {
+          subject: questionContext.subject || '',
+          prompt: questionContext.prompt || '',
+          expectedAnswer: questionContext.expectedAnswer !== undefined ? String(questionContext.expectedAnswer) : '',
+          userAnswer: questionContext.userAnswer !== undefined ? String(questionContext.userAnswer) : '',
+          tier: questionContext.tier || null,
+          questionNumber: questionContext.questionNumber || null,
+          problemType: questionContext.problemType || '',
+          rawProblem: questionContext.rawProblem ? JSON.parse(JSON.stringify(questionContext.rawProblem)) : null
+        };
+      }
+
+      await addDoc(collection(db, 'feedback'), payload);
 
       setSuccess(true);
       autoCloseTimerRef.current = setTimeout(() => {
         handleClose();
-      }, 4000);
+      }, 3000);
     } catch (err) {
       console.error('Error submitting feedback:', err);
       setError('Failed to send feedback. Please try again.');
@@ -143,13 +179,41 @@ export default function FeedbackModal({ isOpen, onClose }) {
         ) : (
           <>
             <div className="space-y-1 text-center mt-2">
-              <h2 className="text-2xl font-black text-slate-900 leading-tight">
-                Send Feedback
+              <h2 className="text-2xl font-black text-slate-900 leading-tight flex items-center justify-center gap-2">
+                {isQuestionFeedback ? (
+                  <>
+                    <Flag className="w-6 h-6 text-rose-500 fill-rose-100" />
+                    Report Question
+                  </>
+                ) : (
+                  'Send Feedback'
+                )}
               </h2>
               <p className="text-xs text-slate-600 font-medium">
-                Spot a bug? Have an idea? Let us know!
+                {isQuestionFeedback
+                  ? 'Let us know if there is an issue with this question.'
+                  : 'Spot a bug? Have an idea? Let us know!'}
               </p>
             </div>
+
+            {/* QUESTION CONTEXT PREVIEW */}
+            {isQuestionFeedback && questionContext && (
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-left space-y-1.5 shadow-2xs">
+                <div className="flex items-center justify-between text-[11px] font-black uppercase text-slate-500 tracking-wider">
+                  <span>{questionContext.subject ? `${questionContext.subject.toUpperCase()} SESSION` : 'QUESTION CONTEXT'}</span>
+                  {questionContext.questionNumber && (
+                    <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
+                      Q #{questionContext.questionNumber}
+                    </span>
+                  )}
+                </div>
+                {questionContext.prompt && (
+                  <p className="text-xs font-bold text-slate-800 line-clamp-3">
+                    {questionContext.prompt}
+                  </p>
+                )}
+              </div>
+            )}
 
             {error && (
               <div className="p-3 bg-rose-50 border border-rose-300 rounded-2xl text-rose-900 font-bold text-xs flex items-center justify-center gap-2 animate-pop">
@@ -181,18 +245,24 @@ export default function FeedbackModal({ isOpen, onClose }) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 ml-1">Message</label>
+                <label className="text-xs font-bold text-slate-700 ml-1">
+                  {isQuestionFeedback ? 'Details (Optional)' : 'Message'}
+                </label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="What's on your mind?"
-                  className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors resize-none min-h-[120px]"
+                  placeholder={
+                    isQuestionFeedback
+                      ? 'Tell us what was wrong (optional)...'
+                      : "What's on your mind?"
+                  }
+                  className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors resize-none min-h-[100px]"
                 />
               </div>
 
               <button
                 type="submit"
-                disabled={isSubmitting || !message.trim()}
+                disabled={isSubmitting || (!message.trim() && !isQuestionFeedback)}
                 className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:text-slate-500 text-white rounded-2xl font-black text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
@@ -200,7 +270,7 @@ export default function FeedbackModal({ isOpen, onClose }) {
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    Send Feedback
+                    {isQuestionFeedback ? 'Submit Report' : 'Send Feedback'}
                   </>
                 )}
               </button>

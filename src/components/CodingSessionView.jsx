@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { analyticsService } from '../services/analyticsService';
-import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame, Terminal, Code2, HelpCircle, Shield, Compass } from 'lucide-react';
+import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame, Terminal, Code2, HelpCircle, Shield, Compass, Flag } from 'lucide-react';
 import Mascot from './Mascot';
+import FeedbackModal from './FeedbackModal';
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
 import { generateCodingSession as generateProblems, generateCodingProblem as generateTierProblem, getNormalizedProblemKey, shuffleArray } from '../utils/codingGenerator';
@@ -93,6 +94,7 @@ export default function CodingSessionView({
   const [isShaking, setIsShaking] = useState(false);
   const [feedbackBanner, setFeedbackBanner] = useState(null);
   const [sessionSparksEarned, setSessionSparksEarned] = useState(0);
+  const [showQuestionFeedback, setShowQuestionFeedback] = useState(false);
 
   // Character Animation State
   const [mascotState, setMascotState] = useState('idle');
@@ -897,10 +899,25 @@ export default function CodingSessionView({
               <div className={`w-full max-w-md shrink-0 flex flex-col justify-between bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-3 sm:p-4 text-center transition-all duration-300 space-y-2 relative shadow-lg ${streakConfig.cardGlow} ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : 'border-purple-200'}`}>
                 {/* TIER 1: MINIMAL CLIMB STATUS BAR (Single row, non-wrapping) */}
                 <div className="w-full flex items-center justify-between gap-1 sm:gap-2 px-1 py-0.5 text-xs">
-                  {/* Left: Question Counter */}
-                  <span className="font-black uppercase text-purple-700 bg-purple-50 px-2 sm:px-2.5 py-1 rounded-full border border-purple-200 shrink-0 shadow-2xs">
-                    🎯 Q #{sessionQuestionIndex}/12
-                  </span>
+                  {/* Left: Question Counter & Report Flag */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="font-black uppercase text-purple-700 bg-purple-50 px-2 sm:px-2.5 py-1 rounded-full border border-purple-200 shadow-2xs">
+                      🎯 Q #{sessionQuestionIndex}/12
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setShowQuestionFeedback(true);
+                      }}
+                      className="p-1 sm:px-2 sm:py-1 rounded-full border bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border-slate-200 hover:border-rose-300 shadow-2xs transition-all active:scale-90 flex items-center gap-1 cursor-pointer"
+                      title="Report an issue with this question"
+                      aria-label="Report Question"
+                    >
+                      <Flag className="w-3 h-3 text-rose-500 fill-rose-100" />
+                      <span className="hidden md:inline text-[10px] font-black uppercase text-rose-600">Report</span>
+                    </button>
+                  </div>
 
                   {/* Center: Concept Tag / Streak Tier */}
                   <div className="flex items-center gap-1.5 text-xs font-black text-purple-800 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200 truncate max-w-[130px] sm:max-w-none">
@@ -935,14 +952,14 @@ export default function CodingSessionView({
                   </div>
                 </div>
 
-                {/* TIER 2: ACTION DOCK / POWER-UPS BAR */}
-                <div className="w-full flex items-center justify-center gap-1 sm:gap-2 py-0.5">
+                {/* TIER 2: ACTION DOCK / POWER-UPS BAR (Row 2, single non-wrapping row) */}
+                <div className="w-full flex items-center justify-center gap-1 sm:gap-2 py-0.5 max-w-full overflow-x-auto no-scrollbar">
                   {/* NON-PUNITIVE PASS BUTTON */}
                   <button
                     type="button"
                     onClick={handlePassQuestion}
                     disabled={consecutiveSkips >= 2}
-                    className={`text-[11px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                       consecutiveSkips >= 2
                         ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                         : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -960,7 +977,7 @@ export default function CodingSessionView({
                   <button
                     type="button"
                     onClick={handleUseHint}
-                    className={`text-[11px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       revealedHint
                         ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                         : (consumables?.hintScrollCount ?? 0) > 0
@@ -980,7 +997,7 @@ export default function CodingSessionView({
                   <button
                     type="button"
                     onClick={handleUsePruner}
-                    className={`text-[11px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       eliminatedOptions.length > 0
                         ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
                         : (consumables?.letterPrunerCount ?? 0) > 0
@@ -1059,6 +1076,22 @@ export default function CodingSessionView({
             )
           )}
         </div>
+
+        {/* QUESTION SPECIFIC FEEDBACK MODAL */}
+        <FeedbackModal
+          isOpen={showQuestionFeedback}
+          onClose={() => setShowQuestionFeedback(false)}
+          questionContext={{
+            subject: 'coding',
+            prompt: currentProblem ? `${currentProblem.displayString || ''}${currentProblem.codeSnippet ? `\n\nCode:\n${currentProblem.codeSnippet}` : ''}` : '',
+            expectedAnswer: currentProblem?.answer,
+            userAnswer: '',
+            tier: currentProblem?.tier || userTier,
+            questionNumber: sessionQuestionIndex,
+            problemType: currentProblem?.type || 'coding',
+            rawProblem: currentProblem
+          }}
+        />
       </div>
     </div>
   );
