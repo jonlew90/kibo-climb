@@ -734,89 +734,89 @@ export default function WorkshopModal({
         {/* ========================================================================= */}
         {/* DESKTOP LEFT PANE OR MY CLOSET DRESSING ROOM STAGE */}
         {/* ========================================================================= */}
-        {(viewMode === 'closet' || window.innerWidth >= 768) && (
-          <aside className={`w-full md:w-80 lg:w-96 shrink-0 bg-white md:border-r-2 border-b-2 md:border-b-0 border-slate-200 flex flex-col z-10 shadow-xs md:shadow-none overflow-y-auto ${
-            viewMode === 'shop' ? 'hidden md:flex' : 'flex'
-          }`}>
-            
-            <div className="p-3 sm:p-4 space-y-3 flex flex-col items-center">
-              {/* Dressing Stage Header */}
-              <div className="w-full flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-black text-slate-800">
-                    {viewMode === 'closet' ? '✨ Kibo’s Dressing Room' : '🐾 Live Try-On Stage'}
-                  </span>
-                </div>
+        <aside className={`w-full md:w-80 lg:w-96 shrink-0 bg-white md:border-r-2 border-b-2 md:border-b-0 border-slate-200 flex flex-col z-10 shadow-xs md:shadow-none overflow-y-auto ${
+          viewMode === 'shop' ? 'hidden md:flex' : 'flex'
+        }`}>
+          
+          <div className="p-3 sm:p-4 space-y-3 flex flex-col items-center">
+            {/* Dressing Stage Header */}
+            <div className="w-full flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black text-slate-800">
+                  {viewMode === 'closet' ? '✨ Kibo’s Dressing Room' : '🐾 Live Try-On Stage'}
+                </span>
+              </div>
 
-                {hasActivePreview && (
-                  <button
-                    type="button"
-                    onClick={handleResetPreview}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] px-2 py-0.5 rounded-full border border-slate-300 flex items-center gap-1 transition-all cursor-pointer"
-                  >
-                    <RotateCcw className="w-3 h-3" /> Reset
-                  </button>
+              {hasActivePreview && (
+                <button
+                  type="button"
+                  onClick={handleResetPreview}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] px-2 py-0.5 rounded-full border border-slate-300 flex items-center gap-1 transition-all cursor-pointer"
+                >
+                  <RotateCcw className="w-3 h-3" /> Reset
+                </button>
+              )}
+            </div>
+
+            {/* Framed Mascot Stage Box */}
+            <div className="w-full h-36 sm:h-44 md:h-52 rounded-3xl bg-gradient-to-b from-sky-100 via-white to-amber-50 border-3 border-slate-200 shadow-inner flex items-center justify-center relative overflow-hidden p-2 group">
+              <Mascot mood="happy" equipped={stageEquippedItems} className="w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 transition-transform duration-300 group-hover:scale-105" />
+
+              {/* Status Indicator */}
+              <div className="absolute top-2.5 left-2.5">
+                {hasUnownedPreview ? (
+                  <span className="bg-purple-700 text-white font-black text-[10px] uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm animate-pulse">
+                    <Sparkles className="w-3 h-3 fill-amber-300 stroke-[2.5]" /> Preview Mode
+                  </span>
+                ) : (
+                  <span className="bg-emerald-700 text-white font-black text-[10px] uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                    <ShieldCheck className="w-3 h-3 stroke-[2.5]" /> Active Look
+                  </span>
                 )}
               </div>
+            </div>
 
-              {/* Framed Mascot Stage Box */}
-              <div className="w-full h-36 sm:h-44 md:h-52 rounded-3xl bg-gradient-to-b from-sky-100 via-white to-amber-50 border-3 border-slate-200 shadow-inner flex items-center justify-center relative overflow-hidden p-2 group">
-                <Mascot mood="happy" equipped={stageEquippedItems} className="w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 transition-transform duration-300 group-hover:scale-105" />
-
-                {/* Status Indicator */}
-                <div className="absolute top-2.5 left-2.5">
-                  {hasUnownedPreview ? (
-                    <span className="bg-purple-700 text-white font-black text-[10px] uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm animate-pulse">
-                      <Sparkles className="w-3 h-3 fill-amber-300 stroke-[2.5]" /> Preview Mode
-                    </span>
-                  ) : (
-                    <span className="bg-emerald-700 text-white font-black text-[10px] uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                      <ShieldCheck className="w-3 h-3 stroke-[2.5]" /> Active Look
-                    </span>
-                  )}
+            {/* CLOSET ONLY: Equipped Slots HUD with 1-Tap Unequip */}
+            {viewMode === 'closet' && (
+              <div className="w-full space-y-1.5 text-left">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+                    Equipped Slots ({activeSlotDetails.length})
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-bold">Tap × to unequip</span>
                 </div>
-              </div>
 
-              {/* CLOSET ONLY: Equipped Slots HUD with 1-Tap Unequip */}
-              {viewMode === 'closet' && (
-                <div className="w-full space-y-1.5 text-left">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-                      Equipped Slots ({activeSlotDetails.length})
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold">Tap × to unequip</span>
+                {activeSlotDetails.length === 0 ? (
+                  <div className="p-2.5 text-center bg-slate-50 border border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-400">
+                    Nothing equipped! Tap any item below to wear it.
                   </div>
-
-                  {activeSlotDetails.length === 0 ? (
-                    <div className="p-2.5 text-center bg-slate-50 border border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-400">
-                      Nothing equipped! Tap any item below to wear it.
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-1.5">
-                      {activeSlotDetails.map(({ slot, item, isPreview }) => (
-                        <div
-                          key={slot}
-                          className="flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-xl text-xs font-black border bg-slate-50 border-slate-200 text-slate-800 shadow-2xs"
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {activeSlotDetails.map(({ slot, item, isPreview }) => (
+                      <div
+                        key={slot}
+                        className="flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-xl text-xs font-black border bg-slate-50 border-slate-200 text-slate-800 shadow-2xs"
+                      >
+                        <ItemThumbnail itemId={item.id} rarity={item.rarity} className="w-4 h-4 rounded-xs shrink-0" />
+                        <span className="truncate max-w-[100px] sm:max-w-[120px]">{item.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleClearSlot(slot)}
+                          className="w-4 h-4 rounded-full bg-slate-200 hover:bg-rose-200 hover:text-rose-800 text-slate-500 flex items-center justify-center text-[10px] font-black transition-colors"
+                          title="Unequip slot"
                         >
-                          <ItemThumbnail itemId={item.id} rarity={item.rarity} className="w-4 h-4 rounded-xs shrink-0" />
-                          <span className="truncate max-w-[100px] sm:max-w-[120px]">{item.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleClearSlot(slot)}
-                            className="w-4 h-4 rounded-full bg-slate-200 hover:bg-rose-200 hover:text-rose-800 text-slate-500 flex items-center justify-center text-[10px] font-black transition-colors"
-                            title="Unequip slot"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-              {/* DESKTOP SHOP: Selected Item Quick Summary */}
-              {viewMode === 'shop' && selectedItemDetail && (
+            {/* DESKTOP SHOP: Selected Item Quick Summary / Empty Prompt */}
+            {viewMode === 'shop' && (
+              selectedItemDetail ? (
                 <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-2 text-left animate-fade-in">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black text-slate-800 truncate">{selectedItemDetail.name}</span>
@@ -860,10 +860,15 @@ export default function WorkshopModal({
                     )}
                   </div>
                 </div>
-              )}
-            </div>
-          </aside>
-        )}
+              ) : (
+                <div className="w-full p-3 bg-slate-50/80 border border-dashed border-slate-200 rounded-2xl text-center space-y-1">
+                  <p className="text-xs font-bold text-slate-500">✨ Click any item to try it on Kibo!</p>
+                  <p className="text-[10px] text-slate-400">Preview hats, outfits, and gear live before unlocking.</p>
+                </div>
+              )
+            )}
+          </div>
+        </aside>
 
         {/* ========================================================================= */}
         {/* RIGHT CATALOG / CLOSET GRID CONTAINER */}
@@ -1592,12 +1597,12 @@ export default function WorkshopModal({
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. INTERACTIVE TRY-ON BOTTOM SHEET / DETAILS MODAL */}
+      {/* 3. INTERACTIVE TRY-ON BOTTOM SHEET / DETAILS MODAL (MOBILE ONLY) */}
       {/* ========================================================================= */}
       {selectedItemDetail && (
         <div
           onClick={() => setSelectedItemDetail(null)}
-          className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in cursor-pointer"
+          className="md:hidden fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in cursor-pointer"
         >
           <div
             className="bg-white rounded-t-3xl sm:rounded-3xl border-t-4 sm:border-3 border-amber-300 p-4 sm:p-5 w-full max-w-sm shadow-2xl space-y-3.5 animate-slide-up sm:animate-scale-in relative text-slate-800 cursor-default"

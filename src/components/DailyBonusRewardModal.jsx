@@ -54,9 +54,9 @@ export default function DailyBonusRewardModal({
     >
       {/* Cinematic Rotating Golden Sunburst Rays */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-        <div className="w-[600px] h-[600px] sm:w-[800px] sm:h-[800px] rounded-full bg-gradient-to-tr from-amber-500/20 via-yellow-400/25 to-orange-500/10 blur-3xl animate-pulse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] sm:w-[800px] sm:h-[800px] rounded-full bg-gradient-to-tr from-amber-500/20 via-yellow-400/25 to-orange-500/10 blur-3xl animate-pulse" />
         <div
-          className="w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] opacity-25 animate-spin-slow pointer-events-none"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] rounded-full opacity-25 animate-spin-slow pointer-events-none"
           style={{
             background: 'conic-gradient(from 0deg, rgba(251,191,36,0.5) 0deg 20deg, transparent 20deg 40deg, rgba(251,191,36,0.5) 40deg 60deg, transparent 60deg 80deg, rgba(251,191,36,0.5) 80deg 100deg, transparent 100deg 120deg, rgba(251,191,36,0.5) 120deg 140deg, transparent 140deg 160deg, rgba(251,191,36,0.5) 160deg 180deg, transparent 180deg 200deg, rgba(251,191,36,0.5) 200deg 220deg, transparent 220deg 240deg, rgba(251,191,36,0.5) 240deg 260deg, transparent 260deg 280deg, rgba(251,191,36,0.5) 280deg 300deg, transparent 300deg 320deg, rgba(251,191,36,0.5) 320deg 340deg, transparent 340deg 360deg)'
           }}

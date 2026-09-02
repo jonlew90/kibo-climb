@@ -36,6 +36,7 @@ export default {
         'shake': 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both',
         'pop': 'pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) both',
         'pulse-glow': 'pulseGlow 2s infinite',
+        'spin-slow': 'spin 20s linear infinite',
       },
       keyframes: {
         bounceShort: {
