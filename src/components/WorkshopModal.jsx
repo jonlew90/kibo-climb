@@ -295,15 +295,12 @@ export default function WorkshopModal({
     };
   }, [isOpen, onClose, showPromoModal, showFamilyPlanModal, selectedItemDetail, itemToSell]);
 
-  // Scroll to top of item list on filter/mode change and auto-reset preview slots when entering closet
+  // Scroll to top of item list on filter/mode change and clear selected item detail
   useEffect(() => {
     if (itemsContainerRef.current) {
       itemsContainerRef.current.scrollTop = 0;
     }
-    if (viewMode === 'closet') {
-      setPreviewSlots(INITIAL_PREVIEW_SLOTS);
-      setSelectedItemDetail(null);
-    }
+    setSelectedItemDetail(null);
   }, [viewMode, activeHub, selectedSlot, seasonalEventFilter]);
 
   const unlockedWearablesCount = useMemo(() => {
@@ -606,16 +603,46 @@ export default function WorkshopModal({
   }, [stageEquippedItems, selectedItemDetail]);
 
   // When clicking an item:
-  // In Shop on Mobile -> opens interactive Try-On Bottom Sheet / Dialog
-  // In Shop on Desktop -> selects item & updates left stage
-  // In Closet -> immediately equips/unequips on Kibo
+  // In Shop on Mobile -> toggles preview if already previewed, or applies preview & opens detail sheet
+  // In Shop on Desktop -> selects item & updates left stage (toggling if already previewed)
   const handleItemCardClick = (item) => {
     soundFx.playKeyTap();
     if (viewMode === 'closet') {
+      const slot = getItemSlot(item);
+      if (slot && previewSlots[slot] !== null) {
+        setPreviewSlots((prev) => ({ ...prev, [slot]: null }));
+      }
       onToggleEquip(item.id);
     } else {
       if (!item.isConsumable) {
         const itemsToPreview = (item.bundleItems && item.bundleItems.length > 0) ? item.bundleItems : [item.id];
+        const primarySlot = getItemSlot(item);
+        const isCurrentlyPreviewed = itemsToPreview.some((id) => {
+          const it = getItemById(id);
+          const slot = it ? getItemSlot(it) : primarySlot;
+          return slot && previewSlots[slot] === id;
+        });
+
+        if (isCurrentlyPreviewed) {
+          // Un-try: remove from preview slots
+          setPreviewSlots((prev) => {
+            const next = { ...prev };
+            itemsToPreview.forEach((id) => {
+              const it = getItemById(id);
+              const slot = it ? getItemSlot(it) : primarySlot;
+              if (slot && next[slot] === id) {
+                next[slot] = null;
+              }
+            });
+            return next;
+          });
+          if (selectedItemDetail?.id === item.id) {
+            setSelectedItemDetail(null);
+          }
+          return;
+        }
+
+        // Apply to preview slots
         setPreviewSlots((prev) => {
           const next = { ...prev };
           itemsToPreview.forEach((id) => {
@@ -787,10 +814,21 @@ export default function WorkshopModal({
                     {activeSlotDetails.map(({ slot, item, isPreview }) => (
                       <div
                         key={slot}
-                        className="flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-xl text-xs font-black border bg-slate-50 border-slate-200 text-slate-800 shadow-2xs"
+                        className={`flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-xl text-xs font-black border shadow-2xs ${
+                          isPreview
+                            ? 'bg-purple-50 border-purple-300 text-purple-900 ring-1 ring-purple-200'
+                            : 'bg-slate-50 border-slate-200 text-slate-800'
+                        }`}
                       >
                         <ItemThumbnail itemId={item.id} rarity={item.rarity} className="w-4 h-4 rounded-xs shrink-0" />
-                        <span className="truncate max-w-[100px] sm:max-w-[120px]">{item.name}</span>
+                        <span className={`truncate max-w-[100px] sm:max-w-[120px] ${isPreview ? 'text-purple-700 font-extrabold' : ''}`}>
+                          {item.name}
+                        </span>
+                        {isPreview && (
+                          <span className="text-[9px] font-black uppercase bg-purple-200/80 text-purple-900 px-1 py-0.2 rounded shrink-0">
+                            Tried
+                          </span>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleClearSlot(slot)}
@@ -819,7 +857,7 @@ export default function WorkshopModal({
                   <p className="text-[11px] text-slate-500 font-medium line-clamp-2 leading-relaxed">
                     {selectedItemDetail.description}
                   </p>
-                  <div className="pt-1">
+                  <div className="pt-1 space-y-1.5">
                     {unlockedItems.includes(selectedItemDetail.id) ? (
                       <button
                         type="button"
@@ -848,6 +886,19 @@ export default function WorkshopModal({
                         <span className="text-amber-300 font-black">
                           {getItemSalePrice(selectedItemDetail, currentDate).salePrice || selectedItemDetail.cost}⚡
                         </span>
+                      </button>
+                    )}
+
+                    {!selectedItemDetail.isConsumable && (stageEquippedItems.includes(selectedItemDetail.id) || (selectedItemDetail.bundleItems && selectedItemDetail.bundleItems.some((id) => stageEquippedItems.includes(id)))) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handlePreviewToggle(selectedItemDetail);
+                          setSelectedItemDetail(null);
+                        }}
+                        className="w-full py-1 text-[11px] font-bold text-slate-600 hover:text-slate-800 bg-slate-200/70 hover:bg-slate-200 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <RotateCcw className="w-3 h-3" /> Remove from Try-On
                       </button>
                     )}
                   </div>
@@ -1482,7 +1533,7 @@ export default function WorkshopModal({
                           : availability.isUpcoming
                           ? 'bg-slate-100/70 border-slate-200 opacity-90'
                           : canAfford
-                          ? 'border-slate-200 hover:border-amber-400 hover:shadow-xs'
+                          ? 'border-slate-200 hover:border-slate-300 shadow-2xs hover:shadow-xs'
                           : 'border-slate-200 opacity-95 hover:border-slate-300'
                       }`}
                     >
@@ -1641,6 +1692,29 @@ export default function WorkshopModal({
                 })}
               </div>
             )}
+
+            {/* Distinct High-Contrast Floating Try-On Pill (Mobile screens when try-on is active) */}
+            {hasActivePreview && (
+              <div className="md:hidden sticky bottom-2 left-0 right-0 z-20 flex justify-center pointer-events-none px-2 mt-[-40px]">
+                <div className="pointer-events-auto bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-amber-950 border-2 border-amber-300 shadow-xl rounded-full px-3 py-1.5 flex items-center gap-2.5 animate-bounce-subtle">
+                  <div className="flex items-center gap-1.5 text-xs font-black drop-shadow-2xs">
+                    <Sparkles className="w-3.5 h-3.5 fill-amber-950 text-amber-950" />
+                    <span>Try-On Active</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleResetPreview();
+                    }}
+                    className="bg-amber-950 hover:bg-black text-amber-100 hover:text-white font-black text-[11px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3 text-amber-300" />
+                    <span>Reset</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>
@@ -1729,7 +1803,7 @@ export default function WorkshopModal({
               )}
             </div>
 
-            {/* Action Buttons */}
+              {/* Action Buttons */}
             <div className="space-y-2 pt-1">
               {unlockedItems.includes(selectedItemDetail.id) && !selectedItemDetail.isConsumable ? (
                 <div className="flex items-center gap-2">
@@ -1780,40 +1854,55 @@ export default function WorkshopModal({
                   </span>
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleBuyClick(selectedItemDetail);
-                    setSelectedItemDetail(null);
-                  }}
-                  className="w-full py-2.5 text-xs font-black rounded-xl btn-3d-purple flex items-center justify-center gap-1 cursor-pointer shadow-md active:scale-95"
-                >
-                  {selectedItemDetail.requiresKiboClub && !isMember ? (
-                    <span className="flex items-center justify-center gap-1">
-                      <span>Join Club to Unlock</span>
-                      <span className="text-amber-300 font-black">({selectedItemDetail.cost}⚡)</span>
-                    </span>
-                  ) : selectedItemDetail.realMoneyPrice ? (
-                    <span className="flex items-center justify-center gap-1">
-                      <span>Buy for</span>
-                      <span className="text-amber-300 font-black">
-                        {isMember && selectedItemDetail.clubRealMoneyPrice ? selectedItemDetail.clubRealMoneyPrice : selectedItemDetail.realMoneyPrice}
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleBuyClick(selectedItemDetail);
+                      setSelectedItemDetail(null);
+                    }}
+                    className="w-full py-2.5 text-xs font-black rounded-xl btn-3d-purple flex items-center justify-center gap-1 cursor-pointer shadow-md active:scale-95"
+                  >
+                    {selectedItemDetail.requiresKiboClub && !isMember ? (
+                      <span className="flex items-center justify-center gap-1">
+                        <span>Join Club to Unlock</span>
+                        <span className="text-amber-300 font-black">({selectedItemDetail.cost}⚡)</span>
                       </span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-1">
-                      <span>Buy & Wear for</span>
-                      <span className="text-amber-300 font-black">
-                        {getItemEffectivePrice(selectedItemDetail, currentDate, isMember).cost}⚡
-                      </span>
-                      {getItemEffectivePrice(selectedItemDetail, currentDate, isMember).isClubDiscount && (
-                        <span className="text-[10px] text-amber-200 line-through">
-                          ({getItemEffectivePrice(selectedItemDetail, currentDate, isMember).originalCost}⚡)
+                    ) : selectedItemDetail.realMoneyPrice ? (
+                      <span className="flex items-center justify-center gap-1">
+                        <span>Buy for</span>
+                        <span className="text-amber-300 font-black">
+                          {isMember && selectedItemDetail.clubRealMoneyPrice ? selectedItemDetail.clubRealMoneyPrice : selectedItemDetail.realMoneyPrice}
                         </span>
-                      )}
-                    </span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-1">
+                        <span>Buy & Wear for</span>
+                        <span className="text-amber-300 font-black">
+                          {getItemEffectivePrice(selectedItemDetail, currentDate, isMember).cost}⚡
+                        </span>
+                        {getItemEffectivePrice(selectedItemDetail, currentDate, isMember).isClubDiscount && (
+                          <span className="text-[10px] text-amber-200 line-through">
+                            ({getItemEffectivePrice(selectedItemDetail, currentDate, isMember).originalCost}⚡)
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </button>
+
+                  {!selectedItemDetail.isConsumable && (stageEquippedItems.includes(selectedItemDetail.id) || (selectedItemDetail.bundleItems && selectedItemDetail.bundleItems.some((id) => stageEquippedItems.includes(id)))) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handlePreviewToggle(selectedItemDetail);
+                        setSelectedItemDetail(null);
+                      }}
+                      className="w-full py-2 text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" /> Remove from Try-On
+                    </button>
                   )}
-                </button>
+                </div>
               )}
             </div>
           </div>
