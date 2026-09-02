@@ -3432,6 +3432,11 @@ export default function App() {
         </div>
       )}
 
+      </main>
+
+      {/* Bottom Navigation Bar */}
+      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}
+
       {/* Workshop Modal */}
       <WorkshopModal
         isOpen={isWorkshopOpen}
@@ -3750,11 +3755,6 @@ export default function App() {
           setUnlockedItems(sData.unlockedItems || ['cap']);
         }}
       />
-
-      </main>
-
-      {/* Bottom Navigation Bar */}
-      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}
     </div>
   );
 }

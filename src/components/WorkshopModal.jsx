@@ -1645,16 +1645,19 @@ export default function WorkshopModal({
         </main>
       </div>
 
+      {/* 6. BOTTOM NAVIGATION FOOTER */}
+      {renderFooter ? renderFooter() : null}
+
       {/* ========================================================================= */}
       {/* 3. INTERACTIVE TRY-ON BOTTOM SHEET / DETAILS MODAL (MOBILE ONLY) */}
       {/* ========================================================================= */}
       {selectedItemDetail && (
         <div
           onClick={() => setSelectedItemDetail(null)}
-          className="md:hidden fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in cursor-pointer"
+          className="md:hidden fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 safe-pb animate-fade-in cursor-pointer"
         >
           <div
-            className="bg-white rounded-t-3xl sm:rounded-3xl border-t-4 sm:border-3 border-amber-300 p-4 sm:p-5 w-full max-w-sm shadow-2xl space-y-3.5 animate-slide-up sm:animate-scale-in relative text-slate-800 cursor-default"
+            className="bg-white rounded-3xl border-3 border-amber-300 p-4 sm:p-5 w-full max-w-sm shadow-2xl space-y-3.5 animate-scale-in relative text-slate-800 cursor-default max-h-[85dvh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header: Title + Category Slot + Close */}
@@ -1823,7 +1826,7 @@ export default function WorkshopModal({
       {showPromoModal && (
         <div
           onClick={() => setShowPromoModal(false)}
-          className="fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
+          className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
         >
           <div
             className="bg-white rounded-3xl border-3 border-amber-300 p-4 sm:p-5 w-full max-w-sm shadow-2xl space-y-3 animate-scale-in relative text-slate-800 cursor-default"
@@ -1851,8 +1854,8 @@ export default function WorkshopModal({
               </button>
             </div>
 
-            <div className="space-y-2.5">
-              <div className="flex items-center gap-2">
+            <div className="space-y-2 pt-1">
+              <div>
                 <input
                   type="text"
                   value={promoInput}
@@ -1861,16 +1864,8 @@ export default function WorkshopModal({
                     if (e.key === 'Enter') handleRedeemPromo();
                   }}
                   placeholder="ENTER CODE"
-                  className="flex-1 px-3 py-2 bg-slate-50 border-2 border-slate-200 rounded-xl font-mono font-bold text-xs tracking-wider uppercase text-slate-800 focus:outline-hidden focus:border-amber-400 focus:bg-white transition-all shadow-inner"
+                  className="flex-1 w-full px-3 py-2 bg-slate-50 border-2 border-slate-200 rounded-xl font-mono font-bold text-xs tracking-wider uppercase text-slate-800 focus:outline-hidden focus:border-amber-400 focus:bg-white transition-all shadow-inner"
                 />
-                <button
-                  type="button"
-                  disabled={isRedeeming || !promoInput.trim()}
-                  onClick={() => handleRedeemPromo()}
-                  className="btn-3d-orange px-3.5 py-2 text-xs rounded-xl font-black whitespace-nowrap disabled:opacity-50"
-                >
-                  {isRedeeming ? '...' : 'Redeem'}
-                </button>
               </div>
 
               {promoFeedback && (
@@ -1909,15 +1904,14 @@ export default function WorkshopModal({
                   )}
                 </div>
               )}
-            </div>
 
-            <div className="pt-1">
               <button
                 type="button"
-                onClick={() => setShowPromoModal(false)}
-                className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl transition-all"
+                disabled={isRedeeming || !promoInput.trim()}
+                onClick={() => handleRedeemPromo()}
+                className="w-full py-2.5 btn-3d-orange text-xs font-black rounded-xl disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1 shadow-md"
               >
-                Done
+                {isRedeeming ? '...' : 'Redeem Code'}
               </button>
             </div>
           </div>
@@ -1930,7 +1924,7 @@ export default function WorkshopModal({
       {itemToSell && (
         <div
           onClick={() => setItemToSell(null)}
-          className="fixed inset-0 z-[75] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
+          className="fixed inset-0 z-[105] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in cursor-pointer"
         >
           <div
             className="bg-white rounded-3xl border-3 border-amber-300 p-4 sm:p-5 w-full max-w-xs shadow-2xl space-y-3 animate-scale-in text-center relative cursor-default"
@@ -1943,10 +1937,11 @@ export default function WorkshopModal({
             <div className="space-y-1">
               <h3 className="text-base font-black text-slate-800">Sell Item</h3>
               <p className="text-xs font-bold text-slate-500 leading-tight">
-                Sell <span className="text-slate-700">{itemToSell.name}</span> for <span className="text-amber-600">{getItemSellBackPrice(itemToSell, isMember)} ⚡</span>?
+                Are you sure you want to sell <strong className="text-slate-800">{itemToSell.name}</strong> for{' '}
+                <span className="text-amber-500 font-black">{getItemSellBackPrice(itemToSell, isMember)}⚡</span>?
               </p>
               {isMember && (
-                <span className="text-[9px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.2 rounded-full inline-block mt-0.5">
+                <span className="inline-block text-[10px] font-black text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
                   VIP 65% Sell-Back Rate
                 </span>
               )}
@@ -1981,9 +1976,6 @@ export default function WorkshopModal({
         onClose={() => setShowFamilyPlanModal(false)}
         onOpenParentZone={onOpenParentZone}
       />
-
-      {/* 6. BOTTOM NAVIGATION FOOTER */}
-      {renderFooter ? renderFooter() : null}
     </div>
   );
 }
