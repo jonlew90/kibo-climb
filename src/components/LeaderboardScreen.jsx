@@ -1268,7 +1268,7 @@ export default function LeaderboardScreen({
                         👑 FAMILY
                       </span>
                     ) : playerPlanTier === 'solo' ? (
-                      <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300" title="Kibo Club VIP">
+                      <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 font-black px-1.5 py-0.2 rounded-md shadow-2xs shrink-0 flex items-center gap-0.5 border border-amber-300" title="Kibo Club Solo">
                         ⭐ CLUB
                       </span>
                     ) : null}

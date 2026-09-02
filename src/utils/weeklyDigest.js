@@ -297,12 +297,12 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
 export function formatWeeklyDigestText({ childName, digestData }) {
   const data = digestData;
   const name = childName || data.childName || 'Kibo Climber';
-  const clubTag = data.isKiboClub ? ' 👑 [KIBO CLUB VIP]' : '';
+  const clubTag = data.isKiboClub ? ' 👑 [KIBO CLUB]' : '';
 
   let text = `🐾 Kibo Climb Weekly Progress for ${name}${clubTag} 🏔️\n\n`;
   text += `Hi there!\n\nHere is ${name}'s personalized learning progress summary for the week:\n\n`;
   if (data.isKiboClub) {
-    text += `👑 KIBO CLUB VIP STATUS: Active (1.25x Spark Multiplier & VIP Access)\n`;
+    text += `👑 KIBO CLUB STATUS: Active (1.25x Spark Multiplier & Multi-Profile Access)\n`;
   }
   text += `🔥 DAILY STREAK: ${data.streak} ${data.streak === 1 ? 'Day' : 'Days'}\n`;
   text += `⚡ Sparks Balance: ${data.sparks} ⚡\n`;
@@ -351,7 +351,7 @@ export function formatWeeklyDigestText({ childName, digestData }) {
 
   if (!data.isKiboClub) {
     text += `========================================\n`;
-    text += `👑 KIBO CLUB PREVIEW: Deep diagnostic bottleneck alerts, fatigue tracking, and actionable parent coaching insights are available with Kibo Club VIP!\n\n`;
+    text += `👑 KIBO CLUB PREVIEW: Deep diagnostic bottleneck alerts, fatigue tracking, and actionable parent coaching insights are available with Kibo Club!\n\n`;
   }
 
   if (data.unstartedSubjects && data.unstartedSubjects.length > 0) {
@@ -458,12 +458,12 @@ export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digest
         </div>
 
         ${data.isKiboClub && sub.clubInsights?.insightCards && sub.clubInsights.insightCards.length > 0 ? `
-          <!-- KIBO CLUB VIP ADVANCED DIAGNOSTICS -->
+          <!-- KIBO CLUB ADVANCED DIAGNOSTICS -->
           <div style="background: linear-gradient(135deg, #fefce8 0%, #fffbeb 100%); border-radius: 12px; padding: 14px; margin-top: 12px; border: 1.5px solid #fef08a;">
             <div style="display: flex; align-items: center; margin-bottom: 8px;">
               <span style="font-size: 14px; margin-right: 6px;">👑</span>
               <strong style="font-size: 12px; color: #854d0e; text-transform: uppercase; letter-spacing: 0.5px;">
-                Kibo Club VIP Diagnostic Insights
+                Kibo Club Diagnostic Insights
               </strong>
             </div>
             ${sub.clubInsights.insightCards.map((card) => `
@@ -503,11 +503,11 @@ export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digest
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 20px;">👑</span>
             <strong style="font-size: 15px; font-weight: 900; color: #fef08a; letter-spacing: -0.2px;">
-              Unlock Deep Diagnostic Insights with Kibo Club
+              Unlock Deep Learning Insights with Kibo Club
             </strong>
           </div>
           <span style="background-color: rgba(254, 240, 138, 0.2); color: #fef08a; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(254, 240, 138, 0.4); text-transform: uppercase;">
-            VIP Feature
+            Kibo Club
           </span>
         </div>
         <p style="margin: 0 0 12px 0; font-size: 12px; color: #c7d2fe; line-height: 1.5;">
@@ -518,9 +518,9 @@ export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digest
             🔒 Sample Bottleneck Alert: Immediate skip patterns (<3s) & prerequisite skill coaching suggestions...
           </div>
         </div>
-        <div style="text-align: right;">
-          <a href="${data.links.parentSettingsUrl}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #78350f; font-size: 12px; font-weight: 900; text-decoration: none; padding: 8px 16px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
-            👑 Upgrade to Kibo Club VIP →
+        <div style="text-align: center; margin-top: 14px;">
+          <a href="${data.links.parentSettingsUrl}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #78350f; font-size: 13px; font-weight: 900; text-decoration: none; padding: 10px 22px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+            👑 Upgrade to Kibo Club →
           </a>
         </div>
       </div>
@@ -600,7 +600,7 @@ export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digest
                       ${data.isKiboClub ? `
                         <div>
                           <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #78350f; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 12px; border: 1px solid #fde68a; display: inline-block; box-shadow: 0 2px 6px rgba(217,119,6,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
-                            👑 Kibo Club VIP
+                            👑 Kibo Club
                           </span>
                         </div>
                       ` : ''}

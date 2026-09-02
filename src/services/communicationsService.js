@@ -162,8 +162,8 @@ class CommunicationsService {
     const childName = profile.username || profile.name || 'Kibo Climber';
     const digestData = generateWeeklyDigestData(profile, subjectsConfig, baseUrl, mergedOptions);
     
-    // Subject line includes the Kibo Red Panda mascot icon 🐾 🏔️ and VIP tag if Kibo Club
-    const clubBadge = digestData.isKiboClub ? ' 👑 [Kibo Club VIP]' : '';
+    // Subject line includes the Kibo Red Panda mascot icon 🐾 🏔️ and club tag if Kibo Club
+    const clubBadge = digestData.isKiboClub ? ' 👑 [Kibo Club]' : '';
     const subjectLine = `🐾 🏔️ Kibo Weekly Progress for ${childName}${clubBadge} | Topics & Mastery Summary`;
     const textMessage = formatWeeklyDigestText({ childName, digestData });
     const htmlMessage = formatWeeklyDigestHtml({ childName, digestData });

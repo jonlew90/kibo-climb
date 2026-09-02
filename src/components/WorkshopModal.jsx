@@ -1258,8 +1258,8 @@ export default function WorkshopModal({
                   <div className="flex items-center gap-1.5 text-xs font-black text-amber-950">
                     <span>
                       {storageService.hasFamilyPlan()
-                        ? 'Kibo Club Family VIP Pricing: Save 20% on All Spark Bundles'
-                        : 'Kibo Club VIP Pricing: Save 15% on All Packs & Bundles'}
+                        ? 'Kibo Club Family Pricing: Save 20% on All Spark Bundles'
+                        : 'Kibo Club Solo Pricing: Save 15% on All Packs & Bundles'}
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-600 font-medium">

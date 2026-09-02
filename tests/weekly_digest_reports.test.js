@@ -61,16 +61,16 @@ describe('Weekly Progress Digest Reports (Kibo Club vs Basic)', () => {
     expect(bottleneck).toBeDefined();
     expect(bottleneck.title).toContain('Topic Bottleneck');
 
-    // Formats into text digest with VIP tag and insights
+    // Formats into text digest with club tag and insights
     const textDigest = formatWeeklyDigestText({ childName: 'Maya Explorer', digestData: clubDigest });
-    expect(textDigest).toContain('👑 [KIBO CLUB VIP]');
+    expect(textDigest).toContain('👑 [KIBO CLUB]');
     expect(textDigest).toContain('👑 KIBO CLUB DEEP DIAGNOSTIC INSIGHTS');
     expect(textDigest).toContain('Topic Bottleneck: Fractions & GCF/LCM');
 
-    // Formats into HTML email with VIP badges and insights
+    // Formats into HTML email with club badges and insights
     const htmlDigest = formatWeeklyDigestHtml({ childName: 'Maya Explorer', digestData: clubDigest });
-    expect(htmlDigest).toContain('👑 Kibo Club VIP');
-    expect(htmlDigest).toContain('Kibo Club VIP Diagnostic Insights');
+    expect(htmlDigest).toContain('👑 Kibo Club');
+    expect(htmlDigest).toContain('Kibo Club Diagnostic Insights');
     expect(htmlDigest).not.toContain('Unlock Deep Diagnostic Insights with Kibo Club');
   });
 
@@ -89,13 +89,13 @@ describe('Weekly Progress Digest Reports (Kibo Club vs Basic)', () => {
 
     // Formats into text digest with teaser notice
     const textDigest = formatWeeklyDigestText({ childName: 'Maya Explorer', digestData: nonClubDigest });
-    expect(textDigest).not.toContain('👑 [KIBO CLUB VIP]');
+    expect(textDigest).not.toContain('👑 [KIBO CLUB]');
     expect(textDigest).not.toContain('👑 KIBO CLUB DEEP DIAGNOSTIC INSIGHTS');
     expect(textDigest).toContain('👑 KIBO CLUB PREVIEW:');
 
     // Formats into HTML email with secure blurred teaser banner
     const htmlDigest = formatWeeklyDigestHtml({ childName: 'Maya Explorer', digestData: nonClubDigest });
-    expect(htmlDigest).toContain('Unlock Deep Diagnostic Insights with Kibo Club');
+    expect(htmlDigest).toContain('Unlock Deep Learning Insights with Kibo Club');
     expect(htmlDigest).toContain('Sample Bottleneck Alert');
     expect(htmlDigest).not.toContain('Topic Bottleneck: Fractions & GCF/LCM');
   });
