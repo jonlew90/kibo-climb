@@ -24,42 +24,48 @@ export const GRADE_CURRICULUM_DETAILS = {
     words: 'Alphabet & basic phonics',
     world: 'Continents & major oceans',
     coding: 'Visual patterns & sequence order',
-    summary: 'Numbers, shapes, letters & logic'
+    summary: 'Numbers, shapes, letters & logic',
+    preview: 'Counting • Phonics • Continents & Oceans'
   },
   'Grade 1–2': {
     math: 'Sums & differences to 20, making 10s',
     words: 'Sight words & basic spelling',
     world: 'Continents, oceans & cardinal directions',
     coding: 'Step algorithms & repeat patterns',
-    summary: 'Addition/subtraction, reading roots & logic'
+    summary: 'Addition/subtraction, reading roots & logic',
+    preview: 'Sums to 20 • Sight Words • Oceans & Maps'
   },
   'Grade 3–4': {
     math: 'Multiplication (0s–9s) & time math',
     words: 'Vocabulary & compound words',
     world: 'US states, shapes & state capitals',
     coding: 'Grid navigation & boolean logic',
-    summary: 'Multiplication, vocabulary & computational thinking'
+    summary: 'Multiplication, vocabulary & computational thinking',
+    preview: 'Multiplication • Vocab • US States & Capitals'
   },
   'Grade 5–6': {
     math: 'Money decimals, fractions & division',
     words: 'Advanced spelling & prefixes/suffixes',
     world: 'Major world countries & sovereign capitals',
     coding: 'Variables, binary & conditionals',
-    summary: 'Decimal arithmetic, fractions & state tracing'
+    summary: 'Decimal arithmetic, fractions & state tracing',
+    preview: 'Fractions & Decimals • Prefixes • World Countries'
   },
   'Grade 7–8': {
     math: 'Multi-digit arithmetic, fractions & PEMDAS',
     words: 'Complex grammar, parts of speech & word roots',
     world: 'Country shapes, hemispheres & physical geography',
     coding: 'Loops, functions & stack data structures',
-    summary: 'Multi-step arithmetic, grammar & functions'
+    summary: 'Multi-step arithmetic, grammar & functions',
+    preview: 'Multi-Step Math • Grammar Roots • World Geography'
   },
   'High School & Beyond': {
     math: 'Linear equations, negatives & powers',
     words: 'Advanced verbal & language mastery',
     world: 'Global straits, tricky capitals & extreme geography',
     coding: 'Recursion, algorithms & Big-O complexity',
-    summary: 'Advanced equations, verbal mastery & algorithmic logic'
+    summary: 'Advanced equations, verbal mastery & algorithmic logic',
+    preview: 'Linear Equations • Verbal Mastery • Advanced Logic'
   },
   // Backwards compatibility aliases
   'Pre-Algebra / Middle School': {
@@ -67,14 +73,16 @@ export const GRADE_CURRICULUM_DETAILS = {
     words: 'Complex grammar, parts of speech & word roots',
     world: 'Country shapes, hemispheres & physical geography',
     coding: 'Loops, functions & stack data structures',
-    summary: 'Multi-step arithmetic, grammar & functions'
+    summary: 'Multi-step arithmetic, grammar & functions',
+    preview: 'Multi-Step Math • Grammar Roots • World Geography'
   },
   'Algebra & Beyond': {
     math: 'Linear equations, negatives & powers',
     words: 'Advanced verbal & language mastery',
     world: 'Global straits, tricky capitals & extreme geography',
     coding: 'Recursion, algorithms & Big-O complexity',
-    summary: 'Advanced equations, verbal mastery & algorithmic logic'
+    summary: 'Advanced equations, verbal mastery & algorithmic logic',
+    preview: 'Linear Equations • Verbal Mastery • Advanced Logic'
   },
 };
 
@@ -100,6 +108,15 @@ export default function FirstLaunchOnboardingModal({
   const inputRef = useRef(null);
   const checkedUsernameRef = useRef('');
   const inFlightPromiseRef = useRef(null);
+  const gradeSelectionTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (gradeSelectionTimerRef.current) {
+        clearTimeout(gradeSelectionTimerRef.current);
+      }
+    };
+  }, []);
 
   // Background cloud claim / availability pre-check
   const verifyUsernameWithCloud = async (name) => {
@@ -152,8 +169,9 @@ export default function FirstLaunchOnboardingModal({
   const [consentAgreed, setConsentAgreed] = useState(false);
   const [consentError, setConsentError] = useState('');
 
-  // Pre-fill if username already set (e.g. returning to this screen)
+  // Pre-fill if username already set, or auto-fill with a generated kid-safe tag
   useEffect(() => {
+    if (!isOpen) return;
     const existing = storageService.getUsername();
     if (existing) {
       setUsernameInput(existing);
@@ -165,6 +183,10 @@ export default function FirstLaunchOnboardingModal({
       } else {
         setStep(2);
       }
+    } else if (!usernameInput) {
+      const safeName = generateSafeUsername();
+      setUsernameInput(safeName);
+      verifyUsernameWithCloud(safeName);
     }
   }, [isOpen]);
 
@@ -243,11 +265,27 @@ export default function FirstLaunchOnboardingModal({
   const handleGradeSelect = (grade) => {
     soundFx.playKeyTap();
     setSelectedGrade(grade);
+
+    if (gradeSelectionTimerRef.current) {
+      clearTimeout(gradeSelectionTimerRef.current);
+    }
+
+    gradeSelectionTimerRef.current = setTimeout(() => {
+      const coppaStatus = parentChildService.getCOPPAConsentStatus();
+      if (!coppaStatus.consented) {
+        setConsentAgreed(false);
+        setConsentError('');
+        setStep('coppa_consent');
+        return;
+      }
+      finalizeProfile(grade);
+    }, 200);
   };
 
-  const finalizeProfile = () => {
+  const finalizeProfile = (gradeOverride) => {
+    const gradeToSave = gradeOverride || selectedGrade;
     const cleaned = usernameInput.trim();
-    storageService.saveUsername(cleaned, selectedGrade);
+    storageService.saveUsername(cleaned, gradeToSave);
     storageService.setOnboarded(true);
     if (onUsernameSet) onUsernameSet(cleaned);
     soundFx.playVictory();
@@ -493,7 +531,7 @@ export default function FirstLaunchOnboardingModal({
                 autoCapitalize="none"
                 spellCheck={false}
                 disabled={isCheckingUsername}
-                className={`w-full pl-10 pr-4 py-3.5 bg-white/10 border-2 rounded-2xl text-white font-extrabold text-base placeholder:text-slate-500 focus:outline-none transition-all ${
+                className={`w-full px-10 py-3.5 text-center bg-white/10 border-2 rounded-2xl text-white font-extrabold text-base placeholder:text-slate-500 focus:outline-none transition-all ${
                   usernameError ? 'border-rose-500 bg-rose-500/10'
                   : usernameConfirmed ? 'border-emerald-400 bg-emerald-500/10'
                   : 'border-white/20 focus:border-purple-400 focus:bg-white/15'
@@ -511,7 +549,7 @@ export default function FirstLaunchOnboardingModal({
               className="w-full py-2.5 px-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 rounded-xl text-purple-200 text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
             >
               <Dices className="w-4 h-4 text-amber-300" />
-              <span>🎲 Generate Kid-Safe Tag</span>
+              <span>🎲 Regenerate Kid-Safe Tag</span>
             </button>
 
             {usernameError && <p className="text-xs font-bold text-rose-400 text-left px-1">{usernameError}</p>}
@@ -596,11 +634,25 @@ export default function FirstLaunchOnboardingModal({
         <div className="absolute w-96 h-96 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
 
         <div className="relative z-10 w-full max-w-sm sm:max-w-md flex flex-col items-center gap-3.5 sm:gap-4.5 text-center max-h-[96dvh] overflow-hidden py-1 sm:py-2">
-          {/* Step indicator */}
-          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500 shrink-0">
-            <span className="text-slate-600">Step 1</span>
-            <span>/</span>
-            <span className="text-amber-400">Step 2</span>
+          {/* Step indicator with back button */}
+          <div className="flex items-center justify-between w-full text-xs font-black uppercase tracking-widest text-slate-500 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                if (gradeSelectionTimerRef.current) clearTimeout(gradeSelectionTimerRef.current);
+                setStep(1);
+              }}
+              className="text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1 font-bold text-xs"
+            >
+              ← Back
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-slate-600">Step 1</span>
+              <span>/</span>
+              <span className="text-amber-400">Step 2</span>
+            </div>
+            <div className="w-12" aria-hidden="true" />
           </div>
 
           <div className="space-y-1.5 shrink-0">
@@ -619,78 +671,53 @@ export default function FirstLaunchOnboardingModal({
           </div>
 
           {/* Bounded Vertically Scrollable Grade Option Tiles */}
-          <div className="w-full max-h-[48dvh] sm:max-h-[52dvh] overflow-y-auto space-y-2 pr-1 custom-scrollbar shrink">
+          <div className="w-full max-h-[56dvh] sm:max-h-[60dvh] overflow-y-auto space-y-2 pr-1 custom-scrollbar shrink">
             {GRADE_OPTIONS.map((grade) => {
-              const details = GRADE_CURRICULUM_DETAILS[grade] || { math: '', words: '', world: '', summary: '' };
+              const details = GRADE_CURRICULUM_DETAILS[grade] || { math: '', words: '', world: '', summary: '', preview: '' };
               const isSelected = selectedGrade === grade;
+              const previewText = details.preview || [details.math, details.words, details.world].filter(Boolean).join(' • ');
+
               return (
                 <button
                   key={grade}
                   type="button"
                   onClick={() => handleGradeSelect(grade)}
-                  className={`w-full flex items-start gap-2.5 px-3.5 py-2.5 sm:py-3 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
                     isSelected
-                      ? 'border-amber-400 bg-amber-400/15 shadow-md shadow-amber-500/10'
+                      ? 'border-amber-400 bg-amber-400/20 shadow-lg shadow-amber-400/25 ring-2 ring-amber-400/40 ring-offset-2 ring-offset-slate-950 scale-[1.01] animate-pop'
                       : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10'
                   }`}
                 >
-                  <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center mt-0.5 transition-all ${
-                    isSelected ? 'border-amber-400 bg-amber-400' : 'border-slate-600'
+                  <div className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
+                    isSelected ? 'border-amber-400 bg-amber-400 animate-bounce-short' : 'border-slate-600'
                   }`}>
-                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-slate-900" />}
+                    {isSelected ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-slate-950 stroke-[3]" />
+                    ) : (
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+                    )}
                   </div>
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="text-sm sm:text-base font-black text-white truncate">{grade}</span>
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`text-sm sm:text-base font-black truncate transition-colors ${isSelected ? 'text-amber-300' : 'text-white'}`}>
+                        {grade}
+                      </span>
                       {isSelected && (
-                        <span className="text-xs font-black uppercase text-amber-400 bg-amber-400/20 px-1.5 py-0.5 rounded-md">
+                        <span className="text-[11px] font-black uppercase text-amber-950 bg-amber-400 px-2 py-0.5 rounded-full shadow-xs shrink-0 flex items-center gap-1 animate-pulse">
+                          <CheckCircle2 className="w-3 h-3 stroke-[3]" />
                           Selected
                         </span>
                       )}
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 text-xs">
-                      <div className="flex items-center gap-1 text-amber-200/90 font-medium truncate">
-                        <span className="text-xs shrink-0">🔢</span>
-                        <span className="truncate">{details.math}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-teal-200/90 font-medium truncate">
-                        <span className="text-xs shrink-0">📚</span>
-                        <span className="truncate">{details.words}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-emerald-200/90 font-medium truncate">
-                        <span className="text-xs shrink-0">🌍</span>
-                        <span className="truncate">{details.world}</span>
-                      </div>
-                    </div>
+                    {previewText && (
+                      <p className={`text-xs font-medium truncate transition-colors ${isSelected ? 'text-amber-100/90' : 'text-slate-300'}`}>
+                        {previewText}
+                      </p>
+                    )}
                   </div>
                 </button>
               );
             })}
-          </div>
-
-          <div className="w-full flex items-center gap-2 pt-1 shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setStep(1);
-              }}
-              className="px-4 py-3 sm:py-3.5 bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-sm sm:text-base rounded-2xl shrink-0 transition-all cursor-pointer"
-            >
-              Back
-            </button>
-            <button
-              type="button"
-              onClick={handleGradeConfirm}
-              disabled={!selectedGrade}
-              className={`flex-1 py-3 sm:py-3.5 font-black text-sm sm:text-base rounded-2xl border-b-4 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1.5 ${
-                selectedGrade
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/30 border-orange-700 cursor-pointer'
-                  : 'bg-slate-800 text-slate-600 border-slate-900 cursor-not-allowed'
-              }`}
-            >
-              Parent Verification 🔒
-            </button>
           </div>
         </div>
         {showPrivacyModal && (
