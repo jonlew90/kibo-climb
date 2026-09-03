@@ -40,6 +40,7 @@ import {
   getAvailableSeasonalEvents,
   getActiveHolidayOrSeasonalSaleEvent,
   getActiveRealMoneySaleEvent,
+  getEffectiveSubscriptionPricing,
   getEffectiveSparksPackage,
   isSeasonalEventAvailableOrUpcoming,
   getItemsByCategory,
@@ -1223,35 +1224,46 @@ export default function WorkshopModal({
             {viewMode === 'shop' && activeHub === 'sparks' ? (
               <div className="space-y-3 max-w-3xl mx-auto pb-24 sm:pb-16">
                 {/* Consolidated Kibo Club Hero Banner */}
-                <div
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    setShowFamilyPlanModal(true);
-                  }}
-                  className="bg-gradient-to-r from-purple-700 via-indigo-700 to-amber-600 text-white rounded-3xl p-4 sm:p-5 shadow-md hover:scale-[1.01] active:scale-98 transition-all cursor-pointer relative overflow-hidden group border-2 border-amber-300/40"
-                >
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-110 transition-transform duration-500 pointer-events-none" />
-                  
-                  <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
-                    <div className="space-y-1.5 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 fill-amber-950" /> Kibo Club
-                        </span>
-                        <span className="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-                          Solo & Family (Save ~35% Annual)
-                        </span>
-                        <span className="bg-emerald-500 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-2xs">
-                          From $4.99/mo or $39.99/yr
-                        </span>
-                      </div>
-                      <h3 className="text-base sm:text-lg font-black tracking-tight text-white drop-shadow-xs">
-                        Unlock 1.25x Sparks Forever, 15% VIP Store Discounts & Daily Vault
-                      </h3>
-                      <p className="text-xs text-indigo-100 font-medium leading-snug max-w-xl">
-                        Supercharge learning with 1.25x Sparks, 15% VIP discounts on gear & packs, 3.3x Daily Vault bonuses, golden tags 👑, and up to 6 siblings on Family Plan!
-                      </p>
-                    </div>
+                {(() => {
+                  const soloSubPricing = getEffectiveSubscriptionPricing('kibo_club_sub', currentDate);
+                  const soloAnnualPricing = getEffectiveSubscriptionPricing('kibo_club_sub_annual', currentDate);
+                  const hasSubDiscount = soloSubPricing.isDiscounted || soloAnnualPricing.isDiscounted;
+
+                  return (
+                    <div
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setShowFamilyPlanModal(true);
+                      }}
+                      className="bg-gradient-to-r from-purple-700 via-indigo-700 to-amber-600 text-white rounded-3xl p-4 sm:p-5 shadow-md hover:scale-[1.01] active:scale-98 transition-all cursor-pointer relative overflow-hidden group border-2 border-amber-300/40"
+                    >
+                      <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-110 transition-transform duration-500 pointer-events-none" />
+                      
+                      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+                        <div className="space-y-1.5 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
+                              <Sparkles className="w-3 h-3 fill-amber-950" /> Kibo Club
+                            </span>
+                            {hasSubDiscount && (
+                              <span className="bg-amber-300 text-amber-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-2xs animate-pulse">
+                                Sale Active!
+                              </span>
+                            )}
+                            <span className="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                              Solo & Family ({soloAnnualPricing.isDiscounted ? `Save ${soloAnnualPricing.discountPercent + 30}%` : 'Save ~35%'} Annual)
+                            </span>
+                            <span className="bg-emerald-500 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-2xs">
+                              From {soloSubPricing.price} or {soloAnnualPricing.price}
+                            </span>
+                          </div>
+                          <h3 className="text-base sm:text-lg font-black tracking-tight text-white drop-shadow-xs">
+                            Unlock 1.25x Sparks Forever, 15% VIP Store Discounts & Daily Vault
+                          </h3>
+                          <p className="text-xs text-indigo-100 font-medium leading-snug max-w-xl">
+                            Supercharge learning with 1.25x Sparks, 15% VIP discounts on gear & packs, 3.3x Daily Vault bonuses, golden tags 👑, and up to 6 siblings on Family Plan!
+                          </p>
+                        </div>
 
                     <div className="shrink-0 flex items-center">
                       <button
@@ -1264,6 +1276,8 @@ export default function WorkshopModal({
                     </div>
                   </div>
                 </div>
+                  );
+                })()}
 
                 {/* Account Link Reward Banner */}
                 {authService.getAuthState().isAnonymous && onRequestAccountLink && (

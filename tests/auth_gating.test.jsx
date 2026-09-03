@@ -305,6 +305,30 @@ describe('Auth & Parental Gating Verification', () => {
       expect(openParentSpy).toHaveBeenCalledWith('verification', 'family_plan');
     });
 
+    it('FamilyPlanUpgradeModal reflects active subscription promo sale pricing', () => {
+      // Mock active sale event date (Back to School sale: late August - early September)
+      const mockSaleDate = new Date(2026, 7, 28); // August 28, 2026
+      vi.useFakeTimers();
+      vi.setSystemTime(mockSaleDate);
+
+      act(() => {
+        root.render(
+          <FamilyPlanUpgradeModal
+            isOpen={true}
+            onClose={() => {}}
+            onOpenParentZone={() => {}}
+          />
+        );
+      });
+
+      // Banner should display
+      expect(container.textContent).toContain('Active');
+      // Should reflect sale discount percentage or discounted price
+      expect(container.textContent).toContain('-25%');
+
+      vi.useRealTimers();
+    });
+
     it('subscription selection in Parent Zone triggers PIN gate and requires auth before Stripe checkout', () => {
       let pendingPurchase = null;
       let showPinGateModal = false;

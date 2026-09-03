@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Sparkles, CheckCircle2, ChevronRight, ShieldCheck, Users } from 'lucide-react';
 import { storageService } from '../services/storageService';
+import { getActiveRealMoneySaleEvent, getEffectiveSubscriptionPricing } from '../utils/itemsCatalog';
 
 export default function FamilyPlanUpgradeModal({
   isOpen,
@@ -13,6 +14,16 @@ export default function FamilyPlanUpgradeModal({
 
   const hasSinglePlan = storageService.hasSinglePlan();
   const hasFamilyPlan = storageService.hasFamilyPlan();
+
+  const activeRealMoneySale = getActiveRealMoneySaleEvent(new Date());
+  const soloPricing = getEffectiveSubscriptionPricing(
+    billingCycle === 'annual' ? 'kibo_club_sub_annual' : 'kibo_club_sub',
+    new Date()
+  );
+  const familyPricing = getEffectiveSubscriptionPricing(
+    billingCycle === 'annual' ? 'kibo_club_family_annual' : 'kibo_club_family',
+    new Date()
+  );
 
   return (
     <div
@@ -68,22 +79,52 @@ export default function FamilyPlanUpgradeModal({
             >
               <span>Annual</span>
               <span className="text-[9px] bg-emerald-500 text-white px-1.5 py-0.2 rounded-full uppercase font-black tracking-wide">
-                Save ~35%
+                {familyPricing.isDiscounted ? `Save ${familyPricing.discountPercent + 30}%` : 'Save ~35%'}
               </span>
             </button>
           </div>
         </div>
 
         <div className="p-4 text-center bg-amber-50/40 space-y-3">
+          {/* Active Subscription Sale Event Banner */}
+          {activeRealMoneySale && (
+            <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-amber-600 text-white p-2.5 rounded-xl shadow-xs text-left space-y-0.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 font-black text-xs">
+                  <Sparkles className="w-3.5 h-3.5 fill-amber-300 text-amber-200" />
+                  <span>{activeRealMoneySale.name} Active</span>
+                </div>
+                <span className="text-[9px] bg-white/20 px-1.5 py-0.2 rounded-full font-black uppercase tracking-wider">
+                  Special Offer
+                </span>
+              </div>
+              <p className="text-[10px] text-purple-100 font-medium leading-relaxed">
+                {activeRealMoneySale.description}
+              </p>
+            </div>
+          )}
+
           {/* Plan Comparison Summary */}
           <div className="grid grid-cols-2 gap-2 text-left">
             <div className="bg-white border border-slate-200 rounded-xl p-2.5 space-y-1 shadow-2xs">
-              <span className="text-[10px] font-black uppercase text-purple-700 block">Solo</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase text-purple-700 block">Solo</span>
+                {soloPricing.isDiscounted && (
+                  <span className="text-[8px] font-black uppercase text-purple-700 bg-purple-100 px-1 rounded">
+                    -{soloPricing.discountPercent}%
+                  </span>
+                )}
+              </div>
               <div className="text-sm font-black text-slate-900 leading-none">
-                {billingCycle === 'annual' ? '$39.99/yr' : '$4.99/mo'}
+                {soloPricing.isDiscounted && (
+                  <span className="text-[10px] text-slate-400 line-through font-bold block mb-0.5">
+                    {soloPricing.originalPrice}
+                  </span>
+                )}
+                {soloPricing.price}
               </div>
               <span className="text-[10px] text-slate-500 font-medium block">
-                {billingCycle === 'annual' ? '($3.33/mo • 1 Profile)' : '1 Child Profile'}
+                {billingCycle === 'annual' ? `(${soloPricing.monthlyEquivalent} • 1 Profile)` : '1 Child Profile'}
               </span>
             </div>
 
@@ -91,14 +132,19 @@ export default function FamilyPlanUpgradeModal({
               <div className="flex items-center justify-between gap-1">
                 <span className="text-[10px] font-black uppercase text-amber-800 truncate">Family</span>
                 <span className="text-[8px] font-black uppercase text-amber-900 bg-amber-200 px-1.5 py-0.5 rounded-full shrink-0">
-                  Best Value
+                  {familyPricing.isDiscounted ? `-${familyPricing.discountPercent}% Sale` : 'Best Value'}
                 </span>
               </div>
               <div className="text-sm font-black text-amber-950 leading-none">
-                {billingCycle === 'annual' ? '$59.99/yr' : '$7.99/mo'}
+                {familyPricing.isDiscounted && (
+                  <span className="text-[10px] text-amber-700/60 line-through font-bold block mb-0.5">
+                    {familyPricing.originalPrice}
+                  </span>
+                )}
+                {familyPricing.price}
               </div>
               <span className="text-[10px] text-amber-800 font-medium block">
-                {billingCycle === 'annual' ? '($5.00/mo • Up to 6)' : 'Up to 6 Sibling Profiles'}
+                {billingCycle === 'annual' ? `(${familyPricing.monthlyEquivalent} • Up to 6)` : 'Up to 6 Sibling Profiles'}
               </span>
             </div>
           </div>
