@@ -7,10 +7,11 @@ import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
 import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { SUBJECTS_CONFIG } from '../config/subjects';
-import { Dices, ShieldCheck, RefreshCw, AlertCircle, Lock } from 'lucide-react';
+import { Dices, ShieldCheck, RefreshCw, AlertCircle, Lock, FileText } from 'lucide-react';
 import { parentChildService } from '../services/parentChildService';
 import PinGateModal from './PinGateModal';
 import PrivacyPolicyScreen from './PrivacyPolicyScreen';
+import TermsOfServiceScreen from './TermsOfServiceScreen';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
 
@@ -144,8 +145,9 @@ export default function FirstLaunchOnboardingModal({
     return () => clearTimeout(timer);
   }, [usernameInput]);
 
-  // COPPA & Privacy Policy state
+  // COPPA, Privacy Policy & Terms state
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPinGateModal, setShowPinGateModal] = useState(false);
   const [consentAgreed, setConsentAgreed] = useState(false);
   const [consentError, setConsentError] = useState('');
@@ -395,19 +397,33 @@ export default function FirstLaunchOnboardingModal({
                 {hasVisitedParentZone ? '🔒 Parent Zone' : '🔒 Parent Zone Setup'}
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
-              className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
-              <span>COPPA Notice & Privacy Policy</span>
-            </button>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+                className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+                <span>COPPA & Privacy</span>
+              </button>
+              <span className="text-slate-600 text-xs">•</span>
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowTermsModal(true); }}
+                className="text-[11px] font-semibold text-slate-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-400" />
+                <span>Terms of Service</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {showPrivacyModal && (
           <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+        )}
+        {showTermsModal && (
+          <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
         )}
       </div>
     );
@@ -542,18 +558,32 @@ export default function FirstLaunchOnboardingModal({
                 {hasVisitedParentZone ? '🔒 Parent Zone' : '🔒 Parent Zone Setup'}
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
-              className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
-              <span>COPPA Notice & Privacy Policy</span>
-            </button>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+                className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+                <span>COPPA & Privacy</span>
+              </button>
+              <span className="text-slate-600 text-xs">•</span>
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowTermsModal(true); }}
+                className="text-[11px] font-semibold text-slate-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-400" />
+                <span>Terms of Service</span>
+              </button>
+            </div>
           </div>
         </div>
         {showPrivacyModal && (
           <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+        )}
+        {showTermsModal && (
+          <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
         )}
       </div>
     );
@@ -666,6 +696,9 @@ export default function FirstLaunchOnboardingModal({
         {showPrivacyModal && (
           <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
         )}
+        {showTermsModal && (
+          <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
+        )}
       </div>
     );
   }
@@ -696,13 +729,20 @@ export default function FirstLaunchOnboardingModal({
             <p className="font-medium leading-relaxed">
               Under the Children's Online Privacy Protection Act (COPPA), verifiable consent from an adult parent or legal guardian is required before collecting any educational practice data or username for children under 13.
             </p>
-            <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
               <button
                 type="button"
                 onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
                 className="text-xs sm:text-sm font-bold text-teal-300 hover:text-teal-200 underline cursor-pointer flex items-center gap-1"
               >
                 <ShieldCheck className="w-3.5 h-3.5" /> Read COPPA Privacy Policy
+              </button>
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowTermsModal(true); }}
+                className="text-xs sm:text-sm font-bold text-amber-300 hover:text-amber-200 underline cursor-pointer flex items-center gap-1"
+              >
+                <FileText className="w-3.5 h-3.5" /> Terms of Service
               </button>
             </div>
           </div>
@@ -768,6 +808,9 @@ export default function FirstLaunchOnboardingModal({
         </div>
         {showPrivacyModal && (
           <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+        )}
+        {showTermsModal && (
+          <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
         )}
         <PinGateModal
           isOpen={showPinGateModal}
@@ -898,6 +941,26 @@ export default function FirstLaunchOnboardingModal({
             </button>
           )}
 
+          <div className="flex items-center justify-center gap-3 flex-wrap pt-0.5">
+            <button
+              type="button"
+              onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+              className="text-[11px] font-semibold text-slate-500 hover:text-teal-600 transition-colors inline-flex items-center gap-1 cursor-pointer"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+              <span>COPPA & Privacy</span>
+            </button>
+            <span className="text-slate-300 text-xs">•</span>
+            <button
+              type="button"
+              onClick={() => { soundFx.playKeyTap(); setShowTermsModal(true); }}
+              className="text-[11px] font-semibold text-slate-500 hover:text-amber-600 transition-colors inline-flex items-center gap-1 cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5 text-amber-600" />
+              <span>Terms of Service</span>
+            </button>
+          </div>
+
           <div className="text-center space-y-0.5">
             <span className="text-xs sm:text-sm font-extrabold text-slate-500 block">
               Kibo Climb • Multi-Subject Daily Climbs • Math, Words & World
@@ -908,6 +971,12 @@ export default function FirstLaunchOnboardingModal({
           </div>
         </div>
       </div>
+      {showPrivacyModal && (
+        <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+      )}
+      {showTermsModal && (
+        <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
+      )}
     </div>
   );
 }
