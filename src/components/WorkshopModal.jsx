@@ -741,7 +741,7 @@ export default function WorkshopModal({
             className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-100 to-yellow-200 border border-amber-300 rounded-full text-amber-950 font-black text-xs shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all shrink-0"
             title="Sparks Balance"
           >
-            <Zap className="w-3.5 h-3.5 text-amber-900 fill-amber-500 stroke-[2]" />
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-800 fill-amber-500 stroke-[2.5]" />
             <span>{sparks}</span>
           </div>
         </div>
