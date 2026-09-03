@@ -15,6 +15,25 @@ class UserSyncService {
     this.isSyncingFromCloud = false;
     this.debounceTimer = null;
     this.currentUid = null;
+    this.syncListeners = new Set();
+  }
+
+  /**
+   * Subscribes to background sync status changes (e.g. syncing, synced).
+   */
+  subscribeSyncStatus(callback) {
+    this.syncListeners.add(callback);
+    return () => this.syncListeners.delete(callback);
+  }
+
+  notifySyncStatus(status) {
+    this.syncListeners.forEach((cb) => {
+      try {
+        cb(status);
+      } catch (e) {
+        console.error('UserSyncService: Error in sync listener callback', e);
+      }
+    });
   }
 
   /**
@@ -156,6 +175,8 @@ class UserSyncService {
       // Do not attempt write if user is not authenticated yet (prevents permission errors)
       if (!currentUser && !targetUid) return;
 
+      this.notifySyncStatus('syncing');
+
       const allProfiles = storageService.getAllProfiles();
       const profilesMap = {};
       const now = Date.now();
@@ -189,8 +210,10 @@ class UserSyncService {
       } else {
         await setDoc(userDocRef, payload, { merge: true });
       }
+      this.notifySyncStatus('synced');
     } catch (error) {
       console.warn('UserSyncService: Cloud sync failed (will retry online)', error);
+      this.notifySyncStatus('error');
     }
   }
 }

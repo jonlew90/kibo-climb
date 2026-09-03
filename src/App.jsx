@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass, LogIn, LogOut, Gift, Share2 } from 'lucide-react';
+import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass, LogIn, LogOut, Gift, Share2, Cloud, Check, Loader2 } from 'lucide-react';
 import Mascot from './components/Mascot';
 import { initOneSignal } from './config/onesignal';
 
@@ -41,6 +41,7 @@ import {
 } from './utils/dateUtils';
 import { authService } from './services/authService';
 import { syncService } from './services/syncService';
+import { userSyncService } from './services/userSyncService';
 import { shopLedgerService } from './services/shopLedgerService';
 import { leaderboardService } from './services/leaderboardService';
 import { analyticsService } from './services/analyticsService';
@@ -167,6 +168,7 @@ export default function App() {
     function handleClickOutside(event) {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
+        setShowSavedTooltip(false);
       }
       if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
         setShowSubjectDropdown(false);
@@ -201,6 +203,30 @@ export default function App() {
   const [showLogoutConfirmModal, setShowLogoutConfirmModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
+  const [currentAuthState, setCurrentAuthState] = useState(() => authService.getAuthState());
+  const [syncStatus, setSyncStatus] = useState('synced');
+  const [showSavedTooltip, setShowSavedTooltip] = useState(false);
+
+  useEffect(() => {
+    const unsubAuth = authService.subscribeAuthState?.((user) => {
+      setCurrentAuthState(authService.getAuthState());
+    });
+    const unsubSync = userSyncService.subscribeSyncStatus?.((status) => {
+      if (status === 'syncing') {
+        setSyncStatus('syncing');
+      } else if (status === 'synced') {
+        setSyncStatus('pulse');
+        const timer = setTimeout(() => {
+          setSyncStatus('synced');
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    });
+    return () => {
+      if (unsubAuth) unsubAuth();
+      if (unsubSync) unsubSync();
+    };
+  }, []);
 
   const [unlockedBadges, setUnlockedBadges] = useState(() => {
     return storageService.getUserData(activeSubject).unlockedBadges || [];
@@ -2273,7 +2299,74 @@ export default function App() {
                     <span>Settings</span>
                   </button>
 
-                  {authService.getAuthState().isAnonymous ? (
+                  {!currentAuthState.isAnonymous ? (
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playKeyTap();
+                          setShowSavedTooltip(!showSavedTooltip);
+                        }}
+                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-all cursor-pointer w-full text-left font-black text-xs ${
+                          showSavedTooltip ? 'bg-emerald-100/80 text-emerald-800' : 'hover:bg-emerald-50 text-emerald-700'
+                        }`}
+                      >
+                        <div className="relative flex items-center justify-center shrink-0">
+                          {syncStatus === 'syncing' ? (
+                            <Loader2 className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
+                          ) : (
+                            <Cloud className={`w-3.5 h-3.5 text-emerald-600 stroke-[2.2] transition-transform duration-300 ${
+                              syncStatus === 'pulse' ? 'scale-125 text-emerald-500' : ''
+                            }`} />
+                          )}
+                          <div className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full p-0.5 shadow-xs border border-white flex items-center justify-center">
+                            <Check className="w-2 h-2 text-white stroke-[3.5]" />
+                          </div>
+                        </div>
+                        <span className="truncate">
+                          {syncStatus === 'syncing' ? 'Syncing...' : 'Saved'}
+                        </span>
+                      </button>
+
+                      {showSavedTooltip && (
+                        <div className="mt-1.5 p-2.5 bg-slate-900 text-white rounded-xl shadow-inner text-[11px] font-bold border border-slate-700 animate-in fade-in duration-150">
+                          <p className="text-slate-200 leading-snug">
+                            All badges and progress are saved to{' '}
+                            <span className="text-emerald-400 font-extrabold underline decoration-emerald-500/50 break-all">
+                              {currentAuthState.email || 'your account'}
+                            </span>.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFx.playKeyTap();
+                              setShowSavedTooltip(false);
+                              setShowProfileDropdown(false);
+                              handleOpenPinGate('profile_dropdown', 'overview', null);
+                            }}
+                            className="mt-2 flex items-center text-teal-300 hover:text-teal-200 font-black text-xs transition-colors cursor-pointer"
+                          >
+                            <span>Manage in Parent Zone →</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setShowProfileDropdown(false);
+                        handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Save Progress' });
+                      }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-sky-50 text-sky-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                    >
+                      <Cloud className="w-3.5 h-3.5 text-sky-600 stroke-[2.5]" />
+                      <span>Save Progress</span>
+                    </button>
+                  )}
+
+                  {currentAuthState.isAnonymous ? (
                     <button
                       type="button"
                       onClick={() => {
@@ -3695,6 +3788,7 @@ export default function App() {
           if (newSparks !== undefined) {
             setSparks(newSparks);
           }
+          setCurrentAuthState(authService.getAuthState());
           syncAppStateWithStorage();
           if (pendingSparksPurchase) {
             if (pendingSparksPurchase.realMoneyPrice) {

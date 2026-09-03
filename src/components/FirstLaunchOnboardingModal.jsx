@@ -426,15 +426,6 @@ export default function FirstLaunchOnboardingModal({
                 </button>
               </p>
             )}
-            {onOpenParentZone && (
-              <button
-                type="button"
-                onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
-                className="text-xs font-bold text-purple-300 hover:text-white transition-colors cursor-pointer"
-              >
-                {hasVisitedParentZone ? '🔒 Parent Zone' : '🔒 Parent Zone Setup'}
-              </button>
-            )}
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <button
                 type="button"
@@ -589,12 +580,6 @@ export default function FirstLaunchOnboardingModal({
                   Log In
                 </button>
               </p>
-            )}
-            {onOpenParentZone && (
-              <button type="button" onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
-                className="text-xs font-bold text-purple-300 hover:text-white transition-colors cursor-pointer">
-                {hasVisitedParentZone ? '🔒 Parent Zone' : '🔒 Parent Zone Setup'}
-              </button>
             )}
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <button
@@ -959,14 +944,6 @@ export default function FirstLaunchOnboardingModal({
               <span className="truncate">World</span>
             </button>
           </div>
-
-          {onOpenParentZone && (
-            <button type="button"
-              onClick={() => { soundFx.playKeyTap(); onOpenParentZone(); }}
-              className="text-xs font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 rounded-xl transition-colors inline-flex items-center gap-1 cursor-pointer">
-              {hasVisitedParentZone ? '🔒 Parent Zone' : '🔒 Parent Zone (Optional Setup)'}
-            </button>
-          )}
 
           <div className="flex items-center justify-center gap-3 flex-wrap pt-0.5">
             <button
