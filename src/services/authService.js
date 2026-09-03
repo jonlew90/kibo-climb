@@ -14,7 +14,10 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   linkWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink
 } from 'firebase/auth';
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
@@ -382,13 +385,42 @@ export const authService = {
   },
 
   /**
-   * Processes authentication result after returning from an OAuth redirect flow.
+   * Processes authentication result after returning from an OAuth redirect or email magic link flow.
    */
   async handleRedirectResult() {
     try {
       if (auth.authStateReady) {
         await auth.authStateReady();
       }
+
+      // Check for Firebase email link sign-in first
+      if (typeof window !== 'undefined' && isSignInWithEmailLink(auth, window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) {
+          email = window.prompt('Please provide your email for confirmation');
+        }
+        if (email) {
+          const res = await signInWithEmailLink(auth, email, window.location.href);
+          window.localStorage.removeItem('emailForSignIn');
+          if (res?.user) {
+            const currentData = storageService.getUserData('math');
+            const mergedUserData = {
+              ...currentData,
+              cloudUid: res.user.uid,
+              isAnonymous: false,
+              authProvider: 'passwordless_email',
+              email: res.user.email || email,
+              displayName: res.user.displayName || currentData.displayName || 'Kibo Master',
+              accountLinkedAt: new Date().toISOString()
+            };
+            storageService.setGlobalAccountLinkedState(mergedUserData);
+            const earnedSparks = storageService.grantAccountLinkSparksReward();
+            if (res.user.uid) loginToOneSignal(res.user.uid);
+            return { success: true, user: storageService.getUserData('math'), earnedSparks };
+          }
+        }
+      }
+
       const res = await getRedirectResult(auth);
       const returnUrl = sessionStorage.getItem('kibo_account_link_return_url');
       sessionStorage.removeItem('kibo_account_link_return_url');
@@ -453,10 +485,24 @@ export const authService = {
   },
 
   /**
-   * Sends email auth link / token or connects profile via Email Auth.
+   * Sends email auth link / token to sign in passwordless via Email Link.
    */
-  async sendMagicLink(email, password = null) {
-    return this.linkAccount({ provider: 'magic_link', email, password });
+  async sendMagicLink(email) {
+    if (!email || !email.includes('@')) {
+      return { success: false, reason: 'Please enter a valid email address.' };
+    }
+    try {
+      const actionCodeSettings = {
+        url: window.location.origin + window.location.pathname,
+        handleCodeInApp: true
+      };
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      window.localStorage.setItem('emailForSignIn', email);
+      return { success: true, emailSent: true };
+    } catch (e) {
+      console.error('Error sending magic link:', e);
+      return { success: false, reason: e.message || 'Failed to send magic link.', code: e.code };
+    }
   },
 
   /**

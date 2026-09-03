@@ -72,6 +72,11 @@ export default function AccountLinkModal({
         return;
       }
 
+      if (res.emailSent) {
+        setSuccessMessage(`Magic link sent! Please check your email inbox at ${emailInput} and click the link to finish signing in.`);
+        return;
+      }
+
       if (res.success) {
         const earnedSparks = res.earnedSparks ?? storageService.grantAccountLinkSparksReward();
 
