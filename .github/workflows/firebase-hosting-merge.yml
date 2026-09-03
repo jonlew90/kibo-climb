@@ -58,7 +58,7 @@ jobs:
 
       - name: Install Dependencies
         if: steps.check_changes.outputs.has_changes == 'true'
-        run: npm install
+        run: npm ci
 
       - name: Run Tests
         if: steps.check_changes.outputs.has_changes == 'true'

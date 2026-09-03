@@ -12,7 +12,6 @@ build/
 *.log
 
 # Ignore lock files and static binaries
-package-lock.json
 pnpm-lock.yaml
 yarn.lock
 public/assets/
