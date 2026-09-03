@@ -250,4 +250,15 @@ describe('NavigationHistory System', () => {
     // After unsubscribe, notifiedState should not update from pop
     expect(notifiedState.current.id).toBe(VIEWS.WORKSHOP);
   });
+
+  it('supports modal navigation parameters for highlighting unseen badges on passport modal', () => {
+    nav.push({
+      type: VIEW_TYPES.MODAL,
+      id: VIEWS.BADGES,
+      params: { highlightBadgeIds: ['math_novice', 'math_scholar'] }
+    });
+    expect(nav.getCurrent().id).toBe(VIEWS.BADGES);
+    expect(nav.getCurrent().params.highlightBadgeIds).toEqual(['math_novice', 'math_scholar']);
+  });
 });
+

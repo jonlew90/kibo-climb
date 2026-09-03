@@ -209,6 +209,7 @@ export default function App() {
     return storageService.getSeenBadges(activeProfileId);
   });
   const [newlyUnlockedBadges, setNewlyUnlockedBadges] = useState([]);
+  const [highlightBadgeIds, setHighlightBadgeIds] = useState([]);
 
   const unseenBadgesCount = (unlockedBadges || []).filter(
     (b) => !seenBadges.includes(typeof b === 'string' ? b : b?.id)
@@ -267,6 +268,13 @@ export default function App() {
       }
 
       setShowBadgesModal(modalId === VIEWS.BADGES);
+      if (modalId === VIEWS.BADGES) {
+        if (params.highlightBadgeIds) {
+          setHighlightBadgeIds(params.highlightBadgeIds);
+        } else {
+          setHighlightBadgeIds([]);
+        }
+      }
       setShowAscentRoadmapModal(modalId === VIEWS.ASCENT_ROADMAP);
 
       setShowPinGateModal(modalId === VIEWS.PIN_GATE);
@@ -380,15 +388,29 @@ export default function App() {
     handleGoBack();
   };
 
-  const handleOpenBadgesModal = () => {
+  const handleOpenBadgesModal = (badgeHighlightOptions = null) => {
     soundFx.playKeyTap();
     setShowProfileDropdown(false);
     setShowSubjectDropdown(false);
+
+    let badgesToHighlight = [];
+    if (Array.isArray(badgeHighlightOptions)) {
+      badgesToHighlight = badgeHighlightOptions;
+    } else if (badgeHighlightOptions && Array.isArray(badgeHighlightOptions.highlightBadgeIds)) {
+      badgesToHighlight = badgeHighlightOptions.highlightBadgeIds;
+    } else {
+      const currentSeen = storageService.getSeenBadges(activeProfileId) || [];
+      const currentUnlockedIds = (unlockedBadges || []).map((b) => (typeof b === 'string' ? b : b?.id)).filter(Boolean);
+      badgesToHighlight = currentUnlockedIds.filter((id) => !currentSeen.includes(id));
+    }
+
     const entry = navigationHistory.push({
       type: VIEW_TYPES.MODAL,
-      id: VIEWS.BADGES
+      id: VIEWS.BADGES,
+      params: badgesToHighlight.length > 0 ? { highlightBadgeIds: badgesToHighlight } : {}
     });
     applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+
     const currentUnlockedIds = (unlockedBadges || []).map((b) => (typeof b === 'string' ? b : b?.id)).filter(Boolean);
     if (currentUnlockedIds.length > 0) {
       storageService.markBadgesAsSeen(currentUnlockedIds, activeProfileId);
@@ -3325,6 +3347,7 @@ export default function App() {
         })()}
         renderFooter={renderNavigationFooter}
         onOpenAscentRoadmap={handleOpenAscentRoadmapModal}
+        highlightBadgeIds={highlightBadgeIds}
       />
 
       {/* EXPEDITION ASCENTS & LEVEL ROADMAP MODAL */}

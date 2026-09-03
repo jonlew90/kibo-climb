@@ -17,11 +17,24 @@ export default function BadgesModal({
   personalRecords = {},
   userState = {},
   renderFooter,
-  onOpenAscentRoadmap
+  onOpenAscentRoadmap,
+  highlightBadgeIds = []
 }) {
-  const [activeCategory, setActiveCategory] = useState(
-    BADGE_CATEGORIES[activeSubject] ? activeSubject : Object.keys(BADGE_CATEGORIES)[0]
-  );
+  const contentMainRef = useRef(null);
+  const targetBadgeRef = useRef(null);
+
+  // Find topmost unseen badge if any
+  const unseenIdsSet = new Set(highlightBadgeIds || []);
+  const firstUnseenBadge = highlightBadgeIds && highlightBadgeIds.length > 0
+    ? BADGES_CATALOG.find((b) => unseenIdsSet.has(b.id))
+    : null;
+
+  const [activeCategory, setActiveCategory] = useState(() => {
+    if (firstUnseenBadge && firstUnseenBadge.category && BADGE_CATEGORIES[firstUnseenBadge.category]) {
+      return firstUnseenBadge.category;
+    }
+    return BADGE_CATEGORIES[activeSubject] ? activeSubject : Object.keys(BADGE_CATEGORIES)[0];
+  });
   const [showAscentRoadmapModal, setShowAscentRoadmapModal] = useState(false);
 
   const categoryScrollRef = useRef(null);
@@ -36,10 +49,23 @@ export default function BadgesModal({
   };
 
   useEffect(() => {
-    if (activeSubject && BADGE_CATEGORIES[activeSubject]) {
+    if (firstUnseenBadge && firstUnseenBadge.category && BADGE_CATEGORIES[firstUnseenBadge.category]) {
+      setActiveCategory(firstUnseenBadge.category);
+    } else if (activeSubject && BADGE_CATEGORIES[activeSubject]) {
       setActiveCategory(activeSubject);
     }
-  }, [activeSubject]);
+  }, [activeSubject, firstUnseenBadge?.id]);
+
+  useEffect(() => {
+    if (isOpen && firstUnseenBadge && targetBadgeRef.current) {
+      const timer = setTimeout(() => {
+        if (targetBadgeRef.current) {
+          targetBadgeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, firstUnseenBadge?.id, activeCategory]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -58,6 +84,7 @@ export default function BadgesModal({
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
+
   }, [isOpen, onClose]);
 
   const handleScrollLeft = () => {
@@ -139,7 +166,7 @@ export default function BadgesModal({
       </header>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
-      <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+      <main ref={contentMainRef} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         
         {/* 1. GLOBAL CLIMBER PASSPORT & ASCENT HERO CARD */}
         <div className="bg-gradient-to-br from-teal-600 via-emerald-600 to-teal-700 rounded-3xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden text-left">
@@ -407,12 +434,17 @@ export default function BadgesModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-6">
           {filteredBadges.map((badge) => {
             const isUnlocked = unlockedSet.has(badge.id);
+            const isUnseen = unseenIdsSet.has(badge.id);
+            const isTarget = firstUnseenBadge?.id === badge.id;
 
             return (
               <div
                 key={badge.id}
+                ref={isTarget ? targetBadgeRef : null}
                 className={`p-4 rounded-3xl border-2 transition-all flex items-center gap-3.5 relative ${
-                  isUnlocked
+                  isUnseen
+                    ? 'bg-amber-50/95 border-amber-500 animate-unseen-badge-highlight ring-4 ring-amber-400/40 shadow-lg'
+                    : isUnlocked
                     ? 'bg-white border-amber-300 shadow-xs'
                     : 'bg-slate-100/70 border-slate-200 opacity-60'
                 }`}
@@ -430,6 +462,11 @@ export default function BadgesModal({
                 <div className="flex-1 text-left min-w-0 space-y-1">
                   <div className="flex items-center gap-1.5">
                     <h4 className="font-extrabold text-slate-800 text-sm sm:text-base truncate">{badge.title || badge.name}</h4>
+                    {isUnseen && (
+                      <span className="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-black rounded-full uppercase tracking-wider animate-pulse shadow-xs shrink-0">
+                        NEW!
+                      </span>
+                    )}
                     {isUnlocked ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-100 shrink-0" />
                     ) : (

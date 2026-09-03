@@ -754,4 +754,20 @@ html, body, #root {
   animation: cinematicFlare 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes unseenBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7), 0 4px 12px rgba(245, 158, 11, 0.25);
+    border-color: #f59e0b;
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0), 0 6px 20px rgba(245, 158, 11, 0.45);
+    border-color: #d97706;
+  }
+}
+
+.animate-unseen-badge-highlight {
+  animation: unseenBadgePulse 2s ease-in-out infinite;
+}
+
+
 
