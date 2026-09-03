@@ -12,8 +12,8 @@ export default function PinGateModal({
   isOpen,
   onClose,
   onUnlockSuccess,
-  title = 'Parent Verification',
-  subtitle = 'Parental verification required to access restricted area.'
+  title = 'Ask a Grown-Up',
+  subtitle = 'Pass the device to a parent or guardian to continue.'
 }) {
   const [activeTab, setActiveTab] = useState(() => {
     const prefs = storageService.getNotificationSettings();
