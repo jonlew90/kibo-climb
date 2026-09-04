@@ -53,6 +53,7 @@ import FamilyPlanUpgradeModal from './components/FamilyPlanUpgradeModal';
 import DailyBonusRewardModal from './components/DailyBonusRewardModal';
 import SettingsScreen from './components/SettingsScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
+import CoppaPrivacyPolicyScreen from './components/CoppaPrivacyPolicyScreen';
 import ShareModal from './components/ShareModal';
 import ReferralRewardModal from './components/ReferralRewardModal';
 import NewsModal from './components/NewsModal';
@@ -137,6 +138,7 @@ export default function App() {
 
   const [appState, setAppState] = useState(() => {
     const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+    if (path === '/coppa-privacy' || path === '/coppa-privacy/' || path === '/coppa' || path === '/coppa/') return 'coppa_privacy';
     if (path === '/privacy' || path === '/privacy/') return 'privacy';
     if (path === '/terms' || path === '/terms/') return 'terms';
     if (path === '/settings' || path === '/settings/') return 'settings';
@@ -348,6 +350,7 @@ export default function App() {
       let screenName = 'Home';
       if (current.id === 'settings') screenName = 'Settings';
       else if (current.id === 'privacy') screenName = 'PrivacyPolicy';
+      else if (current.id === 'coppa_privacy' || current.id === VIEWS.COPPA) screenName = 'CoppaPrivacyPolicy';
       else if (current.id === 'terms') screenName = 'TermsOfService';
       else if (current.id === 'leaderboard') screenName = 'Leaderboard';
       else if (current.id === 'quests') screenName = 'Quests';
@@ -2789,6 +2792,16 @@ export default function App() {
       {appState === 'privacy' && (
         <PrivacyPolicyScreen
           onBack={handleGoBack}
+          onNavigateCoppa={() => handleNavigate('/coppa-privacy', 'coppa_privacy')}
+          renderFooter={renderNavigationFooter}
+        />
+      )}
+
+      {/* COPPA PRIVACY POLICY SCREEN */}
+      {(appState === 'coppa_privacy' || appState === VIEWS.COPPA) && (
+        <CoppaPrivacyPolicyScreen
+          onBack={handleGoBack}
+          onNavigatePrivacy={() => handleNavigate('/privacy', 'privacy')}
           renderFooter={renderNavigationFooter}
         />
       )}
@@ -3551,7 +3564,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {appState !== 'settings' && appState !== 'privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}
+      {appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}
 
       {/* Workshop Modal */}
       <WorkshopModal

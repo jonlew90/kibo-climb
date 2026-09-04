@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, Mail, ArrowLeft, Music } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, ShieldCheck, Mail, ArrowLeft, Music } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
 export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter, onNavigate, onBack, onOpenFeedback, onOpenParentZone, onSwitchProfile }) {
@@ -74,7 +74,7 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
                   </div>
                   <div>
                     <span className="font-extrabold text-purple-950 block text-sm">Parent Dashboard</span>
-                    <span className="text-xs text-purple-700">PIN-protected stats, controls & reports</span>
+                    <span className="text-xs text-purple-700">Progress and stats, controls, cloud sync, reset</span>
                   </div>
                 </div>
                 <span className="text-xs font-black text-purple-700 bg-white/90 border border-purple-200 px-2.5 py-1 rounded-lg">
@@ -225,6 +225,28 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
                   <ShieldAlert className="w-5 h-5 stroke-[2.5]" />
                 </div>
                 <span className="font-extrabold text-slate-700 text-sm">Privacy Policy</span>
+              </div>
+            </a>
+
+            <a
+              href="/coppa-privacy"
+              className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl transition-colors active:scale-95 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                soundFx.playKeyTap();
+                if (onNavigate) {
+                  onNavigate('/coppa-privacy', 'coppa_privacy');
+                } else {
+                  window.history.pushState({}, '', '/coppa-privacy');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-teal-100 text-teal-700 rounded-lg border border-teal-200">
+                  <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <span className="font-extrabold text-slate-700 text-sm">COPPA & Children's Privacy</span>
               </div>
             </a>
 

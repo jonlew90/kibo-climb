@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { ShieldCheck, Sparkles, CheckCircle2, X, ArrowRight, Mail, Zap, AlertTriangle, Lock, Cloud, Smartphone } from 'lucide-react';
 import { authService } from '../services/authService';
 import { storageService } from '../services/storageService';
+import { parentChildService } from '../services/parentChildService';
 import PrivacyPolicyScreen from './PrivacyPolicyScreen';
+import CoppaPrivacyPolicyScreen from './CoppaPrivacyPolicyScreen';
+import CoppaConsentModal from './CoppaConsentModal';
 import PinGateModal from './PinGateModal';
 import FamilyPlanUpgradeModal from './FamilyPlanUpgradeModal';
 
@@ -21,8 +24,11 @@ export default function AccountLinkModal({
   const [errorMessage, setErrorMessage] = useState('');
   const [conflictData, setConflictData] = useState(null);
   const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
+  const [showCoppaPolicyModal, setShowCoppaPolicyModal] = useState(false);
   const [showPinGate, setShowPinGate] = useState(false);
   const [showFamilyUpgrade, setShowFamilyUpgrade] = useState(false);
+  const [showCoppaConsentModal, setShowCoppaConsentModal] = useState(false);
+  const [pendingLinkParams, setPendingLinkParams] = useState(null);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -33,8 +39,11 @@ export default function AccountLinkModal({
       setErrorMessage('');
       setConflictData(null);
       setShowPrivacyPolicyModal(false);
+      setShowCoppaPolicyModal(false);
       setShowPinGate(false);
       setShowFamilyUpgrade(false);
+      setShowCoppaConsentModal(false);
+      setPendingLinkParams(null);
     }
   }, [isOpen]);
 
@@ -45,7 +54,26 @@ export default function AccountLinkModal({
     ? (milestone.toLowerCase().includes('unlocked') ? milestone : `${milestone} Unlocked!`)
     : milestone;
 
-  const handleLinkProvider = async (provider, useRedirect = false) => {
+  const handleLinkProvider = (provider, useRedirect = false) => {
+    const coppaStatus = parentChildService.getCOPPAConsentStatus();
+    if (!coppaStatus.consented) {
+      setPendingLinkParams({ provider, useRedirect });
+      setShowCoppaConsentModal(true);
+      return;
+    }
+    executeLinkProvider(provider, useRedirect);
+  };
+
+  const handleCoppaConsentGranted = () => {
+    setShowCoppaConsentModal(false);
+    if (pendingLinkParams) {
+      const { provider, useRedirect } = pendingLinkParams;
+      setPendingLinkParams(null);
+      executeLinkProvider(provider, useRedirect);
+    }
+  };
+
+  const executeLinkProvider = async (provider, useRedirect = false) => {
     setLoadingProvider(provider);
     setSuccessMessage('');
     setErrorMessage('');
@@ -366,17 +394,41 @@ export default function AccountLinkModal({
             Account linking is for parent/guardian use. By linking, you consent to encrypted cloud backup under our{' '}
             <button
               type="button"
+              onClick={() => setShowCoppaPolicyModal(true)}
+              className="text-teal-600 hover:text-teal-800 underline font-bold cursor-pointer"
+            >
+              COPPA Policy
+            </button>{' '}
+            and{' '}
+            <button
+              type="button"
               onClick={() => setShowPrivacyPolicyModal(true)}
               className="text-purple-600 hover:text-purple-800 underline font-bold cursor-pointer"
             >
-              COPPA Privacy Policy
+              Privacy Policy
             </button>.
           </p>
         </div>
       </div>
 
       {showPrivacyPolicyModal && (
-        <PrivacyPolicyScreen onBack={() => setShowPrivacyPolicyModal(false)} />
+        <PrivacyPolicyScreen
+          onBack={() => setShowPrivacyPolicyModal(false)}
+          onNavigateCoppa={() => {
+            setShowPrivacyPolicyModal(false);
+            setShowCoppaPolicyModal(true);
+          }}
+        />
+      )}
+
+      {showCoppaPolicyModal && (
+        <CoppaPrivacyPolicyScreen
+          onBack={() => setShowCoppaPolicyModal(false)}
+          onNavigatePrivacy={() => {
+            setShowCoppaPolicyModal(false);
+            setShowPrivacyPolicyModal(true);
+          }}
+        />
       )}
 
       {/* Parental PIN Gate for Destructive Cloud Overwrite */}
@@ -402,6 +454,16 @@ export default function AccountLinkModal({
             onOpenFamilyPlan(targetTab, targetHighlight);
           }
         }}
+      />
+
+      {/* COPPA Consent Modal presented right before linking */}
+      <CoppaConsentModal
+        isOpen={showCoppaConsentModal}
+        onClose={() => {
+          setShowCoppaConsentModal(false);
+          setPendingLinkParams(null);
+        }}
+        onConsentGranted={handleCoppaConsentGranted}
       />
     </div>
   );

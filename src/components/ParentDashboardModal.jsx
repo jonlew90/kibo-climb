@@ -23,6 +23,7 @@ import { requestAppReview } from '../utils/AppReview';
 import AccountLinkModal from './AccountLinkModal';
 import FamilyPlanUpgradeModal from './FamilyPlanUpgradeModal';
 import PrivacyPolicyScreen from './PrivacyPolicyScreen';
+import CoppaPrivacyPolicyScreen from './CoppaPrivacyPolicyScreen';
 import { parentChildService } from '../services/parentChildService';
 import { validateSafeChildUsername } from '../utils/safeNames';
 
@@ -172,6 +173,7 @@ export default function ParentDashboardModal({
   const [coppaStatus, setCoppaStatus] = useState(() => parentChildService.getCOPPAConsentStatus());
   const [showRevokeConsentConfirm, setShowRevokeConsentConfirm] = useState(false);
   const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
+  const [showCoppaPolicyModal, setShowCoppaPolicyModal] = useState(false);
 
   const handleSwitchProfile = (pId) => {
     soundFx.playKeyTap();
@@ -1998,10 +2000,32 @@ export default function ParentDashboardModal({
 
             {/* COPPA Parental Rights & Data Privacy Card */}
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-purple-700">
                   <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
                   <h4 className="font-extrabold text-sm text-slate-800">COPPA Parental Rights & Data Privacy</h4>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowCoppaPolicyModal(true);
+                    }}
+                    className="text-xs font-bold text-teal-700 hover:text-teal-900 bg-white border border-teal-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                  >
+                    COPPA Notice
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowPrivacyPolicyModal(true);
+                    }}
+                    className="text-xs font-bold text-purple-700 hover:text-purple-900 bg-white border border-purple-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                  >
+                    Privacy Policy
+                  </button>
                 </div>
               </div>
 
@@ -2170,55 +2194,103 @@ export default function ParentDashboardModal({
                     </>
                   )}
 
-                  {/* Permanent Account & Data Deletion */}
-                  {!showDeleteConfirm ? (
-                    <button
-                      onClick={() => {
-                        soundFx.playKeyTap();
-                        setShowDeleteConfirm(true);
-                      }}
-                      className="flex items-center gap-2 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-xs transition-colors text-left"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      <span>Permanently Delete Account & Child Data</span>
-                    </button>
-                  ) : (
-                    <div className="bg-rose-100 p-3 rounded-xl border border-rose-300 space-y-2">
-                      <p className="text-xs font-bold text-rose-900">WARNING: This will permanently delete all local and cloud data, resetting the app entirely. Type <strong>DELETE</strong> below to confirm.</p>
-                      <input
-                        type="text"
-                        value={deleteInput}
-                        onChange={(e) => setDeleteInput(e.target.value)}
-                        placeholder="Type DELETE"
-                        className="w-full px-3 py-1.5 bg-white border border-rose-300 rounded-lg text-sm font-bold text-rose-900 focus:outline-none focus:border-rose-500"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={async () => {
-                            if (deleteInput === 'DELETE') {
-                              soundFx.playKeyTap();
-                              await authService.deleteAccount();
-                              window.location.reload();
-                            }
-                          }}
-                          disabled={deleteInput !== 'DELETE'}
-                          className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs disabled:opacity-50"
-                        >
-                          Confirm Delete
-                        </button>
+                  {/* Permanent Account & Data Deletion / Local Reset */}
+                  {(() => {
+                    const authState = authService.getAuthState();
+                    const isCloudAccount = !authState.isAnonymous;
+                    const activeProfile = profilesList.find((p) => p.id === viewingProfileId) || storageService.getActiveProfile();
+                    const climberName = activeProfile?.name || liveUserData?.name || 'Climber';
+
+                    if (!showDeleteConfirm) {
+                      return (
                         <button
                           onClick={() => {
                             soundFx.playKeyTap();
-                            setShowDeleteConfirm(false);
-                            setDeleteInput('');
+                            setShowDeleteConfirm(true);
                           }}
-                          className="px-3 py-1.5 bg-rose-200 hover:bg-rose-300 text-rose-900 rounded-lg font-bold text-xs"
+                          className="flex items-center gap-2 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-xs transition-colors text-left cursor-pointer"
                         >
-                          Cancel
+                          <Trash2 className="w-4 h-4" />
+                          <span>
+                            {isCloudAccount
+                              ? 'Permanently Delete Account & Cloud Data'
+                              : 'Reset Local Climber & Device Progress'}
+                          </span>
                         </button>
+                      );
+                    }
+
+                    if (isCloudAccount) {
+                      return (
+                        <div className="bg-rose-100 p-3 rounded-xl border border-rose-300 space-y-2">
+                          <p className="text-xs font-bold text-rose-900">
+                            WARNING: This will permanently delete all local and cloud data, resetting the app entirely. Type <strong>DELETE</strong> below to confirm.
+                          </p>
+                          <input
+                            type="text"
+                            value={deleteInput}
+                            onChange={(e) => setDeleteInput(e.target.value)}
+                            placeholder="Type DELETE"
+                            className="w-full px-3 py-1.5 bg-white border border-rose-300 rounded-lg text-sm font-bold text-rose-900 focus:outline-none focus:border-rose-500"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={async () => {
+                                if (deleteInput === 'DELETE') {
+                                  soundFx.playKeyTap();
+                                  await authService.deleteAccount();
+                                  window.location.reload();
+                                }
+                              }}
+                              disabled={deleteInput !== 'DELETE'}
+                              className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs disabled:opacity-50 cursor-pointer"
+                            >
+                              Confirm Delete
+                            </button>
+                            <button
+                              onClick={() => {
+                                soundFx.playKeyTap();
+                                setShowDeleteConfirm(false);
+                                setDeleteInput('');
+                              }}
+                              className="px-3 py-1.5 bg-rose-200 hover:bg-rose-300 text-rose-900 rounded-lg font-bold text-xs cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="bg-rose-100 p-3 rounded-xl border border-rose-300 space-y-2">
+                        <p className="text-xs font-bold text-rose-900 leading-relaxed">
+                          Reset this device? This will erase <strong>{climberName}</strong>&apos;s badges and level progress from this browser so you can start fresh.
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async () => {
+                              soundFx.playKeyTap();
+                              await authService.deleteAccount();
+                              window.location.reload();
+                            }}
+                            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs cursor-pointer"
+                          >
+                            Reset Game
+                          </button>
+                          <button
+                            onClick={() => {
+                              soundFx.playKeyTap();
+                              setShowDeleteConfirm(false);
+                            }}
+                            className="px-3 py-1.5 bg-rose-200 hover:bg-rose-300 text-rose-900 rounded-lg font-bold text-xs cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -2280,9 +2352,26 @@ export default function ParentDashboardModal({
         }}
       />
 
-      {/* COPPA Privacy Policy Modal */}
+      {/* General Privacy Policy Modal */}
       {showPrivacyPolicyModal && (
-        <PrivacyPolicyScreen onBack={() => setShowPrivacyPolicyModal(false)} />
+        <PrivacyPolicyScreen
+          onBack={() => setShowPrivacyPolicyModal(false)}
+          onNavigateCoppa={() => {
+            setShowPrivacyPolicyModal(false);
+            setShowCoppaPolicyModal(true);
+          }}
+        />
+      )}
+
+      {/* COPPA & Children's Privacy Policy Modal */}
+      {showCoppaPolicyModal && (
+        <CoppaPrivacyPolicyScreen
+          onBack={() => setShowCoppaPolicyModal(false)}
+          onNavigatePrivacy={() => {
+            setShowCoppaPolicyModal(false);
+            setShowPrivacyPolicyModal(true);
+          }}
+        />
       )}
 
       {/* Weekly Progress Report Modal */}

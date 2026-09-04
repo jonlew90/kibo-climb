@@ -8,6 +8,7 @@ export const VIEWS = {
   ADAPTIVE_SESSION: 'adaptive_session',
   SETTINGS: 'settings',
   PRIVACY: 'privacy',
+  COPPA: 'coppa_privacy',
   TERMS: 'terms',
   LEADERBOARD: 'leaderboard',
   QUESTS: 'quests',

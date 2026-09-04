@@ -115,4 +115,36 @@ describe('COPPA Compliance & Operational Requirements', () => {
       expect(child.real_name).toBeUndefined();
     });
   });
+
+  describe('COPPA Account Linking Gating', () => {
+    it('requires verifiable parental consent before account linking', () => {
+      const status = parentChildService.getCOPPAConsentStatus();
+      expect(status.consented).toBe(false);
+
+      // Simulating handleLinkProvider check
+      let showCoppaConsentModal = false;
+      let linked = false;
+
+      const attemptLink = (provider) => {
+        const currentStatus = parentChildService.getCOPPAConsentStatus();
+        if (!currentStatus.consented) {
+          showCoppaConsentModal = true;
+          return;
+        }
+        linked = true;
+      };
+
+      attemptLink('google');
+      expect(showCoppaConsentModal).toBe(true);
+      expect(linked).toBe(false);
+
+      // Verify as parent via parental gate
+      parentChildService.recordParentalConsent('parent_gate');
+      expect(parentChildService.getCOPPAConsentStatus().consented).toBe(true);
+
+      // Now linking succeeds
+      attemptLink('google');
+      expect(linked).toBe(true);
+    });
+  });
 });

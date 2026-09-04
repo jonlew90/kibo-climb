@@ -1,8 +1,8 @@
 import React from 'react';
-import { ShieldCheck, ArrowLeft, Lock, HeartHandshake, EyeOff, Server, Mail, UserCheck } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Lock, FileText, Database, CreditCard, Cookie, Mail, UserCheck, AlertTriangle, ExternalLink } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
-export default function PrivacyPolicyScreen({ onBack, renderFooter }) {
+export default function PrivacyPolicyScreen({ onBack, onNavigateCoppa, renderFooter }) {
   const handleBack = () => {
     soundFx.playKeyTap();
     if (onBack) {
@@ -13,8 +13,19 @@ export default function PrivacyPolicyScreen({ onBack, renderFooter }) {
     }
   };
 
+  const handleGoToCoppa = (e) => {
+    e.preventDefault();
+    soundFx.playKeyTap();
+    if (onNavigateCoppa) {
+      onNavigateCoppa();
+    } else {
+      window.history.pushState({}, '', '/coppa-privacy');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
+    <div className="fixed inset-0 z-50 bg-gradient-to-b from-slate-50 via-sky-50 to-blue-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">
       {/* STICKY TOP HEADER BAR */}
       <header className="bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs shrink-0 z-10">
         <div className="flex items-center gap-3">
@@ -27,27 +38,56 @@ export default function PrivacyPolicyScreen({ onBack, renderFooter }) {
             <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
           </button>
           <div className="flex items-center gap-2 text-slate-800">
-            <ShieldCheck className="w-5 h-5 text-teal-600 stroke-[2.5]" />
+            <ShieldCheck className="w-5 h-5 text-blue-600 stroke-[2.5]" />
             <h2 className="text-base sm:text-lg font-black tracking-tight">Privacy Policy</h2>
           </div>
         </div>
-        <span className="text-xs font-bold bg-teal-100 text-teal-800 px-2.5 py-1 rounded-full border border-teal-200">
-          COPPA Safe
+        <span className="text-xs font-bold bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full border border-blue-200">
+          General & Web
         </span>
       </header>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
       <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-3xl mx-auto p-4 sm:p-6 space-y-6">
+        {/* PROMINENT CROSS-REFERENCE CALLOUT BOX */}
+        <div className="bg-gradient-to-r from-amber-50 to-teal-50 border-2 border-teal-300 rounded-3xl p-5 shadow-sm space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 bg-teal-100 text-teal-800 rounded-2xl border border-teal-200 shrink-0">
+              <ShieldCheck className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
+                Looking for Information on Child Data & Under-13 Protections?
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                For detailed disclosures on children's gameplay data, parental consent mechanisms, guest play local storage, and our strict adherence to the FTC COPPA Rule (16 CFR § 312.4), please visit our dedicated policy.
+              </p>
+            </div>
+          </div>
+          <div className="pt-1 flex justify-end">
+            <button
+              type="button"
+              onClick={handleGoToCoppa}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs sm:text-sm font-black transition-all shadow-xs cursor-pointer active:scale-95"
+            >
+              <span>View Dedicated COPPA & Children’s Privacy Policy</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
         {/* HERO CARD */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-4">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-teal-100 text-teal-700 rounded-2xl border border-teal-200 shrink-0">
+            <div className="p-3 bg-blue-100 text-blue-700 rounded-2xl border border-blue-200 shrink-0">
               <Lock className="w-7 h-7 stroke-[2.5]" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Your Child's Privacy Comes First</h1>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                General Website Privacy Policy
+              </h1>
               <p className="text-sm text-slate-600 mt-1 font-medium leading-relaxed">
-                Kibo Climb is committed to protecting the privacy of children under 13. We strictly adhere to the Children's Online Privacy Protection Act (COPPA). We do not sell personal data, display third-party advertisements, or track children across third-party apps.
+                This Privacy Policy describes how Kibo Climb LLC ("Kibo Climb", "we", "us", or "our") collects, uses, and safeguards information from adult website visitors, parents, and registered guardians in compliance with applicable consumer data protection laws (including CalOPPA and CCPA).
               </p>
               <div className="mt-3 text-xs font-semibold text-slate-400">
                 Last Updated: August 28, 2026
@@ -56,120 +96,168 @@ export default function PrivacyPolicyScreen({ onBack, renderFooter }) {
           </div>
         </div>
 
-        {/* SECTION 1: COPPA PRIVACY NOTICE */}
+        {/* SECTION 1: INFORMATION COLLECTED FROM ADULTS & VISITORS */}
         <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
-          <div className="flex items-center gap-2.5 text-teal-700">
-            <HeartHandshake className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">1. Direct COPPA Notice to Parents</h3>
+          <div className="flex items-center gap-2.5 text-blue-700">
+            <UserCheck className="w-5 h-5 stroke-[2.5]" />
+            <h3 className="text-base font-extrabold tracking-tight">1. Information Collected from Adults & Visitors</h3>
           </div>
           <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            Under COPPA (16 CFR Part 312), online services directed to children under 13 must provide direct notice to parents and obtain verifiable parental consent before collecting personal information.
+            When adult visitors access our public website or create a parent administrator account, we may collect:
           </p>
-          <ul className="list-disc list-inside space-y-1.5 text-sm text-slate-600 font-medium pl-1">
-            <li><strong className="text-slate-800">Zero Behavioral Advertising:</strong> We never serve targeted or third-party ads to children.</li>
-            <li><strong className="text-slate-800">No Open Social Interaction:</strong> Children cannot send direct messages, share live chat, or upload multimedia to strangers.</li>
-            <li><strong className="text-slate-800">Protected Adult Gates:</strong> All account settings, subscription purchases, and data controls require parent verification via biometric authentication, a custom Parent PIN, or dynamic adult knowledge challenges.</li>
+          <ul className="list-disc list-inside space-y-2 text-sm text-slate-700 font-medium pl-1">
+            <li>
+              <strong className="text-slate-900">Parent Account Credentials:</strong> Parent email address, hashed cryptographic credentials, account creation timestamps, and billing status records via Stripe.
+            </li>
+            <li>
+              <strong className="text-slate-900">Technical Web Analytics:</strong> Browser type, operating system, preferred language, referring and exit URLs, device characteristics, screen resolution, and truncated IP addresses for geo-regional telemetry.
+            </li>
+            <li>
+              <strong className="text-slate-900">Inbound Ad Tracking Parameters:</strong> Inbound UTM campaign tags (e.g., source, medium, campaign), click IDs, and aggregated ad conversion statistics from Meta Ads and Google Ads campaigns promoting parent subscriptions.
+            </li>
           </ul>
         </section>
 
-        {/* SECTION 2: INFORMATION WE COLLECT FROM CHILDREN */}
+        {/* SECTION 2: PAYMENT PROCESSING DISCLOSURES */}
         <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
-          <div className="flex items-center gap-2.5 text-indigo-700">
-            <EyeOff className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">2. Information Collected From Children Under 13</h3>
+          <div className="flex items-center gap-2.5 text-emerald-700">
+            <CreditCard className="w-5 h-5 stroke-[2.5]" />
+            <h3 className="text-base font-extrabold tracking-tight">2. Payment Processing Disclosures (Stripe)</h3>
           </div>
-          <div className="space-y-3 text-sm text-slate-600 font-medium leading-relaxed">
-            <p>
-              In accordance with COPPA's data minimization mandate, we aim to collect only minimal data strictly necessary for participation in educational learning climbs:
-            </p>
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
-              <h4 className="font-extrabold text-slate-800 text-xs uppercase tracking-wider">What We Collect</h4>
-              <ul className="list-disc list-inside space-y-1 text-slate-600">
-                <li><strong className="text-slate-700">Kid-Safe Pseudonym / Handle:</strong> Screen nicknames (e.g. "CosmicOtter42") generated or chosen by the user. We implement automated filtering designed to screen out emails, phone numbers, and common real name patterns, and we strongly encourage players and parents to use randomized climber tags.</li>
-                <li><strong className="text-slate-700">Academic Learning Telemetry:</strong> Questions answered, accuracy, response speeds, streak lengths, mastery tiers, and unlocked badges.</li>
-                <li><strong className="text-slate-700">Gameplay Preferences:</strong> Audio toggle states, avatar customization, and local app preferences.</li>
-                <li><strong className="text-slate-700">Technical Device Identifiers:</strong> Anonymous device tokens used solely for session persistence, offline caching, and crash diagnostics with PII redacted.</li>
-              </ul>
+          <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            Optional premium membership plans (Kibo Club) are available for purchase exclusively by verified parents and guardians:
+          </p>
+          <ul className="list-disc list-inside space-y-1.5 text-sm text-slate-700 font-medium pl-1">
+            <li><strong className="text-slate-900">Secure Processor:</strong> All real-money transactions are processed securely via third-party payment infrastructure (Stripe, Inc.).</li>
+            <li><strong className="text-slate-900">No Raw Card Storage:</strong> Kibo Climb does not collect, receive, or store full credit card numbers, CVVs, or sensitive banking credentials on our own servers. Payment tokenization is handled directly by Stripe in compliance with PCI-DSS Level 1 standards.</li>
+            <li><strong className="text-slate-900">Adult Gate Restricted:</strong> Payment interfaces reside entirely behind verified adult gates; children cannot initiate or access subscription purchases.</li>
+          </ul>
+        </section>
+
+        {/* SECTION 3: COOKIE & LOCAL STORAGE POLICY */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
+          <div className="flex items-center gap-2.5 text-amber-700">
+            <Cookie className="w-5 h-5 stroke-[2.5]" />
+            <h3 className="text-base font-extrabold tracking-tight">3. Cookie & Local Storage Policy</h3>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            We employ modern browser storage technologies to maintain platform reliability:
+          </p>
+          <div className="space-y-3 text-sm">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+              <h4 className="font-extrabold text-slate-800 text-xs uppercase tracking-wider mb-1">Essential Cookies & Tokens</h4>
+              <p className="text-slate-600 font-medium">
+                Used solely for user authentication state, session continuity, CSRF security defense, and parent authorization tokens. We do not place third-party advertising tracking cookies in children's sessions.
+              </p>
             </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1 text-amber-900">
-              <h4 className="font-extrabold text-amber-800 text-xs uppercase tracking-wider">Information We Ask You Not to Provide</h4>
-              <p className="text-xs font-medium leading-relaxed">
-                Kibo Climb is designed to operate without collecting personal identifying information from children. We ask that children and parents never submit full real names, postal addresses, phone numbers, precise location data, photos, or voice recordings. If you discover that your child has submitted personal details, please contact us immediately at privacy@kiboclimb.com so we can remove it.
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+              <h4 className="font-extrabold text-slate-800 text-xs uppercase tracking-wider mb-1">Device Local Storage (localStorage)</h4>
+              <p className="text-slate-600 font-medium">
+                Used for gameplay persistence, audio volume preferences, offline play caching, and guest climber progress. This data resides directly on your hardware and operates reliably without continuous server connectivity.
               </p>
             </div>
           </div>
         </section>
 
-        {/* SECTION 3: HOW DATA IS USED */}
-        <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
-          <div className="flex items-center gap-2.5 text-amber-700">
-            <Server className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">3. How Information Is Used</h3>
-          </div>
-          <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            Collected learning data is used exclusively to support internal educational operations:
-          </p>
-          <ul className="list-disc list-inside space-y-1.5 text-sm text-slate-600 font-medium pl-1">
-            <li>Calibrating problem difficulty dynamically so exercises remain engaging and appropriately leveled.</li>
-            <li>Generating parental mastery reports and progress charts inside the secure Parent Dashboard.</li>
-            <li>Enabling offline practice caching and synchronization across devices when a parent links an account.</li>
-          </ul>
-        </section>
-
-        {/* SECTION 4: THIRD-PARTY DISCLOSURES */}
+        {/* SECTION 4: MARKETING & COMMUNICATIONS */}
         <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
           <div className="flex items-center gap-2.5 text-purple-700">
-            <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">4. Third-Party Disclosures & Non-Sale of Data</h3>
-          </div>
-          <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            <strong>We do not sell, rent, or trade personal information of children under 13.</strong> We do not disclose personal information to third parties for advertising or commercial marketing purposes.
-          </p>
-          <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            Data is shared only with trusted infrastructure service providers who act strictly as processors under contractual obligations:
-          </p>
-          <ul className="list-disc list-inside space-y-1 text-sm text-slate-600 font-medium pl-1">
-            <li><strong className="text-slate-700">Google Cloud / Firebase:</strong> Secure cloud storage, data persistence, and authentication infrastructure with end-to-end encryption in transit and at rest.</li>
-            <li><strong className="text-slate-700">Stripe:</strong> Payment processing for parent subscription billing. Child users cannot access or initiate payment flows.</li>
-          </ul>
-        </section>
-
-        {/* SECTION 5: VERIFIABLE PARENTAL CONSENT & PARENT RIGHTS */}
-        <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
-          <div className="flex items-center gap-2.5 text-emerald-700">
-            <UserCheck className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">5. Verifiable Parental Consent, Review & Deletion</h3>
-          </div>
-          <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            Under COPPA, parents have full legal rights regarding their child's collected information:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 font-medium pl-1">
-            <li><strong className="text-slate-800">Verifiable Consent (VPC):</strong> We obtain verifiable consent before collecting child data via adult knowledge-based challenge verification or Parent PIN setup during onboarding.</li>
-            <li><strong className="text-slate-800">Review Collected Data:</strong> Parents can review all practice data, streaks, and profile details inside the Parent Dashboard or export complete records via the "Export Data (JSON)" feature.</li>
-            <li><strong className="text-slate-800">Revoke Consent:</strong> Parents can revoke consent at any time in the Parent Dashboard. Revoking consent halts cloud syncing and purges remote child records.</li>
-            <li><strong className="text-slate-800">Permanent Deletion:</strong> Parents can permanently delete child profiles or execute full account wipe via the Parent Dashboard.</li>
-          </ul>
-        </section>
-
-        {/* SECTION 6: CONTACT INFORMATION */}
-        <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
-          <div className="flex items-center gap-2.5 text-sky-700">
             <Mail className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">6. Contact Information</h3>
+            <h3 className="text-base font-extrabold tracking-tight">4. Marketing & Communications</h3>
           </div>
           <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            If you have questions regarding this COPPA Privacy Policy, our data practices, or wish to submit a data request:
+            We maintain strict boundaries regarding commercial outreach:
           </p>
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-semibold text-slate-700 space-y-1">
-            <p><strong>App:</strong> Kibo Climb</p>
-            <p><strong>Privacy Inquiries:</strong> privacy@kiboclimb.com</p>
+          <ul className="list-disc list-inside space-y-2 text-sm text-slate-700 font-medium pl-1">
+            <li>
+              <strong className="text-slate-900">Opt-In Parent Communications Only:</strong> Product updates, educational tips, and subscription receipts are sent exclusively to adult parents who opted in or established an account.
+            </li>
+            <li>
+              <strong className="text-slate-900">Instant One-Click Unsubscribe:</strong> Every promotional email includes an instant one-click unsubscribe link at the footer, or parents can update notification preferences inside the Parent Dashboard.
+            </li>
+            <li>
+              <strong className="text-slate-900">Absolute Reassurance for Children:</strong> No marketing materials, commercial solicitations, or advertisements are ever delivered to child players.
+            </li>
+          </ul>
+        </section>
+
+        {/* SECTION 5: DATA RETENTION & SECURITY SAFEGUARDS */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
+          <div className="flex items-center gap-2.5 text-indigo-700">
+            <Database className="w-5 h-5 stroke-[2.5]" />
+            <h3 className="text-base font-extrabold tracking-tight">5. Data Retention & Security Safeguards</h3>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            We enforce comprehensive technical, administrative, and physical security measures to safeguard stored data:
+          </p>
+          <ul className="list-disc list-inside space-y-2 text-sm text-slate-700 font-medium pl-1">
+            <li><strong className="text-slate-900">Encryption in Transit & Rest:</strong> All network communication is enforced over modern SSL/TLS (HTTPS) encryption. Database volumes are encrypted at rest with industry-standard AES-256 protocols.</li>
+            <li><strong className="text-slate-900">Access Governance:</strong> Database access is restricted to authorized personnel under least-privilege role-based access control (RBAC) and multi-factor authentication.</li>
+            <li><strong className="text-slate-900">Account Deletion Timelines:</strong> When a parent requests account deletion via the Parent Dashboard or via email, associated cloud database records are permanently purged from active systems within 30 days.</li>
+          </ul>
+        </section>
+
+        {/* SECTION 6: JURISDICTIONAL RIGHTS (CCPA / STATE PRIVACY LAWS) */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
+          <div className="flex items-center gap-2.5 text-rose-700">
+            <FileText className="w-5 h-5 stroke-[2.5]" />
+            <h3 className="text-base font-extrabold tracking-tight">6. Jurisdictional Rights (CCPA / CalOPPA / US State Laws)</h3>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            Consumers and residents of California and other jurisdictions offering statutory privacy rights have the right to exercise the following:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
+              <strong className="text-xs font-black text-slate-800 uppercase tracking-wider block mb-1">Right to Know / Access</strong>
+              <p className="text-xs text-slate-600 font-medium">Request disclosures of categories and specific pieces of personal information collected about you.</p>
+            </div>
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
+              <strong className="text-xs font-black text-slate-800 uppercase tracking-wider block mb-1">Right to Delete</strong>
+              <p className="text-xs text-slate-600 font-medium">Request the permanent deletion of your personal data held across our active database systems.</p>
+            </div>
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
+              <strong className="text-xs font-black text-slate-800 uppercase tracking-wider block mb-1">Opt-Out of Sale / Sharing</strong>
+              <p className="text-xs text-slate-600 font-medium">We do not sell personal data. You have the right to verify or opt out of any data sharing.</p>
+            </div>
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
+              <strong className="text-xs font-black text-slate-800 uppercase tracking-wider block mb-1">Non-Discrimination</strong>
+              <p className="text-xs text-slate-600 font-medium">We will never discriminate against, deny services to, or penalize any user exercising privacy rights.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 7: POLICY CHANGE NOTIFICATIONS */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
+          <div className="flex items-center gap-2.5 text-amber-700">
+            <AlertTriangle className="w-5 h-5 stroke-[2.5]" />
+            <h3 className="text-base font-extrabold tracking-tight">7. Policy Change Notifications</h3>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            We may revise this Privacy Policy periodically to reflect evolving legal standards or platform updates. Material changes will be communicated to registered parents via email notification to the account on file and highlighted through on-site banners prior to the effective date. The "Last Updated" timestamp at the top of this document indicates the most recent revision.
+          </p>
+        </section>
+
+        {/* SECTION 8: CONTACT INFORMATION */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
+          <div className="flex items-center gap-2.5 text-blue-700">
+            <Mail className="w-5 h-5 stroke-[2.5]" />
+            <h3 className="text-base font-extrabold tracking-tight">8. Contact Information</h3>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            For questions or requests regarding this Website Privacy Policy or data rights:
+          </p>
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-semibold text-slate-800 space-y-1.5">
+            <p><strong>Entity:</strong> Kibo Climb LLC</p>
+            <p><strong>Mailing Address:</strong> 906 W McDermott Dr, Suite 116, PMB 345, Allen, TX 75013</p>
+            <p><strong>Privacy Email:</strong> <a href="mailto:privacy@kiboclimb.com" className="text-blue-700 underline font-bold">privacy@kiboclimb.com</a></p>
+            <p><strong>Phone:</strong> <a href="tel:8624385426" className="text-blue-700 underline font-bold">(862) GET-KIBO</a> <span className="text-slate-500 font-normal">((862) 438-5426)</span></p>
           </div>
           <a
-            href="mailto:privacy@kiboclimb.com?subject=COPPA%20Child%20Privacy%20Inquiry"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-xl font-extrabold text-sm transition-colors cursor-pointer"
+            href="mailto:privacy@kiboclimb.com?subject=Website%20Privacy%20Policy%20Inquiry"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-extrabold text-sm transition-colors cursor-pointer shadow-xs active:scale-95"
           >
             <Mail className="w-4 h-4 stroke-[2.5]" />
-            Contact Privacy Team (privacy@kiboclimb.com)
+            Contact Legal & Privacy Desk (privacy@kiboclimb.com)
           </a>
         </section>
       </main>

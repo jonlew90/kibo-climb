@@ -8,9 +8,8 @@ import { leaderboardService } from '../services/leaderboardService';
 import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { Dices, ShieldCheck, RefreshCw, AlertCircle, Lock, FileText } from 'lucide-react';
-import { parentChildService } from '../services/parentChildService';
-import PinGateModal from './PinGateModal';
 import PrivacyPolicyScreen from './PrivacyPolicyScreen';
+import CoppaPrivacyPolicyScreen from './CoppaPrivacyPolicyScreen';
 import TermsOfServiceScreen from './TermsOfServiceScreen';
 
 const GRADE_OPTIONS = Object.keys(GRADE_STARTING_RATINGS);
@@ -162,12 +161,10 @@ export default function FirstLaunchOnboardingModal({
     return () => clearTimeout(timer);
   }, [usernameInput]);
 
-  // COPPA, Privacy Policy & Terms state
+  // Privacy Policy & Terms state
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showCoppaModal, setShowCoppaModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
-  const [showPinGateModal, setShowPinGateModal] = useState(false);
-  const [consentAgreed, setConsentAgreed] = useState(false);
-  const [consentError, setConsentError] = useState('');
 
   // Pre-fill if username already set, or auto-fill with a generated kid-safe tag
   useEffect(() => {
@@ -271,13 +268,6 @@ export default function FirstLaunchOnboardingModal({
     }
 
     gradeSelectionTimerRef.current = setTimeout(() => {
-      const coppaStatus = parentChildService.getCOPPAConsentStatus();
-      if (!coppaStatus.consented) {
-        setConsentAgreed(false);
-        setConsentError('');
-        setStep('coppa_consent');
-        return;
-      }
       finalizeProfile(grade);
     }, 200);
   };
@@ -294,32 +284,6 @@ export default function FirstLaunchOnboardingModal({
 
   const handleGradeConfirm = () => {
     if (!selectedGrade) return;
-    const coppaStatus = parentChildService.getCOPPAConsentStatus();
-    if (!coppaStatus.consented) {
-      setConsentAgreed(false);
-      setConsentError('');
-      setStep('coppa_consent');
-      return;
-    }
-    finalizeProfile();
-  };
-
-  const handleConsentSubmit = (e) => {
-    if (e) e.preventDefault();
-    if (!consentAgreed) {
-      setConsentError('Please check the box to confirm adult status and agree to COPPA consent.');
-      return;
-    }
-    setConsentError('');
-    soundFx.playKeyTap();
-    setShowPinGateModal(true);
-  };
-
-  const handlePinGateSuccess = () => {
-    setShowPinGateModal(false);
-    parentChildService.recordParentalConsent('parent_gate', {
-      verifiedAt: new Date().toISOString()
-    });
     finalizeProfile();
   };
 
@@ -429,11 +393,20 @@ export default function FirstLaunchOnboardingModal({
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <button
                 type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+                onClick={() => { soundFx.playKeyTap(); setShowCoppaModal(true); }}
                 className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
-                <span>COPPA & Privacy</span>
+                <span>COPPA Policy</span>
+              </button>
+              <span className="text-slate-600 text-xs">•</span>
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+                className="text-[11px] font-semibold text-slate-400 hover:text-blue-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+                <span>Privacy Policy</span>
               </button>
               <span className="text-slate-600 text-xs">•</span>
               <button
@@ -449,7 +422,22 @@ export default function FirstLaunchOnboardingModal({
         </div>
 
         {showPrivacyModal && (
-          <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+          <PrivacyPolicyScreen
+            onBack={() => setShowPrivacyModal(false)}
+            onNavigateCoppa={() => {
+              setShowPrivacyModal(false);
+              setShowCoppaModal(true);
+            }}
+          />
+        )}
+        {showCoppaModal && (
+          <CoppaPrivacyPolicyScreen
+            onBack={() => setShowCoppaModal(false)}
+            onNavigatePrivacy={() => {
+              setShowCoppaModal(false);
+              setShowPrivacyModal(true);
+            }}
+          />
         )}
         {showTermsModal && (
           <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
@@ -584,11 +572,20 @@ export default function FirstLaunchOnboardingModal({
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <button
                 type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+                onClick={() => { soundFx.playKeyTap(); setShowCoppaModal(true); }}
                 className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
-                <span>COPPA & Privacy</span>
+                <span>COPPA Policy</span>
+              </button>
+              <span className="text-slate-600 text-xs">•</span>
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+                className="text-[11px] font-semibold text-slate-400 hover:text-blue-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+                <span>Privacy Policy</span>
               </button>
               <span className="text-slate-600 text-xs">•</span>
               <button
@@ -603,7 +600,22 @@ export default function FirstLaunchOnboardingModal({
           </div>
         </div>
         {showPrivacyModal && (
-          <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+          <PrivacyPolicyScreen
+            onBack={() => setShowPrivacyModal(false)}
+            onNavigateCoppa={() => {
+              setShowPrivacyModal(false);
+              setShowCoppaModal(true);
+            }}
+          />
+        )}
+        {showCoppaModal && (
+          <CoppaPrivacyPolicyScreen
+            onBack={() => setShowCoppaModal(false)}
+            onNavigatePrivacy={() => {
+              setShowCoppaModal(false);
+              setShowPrivacyModal(true);
+            }}
+          />
         )}
         {showTermsModal && (
           <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
@@ -706,7 +718,22 @@ export default function FirstLaunchOnboardingModal({
           </div>
         </div>
         {showPrivacyModal && (
-          <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+          <PrivacyPolicyScreen
+            onBack={() => setShowPrivacyModal(false)}
+            onNavigateCoppa={() => {
+              setShowPrivacyModal(false);
+              setShowCoppaModal(true);
+            }}
+          />
+        )}
+        {showCoppaModal && (
+          <CoppaPrivacyPolicyScreen
+            onBack={() => setShowCoppaModal(false)}
+            onNavigatePrivacy={() => {
+              setShowCoppaModal(false);
+              setShowPrivacyModal(true);
+            }}
+          />
         )}
         {showTermsModal && (
           <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
@@ -715,125 +742,7 @@ export default function FirstLaunchOnboardingModal({
     );
   }
 
-  // ─── STEP: Verifiable Parental Consent (COPPA) ───────────────────────────
-  if (step === 'coppa_consent') {
-    return (
-      <div className="fixed inset-0 z-[1000] h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-3 sm:p-5 select-none animate-pop overflow-y-auto">
-        <div className="absolute w-96 h-96 rounded-full bg-purple-600/20 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
 
-        <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-3 text-center my-auto py-2">
-          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500 shrink-0">
-            <span className="text-slate-600">Step 1</span>
-            <span>/</span>
-            <span className="text-slate-600">Step 2</span>
-            <span>/</span>
-            <span className="text-amber-400">Parent Consent</span>
-          </div>
-
-          <div className="flex items-center justify-center gap-2 text-teal-300">
-            <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight">
-              Parental Verification & Consent (COPPA)
-            </h2>
-          </div>
-
-          <div className="bg-white/10 border border-white/20 rounded-2xl p-3.5 text-left space-y-2 text-xs sm:text-sm text-slate-200">
-            <p className="font-medium leading-relaxed">
-              Under the Children's Online Privacy Protection Act (COPPA), verifiable consent from an adult parent or legal guardian is required before collecting any educational practice data or username for children under 13.
-            </p>
-            <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
-                className="text-xs sm:text-sm font-bold text-teal-300 hover:text-teal-200 underline cursor-pointer flex items-center gap-1"
-              >
-                <ShieldCheck className="w-3.5 h-3.5" /> Read COPPA Privacy Policy
-              </button>
-              <button
-                type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowTermsModal(true); }}
-                className="text-xs sm:text-sm font-bold text-amber-300 hover:text-amber-200 underline cursor-pointer flex items-center gap-1"
-              >
-                <FileText className="w-3.5 h-3.5" /> Terms of Service
-              </button>
-            </div>
-          </div>
-
-          {/* Adult Verification Info Card */}
-          <div className="w-full bg-white/5 border border-purple-400/30 rounded-2xl p-3.5 sm:p-4 text-left flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center shrink-0 text-purple-300 mt-0.5">
-              <Lock className="w-5 h-5" />
-            </div>
-            <div className="space-y-1 min-w-0">
-              <h3 className="text-sm sm:text-base font-black text-white">
-                Parental Gate Verification
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
-                Verify adulthood via <strong>Face ID / Touch ID</strong>, device PIN, or dynamic adult challenge.
-              </p>
-            </div>
-          </div>
-
-          {/* Consent Checkbox */}
-          <label className="w-full flex items-start gap-2.5 text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-3 cursor-pointer select-none transition-colors">
-            <input
-              type="checkbox"
-              checked={consentAgreed}
-              onChange={(e) => {
-                setConsentAgreed(e.target.checked);
-                setConsentError('');
-              }}
-              className="mt-0.5 w-4 h-4 rounded text-purple-600 focus:ring-purple-500 shrink-0 cursor-pointer"
-            />
-            <span className="text-xs sm:text-sm text-slate-200 font-medium leading-normal">
-              I confirm I am an adult parent or legal guardian. I consent to the collection and use of educational practice progress and safe climber tag under Kibo Climb's Privacy Policy.
-            </span>
-          </label>
-
-          {consentError && (
-            <div className="w-full p-2.5 bg-rose-500/20 border border-rose-400 rounded-xl text-rose-300 text-xs font-bold flex items-center gap-1.5 text-left">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-              <span>{consentError}</span>
-            </div>
-          )}
-
-          <div className="w-full flex items-center gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setStep(2);
-              }}
-              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-sm rounded-xl shrink-0 transition-all cursor-pointer"
-            >
-              Back
-            </button>
-            <button
-              type="button"
-              onClick={handleConsentSubmit}
-              className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-sm rounded-xl shadow-lg shadow-amber-500/20 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              <Lock className="w-4 h-4" />
-              <span>Verify as Parent</span>
-            </button>
-          </div>
-        </div>
-        {showPrivacyModal && (
-          <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
-        )}
-        {showTermsModal && (
-          <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
-        )}
-        <PinGateModal
-          isOpen={showPinGateModal}
-          onClose={() => setShowPinGateModal(false)}
-          onUnlockSuccess={handlePinGateSuccess}
-          title="Parental Verification"
-          subtitle="Verify adult status to provide COPPA consent."
-        />
-      </div>
-    );
-  }
 
   // ─── STEP 3: Welcome Splash ───────────────────────────────────────────────
   return (
@@ -948,11 +857,20 @@ export default function FirstLaunchOnboardingModal({
           <div className="flex items-center justify-center gap-3 flex-wrap pt-0.5">
             <button
               type="button"
-              onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+              onClick={() => { soundFx.playKeyTap(); setShowCoppaModal(true); }}
               className="text-[11px] font-semibold text-slate-500 hover:text-teal-600 transition-colors inline-flex items-center gap-1 cursor-pointer"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-              <span>COPPA & Privacy</span>
+              <span>COPPA Policy</span>
+            </button>
+            <span className="text-slate-300 text-xs">•</span>
+            <button
+              type="button"
+              onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+              className="text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition-colors inline-flex items-center gap-1 cursor-pointer"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+              <span>Privacy Policy</span>
             </button>
             <span className="text-slate-300 text-xs">•</span>
             <button
@@ -976,7 +894,22 @@ export default function FirstLaunchOnboardingModal({
         </div>
       </div>
       {showPrivacyModal && (
-        <PrivacyPolicyScreen onBack={() => setShowPrivacyModal(false)} />
+        <PrivacyPolicyScreen
+          onBack={() => setShowPrivacyModal(false)}
+          onNavigateCoppa={() => {
+            setShowPrivacyModal(false);
+            setShowCoppaModal(true);
+          }}
+        />
+      )}
+      {showCoppaModal && (
+        <CoppaPrivacyPolicyScreen
+          onBack={() => setShowCoppaModal(false)}
+          onNavigatePrivacy={() => {
+            setShowCoppaModal(false);
+            setShowPrivacyModal(true);
+          }}
+        />
       )}
       {showTermsModal && (
         <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
