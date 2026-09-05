@@ -150,36 +150,36 @@ export default function CoppaConsentModal({
             <span>Verify as Parent</span>
           </button>
         </div>
-
-        {showPrivacyModal && (
-          <PrivacyPolicyScreen
-            onBack={() => setShowPrivacyModal(false)}
-            onNavigateCoppa={() => {
-              setShowPrivacyModal(false);
-              setShowCoppaModal(true);
-            }}
-          />
-        )}
-        {showCoppaModal && (
-          <CoppaPrivacyPolicyScreen
-            onBack={() => setShowCoppaModal(false)}
-            onNavigatePrivacy={() => {
-              setShowCoppaModal(false);
-              setShowPrivacyModal(true);
-            }}
-          />
-        )}
-        {showTermsModal && (
-          <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
-        )}
-        <PinGateModal
-          isOpen={showPinGateModal}
-          onClose={() => setShowPinGateModal(false)}
-          onUnlockSuccess={handlePinGateSuccess}
-          title="Parental Verification"
-          subtitle="Verify adult status to provide COPPA consent."
-        />
       </div>
+
+      {showPrivacyModal && (
+        <PrivacyPolicyScreen
+          onBack={() => setShowPrivacyModal(false)}
+          onNavigateCoppa={() => {
+            setShowPrivacyModal(false);
+            setShowCoppaModal(true);
+          }}
+        />
+      )}
+      {showCoppaModal && (
+        <CoppaPrivacyPolicyScreen
+          onBack={() => setShowCoppaModal(false)}
+          onNavigatePrivacy={() => {
+            setShowCoppaModal(false);
+            setShowPrivacyModal(true);
+          }}
+        />
+      )}
+      {showTermsModal && (
+        <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
+      )}
+      <PinGateModal
+        isOpen={showPinGateModal}
+        onClose={() => setShowPinGateModal(false)}
+        onUnlockSuccess={handlePinGateSuccess}
+        title="Parental Verification"
+        subtitle="Verify adult status to provide COPPA consent."
+      />
     </div>
   );
 }

@@ -271,23 +271,37 @@ export default function AccountLinkModal({
           </div>
         ) : conflictData ? (
           <div className="space-y-4 animate-pop text-left">
-            <div className="bg-amber-50 border border-amber-200 text-amber-950 p-3 rounded-2xl text-xs space-y-1">
-              <div className="flex items-center gap-1.5 font-black text-amber-900">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>Save Conflict: Profile Limit Reached</span>
-              </div>
-              <p className="text-slate-600 font-medium">
-                This cloud account already has saved progress. Review the profiles on each side:
-              </p>
-            </div>
+            {(() => {
+              const cloudCount = Object.keys(conflictData.cloudProfiles || {}).length;
+              const isCloudFull = cloudCount >= 6;
+
+              return (
+                <div className="bg-amber-50 border border-amber-200 text-amber-950 p-3 rounded-2xl text-xs space-y-1">
+                  <div className="flex items-center gap-1.5 font-black text-amber-900">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>{isCloudFull ? 'Save Conflict: Cloud Account Full (6/6 Profiles)' : 'Save Conflict: Existing Cloud Account'}</span>
+                  </div>
+                  <p className="text-slate-600 font-medium">
+                    {isCloudFull
+                      ? 'This cloud account has already reached the maximum 6-profile capacity. Review the profiles on each side:'
+                      : 'This cloud account already has saved progress. Review the profiles on each side:'}
+                  </p>
+                </div>
+              );
+            })()}
 
             {/* Side-by-Side Comparison */}
             <div className="grid grid-cols-2 gap-2 text-left">
               {/* Cloud Account Card */}
               <div className="bg-slate-50 border-2 border-indigo-200 rounded-2xl p-2.5 space-y-2">
-                <div className="flex items-center gap-1.5 text-indigo-700 font-black text-[11px] uppercase tracking-wide">
-                  <Cloud className="w-3.5 h-3.5 shrink-0" />
-                  <span>Cloud Account</span>
+                <div className="flex items-center justify-between text-indigo-700 font-black text-[11px] uppercase tracking-wide">
+                  <div className="flex items-center gap-1.5">
+                    <Cloud className="w-3.5 h-3.5 shrink-0" />
+                    <span>Cloud Account</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-bold lowercase">
+                    {Object.keys(conflictData.cloudProfiles || {}).length} profile{Object.keys(conflictData.cloudProfiles || {}).length === 1 ? '' : 's'}
+                  </span>
                 </div>
                 <div className="space-y-1.5 max-h-36 overflow-y-auto">
                   {Object.values(conflictData.cloudProfiles || {}).map((p, idx) => (
@@ -304,9 +318,14 @@ export default function AccountLinkModal({
 
               {/* This Device Card */}
               <div className="bg-slate-50 border-2 border-amber-200 rounded-2xl p-2.5 space-y-2">
-                <div className="flex items-center gap-1.5 text-amber-700 font-black text-[11px] uppercase tracking-wide">
-                  <Smartphone className="w-3.5 h-3.5 shrink-0" />
-                  <span>This Device</span>
+                <div className="flex items-center justify-between text-amber-700 font-black text-[11px] uppercase tracking-wide">
+                  <div className="flex items-center gap-1.5">
+                    <Smartphone className="w-3.5 h-3.5 shrink-0" />
+                    <span>This Device</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-bold lowercase">
+                    {(conflictData.localProfiles?.length || 1)} profile{(conflictData.localProfiles?.length || 1) === 1 ? '' : 's'}
+                  </span>
                 </div>
                 <div className="space-y-1.5 max-h-36 overflow-y-auto">
                   {(conflictData.localProfiles && conflictData.localProfiles.length > 0
@@ -326,47 +345,57 @@ export default function AccountLinkModal({
             </div>
 
             {/* Actions */}
-            <div className="space-y-2 pt-1">
-              {/* 1. Safe Primary Action: Keep Cloud */}
-              <button
-                type="button"
-                onClick={() => handleConflictResolution('keep_cloud')}
-                disabled={!!loadingProvider}
-                className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                <Cloud className="w-4 h-4 text-sky-400" />
-                <span>{loadingProvider === 'resolving' ? 'Syncing Cloud Account...' : 'Load Cloud Account (Recommended)'}</span>
-              </button>
+            {(() => {
+              const cloudCount = Object.keys(conflictData.cloudProfiles || {}).length;
+              const localCount = conflictData.localProfiles?.length || 1;
+              const canUpgradeToKeepBoth = cloudCount < 6 && (cloudCount + localCount) <= 6 && !conflictData.cloudHasFamilyPlan && !conflictData.localHasFamilyPlan;
 
-              {/* 2. Upgrade to Family Plan (Keep Both) */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (onOpenFamilyPlan) {
-                    onClose();
-                    onOpenFamilyPlan();
-                  } else {
-                    setShowFamilyUpgrade(true);
-                  }
-                }}
-                disabled={!!loadingProvider}
-                className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                <Sparkles className="w-4 h-4 fill-white" />
-                <span>Upgrade to Family Plan (Keep Both)</span>
-              </button>
+              return (
+                <div className="space-y-2 pt-1">
+                  {/* 1. Safe Primary Action: Keep Cloud */}
+                  <button
+                    type="button"
+                    onClick={() => handleConflictResolution('keep_cloud')}
+                    disabled={!!loadingProvider}
+                    className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    <Cloud className="w-4 h-4 text-sky-400" />
+                    <span>{loadingProvider === 'resolving' ? 'Syncing Cloud Account...' : 'Load Cloud Account (Recommended)'}</span>
+                  </button>
 
-              {/* 3. Destructive Action (Parent PIN Gated) */}
-              <button
-                type="button"
-                onClick={() => setShowPinGate(true)}
-                disabled={!!loadingProvider}
-                className="w-full py-2 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-              >
-                <Lock className="w-3.5 h-3.5" />
-                <span>Overwrite Cloud with This Device (Parent PIN)</span>
-              </button>
-            </div>
+                  {/* 2. Upgrade to Family Plan (Keep Both) - only shown when total profiles fit within the 6-profile family limit */}
+                  {canUpgradeToKeepBoth && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onOpenFamilyPlan) {
+                          onClose();
+                          onOpenFamilyPlan();
+                        } else {
+                          setShowFamilyUpgrade(true);
+                        }
+                      }}
+                      disabled={!!loadingProvider}
+                      className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      <Sparkles className="w-4 h-4 fill-white" />
+                      <span>Upgrade to Family Plan (Keep Both)</span>
+                    </button>
+                  )}
+
+                  {/* 3. Destructive Action (Parent PIN Gated) */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPinGate(true)}
+                    disabled={!!loadingProvider}
+                    className="w-full py-2 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Overwrite Cloud with This Device (Parent PIN)</span>
+                  </button>
+                </div>
+              );
+            })()}
           </div>
         ) : (
           /* Link Options */
