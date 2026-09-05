@@ -479,14 +479,21 @@ export default function WorkshopModal({
       setRecentlyPurchasedId(item.id);
       setTimeout(() => setRecentlyPurchasedId(null), 1200);
 
-      // Auto-equip into preview slot upon purchase
+      // Clear tried/preview state for this item upon purchase so it is marked as owned, not tried
       if (!item.isConsumable) {
-        const slot = getItemSlot(item);
-        const previewId = (item.bundleItems && item.bundleItems.length > 0) ? item.bundleItems[0] : item.id;
-        setPreviewSlots((prev) => ({
-          ...prev,
-          [slot]: previewId
-        }));
+        const primarySlot = getItemSlot(item);
+        const itemsBought = (item.bundleItems && item.bundleItems.length > 0) ? item.bundleItems : [item.id];
+        setPreviewSlots((prev) => {
+          const next = { ...prev };
+          itemsBought.forEach((id) => {
+            const it = getItemById(id);
+            const slot = it ? getItemSlot(it) : primarySlot;
+            if (slot && next[slot] === id) {
+              next[slot] = null;
+            }
+          });
+          return next;
+        });
       }
     } else {
       soundFx.playIncorrect();
