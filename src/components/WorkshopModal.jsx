@@ -11,6 +11,8 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   User,
   Ticket,
   Gift,
@@ -192,6 +194,7 @@ export default function WorkshopModal({
 
   // Preview Slots State
   const [previewSlots, setPreviewSlots] = useState(INITIAL_PREVIEW_SLOTS);
+  const [isMobilePreviewOpen, setIsMobilePreviewOpen] = useState(false);
   const [recentlyPurchasedId, setRecentlyPurchasedId] = useState(null);
 
   // Sell Confirmation Modal State
@@ -210,6 +213,7 @@ export default function WorkshopModal({
   const hubScrollRef = useRef(null);
   const slotScrollRef = useRef(null);
   const seasonalScrollRef = useRef(null);
+  const dragStartYRef = useRef(null);
 
   const [canHubScrollRight, setCanHubScrollRight] = useState(false);
   const [canSlotScrollRight, setCanSlotScrollRight] = useState(false);
@@ -344,6 +348,15 @@ export default function WorkshopModal({
   // Active preview states
   const hasActivePreview = Object.values(previewSlots).some((v) => v !== null);
   const hasUnownedPreview = stageEquippedItems.some((id) => !unlockedItems.includes(id));
+  const previewedItemsList = useMemo(() => {
+    return Object.entries(previewSlots)
+      .filter(([, itemId]) => itemId !== null)
+      .map(([slot, itemId]) => {
+        const item = getItemById(itemId);
+        return item ? { ...item, previewSlot: slot } : null;
+      })
+      .filter(Boolean);
+  }, [previewSlots]);
 
   // Determine which items to show based on mode, hubs, slots, and search query (Memoized for instant rendering)
   const displayedItems = useMemo(() => {
@@ -432,6 +445,7 @@ export default function WorkshopModal({
   const handleResetPreview = () => {
     soundFx.playKeyTap();
     setPreviewSlots(INITIAL_PREVIEW_SLOTS);
+    setIsMobilePreviewOpen(false);
   };
 
   const handleBuyClick = (item) => {
@@ -663,7 +677,10 @@ export default function WorkshopModal({
           return next;
         });
       }
-      setSelectedItemDetail(item);
+      // On desktop, selecting an item highlights details/stage; on mobile, keep item detail closed so preview handles it
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        setSelectedItemDetail(item);
+      }
     }
   };
 
@@ -1614,6 +1631,20 @@ export default function WorkshopModal({
                             -{saleInfo.discountPercent}%
                           </span>
                         )}
+
+                        {/* Info Button to explicitly open detail modal */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            soundFx.playKeyTap();
+                            setSelectedItemDetail(item);
+                          }}
+                          className="absolute -top-1 -right-1 p-1 bg-white/90 hover:bg-white text-slate-400 hover:text-slate-700 border border-slate-200 rounded-full shadow-2xs transition-all active:scale-90"
+                          title="Item Details"
+                        >
+                          <Info className="w-2.5 h-2.5" />
+                        </button>
                       </div>
 
                       {/* Name */}
@@ -1714,25 +1745,141 @@ export default function WorkshopModal({
               </div>
             )}
 
-            {/* Distinct High-Contrast Floating Try-On Pill (Mobile screens when try-on is active) */}
-            {hasActivePreview && (
-              <div className="md:hidden sticky bottom-2 left-0 right-0 z-20 flex justify-center pointer-events-none px-2 mt-[-40px]">
-                <div className="pointer-events-auto bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-amber-950 border-2 border-amber-300 shadow-xl rounded-full px-3 py-1.5 flex items-center gap-2.5 animate-bounce-subtle">
-                  <div className="flex items-center gap-1.5 text-xs font-black drop-shadow-2xs">
-                    <Sparkles className="w-3.5 h-3.5 fill-amber-950 text-amber-950" />
-                    <span>Try-On Active</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleResetPreview();
+            {/* Mobile Slide-Up Try-On Handle Drawer (Mobile screens when try-on is active in shop mode) */}
+            {hasActivePreview && viewMode === 'shop' && (
+              <div className="md:hidden sticky bottom-0 left-0 right-0 z-30 pointer-events-none -mx-2 -mb-2">
+                {/* Backdrop when drawer is expanded */}
+                {isMobilePreviewOpen && (
+                  <div
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-20 pointer-events-auto transition-opacity"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setIsMobilePreviewOpen(false);
                     }}
-                    className="bg-amber-950 hover:bg-black text-amber-100 hover:text-white font-black text-[11px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1 active:scale-95 transition-all cursor-pointer"
-                  >
-                    <RotateCcw className="w-3 h-3 text-amber-300" />
-                    <span>Reset</span>
-                  </button>
+                  />
+                )}
+
+                <div className="relative z-30 pointer-events-auto flex flex-col items-center">
+                  {/* Slide-Up / Pull-Down Drawer Container */}
+                  <div className="w-full bg-white/95 backdrop-blur-md border-t-2 border-x-2 border-amber-300 rounded-t-3xl shadow-2xl overflow-hidden transition-all duration-300 ease-out">
+                    {/* Pull Handle Header Bar (Always visible when items are previewed) */}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setIsMobilePreviewOpen((prev) => !prev);
+                      }}
+                      onTouchStart={(e) => {
+                        dragStartYRef.current = e.touches[0].clientY;
+                      }}
+                      onTouchEnd={(e) => {
+                        if (dragStartYRef.current !== null) {
+                          const deltaY = e.changedTouches[0].clientY - dragStartYRef.current;
+                          // Swipe up (negative delta) opens; swipe down (positive delta) closes
+                          if (deltaY < -25) {
+                            soundFx.playKeyTap();
+                            setIsMobilePreviewOpen(true);
+                          } else if (deltaY > 25) {
+                            soundFx.playKeyTap();
+                            setIsMobilePreviewOpen(false);
+                          }
+                          dragStartYRef.current = null;
+                        }
+                      }}
+                      className="w-full px-3 pt-2 pb-2 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-amber-950 flex flex-col items-center cursor-pointer select-none active:brightness-95 transition-all"
+                    >
+                      {/* Visual Pull Pill Indicator */}
+                      <div className="w-10 h-1.5 bg-amber-800/30 rounded-full mb-1.5" />
+
+                      <div className="w-full flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 text-xs font-black drop-shadow-2xs">
+                          <Sparkles className="w-4 h-4 fill-amber-950 text-amber-950 shrink-0" />
+                          <span>Try-On Active ({previewedItemsList.length})</span>
+                          <span className="text-[10px] font-bold text-amber-900 bg-amber-500/30 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                            {isMobilePreviewOpen ? (
+                              <>Tap to close <ChevronDown className="w-3 h-3" /></>
+                            ) : (
+                              <>Drag or tap to preview <ChevronUp className="w-3 h-3" /></>
+                            )}
+                          </span>
+                        </div>
+
+                        {/* Quick Reset Button Accessible directly from the handle */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleResetPreview();
+                          }}
+                          className="bg-amber-950 hover:bg-black text-amber-100 hover:text-white font-black text-[11px] px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1 active:scale-95 transition-all cursor-pointer shrink-0"
+                          title="Reset Try-On"
+                        >
+                          <RotateCcw className="w-3 h-3 text-amber-300" />
+                          <span>Reset</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Drawer Content (Revealed when pulled up) */}
+                    {isMobilePreviewOpen && (
+                      <div className="p-3 bg-white space-y-3 animate-fade-in max-h-[55vh] overflow-y-auto">
+                        {/* Mascot Stage */}
+                        <div className="w-full h-40 rounded-2xl bg-gradient-to-b from-sky-100 via-white to-amber-50 border-2 border-slate-200 shadow-inner flex items-center justify-center relative overflow-hidden p-2">
+                          <Mascot mood="happy" equipped={stageEquippedItems} className="w-36 h-36" />
+                          <div className="absolute top-2 left-2">
+                            <span className="bg-purple-700 text-white font-black text-[9px] uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                              <Sparkles className="w-2.5 h-2.5 fill-amber-300" /> Live Look
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Previewed Items Chips & Actions */}
+                        <div className="space-y-1.5">
+                          <div className="text-[11px] font-black text-slate-500 uppercase tracking-wider">
+                            Items in Preview:
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {previewedItemsList.map((item) => {
+                              const isOwned = unlockedItems.includes(item.id);
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800"
+                                >
+                                  <span className="truncate max-w-[130px]">{item.name}</span>
+                                  {isOwned ? (
+                                    <span className="text-[10px] text-emerald-600 font-extrabold">(Owned)</span>
+                                  ) : (
+                                    <span className="text-[10px] text-amber-600 font-black">{item.cost ? `${item.cost}⚡` : item.realMoneyPrice}</span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleClearSlot(item.previewSlot)}
+                                    className="p-0.5 hover:bg-slate-200 text-slate-400 hover:text-slate-700 rounded-full"
+                                    title="Remove from preview"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Drawer Actions */}
+                        <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
+                          <button
+                            type="button"
+                            onClick={() => setIsMobilePreviewOpen(false)}
+                            className="w-full py-2 bg-amber-500 hover:bg-amber-600 active:scale-98 text-slate-900 font-black text-xs rounded-xl flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm"
+                          >
+                            <span>Done Previewing</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
