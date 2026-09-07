@@ -259,15 +259,18 @@ export const storageService = {
       ...prof
     }));
   },
-  createProfile(name = 'New Climber', gradeLevel = 'Grade 1–2') {
+  createProfile(name, gradeLevel = 'Grade 1–2', startingRatingOverride = null) {
     const state = safeGetProfilesState();
-    if (Object.keys(state.profiles).length >= 6) {
-      console.warn('Maximum profile limit of 6 reached.');
+    const existingCount = Object.keys(state.profiles).length;
+    if (existingCount >= 6) {
       return null;
     }
-    const safeName = (name || 'New Climber').trim().slice(0, 20);
-    const id = `profile_${Date.now()}`;
-    const startingRating = getStartingRatingForGrade(gradeLevel);
+
+    const id = `child_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const safeName = (name || '').trim().slice(0, 20);
+    const startingRating = startingRatingOverride !== null && !isNaN(Number(startingRatingOverride))
+      ? Number(startingRatingOverride)
+      : getStartingRatingForGrade(gradeLevel);
     const startingBadges = getStartingRatingBadges(startingRating);
     const isLinked = this.isAccountGloballyLinked();
     const activeProf = this.getActiveProfile();
@@ -360,7 +363,7 @@ export const storageService = {
   getUsername() {
     return this.getActiveProfile().username || '';
   },
-  saveUsername(username, gradeLevel = null) {
+  saveUsername(username, gradeLevel = null, startingRatingOverride = null) {
     const state = safeGetProfilesState();
     const activeId = state.activeProfileId || DEFAULT_PROFILE_ID;
     if (!state.profiles[activeId]) {
@@ -371,7 +374,9 @@ export const storageService = {
     state.profiles[activeId].name = cleanUsername; // keep display name in sync
     if (gradeLevel) {
       state.profiles[activeId].gradeLevel = gradeLevel;
-      const startingRating = getStartingRatingForGrade(gradeLevel);
+      const startingRating = startingRatingOverride !== null && !isNaN(Number(startingRatingOverride))
+        ? Number(startingRatingOverride)
+        : getStartingRatingForGrade(gradeLevel);
       const startingBadges = getStartingRatingBadges(startingRating);
       const prevUserData = state.profiles[activeId].userData || DEFAULT_PROFILE.userData;
       const existingUnlocked = new Set(prevUserData.unlockedBadges || []);

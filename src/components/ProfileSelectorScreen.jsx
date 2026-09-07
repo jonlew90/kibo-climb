@@ -4,7 +4,7 @@ import Mascot from './Mascot';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
-import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
+import { GRADE_STARTING_RATINGS, ritToStartingRating } from '../utils/mathCurriculum';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { GRADE_CURRICULUM_DETAILS } from './FirstLaunchOnboardingModal';
 import { analyticsService } from '../services/analyticsService';
@@ -195,6 +195,9 @@ function ProfileCard({ profile, onSelect, isSelected, isLocked }) {
 function AddProfilePanel({ onCancel, onCreated }) {
   const [childName, setChildName] = useState('');
   const [childGrade, setChildGrade] = useState('Grade 1–2');
+  const [customRating, setCustomRating] = useState(null);
+  const [ritInput, setRitInput] = useState('');
+  const [showRit, setShowRit] = useState(false);
   const [nameError, setNameError] = useState('');
   const nameRef = useRef(null);
 
@@ -202,11 +205,23 @@ function AddProfilePanel({ onCancel, onCreated }) {
     nameRef.current?.focus();
   }, []);
 
+  const handleRitChange = (val) => {
+    setRitInput(val);
+    const parsed = parseInt(val.trim(), 10);
+    if (!isNaN(parsed) && parsed >= 130 && parsed <= 270) {
+      const cal = ritToStartingRating(parsed);
+      setChildGrade(cal.gradeLevel);
+      setCustomRating(cal.rating);
+    } else {
+      setCustomRating(null);
+    }
+  };
+
   const handleCreateSubmit = (e) => {
     e.preventDefault();
     const error = validateSafeChildUsername(childName);
     if (error) { setNameError(error); return; }
-    const newProfile = storageService.createProfile(childName.trim(), childGrade);
+    const newProfile = storageService.createProfile(childName.trim(), childGrade, customRating);
     if (!newProfile) {
       setNameError('Maximum profile limit of 6 reached.');
       return;
@@ -220,7 +235,7 @@ function AddProfilePanel({ onCancel, onCreated }) {
     onCancel();
   };
 
-    const selectedCurriculum = GRADE_CURRICULUM_DETAILS[childGrade] || { math: '', words: '', world: '', summary: '' };
+  const selectedCurriculum = GRADE_CURRICULUM_DETAILS[childGrade] || { math: '', words: '', world: '', summary: '' };
 
   return (
     <div className="w-full max-w-sm bg-white border-2 border-amber-200/80 shadow-lg rounded-2xl p-4 sm:p-5 space-y-3.5 text-center animate-pop">
@@ -269,13 +284,63 @@ function AddProfilePanel({ onCancel, onCreated }) {
           </div>
           <select
             value={childGrade}
-            onChange={(e) => setChildGrade(e.target.value)}
+            onChange={(e) => {
+              setChildGrade(e.target.value);
+              setCustomRating(null);
+            }}
             className="w-full px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-slate-800 bg-slate-50/50 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-500 focus:bg-white cursor-pointer"
           >
             {GRADE_OPTIONS.map((g) => (
               <option key={g} value={g}>{g}</option>
             ))}
           </select>
+        </div>
+
+        {/* Optional MAP RIT Score Field */}
+        <div>
+          {!showRit ? (
+            <button
+              type="button"
+              onClick={() => setShowRit(true)}
+              className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <span>🎯</span>
+              <span>Calibrate with school MAP® Math RIT score?</span>
+            </button>
+          ) : (
+            <div className="bg-indigo-50/70 border border-indigo-200 rounded-xl p-2.5 space-y-1.5 animate-pop">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase text-indigo-900 flex items-center gap-1">
+                  <span>🎯</span> MAP® Math RIT Score
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRit(false);
+                    setRitInput('');
+                    setCustomRating(null);
+                  }}
+                  className="text-[10px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+                >
+                  Clear
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="130"
+                  max="270"
+                  value={ritInput}
+                  onChange={(e) => handleRitChange(e.target.value)}
+                  placeholder="e.g. 195"
+                  className="w-20 px-2 py-1 bg-white border border-indigo-300 rounded-lg text-xs font-bold text-center text-slate-800 focus:outline-none focus:border-indigo-500"
+                />
+                <span className="text-[11px] text-slate-600">
+                  {customRating ? `Calibrated to ${childGrade}!` : 'Enter 130–270'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Live Subject Curriculum Preview Card */}

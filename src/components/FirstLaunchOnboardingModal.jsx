@@ -5,9 +5,9 @@ import ConfettiCanvas from './ConfettiCanvas';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
 import { leaderboardService } from '../services/leaderboardService';
-import { GRADE_STARTING_RATINGS } from '../utils/mathCurriculum';
+import { GRADE_STARTING_RATINGS, ritToStartingRating } from '../utils/mathCurriculum';
 import { SUBJECTS_CONFIG } from '../config/subjects';
-import { Dices, ShieldCheck, RefreshCw, AlertCircle, Lock, FileText } from 'lucide-react';
+import { Dices, ShieldCheck, RefreshCw, AlertCircle, Lock, FileText, HelpCircle } from 'lucide-react';
 import PrivacyPolicyScreen from './PrivacyPolicyScreen';
 import CoppaPrivacyPolicyScreen from './CoppaPrivacyPolicyScreen';
 import TermsOfServiceScreen from './TermsOfServiceScreen';
@@ -104,6 +104,9 @@ export default function FirstLaunchOnboardingModal({
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState('');
   const [selectedStartingSubject, setSelectedStartingSubject] = useState('math');
+  const [showRitInput, setShowRitInput] = useState(false);
+  const [ritInput, setRitInput] = useState('');
+  const [ritError, setRitError] = useState('');
   const inputRef = useRef(null);
   const checkedUsernameRef = useRef('');
   const inFlightPromiseRef = useRef(null);
@@ -259,7 +262,7 @@ export default function FirstLaunchOnboardingModal({
     }
   };
 
-  const handleGradeSelect = (grade) => {
+  const handleGradeSelect = (grade, startingRatingOverride = null) => {
     soundFx.playKeyTap();
     setSelectedGrade(grade);
 
@@ -268,14 +271,28 @@ export default function FirstLaunchOnboardingModal({
     }
 
     gradeSelectionTimerRef.current = setTimeout(() => {
-      finalizeProfile(grade);
+      finalizeProfile(grade, startingRatingOverride);
     }, 200);
   };
 
-  const finalizeProfile = (gradeOverride) => {
+  const handleRitSubmit = (e) => {
+    if (e) e.preventDefault();
+    const parsed = parseInt(ritInput.trim(), 10);
+    if (isNaN(parsed) || parsed < 130 || parsed > 270) {
+      setRitError('Please enter a valid MAP RIT score between 130 and 270.');
+      return;
+    }
+    setRitError('');
+    const calibration = ritToStartingRating(parsed);
+    setSelectedGrade(calibration.gradeLevel);
+    soundFx.playVictory();
+    finalizeProfile(calibration.gradeLevel, calibration.rating);
+  };
+
+  const finalizeProfile = (gradeOverride, startingRatingOverride = null) => {
     const gradeToSave = gradeOverride || selectedGrade;
     const cleaned = usernameInput.trim();
-    storageService.saveUsername(cleaned, gradeToSave);
+    storageService.saveUsername(cleaned, gradeToSave, startingRatingOverride);
     storageService.setOnboarded(true);
     if (onUsernameSet) onUsernameSet(cleaned);
     soundFx.playVictory();
@@ -715,6 +732,68 @@ export default function FirstLaunchOnboardingModal({
                 </button>
               );
             })}
+
+            {/* OR Calibrate with School MAP Growth RIT Score */}
+            <div className="pt-2 border-t border-white/10">
+              {!showRitInput ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setShowRitInput(true);
+                  }}
+                  className="w-full py-2 px-3 rounded-xl border border-indigo-500/30 bg-indigo-950/40 hover:bg-indigo-900/40 text-indigo-300 hover:text-indigo-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Have a school MAP® Growth RIT score? (Optional)</span>
+                </button>
+              ) : (
+                <div className="bg-indigo-950/60 border border-indigo-400/40 rounded-2xl p-3 text-left space-y-2 animate-pop">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase text-indigo-300 tracking-wider flex items-center gap-1.5">
+                      <span>🎯</span> NWEA MAP® Math RIT Score
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowRitInput(false);
+                        setRitError('');
+                      }}
+                      className="text-[11px] text-slate-400 hover:text-white font-bold cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-snug">
+                    Enter the 3-digit Math RIT from your child’s school report (130–270) to pinpoint their starting difficulty.
+                  </p>
+                  <form onSubmit={handleRitSubmit} className="flex gap-2">
+                    <input
+                      type="number"
+                      min="130"
+                      max="270"
+                      value={ritInput}
+                      onChange={(e) => {
+                        setRitInput(e.target.value);
+                        setRitError('');
+                      }}
+                      placeholder="e.g. 198"
+                      className="w-24 px-3 py-1.5 bg-slate-900 border border-indigo-300/50 rounded-xl text-white font-black text-sm text-center focus:outline-none focus:border-amber-400"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!ritInput.trim()}
+                      className="flex-1 px-3 py-1.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 disabled:opacity-50 text-slate-950 font-black text-xs rounded-xl shadow-sm transition-all cursor-pointer"
+                    >
+                      Calibrate & Start
+                    </button>
+                  </form>
+                  {ritError && (
+                    <p className="text-xs text-rose-400 font-bold">{ritError}</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {showPrivacyModal && (

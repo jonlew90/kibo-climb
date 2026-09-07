@@ -140,11 +140,25 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
           </p>
         </section>
 
-        {/* SECTION 6: CONTACT INFORMATION */}
+        {/* SECTION 6: THIRD-PARTY TRADEMARKS & EDUCATIONAL ESTIMATES */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
+          <div className="flex items-center gap-2.5 text-indigo-700">
+            <Shield className="w-5 h-5 stroke-[2.5]" />
+            <h3 className="text-base font-extrabold tracking-tight">6. Third-Party Trademarks & Academic Alignment Estimates</h3>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            NWEA® and MAP® are registered trademarks of NWEA (a division of Houghton Mifflin Harcourt). Kibo Climb is not affiliated with, sponsored by, or endorsed by NWEA or HMH.
+          </p>
+          <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            Any references to MAP® Growth, RIT scores, or grade-level equivalencies within Kibo Climb are provided solely as informational estimates based on publicly available national normative research data. They do not constitute official test administrations, psychometric evaluations, or certified academic credentials.
+          </p>
+        </section>
+
+        {/* SECTION 7: CONTACT INFORMATION */}
         <section className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-3">
           <div className="flex items-center gap-2.5 text-emerald-700">
             <Mail className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="text-base font-extrabold tracking-tight">6. Questions & Contact</h3>
+            <h3 className="text-base font-extrabold tracking-tight">7. Questions & Contact</h3>
           </div>
           <p className="text-sm text-slate-600 leading-relaxed font-medium">
             If you have questions about these Terms of Service, please contact our support team:

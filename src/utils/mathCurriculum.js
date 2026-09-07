@@ -32,6 +32,15 @@ export function getStartingRatingForGrade(gradeLevel) {
   return 1000;
 }
 
+// Re-export MAP Growth RIT alignment utilities
+export {
+  ratingToEstimatedRIT,
+  getRITBandDetails,
+  ritToStartingRating,
+  MAP_MATH_DOMAINS,
+  calculateMapDomainBreakdown
+} from './mapGrowthCalibration.js';
+
 // Maps a live rating back to an approximate grade-level label (used in
 // the Parent Dashboard and progress descriptions).
 export function getGradeLevelFromRating(rating = 1000) {
