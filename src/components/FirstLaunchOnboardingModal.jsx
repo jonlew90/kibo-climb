@@ -766,10 +766,10 @@ export default function FirstLaunchOnboardingModal({
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col justify-center gap-3 py-1 my-auto">
-          <div className="relative py-1 flex justify-center items-center shrink-0 p-1 overflow-visible">
-            <div className="absolute w-32 sm:w-40 h-32 sm:h-40 rounded-full bg-amber-400/30 blur-2xl animate-pulse pointer-events-none" />
+          <div className="relative py-1 flex justify-center items-center shrink-0 p-1 sm:p-2 overflow-visible w-full max-w-[240px] md:max-w-[300px] h-[32vh] sm:h-[44vh] md:h-[48vh] max-h-[32vh] sm:max-h-[44vh] md:max-h-[48vh] mx-auto">
+            <div className="absolute w-40 sm:w-56 h-40 sm:h-56 rounded-full bg-amber-400/30 blur-2xl animate-pulse pointer-events-none" />
             <Mascot mood="happy" state="idle" equipped={equippedItems}
-              className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 aspect-square filter drop-shadow-xl animate-bounce" />
+              className="h-full w-auto max-h-[32vh] max-w-full sm:max-h-[44vh] md:max-h-[48vh] aspect-square filter drop-shadow-xl animate-bounce object-contain shrink-0" />
           </div>
 
           {/* Multi-Subject Showcase Cards */}

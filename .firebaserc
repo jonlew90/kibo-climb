@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "kibo-climb"
+    "default": "kibo-climb",
+    "dev": "kibo-climb-dev"
   }
 }
