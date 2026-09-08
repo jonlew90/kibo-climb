@@ -1578,7 +1578,14 @@ export const storageService = {
       state.profiles[pid].userData = state.profiles[pid].userData || {};
       state.profiles[pid].userData.sparks = newSparks;
       state.profiles[pid].userData.lastDailyVaultClaimDate = todayStr;
+      state.profiles[pid].updatedAtMillis = Date.now();
       safeSaveProfilesState(state);
+    }
+
+    try {
+      userSyncService.syncProfileToCloud(pid);
+    } catch (e) {
+      console.warn('StorageService: userSyncService trigger failed in claimDailyVault', e);
     }
 
     try {
@@ -1710,7 +1717,14 @@ export const storageService = {
       state.profiles[pid].userData = state.profiles[pid].userData || {};
       state.profiles[pid].userData.sparks = newSparks;
       state.profiles[pid].userData.claimedWeeklyLeaderboardWeeks = [...claimedWeeks, claimKey];
+      state.profiles[pid].updatedAtMillis = Date.now();
       safeSaveProfilesState(state);
+    }
+
+    try {
+      userSyncService.syncProfileToCloud(pid);
+    } catch (e) {
+      console.warn('StorageService: userSyncService trigger failed in claimWeeklyLeaderboardReward', e);
     }
 
     try {
