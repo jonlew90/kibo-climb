@@ -205,6 +205,7 @@ export default function App() {
   const [showLogoutConfirmModal, setShowLogoutConfirmModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [linkModalMilestone, setLinkModalMilestone] = useState('Milestone');
+  const [linkModalIsLoginOnly, setLinkModalIsLoginOnly] = useState(false);
   const [currentAuthState, setCurrentAuthState] = useState(() => authService.getAuthState());
   const [syncStatus, setSyncStatus] = useState('synced');
   const [showSavedTooltip, setShowSavedTooltip] = useState(false);
@@ -316,8 +317,13 @@ export default function App() {
       setShowFriendsModal(modalId === VIEWS.FRIENDS);
       setShowFamilyUpgradeModal(modalId === VIEWS.FAMILY_UPGRADE);
       setShowAccountLinkModal(modalId === VIEWS.ACCOUNT_LINK);
-      if (modalId === VIEWS.ACCOUNT_LINK && params.milestone) {
-        setLinkModalMilestone(params.milestone);
+      if (modalId === VIEWS.ACCOUNT_LINK) {
+        if (params.milestone) {
+          setLinkModalMilestone(params.milestone);
+        }
+        setLinkModalIsLoginOnly(Boolean(params.isLoginOnly));
+      } else {
+        setLinkModalIsLoginOnly(false);
       }
       setShowMockCheckoutModal(modalId === VIEWS.MOCK_CHECKOUT);
       setShowStripeCheckoutModal(modalId === VIEWS.STRIPE_CHECKOUT);
@@ -333,6 +339,7 @@ export default function App() {
       setShowFriendsModal(false);
       setShowFamilyUpgradeModal(false);
       setShowAccountLinkModal(false);
+      setLinkModalIsLoginOnly(false);
       setShowMockCheckoutModal(false);
       setShowStripeCheckoutModal(false);
       setShowShareModal(false);
@@ -3286,7 +3293,7 @@ export default function App() {
           applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
         }}
         onRequestLogin={() => {
-          handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Restore Account' });
+          handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Restore Account', isLoginOnly: true });
         }}
       />
 
@@ -3797,6 +3804,7 @@ export default function App() {
           handleOpenPinGate('family_plan', targetTab, targetHighlight);
         }}
         triggerMilestone={linkModalMilestone}
+        isLoginOnly={linkModalIsLoginOnly || showFirstLaunchOnboardingModal}
         onAccountLinked={(user, newSparks) => {
           if (newSparks !== undefined) {
             setSparks(newSparks);

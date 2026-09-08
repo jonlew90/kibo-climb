@@ -15,7 +15,8 @@ export default function AccountLinkModal({
   onAccountLinked,
   triggerMilestone,
   milestoneName,
-  onOpenFamilyPlan
+  onOpenFamilyPlan,
+  isLoginOnly = false
 }) {
   const [loadingProvider, setLoadingProvider] = useState(null);
   const [emailInput, setEmailInput] = useState('');
@@ -31,7 +32,7 @@ export default function AccountLinkModal({
   const [pendingLinkParams, setPendingLinkParams] = useState(null);
 
   const initialMilestone = triggerMilestone || milestoneName || 'Cloud Account Sync';
-  const isInitialRestore = initialMilestone.toLowerCase().includes('restore') || initialMilestone.toLowerCase().includes('log in');
+  const isInitialRestore = isLoginOnly || initialMilestone.toLowerCase().includes('restore') || initialMilestone.toLowerCase().includes('log in');
   const [activeMode, setActiveMode] = useState(isInitialRestore ? 'restore' : 'save');
 
   React.useEffect(() => {
@@ -48,11 +49,12 @@ export default function AccountLinkModal({
       setShowFamilyUpgrade(false);
       setShowCoppaConsentModal(false);
       setPendingLinkParams(null);
-      const shouldRestore = (triggerMilestone || milestoneName || '').toLowerCase().includes('restore') || 
+      const shouldRestore = isLoginOnly ||
+                            (triggerMilestone || milestoneName || '').toLowerCase().includes('restore') || 
                             (triggerMilestone || milestoneName || '').toLowerCase().includes('log in');
       setActiveMode(shouldRestore ? 'restore' : 'save');
     }
-  }, [isOpen, triggerMilestone, milestoneName]);
+  }, [isOpen, triggerMilestone, milestoneName, isLoginOnly]);
 
   if (!isOpen) return null;
 
@@ -185,32 +187,34 @@ export default function AccountLinkModal({
         </button>
 
         {/* Mode Toggle Switcher */}
-        <div className="flex bg-slate-100 p-1 rounded-2xl gap-1 border border-slate-200">
-          <button
-            type="button"
-            onClick={() => setActiveMode('save')}
-            className={`flex-1 py-1.5 px-3 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-              activeMode === 'save'
-                ? 'bg-white text-indigo-950 shadow-sm border border-slate-200/80'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <Sparkles className={`w-3.5 h-3.5 ${activeMode === 'save' ? 'text-amber-500' : 'text-slate-400'}`} />
-            <span>Save Progress</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveMode('restore')}
-            className={`flex-1 py-1.5 px-3 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-              activeMode === 'restore'
-                ? 'bg-white text-indigo-950 shadow-sm border border-slate-200/80'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <Cloud className={`w-3.5 h-3.5 ${activeMode === 'restore' ? 'text-sky-500' : 'text-slate-400'}`} />
-            <span>Log In</span>
-          </button>
-        </div>
+        {!isLoginOnly && (
+          <div className="flex bg-slate-100 p-1 rounded-2xl gap-1 border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setActiveMode('save')}
+              className={`flex-1 py-1.5 px-3 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                activeMode === 'save'
+                  ? 'bg-white text-indigo-950 shadow-sm border border-slate-200/80'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${activeMode === 'save' ? 'text-amber-500' : 'text-slate-400'}`} />
+              <span>Save Progress</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveMode('restore')}
+              className={`flex-1 py-1.5 px-3 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                activeMode === 'restore'
+                  ? 'bg-white text-indigo-950 shadow-sm border border-slate-200/80'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <Cloud className={`w-3.5 h-3.5 ${activeMode === 'restore' ? 'text-sky-500' : 'text-slate-400'}`} />
+              <span>Log In</span>
+            </button>
+          </div>
+        )}
 
         {/* Dynamic Context Badge */}
         <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase ${
@@ -474,31 +478,33 @@ export default function AccountLinkModal({
             )}
 
             {/* Mode Switch Helper Prompt */}
-            <div className="pt-0.5 text-center">
-              {activeMode === 'save' ? (
-                <p className="text-[11px] text-slate-500 font-medium">
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setActiveMode('restore')}
-                    className="text-indigo-600 hover:text-indigo-800 font-black underline cursor-pointer"
-                  >
-                    Log In to restore
-                  </button>
-                </p>
-              ) : (
-                <p className="text-[11px] text-slate-500 font-medium">
-                  First time playing on this device?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setActiveMode('save')}
-                    className="text-indigo-600 hover:text-indigo-800 font-black underline cursor-pointer"
-                  >
-                    Save progress instead
-                  </button>
-                </p>
-              )}
-            </div>
+            {!isLoginOnly && (
+              <div className="pt-0.5 text-center">
+                {activeMode === 'save' ? (
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Already have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => setActiveMode('restore')}
+                      className="text-indigo-600 hover:text-indigo-800 font-black underline cursor-pointer"
+                    >
+                      Log In to restore
+                    </button>
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    First time playing on this device?{' '}
+                    <button
+                      type="button"
+                      onClick={() => setActiveMode('save')}
+                      className="text-indigo-600 hover:text-indigo-800 font-black underline cursor-pointer"
+                    >
+                      Save progress instead
+                    </button>
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
