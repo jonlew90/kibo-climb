@@ -66,11 +66,14 @@ export default function AccountLinkModal({
       : (milestone.toLowerCase().includes('save') ? 'Save Your Climber' : milestone));
 
   const handleLinkProvider = (provider, useRedirect = false) => {
-    const coppaStatus = parentChildService.getCOPPAConsentStatus();
-    if (!coppaStatus.consented) {
-      setPendingLinkParams({ provider, useRedirect });
-      setShowCoppaConsentModal(true);
-      return;
+    // Only gate behind COPPA consent when saving local progress to a new/linked account, not when restoring/logging in
+    if (activeMode !== 'restore' && !isLoginOnly) {
+      const coppaStatus = parentChildService.getCOPPAConsentStatus();
+      if (!coppaStatus.consented) {
+        setPendingLinkParams({ provider, useRedirect });
+        setShowCoppaConsentModal(true);
+        return;
+      }
     }
     executeLinkProvider(provider, useRedirect);
   };
