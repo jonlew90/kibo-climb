@@ -96,6 +96,27 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
             </ul>
 
             <div className="pt-2 space-y-2">
+              <h4 className="text-xs font-black uppercase text-slate-800 tracking-wider">Real-Money Purchases & Price Modifications</h4>
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                Kibo Climb offers optional real-money transactions exclusively authorized through the Parent Zone:
+              </p>
+              <ul className="list-disc list-inside space-y-1.5 pl-1 text-slate-600 text-xs">
+                <li>
+                  <strong>Recurring Subscriptions:</strong> Optional recurring memberships (such as Kibo Club Solo and Family plans, billed monthly or annually) granting premium learning benefits, reward multipliers, and exclusive features.
+                </li>
+                <li>
+                  <strong>Virtual Currency (Sparks Packs):</strong> One-time consumable packages of Sparks used to acquire virtual gear, trails, badges, and customizations.
+                </li>
+                <li>
+                  <strong>Cosmetics & Limited-Edition Bundles:</strong> One-time purchases of themed equipment sets, seasonal bundles, mascot outfits, and climber cosmetics.
+                </li>
+                <li>
+                  <strong>Right to Modify Prices:</strong> We reserve the right to modify, revise, or discontinue pricing, packages, and offerings for virtual items, currency, and subscriptions at any time at our sole discretion. Price modifications for one-time purchases take effect immediately upon posting and will not affect completed orders. For recurring subscriptions, any price adjustments will apply only to subsequent billing cycles following reasonable advance notice, allowing you the opportunity to cancel before new rates take effect.
+                </li>
+              </ul>
+            </div>
+
+            <div className="pt-2 space-y-2">
               <h4 className="text-xs font-black uppercase text-slate-800 tracking-wider">Cancellation & Refund Policy ("Cancel at Period End")</h4>
               <ul className="list-disc list-inside space-y-1.5 pl-1 text-slate-600">
                 <li>
