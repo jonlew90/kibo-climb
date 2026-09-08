@@ -116,34 +116,49 @@ export const SUBJECTS_CONFIG = {
       { min: 1200, max: 1399, tier: 2, name: 'State Navigator', location: 'State Trails' },
       { min: 1400, max: 1599, tier: 3, name: 'National Guide', location: 'Country Crossings' },
       { min: 1600, max: 1799, tier: 4, name: 'Continental Traveler', location: 'Hemisphere Heights' },
-      { min: 1800, max: 9999, tier: 5, name: 'Global Globetrotter', location: 'World Summit' }
+      { min: 1800, max: 1999, tier: 5, name: 'Physical Geographer', location: 'Ridge & River Pass' },
+      { min: 2000, max: 2199, tier: 6, name: 'Cartography Specialist', location: 'Archipelago Atolls' },
+      { min: 2200, max: 2399, tier: 7, name: 'Geopolitical Expert', location: 'Strait of Meridian' },
+      { min: 2400, max: 9999, tier: 8, name: 'Global Globetrotter', location: 'Mount World Summit' }
     ],
     getCompetenceDescription: (rating = 1000, totalProblemsSolved = 0) => {
       if (totalProblemsSolved < 15) return 'Calibrating baseline for World...';
       const numRating = Number(rating) || 1000;
-      if (numRating < 1200) return 'Identifying 7 continents, 5 oceans, cardinal directions, and foundational facts. (K–Grade 2)';
+      if (numRating < 1200) return 'Identifying 7 continents, 5 oceans, cardinal directions, and foundational global facts. (K–Grade 2)';
       if (numRating < 1400) return 'Recognizing US states, map outlines, state nicknames, and capitals. (Grade 3–4)';
-      if (numRating < 1600) return 'Identifying major world countries, sovereign capitals, and continent mapping. (Grade 5–6)';
-      if (numRating < 1800) return 'Mastering global country shapes, hemispheres, coordinates, and physical geography. (Grade 7–8)';
-      return 'Peak mastery in tricky capitals, strategic global straits, extreme geography, and enclaves. (Grade 8–High School+)';
+      if (numRating < 1600) return 'Identifying major world countries, sovereign capitals, continental mapping, and national flags. (Grade 4–5)';
+      if (numRating < 1800) return 'Mastering global country shapes, hemispheres, coordinates, and regional border outlines. (Grade 5–6)';
+      if (numRating < 2000) return 'Mastering world physical geography, major rivers, deserts, mountain ranges, and natural wonders. (Grade 6–7)';
+      if (numRating < 2200) return 'Analyzing visual architectural wonders, island archipelagos, regional maps, and marginal seas. (Grade 7–8)';
+      if (numRating < 2400) return 'Mastering strategic global straits, canals, enclaves, and geopolitical anomalies. (Grade 8–High School)';
+      return 'Demonstrating peak global mastery in tricky capital misconceptions, deepest trenches, extreme points, and global cartography. (Summit Legend)';
     },
     SKILL_STRANDS: [
       { tier: 1, id: 'continents_oceans', name: 'Continents, Oceans & Directions', ratingBand: { min: 0, max: 1199 }, probeTargetTier: 2 },
       { tier: 2, id: 'states_shapes', name: 'US States, Shapes & Capitals', ratingBand: { min: 1200, max: 1399 }, probeTargetTier: 3 },
       { tier: 3, id: 'countries_capitals_basic', name: 'Major Countries & Sovereign Capitals', ratingBand: { min: 1400, max: 1599 }, probeTargetTier: 4 },
       { tier: 4, id: 'countries_shapes', name: 'Country Shapes, Hemispheres & Physical Geography', ratingBand: { min: 1600, max: 1799 }, probeTargetTier: 5 },
-      { tier: 5, id: 'global_expert', name: 'Global Geography Expert, Straits & Extreme Points', ratingBand: { min: 1800, max: 9999 }, probeTargetTier: 5 }
+      { tier: 5, id: 'physical_wonders', name: 'Mountain Ranges, Rivers, Deserts & Wonders', ratingBand: { min: 1800, max: 1999 }, probeTargetTier: 6 },
+      { tier: 6, id: 'visual_landmarks_seas', name: 'Visual Landmarks, Marginal Seas & Outlines', ratingBand: { min: 2000, max: 2199 }, probeTargetTier: 7 },
+      { tier: 7, id: 'straits_enclaves', name: 'Strategic Straits, Passages & Geopolitical Enclaves', ratingBand: { min: 2200, max: 2399 }, probeTargetTier: 8 },
+      { tier: 8, id: 'global_expert', name: 'Tricky Capitals, Extreme Geography & Summit Records', ratingBand: { min: 2400, max: 9999 }, probeTargetTier: 8 }
     ],
     MASTERY_THRESHOLDS: [
       { threshold: 1150, skillName: 'Continents & Oceans' },
       { threshold: 1300, skillName: 'US States & Capitals' },
       { threshold: 1450, skillName: 'World Countries & Capitals' },
-      { threshold: 1650, skillName: 'Country Outlines & Physical Geo' }
+      { threshold: 1650, skillName: 'Country Outlines & Hemispheres' },
+      { threshold: 1850, skillName: 'Rivers, Mountains & Deserts' },
+      { threshold: 2050, skillName: 'Landmarks & Seas' },
+      { threshold: 2250, skillName: 'Straits & Enclaves' },
+      { threshold: 2400, skillName: 'Peak Cartography & Extremes' }
     ],
     DOMAIN_DEFINITIONS: [
       { id: 'basics', name: 'Basics', icon: '🗺️', subtitle: 'Continents, Oceans & Directions', minUnlockRating: 0, tiers: [1], defaultAcc: 90, defaultSpeed: 2.0 },
       { id: 'national', name: 'National', icon: '🦅', subtitle: 'US States & Capitals', minUnlockRating: 1200, tiers: [2], defaultAcc: 85, defaultSpeed: 3.0 },
-      { id: 'global', name: 'Global', icon: '🌎', subtitle: 'World Countries, Shapes & Straits', minUnlockRating: 1400, tiers: [3, 4, 5], defaultAcc: 80, defaultSpeed: 4.0 }
+      { id: 'global', name: 'Global Nations', icon: '🌎', subtitle: 'World Countries, Capitals & Flags', minUnlockRating: 1400, tiers: [3, 4], defaultAcc: 80, defaultSpeed: 3.5 },
+      { id: 'physical', name: 'Physical Earth', icon: '🏔️', subtitle: 'Rivers, Mountains, Deserts & Seas', minUnlockRating: 1800, tiers: [5, 6], defaultAcc: 75, defaultSpeed: 4.0 },
+      { id: 'summit_expert', name: 'Summit Cartography', icon: '🌐', subtitle: 'Straits, Enclaves & Extreme Points', minUnlockRating: 2200, tiers: [7, 8], defaultAcc: 70, defaultSpeed: 4.5 }
     ]
   },
   coding: {

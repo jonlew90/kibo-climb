@@ -419,7 +419,7 @@ export function evaluateBadges(userState = {}, lastSprintResult = null) {
         break;
       case 'world_summit_master':
         if (subjectId === 'world') {
-          unlocked = currentRating >= 2000;
+          unlocked = currentRating >= 2400;
         }
         break;
       case 'capital_collector':
@@ -707,7 +707,7 @@ export function getStartingRatingBadges(startingRating = 1000) {
         case 'state_cartographer': if (subId === 'world') shouldUnlock = rating >= 1400; break;
         case 'country_diplomat': if (subId === 'world') shouldUnlock = rating >= 1600; break;
         case 'hemisphere_voyager': if (subId === 'world') shouldUnlock = rating >= 1800; break;
-        case 'world_summit_master': if (subId === 'world') shouldUnlock = rating >= 2000; break;
+        case 'world_summit_master': if (subId === 'world') shouldUnlock = rating >= 2400; break;
 
         // Coding Rating Badges
         case 'pattern_scout': if (subId === 'coding') shouldUnlock = rating >= 1200; break;

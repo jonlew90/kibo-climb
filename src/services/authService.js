@@ -512,17 +512,64 @@ export const authService = {
   async resolveLinkConflict(action, linkedUser) {
     try {
       if (action === 'keep_cloud') {
-        // Wipe local device profiles and let userSyncService pull down cloud profiles
-        localStorage.removeItem('kibo_profiles_data');
-        localStorage.removeItem('kibo_parent_pin');
+        // Fetch cloud data for linkedUser to hydrate profiles locally
+        const userDocRef = doc(db, 'users', linkedUser.uid);
+        let cloudProfiles = null;
+        let cloudActiveProfileId = null;
+        let cloudParentPin = null;
 
-        // Save minimal state to re-trigger sync
+        try {
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap && typeof docSnap.exists === 'function' && docSnap.exists()) {
+            const cloudData = docSnap.data();
+            if (cloudData) {
+              if (cloudData.profiles && Object.keys(cloudData.profiles).length > 0) {
+                cloudProfiles = cloudData.profiles;
+                cloudActiveProfileId = cloudData.activeProfileId || Object.keys(cloudProfiles)[0];
+              }
+              if (cloudData.parentPin) {
+                cloudParentPin = cloudData.parentPin;
+              }
+            }
+          }
+        } catch (fetchErr) {
+          console.warn('Could not fetch cloud user doc during keep_cloud conflict resolution:', fetchErr);
+        }
+
+        if (cloudProfiles) {
+          // Reconstruct local profiles with cloud state
+          const newProfilesState = {
+            activeProfileId: cloudActiveProfileId,
+            isKiboClubFamily: Object.values(cloudProfiles).some(p => 
+              p.shopState?.unlockedItems?.includes('kibo_club_family')
+            ),
+            profiles: cloudProfiles
+          };
+          localStorage.setItem('kibo_profiles_data', JSON.stringify(newProfilesState));
+
+          if (cloudParentPin) {
+            localStorage.setItem('kibo_parent_pin', cloudParentPin);
+          } else {
+            localStorage.removeItem('kibo_parent_pin');
+          }
+        } else {
+          // Fallback if cloud profile document was empty
+          localStorage.removeItem('kibo_profiles_data');
+          localStorage.removeItem('kibo_parent_pin');
+        }
+
+        // Mark onboarding complete so the user is not kicked back to onboarding modal
+        storageService.setOnboarded(true);
+
+        // Ensure global linked state is set on the restored profiles
         storageService.setGlobalAccountLinkedState({
           cloudUid: linkedUser.uid,
           isAnonymous: false,
           authProvider: 'resolved',
           email: linkedUser.email
         });
+
+        loginToOneSignal(linkedUser.uid);
 
         return { success: true, reload: true };
       } else if (action === 'overwrite_cloud') {

@@ -31,7 +31,7 @@ import { BRAND_CONFIG } from './config/brand';
 import { pluralize } from './utils/formatters';
 import { storageService } from './services/storageService';
 import { questService } from './services/questService';
-import { getCompetenceRankTier } from './utils/GameEconomyModel';
+import { getCompetenceRankTier, getSubjectTierProgress } from './utils/GameEconomyModel';
 import {
   getTodayStr,
   getYesterdayStr,
@@ -2441,11 +2441,15 @@ export default function App() {
                     handleOpenAscentRoadmapModal();
                   }}
                   className="flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600 text-white border-2 border-teal-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
-                  title={`Expedition Level Roadmap: Ascent ${questLevelInfo.ascentTier} • Lv. ${questLevelInfo.level} (${questLevelInfo.title}) • ${questLevelInfo.progressPct || 0}% to next level`}
+                  title={`Expedition Level Roadmap: Ascent ${questLevelInfo.ascentTier} (${questLevelInfo.ascentMode?.name || 'Sunny Trailhead'}) • Lv. ${questLevelInfo.level} (${questLevelInfo.title}) • ${questLevelInfo.progressPct || 0}% to next level`}
+                  aria-label={`Ascent Tier ${questLevelInfo.ascentTier}, Level ${questLevelInfo.level}, ${questLevelInfo.progressPct || 0}% progress`}
                 >
                   <span className="text-xs sm:text-sm leading-none select-none">{questLevelInfo.icon || '🏕️'}</span>
-                  <span className="font-black truncate">Lv. {questLevelInfo.level}</span>
-                  <div className="hidden sm:block w-8 sm:w-10 h-1.5 bg-black/25 rounded-full overflow-hidden shrink-0 border border-white/20">
+                  <span className="text-[10px] bg-teal-800/60 border border-teal-200/40 text-teal-100 px-1 rounded-sm font-black uppercase tracking-wider hidden xs:inline">
+                    A{questLevelInfo.ascentTier}
+                  </span>
+                  <span className="font-black truncate">Lv.{questLevelInfo.level}</span>
+                  <div className="w-6 sm:w-10 h-1.5 bg-black/25 rounded-full overflow-hidden shrink-0 border border-white/20">
                     <div
                       className="h-full bg-amber-300 rounded-full transition-all duration-500"
                       style={{ width: `${questLevelInfo.progressPct || 0}%` }}
@@ -2776,6 +2780,69 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* SUBJECT CURRICULUM TIER PROGRESS BAR */}
+      {appState === 'adaptive_session' && (() => {
+        const tierProgress = getSubjectTierProgress(liveCompetenceRating, activeSubject);
+        const theme = activeSubject === 'math'
+          ? { bar: 'from-amber-400 to-orange-500', bg: 'bg-amber-500/15', border: 'border-amber-200', text: 'text-amber-950', badge: 'bg-amber-100 text-amber-900 border-amber-300' }
+          : activeSubject === 'words'
+          ? { bar: 'from-indigo-500 to-purple-500', bg: 'bg-indigo-500/15', border: 'border-indigo-200', text: 'text-indigo-950', badge: 'bg-indigo-100 text-indigo-900 border-indigo-300' }
+          : activeSubject === 'world'
+          ? { bar: 'from-teal-500 to-emerald-500', bg: 'bg-teal-500/15', border: 'border-teal-200', text: 'text-teal-950', badge: 'bg-teal-100 text-teal-900 border-teal-300' }
+          : { bar: 'from-rose-500 to-pink-500', bg: 'bg-rose-500/15', border: 'border-rose-200', text: 'text-rose-950', badge: 'bg-rose-100 text-rose-900 border-rose-300' };
+
+        return (
+          <div className="w-full max-w-xl mx-auto px-2 mb-1.5 sm:mb-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleOpenBadgesModal}
+              className={`w-full bg-white/90 backdrop-blur-xs border-2 ${theme.border} rounded-2xl px-2.5 sm:px-3.5 py-1.5 shadow-2xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.99] transition-all flex flex-col gap-1 cursor-pointer text-left group`}
+              title={`Curriculum Tier: Tier ${tierProgress.tier} of ${tierProgress.totalTiers} (${tierProgress.tierName} • ${tierProgress.location}) - ${tierProgress.isMaxTier ? 'Summit Mastery!' : `${tierProgress.progressPct}% complete (${tierProgress.pointsToNext} pts to Tier ${tierProgress.tier + 1})`}`}
+              aria-label={`Current Subject Tier ${tierProgress.tier}: ${tierProgress.tierName}, ${tierProgress.progressPct}% progress`}
+            >
+              <div className="flex items-center justify-between text-xs sm:text-sm font-black w-full">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className={`text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 rounded-full border shadow-2xs ${theme.badge} shrink-0`}>
+                    Tier {tierProgress.tier}
+                  </span>
+                  <span className={`truncate font-extrabold ${theme.text} text-xs sm:text-sm`}>
+                    {tierProgress.tierName}
+                  </span>
+                  <span className="text-slate-400 font-semibold text-[11px] hidden sm:inline truncate">
+                    • {tierProgress.location}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 shrink-0 text-[11px] sm:text-xs font-black text-slate-600">
+                  {tierProgress.isMaxTier ? (
+                    <span className="text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full font-black flex items-center gap-1 shadow-2xs">
+                      <span>👑 Summit Legend</span>
+                      <span className="text-amber-950 font-black">• {liveCompetenceRating} pts</span>
+                    </span>
+                  ) : (
+                    <>
+                      <span className="text-slate-800 font-extrabold">{tierProgress.progressPct}%</span>
+                      <span className="text-slate-400 font-normal hidden xs:inline">({tierProgress.pointsToNext} pts to T{tierProgress.tier + 1})</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Visual Progress Bar */}
+              <div className={`w-full h-2 sm:h-2.5 ${tierProgress.isMaxTier ? 'bg-amber-100' : theme.bg} rounded-full overflow-hidden border border-slate-200/80 p-0.5`}>
+                <div
+                  className={`h-full rounded-full transition-all duration-700 shadow-2xs ${
+                    tierProgress.isMaxTier
+                      ? 'w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 animate-pulse'
+                      : `bg-gradient-to-r ${theme.bar}`
+                  }`}
+                  style={{ width: tierProgress.isMaxTier ? '100%' : `${tierProgress.progressPct}%` }}
+                />
+              </div>
+            </button>
+          </div>
+        );
+      })()}
 
       {/* SETTINGS SCREEN */}
       {appState === 'settings' && (

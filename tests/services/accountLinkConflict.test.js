@@ -88,7 +88,27 @@ describe('Account Link Conflict & Overwrite Mode', () => {
     expect(options).toBeUndefined();
   });
 
-  it('resolveLinkConflict keep_cloud wipes local profile and sets cloud link', async () => {
+  it('resolveLinkConflict keep_cloud wipes local profile, hydrates cloud profile and marks onboarded', async () => {
+    const { getDoc } = await import('firebase/firestore');
+    getDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({
+        activeProfileId: 'cloud_child_1',
+        parentPin: '9876',
+        profiles: {
+          cloud_child_1: {
+            id: 'cloud_child_1',
+            name: 'Cloud Kid',
+            gradeLevel: 'Grade 5',
+            userData: {
+              adaptiveCompetenceRating: 1500,
+              sparks: 999
+            }
+          }
+        }
+      })
+    });
+
     mockStorage['kibo_parent_pin'] = '1234';
     expect(mockStorage['kibo_profiles_data']).toBeDefined();
 
@@ -99,11 +119,15 @@ describe('Account Link Conflict & Overwrite Mode', () => {
 
     expect(res.success).toBe(true);
     expect(res.reload).toBe(true);
-    expect(mockStorage['kibo_parent_pin']).toBeUndefined();
-    
+    expect(mockStorage['kibo_parent_pin']).toBe('9876');
+    expect(storageService.isOnboarded()).toBe(true);
+
     const savedData = JSON.parse(mockStorage['kibo_profiles_data']);
     expect(savedData.profiles['local_device_prof']).toBeUndefined();
-    expect(savedData.profiles['default_child'].userData.cloudUid).toBe('cloud_user_1');
+    expect(savedData.profiles['cloud_child_1']).toBeDefined();
+    expect(savedData.profiles['cloud_child_1'].name).toBe('Cloud Kid');
+    expect(savedData.profiles['cloud_child_1'].userData.cloudUid).toBe('cloud_user_1');
+    expect(savedData.profiles['cloud_child_1'].userData.isAnonymous).toBe(false);
   });
 
   it('resolveLinkConflict overwrite_cloud triggers pushLocalToCloud with overwriteEntireDocument', async () => {

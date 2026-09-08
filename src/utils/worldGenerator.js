@@ -488,7 +488,7 @@ export const getTierCandidateTemplates = (tier) => {
       }
     }
   } else if (tier === 4) {
-    // Tier 4: Country Shapes, Hemispheres, Physical Geography & Waterways
+    // Tier 4: Country Shapes, Outlines & Regional Maps
     const countriesWithShapes = COUNTRIES.filter(c => c.shapeSvg);
     for (const country of countriesWithShapes) {
       const regionalMap = REGIONAL_MAPS[country.name] || null;
@@ -506,91 +506,7 @@ export const getTierCandidateTemplates = (tier) => {
       });
     }
 
-    // Visual Landmark identification questions
-    for (const [landmarkName, vis] of Object.entries(WORLD_LANDMARK_VISUALS)) {
-      templates.push({
-        key: `landmark_visual:${landmarkName}`,
-        type: 'landmark_visual',
-        prompt: `Identify this famous world landmark:`,
-        correctAnswer: landmarkName,
-        options: shuffleArray([landmarkName, ...getUniqueDistractors(landmarkName, Object.keys(WORLD_LANDMARK_VISUALS).map(k => ({ name: k })), 3, w => w.name)]),
-        hint: vis.badge ? `${vis.badge} built in ${vis.city || vis.country || 'historic times'}.` : (vis.category ? `An iconic example of world ${vis.category.toLowerCase()}.` : 'Observe the architectural structure.'),
-        landmarkData: vis,
-        concept: 'Landmarks & Wonders',
-        tier: 4
-      });
-    }
-
-    // World physical landmarks & natural wonders
-    for (const item of WORLD_LANDMARKS_AND_WONDERS) {
-      const landmarkVis = getLandmarkVisual(item.name);
-      templates.push({
-        key: `wonder_fact:${item.name}`,
-        type: 'world_wonder',
-        prompt: `Which geographic wonder is described as: "${item.fact}"?`,
-        correctAnswer: item.name,
-        options: shuffleArray([item.name, ...getUniqueDistractors(item.name, WORLD_LANDMARKS_AND_WONDERS, 3, w => w.name)]),
-        hint: item.mountainRange ? `Part of the ${item.mountainRange} range.` : (item.type ? `It is a world-renowned natural ${item.type.replace('_', ' ')}.` : 'Examine the record-setting characteristics described.'),
-        landmarkData: landmarkVis,
-        concept: 'Country Shapes & Locations',
-        tier: 4
-      });
-
-      if (item.country) {
-        templates.push({
-          key: `wonder_country:${item.name}`,
-          type: 'world_wonder',
-          prompt: `The world wonder "${item.name}" is located in which country or territory?`,
-          correctAnswer: item.country,
-          options: shuffleArray([item.country, ...getUniqueDistractors(item.country, COUNTRIES, 3, c => c.name)]),
-          hint: item.fact,
-          concept: 'Country Shapes & Locations',
-          tier: 4
-        });
-      }
-
-      if (item.mountainRange) {
-        templates.push({
-          key: `mountain_range_t4:${item.name}`,
-          type: 'mountain_range',
-          prompt: `The mountain peak "${item.name}" is part of which mountain range?`,
-          correctAnswer: item.mountainRange,
-          options: shuffleArray([item.mountainRange, ...getUniqueDistractors(item.mountainRange, ['Himalayas', 'Andes', 'Alps', 'Rocky Mountains', 'Karakoram', 'Alaska Range'], 3)]),
-          hint: item.fact,
-          concept: 'Country Shapes & Locations',
-          tier: 4
-        });
-      }
-
-      if (item.continent && (item.type === 'river' || item.type === 'desert' || item.type === 'lake' || item.type === 'waterfall')) {
-        templates.push({
-          key: `wonder_continent_t4:${item.name}`,
-          type: 'physical_geography',
-          prompt: `On which continent is the famous ${item.type} "${item.name}" located?`,
-          correctAnswer: item.continent,
-          options: shuffleArray([item.continent, ...getUniqueDistractors(item.continent, CONTINENTS, 3, c => c.name)]),
-          hint: item.fact,
-          concept: 'Country Shapes & Locations',
-          tier: 4
-        });
-      }
-    }
-
-    // Major Seas & Marginal Water Bodies in Tier 4
-    for (const sea of MAJOR_SEAS_AND_WATERBODIES) {
-      templates.push({
-        key: `sea_ocean_t4:${sea.name}`,
-        type: 'sea_ocean',
-        prompt: `The ${sea.name} is connected to or considered part of which major ocean?`,
-        correctAnswer: sea.ocean,
-        options: shuffleArray([sea.ocean, ...getUniqueDistractors(sea.ocean, OCEANS, 3, o => o.fullName)]),
-        hint: sea.fact,
-        concept: 'Country Shapes & Locations',
-        tier: 4
-      });
-    }
-
-    // Hemisphere & coordinate questions
+    // Hemisphere & coordinate questions in Tier 4
     templates.push({
       key: 'foundation:prime_meridian',
       type: 'geographic_foundation',
@@ -634,6 +550,128 @@ export const getTierCandidateTemplates = (tier) => {
       concept: 'Country Shapes & Locations',
       tier: 4
     });
+  } else if (tier === 5) {
+    // Tier 5: World Rivers, Mountain Ranges, Deserts & Physical Earth Landmarks
+    for (const item of WORLD_LANDMARKS_AND_WONDERS) {
+      const landmarkVis = getLandmarkVisual(item.name);
+      templates.push({
+        key: `wonder_fact_t5:${item.name}`,
+        type: 'world_wonder',
+        prompt: `Which geographic wonder is described as: "${item.fact}"?`,
+        correctAnswer: item.name,
+        options: shuffleArray([item.name, ...getUniqueDistractors(item.name, WORLD_LANDMARKS_AND_WONDERS, 3, w => w.name)]),
+        hint: item.mountainRange ? `Part of the ${item.mountainRange} range.` : (item.type ? `It is a world-renowned natural ${item.type.replace('_', ' ')}.` : 'Examine the record-setting characteristics described.'),
+        landmarkData: landmarkVis,
+        concept: 'Physical Geography & Wonders',
+        tier: 5
+      });
+
+      if (item.country) {
+        templates.push({
+          key: `wonder_country_t5:${item.name}`,
+          type: 'world_wonder',
+          prompt: `The natural wonder "${item.name}" is located in which country or territory?`,
+          correctAnswer: item.country,
+          options: shuffleArray([item.country, ...getUniqueDistractors(item.country, COUNTRIES, 3, c => c.name)]),
+          hint: item.fact,
+          concept: 'Physical Geography & Wonders',
+          tier: 5
+        });
+      }
+
+      if (item.mountainRange) {
+        templates.push({
+          key: `mountain_range_t5:${item.name}`,
+          type: 'mountain_range',
+          prompt: `The mountain peak "${item.name}" is part of which mountain range?`,
+          correctAnswer: item.mountainRange,
+          options: shuffleArray([item.mountainRange, ...getUniqueDistractors(item.mountainRange, ['Himalayas', 'Andes', 'Alps', 'Rocky Mountains', 'Karakoram', 'Alaska Range'], 3)]),
+          hint: item.fact,
+          concept: 'Physical Geography & Wonders',
+          tier: 5
+        });
+      }
+
+      if (item.continent && (item.type === 'river' || item.type === 'desert' || item.type === 'lake' || item.type === 'waterfall')) {
+        templates.push({
+          key: `wonder_continent_t5:${item.name}`,
+          type: 'physical_geography',
+          prompt: `On which continent is the famous ${item.type} "${item.name}" located?`,
+          correctAnswer: item.continent,
+          options: shuffleArray([item.continent, ...getUniqueDistractors(item.continent, CONTINENTS, 3, c => c.name)]),
+          hint: item.fact,
+          concept: 'Physical Geography & Wonders',
+          tier: 5
+        });
+      }
+    }
+  } else if (tier === 6) {
+    // Tier 6: Visual Landmarks, Marginal Seas & Regional Maps
+    for (const [landmarkName, vis] of Object.entries(WORLD_LANDMARK_VISUALS)) {
+      templates.push({
+        key: `landmark_visual_t6:${landmarkName}`,
+        type: 'landmark_visual',
+        prompt: `Identify this famous world landmark:`,
+        correctAnswer: landmarkName,
+        options: shuffleArray([landmarkName, ...getUniqueDistractors(landmarkName, Object.keys(WORLD_LANDMARK_VISUALS).map(k => ({ name: k })), 3, w => w.name)]),
+        hint: vis.badge ? `${vis.badge} built in ${vis.city || vis.country || 'historic times'}.` : (vis.category ? `An iconic example of world ${vis.category.toLowerCase()}.` : 'Observe the architectural structure.'),
+        landmarkData: vis,
+        concept: 'Landmarks & Seas',
+        tier: 6
+      });
+    }
+
+    // Major Seas & Marginal Water Bodies in Tier 6
+    for (const sea of MAJOR_SEAS_AND_WATERBODIES) {
+      templates.push({
+        key: `sea_ocean_t6:${sea.name}`,
+        type: 'sea_ocean',
+        prompt: `The ${sea.name} is connected to or considered part of which major ocean?`,
+        correctAnswer: sea.ocean,
+        options: shuffleArray([sea.ocean, ...getUniqueDistractors(sea.ocean, OCEANS, 3, o => o.fullName)]),
+        hint: sea.fact,
+        concept: 'Landmarks & Seas',
+        tier: 6
+      });
+    }
+  } else if (tier === 7) {
+    // Tier 7: Strategic Straits, Passages & Geopolitical Anomalies/Enclaves
+    for (const strait of GLOBAL_STRAITS) {
+      templates.push({
+        key: `strait_connects_t7:${strait.name}`,
+        type: 'global_strait',
+        prompt: `Which strategic strait connects the ${strait.connects}?`,
+        correctAnswer: strait.name,
+        options: shuffleArray([strait.name, ...getUniqueDistractors(strait.name, GLOBAL_STRAITS, 3, s => s.name)]),
+        hint: `It separates ${strait.separates}. ${strait.fact}`,
+        concept: 'Straits & Enclaves',
+        tier: 7
+      });
+
+      templates.push({
+        key: `strait_separates_t7:${strait.name}`,
+        type: 'global_strait',
+        prompt: `Which strategic waterway separates ${strait.separates}?`,
+        correctAnswer: strait.name,
+        options: shuffleArray([strait.name, ...getUniqueDistractors(strait.name, GLOBAL_STRAITS, 3, s => s.name)]),
+        hint: `It connects ${strait.connects}.`,
+        concept: 'Straits & Enclaves',
+        tier: 7
+      });
+    }
+
+    for (const anomaly of GEOPOLITICAL_ANOMALIES) {
+      templates.push({
+        key: `anomaly_t7:${anomaly.name}`,
+        type: 'geopolitical_anomaly',
+        prompt: `Which country or territory is described by: "${anomaly.fact}"?`,
+        correctAnswer: anomaly.name,
+        options: shuffleArray([anomaly.name, ...getUniqueDistractors(anomaly.name, COUNTRIES, 3, c => c.name)]),
+        hint: `Think about geopolitical borders, enclaves, and transcontinental boundaries.`,
+        concept: 'Straits & Enclaves',
+        tier: 7
+      });
+    }
 
     templates.push({
       key: 'foundation:arctic_circle',
@@ -642,8 +680,8 @@ export const getTierCandidateTemplates = (tier) => {
       correctAnswer: 'Arctic Circle',
       options: shuffleArray(['Arctic Circle', 'Antarctic Circle', 'Tropic of Cancer', 'Prime Meridian']),
       hint: 'North of this line, the sun remains above the horizon for 24 hours during the summer solstice.',
-      concept: 'Country Shapes & Locations',
-      tier: 4
+      concept: 'Straits & Enclaves',
+      tier: 7
     });
 
     templates.push({
@@ -653,13 +691,11 @@ export const getTierCandidateTemplates = (tier) => {
       correctAnswer: 'Antarctic Circle',
       options: shuffleArray(['Antarctic Circle', 'Arctic Circle', 'Tropic of Capricorn', 'Equator']),
       hint: 'South of this line is the icy Antarctic polar zone.',
-      concept: 'Country Shapes & Locations',
-      tier: 4
+      concept: 'Straits & Enclaves',
+      tier: 7
     });
-  } else if (tier >= 5) {
-    // Tier 5: World Summit (Tricky Capitals, Global Expert, Extreme Geography, Straits & Enclaves)
-
-    // 1. Tricky Capitals (direct and reverse)
+  } else if (tier >= 8) {
+    // Tier 8: Mount World Summit (Tricky Capitals, Extreme Earth Geography, Summit Records & Outlines)
     for (const tricky of TRICKY_CAPITALS) {
       const distractors = [tricky.commonConfusion];
       const otherCapitals = getUniqueDistractors(tricky.capital, ALL_COUNTRY_CAPITALS, 2);
@@ -669,87 +705,46 @@ export const getTierCandidateTemplates = (tier) => {
       }
 
       templates.push({
-        key: `tricky_capital:${tricky.country}`,
+        key: `tricky_capital_t8:${tricky.country}`,
         type: 'tricky_capital',
         prompt: `What is the official capital of ${tricky.country}?`,
         correctAnswer: tricky.capital,
         options: shuffleArray([tricky.capital, ...distractors.slice(0, 3)]),
         hint: tricky.reason,
-        concept: 'Global Geography Expert',
-        tier: 5
+        concept: 'Peak Cartography & Extremes',
+        tier: 8
       });
 
       templates.push({
-        key: `reverse_tricky_capital:${tricky.capital}`,
+        key: `reverse_tricky_capital_t8:${tricky.capital}`,
         type: 'reverse_tricky_capital',
         prompt: `${tricky.capital} is the official capital city of which country?`,
         correctAnswer: tricky.country,
         options: shuffleArray([tricky.country, ...getUniqueDistractors(tricky.country, COUNTRIES, 3, c => c.name)]),
         hint: tricky.reason,
-        concept: 'Global Geography Expert',
-        tier: 5
+        concept: 'Peak Cartography & Extremes',
+        tier: 8
       });
     }
 
-    // 2. Extreme Earth Geography & Superlatives
     for (const ext of EXTREME_GEOGRAPHY) {
       templates.push({
-        key: `extreme_geo:${ext.record}`,
+        key: `extreme_geo_t8:${ext.record}`,
         type: 'extreme_geography',
         prompt: `Which geographic location holds the record for: "${ext.record}"?`,
         correctAnswer: ext.answer,
         options: shuffleArray([ext.answer, ...getUniqueDistractors(ext.answer, EXTREME_GEOGRAPHY, 3, eg => eg.answer)]),
         hint: ext.details,
-        concept: 'Global Geography Expert',
-        tier: 5
+        concept: 'Peak Cartography & Extremes',
+        tier: 8
       });
     }
 
-    // 3. Geopolitical Anomalies & Enclaves
-    for (const anomaly of GEOPOLITICAL_ANOMALIES) {
-      templates.push({
-        key: `anomaly:${anomaly.name}`,
-        type: 'geopolitical_anomaly',
-        prompt: `Which country or territory is described by: "${anomaly.fact}"?`,
-        correctAnswer: anomaly.name,
-        options: shuffleArray([anomaly.name, ...getUniqueDistractors(anomaly.name, COUNTRIES, 3, c => c.name)]),
-        hint: `Think about geopolitical borders, enclaves, and transcontinental boundaries.`,
-        concept: 'Global Geography Expert',
-        tier: 5
-      });
-    }
-
-    // 4. Strategic Global Straits & Passages
-    for (const strait of GLOBAL_STRAITS) {
-      templates.push({
-        key: `strait_connects:${strait.name}`,
-        type: 'global_strait',
-        prompt: `Which strategic strait connects the ${strait.connects}?`,
-        correctAnswer: strait.name,
-        options: shuffleArray([strait.name, ...getUniqueDistractors(strait.name, GLOBAL_STRAITS, 3, s => s.name)]),
-        hint: `It separates ${strait.separates}. ${strait.fact}`,
-        concept: 'Global Geography Expert',
-        tier: 5
-      });
-
-      templates.push({
-        key: `strait_separates:${strait.name}`,
-        type: 'global_strait',
-        prompt: `Which strategic waterway separates ${strait.separates}?`,
-        correctAnswer: strait.name,
-        options: shuffleArray([strait.name, ...getUniqueDistractors(strait.name, GLOBAL_STRAITS, 3, s => s.name)]),
-        hint: `It connects ${strait.connects}.`,
-        concept: 'Global Geography Expert',
-        tier: 5
-      });
-    }
-
-    // 5. Summit Challenge Country Shapes
     const shapes = COUNTRIES.filter(c => c.shapeSvg);
     for (const country of shapes) {
       const regionalMap = REGIONAL_MAPS[country.name] || null;
       templates.push({
-        key: `summit_shape:${country.name}`,
+        key: `summit_shape_t8:${country.name}`,
         type: 'country_shape',
         prompt: `Summit Challenge: Identify this highlighted country by its outline borders:`,
         correctAnswer: country.name,
@@ -757,8 +752,8 @@ export const getTierCandidateTemplates = (tier) => {
         hint: country.capital ? `Its seat of government is ${country.capital}.` : (country.trivia ? `Inspect the coastal perimeter and neighboring territory. Hint: ${country.trivia}` : `Inspect the coastal perimeter and neighboring territory.`),
         shapeSvg: country.shapeSvg,
         mapData: regionalMap,
-        concept: 'Global Geography Expert',
-        tier: 5
+        concept: 'Peak Cartography & Extremes',
+        tier: 8
       });
     }
   }
@@ -768,13 +763,13 @@ export const getTierCandidateTemplates = (tier) => {
 
 /**
  * Generates a single world problem for a given tier
- * @param {number} tier - Curriculum tier (1-5)
+ * @param {number} tier - Curriculum tier (1-8)
  * @param {boolean} isProbe - Whether this is a probe question
  * @param {Set|Array} seenKeys - Excluded problem keys
  * @param {Object} specificItem - Optional specific template
  */
 export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Set(), specificItem = null) => {
-  const effectiveTier = Math.max(1, Math.min(5, Number(tier) || 1));
+  const effectiveTier = Math.max(1, Math.min(8, Number(tier) || 1));
   const seenSet = seenKeys instanceof Set ? seenKeys : new Set(Array.isArray(seenKeys) ? seenKeys.map(k => String(k).toLowerCase()) : []);
 
   if (specificItem) {
@@ -811,7 +806,7 @@ export const generateTierProblem = (tier = 1, isProbe = false, seenKeys = new Se
 
   if (!chosen) {
     // If all questions in this tier have been seen, check all other curriculum tiers
-    for (let t = 1; t <= 5; t++) {
+    for (let t = 1; t <= 8; t++) {
       if (t === effectiveTier) continue;
       const otherTemplates = shuffleArray(getTierCandidateTemplates(t));
       chosen = otherTemplates.find(item => {
@@ -877,7 +872,7 @@ export const generateWorldProblem = (ratingOrTier = 1000, history = [], seenKeys
  * @param {Set} seenKeys - Active session seen keys
  */
 export const generateWorldSession = (count = 15, targetTier = 1, history = [], seenKeys = new Set()) => {
-  const effectiveTier = Math.max(1, Math.min(5, Number(targetTier) || 1));
+  const effectiveTier = Math.max(1, Math.min(8, Number(targetTier) || 1));
   const recentTerms = new Set((history || []).map(h => (typeof h === 'string' ? h.toLowerCase() : String(h?.key || '').toLowerCase())));
   const sessionSeen = new Set(seenKeys instanceof Set ? Array.from(seenKeys).map(k => String(k).toLowerCase()) : []);
 
@@ -962,7 +957,7 @@ export const generateWorldSession = (count = 15, targetTier = 1, history = [], s
 
   // 3. Third pass: Check adjacent/other curriculum tiers not seen in active session
   if (problems.length < count) {
-    for (let t = 1; t <= 5; t++) {
+    for (let t = 1; t <= 8; t++) {
       if (problems.length >= count) break;
       if (t === effectiveTier) continue;
       const otherTemplates = shuffleArray(getTierCandidateTemplates(t));

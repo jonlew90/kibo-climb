@@ -140,7 +140,7 @@ describe('Badges System & Expansion Tests', () => {
     it('unlocks World curriculum rating badges', () => {
       const resWorld = evaluateBadges({
         subjectId: 'world',
-        competenceRank: 2100,
+        competenceRank: 2400,
         unlockedBadges: []
       });
 

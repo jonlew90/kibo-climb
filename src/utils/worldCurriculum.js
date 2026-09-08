@@ -71,18 +71,69 @@ export const WORLD_CURRICULUM_TIERS = [
   },
   {
     tier: 5,
-    title: 'World Summit',
-    subtitle: 'Global Geography Expert & Tricky Capitals',
-    description: 'Master advanced global geography, common capital misconceptions, extreme geographic points, and deep earth wonders.',
+    title: 'Ridge & River Pass',
+    subtitle: 'World Rivers, Mountain Ranges & Deserts',
+    description: 'Master major world river systems, high mountain ranges, deserts, and famous physical earth landmarks.',
     topics: [
-      'Tricky Capitals & Common Misconceptions',
-      'Extreme Earth Geography & Deepest Points',
-      'Global Waterways & Strategic Straits',
-      'Advanced Country Shapes & Islands'
+      'Major World Mountain Ranges',
+      'Global River Systems & Basins',
+      'Great Deserts & Arid Zones',
+      'Physical Geography Superlatives'
     ],
     hintText: {
-      description: 'You are now tackling expert geography! Beware of common traps—like thinking Sydney is the capital of Australia instead of Canberra!',
-      content: 'Take your time and pay close attention to nuances in capitals and physical landmarks.',
+      description: 'Physical geography covers the natural landforms that cross country boundaries!',
+      content: 'The Andes run down South America, the Himalayas tower over Asia, and the Amazon flows through dense rainforest.',
+      summary: 'Identify major mountain ranges, rivers, and natural landforms.'
+    }
+  },
+  {
+    tier: 6,
+    title: 'Archipelago Atolls',
+    subtitle: 'Visual Landmarks, Marginal Seas & Regional Maps',
+    description: 'Identify iconic architectural monuments, world wonders, regional island chains, and marginal seas.',
+    topics: [
+      'Visual World Wonders & Architecture',
+      'Marginal Seas & Water Bodies',
+      'Island Archipelagos & Territory Outlines',
+      'Regional Map Recognition'
+    ],
+    hintText: {
+      description: 'Observe architectural details and oceanic water bodies!',
+      content: 'Marginal seas like the Mediterranean, Caribbean, and Red Sea border continents and connect to oceans.',
+      summary: 'Recognize visual wonders, regional maps, and major seas.'
+    }
+  },
+  {
+    tier: 7,
+    title: 'Strait of Meridian',
+    subtitle: 'Strategic Global Straits, Canals & Enclaves',
+    description: 'Master crucial maritime choke points, canals, geopolitical enclaves, and transcontinental territory boundaries.',
+    topics: [
+      'Strategic Straits (Malacca, Hormuz, Gibraltar)',
+      'Man-Made Canals (Panama & Suez)',
+      'Geopolitical Enclaves & Anomalies',
+      'Hemisphere Latitudes & Prime Meridian'
+    ],
+    hintText: {
+      description: 'Maritime straits and enclaves shape global trade and political boundaries!',
+      content: 'The Strait of Gibraltar connects the Atlantic to the Mediterranean, while the Panama Canal links the Atlantic and Pacific.',
+      summary: 'Master strategic waterways and geopolitical anomalies.'
+    }
+  },
+  {
+    tier: 8,
+    title: 'Mount World Summit',
+    subtitle: 'Peak Cartography & Tricky Capital Misconceptions',
+    description: 'Demonstrate summit mastery over counterintuitive capital cities, deepest ocean trenches, and extreme global geography.',
+    topics: [
+      'Tricky Capitals & Common Misconceptions',
+      'Extreme Earth Geography & Deepest Trenches',
+      'Sub-Zero Polar Geography & Coordinates',
+      'Summit Cartographer Mastery'
+    ],
+    hintText: {
+      description: 'You have reached the summit! Watch out for common traps and deceptive city names.',
+      content: 'Many capital cities were purposefully built away from the largest metropolitan hubs.',
       summary: 'Demonstrate peak global geography mastery.'
     }
   }
@@ -92,9 +143,9 @@ export const WORLD_TIER_RATING_THRESHOLDS = {
   'Kindergarten': 900,
   'Grade 1–2': 1000,
   'Grade 3–4': 1200,
-  'Grade 5–6': 1400,
-  'Grade 7–8': 1600,
-  'High School & Beyond': 1800,
+  'Grade 5–6': 1800,
+  'Grade 7–8': 2200,
+  'High School & Beyond': 2400,
 };
 
 // Grade-level starting ratings for Kibo World
@@ -102,17 +153,17 @@ export const GRADE_STARTING_RATINGS = {
   'Kindergarten':                   900,   // Tier 1 — Continents, oceans & earth foundations
   'Grade 1–2':                      1000,  // Tier 1 — Continents, oceans & cardinal directions
   'Grade 3–4':                      1200,  // Tier 2 — US states, shapes & state capitals
-  'Grade 5–6':                      1400,  // Tier 3 — Major world countries & sovereign capitals
-  'Grade 7–8':                      1600,  // Tier 4 — Country shapes, hemispheres & physical geography
-  'High School & Beyond':           1800,  // Tier 5 — Peak global geography, tricky capitals & straits
+  'Grade 5–6':                      1800,  // Tier 5 — Rivers, mountains, deserts & physical geography
+  'Grade 7–8':                      2200,  // Tier 7 — Straits, canals & geopolitical enclaves
+  'High School & Beyond':           2400,  // Tier 8 — Summit tricky capitals & extreme geography
 };
 
 export function getStartingRatingForGrade(gradeLevel) {
   if (GRADE_STARTING_RATINGS[gradeLevel]) {
     return GRADE_STARTING_RATINGS[gradeLevel];
   }
-  if (gradeLevel === 'Pre-Algebra / Middle School' || gradeLevel === 'Pre-Algebra') return 1600;
-  if (gradeLevel === 'Algebra & Beyond' || gradeLevel === 'Algebra+') return 1800;
+  if (gradeLevel === 'Pre-Algebra / Middle School' || gradeLevel === 'Pre-Algebra') return 2000;
+  if (gradeLevel === 'Algebra & Beyond' || gradeLevel === 'Algebra+') return 2400;
   return 1000;
 }
 
@@ -121,9 +172,12 @@ export function getGradeLevelFromRating(rating = 1000) {
   const numRating = Number(rating) || 1000;
   if (numRating < 1200) return 'K–Grade 2';   // Tier 1: Continents & Oceans
   if (numRating < 1400) return 'Grade 3–4';   // Tier 2: US States & Capitals
-  if (numRating < 1600) return 'Grade 5–6';   // Tier 3: Major Countries & Capitals
-  if (numRating < 1800) return 'Grade 7–8';   // Tier 4: Country Shapes & Physical Geo
-  return 'Grade 7–8+';                        // Tier 5: World Summit
+  if (numRating < 1600) return 'Grade 4–5';   // Tier 3: Major Countries & Capitals
+  if (numRating < 1800) return 'Grade 5–6';   // Tier 4: Country Shapes & Hemispheres
+  if (numRating < 2000) return 'Grade 6–7';   // Tier 5: Mountains, Rivers & Deserts
+  if (numRating < 2200) return 'Grade 7–8';   // Tier 6: Visual Landmarks & Seas
+  if (numRating < 2400) return 'Grade 8+';    // Tier 7: Straits & Enclaves
+  return 'High School+';                      // Tier 8: Mount World Summit
 }
 
 export const getTierForRating = (rating = 1000) => {
@@ -132,13 +186,17 @@ export const getTierForRating = (rating = 1000) => {
   if (numRating < 1400) return 2;
   if (numRating < 1600) return 3;
   if (numRating < 1800) return 4;
-  return 5;
+  if (numRating < 2000) return 5;
+  if (numRating < 2200) return 6;
+  if (numRating < 2400) return 7;
+  return 8;
 };
 
 export const getTierFromRating = getTierForRating;
 
 export const isNearTierThreshold = (rating) => {
-  const thresholds = [1200, 1400, 1600, 1800];
+  const thresholds = [1200, 1400, 1600, 1800, 2000, 2200, 2400];
   return thresholds.some(t => Math.abs(rating - t) <= 25);
 };
+
 

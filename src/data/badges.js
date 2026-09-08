@@ -402,7 +402,7 @@ export const BADGES_CATALOG = [
     description: 'Reached the peak of Mount Kibo World with expert global knowledge!',
     category: 'world',
     icon: '🌐',
-    reqText: 'Reach 2000+ World Rating'
+    reqText: 'Reach 2400+ World Rating'
   },
   {
     id: 'capital_collector',
