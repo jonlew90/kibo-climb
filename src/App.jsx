@@ -1009,6 +1009,21 @@ export default function App() {
         setUnlockedBadges(evalRes.updatedUnlocked);
       }
     }
+
+    // Check account link prompts at natural completion checkpoint (completed climbs, streak milestone, rating milestone)
+    const activeData = storageService.getUserData(activeSubject);
+    const completedClimbs = activeData.completedClimbsCount || (activeData.sprintHistory || []).length;
+    const currentRating = activeData.adaptiveCompetenceRating || activeData.competenceRank || 1000;
+    checkAndPromptLinkAccount(
+      {
+        completedClimbs,
+        streak: nextStreak,
+        rating: currentRating,
+        subject: activeSubject
+      },
+      setLinkModalMilestone,
+      setShowAccountLinkModal
+    );
   };
 
   const handleIncrementLifetimeProblems = (isCorrect = true) => {
@@ -1358,7 +1373,7 @@ export default function App() {
 
     const refreshedUserData = storageService.getUserData(activeSubject);
     checkAndPromptLinkAccount(
-      { purchasesCount: newPurchasesCount },
+      { purchasesCount: newPurchasesCount, subject: activeSubject },
       setLinkModalMilestone,
       setShowAccountLinkModal
     );
@@ -1688,7 +1703,7 @@ export default function App() {
     const refreshedUserData = storageService.getUserData(activeSubject);
 
     checkAndPromptLinkAccount(
-      { purchasesCount: newPurchasesCount },
+      { purchasesCount: newPurchasesCount, subject: activeSubject },
       setLinkModalMilestone,
       setShowAccountLinkModal
     );
@@ -3118,11 +3133,6 @@ export default function App() {
           }}
           onUpdateCompetenceRating={(newRating) => {
             setLiveCompetenceRating(newRating);
-            checkAndPromptLinkAccount(
-              { rating: newRating },
-              setLinkModalMilestone,
-              setShowAccountLinkModal
-            );
           }}
           onAwardSparks={(earned) => {
             const clubMultiplier = isKiboClub ? 1.25 : 1;
@@ -3165,11 +3175,6 @@ export default function App() {
           }}
           onUpdateCompetenceRating={(newRating) => {
             setLiveCompetenceRating(newRating);
-            checkAndPromptLinkAccount(
-              { rating: newRating },
-              setLinkModalMilestone,
-              setShowAccountLinkModal
-            );
           }}
           onAwardSparks={(earned) => {
             const clubMultiplier = isKiboClub ? 1.25 : 1;
@@ -3212,11 +3217,6 @@ export default function App() {
           }}
           onUpdateCompetenceRating={(newRating) => {
             setLiveCompetenceRating(newRating);
-            checkAndPromptLinkAccount(
-              { rating: newRating },
-              setLinkModalMilestone,
-              setShowAccountLinkModal
-            );
           }}
           onAwardSparks={(earned) => {
             const clubMultiplier = isKiboClub ? 1.25 : 1;
@@ -3258,11 +3258,6 @@ export default function App() {
           }}
           onUpdateCompetenceRating={(newRating) => {
             setLiveCompetenceRating(newRating);
-            checkAndPromptLinkAccount(
-              { rating: newRating },
-              setLinkModalMilestone,
-              setShowAccountLinkModal
-            );
           }}
           onAwardSparks={(earned) => {
             const clubMultiplier = isKiboClub ? 1.25 : 1;
@@ -3371,7 +3366,18 @@ export default function App() {
       {/* STREAK SAVED MODAL */}
       <StreakSavedModal
         isOpen={showStreakSavedModal}
-        onClose={() => setShowStreakSavedModal(false)}
+        onClose={() => {
+          setShowStreakSavedModal(false);
+          const uData = storageService.getUserData(activeSubject);
+          checkAndPromptLinkAccount(
+            {
+              streak: streak,
+              subject: activeSubject
+            },
+            setLinkModalMilestone,
+            setShowAccountLinkModal
+          );
+        }}
         streak={streak}
         remainingShields={streakShields}
       />
@@ -3379,7 +3385,17 @@ export default function App() {
       {/* DAILY STREAK INCREASED MODAL */}
       <DailyStreakIncreasedModal
         isOpen={showDailyStreakIncreasedModal && !perfectMonthData && !showMultiSubjectBonusModal}
-        onClose={() => setShowDailyStreakIncreasedModal(false)}
+        onClose={() => {
+          setShowDailyStreakIncreasedModal(false);
+          checkAndPromptLinkAccount(
+            {
+              streak: streak,
+              subject: activeSubject
+            },
+            setLinkModalMilestone,
+            setShowAccountLinkModal
+          );
+        }}
         streak={streak}
       />
 

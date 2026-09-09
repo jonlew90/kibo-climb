@@ -684,8 +684,8 @@ export default function FirstLaunchOnboardingModal({
             </p>
           </div>
 
-          {/* Bounded Vertically Scrollable Grade Option Tiles */}
-          <div className="w-full max-h-[56dvh] sm:max-h-[60dvh] overflow-y-auto space-y-2 pr-1 custom-scrollbar shrink">
+          {/* Compact 2-Column Grade Option Tiles (no vertical scroll needed) */}
+          <div className="w-full grid grid-cols-2 gap-2">
             {GRADE_OPTIONS.map((grade) => {
               const details = GRADE_CURRICULUM_DETAILS[grade] || { math: '', words: '', world: '', summary: '', preview: '' };
               const isSelected = selectedGrade === grade;
@@ -696,42 +696,35 @@ export default function FirstLaunchOnboardingModal({
                   key={grade}
                   type="button"
                   onClick={() => handleGradeSelect(grade)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
+                  className={`flex flex-col items-start justify-center p-2.5 rounded-xl border-2 text-left transition-all duration-150 cursor-pointer ${
                     isSelected
-                      ? 'border-amber-400 bg-amber-400/20 shadow-lg shadow-amber-400/25 ring-2 ring-amber-400/40 ring-offset-2 ring-offset-slate-950 scale-[1.01] animate-pop'
+                      ? 'border-amber-400 bg-amber-400/20 shadow-md shadow-amber-400/25 ring-2 ring-amber-400/40 scale-[1.01] animate-pop'
                       : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10'
                   }`}
                 >
-                  <div className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
-                    isSelected ? 'border-amber-400 bg-amber-400 animate-bounce-short' : 'border-slate-600'
-                  }`}>
-                    {isSelected ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-slate-950 stroke-[3]" />
-                    ) : (
-                      <div className="w-1.5 h-1.5 rounded-full bg-slate-600" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={`text-sm sm:text-base font-black truncate transition-colors ${isSelected ? 'text-amber-300' : 'text-white'}`}>
-                        {grade}
-                      </span>
-                      {isSelected && (
-                        <span className="text-[11px] font-black uppercase text-amber-950 bg-amber-400 px-2 py-0.5 rounded-full shadow-xs shrink-0 flex items-center gap-1 animate-pulse">
-                          <CheckCircle2 className="w-3 h-3 stroke-[3]" />
-                          Selected
-                        </span>
+                  <div className="flex items-center justify-between w-full gap-1">
+                    <span className={`text-xs sm:text-sm font-black truncate transition-colors ${isSelected ? 'text-amber-300' : 'text-white'}`}>
+                      {grade}
+                    </span>
+                    <div className={`w-4 h-4 rounded-full border shrink-0 flex items-center justify-center transition-all ${
+                      isSelected ? 'border-amber-400 bg-amber-400' : 'border-slate-600'
+                    }`}>
+                      {isSelected ? (
+                        <CheckCircle2 className="w-3 h-3 text-slate-950 stroke-[3]" />
+                      ) : (
+                        <div className="w-1 h-1 rounded-full bg-slate-600" />
                       )}
                     </div>
-                    {previewText && (
-                      <p className={`text-xs font-medium truncate transition-colors ${isSelected ? 'text-amber-100/90' : 'text-slate-300'}`}>
-                        {previewText}
-                      </p>
-                    )}
                   </div>
+                  {previewText && (
+                    <p className={`text-[10px] sm:text-[11px] leading-tight mt-0.5 truncate w-full font-medium transition-colors ${isSelected ? 'text-amber-100/90' : 'text-slate-400'}`}>
+                      {previewText}
+                    </p>
+                  )}
                 </button>
               );
             })}
+          </div>
 
             {/* OR Calibrate with School MAP Growth RIT Score */}
             <div className="pt-2 border-t border-white/10">

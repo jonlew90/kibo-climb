@@ -7,12 +7,13 @@ export function checkAndPromptLinkAccount({
   purchasesCount,
   completedClimbs,
   streak,
-  rating
+  rating,
+  subject = 'math'
 }, setMilestoneCallback, showModalCallback) {
   const isAnon = authService.getAuthState().isAnonymous;
   if (!isAnon) return false;
 
-  const userData = storageService.getUserData('math');
+  const userData = storageService.getUserData(subject);
   const milestones = userData.promptedLinkMilestones || [];
   const lastPrompted = userData.lastPromptedLinkAt || 0;
 
@@ -121,7 +122,7 @@ export function checkAndPromptLinkAccount({
     storageService.saveUserData({
       promptedLinkMilestones: newMilestonesArray,
       lastPromptedLinkAt: now
-    });
+    }, subject);
 
     if (setMilestoneCallback) setMilestoneCallback(newMilestone.label);
     if (showModalCallback) showModalCallback(true);
