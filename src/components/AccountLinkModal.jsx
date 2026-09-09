@@ -122,7 +122,7 @@ export default function AccountLinkModal({
       if (res.success) {
         const earnedSparks = res.earnedSparks ?? storageService.grantAccountLinkSparksReward();
 
-        const label = provider === 'google' ? 'Google 1-Tap' : provider === 'apple' ? 'Sign in with Apple' : 'Passwordless Magic Link';
+        const label = provider === 'google' ? 'Google' : provider === 'apple' ? 'Apple' : 'Email Magic Link';
 
         if (earnedSparks > 0) {
           setSuccessMessage(`Account linked successfully with ${label}! Your progress is now permanently synced. +200 ⚡ Earned!`);
@@ -137,6 +137,9 @@ export default function AccountLinkModal({
           onClose();
         }, 1800);
       } else if (!res.cancelled) {
+        if (res.code === 'auth/popup-blocked') {
+          setShowEmailInput(true);
+        }
         setErrorMessage(res.reason || 'Failed to link account. Please try again.');
       }
     } catch (e) {
