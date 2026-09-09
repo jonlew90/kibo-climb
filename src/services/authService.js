@@ -401,8 +401,32 @@ export const authService = {
         }
         if (email) {
           const res = await signInWithEmailLink(auth, email, window.location.href);
-          window.localStorage.removeItem('emailForSignIn');
           if (res?.user) {
+            // Hydrate cloud profiles if user previously had data saved in Firestore
+            try {
+              const userDocRef = doc(db, 'users', res.user.uid);
+              const docSnap = await getDoc(userDocRef);
+              if (docSnap && typeof docSnap.exists === 'function' && docSnap.exists()) {
+                const cloudData = docSnap.data();
+                if (cloudData && cloudData.profiles && Object.keys(cloudData.profiles).length > 0) {
+                  const newProfilesState = {
+                    activeProfileId: cloudData.activeProfileId || Object.keys(cloudData.profiles)[0],
+                    isKiboClubFamily: Object.values(cloudData.profiles).some(p =>
+                      p.shopState?.unlockedItems?.includes('kibo_club_family')
+                    ),
+                    profiles: cloudData.profiles
+                  };
+                  localStorage.setItem('kibo_profiles_data', JSON.stringify(newProfilesState));
+                  if (cloudData.parentPin) {
+                    localStorage.setItem('kibo_parent_pin', cloudData.parentPin);
+                  }
+                }
+              }
+            } catch (cloudErr) {
+              console.warn('Could not check/hydrate cloud user doc during email link sign-in:', cloudErr);
+            }
+
+            storageService.setOnboarded(true);
             const currentData = storageService.getUserData('math');
             const mergedUserData = {
               ...currentData,
@@ -416,6 +440,11 @@ export const authService = {
             storageService.setGlobalAccountLinkedState(mergedUserData);
             const earnedSparks = storageService.grantAccountLinkSparksReward();
             if (res.user.uid) loginToOneSignal(res.user.uid);
+
+            if (typeof window !== 'undefined' && window.history && window.location.search) {
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+
             return { success: true, user: storageService.getUserData('math'), earnedSparks };
           }
         }

@@ -1245,6 +1245,10 @@ export default function App() {
       syncAppStateWithStorage();
       syncService.initBackgroundSync();
 
+      if (authRes && !authRes.isAnonymous && storageService.isOnboarded()) {
+        setShowFirstLaunchOnboardingModal(false);
+      }
+
       // Check URL query parameters for ?friend=KIBO-XXXX and ?ref=UID from QR scans or invite links
       try {
         if (typeof window !== 'undefined' && window.location.search) {
