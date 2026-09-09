@@ -28,6 +28,23 @@ const isProductionHost = typeof window !== 'undefined' && (
 );
 
 if (isProductionHost) {
+  // Ensure COPPA-compliant default consent and restricted data processing
+  if (typeof window !== 'undefined') {
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+    gtag('consent', 'default', {
+      'ad_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied',
+      'analytics_storage': 'granted'
+    });
+    gtag('set', {
+      'restricted_data_processing': true,
+      'allow_google_signals': false,
+      'allow_ad_personalization_signals': false
+    });
+  }
+
   isSupported().then((supported) => {
     if (supported) {
       analytics = getAnalytics(app);
