@@ -407,9 +407,9 @@ export default function AccountLinkModal({
         ) : (
           /* Link Options */
           <div className="space-y-2 pt-1">
-            {/* Google 1-Tap Popup Link */}
+            {/* Google Link Button */}
             <button
-              onClick={() => handleLinkProvider('google', false)}
+              onClick={() => handleLinkProvider('google')}
               disabled={!!loadingProvider}
               className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50"
             >
@@ -422,19 +422,7 @@ export default function AccountLinkModal({
               <span>
                 {loadingProvider === 'google'
                   ? (activeMode === 'restore' ? 'Signing in with Google...' : 'Linking Google Account...')
-                  : (activeMode === 'restore' ? 'Log in with Google (Popup)' : 'Save with Google (Popup)')}
-              </span>
-            </button>
-
-            {/* Google Full Redirect Option (No COOP warning) */}
-            <button
-              onClick={() => handleLinkProvider('google', true)}
-              disabled={!!loadingProvider}
-              className="w-full py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 rounded-xl font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              <Zap className="w-3.5 h-3.5 text-indigo-600" />
-              <span>
-                {activeMode === 'restore' ? 'Log in via Full Redirect (No Popups)' : 'Save via Full Redirect (No Popups)'}
+                  : (activeMode === 'restore' ? 'Continue with Google' : 'Save with Google')}
               </span>
             </button>
 
