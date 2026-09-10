@@ -238,6 +238,11 @@ class SoundSystem {
     });
   }
 
+  // Alias for backward compatibility / explicit naming
+  playVictoryFanfare() {
+    this.playVictory();
+  }
+
   // Play energetic spark collection chime
   playSparkCollect() {
     triggerHaptic([20, 20]);

@@ -601,6 +601,7 @@ export default function LeaderboardScreen({
       weeklySparks: familySquadSparks,
       totalXp: familySquadXp,
       icon: '🏔️',
+      equipped: userEquippedItems,
       badge: allAccountProfiles.length > 1 ? 'Family Squad' : 'Ascent Squad'
     }
   ];
@@ -820,24 +821,24 @@ export default function LeaderboardScreen({
       </header>
 
       {/* CONTROLS BAR (VIEW MODES & SUBJECTS) */}
-      <div className="bg-white/80 backdrop-blur-xs border-b border-slate-200 relative z-30 shrink-0 px-4 py-2 space-y-2 shadow-2xs">
+      <div className="bg-white/80 backdrop-blur-xs border-b border-slate-200 relative z-30 shrink-0 px-2 sm:px-4 py-2 space-y-2 shadow-2xs">
 
         {/* VIEW MODE TABS */}
-        <div className="px-4 py-1.5 flex items-center gap-1.5 sm:gap-2 mb-1 overflow-x-auto hide-scrollbar">
+        <div className="px-0 sm:px-4 py-1 flex items-center justify-between gap-1 sm:gap-2 mb-1">
           <button
             type="button"
             onClick={() => {
               soundFx.playKeyTap();
               setViewMode('global');
             }}
-            className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer shrink-0 ${
+            className={`flex-1 min-w-0 py-1.5 px-1 sm:px-2 rounded-xl text-[11px] sm:text-sm font-black transition-all flex items-center justify-center gap-1 sm:gap-1.5 border-2 cursor-pointer ${
               viewMode === 'global'
                 ? 'bg-slate-800 text-white border-slate-900 shadow-xs ring-2 ring-slate-400/30'
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
             }`}
           >
             <Trophy className="w-3.5 h-3.5 shrink-0" />
-            <span>Global</span>
+            <span className="whitespace-nowrap">Global</span>
           </button>
 
           <button
@@ -846,14 +847,14 @@ export default function LeaderboardScreen({
               soundFx.playKeyTap();
               setViewMode('weekly');
             }}
-            className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer shrink-0 ${
+            className={`flex-1 min-w-0 py-1.5 px-1 sm:px-2 rounded-xl text-[11px] sm:text-sm font-black transition-all flex items-center justify-center gap-1 sm:gap-1.5 border-2 cursor-pointer ${
               viewMode === 'weekly'
                 ? 'bg-emerald-500 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-400/30'
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
             }`}
           >
             <Zap className="w-3.5 h-3.5 fill-current shrink-0" />
-            <span>Weekly</span>
+            <span className="whitespace-nowrap">Weekly</span>
           </button>
 
           <button
@@ -862,14 +863,14 @@ export default function LeaderboardScreen({
               soundFx.playKeyTap();
               setViewMode('quests');
             }}
-            className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer shrink-0 ${
+            className={`flex-1 min-w-0 py-1.5 px-1 sm:px-2 rounded-xl text-[11px] sm:text-sm font-black transition-all flex items-center justify-center gap-1 sm:gap-1.5 border-2 cursor-pointer ${
               viewMode === 'quests'
                 ? 'bg-purple-600 text-white border-purple-700 shadow-xs ring-2 ring-purple-400/30'
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
             }`}
           >
             <Scroll className="w-3.5 h-3.5 shrink-0" />
-            <span>Quests</span>
+            <span className="whitespace-nowrap">Quests</span>
           </button>
 
           <button
@@ -878,14 +879,14 @@ export default function LeaderboardScreen({
               soundFx.playKeyTap();
               setViewMode('squads');
             }}
-            className={`flex-1 min-w-[75px] py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer shrink-0 ${
+            className={`flex-1 min-w-0 py-1.5 px-1 sm:px-2 rounded-xl text-[11px] sm:text-sm font-black transition-all flex items-center justify-center gap-1 sm:gap-1.5 border-2 cursor-pointer ${
               viewMode === 'squads'
                 ? 'bg-amber-500 text-white border-amber-600 shadow-xs ring-2 ring-amber-400/30'
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
             }`}
           >
             <Users2 className="w-3.5 h-3.5 shrink-0" />
-            <span>Squads</span>
+            <span className="whitespace-nowrap">Squads</span>
           </button>
 
           <button
@@ -894,16 +895,16 @@ export default function LeaderboardScreen({
               soundFx.playKeyTap();
               setViewMode('friends');
             }}
-            className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 border-2 cursor-pointer relative shrink-0 ${
+            className={`flex-1 min-w-0 py-1.5 px-0.5 sm:px-2 rounded-xl text-[11px] sm:text-sm font-black transition-all flex items-center justify-center gap-0.5 sm:gap-1.5 border-2 cursor-pointer relative ${
               viewMode === 'friends'
                 ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs ring-2 ring-indigo-400/30'
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
             }`}
           >
             <Users className="w-3.5 h-3.5 shrink-0" />
-            <span>Friends</span>
+            <span className="whitespace-nowrap">Friends</span>
             {friendsList.length > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ml-0.5 ${
+              <span className={`text-[9px] sm:text-[10px] px-1 py-0.2 rounded-full font-black ml-0.5 shrink-0 ${
                 viewMode === 'friends' ? 'bg-indigo-400 text-white' : 'bg-slate-200 text-slate-700 border border-slate-300'
               }`}>
                 {friendsList.length}
@@ -1378,15 +1379,20 @@ export default function LeaderboardScreen({
                     : 'bg-slate-200 border-slate-300'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
-                    {viewMode === 'squads' ? (
+                    {viewMode === 'squads' && !top3[1].isCurrentUserSquad && !top3[1].isCurrentUser ? (
                       <span className="text-3xl select-none">{top3[1].icon || '🦊'}</span>
                     ) : (
-                      <Mascot size={56} mood={top3[1].isCurrentUser ? "excited" : "happy"} equipped={top3[1].equipped} className="w-full h-full" />
+                      <Mascot size={56} mood={(top3[1].isCurrentUser || top3[1].isCurrentUserSquad) ? "excited" : "happy"} equipped={top3[1].equipped} className="w-full h-full" />
                     )}
                   </div>
+                  {(top3[1].isCurrentUser || top3[1].isCurrentUserSquad) && (
+                    <span className="absolute bottom-0 inset-x-0 bg-indigo-600/90 backdrop-blur-[1px] text-white text-[8px] sm:text-[9px] leading-tight py-0.5 text-center font-black uppercase tracking-wider shadow-xs">
+                      YOU
+                    </span>
+                  )}
                 </div>
                 <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[1].name}>
-                  <span className="font-bold text-xs text-center break-words line-clamp-2 max-w-full leading-tight">
+                  <span className="font-bold text-xs text-center truncate max-w-full leading-tight">
                     {top3[1].name}
                   </span>
                   {top3[1].planTier === 'family' ? (
@@ -1398,9 +1404,7 @@ export default function LeaderboardScreen({
                       ⭐ CLUB
                     </span>
                   ) : null}
-                  {top3[1].isCurrentUser || top3[1].isCurrentUserSquad ? (
-                    <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
-                  ) : top3[1].isFriend ? (
+                  {top3[1].isFriend && !(top3[1].isCurrentUser || top3[1].isCurrentUserSquad) ? (
                     <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
                       <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" />
                     </span>
@@ -1439,15 +1443,20 @@ export default function LeaderboardScreen({
                     : top3[0].isCurrentUser || top3[0].isCurrentUserSquad ? 'bg-amber-100 border-amber-400 ring-4 ring-indigo-500/60' : 'bg-amber-100 border-amber-400'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.88] sm:scale-95">
-                    {viewMode === 'squads' ? (
+                    {viewMode === 'squads' && !top3[0].isCurrentUserSquad && !top3[0].isCurrentUser ? (
                       <span className="text-4xl select-none">{top3[0].icon || '🏔️'}</span>
                     ) : (
                       <Mascot size={72} mood="excited" equipped={top3[0].equipped} className="w-full h-full" />
                     )}
                   </div>
+                  {(top3[0].isCurrentUser || top3[0].isCurrentUserSquad) && (
+                    <span className="absolute bottom-0 inset-x-0 bg-indigo-600/90 backdrop-blur-[1px] text-white text-[9px] sm:text-[10px] leading-tight py-0.5 text-center font-black uppercase tracking-wider shadow-xs">
+                      YOU
+                    </span>
+                  )}
                 </div>
                 <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[0].name}>
-                  <span className="font-black text-sm text-amber-900 text-center break-words line-clamp-2 max-w-full leading-tight">
+                  <span className="font-black text-sm text-amber-900 text-center truncate max-w-full leading-tight">
                     {top3[0].name}
                   </span>
                   {top3[0].planTier === 'family' ? (
@@ -1459,9 +1468,7 @@ export default function LeaderboardScreen({
                       ⭐ CLUB
                     </span>
                   ) : null}
-                  {top3[0].isCurrentUser || top3[0].isCurrentUserSquad ? (
-                    <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
-                  ) : top3[0].isFriend ? (
+                  {top3[0].isFriend && !(top3[0].isCurrentUser || top3[0].isCurrentUserSquad) ? (
                     <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
                       <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" />
                     </span>
@@ -1504,15 +1511,20 @@ export default function LeaderboardScreen({
                     : 'bg-orange-100 border-orange-300'
                 }`}>
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-95">
-                    {viewMode === 'squads' ? (
+                    {viewMode === 'squads' && !top3[2].isCurrentUserSquad && !top3[2].isCurrentUser ? (
                       <span className="text-3xl select-none">{top3[2].icon || '🐻'}</span>
                     ) : (
-                      <Mascot size={56} mood={top3[2].isCurrentUser ? "excited" : "happy"} equipped={top3[2].equipped} className="w-full h-full" />
+                      <Mascot size={56} mood={(top3[2].isCurrentUser || top3[2].isCurrentUserSquad) ? "excited" : "happy"} equipped={top3[2].equipped} className="w-full h-full" />
                     )}
                   </div>
+                  {(top3[2].isCurrentUser || top3[2].isCurrentUserSquad) && (
+                    <span className="absolute bottom-0 inset-x-0 bg-indigo-600/90 backdrop-blur-[1px] text-white text-[8px] sm:text-[9px] leading-tight py-0.5 text-center font-black uppercase tracking-wider shadow-xs">
+                      YOU
+                    </span>
+                  )}
                 </div>
                 <div className="w-full flex items-center justify-center gap-1 px-0.5" title={top3[2].name}>
-                  <span className="font-bold text-xs text-center break-words line-clamp-2 max-w-full leading-tight">
+                  <span className="font-bold text-xs text-center truncate max-w-full leading-tight">
                     {top3[2].name}
                   </span>
                   {top3[2].planTier === 'family' ? (
@@ -1524,9 +1536,7 @@ export default function LeaderboardScreen({
                       ⭐ CLUB
                     </span>
                   ) : null}
-                  {top3[2].isCurrentUser || top3[2].isCurrentUserSquad ? (
-                    <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0">YOU</span>
-                  ) : top3[2].isFriend ? (
+                  {top3[2].isFriend && !(top3[2].isCurrentUser || top3[2].isCurrentUserSquad) ? (
                     <span className="bg-rose-500/15 text-rose-700 border border-rose-300 text-[10px] px-1.5 py-0.2 rounded-full font-black flex items-center gap-0.5 shrink-0" title="Friend">
                       <Heart className="w-2.5 h-2.5 fill-rose-500 text-rose-500" />
                     </span>
@@ -1597,11 +1607,11 @@ export default function LeaderboardScreen({
                     ? 'bg-rose-50 border-rose-200 ring-2 ring-rose-300/40'
                     : 'bg-slate-100 border-slate-200'
                 }`}>
-                  {isSquadMode ? (
+                  {isSquadMode && !player.isCurrentUserSquad && !player.isCurrentUser ? (
                     <span className="select-none">{player.icon || '🏔️'}</span>
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
-                      <Mascot size={44} mood={player.isCurrentUser ? "happy" : "neutral"} equipped={player.equipped} className="w-full h-full" />
+                      <Mascot size={44} mood={(player.isCurrentUser || player.isCurrentUserSquad) ? "happy" : "neutral"} equipped={player.equipped} className="w-full h-full" />
                     </div>
                   )}
                 </div>
@@ -1714,11 +1724,11 @@ export default function LeaderboardScreen({
                     ? 'border-amber-300 ring-2 ring-amber-400/70 shadow-[0_0_10px_rgba(245,158,11,0.5)]'
                     : 'border-indigo-300'
                 }`}>
-                   {isSquadMode ? (
+                   {isSquadMode && (!mySquad || !mySquad.isCurrentUserSquad) ? (
                      <span className="text-2xl select-none">{mySquad?.icon || '🏔️'}</span>
                    ) : (
                      <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-95">
-                       <Mascot size={48} mood="happy" equipped={equippedItems} className="w-full h-full" />
+                       <Mascot size={48} mood="happy" equipped={userEquippedItems} className="w-full h-full" />
                      </div>
                    )}
                 </div>
@@ -1954,7 +1964,7 @@ export default function LeaderboardScreen({
                 ? 'bg-rose-50 border-rose-300 ring-4 ring-rose-200/50'
                 : 'bg-slate-100 border-slate-300'
             }`}>
-              {viewMode === 'squads' ? (
+              {viewMode === 'squads' && !selectedPlayerForModal.isCurrentUserSquad && !selectedPlayerForModal.isCurrentUser ? (
                 <span className="text-4xl select-none">{selectedPlayerForModal.icon || '🏔️'}</span>
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center scale-95">
