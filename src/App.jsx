@@ -2501,7 +2501,7 @@ export default function App() {
             {/* Streak Badge Button */}
             <button
               type="button"
-              className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 text-white border-2 border-rose-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer"
+              className="flex items-center gap-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 text-white border-2 border-rose-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer"
               title={(consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0 ? "Daily Streak & Shield Active! 🛡️" : `Daily Streak: ${streak} ${streak === 1 ? 'day' : 'days'}`}
               onClick={handleOpenBadgesModal}
             >
@@ -2512,11 +2512,6 @@ export default function App() {
                 subjectId={activeSubject}
                 icon={<Flame className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 fill-amber-300 shrink-0 ${!isStreakCompletedToday ? 'animate-pulse' : ''}`} />}
               />
-              {((consumables?.streakSaverCount || 0) > 0 || (consumables?.shieldCount || 0) > 0) && (
-                <span className="inline-flex items-center justify-center bg-white/95 rounded-full w-3.5 h-3.5 text-[10px] ml-0.5 animate-pulse shadow-2xs border border-rose-200 leading-none shrink-0" title="Kibo Shield Active">
-                  🛡️
-                </span>
-              )}
             </button>
 
             {/* Friends Button (Available on all screen sizes) */}
