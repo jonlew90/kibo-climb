@@ -194,7 +194,7 @@ export default function AccountLinkModal({
 
         {/* Mode Toggle Switcher */}
         {!isLoginOnly && (
-          <div className="flex bg-slate-100 p-1 rounded-2xl gap-1 border border-slate-200">
+          <div className="flex bg-slate-100 p-1 rounded-2xl gap-1 border border-slate-200 mr-9">
             <button
               type="button"
               onClick={() => setActiveMode('save')}

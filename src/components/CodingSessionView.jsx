@@ -21,6 +21,7 @@ import ClimbHeader from './climb/ClimbHeader';
 import ClimbPreCard from './climb/ClimbPreCard';
 import CompanionsRow from './climb/CompanionsRow';
 import ToastBanner from './climb/ToastBanner';
+import ChallengeBanner from './climb/ChallengeBanner';
 import ItemThumbnail from './ItemThumbnail';
 
 
@@ -731,6 +732,7 @@ export default function CodingSessionView({
             consumables={consumables}
             onExitOrPause={handleExitOrPauseClimb}
             onOpenFeedback={() => setShowQuestionFeedback(true)}
+            onTriggerToastBanner={(banner) => setFeedbackBanner(banner)}
           />
         )}
 
@@ -742,6 +744,14 @@ export default function CodingSessionView({
           mascotState={mascotState}
         />
 
+        {/* DEDICATED CHALLENGE BANNER (Concept Drill / 2x Sparks) */}
+        {hasStartedClimb && currentProblem && (
+          <ChallengeBanner
+            concept={currentProblem.concept || 'Logic Drill'}
+            isDoubleSparks={Boolean(isDoubleSparksActive)}
+          />
+        )}
+
         {/* PROBLEM CARD CONTAINER */}
         <div className="w-full shrink-0 flex flex-col items-center justify-center my-1 space-y-2">
           {!hasStartedClimb ? (
@@ -752,6 +762,7 @@ export default function CodingSessionView({
               isDoubleSparksActive={isDoubleSparksActive}
               onToggleDoubleSparksPotion={onToggleDoubleSparksPotion}
               onTriggerToastBanner={setFeedbackBanner}
+              onOpenWorkshop={onOpenWorkshop}
               onStartClimb={handleStartClimb}
               onResumeClimb={handleResumeClimb}
             />
@@ -760,16 +771,8 @@ export default function CodingSessionView({
             currentProblem && (
               <div className={`w-full max-w-md shrink-0 flex flex-col justify-between bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-3 sm:p-4 text-center transition-all duration-300 space-y-2 relative shadow-lg ${streakConfig.cardGlow} ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : 'border-purple-200'}`}>
 
-                {/* Concept Tag */}
-                <div className="w-full flex items-center justify-center px-1 py-0.5 text-xs">
-                  <div className="flex items-center gap-1.5 text-xs font-black text-purple-800 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
-                    <Terminal className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                    <span>{currentProblem.concept || 'Logic Drill'}</span>
-                  </div>
-                </div>
-
                 {/* ACTION DOCK (Pass, Hint, plus 50:50 if owned or active) */}
-                <div className="w-full flex items-center justify-center gap-1.5 py-0.5 max-w-full overflow-x-auto no-scrollbar">
+                <div className="w-full flex flex-wrap items-center justify-center gap-1.5 py-0.5 max-w-full">
                   {/* NON-PUNITIVE PASS BUTTON */}
                   <button
                     type="button"

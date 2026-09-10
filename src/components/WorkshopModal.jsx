@@ -697,8 +697,11 @@ export default function WorkshopModal({
         // Automatically slide up try-on drawer on mobile
         setIsMobilePreviewOpen(true);
       }
-      // On desktop, selecting an item highlights details/stage; on mobile, keep item detail closed so preview handles it
-      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      // Consumables don't preview on the stage; opening details works on all screen sizes (mobile modal & desktop panel)
+      if (item.isConsumable) {
+        setSelectedItemDetail(item);
+      } else if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        // On desktop, selecting an item highlights details/stage; on mobile, keep item detail closed so preview handles it
         setSelectedItemDetail(item);
       }
     }

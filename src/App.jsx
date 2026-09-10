@@ -2178,7 +2178,7 @@ export default function App() {
                   <div className="px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
                     Switch Climber
                   </div>
-                  {storageService.getProfiles()
+                  {storageService.getAllProfiles()
                     .filter(p => p.id !== activeProfileId)
                     .map(p => {
                       const pName = p.username || p.name || 'Climber';
@@ -2268,7 +2268,7 @@ export default function App() {
                     onClick={() => {
                       soundFx.playKeyTap();
                       setShowProfileDropdown(false);
-                      handleOpenShareModal('profile_dropdown');
+                      handleOpenModal(VIEWS.SHARE, { source: 'profile_dropdown' });
                     }}
                     className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-amber-950 font-black text-xs shadow-xs border border-amber-400/80 transition-all cursor-pointer group active:scale-95"
                   >
@@ -2412,10 +2412,12 @@ export default function App() {
           >
             <span className="flex items-center font-black text-base sm:text-lg tracking-tight text-slate-800 group-hover:text-amber-600 transition-colors uppercase">
               KIB
-              <span className="relative flex items-center justify-center mx-0.5">
-                <Mountain className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 fill-amber-500 stroke-[2.5] inline-block" />
-              </span>
-              CLIMB
+              <img
+                src="/favicon.svg"
+                alt="O"
+                className="w-5 h-5 sm:w-6 sm:h-6 mx-0.5 object-contain group-hover:scale-110 transition-transform drop-shadow-xs inline-block"
+              />
+              <span className="hidden sm:inline ml-1">CLIMB</span>
             </span>
           </button>
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Flame, Flag } from 'lucide-react';
 import { soundFx } from '../../utils/audio';
 
@@ -7,12 +7,27 @@ export default function ClimbHeader({
   inSessionStreak,
   consumables,
   onExitOrPause,
-  onOpenFeedback
+  onOpenFeedback,
+  onTriggerToastBanner
 }) {
   const shieldCount = (consumables?.shieldCount || 0) + (consumables?.streakSaverCount || 0);
+  const [activeTooltip, setActiveTooltip] = useState(null); // 'streak' | 'shield' | null
+  const headerRef = useRef(null);
+
+  // Close tooltip when clicking anywhere outside
+  useEffect(() => {
+    if (!activeTooltip) return;
+    const handlePointerDown = (e) => {
+      if (headerRef.current && !headerRef.current.contains(e.target)) {
+        setActiveTooltip(null);
+      }
+    };
+    window.addEventListener('pointerdown', handlePointerDown);
+    return () => window.removeEventListener('pointerdown', handlePointerDown);
+  }, [activeTooltip]);
 
   return (
-    <div className="w-full max-w-xl mx-auto flex items-center justify-between gap-2 px-2 py-1.5 mb-1 z-30 shrink-0">
+    <div ref={headerRef} className="relative w-full max-w-xl mx-auto flex items-center justify-between gap-2 px-2 py-1.5 mb-1 z-30 shrink-0">
       {/* Left: Clean Exit / Pause button */}
       <button
         type="button"
@@ -41,19 +56,98 @@ export default function ClimbHeader({
       {/* Right: Streak & Shield status + Report */}
       <div className="flex items-center gap-1 shrink-0">
         {inSessionStreak >= 2 && (
-          <span className="flex items-center gap-0.5 text-xs font-black bg-rose-50 border border-rose-200 text-rose-600 px-2 py-1 rounded-full shadow-2xs">
-            <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" />
-            <span>{inSessionStreak}</span>
-          </span>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setActiveTooltip(prev => (prev === 'streak' ? null : 'streak'));
+              }}
+              className="flex items-center gap-0.5 text-xs font-black bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200 text-rose-600 px-2 py-1 rounded-full shadow-2xs cursor-pointer transition-all"
+              title="In-session Streak"
+              aria-label={`Streak: ${inSessionStreak}. Click for details.`}
+              aria-expanded={activeTooltip === 'streak'}
+            >
+              <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" />
+              <span>{inSessionStreak}</span>
+            </button>
+
+            {activeTooltip === 'streak' && (
+              <div className="absolute right-0 top-full mt-2 w-56 p-2.5 bg-slate-900 text-white rounded-xl shadow-xl border border-slate-700/80 z-50 animate-in fade-in zoom-in-95 duration-150 text-left">
+                <div className="flex items-center justify-between gap-1 mb-1">
+                  <div className="flex items-center gap-1.5 text-xs font-black text-orange-400">
+                    <Flame className="w-4 h-4 fill-orange-400" />
+                    <span>{inSessionStreak} Answer Streak</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveTooltip(null);
+                    }}
+                    className="text-slate-400 hover:text-white p-0.5 rounded cursor-pointer"
+                    aria-label="Close streak tooltip"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+                <p className="text-[11px] font-medium leading-relaxed text-slate-200">
+                  Solve consecutive questions correctly to boost your streak and earn bonus sparks!
+                </p>
+                {/* Speech arrow pointing up */}
+                <div className="absolute -top-1.5 right-4 w-3 h-3 bg-slate-900 border-t border-l border-slate-700/80 rotate-45" />
+              </div>
+            )}
+          </div>
         )}
+
         {shieldCount > 0 && (
-          <span
-            className="flex items-center gap-0.5 text-xs font-black bg-sky-50 border border-sky-200 text-sky-700 px-1.5 py-1 rounded-full shadow-2xs"
-            title="Streak Shield Active"
-          >
-            🛡️ <span className="text-[10px]">{shieldCount}</span>
-          </span>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setActiveTooltip(prev => (prev === 'shield' ? null : 'shield'));
+              }}
+              className="flex items-center gap-0.5 text-xs font-black bg-sky-50 hover:bg-sky-100 active:scale-95 border border-sky-200 text-sky-700 px-1.5 py-1 rounded-full shadow-2xs cursor-pointer transition-all"
+              title="Streak Shield"
+              aria-label={`Streak Shield Active: ${shieldCount}. Click for details.`}
+              aria-expanded={activeTooltip === 'shield'}
+            >
+              🛡️ <span className="text-[10px]">{shieldCount}</span>
+            </button>
+
+            {activeTooltip === 'shield' && (
+              <div className="absolute right-0 top-full mt-2 w-60 p-2.5 bg-slate-900 text-white rounded-xl shadow-xl border border-slate-700/80 z-50 animate-in fade-in zoom-in-95 duration-150 text-left">
+                <div className="flex items-center justify-between gap-1 mb-1">
+                  <div className="flex items-center gap-1.5 text-xs font-black text-sky-400">
+                    <span>🛡️ Streak Shield</span>
+                    <span className="text-[10px] bg-sky-950 text-sky-300 px-1.5 py-0.5 rounded-full border border-sky-800">
+                      {shieldCount} active
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveTooltip(null);
+                    }}
+                    className="text-slate-400 hover:text-white p-0.5 rounded cursor-pointer"
+                    aria-label="Close streak shield tooltip"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+                <p className="text-[11px] font-medium leading-relaxed text-slate-200">
+                  Protects your streak if you miss a question! One shield will be consumed instead of resetting your streak to zero.
+                </p>
+                {/* Speech arrow pointing up */}
+                <div className="absolute -top-1.5 right-4 w-3 h-3 bg-slate-900 border-t border-l border-slate-700/80 rotate-45" />
+              </div>
+            )}
+          </div>
         )}
+
         <button
           type="button"
           onClick={() => {

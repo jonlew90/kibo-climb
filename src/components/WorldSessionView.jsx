@@ -40,6 +40,7 @@ import ClimbPreCard from './climb/ClimbPreCard';
 import CelebrationOverlay from './climb/CelebrationOverlay';
 import CompanionsRow from './climb/CompanionsRow';
 import ToastBanner from './climb/ToastBanner';
+import ChallengeBanner from './climb/ChallengeBanner';
 import ItemThumbnail from './ItemThumbnail';
 
 
@@ -1463,6 +1464,7 @@ export default function WorldSessionView({
           consumables={consumables}
           onExitOrPause={handleExitOrPauseClimb}
           onOpenFeedback={() => setShowQuestionFeedback(true)}
+          onTriggerToastBanner={triggerToastBanner}
         />
       )}
 
@@ -1484,6 +1486,15 @@ export default function WorldSessionView({
         mascotState={mascotState}
       />
 
+      {/* DEDICATED CHALLENGE BANNER (Probe / Gatekeeper / 2x Sparks) */}
+      {hasStartedClimb && currentProblem && (
+        <ChallengeBanner
+          isProbe={Boolean(currentProblem.isProbe)}
+          isGatekeeper={Boolean(isNearTierThreshold(competenceRank))}
+          isDoubleSparks={Boolean(isDoubleSparksActive)}
+        />
+      )}
+
       {/* PROBLEM CARD CONTAINER */}
       <div className="w-full shrink-0 flex flex-col items-center justify-center my-1 space-y-2">
         {!hasStartedClimb ? (
@@ -1494,6 +1505,7 @@ export default function WorldSessionView({
             isDoubleSparksActive={isDoubleSparksActive}
             onToggleDoubleSparksPotion={onToggleDoubleSparksPotion}
             onTriggerToastBanner={triggerToastBanner}
+            onOpenWorkshop={onOpenWorkshop}
             onStartClimb={handleStartClimb}
             onResumeClimb={handleResumeClimb}
           />
@@ -1518,23 +1530,8 @@ export default function WorldSessionView({
                   </div>
                 )}
 
-                {/* QUESTION CARD STATUS BADGES (Only probe or gatekeeper when active) */}
-                {(currentProblem.isProbe || isNearTierThreshold(competenceRank)) && (
-                  <div className="w-full flex items-center justify-center gap-1 sm:gap-2 px-1 py-0.5 text-xs">
-                    {currentProblem.isProbe ? (
-                      <span className="font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-1 rounded-full border border-indigo-300 shrink-0 shadow-xs animate-pulse flex items-center gap-1">
-                        🚀 PROBE (+120)
-                      </span>
-                    ) : (
-                      <span className="font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-1 rounded-full border border-amber-500 shrink-0 shadow-xs animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
-                        ⚡ GATEKEEPER
-                      </span>
-                    )}
-                  </div>
-                )}
-
                 {/* TIER 2: ACTION DOCK (Pass, Hint, plus Compass and 50:50 if owned or active) */}
-                <div className="w-full flex items-center justify-center gap-1.5 py-0.5 max-w-full overflow-x-auto no-scrollbar">
+                <div className="w-full flex flex-wrap items-center justify-center gap-1.5 py-0.5 max-w-full">
                   {incorrectReviewData ? (
                     <span className="text-[10px] sm:text-xs font-black uppercase text-rose-800 bg-rose-100 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1 animate-pulse shrink-0">
                       ❌ Reviewing Solution

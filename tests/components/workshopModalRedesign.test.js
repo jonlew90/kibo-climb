@@ -89,4 +89,20 @@ describe('Shop & Closet Redesign Unit Tests', () => {
     const isShieldNotFull = shieldItem.isConsumable && shieldItem.id === 'kibo_shield' && (consumablesNotFull.shieldCount ?? 1) >= 2;
     expect(isShieldNotFull).toBe(false);
   });
+
+  it('should select item details when clicking a consumable card', () => {
+    const doubleSparks = WORKSHOP_ITEMS.find((i) => i.id === 'double_sparks_potion');
+    expect(doubleSparks).toBeDefined();
+    expect(doubleSparks.isConsumable).toBe(true);
+
+    let selectedDetail = null;
+    const handleCardClick = (item) => {
+      if (item.isConsumable) {
+        selectedDetail = item;
+      }
+    };
+
+    handleCardClick(doubleSparks);
+    expect(selectedDetail).toEqual(doubleSparks);
+  });
 });

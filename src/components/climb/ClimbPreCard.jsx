@@ -9,6 +9,7 @@ export default function ClimbPreCard({
   isDoubleSparksActive,
   onToggleDoubleSparksPotion,
   onTriggerToastBanner,
+  onOpenWorkshop,
   onStartClimb,
   onResumeClimb
 }) {
@@ -41,37 +42,8 @@ export default function ClimbPreCard({
         </p>
       </div>
 
-      {/* PRE-CLIMB POWERUPS & CONSUMABLES SELECTOR */}
-      <div className="flex flex-wrap items-center justify-center gap-2 py-1">
-        {isDoubleSparksActive ? (
-          <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 animate-pulse shadow-xs flex items-center gap-1.5">
-            <ItemThumbnail itemId="double_sparks_potion" borderless className="w-4 h-4 shrink-0" />
-            <span>2x Sparks Active!</span>
-          </span>
-        ) : ownedDoubleSparks > 0 ? (
-          <button
-            type="button"
-            onClick={() => {
-              if (onToggleDoubleSparksPotion) {
-                onToggleDoubleSparksPotion();
-                if (onTriggerToastBanner) {
-                  onTriggerToastBanner({
-                    type: 'success',
-                    text: 'Double Sparks Potion Activated for this climb! 🧪'
-                  }, 1400);
-                }
-              }
-            }}
-            className="text-xs sm:text-sm font-black uppercase px-3 py-1 rounded-full border transition-all active:scale-95 flex items-center gap-1.5 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
-          >
-            <ItemThumbnail itemId="double_sparks_potion" borderless className="w-4 h-4 shrink-0" />
-            <span>Activate 2x Potion ({ownedDoubleSparks})</span>
-          </button>
-        ) : null}
-      </div>
-
       {/* START / RESUME CLIMB MAIN CTA BUTTON */}
-      <div className="w-full space-y-1.5">
+      <div className="w-full space-y-1.5 order-2">
         <button
           type="button"
           onClick={isResumeAvailable ? onResumeClimb : onStartClimb}
@@ -80,6 +52,56 @@ export default function ClimbPreCard({
           <Play className="w-7 h-7 fill-current" />
           <span>{isResumeAvailable ? 'RESUME CLIMB 🏔️' : 'START CLIMB 🏔️'}</span>
         </button>
+      </div>
+
+      {/* PRE-CLIMB POWERUPS & CONSUMABLES SELECTOR */}
+      <div className="flex flex-wrap items-center justify-center gap-2 py-1 order-1">
+        {isDoubleSparksActive ? (
+          <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 animate-pulse shadow-xs flex items-center gap-1.5">
+            <ItemThumbnail itemId="double_sparks_potion" borderless className="w-4 h-4 shrink-0" />
+            <span>2x Sparks Active!</span>
+          </span>
+        ) : !isResumeAvailable ? (
+          ownedDoubleSparks > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                if (onToggleDoubleSparksPotion) {
+                  onToggleDoubleSparksPotion();
+                  if (onTriggerToastBanner) {
+                    onTriggerToastBanner({
+                      type: 'success',
+                      text: 'Double Sparks Potion Activated for this climb! 🧪'
+                    }, 1400);
+                  }
+                }
+              }}
+              className="text-xs sm:text-sm font-black uppercase px-3 py-1 rounded-full border transition-all active:scale-95 flex items-center gap-1.5 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
+            >
+              <ItemThumbnail itemId="double_sparks_potion" borderless className="w-4 h-4 shrink-0" />
+              <span>Activate 2x Potion ({ownedDoubleSparks})</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenWorkshop) {
+                  onOpenWorkshop();
+                } else if (onTriggerToastBanner) {
+                  onTriggerToastBanner({
+                    type: 'info',
+                    text: 'Opening Shop to get 2x Potions! 🧪'
+                  }, 1400);
+                }
+              }}
+              className="text-xs sm:text-sm font-black uppercase px-3 py-1 rounded-full border border-dashed border-amber-400/80 bg-amber-50/70 hover:bg-amber-100 text-amber-900 transition-all active:scale-95 flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title="Get 2x Sparks Potion in the Shop to double sparks this climb!"
+            >
+              <ItemThumbnail itemId="double_sparks_potion" borderless className="w-4 h-4 shrink-0 opacity-80" />
+              <span>Get 2x Potion +</span>
+            </button>
+          )
+        ) : null}
       </div>
     </div>
   );
