@@ -160,7 +160,9 @@ export default function BadgesModal({
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             </button>
           )}
-          <Compass className="w-5 h-5 text-teal-600 stroke-[2.5] shrink-0" />
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-yellow-100 border border-yellow-300 flex items-center justify-center shrink-0 shadow-2xs">
+            <Compass className="w-4 h-4 sm:w-5 sm:h-5 text-amber-700 stroke-[2.5]" />
+          </div>
           <h2 className="text-base sm:text-lg font-black tracking-tight truncate">Climber Passport & Mountain Records</h2>
         </div>
       </header>

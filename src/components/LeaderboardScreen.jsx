@@ -755,11 +755,13 @@ export default function LeaderboardScreen({
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             </button>
           )}
-          {viewMode === 'quests' ? (
-            <Scroll className="w-5 h-5 text-purple-600 stroke-[2.5] shrink-0" />
-          ) : (
-            <Crown className="w-5 h-5 text-indigo-600 stroke-[2.5] shrink-0" />
-          )}
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-indigo-100 border border-indigo-300 flex items-center justify-center shrink-0 shadow-2xs">
+            {viewMode === 'quests' ? (
+              <Scroll className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-700 stroke-[2.5]" />
+            ) : (
+              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-700 stroke-[2.5]" />
+            )}
+          </div>
           <h2 className="text-base sm:text-lg font-black tracking-tight truncate">
             {viewMode === 'quests' ? 'Mountain Quest Standings' : viewMode === 'weekly' ? 'Weekly League' : viewMode === 'friends' ? 'Friends Standings' : 'Global Standings'}
           </h2>

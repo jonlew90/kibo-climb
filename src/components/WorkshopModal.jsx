@@ -707,8 +707,8 @@ export default function WorkshopModal({
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             </button>
           )}
-          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-orange-100 border border-orange-300 flex items-center justify-center shrink-0 shadow-2xs">
-            <ShoppingBag className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-orange-100 border border-orange-300 flex items-center justify-center shrink-0 shadow-2xs">
+            <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 stroke-[2.5]" />
           </div>
           <h2 className="text-sm sm:text-base font-black tracking-tight text-slate-900 leading-tight truncate">
             Kibo's Corner
