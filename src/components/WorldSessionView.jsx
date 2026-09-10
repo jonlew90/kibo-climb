@@ -1642,7 +1642,7 @@ export default function WorldSessionView({
                 {isAutoPaused
                   ? 'We paused your climb and timer so your speed record and streak stay safe! Click Resume to keep going.'
                   : savedClimbState && savedClimbState.sessionQuestionIndex <= 12
-                  ? 'You have a climb in progress! Click Resume Climb to continue where you left off.'
+                  ? 'Click Resume Climb to continue where you left off.'
                   : 'Click Start Climb when you are ready! Your timer will begin as soon as you start.'}
               </p>
             </div>
