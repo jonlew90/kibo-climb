@@ -4,6 +4,7 @@ import { soundFx } from '../utils/audio';
 import { questService } from '../services/questService';
 import { storageService } from '../services/storageService';
 import { ASCENT_MODES, ASCENT_RANKS } from '../data/questsData';
+import AscentLevelHeroCard from './AscentLevelHeroCard';
 
 export default function AscentRoadmapModal({
   isOpen,
@@ -116,51 +117,11 @@ export default function AscentRoadmapModal({
           {levelRoadmapTab === 'levels' && (
             <div className="space-y-3.5 animate-in fade-in duration-150">
               {/* Top Hero Card */}
-              <div className="bg-gradient-to-br from-teal-600 via-emerald-600 to-teal-700 rounded-3xl p-4 sm:p-5 text-white shadow-md relative overflow-hidden text-left">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 text-[10px] sm:text-xs font-black uppercase tracking-wider shadow-2xs flex items-center gap-1">
-                      <span>{ascentMode.icon}</span>
-                      <span>Ascent {ascentTier}: {ascentMode.name}</span>
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] sm:text-xs font-black uppercase tracking-wider">
-                      Lv. {levelInfo.level}
-                    </span>
-                    {levelInfo.sparkBonusPct > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-emerald-950 text-[10px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" />
-                        +{levelInfo.sparkBonusPct}% Permanent Sparks
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2.5 pt-1.5">
-                    <span className="text-3xl sm:text-4xl drop-shadow-xs">{levelInfo.icon || '🏕️'}</span>
-                    <div>
-                      <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
-                        {levelInfo.title}
-                      </h3>
-                      <p className="text-teal-100 text-xs sm:text-sm font-bold">
-                        {currentTotalXp}m Total Mountain Altitude XP
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="mt-4 space-y-1.5">
-                  <div className="w-full bg-black/25 h-3.5 rounded-full overflow-hidden border border-white/20">
-                    <div
-                      className="bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-400 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${levelInfo.progressPct || 0}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[10px] sm:text-xs font-black text-teal-100">
-                    <span>{levelInfo.xpIntoLevel || 0}m / {levelInfo.xpRequiredForLevel || 150}m in Level {levelInfo.level}</span>
-                    <span>{levelInfo.progressPct || 0}% to Lv. {(levelInfo.level || 1) + 1} ({levelInfo.nextRankTitle || 'Next Rank'})</span>
-                  </div>
-                </div>
-              </div>
+              <AscentLevelHeroCard
+                ascentTier={ascentTier}
+                ascentMode={ascentMode}
+                levelInfo={levelInfo}
+              />
 
               {/* 10 Level Track Cards */}
               <div className="space-y-1.5">
