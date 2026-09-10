@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { analyticsService } from '../services/analyticsService';
-import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame, Flag } from 'lucide-react';
+import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame, Flag, X } from 'lucide-react';
 import Mascot from './Mascot';
 import FeedbackModal from './FeedbackModal';
 import WorldMapViewer from './WorldMapViewer';
@@ -87,7 +87,8 @@ export default function WorldSessionView({
   onConsumeExplorerCompass,
   onConsumeLetterPruner,
   onConsumeShield,
-  onResetDoubleSparks
+  onResetDoubleSparks,
+  onClimbActiveChange
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     return storageService.getUserData('world').adaptiveCompetenceRating || storageService.getUserData('world').competenceRank || 1000;
@@ -194,6 +195,13 @@ export default function WorldSessionView({
 
   const [hasStartedClimb, setHasStartedClimb] = useState(false);
   const [isAutoPaused, setIsAutoPaused] = useState(false);
+
+  useEffect(() => {
+    if (onClimbActiveChange) {
+      onClimbActiveChange(Boolean(hasStartedClimb && !showBreakOverlay));
+    }
+  }, [hasStartedClimb, showBreakOverlay, onClimbActiveChange]);
+
   const [savedClimbState, setSavedClimbState] = useState(() => {
     const saved = storageService.getActiveClimbState(profileId, 'world');
     if (saved && saved.problemQueue && (!saved.problemQueue.every(isWorldProblem) || (saved.subject && saved.subject !== 'world'))) {
@@ -507,6 +515,12 @@ export default function WorldSessionView({
     setIsCompassActive(false);
     setShowFrustrationCard(false);
     setHasStartedClimb(true);
+  };
+
+  const handleExitOrPauseClimb = () => {
+    soundFx.playKeyTap();
+    saveCurrentClimbProgress();
+    setHasStartedClimb(false);
   };
 
   const handleResumeClimb = () => {
@@ -941,12 +955,6 @@ export default function WorldSessionView({
         });
       }
 
-      const toastMsg = evalResult.streakBannerText ? evalResult.streakBannerText : `Correct! (${evalResult.fluencyLabel})`;
-      triggerToastBanner({
-        type: 'success',
-        text: toastMsg
-      }, 1100);
-
       const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
       setBlockRatingGain(nextBlockRatingGain);
 
@@ -1163,13 +1171,6 @@ export default function WorldSessionView({
 
         setIsShaking(true);
         setTimeout(() => setIsShaking(false), 400);
-
-        const isProbe = currentProblem.isProbe;
-        const toastMessage = isProbe
-          ? `🚀 Probe missed! Active tier maintained (Answer: ${normTargetAns})`
-          : `Incorrect! Answer was ${normTargetAns}`;
-
-        triggerToastBanner({ type: 'error', text: toastMessage }, 1600);
       }
 
       setCompetenceRank(evalResult.nextCompetenceRank);
@@ -1524,6 +1525,66 @@ export default function WorldSessionView({
         document.body
       )}
 
+      {/* DUOLINGO-STYLE CLIMB FOCUS TOP BAR (Active during climb) */}
+      {hasStartedClimb && (
+        <div className="w-full max-w-xl mx-auto flex items-center justify-between gap-2 px-2 py-1.5 mb-1 z-30 shrink-0">
+          {/* Left: Clean Exit / Pause button */}
+          <button
+            type="button"
+            onClick={handleExitOrPauseClimb}
+            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full bg-white/90 hover:bg-slate-100 active:scale-90 text-slate-500 hover:text-slate-800 border-2 border-slate-200 shadow-2xs transition-all cursor-pointer shrink-0"
+            title="Pause & Save Climb"
+            aria-label="Pause Climb"
+          >
+            <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
+          </button>
+
+          {/* Center: Sleek 12-segment progress bar */}
+          <div className="flex-1 flex flex-col gap-0.5 min-w-0">
+            <div className="flex items-center justify-between px-1 text-[10px] sm:text-xs font-black text-slate-500">
+              <span className="uppercase tracking-wider">Question {currentQuestionNum} of 12</span>
+              <span>{Math.round(((currentQuestionNum - 1) / 12) * 100)}%</span>
+            </div>
+            <div className="w-full h-2.5 sm:h-3 bg-slate-200/80 rounded-full overflow-hidden p-0.5 border border-slate-300/60 shadow-inner">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600 transition-all duration-500 shadow-xs"
+                style={{ width: `${Math.max(5, (currentQuestionNum / 12) * 100)}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Right: Streak & Shield status + Report */}
+          <div className="flex items-center gap-1 shrink-0">
+            {inSessionStreak >= 2 && (
+              <span className="flex items-center gap-0.5 text-xs font-black bg-rose-50 border border-rose-200 text-rose-600 px-2 py-1 rounded-full shadow-2xs">
+                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" />
+                <span>{inSessionStreak}</span>
+              </span>
+            )}
+            {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
+              <span
+                className="flex items-center gap-0.5 text-xs font-black bg-sky-50 border border-sky-200 text-sky-700 px-1.5 py-1 rounded-full shadow-2xs"
+                title="Streak Shield Active"
+              >
+                🛡️ <span className="text-[10px]">{consumables.shieldCount || consumables.streakSaverCount}</span>
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setShowQuestionFeedback(true);
+              }}
+              className="p-1 sm:p-1.5 rounded-full border bg-white/90 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border-slate-200 hover:border-rose-300 shadow-2xs transition-all active:scale-90 flex items-center justify-center cursor-pointer"
+              title="Report Question"
+              aria-label="Report Question"
+            >
+              <Flag className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* MECHANICAL TRANSIENT FEEDBACK TOAST (SLIDES DOWN FROM TOP HUD) */}
       <div
         onClick={() => {
@@ -1531,7 +1592,7 @@ export default function WorldSessionView({
           setFeedbackBanner(null);
         }}
         className={`absolute inset-x-4 z-50 transition-all duration-300 ${
-          feedbackBanner ? 'top-0 opacity-100 scale-100 pointer-events-auto cursor-pointer' : '-top-12 opacity-0 scale-95 pointer-events-none'
+          feedbackBanner ? (hasStartedClimb ? 'top-12 opacity-100 scale-100 pointer-events-auto cursor-pointer' : 'top-0 opacity-100 scale-100 pointer-events-auto cursor-pointer') : '-top-12 opacity-0 scale-95 pointer-events-none'
         }`}
       >
         <div
@@ -1713,72 +1774,23 @@ export default function WorldSessionView({
                   </div>
                 )}
 
-                {/* TIER 1: MINIMAL CLIMB STATUS BAR (Single row, non-wrapping) */}
-                <div className="w-full flex items-center justify-between gap-1 sm:gap-2 px-1 py-0.5 text-xs">
-                  {/* Left: Question Counter & Report Flag */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="font-black uppercase text-purple-700 bg-purple-50 px-2 sm:px-2.5 py-1 rounded-full border border-purple-200 shadow-2xs">
-                      🎯 Q #{currentQuestionNum}/12
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        soundFx.playKeyTap();
-                        setShowQuestionFeedback(true);
-                      }}
-                      className="p-1 sm:px-2 sm:py-1 rounded-full border bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border-slate-200 hover:border-rose-300 shadow-2xs transition-all active:scale-90 flex items-center gap-1 cursor-pointer"
-                      title="Report an issue with this question"
-                      aria-label="Report Question"
-                    >
-                      <Flag className="w-3 h-3 text-rose-500 fill-rose-100" />
-                      <span className="hidden md:inline text-[10px] font-black uppercase text-rose-600">Report</span>
-                    </button>
-                  </div>
-
-                  {/* Center: Priority Status Badge (Probe > Gatekeeper > Streak) */}
-                  {currentProblem.isProbe ? (
-                    <span className="font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-1 rounded-full border border-indigo-300 shrink-0 shadow-xs animate-pulse flex items-center gap-1">
-                      🚀 PROBE (+120)
-                    </span>
-                  ) : isNearTierThreshold(competenceRank) ? (
-                    <span className="font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-1 rounded-full border border-amber-500 shrink-0 shadow-xs animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
-                      ⚡ GATEKEEPER
-                    </span>
-                  ) : (
-                    <span className={`font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all duration-300 shadow-2xs ${streakCfg.pillClass}`}>
-                      {streakCfg.label}
-                    </span>
-                  )}
-
-                  {/* Right: Consolidated Sparks & Shield Indicator */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span
-                      className={`font-black uppercase px-2 sm:px-2.5 py-1 rounded-full border shadow-2xs flex items-center gap-1 ${
-                        storageService?.hasClubMembership?.(profileId)
-                          ? 'text-amber-950 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300 border-amber-400'
-                          : 'text-amber-800 bg-amber-50 border-amber-200'
-                      }`}
-                      title={`Sparks earned per correct answer${isDoubleSparksActive ? ' (2x Active!)' : ''}${storageService?.hasClubMembership?.(profileId) ? ' (1.25x VIP)' : ''}`}
-                    >
-                      <span>+{Math.round((isDoubleSparksActive ? 4 : 2) * (inSessionStreak >= 5 ? 1.5 : 1) * (storageService?.hasClubMembership?.(profileId) ? 1.25 : 1))} ⚡</span>
-                      {isDoubleSparksActive && (
-                        <span className="text-[10px] bg-amber-400 text-amber-950 px-1 rounded font-black leading-none">2x</span>
-                      )}
-                    </span>
-
-                    {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
-                      <span
-                        className="font-black uppercase text-sky-950 bg-sky-100 px-1.5 sm:px-2 py-1 rounded-full border border-sky-300 shadow-2xs flex items-center gap-0.5 cursor-help"
-                        title="Kibo Shield Active: Streak protected!"
-                      >
-                        🛡️ <span className="text-[10px] sm:text-xs">{consumables.shieldCount || consumables.streakSaverCount}</span>
+                {/* QUESTION CARD STATUS BADGES (Only probe or gatekeeper when active) */}
+                {(currentProblem.isProbe || isNearTierThreshold(competenceRank)) && (
+                  <div className="w-full flex items-center justify-center gap-1 sm:gap-2 px-1 py-0.5 text-xs">
+                    {currentProblem.isProbe ? (
+                      <span className="font-black uppercase text-white bg-gradient-to-r from-amber-500 to-indigo-600 px-2.5 py-1 rounded-full border border-indigo-300 shrink-0 shadow-xs animate-pulse flex items-center gap-1">
+                        🚀 PROBE (+120)
+                      </span>
+                    ) : (
+                      <span className="font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 py-1 rounded-full border border-amber-500 shrink-0 shadow-xs animate-pulse flex items-center gap-1" title="1 question away from entering the next Tier!">
+                        ⚡ GATEKEEPER
                       </span>
                     )}
                   </div>
-                </div>
+                )}
 
-                {/* TIER 2: ACTION DOCK / POWER-UPS BAR (Row 2, single non-wrapping row) */}
-                <div className="w-full flex items-center justify-center gap-1 sm:gap-1.5 py-0.5 max-w-full overflow-x-auto no-scrollbar">
+                {/* TIER 2: ACTION DOCK (Pass, Hint, plus Compass and 50:50 if owned or active) */}
+                <div className="w-full flex items-center justify-center gap-1.5 py-0.5 max-w-full overflow-x-auto no-scrollbar">
                   {incorrectReviewData ? (
                     <span className="text-[10px] sm:text-xs font-black uppercase text-rose-800 bg-rose-100 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1 animate-pulse shrink-0">
                       ❌ Reviewing Solution
@@ -1790,7 +1802,7 @@ export default function WorldSessionView({
                         type="button"
                         onClick={handlePassQuestion}
                         disabled={consecutiveSkips >= 2}
-                        className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                        className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                           consecutiveSkips >= 2
                             ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                             : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -1801,7 +1813,7 @@ export default function WorldSessionView({
                             : 'Try another problem'
                         }
                       >
-                        {consecutiveSkips >= 2 ? '🔒 Attempt' : '🔄 Pass'}
+                        {consecutiveSkips >= 2 ? '🔒 Pass' : '🔄 Pass'}
                       </button>
 
                       {/* MANUAL WISDOM HINT BUTTON */}
@@ -1826,7 +1838,7 @@ export default function WorldSessionView({
                             onOpenWorkshop();
                           }
                         }}
-                        className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                        className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                           showHintCard || showFrustrationCard
                             ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                             : shouldPulseHint
@@ -1841,52 +1853,40 @@ export default function WorldSessionView({
                             : 'Out of Hint Scrolls • Tap to get in Shop!'
                         }
                       >
-                        💡 {showHintCard || showFrustrationCard ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint +'}
+                        💡 {showHintCard || showFrustrationCard ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Clue (${consumables.hintScrollCount})` : 'Clue'}
                       </button>
 
-                      {/* EXPLORER'S COMPASS BUTTON (Kibo World Bespoke Item) */}
-                      <button
-                        type="button"
-                        onClick={handleUseExplorerCompass}
-                        className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
-                          isCompassActive
-                            ? 'bg-amber-200 text-amber-950 border-amber-400'
-                            : (consumables?.explorerCompassCount ?? 0) > 0
-                            ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
-                            : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
-                        }`}
-                        title={
-                          isCompassActive
-                            ? 'Compass orientation clue active!'
-                            : (consumables?.explorerCompassCount ?? 0) > 0
-                            ? "Use Explorer's Compass to reveal regional orientation!"
-                            : "Out of Compasses • Tap to get in Shop!"
-                        }
-                      >
-                        🧭 {isCompassActive ? 'Active' : (consumables?.explorerCompassCount ?? 0) > 0 ? `Compass (${consumables.explorerCompassCount})` : 'Compass +'}
-                      </button>
+                      {/* EXPLORER'S COMPASS BUTTON (Shown when active or count > 0) */}
+                      {(isCompassActive || (consumables?.explorerCompassCount ?? 0) > 0) && (
+                        <button
+                          type="button"
+                          onClick={handleUseExplorerCompass}
+                          className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                            isCompassActive
+                              ? 'bg-amber-200 text-amber-950 border-amber-400'
+                              : 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs'
+                          }`}
+                          title="Use Explorer's Compass to reveal regional orientation!"
+                        >
+                          🧭 {isCompassActive ? 'Active' : `Compass (${consumables?.explorerCompassCount ?? 0})`}
+                        </button>
+                      )}
 
-                      {/* 50:50 DISTRACTOR PRUNER BUTTON */}
-                      <button
-                        type="button"
-                        onClick={handleUseLetterPruner}
-                        className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
-                          isLetterPrunerActive
-                            ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
-                            : (consumables?.letterPrunerCount ?? 0) > 0
-                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
-                            : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
-                        }`}
-                        title={
-                          isLetterPrunerActive
-                            ? '50:50 Distractors pruned for this problem!'
-                            : (consumables?.letterPrunerCount ?? 0) > 0
-                            ? 'Prune 2 wrong choices (50:50)!'
-                            : "Out of 50:50 Pruners • Tap to get in Shop!"
-                        }
-                      >
-                        ✂️ {isLetterPrunerActive ? '50:50 Active' : (consumables?.letterPrunerCount ?? 0) > 0 ? `50:50 (${consumables.letterPrunerCount})` : '50:50 +'}
-                      </button>
+                      {/* 50:50 DISTRACTOR PRUNER BUTTON (Shown when active or count > 0) */}
+                      {(isLetterPrunerActive || (consumables?.letterPrunerCount ?? 0) > 0) && (
+                        <button
+                          type="button"
+                          onClick={handleUseLetterPruner}
+                          className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                            isLetterPrunerActive
+                              ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
+                              : 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
+                          }`}
+                          title="Prune 2 wrong choices (50:50)!"
+                        >
+                          ✂️ {isLetterPrunerActive ? 'Active' : `50:50 (${consumables?.letterPrunerCount ?? 0})`}
+                        </button>
+                      )}
                     </>
                   )}
                 </div>

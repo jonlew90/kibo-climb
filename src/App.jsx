@@ -109,6 +109,8 @@ export default function App() {
     return true;
   });
 
+  const [isClimbActive, setIsClimbActive] = useState(false);
+
   useEffect(() => {
     initOneSignal();
   }, []);
@@ -2049,6 +2051,7 @@ export default function App() {
         </div>
       )}
       {/* Sticky Top HUD Header Bar */}
+      {!isClimbActive && (
       <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between shadow-xs shrink-0">
         {/* Brand Logo, User Profile & Stats */}
         <div className="flex items-center gap-2 w-full justify-between max-w-4xl mx-auto min-w-0">
@@ -2159,43 +2162,28 @@ export default function App() {
                   <div className="px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
                     Switch Climber
                   </div>
-                  {allProfiles
-                    .filter((p) => p.id !== activeProfileId)
-                    .map((profile) => {
-                      const isLocked = storageService.isProfileLocked(profile.id);
-                      const profilePlanTier = storageService.getPlanTier(profile.id);
-                      const pRating = profile.userData?.subjects?.[activeSubject]?.competenceRank ||
-                        profile.userData?.competenceRank ||
-                        1000;
-                      const pName = profile.username || profile.name || 'Climber';
+                  {storageService.getProfiles()
+                    .filter(p => p.id !== activeProfileId)
+                    .map(p => {
+                      const pName = p.username || p.name || 'Climber';
+                      const isLocked = p.isLocked;
+                      const profilePlanTier = storageService.getPlanTier(p.id);
+                      const pRating = p.userData?.subjects?.[activeSubject]?.adaptiveCompetenceRating || p.userData?.subjects?.[activeSubject]?.competenceRank || 1000;
                       return (
                         <button
-                          key={profile.id}
+                          key={p.id}
                           type="button"
                           onClick={() => {
-                            soundFx.playKeyTap();
-                            if (isLocked) {
-                              setShowProfileDropdown(false);
-                              handleOpenModal(VIEWS.FAMILY_UPGRADE);
-                              return;
-                            }
-                            const targetSubject = profile?.lastActiveSubject || storageService.getLastActiveSubject(profile.id) || 'math';
-                            storageService.setLastActiveSubject(targetSubject, profile.id);
-                            storageService.setActiveProfileId(profile.id);
-                            setActiveProfileId(profile.id);
-                            setActiveSubject(targetSubject);
-                            syncAppStateWithStorage(targetSubject);
                             setShowProfileDropdown(false);
-                            const targetPath = SUBJECT_ROUTES[targetSubject] || `/${targetSubject}`;
-                            navigationHistory.reset({
-                              type: VIEW_TYPES.ROUTE,
-                              id: VIEWS.ADAPTIVE_SESSION,
-                              path: targetPath,
-                              params: { subject: targetSubject }
-                            });
-                            applyNavState(navigationHistory.getCurrent(), navigationHistory.getStack(), navigationHistory.getBaseRoute());
+                            if (isLocked) {
+                              handleOpenPinGate('switch_profile', 'overview', null, p.id);
+                            } else {
+                              storageService.setActiveProfileId(p.id);
+                              setActiveProfileId(p.id);
+                              syncAppStateWithStorage();
+                            }
                           }}
-                          className={`flex items-center justify-between px-2.5 py-2 rounded-xl transition-colors text-left cursor-pointer group w-full ${
+                          className={`flex items-center justify-between p-1.5 rounded-xl transition-all cursor-pointer text-left group ${
                             isLocked
                               ? 'opacity-60 bg-slate-50/50 hover:bg-slate-100 hover:opacity-80 border border-slate-200'
                               : 'hover:bg-slate-100 active:bg-slate-200'
@@ -2248,57 +2236,32 @@ export default function App() {
                       setShowProfileDropdown(false);
                       handleOpenModal(VIEWS.PROFILE_SWITCHER);
                     }}
-                    className="flex items-center gap-2 px-2.5 py-2 rounded-xl hover:bg-amber-50 text-amber-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 text-slate-600 font-black text-xs transition-colors cursor-pointer w-full text-left mt-0.5 border-t border-slate-100 pt-2"
                   >
-                    <div className="w-7 h-7 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800 shrink-0">
-                      <Users className="w-3.5 h-3.5 stroke-[2.5]" />
-                    </div>
-                    <span>Manage Profiles</span>
+                    <Users className="w-3.5 h-3.5 text-slate-500 stroke-[2.5]" />
+                    <span>Manage All Profiles</span>
                   </button>
                 </div>
 
                 <div className="h-px bg-slate-100 w-full" />
 
-                {/* Kibo Club / Membership Status in Dropdown */}
-                <div className="p-2 bg-amber-50/60 border-y border-amber-100/60 space-y-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowProfileDropdown(false);
-                      handleOpenModal(VIEWS.FAMILY_UPGRADE);
-                    }}
-                    className="w-full flex items-center justify-between p-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-black text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 fill-white" />
-                      <span>{isKiboClub ? 'Kibo Club Active (1.25x)' : 'Join Kibo Club'}</span>
-                    </div>
-                    <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-md">
-                      {isKiboClub ? 'Perks' : 'Upgrade'}
-                    </span>
-                  </button>
-
-                  {/* Share & Earn 500 Sparks Quick Link */}
+                {/* Invite & Earn Sparks Button */}
+                <div className="p-2 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100">
                   <button
                     type="button"
                     onClick={() => {
                       soundFx.playKeyTap();
                       setShowProfileDropdown(false);
-                      handleOpenModal(VIEWS.SHARE);
+                      handleOpenShareModal('profile_dropdown');
                     }}
-                    className="w-full flex items-center justify-between p-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 font-black text-xs transition-all active:scale-95 cursor-pointer"
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-amber-950 font-black text-xs shadow-xs border border-amber-400/80 transition-all cursor-pointer group active:scale-95"
                   >
                     <div className="flex items-center gap-1.5">
                       <Gift className="w-3.5 h-3.5 text-indigo-600" />
                       <span>Share & Earn Sparks</span>
                     </div>
-                    <span className="flex items-center gap-0.5 text-[10px] bg-amber-500 text-amber-950 font-black px-1.5 py-0.5 rounded-md shadow-xs border border-amber-600">
-                      <span>+500</span>
-                      <Zap className="w-3 h-3 text-amber-950 fill-amber-300 stroke-[2.5]" />
-                    </span>
                   </button>
                 </div>
-
 
                 <div className="h-px bg-slate-100 w-full" />
 
@@ -2322,60 +2285,55 @@ export default function App() {
                       setShowProfileDropdown(false);
                       handleNavigateTo('/settings', 'settings');
                     }}
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-slate-200/70 text-slate-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 text-slate-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
                   >
-                    <Settings className="w-3.5 h-3.5 text-slate-600 stroke-[2.5]" />
+                    <Settings className="w-3.5 h-3.5 text-slate-500 stroke-[2.5]" />
                     <span>Settings</span>
                   </button>
+                </div>
 
-                  {!currentAuthState.isAnonymous ? (
+                <div className="h-px bg-slate-100 w-full" />
+
+                {/* Account / Save Cloud Section */}
+                <div className="p-2 bg-slate-50/30 flex flex-col gap-1">
+                  {currentAuthState.isAuthenticated && !currentAuthState.isAnonymous ? (
                     <div className="relative">
                       <button
                         type="button"
                         onClick={() => {
                           soundFx.playKeyTap();
-                          setShowSavedTooltip(!showSavedTooltip);
+                          setShowSavedTooltip(prev => !prev);
                         }}
-                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-all cursor-pointer w-full text-left font-black text-xs ${
-                          showSavedTooltip ? 'bg-emerald-100/80 text-emerald-800' : 'hover:bg-emerald-50 text-emerald-700'
-                        }`}
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-teal-50 text-teal-800 font-black text-xs border border-teal-200 transition-colors w-full cursor-pointer hover:bg-teal-100/70"
                       >
-                        <div className="relative flex items-center justify-center shrink-0">
-                          {syncStatus === 'syncing' ? (
-                            <Loader2 className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
-                          ) : (
-                            <Cloud className={`w-3.5 h-3.5 text-emerald-600 stroke-[2.2] transition-transform duration-300 ${
-                              syncStatus === 'pulse' ? 'scale-125 text-emerald-500' : ''
-                            }`} />
-                          )}
-                          <div className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full p-0.5 shadow-xs border border-white flex items-center justify-center">
-                            <Check className="w-2 h-2 text-white stroke-[3.5]" />
-                          </div>
+                        <div className="flex items-center gap-1.5">
+                          <Check className="w-3.5 h-3.5 text-teal-600 stroke-[3]" />
+                          <span className="truncate max-w-[120px]">{currentAuthState.user?.email || 'Cloud Active'}</span>
                         </div>
-                        <span className="truncate">
-                          {syncStatus === 'syncing' ? 'Syncing...' : 'Saved'}
+                        <span className="text-[10px] bg-teal-200/80 text-teal-900 px-1 py-0.5 rounded font-black uppercase tracking-wider">
+                          Saved
                         </span>
                       </button>
 
+                      {/* Saved Status Tooltip Card */}
                       {showSavedTooltip && (
-                        <div className="mt-1.5 p-2.5 bg-slate-900 text-white rounded-xl shadow-inner text-[11px] font-bold border border-slate-700 animate-in fade-in duration-150">
-                          <p className="text-slate-200 leading-snug">
-                            All badges and progress are saved to{' '}
-                            <span className="text-emerald-400 font-extrabold underline decoration-emerald-500/50 break-all">
-                              {currentAuthState.email || 'your account'}
-                            </span>.
+                        <div className="absolute bottom-full left-0 mb-2 w-64 bg-slate-900/95 text-white p-3 rounded-2xl shadow-2xl border border-slate-700 z-50 text-xs animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md">
+                          <div className="flex items-center gap-1.5 text-teal-400 font-black text-xs mb-1">
+                            <Cloud className="w-4 h-4 text-teal-400 stroke-[2.5]" />
+                            <span>Cloud Backup Active</span>
+                          </div>
+                          <p className="text-slate-300 text-[11px] leading-relaxed">
+                            Your account is permanently linked to <strong className="text-white">{currentAuthState.user?.email}</strong>. All streaks, sparks, and progress sync automatically across your family's devices!
                           </p>
                           <button
                             type="button"
                             onClick={() => {
                               soundFx.playKeyTap();
                               setShowSavedTooltip(false);
-                              setShowProfileDropdown(false);
-                              handleOpenPinGate('profile_dropdown', 'overview', null);
                             }}
-                            className="mt-2 flex items-center text-teal-300 hover:text-teal-200 font-black text-xs transition-colors cursor-pointer"
+                            className="mt-2 text-teal-300 font-black text-[10px] hover:underline"
                           >
-                            <span>Manage in Parent Zone →</span>
+                            Close
                           </button>
                         </div>
                       )}
@@ -2395,20 +2353,7 @@ export default function App() {
                     </button>
                   )}
 
-                  {currentAuthState.isAnonymous ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        soundFx.playKeyTap();
-                        setShowProfileDropdown(false);
-                        handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Restore Account' });
-                      }}
-                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-indigo-50 text-indigo-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
-                    >
-                      <LogIn className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5]" />
-                      <span>Log In</span>
-                    </button>
-                  ) : (
+                  {currentAuthState.isAuthenticated && !currentAuthState.isAnonymous ? (
                     <button
                       type="button"
                       onClick={() => {
@@ -2420,6 +2365,19 @@ export default function App() {
                     >
                       <LogOut className="w-3.5 h-3.5 text-rose-600 stroke-[2.5]" />
                       <span>Log Out</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playKeyTap();
+                        setShowProfileDropdown(false);
+                        handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Restore Account' });
+                      }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-indigo-50 text-indigo-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                    >
+                      <LogIn className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5]" />
+                      <span>Log In</span>
                     </button>
                   )}
                 </div>
@@ -2438,12 +2396,10 @@ export default function App() {
           >
             <span className="flex items-center font-black text-base sm:text-lg tracking-tight text-slate-800 group-hover:text-amber-600 transition-colors uppercase">
               KIB
-              <img
-                src="/favicon.svg"
-                alt="O"
-                className="w-5 h-5 sm:w-6 sm:h-6 mx-0.5 object-contain group-hover:scale-110 transition-transform drop-shadow-xs inline-block"
-              />
-              <span className="hidden sm:inline ml-1">CLIMB</span>
+              <span className="relative flex items-center justify-center mx-0.5">
+                <Mountain className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 fill-amber-500 stroke-[2.5] inline-block" />
+              </span>
+              CLIMB
             </span>
           </button>
 
@@ -2518,14 +2474,16 @@ export default function App() {
             <button
               type="button"
               onClick={() => {
-                handleOpenModal(VIEWS.FRIENDS);
+                soundFx.playKeyTap();
+                setShowAddFriendModal(true);
               }}
-              className="flex items-center gap-1 bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 text-white border-2 border-sky-300 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer relative mr-1 sm:mr-0"
-              title={`Friends (${friendsCount})${pendingFriendRequestsCount > 0 ? ` • ${pendingFriendRequestsCount} pending request${pendingFriendRequestsCount > 1 ? 's' : ''}` : ''}`}
+              className="relative p-1.5 sm:px-2 sm:py-1.5 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white border-2 border-sky-200 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1 cursor-pointer shrink-0"
+              title="Friends & Leaderboard"
+              aria-label="Friends & Leaderboard"
             >
-              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white stroke-[2.5]" />
               {friendsCount > 0 && (
-                <span className="inline-flex items-center justify-center bg-white text-sky-700 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-2xs leading-tight">
+                <span className="hidden sm:inline text-xs font-black">
                   {friendsCount}
                 </span>
               )}
@@ -2541,10 +2499,11 @@ export default function App() {
           </div>
         </div>
       </header>
+      )}
       <main className="w-full max-w-4xl mx-auto flex-1 flex flex-col p-1 sm:p-2 relative min-h-0 overflow-y-auto hide-scrollbar">
 
       {/* In-Content Subject Selector Bar */}
-      {appState === 'adaptive_session' && (
+      {appState === 'adaptive_session' && !isClimbActive && (
         <div className="w-full mb-2 sm:mb-3 flex items-center justify-center gap-2 px-1 shrink-0">
           {/* Mobile Subject Dropdown (< sm) */}
           <div className="relative sm:hidden w-48 max-w-[220px]" ref={subjectDropdownRef}>
@@ -2680,11 +2639,11 @@ export default function App() {
                   </span>
                 </button>
 
-                {/* Coming Soon Teasers (Money & Music in Mobile Menu) */}
+                {/* Coming Soon Subjects */}
                 <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black bg-slate-50/80 border border-dashed border-emerald-300 text-slate-700 select-none">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">💰</span>
-                    <span>Kibo Money</span>
+                    <span className="text-base">🔬</span>
+                    <span>Kibo Science</span>
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 leading-none">
                     Coming Soon
@@ -2773,7 +2732,7 @@ export default function App() {
               onClick={() => handleSubjectChange('coding')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
                 activeSubject === 'coding'
-                  ? 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white border-rose-300 ring-2 ring-rose-400/50 scale-105'
+                  ? 'bg-gradient-to-r from-rose-500 via-pink-600 to-rose-600 text-white border-rose-300 ring-2 ring-rose-400/50 scale-105'
                   : 'bg-white/90 hover:bg-rose-50 text-slate-700 border-slate-200 hover:border-rose-200'
               }`}
               title="Switch to Kibo Coding"
@@ -2787,24 +2746,26 @@ export default function App() {
               ) : null}
             </button>
 
-            {/* Coming Soon Teasers (Money & Music) */}
+            {/* Kibo Science (Coming Soon) */}
             <button
               type="button"
               disabled
-              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-white/90 border-2 border-dashed border-emerald-300 text-slate-700 shadow-2xs shrink-0 select-none cursor-not-allowed"
-              title="Kibo Money - Coming Soon"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-slate-50/80 text-slate-400 border border-dashed border-emerald-300 cursor-not-allowed shrink-0 select-none relative opacity-70"
+              title="Kibo Science - Coming Soon!"
             >
-              <span className="text-sm sm:text-base leading-none select-none">💰</span>
-              <span className="tracking-tight">Money</span>
+              <span className="text-sm sm:text-base leading-none select-none">🔬</span>
+              <span className="tracking-tight">Science</span>
               <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs leading-none whitespace-nowrap">
                 Coming Soon
               </span>
             </button>
+
+            {/* Kibo Music (Coming Soon) */}
             <button
               type="button"
               disabled
-              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-white/90 border-2 border-dashed border-purple-300 text-slate-700 shadow-2xs shrink-0 select-none cursor-not-allowed"
-              title="Kibo Music - Coming Soon"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-slate-50/80 text-slate-400 border border-dashed border-purple-300 cursor-not-allowed shrink-0 select-none relative opacity-70"
+              title="Kibo Music - Coming Soon!"
             >
               <span className="text-sm sm:text-base leading-none select-none">🎵</span>
               <span className="tracking-tight">Music</span>
@@ -2817,7 +2778,7 @@ export default function App() {
       )}
 
       {/* SUBJECT CURRICULUM TIER PROGRESS BAR */}
-      {appState === 'adaptive_session' && (() => {
+      {appState === 'adaptive_session' && !isClimbActive && (() => {
         const tierProgress = getSubjectTierProgress(liveCompetenceRating, activeSubject);
         const theme = activeSubject === 'math'
           ? { bar: 'from-amber-400 to-orange-500', bg: 'bg-amber-500/15', border: 'border-amber-200', text: 'text-amber-950', badge: 'bg-amber-100 text-amber-900 border-amber-300' }
@@ -3159,6 +3120,7 @@ export default function App() {
             analyticsService.logEarnVirtualCurrency(finalEarned, 'session_reward');
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
+          onClimbActiveChange={setIsClimbActive}
         />
       )}
 
@@ -3201,6 +3163,7 @@ export default function App() {
             analyticsService.logEarnVirtualCurrency(finalEarned, 'session_reward');
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
+          onClimbActiveChange={setIsClimbActive}
         />
       )}
 
@@ -3243,6 +3206,7 @@ export default function App() {
             analyticsService.logEarnVirtualCurrency(finalEarned, 'session_reward');
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
+          onClimbActiveChange={setIsClimbActive}
         />
       )}
 
@@ -3284,6 +3248,7 @@ export default function App() {
             analyticsService.logEarnVirtualCurrency(finalEarned, 'session_reward');
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
+          onClimbActiveChange={setIsClimbActive}
         />
       )}
 
@@ -3674,7 +3639,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}
+      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}
 
       {/* Workshop Modal */}
       <WorkshopModal

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { analyticsService } from '../services/analyticsService';
-import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame, Terminal, Code2, HelpCircle, Shield, Compass, Flag } from 'lucide-react';
+import { Trophy, Zap, CheckCircle2, XCircle, Sparkles, Award, Play, RotateCcw, Flame, Terminal, Code2, HelpCircle, Shield, Compass, Flag, X } from 'lucide-react';
 import Mascot from './Mascot';
 import FeedbackModal from './FeedbackModal';
 import RollingNumberTicker from './RollingNumberTicker';
@@ -68,7 +68,8 @@ export default function CodingSessionView({
   onConsumeHintScroll,
   onConsumeLetterPruner,
   onConsumeShield,
-  onResetDoubleSparks
+  onResetDoubleSparks,
+  onClimbActiveChange
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     const data = storageService.getUserData('coding');
@@ -147,6 +148,16 @@ export default function CodingSessionView({
 
   const [hasStartedClimb, setHasStartedClimb] = useState(false);
   const [isAutoPaused, setIsAutoPaused] = useState(false);
+  // Break overlay
+  const [showBreakOverlay, setShowBreakOverlay] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  useEffect(() => {
+    if (onClimbActiveChange) {
+      onClimbActiveChange(Boolean(hasStartedClimb && !showBreakOverlay));
+    }
+  }, [hasStartedClimb, showBreakOverlay, onClimbActiveChange]);
+
   const [savedClimbState, setSavedClimbState] = useState(() => {
     const saved = storageService.getActiveClimbState(profileId, 'coding');
     if (saved && saved.problemQueue && (!saved.problemQueue.every(isCodingProblem) || (saved.subject && saved.subject !== 'coding'))) {
@@ -209,10 +220,6 @@ export default function CodingSessionView({
   // Timing
   const [problemStartTime, setProblemStartTime] = useState(Date.now());
   const [sessionAnswers, setSessionAnswers] = useState([]);
-
-  // Break overlay
-  const [showBreakOverlay, setShowBreakOverlay] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
 
   const saveCurrentClimbProgress = () => {
     const climbState = {
@@ -291,6 +298,12 @@ export default function CodingSessionView({
     }
     setProblemStartTime(Date.now());
     setHasStartedClimb(true);
+  };
+
+  const handleExitOrPauseClimb = () => {
+    soundFx.playKeyTap();
+    saveCurrentClimbProgress();
+    setHasStartedClimb(false);
   };
 
   // Window unload / unmount saving & auto-pause
@@ -466,15 +479,7 @@ export default function CodingSessionView({
       onUpdateCompetenceRating(nextRating);
     }
 
-    // Feedback banner
-    setFeedbackBanner({
-      isCorrect,
-      message: isCorrect
-        ? `+${earnedSparks} ⚡ ${evalResult.streakBannerText || 'Great logic!'}`
-        : `Keep going! ${currentProblem.hint || 'Review the logic steps.'}`
-    });
 
-    setTimeout(() => setFeedbackBanner(null), 2500);
 
     // Record answer in session history
     const record = {
@@ -737,7 +742,7 @@ export default function CodingSessionView({
         <div
           onClick={() => setFeedbackBanner(null)}
           className={`absolute inset-x-4 z-50 transition-all duration-300 ${
-            feedbackBanner ? 'top-0 opacity-100 scale-100 pointer-events-auto cursor-pointer' : '-top-12 opacity-0 scale-95 pointer-events-none'
+            feedbackBanner ? (hasStartedClimb ? 'top-12 opacity-100 scale-100 pointer-events-auto cursor-pointer' : 'top-0 opacity-100 scale-100 pointer-events-auto cursor-pointer') : '-top-12 opacity-0 scale-95 pointer-events-none'
           }`}
         >
           <div
@@ -751,6 +756,66 @@ export default function CodingSessionView({
             <span className="text-xs font-black opacity-80 hover:opacity-100 bg-black/20 px-2 py-0.5 rounded-full shrink-0">✕</span>
           </div>
         </div>
+
+        {/* DUOLINGO-STYLE CLIMB FOCUS TOP BAR (Active during climb) */}
+        {hasStartedClimb && (
+          <div className="w-full max-w-xl mx-auto flex items-center justify-between gap-2 px-2 py-1.5 mb-1 z-30 shrink-0">
+            {/* Left: Clean Exit / Pause button */}
+            <button
+              type="button"
+              onClick={handleExitOrPauseClimb}
+              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full bg-white/90 hover:bg-slate-100 active:scale-90 text-slate-500 hover:text-slate-800 border-2 border-slate-200 shadow-2xs transition-all cursor-pointer shrink-0"
+              title="Pause & Save Climb"
+              aria-label="Pause Climb"
+            >
+              <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
+            </button>
+
+            {/* Center: Sleek 12-segment progress bar */}
+            <div className="flex-1 flex flex-col gap-0.5 min-w-0">
+              <div className="flex items-center justify-between px-1 text-[10px] sm:text-xs font-black text-slate-500">
+                <span className="uppercase tracking-wider">Question {sessionQuestionIndex} of 12</span>
+                <span>{Math.round(((sessionQuestionIndex - 1) / 12) * 100)}%</span>
+              </div>
+              <div className="w-full h-2.5 sm:h-3 bg-slate-200/80 rounded-full overflow-hidden p-0.5 border border-slate-300/60 shadow-inner">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 transition-all duration-500 shadow-xs"
+                  style={{ width: `${Math.max(5, (sessionQuestionIndex / 12) * 100)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Right: Streak & Shield status + Report */}
+            <div className="flex items-center gap-1 shrink-0">
+              {streak >= 2 && (
+                <span className="flex items-center gap-0.5 text-xs font-black bg-rose-50 border border-rose-200 text-rose-600 px-2 py-1 rounded-full shadow-2xs">
+                  <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" />
+                  <span>{streak}</span>
+                </span>
+              )}
+              {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
+                <span
+                  className="flex items-center gap-0.5 text-xs font-black bg-sky-50 border border-sky-200 text-sky-700 px-1.5 py-1 rounded-full shadow-2xs"
+                  title="Streak Shield Active"
+                >
+                  🛡️ <span className="text-[10px]">{consumables.shieldCount || consumables.streakSaverCount}</span>
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setShowQuestionFeedback(true);
+                }}
+                className="p-1 sm:p-1.5 rounded-full border bg-white/90 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border-slate-200 hover:border-rose-300 shadow-2xs transition-all active:scale-90 flex items-center justify-center cursor-pointer"
+                title="Report Question"
+                aria-label="Report Question"
+              >
+                <Flag className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* MASCOT CONTAINER - Centered between sticky header and question card */}
         <div
@@ -897,69 +962,22 @@ export default function CodingSessionView({
             /* ACTIVE CODING QUESTION CARD */
             currentProblem && (
               <div className={`w-full max-w-md shrink-0 flex flex-col justify-between bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-3 sm:p-4 text-center transition-all duration-300 space-y-2 relative shadow-lg ${streakConfig.cardGlow} ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : 'border-purple-200'}`}>
-                {/* TIER 1: MINIMAL CLIMB STATUS BAR (Single row, non-wrapping) */}
-                <div className="w-full flex items-center justify-between gap-1 sm:gap-2 px-1 py-0.5 text-xs">
-                  {/* Left: Question Counter & Report Flag */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="font-black uppercase text-purple-700 bg-purple-50 px-2 sm:px-2.5 py-1 rounded-full border border-purple-200 shadow-2xs">
-                      🎯 Q #{sessionQuestionIndex}/12
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        soundFx.playKeyTap();
-                        setShowQuestionFeedback(true);
-                      }}
-                      className="p-1 sm:px-2 sm:py-1 rounded-full border bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border-slate-200 hover:border-rose-300 shadow-2xs transition-all active:scale-90 flex items-center gap-1 cursor-pointer"
-                      title="Report an issue with this question"
-                      aria-label="Report Question"
-                    >
-                      <Flag className="w-3 h-3 text-rose-500 fill-rose-100" />
-                      <span className="hidden md:inline text-[10px] font-black uppercase text-rose-600">Report</span>
-                    </button>
-                  </div>
-
-                  {/* Center: Concept Tag / Streak Tier */}
-                  <div className="flex items-center gap-1.5 text-xs font-black text-purple-800 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200 truncate max-w-[130px] sm:max-w-none">
+                {/* Concept Tag */}
+                <div className="w-full flex items-center justify-center px-1 py-0.5 text-xs">
+                  <div className="flex items-center gap-1.5 text-xs font-black text-purple-800 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
                     <Terminal className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                    <span className="truncate">{currentProblem.concept || 'Logic Drill'}</span>
-                  </div>
-
-                  {/* Right: Consolidated Sparks & Shield Indicator */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span
-                      className={`font-black uppercase px-2 sm:px-2.5 py-1 rounded-full border shadow-2xs flex items-center gap-1 ${
-                        storageService?.hasClubMembership?.(profileId)
-                          ? 'text-amber-950 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300 border-amber-400'
-                          : 'text-amber-800 bg-amber-50 border-amber-200'
-                      }`}
-                      title={`Sparks earned per correct answer${isDoubleSparksActive ? ' (2x Active!)' : ''}${storageService?.hasClubMembership?.(profileId) ? ' (1.25x VIP)' : ''}`}
-                    >
-                      <span>+{Math.round((isDoubleSparksActive ? 4 : 2) * (streak >= 5 ? 1.5 : 1) * (storageService?.hasClubMembership?.(profileId) ? 1.25 : 1))} ⚡</span>
-                      {isDoubleSparksActive && (
-                        <span className="text-[10px] bg-amber-400 text-amber-950 px-1 rounded font-black leading-none">2x</span>
-                      )}
-                    </span>
-
-                    {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
-                      <span
-                        className="font-black uppercase text-sky-950 bg-sky-100 px-1.5 sm:px-2 py-1 rounded-full border border-sky-300 shadow-2xs flex items-center gap-0.5 cursor-help"
-                        title="Kibo Shield Active: Streak protected!"
-                      >
-                        🛡️ <span className="text-[10px] sm:text-xs">{consumables.shieldCount || consumables.streakSaverCount}</span>
-                      </span>
-                    )}
+                    <span>{currentProblem.concept || 'Logic Drill'}</span>
                   </div>
                 </div>
 
-                {/* TIER 2: ACTION DOCK / POWER-UPS BAR (Row 2, single non-wrapping row) */}
-                <div className="w-full flex items-center justify-center gap-1 sm:gap-2 py-0.5 max-w-full overflow-x-auto no-scrollbar">
+                {/* ACTION DOCK (Pass, Hint, plus 50:50 if owned or active) */}
+                <div className="w-full flex items-center justify-center gap-1.5 py-0.5 max-w-full overflow-x-auto no-scrollbar">
                   {/* NON-PUNITIVE PASS BUTTON */}
                   <button
                     type="button"
                     onClick={handlePassQuestion}
                     disabled={consecutiveSkips >= 2}
-                    className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                       consecutiveSkips >= 2
                         ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                         : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -970,14 +988,14 @@ export default function CodingSessionView({
                         : 'Try another problem'
                     }
                   >
-                    {consecutiveSkips >= 2 ? '🔒 Attempt' : '🔄 Pass'}
+                    {consecutiveSkips >= 2 ? '🔒 Pass' : '🔄 Pass'}
                   </button>
 
                   {/* MANUAL WISDOM HINT BUTTON */}
                   <button
                     type="button"
                     onClick={handleUseHint}
-                    className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       revealedHint
                         ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                         : (consumables?.hintScrollCount ?? 0) > 0
@@ -990,30 +1008,24 @@ export default function CodingSessionView({
                         : 'Out of Hint Scrolls • Tap to get in Shop!'
                     }
                   >
-                    💡 {revealedHint ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint +'}
+                    💡 {revealedHint ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
                   </button>
 
-                  {/* 50:50 DISTRACTOR PRUNER BUTTON */}
-                  <button
-                    type="button"
-                    onClick={handleUsePruner}
-                    className={`text-[10px] sm:text-xs font-black uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
-                      eliminatedOptions.length > 0
-                        ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
-                        : (consumables?.letterPrunerCount ?? 0) > 0
-                        ? 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
-                        : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
-                    }`}
-                    title={
-                      eliminatedOptions.length > 0
-                        ? '50:50 Distractors pruned for this problem!'
-                        : (consumables?.letterPrunerCount ?? 0) > 0
-                        ? 'Prune 2 wrong choices (50:50)!'
-                        : 'Out of 50:50 Pruners • Tap to get in Shop!'
-                    }
-                  >
-                    ✂️ {eliminatedOptions.length > 0 ? '50:50 Active' : (consumables?.letterPrunerCount ?? 0) > 0 ? `50:50 (${consumables.letterPrunerCount})` : '50:50 +'}
-                  </button>
+                  {/* 50:50 DISTRACTOR PRUNER BUTTON (Shown when active or count > 0) */}
+                  {(eliminatedOptions.length > 0 || (consumables?.letterPrunerCount ?? 0) > 0) && (
+                    <button
+                      type="button"
+                      onClick={handleUsePruner}
+                      className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                        eliminatedOptions.length > 0
+                          ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
+                          : 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
+                      }`}
+                      title="Prune 2 wrong choices (50:50)!"
+                    >
+                      ✂️ {eliminatedOptions.length > 0 ? 'Active' : `50:50 (${consumables?.letterPrunerCount ?? 0})`}
+                    </button>
+                  )}
                 </div>
 
                 {/* Question Display Text */}
