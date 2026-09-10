@@ -2493,7 +2493,7 @@ export default function App() {
               type="button"
               onClick={() => {
                 soundFx.playKeyTap();
-                setShowAddFriendModal(true);
+                openModal(VIEWS.FRIENDS);
               }}
               className="relative p-1.5 sm:px-2 sm:py-1.5 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white border-2 border-sky-200 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1 cursor-pointer shrink-0"
               title="Friends & Leaderboard"
