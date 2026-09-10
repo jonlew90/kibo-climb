@@ -187,7 +187,7 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
   const masteredPct = Math.round((masteredCount / total) * 100);
   const practicingPct = Math.round((practicingCount / total) * 100);
   const skippedPct = Math.round((skippedCount / total) * 100);
-  const lockedPct = Math.max(0, 100 - masteredPct - practicingPct - skippedPct);
+  const challengedPct = Math.max(0, 100 - masteredPct - practicingPct - skippedPct);
 
   // Use actual active rating
   const adaptiveCompetenceRating = activeRating;
@@ -208,7 +208,7 @@ export const calculateAdaptiveCompetenceProfile = (sprintHistory = [], currentTi
       mastered: masteredPct,
       practicing: practicingPct,
       skipped: skippedPct,
-      challenged: lockedPct
+      challenged: challengedPct
     },
     skillStrandBreakdown: strandBreakdown
   };

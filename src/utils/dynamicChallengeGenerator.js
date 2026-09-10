@@ -57,20 +57,6 @@ export const dynamicChallengeGenerator = {
   },
 
   /**
-   * Compatibility method for existing test suites.
-   */
-  generateMathChallenge() {
-    return this.generateWordMathChallenge();
-  },
-
-  /**
-   * Compatibility method for existing test suites.
-   */
-  generateOrderChallenge() {
-    return this.generateAdultLiteracyChallenge();
-  },
-
-  /**
    * Generates a fresh random COPPA-hardened challenge.
    */
   generateChallenge() {

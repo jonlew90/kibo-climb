@@ -113,10 +113,6 @@ class UserSyncService {
     this.currentUid = null;
   }
 
-  /**
-   * Debounced push of local profiles & user data to Cloud Firestore.
-   */
-
   async processPendingReferrals() {
     const authState = auth.currentUser;
     if (!authState || authState.isAnonymous) return;
@@ -135,6 +131,9 @@ class UserSyncService {
     }
   }
 
+  /**
+   * Debounced push of local profiles & user data to Cloud Firestore.
+   */
   syncProfileToCloud(profileId) {
     if (this.isSyncingFromCloud) return;
 

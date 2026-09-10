@@ -1,4 +1,4 @@
-import { getKFactor, getProbeTargetTier, getStrandForRating, getSubjectStrands } from './SkillTreeConfig.js';
+import { getKFactor, getStrandForRating, getSubjectStrands } from './SkillTreeConfig.js';
 import { SUBJECTS_CONFIG } from '../config/subjects.js';
 
 /**
@@ -10,6 +10,20 @@ export function shouldTriggerProbeQuestion({ totalProblemsSolved = 0, inSessionS
     return inSessionStreak >= 3;
   }
   return inSessionStreak >= 4 && inSessionStreak % 4 === 0;
+}
+
+export function getTierTargetRating(tier = 1) {
+  const targets = {
+    1: 600,   // Tier 1 (0–1199 midpoint)
+    2: 1300,  // Tier 2 (1200–1399 midpoint)
+    3: 1500,  // Tier 3 (1400–1599 midpoint)
+    4: 1700,  // Tier 4 (1600–1799 midpoint)
+    5: 1900,  // Tier 5 (1800–1999 midpoint)
+    6: 2100,  // Tier 6 (2000–2199 midpoint)
+    7: 2300,  // Tier 7 (2200–2399 midpoint)
+    8: 2600   // Tier 8 (2400+ pseudo-midpoint)
+  };
+  return targets[tier] || 1000;
 }
 
 /**
@@ -25,20 +39,6 @@ export function shouldTriggerProbeQuestion({ totalProblemsSolved = 0, inSessionS
  * @param {Object} params
  * @returns {Object} Evaluation results
  */
-export function getTierTargetRating(tier = 1) {
-  const targets = {
-    1: 600,   // Tier 1 (0–1199 midpoint)
-    2: 1300,  // Tier 2 (1200–1399 midpoint)
-    3: 1500,  // Tier 3 (1400–1599 midpoint)
-    4: 1700,  // Tier 4 (1600–1799 midpoint)
-    5: 1900,  // Tier 5 (1800–1999 midpoint)
-    6: 2100,  // Tier 6 (2000–2199 midpoint)
-    7: 2300,  // Tier 7 (2200–2399 midpoint)
-    8: 2600   // Tier 8 (2400+ pseudo-midpoint)
-  };
-  return targets[tier] || 1000;
-}
-
 export function evaluateAdaptiveAttempt({
   isCorrect,
   latencyMs = 0,
@@ -75,7 +75,7 @@ export function evaluateAdaptiveAttempt({
   let multiplier = 1.0;
   let streakBannerText = null;
 
-  // 5. Adaptive ELO-style Skill Rating System First (so we can use rankDelta in the banner)
+  // 6. Adaptive ELO-style Skill Rating System First (so we can use rankDelta in the banner)
   const problemTarget = getTierTargetRating(problemTier || 1);
 
   // Calculate Expected Score based on difference in rating (400 points = 10x difference in odds)
@@ -170,74 +170,6 @@ export function evaluateAdaptiveAttempt({
   };
 }
 
-/**
- * Evaluates session-wrap bonus rewards and personal records upon Break Overlay or Session End.
- * - Perfect Run Bonus: 100% accuracy awards +15 Sparks & increments mostPerfectSessions.
- * - Speed Run Bonus: average speed < 5s per question awards +10 Sparks.
- * - Cumulative Streak Milestones: 25, 50, 100 streaks award +25, +50, +100 Sparks.
- */
-export function evaluateAdaptiveSessionEnd({
-  questionsAnswered = 0,
-  correctCount = 0,
-  totalSessionTimeMs = 0,
-  cumulativeCorrectStreak = 0,
-  personalRecords = {}
-}) {
-  const sessionAccuracy = questionsAnswered > 0 ? (correctCount / questionsAnswered) * 100 : 0;
-  const sessionAverageTimeSec = questionsAnswered > 0 ? (totalSessionTimeMs / 1000) / questionsAnswered : 0;
-
-  let bonusSparks = 0;
-  let isPerfectRun = false;
-  let isSpeedRun = false;
-  let milestonesUnlocked = [];
-
-  const records = {
-    fastest12QuestionsTime: personalRecords?.fastest12QuestionsTime ?? personalRecords?.fastest10QuestionsTime ?? null,
-    highestCorrectStreak: Math.max(personalRecords?.highestCorrectStreak || 0, cumulativeCorrectStreak),
-    mostPerfectSessions: personalRecords?.mostPerfectSessions || 0
-  };
-
-  // 1. Perfect Run Bonus (100% accuracy for 5+ questions)
-  if (questionsAnswered >= 5 && sessionAccuracy === 100) {
-    isPerfectRun = true;
-    bonusSparks += 15;
-    records.mostPerfectSessions += 1;
-  }
-
-  // 2. Speed Run Bonus (< 5.0s average response time with 100% accuracy)
-  if (questionsAnswered >= 5 && sessionAccuracy === 100 && sessionAverageTimeSec > 0 && sessionAverageTimeSec < 5.0) {
-    isSpeedRun = true;
-    bonusSparks += 10;
-    const sessionTimeSec = Math.round(totalSessionTimeMs / 1000);
-    if (questionsAnswered >= 12 && (!records.fastest12QuestionsTime || sessionTimeSec < records.fastest12QuestionsTime)) {
-      records.fastest12QuestionsTime = sessionTimeSec;
-    }
-  }
-
-  // 3. Cumulative Cross-Session Streak Milestones
-  if (cumulativeCorrectStreak >= 100) {
-    bonusSparks += 100;
-    milestonesUnlocked.push('100-Answer Legend (+100 ⚡)');
-  } else if (cumulativeCorrectStreak >= 50) {
-    bonusSparks += 50;
-    milestonesUnlocked.push('50-Answer Master (+50 ⚡)');
-  } else if (cumulativeCorrectStreak >= 25) {
-    bonusSparks += 25;
-    milestonesUnlocked.push('25-Answer Streak (+25 ⚡)');
-  }
-
-  return {
-    sessionAccuracy,
-    sessionAverageTimeSec,
-    bonusSparks,
-    isPerfectRun,
-    isSpeedRun,
-    milestonesUnlocked,
-    updatedPersonalRecords: records
-  };
-}
-
-
 
 export function checkSkillMasteryEvents(prevRating, nextRating, existingEvents = [], subjectId = 'math') {
   const newEvents = [...(existingEvents || [])];
@@ -259,23 +191,6 @@ export function checkSkillMasteryEvents(prevRating, nextRating, existingEvents =
   });
 
   return newEvents.slice(0, 3);
-}
-
-/**
- * Evaluates calibration phase completion when totalProblemsSolved reaches 15.
- * Locks in the user's initial calibrated rating as baselineRating and awards
- * a single clean "Scout Placement Bonus" (+30 Sparks).
- */
-export function checkCalibrationCompletion(totalProblemsSolved, currentRating, isAlreadyCalibrated = false) {
-  if (totalProblemsSolved >= 15 && !isAlreadyCalibrated) {
-    return {
-      justCalibrated: true,
-      baselineRating: currentRating,
-      scoutBonusSparks: 30,
-      bannerMessage: '🎯 Placement Calibration Complete! Baseline Rating Locked (+30 Scout Placement Bonus ⚡)'
-    };
-  }
-  return { justCalibrated: false, scoutBonusSparks: 0, baselineRating: null };
 }
 
 // Backward compatibility export

@@ -640,7 +640,6 @@ export const authService = {
       uid: (firebaseUser && firebaseUser.uid) || (data && data.cloudUid) || getOrCreateGuestId(),
       isAnonymous,
       authProvider: provider,
-      provider: provider, // Provide alias for code referencing .provider
       displayName: (firebaseUser && firebaseUser.displayName) || (data && data.displayName) || 'Kibo Climber',
       email: (firebaseUser && firebaseUser.email) || (data && data.email) || null
     };

@@ -1,7 +1,7 @@
 // Kibo Audio Manager — Web Audio API Synthesizer & Sound Effects Engine
 import { soundFx, triggerHaptic } from './audio';
 
-class KiboAudioManagerEngine {
+class KiboAudioManagerClass {
   constructor() {
     this.soundFx = soundFx;
   }
@@ -121,4 +121,4 @@ class KiboAudioManagerEngine {
   }
 }
 
-export const KiboAudioManager = new KiboAudioManagerEngine();
+export const KiboAudioManager = new KiboAudioManagerClass();

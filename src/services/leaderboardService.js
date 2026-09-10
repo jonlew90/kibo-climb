@@ -103,20 +103,6 @@ class LeaderboardService {
     }
   }
 
-  // Generates or retrieves a fallback device ID for anonymous users who fail to sign in to Firebase
-  _getFallbackDeviceId() {
-    try {
-      let deviceId = localStorage.getItem('kibo_fallback_device_id');
-      if (!deviceId) {
-        deviceId = 'local_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
-        localStorage.setItem('kibo_fallback_device_id', deviceId);
-      }
-      return deviceId;
-    } catch (e) {
-      return 'local_user_' + Date.now();
-    }
-  }
-
   // Real-time listener for top standings separated by subject
   subscribeToLeaderboard(subject = 'math', limitCount = 20, onUpdate) {
     try {

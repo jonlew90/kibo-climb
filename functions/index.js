@@ -554,7 +554,7 @@ exports.createStripeCheckoutSession = onCall(
       throw new HttpsError('invalid-argument', 'Missing required item details.');
     }
 
-    const stripeKey = STRIPE_SECRET_KEY.value() || process.env.STRIPE_SECRET_KEY;
+    const stripeKey = STRIPE_SECRET_KEY.value();
     if (!stripeKey) {
       throw new HttpsError('internal', 'Stripe secret key not configured.');
     }
@@ -615,8 +615,8 @@ exports.createStripeCheckoutSession = onCall(
 exports.stripeWebhook = onRequest(
   { secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET] },
   async (request, response) => {
-    const stripeKey = STRIPE_SECRET_KEY.value() || process.env.STRIPE_SECRET_KEY;
-    const endpointSecret = STRIPE_WEBHOOK_SECRET.value() || process.env.STRIPE_WEBHOOK_SECRET;
+    const stripeKey = STRIPE_SECRET_KEY.value();
+    const endpointSecret = STRIPE_WEBHOOK_SECRET.value();
 
     if (!stripeKey || !endpointSecret) {
       console.error('Stripe secrets not configured');

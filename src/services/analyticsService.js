@@ -93,12 +93,6 @@ export const analyticsService = {
   },
 
   /**
-   * Log custom events
-   * @param {string} eventName
-   * @param {Object} [params]
-   */
-
-  /**
    * Log when a user answers a question.
    * @param {string} subjectId - The subject (e.g. 'math').
    * @param {boolean} isCorrect - Whether the answer was correct.
