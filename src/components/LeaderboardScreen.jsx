@@ -765,25 +765,21 @@ export default function LeaderboardScreen({
             )}
           </div>
           <h2 className="text-base sm:text-lg font-black tracking-tight truncate">
-            {viewMode === 'quests' ? 'Mountain Quest Standings' : viewMode === 'weekly' ? 'Weekly League' : viewMode === 'friends' ? 'Friends Standings' : 'Global Standings'}
+            {viewMode === 'quests' ? 'Quest Standings' : viewMode === 'weekly' ? 'Weekly League' : viewMode === 'friends' ? 'Friends Standings' : 'Global Standings'}
           </h2>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {/* Dynamic Reset / Permanent Status Badge in Header */}
-          <span className={`text-[10px] sm:text-xs font-black uppercase tracking-wider px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shadow-2xs whitespace-nowrap ${
-            viewMode === 'weekly'
-              ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-              : viewMode === 'squads'
-              ? 'bg-amber-100 text-amber-900 border-amber-300'
-              : viewMode === 'quests'
-              ? 'bg-purple-100 text-purple-900 border-purple-300'
-              : viewMode === 'friends'
-              ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
-              : 'bg-slate-100 text-slate-800 border-slate-300'
-          }`}>
-            {viewMode === 'weekly' || viewMode === 'squads' ? '⏰ Resets Weekly' : '🔄 Permanent'}
-          </span>
+          {/* Reset Status Badge in Header (only when applicable) */}
+          {(viewMode === 'weekly' || viewMode === 'squads') && (
+            <span className={`text-[10px] sm:text-xs font-black uppercase tracking-wider px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border shadow-2xs whitespace-nowrap ${
+              viewMode === 'weekly'
+                ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                : 'bg-amber-100 text-amber-900 border-amber-300'
+            }`}>
+              ⏰ Resets Weekly
+            </span>
+          )}
 
           <button
             type="button"
@@ -1785,10 +1781,10 @@ export default function LeaderboardScreen({
                   ? 'Play daily practice and squad quests together to raise your team score!'
                   : currentUserRank > 1
                   ? (viewMode === 'quests'
-                      ? `+${pointsNeeded.toLocaleString()} XP needed to rank up in Mountain Quests`
+                      ? `+${pointsNeeded.toLocaleString()} XP needed to rank up in Quests`
                       : `+${pointsNeeded} ${viewMode === 'global' ? 'pts' : 'sparks'} needed to rank up in ${subjectConfig.name}`)
                   : (viewMode === 'quests'
-                      ? `You are currently holding 1st place in Mountain Quests Elevation! Keep ascending!`
+                      ? `You are currently holding 1st place in Quests Elevation! Keep ascending!`
                       : `You are currently holding 1st place in ${subjectConfig.name}! Keep it up!`)}
               </p>
             </div>
@@ -1841,7 +1837,7 @@ export default function LeaderboardScreen({
               </div>
               <div className="min-w-0 flex-1 pr-6">
                 <h3 className="text-lg font-black text-slate-900 leading-tight">
-                  {viewMode === 'global' ? `${subjectConfig.name} Competence & Divisions` : viewMode === 'weekly' ? 'Weekly League & Consistency' : viewMode === 'quests' ? 'Mountain Quest Standings' : viewMode === 'squads' ? 'Squad Standings' : 'Friends Standings'}
+                  {viewMode === 'global' ? `${subjectConfig.name} Competence & Divisions` : viewMode === 'weekly' ? 'Weekly League & Consistency' : viewMode === 'quests' ? 'Quest Standings' : viewMode === 'squads' ? 'Squad Standings' : 'Friends Standings'}
                 </h3>
                 <p className="text-xs font-semibold text-slate-500">
                   {viewMode === 'global' ? 'How Global Divisions Work' : viewMode === 'weekly' ? 'How Weekly Leagues Work' : viewMode === 'squads' ? 'How Squad Standings Work' : 'How Standings Work'}
