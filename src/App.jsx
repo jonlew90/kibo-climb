@@ -2478,25 +2478,7 @@ export default function App() {
               );
             })()}
 
-            {/* Competence Rank Button (Visible on all devices) */}
-            {(() => {
-              const rankTitle = getCompetenceRankTier(liveCompetenceRating, activeSubject);
-              return (
-                <button
-                  type="button"
-                  onClick={handleOpenBadgesModal}
-                  className="flex items-center gap-1 bg-gradient-to-r from-purple-100 via-indigo-100 to-purple-200 text-purple-950 border-2 border-purple-400 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full text-xs sm:text-sm font-black shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0 relative overflow-visible cursor-pointer hover:border-purple-500"
-                  title={`Competence Rank: ${liveCompetenceRating} pts (${rankTitle})`}
-                >
-                  <RollingNumberTicker
-                    value={liveCompetenceRating}
-                    profileId={activeProfileId}
-                    subjectId={activeSubject}
-                    icon={<Star className="w-3.5 h-3.5 text-purple-700 fill-purple-300 stroke-[2]" />}
-                  />
-                </button>
-              );
-            })()}
+
 
             {/* Sparks Counter Button (Visible on all devices) */}
             <button
@@ -2595,11 +2577,25 @@ export default function App() {
                 </span>
                 <span className="tracking-tight capitalize">{activeSubject}</span>
               </div>
-              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showSubjectDropdown ? 'rotate-180' : ''}`} />
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-black/15 text-inherit">
+                  {liveCompetenceRating} pts
+                </span>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showSubjectDropdown ? 'rotate-180' : ''}`} />
+              </div>
             </button>
 
             {/* Mobile Subject Roll-down Menu */}
-            {showSubjectDropdown && (
+            {showSubjectDropdown && (() => {
+              const activeProf = storageService.getActiveProfile();
+              const subData = activeProf.userData?.subjects || {};
+              const getRating = (subId) => {
+                if (subId === activeSubject) return liveCompetenceRating;
+                const d = subData[subId];
+                return Number(d?.adaptiveCompetenceRating) || Number(d?.competenceRank) || 1000;
+              };
+
+              return (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
                 {/* Math Option */}
                 <button
@@ -2618,7 +2614,9 @@ export default function App() {
                     <span className="text-base">🔢</span>
                     <span>Kibo Math</span>
                   </div>
-                  {activeSubject === 'math' && <span className="w-2 h-2 rounded-full bg-amber-600" />}
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-200/70 text-amber-950 font-black">
+                    {getRating('math')} pts
+                  </span>
                 </button>
 
                 {/* Words Option */}
@@ -2638,7 +2636,9 @@ export default function App() {
                     <span className="text-base">📚</span>
                     <span>Kibo Words</span>
                   </div>
-                  {activeSubject === 'words' && <span className="w-2 h-2 rounded-full bg-indigo-600" />}
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-200/70 text-indigo-950 font-black">
+                    {getRating('words')} pts
+                  </span>
                 </button>
 
                 {/* World Option */}
@@ -2658,7 +2658,9 @@ export default function App() {
                     <span className="text-base">🌍</span>
                     <span>Kibo World</span>
                   </div>
-                  {activeSubject === 'world' && <span className="w-2 h-2 rounded-full bg-teal-600" />}
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-200/70 text-teal-950 font-black">
+                    {getRating('world')} pts
+                  </span>
                 </button>
 
                 {/* Coding Option */}
@@ -2678,7 +2680,9 @@ export default function App() {
                     <span className="text-base">💻</span>
                     <span>Kibo Coding</span>
                   </div>
-                  {activeSubject === 'coding' && <span className="w-2 h-2 rounded-full bg-rose-600" />}
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-200/70 text-rose-950 font-black">
+                    {getRating('coding')} pts
+                  </span>
                 </button>
 
                 {/* Coming Soon Teasers (Money & Music in Mobile Menu) */}
@@ -2702,7 +2706,8 @@ export default function App() {
                   </span>
                 </div>
               </div>
-            )}
+              );
+            })()}
           </div>
 
           {/* Desktop Subject Bar (>= sm) */}
@@ -2720,7 +2725,11 @@ export default function App() {
             >
               <span className="text-sm sm:text-base leading-none select-none">🔢</span>
               <span className="tracking-tight">Math</span>
-              {activeSubject === 'math' && <span className="w-1.5 h-1.5 rounded-full bg-amber-950 animate-pulse" />}
+              {activeSubject === 'math' ? (
+                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-amber-950/15 text-amber-950">
+                  {liveCompetenceRating} pts
+                </span>
+              ) : null}
             </button>
 
             {/* Kibo Words */}
@@ -2736,7 +2745,11 @@ export default function App() {
             >
               <span className="text-sm sm:text-base leading-none select-none">📚</span>
               <span className="tracking-tight">Words</span>
-              {activeSubject === 'words' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+              {activeSubject === 'words' ? (
+                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-white/20 text-white">
+                  {liveCompetenceRating} pts
+                </span>
+              ) : null}
             </button>
 
             {/* Kibo World */}
@@ -2752,7 +2765,11 @@ export default function App() {
             >
               <span className="text-sm sm:text-base leading-none select-none">🌍</span>
               <span className="tracking-tight">World</span>
-              {activeSubject === 'world' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+              {activeSubject === 'world' ? (
+                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-white/20 text-white">
+                  {liveCompetenceRating} pts
+                </span>
+              ) : null}
             </button>
 
             {/* Kibo Coding */}
@@ -2768,7 +2785,11 @@ export default function App() {
             >
               <span className="text-sm sm:text-base leading-none select-none">💻</span>
               <span className="tracking-tight">Coding</span>
-              {activeSubject === 'coding' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+              {activeSubject === 'coding' ? (
+                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-white/20 text-white">
+                  {liveCompetenceRating} pts
+                </span>
+              ) : null}
             </button>
 
             {/* Coming Soon Teasers (Money & Music) */}
