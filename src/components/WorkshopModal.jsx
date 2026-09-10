@@ -1302,7 +1302,7 @@ export default function WorkshopModal({
                         soundFx.playKeyTap();
                         setShowFamilyPlanModal(true);
                       }}
-                      className="bg-indigo-900 border border-indigo-700/60 text-white rounded-2xl p-3.5 sm:p-4 shadow-sm hover:border-amber-400/50 transition-all cursor-pointer relative overflow-hidden group"
+                      className="bg-indigo-900 border border-indigo-700/60 text-white rounded-2xl p-3.5 sm:p-4 shadow-sm hover:border-amber-400/50 transition-colors cursor-pointer relative overflow-hidden group"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
                         <div className="space-y-1.5 min-w-0">
