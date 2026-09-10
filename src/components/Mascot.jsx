@@ -282,10 +282,16 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   // --- LIVING MASCOT ANIMATION STATES ---
   const [isBlinking, setIsBlinking] = useState(false);
   const [isEarTwitching, setIsEarTwitching] = useState(false);
+  const [isEarFlurry, setIsEarFlurry] = useState(false);
   const [isSniffing, setIsSniffing] = useState(false);
   const [isTwirling, setIsTwirling] = useState(false);
   const [isTapped, setIsTapped] = useState(false);
   const [sparkParticles, setSparkParticles] = useState([]);
+  // Idle micro-action varieties
+  const [lookDirection, setLookDirection] = useState('center'); // 'center', 'left', 'right', 'up'
+  const [idleGesture, setIdleGesture] = useState(''); // '', 'tilt', 'wiggle', 'sleepy'
+  const [tailAnimationMode, setTailAnimationMode] = useState('normal'); // 'normal', 'fast', 'slow'
+  const [isCuteSmile, setIsCuteSmile] = useState(false);
   const isReactingRef = useRef(false);
 
   // Advanced Movement Visual FX items
@@ -304,24 +310,70 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
     return () => clearInterval(interval);
   }, [hasSpinDance]);
 
-  // Random Natural Micro-Actions Loop (Blinks, Ear Twitches, Nose Sniffs)
+  // Dynamic Natural Micro-Actions Loop (Blinks, Gaze shifts, Ear Twitches, Head Tilts, Tail Speeds)
   useEffect(() => {
     let timeoutId;
 
     const scheduleMicroAction = () => {
-      const delay = Math.floor(Math.random() * 2500) + 3000;
+      // Natural varied cadence (every 2.2s to 4.5s)
+      const delay = Math.floor(Math.random() * 2300) + 2200;
       timeoutId = setTimeout(() => {
         const rand = Math.random();
 
-        if (rand < 0.4) {
+        if (rand < 0.28) {
+          // Double or single blink
           setIsBlinking(true);
-          setTimeout(() => setIsBlinking(false), 200);
-        } else if (rand < 0.75) {
-          setIsEarTwitching(true);
-          setTimeout(() => setIsEarTwitching(false), 380);
-        } else {
+          const isDouble = Math.random() < 0.35;
+          setTimeout(() => {
+            setIsBlinking(false);
+            if (isDouble) {
+              setTimeout(() => {
+                setIsBlinking(true);
+                setTimeout(() => setIsBlinking(false), 160);
+              }, 120);
+            }
+          }, 180);
+        } else if (rand < 0.42) {
+          // Curious ear twitch or flurry
+          if (Math.random() < 0.45) {
+            setIsEarFlurry(true);
+            setTimeout(() => setIsEarFlurry(false), 680);
+          } else {
+            setIsEarTwitching(true);
+            setTimeout(() => setIsEarTwitching(false), 380);
+          }
+        } else if (rand < 0.58) {
+          // Inquisitive look-around gaze shift
+          const directions = ['left', 'right', 'up'];
+          const picked = directions[Math.floor(Math.random() * directions.length)];
+          setLookDirection(picked);
+          setTimeout(() => setLookDirection('center'), Math.floor(Math.random() * 1200) + 1200);
+        } else if (rand < 0.72) {
+          // Curious head tilt
+          setIdleGesture('tilt');
+          setTimeout(() => setIdleGesture(''), 1800);
+        } else if (rand < 0.85) {
+          // Happy little wiggle & smile
+          setIdleGesture('wiggle');
+          setIsCuteSmile(true);
+          setTailAnimationMode('fast');
+          setTimeout(() => {
+            setIdleGesture('');
+            setIsCuteSmile(false);
+            setTailAnimationMode('normal');
+          }, 1400);
+        } else if (rand < 0.93) {
+          // Sniffing air & slow tail swish
           setIsSniffing(true);
-          setTimeout(() => setIsSniffing(false), 420);
+          setTailAnimationMode('slow');
+          setTimeout(() => {
+            setIsSniffing(false);
+            setTailAnimationMode('normal');
+          }, 1800);
+        } else {
+          // Peaceful sleepy nod
+          setIdleGesture('sleepy');
+          setTimeout(() => setIdleGesture(''), 2200);
         }
 
         scheduleMicroAction();
@@ -366,8 +418,21 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
   };
 
   const getMoodEyeTransform = () => {
-    if (mood === 'thinking') return '-translate-y-1';
-    if (mood === 'sad') return 'translate-y-1';
+    let transform = '';
+    if (mood === 'thinking') transform += '-translate-y-1 ';
+    else if (mood === 'sad') transform += 'translate-y-1 ';
+
+    if (lookDirection === 'left') transform += '-translate-x-1.5 ';
+    else if (lookDirection === 'right') transform += 'translate-x-1.5 ';
+    else if (lookDirection === 'up') transform += '-translate-y-1 ';
+
+    return transform.trim();
+  };
+
+  const getIdleGestureClass = () => {
+    if (idleGesture === 'tilt') return 'animate-idle-tilt';
+    if (idleGesture === 'wiggle') return 'animate-idle-wiggle';
+    if (idleGesture === 'sleepy') return 'animate-idle-sleepy';
     return '';
   };
 
@@ -381,7 +446,7 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
           ? 'animate-victory-spin'
           : hasCloudFloat
           ? 'animate-cloud-float'
-          : 'animate-mascot-breathe'
+          : getIdleGestureClass() || 'animate-mascot-breathe'
       } ${state === 'climbing' ? 'animate-bounce-slow' : ''} ${className}`}
     >
       {/* AURAS & FX OUTER GLOW */}
@@ -1202,7 +1267,13 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
               fill={tailFill}
               stroke={hasCustomSkin ? secondaryStroke : '#5c3021'}
               strokeWidth="2.5"
-              className="transition-transform duration-300 origin-bottom"
+              className={`transition-transform duration-300 origin-bottom ${
+                tailAnimationMode === 'fast'
+                  ? 'animate-tail-wag-fast'
+                  : tailAnimationMode === 'slow'
+                  ? 'animate-tail-swish-slow'
+                  : 'animate-tail-wag'
+              }`}
             />
 
             {/* Main 3D Volumetric Body Sphere */}
@@ -1246,8 +1317,8 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             <path d="M 60 120 C 60 160, 85 160, 95 155 C 90 145, 80 130, 75 110 Z" fill={secondaryFill} stroke={hasCustomSkin ? secondaryStroke : '#5c3021'} strokeWidth="2" />
             <path d="M 140 120 C 140 160, 115 160, 105 155 C 110 145, 120 130, 125 110 Z" fill={secondaryFill} stroke={hasCustomSkin ? secondaryStroke : '#5c3021'} strokeWidth="2" />
 
-            {/* Ears with Micro Twitching */}
-            <g className={`transition-transform duration-200 ${isEarTwitching ? '-rotate-6 translate-y-0.5' : ''}`}>
+            {/* Ears with Micro Twitching and Flurries */}
+            <g className={`transition-transform duration-200 ${isEarFlurry ? 'animate-ear-flurry' : isEarTwitching ? '-rotate-6 translate-y-0.5' : ''}`}>
               {/* Left Ear */}
               <path
                 d="M 65 60 C 50 30, 40 15, 60 15 C 80 15, 85 30, 90 45 Z"
@@ -1404,6 +1475,8 @@ export default function Mascot({ mood = 'happy', state = 'idle', equipped = [], 
             {/* Expressive Mouth */}
             {mood === 'sad' ? (
               <path d="M 94 105 Q 97 100 100 105 Q 103 100 106 105" stroke={mouthStroke} strokeWidth="2" strokeLinecap="round" fill="none" />
+            ) : isCuteSmile ? (
+              <path d="M 92 99 Q 100 107 108 99" stroke={mouthStroke} strokeWidth="2.5" strokeLinecap="round" fill="none" />
             ) : (
               <path d="M 94 100 Q 97 105 100 100 Q 103 105 106 100" stroke={mouthStroke} strokeWidth="2" strokeLinecap="round" fill="none" />
             )}
