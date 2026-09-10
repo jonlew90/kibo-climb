@@ -893,5 +893,207 @@ html, body, #root {
   animation: unseenBadgePulse 2s ease-in-out infinite;
 }
 
+/* ==================================================== */
+/* COMPANION PET SPECIALIZED ANIMATIONS & VISUAL FX     */
+/* ==================================================== */
+
+@keyframes petHoverFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(1.5deg);
+  }
+}
+
+@keyframes petGroundIdle {
+  0%, 100% {
+    transform: translateY(0px) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.02, 0.98);
+  }
+}
+
+@keyframes petWingFlutter {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.78);
+  }
+}
+
+@keyframes petEmberFloat {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(0.6);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  75% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-18px) translateX(6px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes petSnowDrift {
+  0% {
+    transform: translateY(-4px) translateX(-3px) rotate(0deg);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(16px) translateX(4px) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes petPollenDrift {
+  0% {
+    transform: translateY(2px) translateX(0px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-14px) translateX(-5px);
+    opacity: 0;
+  }
+}
+
+@keyframes petOrbitSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes petPulseGlow {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes petSignalPing {
+  0% {
+    r: 2;
+    opacity: 0.9;
+  }
+  100% {
+    r: 12;
+    opacity: 0;
+  }
+}
+
+@keyframes petSmokeWisp {
+  0% {
+    transform: translate(0, 0) scale(0.7);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(8px, -12px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+.animate-pet-hover {
+  animation: petHoverFloat 3.2s ease-in-out infinite;
+}
+
+.animate-pet-hover-fast {
+  animation: petHoverFloat 2.2s ease-in-out infinite;
+}
+
+.animate-pet-ground {
+  animation: petGroundIdle 2.8s ease-in-out infinite;
+}
+
+.animate-pet-wing {
+  animation: petWingFlutter 1.6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-pet-wing-fast {
+  animation: petWingFlutter 0.35s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-pet-ember-1 {
+  animation: petEmberFloat 2s ease-out infinite;
+}
+
+.animate-pet-ember-2 {
+  animation: petEmberFloat 2.4s ease-out infinite 0.6s;
+}
+
+.animate-pet-ember-3 {
+  animation: petEmberFloat 2.8s ease-out infinite 1.2s;
+}
+
+.animate-pet-snow-1 {
+  animation: petSnowDrift 2.8s linear infinite;
+}
+
+.animate-pet-snow-2 {
+  animation: petSnowDrift 3.4s linear infinite 1.1s;
+}
+
+.animate-pet-snow-3 {
+  animation: petSnowDrift 2.6s linear infinite 1.8s;
+}
+
+.animate-pet-pollen-1 {
+  animation: petPollenDrift 2.5s ease-out infinite;
+}
+
+.animate-pet-pollen-2 {
+  animation: petPollenDrift 3s ease-out infinite 1s;
+}
+
+.animate-pet-orbit {
+  animation: petOrbitSpin 8s linear infinite;
+  transform-origin: 50px 50px;
+}
+
+.animate-pet-orbit-reverse {
+  animation: petOrbitSpin 6s linear infinite reverse;
+  transform-origin: 50px 50px;
+}
+
+.animate-pet-pulse-glow {
+  animation: petPulseGlow 2.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-pet-smoke-1 {
+  animation: petSmokeWisp 2s ease-out infinite;
+}
+
+.animate-pet-smoke-2 {
+  animation: petSmokeWisp 2.2s ease-out infinite 0.8s;
+}
+
+
 
 

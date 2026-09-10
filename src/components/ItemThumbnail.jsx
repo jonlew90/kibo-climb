@@ -1,5 +1,6 @@
 import React from 'react';
 import { WORKSHOP_ITEMS } from '../utils/itemsCatalog';
+import PetGraphic, { IS_PET_ID } from './PetGraphic';
 
 export default function ItemThumbnail({ itemId, rarity = 'common', className = "w-12 h-12", saleDiscount = 0, borderless = false }) {
   const containerClasses = {
@@ -518,206 +519,9 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {/* --- PETS --- */}
-        {itemId === 'snowy_owl' && (
-          <g>
-            {/* Wooden Perch */}
-            <path d="M 22 84 Q 50 82 78 84" stroke="#78350F" strokeWidth="4.5" strokeLinecap="round" />
-            <path d="M 24 84 Q 50 83 76 84" stroke="#92400E" strokeWidth="2.5" strokeLinecap="round" />
-            {/* Left & Right Talons */}
-            <path d="M 38 82 L 38 86 M 42 82 L 42 87 M 46 82 L 46 86" stroke="#334155" strokeWidth="2" strokeLinecap="round" />
-            <path d="M 54 82 L 54 86 M 58 82 L 58 87 M 62 82 L 62 86" stroke="#334155" strokeWidth="2" strokeLinecap="round" />
-            {/* Downy Body */}
-            <ellipse cx="50" cy="62" rx="20" ry="22" fill="url(#thumbOwlChickGrad)" stroke="#94A3B8" strokeWidth="2.2" />
-            {/* Chest Speckles */}
-            <path d="M 45 56 Q 50 59 55 56 M 43 63 Q 50 66 57 63 M 46 70 Q 50 73 54 70" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-            {/* Folded Wings */}
-            <path d="M 30 52 C 22 60, 24 72, 34 76 C 36 68, 36 58, 34 52 Z" fill="#F1F5F9" stroke="#94A3B8" strokeWidth="1.8" />
-            <path d="M 70 52 C 78 60, 76 72, 66 76 C 64 68, 64 58, 66 52 Z" fill="#F1F5F9" stroke="#94A3B8" strokeWidth="1.8" />
-            {/* Fluffy Round Head */}
-            <circle cx="50" cy="38" r="18" fill="url(#thumbOwlChickGrad)" stroke="#94A3B8" strokeWidth="2.2" />
-            {/* Feather Head Tufts */}
-            <path d="M 34 26 Q 38 31 36 36" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" fill="none" />
-            <path d="M 66 26 Q 62 31 64 36" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" fill="none" />
-            {/* Facial Discs */}
-            <circle cx="42" cy="38" r="9" fill="#FFFFFF" opacity="0.9" />
-            <circle cx="58" cy="38" r="9" fill="#FFFFFF" opacity="0.9" />
-            {/* Amber Eyes with Double Highlights */}
-            <circle cx="42" cy="38" r="6.5" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2" />
-            <circle cx="58" cy="38" r="6.5" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2" />
-            <circle cx="42" cy="38" r="4" fill="#0F172A" />
-            <circle cx="58" cy="38" r="4" fill="#0F172A" />
-            <circle cx="40" cy="36" r="1.8" fill="#FFFFFF" />
-            <circle cx="56" cy="36" r="1.8" fill="#FFFFFF" />
-            <circle cx="43.5" cy="39.5" r="0.9" fill="#FFFFFF" />
-            <circle cx="59.5" cy="39.5" r="0.9" fill="#FFFFFF" />
-            {/* Curved Dark Beak */}
-            <path d="M 48 38 Q 50 46 52 38 Z" fill="#334155" stroke="#1E293B" strokeWidth="0.8" />
-          </g>
-        )}
-
-        {itemId === 'alpine_fox' && (
-          <g>
-            {/* Curled Fluffy Tail behind body with snowy white plume tip */}
-            <path d="M 62 66 C 88 64, 88 34, 72 28 C 64 25, 60 38, 70 54 Z" fill="url(#thumbFoxCoatGrad)" stroke="#9A3412" strokeWidth="2.2" />
-            <path d="M 78 37 C 88 34, 84 28, 72 28 C 68 28, 67 32, 70 36 Z" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.2" />
-            {/* Haunches and Body */}
-            <ellipse cx="50" cy="66" rx="18" ry="15" fill="url(#thumbFoxCoatGrad)" stroke="#9A3412" strokeWidth="2.2" />
-            {/* Snowy White Chest Bib */}
-            <path d="M 38 52 Q 50 56 62 52 Q 58 74 50 78 Q 42 74 38 52 Z" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1.5" />
-            {/* White Front Paws */}
-            <ellipse cx="43" cy="78" rx="4" ry="3.5" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.2" />
-            <ellipse cx="53" cy="78" rx="4" ry="3.5" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.2" />
-            {/* Fox Cub Head */}
-            <circle cx="48" cy="42" r="15" fill="url(#thumbFoxCoatGrad)" stroke="#9A3412" strokeWidth="2.2" />
-            {/* White Cheek Tufts */}
-            <path d="M 34 46 Q 40 48 42 42" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" fill="none" />
-            <path d="M 62 46 Q 56 48 54 42" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" fill="none" />
-            {/* Triangular Alert Ears with Charcoal Tips & Cream Fluff */}
-            <polygon points="36,36 26,14 44,26" fill="url(#thumbFoxCoatGrad)" stroke="#9A3412" strokeWidth="2" />
-            <polygon points="29,20 26,14 34,18" fill="#1E293B" />
-            <polygon points="36,33 30,22 41,27" fill="#FEF3C7" />
-            <polygon points="48,27 64,14 58,36" fill="url(#thumbFoxCoatGrad)" stroke="#9A3412" strokeWidth="2" />
-            <polygon points="61,19 64,14 57,17" fill="#1E293B" />
-            <polygon points="51,28 60,21 56,33" fill="#FEF3C7" />
-            {/* Muzzle & Snout */}
-            <ellipse cx="48" cy="46" rx="5" ry="4" fill="#FFFFFF" />
-            <ellipse cx="48" cy="46" rx="2.5" ry="1.8" fill="#1E293B" />
-            <path d="M 48 48 L 48 50 M 46 49 Q 48 52 50 49" stroke="#78350F" strokeWidth="1" strokeLinecap="round" fill="none" />
-            {/* Expressive Glossy Eyes */}
-            <ellipse cx="41" cy="38" rx="3.5" ry="4.5" fill="#451A03" />
-            <ellipse cx="55" cy="38" rx="3.5" ry="4.5" fill="#451A03" />
-            <circle cx="40" cy="36.5" r="1.5" fill="#FFFFFF" />
-            <circle cx="54" cy="36.5" r="1.5" fill="#FFFFFF" />
-          </g>
-        )}
-
-        {itemId === 'mini_robot' && (
-          <g>
-            {/* Antigravity Hover Field */}
-            <ellipse cx="50" cy="85" rx="22" ry="5" fill="#38BDF8" opacity="0.35" />
-            <ellipse cx="50" cy="85" rx="14" ry="3" fill="#22D3EE" opacity="0.75" />
-            {/* Thruster Bell */}
-            <path d="M 42 70 L 40 76 Q 50 80 60 76 L 58 70 Z" fill="#334155" stroke="#0EA5E9" strokeWidth="1.5" />
-            <path d="M 43 76 Q 50 83 57 76 Z" fill="#38BDF8" />
-            {/* Robot Chassis Body */}
-            <rect x="24" y="26" width="52" height="46" rx="18" fill="url(#thumbMetalGrad)" stroke="#1E293B" strokeWidth="2.5" />
-            {/* Dark Obsidian Curved Visor */}
-            <rect x="29" y="32" width="42" height="26" rx="12" fill="#0F172A" stroke="#0284C7" strokeWidth="1.5" />
-            {/* Glowing Neon Cyan LED Visor Eyes */}
-            <path d="M 37 45 Q 42 39 47 45" stroke="#22D3EE" strokeWidth="3" strokeLinecap="round" fill="none" />
-            <path d="M 53 45 Q 58 39 63 45" stroke="#22D3EE" strokeWidth="3" strokeLinecap="round" fill="none" />
-            {/* Battery / Energy Core */}
-            <circle cx="50" cy="64" r="3.5" fill="#22D3EE" stroke="#0284C7" strokeWidth="1" />
-            {/* Side Floating Drone Hands */}
-            <circle cx="16" cy="50" r="5" fill="#94A3B8" stroke="#334155" strokeWidth="1.5" />
-            <circle cx="16" cy="50" r="2" fill="#38BDF8" />
-            <circle cx="84" cy="50" r="5" fill="#94A3B8" stroke="#334155" strokeWidth="1.5" />
-            <circle cx="84" cy="50" r="2" fill="#38BDF8" />
-            {/* Beacon Antenna */}
-            <line x1="50" y1="26" x2="50" y2="13" stroke="#64748B" strokeWidth="2.5" strokeLinecap="round" />
-            <circle cx="50" cy="11" r="4.5" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
-            <path d="M 43 8 Q 50 4 57 8" stroke="#38BDF8" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.85" />
-          </g>
-        )}
-
-        {itemId === 'phoenix_pet' && (
-          <g>
-            {/* Sinuous Flaming Tail Plumes */}
-            <path d="M 50 68 Q 36 84 44 98 Q 54 88 52 68 Z" fill="url(#thumbLavaGrad)" stroke="#B45309" strokeWidth="1.5" />
-            <path d="M 44 65 Q 24 78 26 92 Q 36 80 46 68 Z" fill="#F59E0B" opacity="0.9" />
-            <path d="M 56 65 Q 76 78 74 92 Q 64 80 54 68 Z" fill="#EF4444" opacity="0.9" />
-            {/* Fiery Body */}
-            <ellipse cx="50" cy="54" rx="14" ry="18" fill="url(#thumbLavaGrad)" stroke="#9A3412" strokeWidth="2.2" />
-            <path d="M 44 48 Q 50 58 46 68" stroke="#FEF08A" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.8" />
-            {/* Sweeping Arched Flame Wings */}
-            <path d="M 46 48 C 18 28, 8 52, 20 68 C 28 70, 36 60, 46 54 Z" fill="url(#thumbLavaGrad)" stroke="#EA580C" strokeWidth="2" />
-            <path d="M 24 38 C 16 48, 16 58, 26 64" stroke="#FEF08A" strokeWidth="2" fill="none" />
-            <path d="M 54 48 C 82 28, 92 52, 80 68 C 72 70, 64 60, 54 54 Z" fill="url(#thumbGoldGrad)" stroke="#D97706" strokeWidth="2" />
-            <path d="M 76 38 C 84 48, 84 58, 74 64" stroke="#FEF08A" strokeWidth="2" fill="none" />
-            {/* Licking Flame Crest */}
-            <path d="M 50 30 C 44 14, 52 6, 56 10 C 54 18, 52 22, 52 30 Z" fill="#FEF08A" stroke="#D97706" strokeWidth="1" />
-            <path d="M 46 28 C 38 18, 42 12, 47 16 Z" fill="#F59E0B" />
-            <path d="M 54 28 C 62 18, 58 12, 53 16 Z" fill="#EF4444" />
-            {/* Phoenix Head */}
-            <circle cx="50" cy="34" r="11" fill="#EA580C" stroke="#9A3412" strokeWidth="2" />
-            {/* Sharp Hooked Golden Beak */}
-            <polygon points="56,32 72,36 56,40" fill="#FBBF24" stroke="#B45309" strokeWidth="1.5" />
-            {/* Glowing Ember Eye */}
-            <circle cx="47" cy="32" r="3.5" fill="#FEF08A" stroke="#B45309" strokeWidth="1" />
-            <circle cx="47" cy="32" r="2" fill="#451A03" />
-            <circle cx="46" cy="31" r="1" fill="#FFFFFF" />
-            {/* Floating Star Sparks */}
-            <circle cx="20" cy="36" r="1.5" fill="#FEF08A" />
-            <circle cx="80" cy="40" r="1.8" fill="#FBBF24" />
-            <circle cx="30" cy="85" r="1.2" fill="#EF4444" />
-          </g>
-        )}
-
-        {itemId === 'frost_dragon' && (
-          <g>
-            {/* Curled Serpentine Tail with Crystal Ice Spade Barb */}
-            <path d="M 56 68 C 76 72, 82 86, 70 94 C 62 88, 60 78, 52 70 Z" fill="url(#thumbIceDragonGrad)" stroke="#0284C7" strokeWidth="2" />
-            <polygon points="70,94 82,90 76,80 66,88" fill="#E0F2FE" stroke="#0284C7" strokeWidth="1.5" />
-            {/* Crystalline Dragon Body */}
-            <ellipse cx="48" cy="58" rx="16" ry="18" fill="url(#thumbIceDragonGrad)" stroke="#0284C7" strokeWidth="2.2" />
-            <path d="M 44 48 Q 50 60 46 72" stroke="#E0F2FE" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-            {/* Spiky Dorsal Ice Ridge */}
-            <polygon points="34,48 37,42 40,48" fill="#A5F3FC" stroke="#0891B2" strokeWidth="1" />
-            <polygon points="38,58 41,52 44,58" fill="#A5F3FC" stroke="#0891B2" strokeWidth="1" />
-            {/* Translucent Faceted Ice Wings */}
-            <path d="M 42 50 L 14 28 L 20 44 L 8 54 L 28 62 L 42 56 Z" fill="url(#thumbNeonGrad)" stroke="#0891B2" strokeWidth="2" opacity="0.9" />
-            <path d="M 14 28 L 30 54 M 20 44 L 34 56" stroke="#FFFFFF" strokeWidth="1.5" opacity="0.8" />
-            <path d="M 54 50 L 82 26 L 76 42 L 88 52 L 68 62 L 56 56 Z" fill="url(#thumbNeonGrad)" stroke="#0891B2" strokeWidth="2" opacity="0.9" />
-            <path d="M 82 26 L 66 54 M 76 42 L 62 56" stroke="#FFFFFF" strokeWidth="1.5" opacity="0.8" />
-            {/* Swept-back Crystalline Ice Horns */}
-            <path d="M 42 26 Q 34 8 22 6 Q 32 18 38 28 Z" fill="#E0F2FE" stroke="#0284C7" strokeWidth="1.5" />
-            <path d="M 54 26 Q 62 8 74 6 Q 64 18 58 28 Z" fill="#E0F2FE" stroke="#0284C7" strokeWidth="1.5" />
-            {/* Dragon Head & Snout */}
-            <path d="M 38 32 C 38 22, 58 22, 60 32 C 62 38, 56 44, 46 44 C 40 44, 38 38, 38 32 Z" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" />
-            {/* Sapphire Slit Eye */}
-            <ellipse cx="44" cy="30" rx="3.5" ry="4" fill="#0369A1" stroke="#E0F2FE" strokeWidth="1" />
-            <line x1="44" y1="28" x2="44" y2="32" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-            {/* Frost Breath Vapour */}
-            <path d="M 58 38 Q 66 36 72 38 M 60 42 Q 68 42 74 44" stroke="#E0F2FE" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.85" />
-            <circle cx="70" cy="32" r="1.5" fill="#A5F3FC" />
-          </g>
-        )}
-
-        {itemId === 'cosmic_griffin' && (
-          <g>
-            {/* Orbiting Celestial 4-Point Stars */}
-            <path d="M 16 26 L 18 18 L 20 26 L 28 28 L 20 30 L 18 38 L 16 30 L 8 28 Z" fill="#FEF08A" stroke="#F59E0B" strokeWidth="0.8" />
-            <path d="M 84 20 L 85.5 14 L 87 20 L 93 21.5 L 87 23 L 85.5 29 L 84 23 L 78 21.5 Z" fill="#FEF08A" stroke="#F59E0B" strokeWidth="0.8" />
-            <circle cx="82" cy="74" r="2" fill="#818CF8" />
-            <circle cx="18" cy="68" r="1.5" fill="#38BDF8" />
-            {/* Curled Lion Tail with Cosmic Flame Tuft */}
-            <path d="M 64 66 C 84 62, 88 42, 78 38 C 74 36, 70 42, 76 52 Z" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="2.2" />
-            <path d="M 80 38 C 88 32, 90 26, 82 26 C 76 26, 76 32, 78 38 Z" fill="url(#thumbCosmicStarGrad)" stroke="#B45309" strokeWidth="1" />
-            {/* Golden Lion Body & Muscular Haunches */}
-            <ellipse cx="50" cy="62" rx="18" ry="16" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="2.2" />
-            {/* Paws with Golden Claws */}
-            <ellipse cx="41" cy="78" rx="5" ry="4" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
-            <ellipse cx="59" cy="78" rx="5" ry="4" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
-            <path d="M 38 80 L 38 83 M 41 80 L 41 84 M 44 80 L 44 83" stroke="#FEF08A" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M 56 80 L 56 83 M 59 80 L 59 84 M 62 80 L 62 83" stroke="#FEF08A" strokeWidth="1.5" strokeLinecap="round" />
-            {/* Enormous Starlight Tipped Majestic Wings */}
-            <path d="M 44 48 C 12 18, 6 46, 22 70 C 32 72, 38 60, 44 54 Z" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="2" />
-            <path d="M 22 28 C 12 36, 8 50, 18 64" stroke="#818CF8" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-            <path d="M 56 48 C 88 18, 94 46, 78 70 C 68 72, 62 60, 56 54 Z" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="2" />
-            <path d="M 78 28 C 88 36, 92 50, 82 64" stroke="#818CF8" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-            {/* Royal Feathered Crest */}
-            <path d="M 50 28 C 44 12, 52 4, 58 8 C 56 16, 54 20, 54 28 Z" fill="#FEF08A" stroke="#B45309" strokeWidth="1.2" />
-            <polygon points="40,22 48,14 46,24" fill="#F59E0B" />
-            {/* Regal Eagle Head */}
-            <circle cx="50" cy="34" r="13" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="2.2" />
-            {/* Mighty Hooked Golden Beak */}
-            <path d="M 58 32 Q 74 32 72 42 Q 64 42 58 38 Z" fill="#FEF08A" stroke="#B45309" strokeWidth="2" />
-            {/* Keen Celestial Eye */}
-            <circle cx="46" cy="31" r="4.5" fill="#38BDF8" stroke="#1E1B4B" strokeWidth="1.5" />
-            <circle cx="46" cy="31" r="2.5" fill="#0F172A" />
-            <circle cx="44.5" cy="29.5" r="1.5" fill="#FFFFFF" />
-          </g>
+        {/* --- HIGH-FIDELITY COMPANION PETS --- */}
+        {IS_PET_ID(itemId) && (
+          <PetGraphic petId={itemId} isCompanion={false} />
         )}
 
         {/* --- FX --- */}
@@ -965,40 +769,6 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'spring_butterfly_pet' && (
-          <g>
-            {/* Pollen Dust Sparks */}
-            <circle cx="20" cy="30" r="1.5" fill="#FEF08A" opacity="0.85" />
-            <circle cx="80" cy="32" r="1.5" fill="#FEF08A" opacity="0.85" />
-            <circle cx="50" cy="80" r="1.2" fill="#FBBF24" opacity="0.8" />
-            {/* Upper Wings (Monarch Amber/Orange Stained Glass) */}
-            <path d="M 48 44 C 14 10, 8 48, 44 54 Z" fill="#F97316" stroke="#0F172A" strokeWidth="2.5" />
-            <path d="M 52 44 C 86 10, 92 48, 56 54 Z" fill="#F97316" stroke="#0F172A" strokeWidth="2.5" />
-            {/* Upper Wing Black Veins */}
-            <path d="M 48 44 C 30 26, 20 38, 42 50 M 44 44 C 28 32, 24 46, 38 52" stroke="#0F172A" strokeWidth="1.8" fill="none" />
-            <path d="M 52 44 C 70 26, 80 38, 58 50 M 56 44 C 72 32, 76 46, 62 52" stroke="#0F172A" strokeWidth="1.8" fill="none" />
-            {/* Wing Margin White Spots */}
-            <circle cx="16" cy="30" r="1" fill="#FFFFFF" />
-            <circle cx="20" cy="22" r="1" fill="#FFFFFF" />
-            <circle cx="28" cy="18" r="1" fill="#FFFFFF" />
-            <circle cx="84" cy="30" r="1" fill="#FFFFFF" />
-            <circle cx="80" cy="22" r="1" fill="#FFFFFF" />
-            <circle cx="72" cy="18" r="1" fill="#FFFFFF" />
-            {/* Lower Wings */}
-            <path d="M 48 53 C 18 64, 24 86, 48 68 Z" fill="#EA580C" stroke="#0F172A" strokeWidth="2.2" />
-            <path d="M 52 53 C 82 64, 76 86, 52 68 Z" fill="#EA580C" stroke="#0F172A" strokeWidth="2.2" />
-            <path d="M 46 56 C 32 68, 30 76, 46 66" stroke="#0F172A" strokeWidth="1.5" fill="none" />
-            <path d="M 54 56 C 68 68, 70 76, 54 66" stroke="#0F172A" strokeWidth="1.5" fill="none" />
-            {/* Butterfly Body & Head */}
-            <ellipse cx="50" cy="52" rx="3.5" ry="16" fill="#0F172A" />
-            <circle cx="50" cy="36" r="4.5" fill="#0F172A" />
-            {/* Curled Antennae with Golden Tips */}
-            <path d="M 48 34 Q 38 20 32 22 M 52 34 Q 62 20 68 22" stroke="#0F172A" strokeWidth="2" strokeLinecap="round" fill="none" />
-            <circle cx="32" cy="22" r="1.5" fill="#FBBF24" />
-            <circle cx="68" cy="22" r="1.5" fill="#FBBF24" />
-          </g>
-        )}
-
         {/* 2. SUMMER ITEMS */}
         {itemId === 'summer_visor' && (
           <g>
@@ -1156,35 +926,6 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'autumn_squirrel_pet' && (
-          <g>
-            {/* Giant Fluffy Tail Curling Over Back with Shaded Strands */}
-            <path d="M 42 78 C 8 72, 4 24, 32 14 C 44 10, 52 24, 38 42 C 30 52, 38 68, 48 72 Z" fill="url(#thumbFoxCoatGrad)" stroke="#78350F" strokeWidth="2.2" />
-            <path d="M 28 20 C 18 28, 18 52, 36 62" stroke="#FEF3C7" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.8" />
-            {/* Squirrel Body & Soft Cream Belly */}
-            <ellipse cx="58" cy="65" rx="16" ry="18" fill="url(#thumbFoxCoatGrad)" stroke="#78350F" strokeWidth="2" />
-            <ellipse cx="55" cy="67" rx="8" ry="12" fill="#FEF3C7" opacity="0.9" />
-            {/* Chubby Head & Tufted Ears */}
-            <circle cx="60" cy="42" r="13" fill="url(#thumbFoxCoatGrad)" stroke="#78350F" strokeWidth="2" />
-            <polygon points="54,34 50,20 58,28" fill="url(#thumbFoxCoatGrad)" stroke="#78350F" strokeWidth="1.5" />
-            <polygon points="62,32 68,18 68,30" fill="url(#thumbFoxCoatGrad)" stroke="#78350F" strokeWidth="1.5" />
-            <path d="M 51 22 L 53 25 M 67 20 L 65 24" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-            {/* Glossy Dark Eye with Shine */}
-            <ellipse cx="64" cy="40" rx="3.5" ry="4" fill="#1E293B" />
-            <circle cx="63" cy="38.5" r="1.5" fill="#FFFFFF" />
-            {/* Snout with Cute Nose and Whiskers */}
-            <ellipse cx="71" cy="45" rx="2" ry="1.5" fill="#451A03" />
-            <path d="M 69 47 L 76 45 M 69 48 L 76 49" stroke="#78350F" strokeWidth="0.8" strokeLinecap="round" />
-            {/* Gleaming Golden Summit Acorn clutched in Paws */}
-            <path d="M 44 56 Q 52 52 60 56 L 58 60 Q 52 57 46 60 Z" fill="#78350F" stroke="#451A03" strokeWidth="1.2" />
-            <path d="M 52 53 Q 50 48 53 46" stroke="#451A03" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-            <path d="M 46 59 Q 44 72 52 74 Q 60 72 58 59 Z" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1.5" />
-            <circle cx="49" cy="64" r="1.5" fill="#FFFFFF" opacity="0.75" />
-            {/* Front Paws Holding Acorn */}
-            <ellipse cx="46" cy="62" rx="3" ry="2" fill="url(#thumbFoxCoatGrad)" stroke="#78350F" strokeWidth="1" />
-            <ellipse cx="58" cy="62" rx="3" ry="2" fill="url(#thumbFoxCoatGrad)" stroke="#78350F" strokeWidth="1" />
-          </g>
-        )}
 
         {/* 4. WINTER ITEMS */}
         {itemId === 'winter_beanie' && (
@@ -1195,42 +936,6 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'winter_snowman_pet' && (
-          <g>
-            {/* Pine Twig Arms */}
-            <path d="M 38 52 L 20 44 M 25 46 L 22 40" stroke="#78350F" strokeWidth="2.5" strokeLinecap="round" />
-            <path d="M 62 52 L 80 42 M 74 45 L 78 40" stroke="#78350F" strokeWidth="2.5" strokeLinecap="round" />
-            {/* Sculpted Snowball Body Tiers */}
-            <circle cx="50" cy="72" r="18" fill="url(#thumbOwlChickGrad)" stroke="#94A3B8" strokeWidth="2.2" />
-            <circle cx="50" cy="50" r="14" fill="url(#thumbOwlChickGrad)" stroke="#94A3B8" strokeWidth="2" />
-            <circle cx="50" cy="32" r="11" fill="url(#thumbOwlChickGrad)" stroke="#94A3B8" strokeWidth="2" />
-            {/* Windblown Striped Cozy Scarf */}
-            <path d="M 40 40 Q 50 44 60 40 L 62 46 Q 50 50 38 46 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="1.5" />
-            <path d="M 54 44 Q 64 48 62 60 L 56 60 Q 58 50 52 46 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="1.2" />
-            <line x1="43" y1="41" x2="44" y2="46" stroke="#16A34A" strokeWidth="2" />
-            <line x1="57" y1="49" x2="61" y2="53" stroke="#16A34A" strokeWidth="2" />
-            <path d="M 56 60 L 56 63 M 59 60 L 59 63 M 62 60 L 62 63" stroke="#FEF08A" strokeWidth="1.5" />
-            {/* Charcoal Eyes & Smile */}
-            <circle cx="46" cy="30" r="1.8" fill="#0F172A" />
-            <circle cx="54" cy="30" r="1.8" fill="#0F172A" />
-            <circle cx="45" cy="36" r="0.9" fill="#0F172A" />
-            <circle cx="48" cy="38" r="0.9" fill="#0F172A" />
-            <circle cx="52" cy="38" r="0.9" fill="#0F172A" />
-            <circle cx="55" cy="36" r="0.9" fill="#0F172A" />
-            {/* Carrot Nose */}
-            <polygon points="50,33 66,35 50,37" fill="#EA580C" stroke="#C2410C" strokeWidth="0.8" />
-            {/* Shiny Top Hat with Holly */}
-            <ellipse cx="50" cy="23" rx="16" ry="3" fill="#1E293B" stroke="#0F172A" strokeWidth="1" />
-            <rect x="41" y="10" width="18" height="13" rx="2" fill="#1E293B" stroke="#0F172A" strokeWidth="1" />
-            <rect x="41" y="19" width="18" height="3" fill="#DC2626" />
-            <circle cx="43" cy="19" r="1.5" fill="#15803D" />
-            <circle cx="41.5" cy="19" r="1.2" fill="#EF4444" />
-            {/* Coal Body Buttons */}
-            <circle cx="50" cy="56" r="1.8" fill="#0F172A" />
-            <circle cx="50" cy="68" r="2" fill="#0F172A" />
-            <circle cx="50" cy="76" r="2" fill="#0F172A" />
-          </g>
-        )}
 
         {itemId === 'winter_ice_skates' && (
           <g>
@@ -1268,37 +973,7 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
         )}
 
         {/* 6. MLK DAY OF SERVICE */}
-        {itemId === 'mlk_peace_dove_pet' && (
-          <g>
-            {/* Celestial Harmony Halo */}
-            <circle cx="50" cy="45" r="32" fill="none" stroke="#FEF08A" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.75" />
-            <circle cx="22" cy="24" r="1.5" fill="#FEF08A" />
-            <circle cx="78" cy="22" r="1.5" fill="#FEF08A" />
-            {/* Fan Tail Feathers */}
-            <path d="M 32 60 C 14 68, 12 78, 20 84 C 28 82, 34 72, 38 64 Z" fill="url(#thumbOwlChickGrad)" stroke="#94A3B8" strokeWidth="1.8" />
-            <path d="M 28 66 C 18 74, 18 82, 26 84" stroke="#CBD5E1" strokeWidth="1" fill="none" />
-            {/* Dove Body & Breast */}
-            <path d="M 34 56 C 30 42, 48 30, 64 36 C 76 40, 80 48, 76 58 C 68 64, 48 68, 34 56 Z" fill="url(#thumbOwlChickGrad)" stroke="#94A3B8" strokeWidth="2" />
-            {/* Left Layered Wing Outstretched */}
-            <path d="M 44 44 C 20 16, 42 10, 56 26 C 52 34, 48 38, 44 44 Z" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="2" />
-            <path d="M 34 22 C 40 18, 48 18, 52 28 M 28 26 C 34 24, 42 24, 46 34" stroke="#CBD5E1" strokeWidth="1.2" fill="none" />
-            {/* Right Layered Wing */}
-            <path d="M 52 42 C 46 14, 68 8, 78 24 C 72 32, 64 38, 52 42 Z" fill="url(#thumbOwlChickGrad)" stroke="#94A3B8" strokeWidth="1.8" />
-            {/* Head & Gentle Eye */}
-            <circle cx="72" cy="42" r="9" fill="#FFFFFF" stroke="#94A3B8" strokeWidth="1.8" />
-            <circle cx="74" cy="40" r="2.2" fill="#0F172A" />
-            <circle cx="73.5" cy="39.2" r="0.8" fill="#FFFFFF" />
-            {/* Delicate Golden Beak */}
-            <polygon points="79,42 90,44 79,46" fill="#F59E0B" stroke="#D97706" strokeWidth="0.8" />
-            {/* Detailed Fresh Olive Branch of Peace */}
-            <path d="M 78 45 Q 66 58 54 54" stroke="#15803D" strokeWidth="2" strokeLinecap="round" fill="none" />
-            {/* Olive Leaves */}
-            <path d="M 72 48 Q 72 42 66 45 Q 68 50 72 48 Z" fill="#22C55E" stroke="#15803D" strokeWidth="0.8" />
-            <path d="M 64 53 Q 62 46 56 50 Q 59 55 64 53 Z" fill="#22C55E" stroke="#15803D" strokeWidth="0.8" />
-            <path d="M 57 55 Q 52 50 48 54 Q 52 58 57 55 Z" fill="#22C55E" stroke="#15803D" strokeWidth="0.8" />
-            <circle cx="68" cy="51" r="2" fill="#166534" />
-          </g>
-        )}
+
 
         {itemId === 'mlk_dream_sash' && (
           <g>
@@ -1535,34 +1210,6 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'halloween_ghost_pet' && (
-          <g>
-            {/* Will-o'-the-Wisp Spirit Embers */}
-            <circle cx="18" cy="36" r="4" fill="#67E8F9" opacity="0.4" />
-            <circle cx="18" cy="36" r="2" fill="#FFFFFF" />
-            <circle cx="82" cy="52" r="3.5" fill="#C084FC" opacity="0.4" />
-            <circle cx="82" cy="52" r="1.8" fill="#FFFFFF" />
-            {/* Ghost Spectral Body with Ethereal Folds */}
-            <path d="M 28 46 C 28 20, 72 20, 72 46 C 72 68, 80 76, 74 82 C 68 86, 64 78, 58 84 C 52 78, 48 86, 42 80 C 36 86, 32 78, 26 82 C 20 76, 28 68, 28 46 Z" fill="url(#thumbGhostGlowGrad)" stroke="#67E8F9" strokeWidth="2.2" opacity="0.95" />
-            {/* Translucent Inner Glow */}
-            <path d="M 34 46 C 34 26, 66 26, 66 46 C 66 64, 70 70, 64 74 C 58 78, 54 72, 50 74 C 46 72, 42 78, 36 74 C 30 70, 34 64, 34 46 Z" fill="#FFFFFF" opacity="0.5" />
-            {/* Cute Ghost Waving Arms */}
-            <path d="M 28 50 Q 14 42 22 36" stroke="url(#thumbGhostGlowGrad)" strokeWidth="6" strokeLinecap="round" fill="none" />
-            <path d="M 72 50 Q 86 42 78 36" stroke="url(#thumbGhostGlowGrad)" strokeWidth="6" strokeLinecap="round" fill="none" />
-            {/* Glowing Spectral Eyes */}
-            <ellipse cx="43" cy="42" rx="4" ry="5.5" fill="#0F172A" />
-            <ellipse cx="57" cy="42" rx="4" ry="5.5" fill="#0F172A" />
-            <circle cx="43" cy="42" r="2.5" fill="#22D3EE" />
-            <circle cx="57" cy="42" r="2.5" fill="#22D3EE" />
-            <circle cx="41.5" cy="40.5" r="1.2" fill="#FFFFFF" />
-            <circle cx="55.5" cy="40.5" r="1.2" fill="#FFFFFF" />
-            {/* Cheerful Blushing Cheeks */}
-            <circle cx="36" cy="48" r="3" fill="#F472B6" opacity="0.6" />
-            <circle cx="64" cy="48" r="3" fill="#F472B6" opacity="0.6" />
-            {/* Friendly Open Smile */}
-            <path d="M 46 52 Q 50 60 54 52 Z" fill="#0F172A" />
-          </g>
-        )}
 
         {itemId === 'halloween_witch_broom' && (
           <g>
@@ -1639,47 +1286,6 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'holiday_gingerbread_pet' && (
-          <g>
-            {/* Gingerbread Full Body & Limbs */}
-            <path
-              d="M 44 38 L 22 46 C 18 48, 16 54, 20 58 C 24 62, 30 60, 34 54 L 38 56 L 36 78 C 35 84, 40 88, 46 88 C 50 88, 52 84, 52 78 L 52 70 L 52 78 C 52 84, 54 88, 58 88 C 64 88, 69 84, 68 78 L 66 56 L 70 54 C 74 60, 80 62, 84 58 C 88 54, 86 48, 82 46 L 60 38 Z"
-              fill="url(#thumbGingerbreadGrad)"
-              stroke="#78350F"
-              strokeWidth="2.2"
-              strokeLinejoin="round"
-            />
-            {/* Gingerbread Head */}
-            <circle cx="52" cy="30" r="14" fill="url(#thumbGingerbreadGrad)" stroke="#78350F" strokeWidth="2.2" />
-            {/* White Swirled Royal Icing Hair */}
-            <path d="M 44 22 Q 52 16 60 22" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" fill="none" />
-            <path d="M 48 19 Q 52 14 56 19" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-            {/* White Icing Zig-Zags on Wrists & Ankles */}
-            <path d="M 22 52 L 25 49 L 28 53" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            <path d="M 76 52 L 79 49 L 82 53" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            <path d="M 38 80 L 41 77 L 44 81" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            <path d="M 60 80 L 63 77 L 66 81" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            {/* Royal Icing Smile & Eyes */}
-            <circle cx="47" cy="28" r="2" fill="#FFFFFF" />
-            <circle cx="47" cy="28" r="1" fill="#78350F" />
-            <circle cx="57" cy="28" r="2" fill="#FFFFFF" />
-            <circle cx="57" cy="28" r="1" fill="#78350F" />
-            <path d="M 47 34 Q 52 38 57 34" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" fill="none" />
-            {/* Rosy Cheeks */}
-            <circle cx="43" cy="32" r="2" fill="#F472B6" opacity="0.6" />
-            <circle cx="61" cy="32" r="2" fill="#F472B6" opacity="0.6" />
-            {/* Ruby, Emerald & Amber Gumdrop Buttons */}
-            <circle cx="52" cy="46" r="3" fill="#EF4444" stroke="#991B1B" strokeWidth="1" />
-            <circle cx="51" cy="45" r="1" fill="#FFFFFF" opacity="0.8" />
-            <circle cx="52" cy="56" r="3" fill="#22C55E" stroke="#15803D" strokeWidth="1" />
-            <circle cx="51" cy="55" r="1" fill="#FFFFFF" opacity="0.8" />
-            <circle cx="52" cy="66" r="3" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
-            <circle cx="51" cy="65" r="1" fill="#FFFFFF" opacity="0.8" />
-            {/* Mini Peppermint Candy Cane held in hand */}
-            <path d="M 18 64 L 18 42 A 4 4 0 0 1 26 42" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" fill="none" />
-            <path d="M 18 64 L 18 42 A 4 4 0 0 1 26 42" stroke="#DC2626" strokeWidth="3" strokeLinecap="round" strokeDasharray="3 3" fill="none" />
-          </g>
-        )}
 
         {itemId === 'holiday_candy_cane_staff' && (
           <g>
@@ -1969,53 +1575,6 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
-        {itemId === 'dragon_pet_premium' && (
-          <g>
-            {/* Fiery Fluttering Baby Wings */}
-            <path d="M 40 48 C 14 26, 12 56, 22 66 C 30 68, 38 58, 42 52 Z" fill="url(#thumbLavaGrad)" stroke="#991B1B" strokeWidth="2" />
-            <path d="M 22 40 L 36 54 M 18 48 L 34 56" stroke="#FEF08A" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M 60 48 C 86 26, 88 56, 78 66 C 70 68, 62 58, 58 52 Z" fill="url(#thumbLavaGrad)" stroke="#991B1B" strokeWidth="2" />
-            <path d="M 78 40 L 64 54 M 82 48 L 66 56" stroke="#FEF08A" strokeWidth="1.5" strokeLinecap="round" />
-            {/* Curled Dragon Tail with Golden Flame Tip */}
-            <path d="M 54 68 C 76 72, 78 88, 66 94 C 58 88, 56 78, 50 72 Z" fill="url(#thumbLavaGrad)" stroke="#991B1B" strokeWidth="2" />
-            <path d="M 68 93 Q 78 94 76 84 Q 70 86 66 90 Z" fill="#FBBF24" stroke="#D97706" strokeWidth="1" />
-            {/* Chubby Dragon Body & Golden Belly Plates */}
-            <ellipse cx="50" cy="62" rx="18" ry="20" fill="url(#thumbLavaGrad)" stroke="#991B1B" strokeWidth="2.2" />
-            <path d="M 44 54 Q 50 64 48 76" stroke="#FEF08A" strokeWidth="6" strokeLinecap="round" fill="none" opacity="0.9" />
-            <path d="M 44 58 L 50 58 M 45 64 L 51 64 M 46 70 L 52 70" stroke="#D97706" strokeWidth="1.2" strokeLinecap="round" />
-            {/* Tiny Dragon Paws with Claws */}
-            <ellipse cx="40" cy="78" rx="4.5" ry="3.5" fill="#EF4444" stroke="#991B1B" strokeWidth="1.2" />
-            <ellipse cx="60" cy="78" rx="4.5" ry="3.5" fill="#EF4444" stroke="#991B1B" strokeWidth="1.2" />
-            <circle cx="38" cy="80" r="0.8" fill="#FEF08A" />
-            <circle cx="40" cy="81" r="0.8" fill="#FEF08A" />
-            <circle cx="42" cy="80" r="0.8" fill="#FEF08A" />
-            <circle cx="58" cy="80" r="0.8" fill="#FEF08A" />
-            <circle cx="60" cy="81" r="0.8" fill="#FEF08A" />
-            <circle cx="62" cy="80" r="0.8" fill="#FEF08A" />
-            {/* Round Baby Dragon Head */}
-            <circle cx="50" cy="36" r="16" fill="url(#thumbLavaGrad)" stroke="#991B1B" strokeWidth="2.2" />
-            {/* Curled Golden Horns */}
-            <path d="M 38 26 C 28 12, 34 6, 40 8 C 42 16, 43 20, 42 24 Z" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1.5" />
-            <path d="M 62 26 C 72 12, 66 6, 60 8 C 58 16, 57 20, 58 24 Z" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="1.5" />
-            {/* Adorable Large Baby Eyes */}
-            <circle cx="43" cy="34" r="5" fill="#FEF08A" stroke="#B45309" strokeWidth="1" />
-            <circle cx="57" cy="34" r="5" fill="#FEF08A" stroke="#B45309" strokeWidth="1" />
-            <circle cx="43" cy="34" r="3.2" fill="#451A03" />
-            <circle cx="57" cy="34" r="3.2" fill="#451A03" />
-            <circle cx="41.5" cy="32.5" r="1.5" fill="#FFFFFF" />
-            <circle cx="55.5" cy="32.5" r="1.5" fill="#FFFFFF" />
-            <circle cx="44.5" cy="35.5" r="0.8" fill="#FFFFFF" />
-            <circle cx="58.5" cy="35.5" r="0.8" fill="#FFFFFF" />
-            {/* Snout with Playful Smoke Puff */}
-            <ellipse cx="50" cy="42" rx="6" ry="3.5" fill="#DC2626" />
-            <circle cx="48" cy="42" r="0.9" fill="#7F1D1D" />
-            <circle cx="52" cy="42" r="0.9" fill="#7F1D1D" />
-            {/* Floating Baby Fire & Smoke Puff */}
-            <circle cx="50" cy="47" r="1.5" fill="#F59E0B" />
-            <circle cx="52" cy="49" r="1" fill="#FBBF24" />
-            <path d="M 52 50 Q 56 48 58 50" stroke="#CBD5E1" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.75" />
-          </g>
-        )}
 
         {itemId === 'galaxy_skin_premium' && (
           <g>

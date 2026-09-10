@@ -216,6 +216,9 @@ export default function WorkshopModal({
   const slotScrollRef = useRef(null);
   const seasonalScrollRef = useRef(null);
   const dragStartYRef = useRef(null);
+  // Set to true before navigating away for a real-money/parent-zone flow so that
+  // when isOpen flips back to true we don't wipe the try-on preview state.
+  const pendingRealMoneyNavRef = useRef(false);
 
   const [canHubScrollRight, setCanHubScrollRight] = useState(false);
   const [canSlotScrollRight, setCanSlotScrollRight] = useState(false);
@@ -253,9 +256,14 @@ export default function WorkshopModal({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      setPreviewSlots(INITIAL_PREVIEW_SLOTS);
-      if (initialViewMode) setViewMode(initialViewMode);
-      if (initialHub) setActiveHub(initialHub);
+      if (pendingRealMoneyNavRef.current) {
+        // Returning from a real-money / parent-zone flow — preserve try-on state.
+        pendingRealMoneyNavRef.current = false;
+      } else {
+        setPreviewSlots(INITIAL_PREVIEW_SLOTS);
+        if (initialViewMode) setViewMode(initialViewMode);
+        if (initialHub) setActiveHub(initialHub);
+      }
       if (highlightItemId) {
         // Allow DOM to render item tile before scrolling
         const timer = setTimeout(() => {
@@ -1882,15 +1890,98 @@ export default function WorkshopModal({
                         </div>
 
                         {/* Drawer Actions */}
-                        <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
-                          <button
-                            type="button"
-                            onClick={() => setIsMobilePreviewOpen(false)}
-                            className="w-full py-2 bg-amber-500 hover:bg-amber-600 active:scale-98 text-slate-900 font-black text-xs rounded-xl flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm"
-                          >
-                            <span>Done Previewing</span>
-                          </button>
-                        </div>
+                        {(() => {
+                          const unownedItems = previewedItemsList.filter((item) => !unlockedItems.includes(item.id));
+                          const coinItems = unownedItems.filter((item) => !item.realMoneyPrice && !(item.requiresKiboClub && !isMember));
+                          const realMoneyItems = unownedItems.filter((item) => item.realMoneyPrice);
+                          const clubGatedItems = unownedItems.filter((item) => item.requiresKiboClub && !isMember && !item.realMoneyPrice);
+                          const totalCoinCost = coinItems.reduce((sum, item) => sum + (getItemEffectivePrice(item, currentDate, isMember).cost || 0), 0);
+                          const canAffordAll = sparks >= totalCoinCost;
+                          const hasNonCoinItems = realMoneyItems.length > 0 || clubGatedItems.length > 0;
+
+                          return (
+                            <div className="space-y-2 pt-1 border-t border-slate-100">
+                              {/* Buy All coin items in one tap — only shown when there are coin-purchasable unowned items */}
+                              {coinItems.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    coinItems.forEach((item) => handleBuyClick(item));
+                                    // Keep drawer open if there are still real-money/club items to handle
+                                    if (!hasNonCoinItems) setIsMobilePreviewOpen(false);
+                                  }}
+                                  disabled={!canAffordAll}
+                                  className={`w-full py-2.5 text-xs font-black rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm active:scale-95 ${
+                                    canAffordAll
+                                      ? 'btn-3d-purple'
+                                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                  }`}
+                                  title={!canAffordAll ? `Need ${totalCoinCost}⚡ — you have ${sparks}⚡` : undefined}
+                                >
+                                  <ShoppingBag className="w-3.5 h-3.5" />
+                                  <span>
+                                    {hasNonCoinItems
+                                      ? `Buy ${coinItems.length} item${coinItems.length > 1 ? 's' : ''} for`
+                                      : `Buy all (${coinItems.length}) for`}
+                                  </span>
+                                  <span className={canAffordAll ? 'text-amber-300 font-black' : ''}>
+                                    {totalCoinCost}⚡
+                                  </span>
+                                  {!canAffordAll && (
+                                    <span className="text-[10px] font-bold text-slate-500 ml-1">
+                                      (need {totalCoinCost - sparks}⚡ more)
+                                    </span>
+                                  )}
+                                </button>
+                              )}
+
+                              {/* Individual buy buttons for real-money items */}
+                              {realMoneyItems.map((item) => (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => {
+                                    handleBuyClick(item);
+                                    // drawer stays open; preview state persists on return
+                                  }}
+                                  className="w-full py-2.5 text-xs font-black rounded-xl btn-3d-orange flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm active:scale-95"
+                                >
+                                  <ShoppingBag className="w-3.5 h-3.5" />
+                                  <span>Buy {item.name} for</span>
+                                  <span className="text-amber-900 font-black">
+                                    {isMember && item.clubRealMoneyPrice ? item.clubRealMoneyPrice : item.realMoneyPrice}
+                                  </span>
+                                </button>
+                              ))}
+
+                              {/* Individual unlock buttons for club-gated items */}
+                              {clubGatedItems.map((item) => (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => handleBuyClick(item)}
+                                  className="w-full py-2.5 text-xs font-black rounded-xl bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm active:scale-95"
+                                >
+                                  <Lock className="w-3.5 h-3.5" />
+                                  <span>Join Club to unlock {item.name}</span>
+                                </button>
+                              ))}
+
+                              {/* Done button — always present */}
+                              <button
+                                type="button"
+                                onClick={() => setIsMobilePreviewOpen(false)}
+                                className={`w-full py-2 font-black text-xs rounded-xl flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm ${
+                                  unownedItems.length === 0
+                                    ? 'bg-amber-500 hover:bg-amber-600 active:scale-98 text-slate-900'
+                                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200'
+                                }`}
+                              >
+                                <span>{unownedItems.length === 0 ? 'Done Previewing' : 'Keep Browsing'}</span>
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>
