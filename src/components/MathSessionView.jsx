@@ -20,35 +20,13 @@ import { evaluateBadges } from '../utils/badgeManager';
 import { storageService } from '../services/storageService';
 import { getConceptForProblem } from '../utils/skipDiagnosticEngine';
 import useInactivityAutoPause from '../hooks/useInactivityAutoPause';
+import { getStreakTierConfig } from '../utils/streakTierConfig';
+import ClimbHeader from './climb/ClimbHeader';
+import ClimbPreCard from './climb/ClimbPreCard';
+import CelebrationOverlay from './climb/CelebrationOverlay';
+import CompanionsRow from './climb/CompanionsRow';
+import ToastBanner from './climb/ToastBanner';
 
-function getStreakTierConfig(streak) {
-  if (streak >= 15) {
-    return {
-      label: `⚡ ${streak} ULTRA INFERNO (3x)`,
-      pillClass: 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 text-white border-yellow-300 shadow-md shadow-purple-500/40 ring-2 ring-yellow-300 animate-pulse',
-      cardGlow: 'shadow-[0_0_35px_rgba(168,85,247,0.4)] border-purple-400 bg-gradient-to-b from-white via-purple-50/20 to-amber-50/30'
-    };
-  }
-  if (streak >= 10) {
-    return {
-      label: `💥 ${streak} SUPER NOVA (2x)`,
-      pillClass: 'bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 text-white border-red-300 shadow-md shadow-orange-500/30 ring-2 ring-orange-400 animate-pulse',
-      cardGlow: 'shadow-[0_0_25px_rgba(249,115,22,0.35)] border-orange-400 bg-gradient-to-b from-white via-orange-50/20 to-amber-50/30'
-    };
-  }
-  if (streak >= 5) {
-    return {
-      label: `🔥 ${streak} ON FIRE`,
-      pillClass: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-300 shadow-sm animate-pulse',
-      cardGlow: 'shadow-[0_0_15px_rgba(245,158,11,0.25)] border-amber-400'
-    };
-  }
-  return {
-    label: `🔥 ${streak} STREAK`,
-    pillClass: 'bg-slate-100 text-slate-700 border-slate-300',
-    cardGlow: 'border-slate-300 hover:border-slate-400'
-  };
-}
 
 export default function MathSessionView({
   profileId,
@@ -1554,297 +1532,61 @@ export default function MathSessionView({
       <div className="w-full h-full flex flex-col items-center justify-between sm:justify-end pb-1 sm:pb-2 pt-1 px-1.5 sm:px-3 max-w-4xl mx-auto relative overflow-visible flex-1 min-h-0">
 
       {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
-      {!isPaused && celebrationEvent && typeof document !== 'undefined' && createPortal(
-        <div
-          onClick={() => setCelebrationEvent(null)}
-          className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-pop cursor-pointer"
-        >
-          <ConfettiCanvas />
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-amber-50 via-white to-yellow-50 border-4 border-amber-300 rounded-3xl p-5 text-center shadow-2xl space-y-3.5 relative overflow-hidden text-slate-800 cursor-default"
-          >
-            <div className="space-y-1">
-              <span className="text-xs font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 inline-block shadow-xs">
-                {celebrationEvent.title}
-              </span>
-            </div>
-
-            <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-b from-amber-300 via-yellow-400 to-amber-500 border-2 border-amber-600 flex items-center justify-center text-4xl shadow-clay-amber animate-pulse">
-              {celebrationEvent.icon}
-            </div>
-
-            <div className="space-y-1">
-              <h3 className="font-extrabold text-slate-900 text-base sm:text-lg leading-snug">{celebrationEvent.name}</h3>
-              <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                {celebrationEvent.description}
-              </p>
-            </div>
-
-            <div className="bg-amber-100 border-2 border-amber-300 rounded-2xl p-2.5 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-amber-950 font-black text-xs sm:text-sm shadow-xs animate-pulse">
-              <div className="flex items-center gap-1.5">
-                <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
-                {storageService?.hasClubMembership?.(profileId) ? (
-                  <span className="line-through text-amber-900/50 text-xs">
-                    +{celebrationEvent.bonusSparks} ⚡
-                  </span>
-                ) : null}
-                <span>
-                  +{storageService?.hasClubMembership?.(profileId) ? Math.round(celebrationEvent.bonusSparks * 1.25) : celebrationEvent.bonusSparks} Bonus Sparks Awarded! ⚡
-                </span>
-              </div>
-              {storageService?.hasClubMembership?.(profileId) && (
-                <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 px-1.5 py-0.2 rounded-md font-black border border-amber-300">
-                  👑 1.25x VIP
-                </span>
-              )}
-            </div>
-
-            <button
-              onClick={() => setCelebrationEvent(null)}
-              className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-sm sm:text-base py-3 px-6 rounded-2xl shadow-md border-b-4 border-amber-700 active:translate-y-0.5 active:border-b-0 transition-all cursor-pointer"
-            >
-              Keep Climbing 🚀
-            </button>
-          </div>
-        </div>,
-        document.body
+      {!isPaused && (
+        <CelebrationOverlay
+          celebrationEvent={celebrationEvent}
+          onDismiss={() => setCelebrationEvent(null)}
+          profileId={profileId}
+        />
       )}
 
       {/* DUOLINGO-STYLE CLIMB FOCUS TOP BAR (Active during climb) */}
       {hasStartedClimb && (
-        <div className="w-full max-w-xl mx-auto flex items-center justify-between gap-2 px-2 py-1.5 mb-1 z-30 shrink-0">
-          {/* Left: Clean Exit / Pause button */}
-          <button
-            type="button"
-            onClick={handleExitOrPauseClimb}
-            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full bg-white/90 hover:bg-slate-100 active:scale-90 text-slate-500 hover:text-slate-800 border-2 border-slate-200 shadow-2xs transition-all cursor-pointer shrink-0"
-            title="Pause & Save Climb"
-            aria-label="Pause Climb"
-          >
-            <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
-          </button>
-
-          {/* Center: Sleek 12-segment progress bar */}
-          <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-            <div className="flex items-center justify-between px-1 text-[10px] sm:text-xs font-black text-slate-500">
-              <span className="uppercase tracking-wider">Question {currentQuestionNum} of 12</span>
-              <span>{Math.round(((currentQuestionNum - 1) / 12) * 100)}%</span>
-            </div>
-            <div className="w-full h-2.5 sm:h-3 bg-slate-200/80 rounded-full overflow-hidden p-0.5 border border-slate-300/60 shadow-inner">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 transition-all duration-500 shadow-xs"
-                style={{ width: `${Math.max(5, (currentQuestionNum / 12) * 100)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Right: Streak & Shield status + Report */}
-          <div className="flex items-center gap-1 shrink-0">
-            {inSessionStreak >= 2 && (
-              <span className="flex items-center gap-0.5 text-xs font-black bg-rose-50 border border-rose-200 text-rose-600 px-2 py-1 rounded-full shadow-2xs">
-                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" />
-                <span>{inSessionStreak}</span>
-              </span>
-            )}
-            {((consumables?.shieldCount || 0) > 0 || (consumables?.streakSaverCount || 0) > 0) && (
-              <span
-                className="flex items-center gap-0.5 text-xs font-black bg-sky-50 border border-sky-200 text-sky-700 px-1.5 py-1 rounded-full shadow-2xs"
-                title="Streak Shield Active"
-              >
-                🛡️ <span className="text-[10px]">{consumables.shieldCount || consumables.streakSaverCount}</span>
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setShowQuestionFeedback(true);
-              }}
-              className="p-1 sm:p-1.5 rounded-full border bg-white/90 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border-slate-200 hover:border-rose-300 shadow-2xs transition-all active:scale-90 flex items-center justify-center cursor-pointer"
-              title="Report Question"
-              aria-label="Report Question"
-            >
-              <Flag className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
+        <ClimbHeader
+          currentQuestionNum={currentQuestionNum}
+          inSessionStreak={inSessionStreak}
+          consumables={consumables}
+          onExitOrPause={handleExitOrPauseClimb}
+          onOpenFeedback={() => setShowQuestionFeedback(true)}
+        />
       )}
 
       {/* MECHANICAL TRANSIENT FEEDBACK TOAST (SLIDES DOWN FROM TOP HUD) */}
-      <div
-        onClick={() => {
+      <ToastBanner
+        feedbackBanner={feedbackBanner}
+        hasStartedClimb={hasStartedClimb}
+        onDismiss={() => {
           if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
           setFeedbackBanner(null);
         }}
-        className={`absolute inset-x-4 z-50 transition-all duration-300 ${
-          feedbackBanner ? (hasStartedClimb ? 'top-12 opacity-100 scale-100 pointer-events-auto cursor-pointer' : 'top-0 opacity-100 scale-100 pointer-events-auto cursor-pointer') : '-top-12 opacity-0 scale-95 pointer-events-none'
-        }`}
-      >
-        <div
-          className={`py-2.5 px-4 rounded-2xl text-center font-extrabold text-xs sm:text-sm shadow-xl backdrop-blur-md border flex items-center justify-between gap-2 ${
-            activeBannerType === 'success'
-              ? 'bg-emerald-900 text-white border-emerald-700 shadow-emerald-950/40'
-              : 'bg-rose-900 text-white border-rose-700 shadow-rose-950/40'
-          }`}
-        >
-          <span className="flex-1 text-center leading-snug">{feedbackBanner?.text || lastBannerTextRef.current}</span>
-          <span className="text-xs font-black opacity-80 hover:opacity-100 bg-black/20 px-2 py-0.5 rounded-full shrink-0">✕</span>
-        </div>
-      </div>
+      />
 
       {/* MASCOT CONTAINER - Centered between sticky header and question card */}
-      <div
-        className="flex-1 flex flex-row items-center justify-center w-full min-h-0 my-auto py-1 sm:py-2 z-10 overflow-visible px-2 sm:px-4"
-      >
-        {/* Left Friend */}
-        {displayedFriends[0] ? (
-          <div
-            className="relative z-0 flex items-center justify-end sm:justify-center overflow-visible flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] h-3/4 max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh] cursor-pointer hover:scale-105 active:scale-95 transition-transform shrink-0"
-            onClick={() => handleFriendClick(0)}
-            title={`Tap ${displayedFriends[0].username}!`}
-          >
-            {friend1Tooltip && (
-              <div className="absolute -top-8 left-0 sm:left-1/2 sm:-translate-x-1/2 bg-white text-slate-800 text-[10px] sm:text-xs font-black px-2 py-1 rounded-xl shadow-lg border-2 border-slate-200 z-50 whitespace-nowrap animate-bounce pointer-events-none">
-                Hi, I'm {displayedFriends[0].username}!
-              </div>
-            )}
-            <div className="w-full h-full flex items-center justify-center scale-x-[-1]">
-              <Mascot
-                mood="happy"
-                state={friend1State}
-                equipped={displayedFriends[0].equipped || []}
-                className="h-full w-auto max-h-[22vh] max-w-full sm:max-h-[28vh] md:max-h-[32vh] aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90"
-              />
-            </div>
-            <div className="absolute bottom-0 sm:bottom-1 left-1/2 -translate-x-1/2 bg-white/90 text-slate-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-slate-200 z-10 truncate max-w-full pointer-events-none">
-              {displayedFriends[0].username}
-            </div>
-          </div>
-        ) : (
-          <div className="flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] shrink-0" />
-        )}
-
-        {/* Main Mascot */}
-        <div
-          className="relative z-10 flex items-center justify-center overflow-visible p-1 sm:p-2 w-1/2 max-w-[50%] sm:max-w-[240px] md:max-w-[300px] h-full max-h-[32vh] sm:max-h-[44vh] md:max-h-[48vh] shrink-0"
-          title="Tap Kibo!"
-        >
-          <Mascot
-            mood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'}
-            state={mascotState}
-            equipped={equippedItems}
-            className="h-full w-auto max-h-[32vh] max-w-full sm:max-h-[44vh] md:max-h-[48vh] aspect-square filter drop-shadow-xl object-contain shrink-0"
-          />
-        </div>
-
-        {/* Right Friend */}
-        {displayedFriends[1] ? (
-          <div
-            className="relative z-0 flex items-center justify-start sm:justify-center overflow-visible flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] h-3/4 max-h-[22vh] sm:max-h-[28vh] md:max-h-[32vh] cursor-pointer hover:scale-105 active:scale-95 transition-transform shrink-0"
-            onClick={() => handleFriendClick(1)}
-            title={`Tap ${displayedFriends[1].username}!`}
-          >
-            {friend2Tooltip && (
-              <div className="absolute -top-8 right-0 sm:left-1/2 sm:-translate-x-1/2 bg-white text-slate-800 text-[10px] sm:text-xs font-black px-2 py-1 rounded-xl shadow-lg border-2 border-slate-200 z-50 whitespace-nowrap animate-bounce pointer-events-none">
-                Hi, I'm {displayedFriends[1].username}!
-              </div>
-            )}
-            <Mascot
-              mood="happy"
-              state={friend2State}
-              equipped={displayedFriends[1].equipped || []}
-              className="h-full w-auto max-h-[22vh] max-w-full sm:max-h-[28vh] md:max-h-[32vh] aspect-square filter drop-shadow-md object-contain shrink-0 opacity-90"
-            />
-            <div className="absolute bottom-0 sm:bottom-1 left-1/2 -translate-x-1/2 bg-white/90 text-slate-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-slate-200 z-10 truncate max-w-full pointer-events-none">
-              {displayedFriends[1].username}
-            </div>
-          </div>
-        ) : (
-          <div className="flex-1 max-w-[28%] sm:max-w-[140px] md:max-w-[170px] shrink-0" />
-        )}
-      </div>
+      <CompanionsRow
+        profileId={profileId}
+        equippedItems={equippedItems}
+        mascotMood={feedbackBanner?.type === 'error' ? 'sad' : 'happy'}
+        mascotState={mascotState}
+      />
 
       {/* PROBLEM CARD CONTAINER */}
       <div className="w-full shrink-0 flex flex-col items-center justify-center my-1 space-y-2">
         {!hasStartedClimb ? (
-          /* PRE-CLIMB START SCREEN HERO CARD */
-          <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 sm:p-5 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[42vh]">
-            <div className="space-y-1.5">
-              <span className="text-xs sm:text-sm font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
-                {isAutoPaused
-                  ? '⏸️ Climb Auto-Paused'
-                  : savedClimbState && savedClimbState.sessionQuestionIndex <= 12
-                  ? `🏔️ Mountain Climb • Question ${savedClimbState.sessionQuestionIndex || 1} of 12`
-                  : '🏔️ Mountain Climb • 12 Problems'}
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
-                {isAutoPaused
-                  ? 'Are you still climbing?'
-                  : savedClimbState && savedClimbState.sessionQuestionIndex <= 12
-                  ? 'Climb in Progress!'
-                  : 'Ready for the Climb?'}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed">
-                {isAutoPaused
-                  ? 'We paused your climb and timer so your speed record and streak stay safe! Click Resume to keep going.'
-                  : savedClimbState && savedClimbState.sessionQuestionIndex <= 12
-                  ? 'Click Resume Climb to continue where you left off.'
-                  : 'Click Start Climb when you are ready! Your timer will begin as soon as you start.'}
-              </p>
-            </div>
-
-            {/* PRE-CLIMB POWERUPS & CONSUMABLES SELECTOR */}
-            <div className="flex flex-wrap items-center justify-center gap-2 py-1">
-              {(() => {
-                const owned = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
-                if (isDoubleSparksActive) {
-                  return (
-                    <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 animate-pulse shadow-xs flex items-center gap-1">
-                      ⚡ 2x Sparks Active!
-                    </span>
-                  );
-                }
-                if (owned > 0) {
-                  return (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (onToggleDoubleSparksPotion) {
-                          onToggleDoubleSparksPotion();
-                          triggerToastBanner({
-                            type: 'success',
-                            text: 'Double Sparks Potion Activated for this climb! ⚡'
-                          }, 1400);
-                        }
-                      }}
-                      className="text-xs sm:text-sm font-black uppercase px-3 py-1 rounded-full border transition-all active:scale-95 flex items-center gap-1 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
-                    >
-                      ⚡ Activate 2x Potion ({owned})
-                    </button>
-                  );
-                }
-                return null;
-              })()}
-            </div>
-
-            {/* START / RESUME CLIMB MAIN CTA BUTTON */}
-            <div className="w-full space-y-1.5">
-              <button
-                type="button"
-                onClick={savedClimbState && savedClimbState.sessionQuestionIndex <= 12 ? handleResumeClimb : handleStartClimb}
-                className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-xl sm:text-2xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer"
-              >
-                <Play className="w-7 h-7 fill-current" />
-                <span>{savedClimbState && savedClimbState.sessionQuestionIndex <= 12 ? 'RESUME CLIMB 🏔️' : 'START CLIMB 🏔️'}</span>
-              </button>
-
-            </div>
-          </div>
+          <ClimbPreCard
+            isAutoPaused={isAutoPaused}
+            savedClimbState={savedClimbState}
+            consumables={consumables}
+            isDoubleSparksActive={isDoubleSparksActive}
+            onToggleDoubleSparksPotion={onToggleDoubleSparksPotion}
+            onTriggerToastBanner={triggerToastBanner}
+            onStartClimb={handleStartClimb}
+            onResumeClimb={handleResumeClimb}
+          />
         ) : (
           /* ACTIVE ADAPTIVE MATH QUESTION CARD */
           (() => {
             const streakCfg = getStreakTierConfig(inSessionStreak);
+
 
             return (
               <div
