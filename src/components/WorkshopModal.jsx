@@ -498,10 +498,14 @@ export default function WorkshopModal({
         ? { ...item, realMoneyPrice: item.clubRealMoneyPrice, price: item.clubRealMoneyPrice }
         : item;
 
+      pendingRealMoneyNavRef.current = true;
       if (allowRealMoneyPurchases) {
         onBuySparksPackage(packToBuy);
       } else if (onOpenParentZone) {
         onOpenParentZone('verification', 'real_money_purchases');
+      } else {
+        // No nav will actually happen; clear the flag immediately
+        pendingRealMoneyNavRef.current = false;
       }
       return;
     }
