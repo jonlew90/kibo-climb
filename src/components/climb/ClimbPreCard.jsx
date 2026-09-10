@@ -1,5 +1,6 @@
 import React from 'react';
 import { Play } from 'lucide-react';
+import ItemThumbnail from '../ItemThumbnail';
 
 export default function ClimbPreCard({
   isAutoPaused,
@@ -43,8 +44,9 @@ export default function ClimbPreCard({
       {/* PRE-CLIMB POWERUPS & CONSUMABLES SELECTOR */}
       <div className="flex flex-wrap items-center justify-center gap-2 py-1">
         {isDoubleSparksActive ? (
-          <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 animate-pulse shadow-xs flex items-center gap-1">
-            ⚡ 2x Sparks Active!
+          <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-amber-200 px-3 py-1 rounded-full border border-amber-400 animate-pulse shadow-xs flex items-center gap-1.5">
+            <ItemThumbnail itemId="double_sparks_potion" borderless className="w-4 h-4 shrink-0" />
+            <span>2x Sparks Active!</span>
           </span>
         ) : ownedDoubleSparks > 0 ? (
           <button
@@ -55,14 +57,15 @@ export default function ClimbPreCard({
                 if (onTriggerToastBanner) {
                   onTriggerToastBanner({
                     type: 'success',
-                    text: 'Double Sparks Potion Activated for this climb! ⚡'
+                    text: 'Double Sparks Potion Activated for this climb! 🧪'
                   }, 1400);
                 }
               }
             }}
-            className="text-xs sm:text-sm font-black uppercase px-3 py-1 rounded-full border transition-all active:scale-95 flex items-center gap-1 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
+            className="text-xs sm:text-sm font-black uppercase px-3 py-1 rounded-full border transition-all active:scale-95 flex items-center gap-1.5 bg-gradient-to-r from-amber-300 to-yellow-400 text-amber-950 border-amber-500 hover:from-amber-400 hover:to-yellow-500 shadow-sm animate-pulse cursor-pointer"
           >
-            ⚡ Activate 2x Potion ({ownedDoubleSparks})
+            <ItemThumbnail itemId="double_sparks_potion" borderless className="w-4 h-4 shrink-0" />
+            <span>Activate 2x Potion ({ownedDoubleSparks})</span>
           </button>
         ) : null}
       </div>

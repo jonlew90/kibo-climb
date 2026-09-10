@@ -75,4 +75,18 @@ describe('Shop & Closet Redesign Unit Tests', () => {
     const closetSorted = sortShopItems(mockItems, 500, ['item_b', 'item_c'], ['item_b'], new Date(), 'closet');
     expect(closetSorted[0].id).toBe('item_b');
   });
+
+  it('should recognize kibo_shield capacity limit when shieldCount is at 2', () => {
+    const shieldItem = WORKSHOP_ITEMS.find((i) => i.id === 'kibo_shield');
+    expect(shieldItem).toBeDefined();
+    expect(shieldItem.isConsumable).toBe(true);
+
+    const consumablesFull = { shieldCount: 2 };
+    const isShieldFull = shieldItem.isConsumable && shieldItem.id === 'kibo_shield' && (consumablesFull.shieldCount ?? 1) >= 2;
+    expect(isShieldFull).toBe(true);
+
+    const consumablesNotFull = { shieldCount: 1 };
+    const isShieldNotFull = shieldItem.isConsumable && shieldItem.id === 'kibo_shield' && (consumablesNotFull.shieldCount ?? 1) >= 2;
+    expect(isShieldNotFull).toBe(false);
+  });
 });

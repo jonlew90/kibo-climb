@@ -153,6 +153,7 @@ export default function App() {
   const [isWorkshopOpen, setIsWorkshopOpen] = useState(false);
   const [workshopHub, setWorkshopHub] = useState('wearables');
   const [workshopViewMode, setWorkshopViewMode] = useState('shop');
+  const [workshopHighlightItemId, setWorkshopHighlightItemId] = useState(null);
 
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [showSpeedInfoModal, setShowSpeedInfoModal] = useState(false);
@@ -296,6 +297,7 @@ export default function App() {
       if (modalId === VIEWS.WORKSHOP) {
         if (params.hub) setWorkshopHub(params.hub);
         if (params.viewMode) setWorkshopViewMode(params.viewMode);
+        setWorkshopHighlightItemId(params.highlightItemId || null);
       }
 
       setShowBadgesModal(modalId === VIEWS.BADGES);
@@ -410,14 +412,27 @@ export default function App() {
     }
   };
 
-  const handleOpenWorkshop = (overrideOrigin = null, initialHubParam = 'wearables', initialViewModeParam = 'shop') => {
+  const handleOpenWorkshop = (overrideOrigin = null, initialHubParam = 'wearables', initialViewModeParam = 'shop', highlightItemId = null) => {
     soundFx.playKeyTap();
     setShowProfileDropdown(false);
     setShowSubjectDropdown(false);
     const entry = navigationHistory.push({
       type: VIEW_TYPES.MODAL,
       id: VIEWS.WORKSHOP,
-      params: { hub: initialHubParam, viewMode: initialViewModeParam }
+      params: { hub: initialHubParam, viewMode: initialViewModeParam, highlightItemId }
+    });
+    applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
+  };
+
+  const handleNavigateWithinWorkshop = (nextParams = {}) => {
+    const entry = navigationHistory.push({
+      type: VIEW_TYPES.MODAL,
+      id: VIEWS.WORKSHOP,
+      params: {
+        hub: nextParams.hub || workshopHub,
+        viewMode: nextParams.viewMode || workshopViewMode,
+        highlightItemId: nextParams.highlightItemId || null
+      }
     });
     applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
   };
@@ -1331,6 +1346,7 @@ export default function App() {
     let nextExplorerCompassCount = consumables.explorerCompassCount || 0;
 
     if (item.id === 'kibo_shield') {
+      if (nextShieldCount >= 2) return;
       nextShieldCount += 1;
     } else if (item.id === 'streak_saver') {
       nextStreakSaverCount += 1;
@@ -3658,6 +3674,8 @@ export default function App() {
         allowRealMoneyPurchases={notifPrefs.allowRealMoneyPurchases}
         initialHub={workshopHub}
         initialViewMode={workshopViewMode}
+        highlightItemId={workshopHighlightItemId}
+        onNavigateWithinWorkshop={handleNavigateWithinWorkshop}
         isKiboClub={isKiboClub}
         activeProfileId={activeProfileId}
         onOpenDailyVault={() => setShowDailyBonusModal(true)}

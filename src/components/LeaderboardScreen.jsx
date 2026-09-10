@@ -11,6 +11,7 @@ import { getWeekStr, getPreviousWeekStr } from '../utils/dateUtils';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { getDeterministicAnonymousName } from '../utils/safeNames';
 import AddFriendModal from './AddFriendModal';
+import ItemThumbnail from './ItemThumbnail';
 
 export default function LeaderboardScreen({
   activeSubject = 'math',
@@ -2106,8 +2107,8 @@ export default function LeaderboardScreen({
               {/* Shields or Converted Bonus */}
               {weeklySettlementReward.shieldsGranted > 0 ? (
                 <div className="bg-sky-100/70 border border-sky-300 rounded-2xl p-2.5 flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-sky-400 text-sky-950 flex items-center justify-center shrink-0 shadow-2xs font-black">
-                    🛡️
+                  <div className="w-8 h-8 rounded-xl bg-sky-200 text-sky-950 flex items-center justify-center shrink-0 shadow-2xs font-black p-0.5">
+                    <ItemThumbnail itemId="kibo_shield" borderless className="w-6 h-6 shrink-0" />
                   </div>
                   <div className="text-left min-w-0">
                     <span className="text-xs font-black text-sky-950 block">
@@ -2120,8 +2121,8 @@ export default function LeaderboardScreen({
                 </div>
               ) : weeklySettlementReward.convertedShieldsToPowerUps > 0 ? (
                 <div className="bg-purple-100/70 border border-purple-300 rounded-2xl p-2.5 flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-purple-400 text-purple-950 flex items-center justify-center shrink-0 shadow-2xs font-black">
-                    ✨
+                  <div className="w-8 h-8 rounded-xl bg-purple-200 text-purple-950 flex items-center justify-center shrink-0 shadow-2xs font-black p-0.5">
+                    <ItemThumbnail itemId={weeklySettlementReward.secondaryPowerUp || 'double_sparks_potion'} borderless className="w-6 h-6 shrink-0" />
                   </div>
                   <div className="text-left min-w-0">
                     <span className="text-xs font-black text-purple-950 block">
@@ -2146,12 +2147,20 @@ export default function LeaderboardScreen({
                   : key === 'letterPrunerCount'
                   ? 'Pruner'
                   : 'Compass';
-                const powerUpIcon = key === 'doubleSparksPotionCount' ? '🧪' : key === 'hintScrollCount' ? '📜' : key === 'letterSpyglassCount' ? '🔍' : key === 'letterPrunerCount' ? '✂️' : '🧭';
+                const powerUpItemId = key === 'doubleSparksPotionCount'
+                  ? 'double_sparks_potion'
+                  : key === 'hintScrollCount'
+                  ? 'hint_scroll'
+                  : key === 'letterSpyglassCount'
+                  ? 'letter_spyglass'
+                  : key === 'letterPrunerCount'
+                  ? 'letter_pruner'
+                  : 'explorer_compass';
 
                 return (
                   <div key={key} className="bg-emerald-100/70 border border-emerald-300 rounded-2xl p-2.5 flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-400 text-emerald-950 flex items-center justify-center shrink-0 shadow-2xs text-sm">
-                      {powerUpIcon}
+                    <div className="w-8 h-8 rounded-xl bg-emerald-200 text-emerald-950 flex items-center justify-center shrink-0 shadow-2xs p-0.5">
+                      <ItemThumbnail itemId={powerUpItemId} borderless className="w-6 h-6 shrink-0" />
                     </div>
                     <div className="text-left min-w-0">
                       <span className="text-xs font-black text-emerald-950 block">

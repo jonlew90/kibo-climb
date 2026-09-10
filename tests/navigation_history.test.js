@@ -260,5 +260,52 @@ describe('NavigationHistory System', () => {
     expect(nav.getCurrent().id).toBe(VIEWS.BADGES);
     expect(nav.getCurrent().params.highlightBadgeIds).toEqual(['math_novice', 'math_scholar']);
   });
+
+  it('tracks Workshop sub-view transitions and item deep-linking on the navigation stack', () => {
+    // Open workshop in wearables view
+    nav.push({
+      type: VIEW_TYPES.MODAL,
+      id: VIEWS.WORKSHOP,
+      params: { hub: 'wearables', viewMode: 'shop' }
+    });
+    expect(nav.getCurrent().id).toBe(VIEWS.WORKSHOP);
+    expect(nav.getCurrent().params.hub).toBe('wearables');
+
+    // Click 'Need X sparks' on item 'crown_gold' -> deep links to sparks hub with highlightItemId
+    nav.push({
+      type: VIEW_TYPES.MODAL,
+      id: VIEWS.WORKSHOP,
+      params: { hub: 'sparks', viewMode: 'shop', highlightItemId: 'crown_gold' }
+    });
+    expect(nav.getStack().length).toBe(3);
+    expect(nav.getCurrent().params.hub).toBe('sparks');
+
+    // Clicking back in header pops back to previous workshop state with highlightItemId preserved
+    const prev = nav.pop();
+    expect(prev.id).toBe(VIEWS.WORKSHOP);
+    expect(prev.params.hub).toBe('wearables');
+    expect(nav.getStack().length).toBe(2);
+
+    // Clicking back again closes workshop modal back to base route
+    const base = nav.pop();
+    expect(base.id).toBe(VIEWS.ADAPTIVE_SESSION);
+    expect(nav.getStack().length).toBe(1);
+  });
+
+  it('tracks Badges -> Ascent Roadmap navigation transitions on the stack', () => {
+    nav.push({ type: VIEW_TYPES.MODAL, id: VIEWS.BADGES });
+    expect(nav.getCurrent().id).toBe(VIEWS.BADGES);
+
+    // Open Ascent Roadmap from Badges
+    nav.push({ type: VIEW_TYPES.MODAL, id: VIEWS.ASCENT_ROADMAP });
+    expect(nav.getCurrent().id).toBe(VIEWS.ASCENT_ROADMAP);
+    expect(nav.getStack().length).toBe(3);
+
+    // Pop returns to Badges modal
+    nav.pop();
+    expect(nav.getCurrent().id).toBe(VIEWS.BADGES);
+    expect(nav.getStack().length).toBe(2);
+  });
 });
+
 

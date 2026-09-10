@@ -26,6 +26,7 @@ import ClimbPreCard from './climb/ClimbPreCard';
 import CelebrationOverlay from './climb/CelebrationOverlay';
 import CompanionsRow from './climb/CompanionsRow';
 import ToastBanner from './climb/ToastBanner';
+import ItemThumbnail from './ItemThumbnail';
 
 
 export default function MathSessionView({
@@ -1663,12 +1664,12 @@ export default function MathSessionView({
                             setShowFrustrationCard(true);
                             triggerToastBanner({
                               type: 'success',
-                              text: 'Kibo Wisdom Hint Unlocked! 💡'
+                              text: 'Kibo Wisdom Hint Unlocked! 📜'
                             }, 1200);
                           } else if (onOpenWorkshop) {
                             triggerToastBanner({
                               type: 'info',
-                              text: 'Out of Hint Scrolls! Opening Shop... 🧪'
+                              text: 'Out of Hint Scrolls! Opening Shop... 📜'
                             }, 1400);
                             onOpenWorkshop();
                           }
@@ -1688,7 +1689,8 @@ export default function MathSessionView({
                             : 'Out of Hint Scrolls • Tap to get in Shop!'
                         }
                       >
-                        💡 {showFrustrationCard ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint +'}
+                        <ItemThumbnail itemId="hint_scroll" borderless className="w-4 h-4 shrink-0" />
+                        <span>{showFrustrationCard ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint +'}</span>
                       </button>
 
                       {/* CLIMBER SPYGLASS BUTTON (Only when owned or active) */}
@@ -1699,7 +1701,8 @@ export default function MathSessionView({
                           className="text-[10px] sm:text-xs font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs"
                           title="Use Spyglass to reveal & fill 1 missing blank slot or answer!"
                         >
-                          🔍 Spyglass ({consumables?.letterSpyglassCount ?? 0})
+                          <ItemThumbnail itemId="letter_spyglass" borderless className="w-4 h-4 shrink-0" />
+                          <span>Spyglass ({consumables?.letterSpyglassCount ?? 0})</span>
                         </button>
                       )}
 
@@ -1715,7 +1718,8 @@ export default function MathSessionView({
                           }`}
                           title={isLetterPrunerActive ? 'Distractors pruned for this problem!' : 'Prune distractor options / keys!'}
                         >
-                          ✂️ {isLetterPrunerActive ? 'Pruned' : `Prune (${consumables?.letterPrunerCount ?? 0})`}
+                          <ItemThumbnail itemId="letter_pruner" borderless className="w-4 h-4 shrink-0" />
+                          <span>{isLetterPrunerActive ? 'Pruned' : `Prune (${consumables?.letterPrunerCount ?? 0})`}</span>
                         </button>
                       )}
                     </>

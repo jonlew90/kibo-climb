@@ -40,6 +40,7 @@ import ClimbPreCard from './climb/ClimbPreCard';
 import CelebrationOverlay from './climb/CelebrationOverlay';
 import CompanionsRow from './climb/CompanionsRow';
 import ToastBanner from './climb/ToastBanner';
+import ItemThumbnail from './ItemThumbnail';
 
 
 export default function WorldSessionView({
@@ -346,13 +347,13 @@ export default function WorldSessionView({
         soundFx.playSparkCollect();
         triggerToastBanner({
           type: 'success',
-          text: '💡 Field Guide Hint Revealed!'
+          text: '📜 Field Guide Hint Revealed!'
         }, 1500);
       }
     } else if (onOpenWorkshop) {
       triggerToastBanner({
         type: 'info',
-        text: 'Out of Hint Scrolls! Opening Shop... 🧪'
+        text: 'Out of Hint Scrolls! Opening Shop... 📜'
       }, 1400);
       onOpenWorkshop();
     }
@@ -1571,12 +1572,12 @@ export default function WorldSessionView({
                             setShowHintCard(true);
                             triggerToastBanner({
                               type: 'success',
-                              text: 'Kibo Wisdom Clue Unlocked! 💡'
+                              text: 'Kibo Wisdom Clue Unlocked! 📜'
                             }, 1200);
                           } else if (onOpenWorkshop) {
                             triggerToastBanner({
                               type: 'info',
-                              text: 'Out of Hint Scrolls! Opening Shop... 🧪'
+                              text: 'Out of Hint Scrolls! Opening Shop... 📜'
                             }, 1400);
                             onOpenWorkshop();
                           }
@@ -1596,7 +1597,8 @@ export default function WorldSessionView({
                             : 'Out of Hint Scrolls • Tap to get in Shop!'
                         }
                       >
-                        💡 {showHintCard || showFrustrationCard ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Clue (${consumables.hintScrollCount})` : 'Clue'}
+                        <ItemThumbnail itemId="hint_scroll" borderless className="w-4 h-4 shrink-0" />
+                        <span>{showHintCard || showFrustrationCard ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Clue (${consumables.hintScrollCount})` : 'Clue'}</span>
                       </button>
 
                       {/* EXPLORER'S COMPASS BUTTON (Shown when active or count > 0) */}
@@ -1611,7 +1613,8 @@ export default function WorldSessionView({
                           }`}
                           title="Use Explorer's Compass to reveal regional orientation!"
                         >
-                          🧭 {isCompassActive ? 'Active' : `Compass (${consumables?.explorerCompassCount ?? 0})`}
+                          <ItemThumbnail itemId="explorer_compass" borderless className="w-4 h-4 shrink-0" />
+                          <span>{isCompassActive ? 'Active' : `Compass (${consumables?.explorerCompassCount ?? 0})`}</span>
                         </button>
                       )}
 
@@ -1627,7 +1630,8 @@ export default function WorldSessionView({
                           }`}
                           title="Prune 2 wrong choices (50:50)!"
                         >
-                          ✂️ {isLetterPrunerActive ? 'Active' : `50:50 (${consumables?.letterPrunerCount ?? 0})`}
+                          <ItemThumbnail itemId="letter_pruner" borderless className="w-4 h-4 shrink-0" />
+                          <span>{isLetterPrunerActive ? 'Active' : `50:50 (${consumables?.letterPrunerCount ?? 0})`}</span>
                         </button>
                       )}
                     </>

@@ -157,6 +157,8 @@ export default function WorkshopModal({
   activeProfileId = null,
   initialHub = 'wearables',
   initialViewMode = 'shop',
+  highlightItemId = null,
+  onNavigateWithinWorkshop = null,
   renderFooter
 }) {
   const isMember = isKiboClub || storageService.hasClubMembership(activeProfileId);
@@ -254,7 +256,16 @@ export default function WorkshopModal({
       setPreviewSlots(INITIAL_PREVIEW_SLOTS);
       if (initialViewMode) setViewMode(initialViewMode);
       if (initialHub) setActiveHub(initialHub);
-      if (itemsContainerRef.current) {
+      if (highlightItemId) {
+        // Allow DOM to render item tile before scrolling
+        const timer = setTimeout(() => {
+          const itemEl = itemsContainerRef.current?.querySelector(`[data-item-id="${highlightItemId}"]`);
+          if (itemEl && typeof itemEl.scrollIntoView === 'function') {
+            itemEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 60);
+        return () => clearTimeout(timer);
+      } else if (itemsContainerRef.current) {
         itemsContainerRef.current.scrollTop = 0;
       }
     }
@@ -262,7 +273,7 @@ export default function WorkshopModal({
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen, initialViewMode, initialHub]);
+  }, [isOpen, initialViewMode, initialHub, highlightItemId]);
 
   // Ensure active category hub is scrolled into view in the top navigation strip
   useEffect(() => {
@@ -302,11 +313,11 @@ export default function WorkshopModal({
 
   // Scroll to top of item list on filter/mode change and clear selected item detail
   useEffect(() => {
-    if (itemsContainerRef.current) {
+    if (itemsContainerRef.current && !highlightItemId) {
       itemsContainerRef.current.scrollTop = 0;
     }
     setSelectedItemDetail(null);
-  }, [viewMode, activeHub, selectedSlot, seasonalEventFilter]);
+  }, [viewMode, activeHub, selectedSlot, seasonalEventFilter, highlightItemId]);
 
   const unlockedWearablesCount = useMemo(() => {
     return getOwnedItems(unlockedItems).length;
@@ -450,6 +461,9 @@ export default function WorkshopModal({
 
   const handleBuyClick = (item) => {
     if (item.isConsumable) {
+      if (item.id === 'kibo_shield' && (consumables?.shieldCount ?? 1) >= 2) {
+        return;
+      }
       soundFx.playKeyTap();
       onBuyConsumable(item);
       setRecentlyPurchasedId(item.id);
@@ -766,8 +780,12 @@ export default function WorkshopModal({
           <div
             onClick={() => {
               soundFx.playKeyTap();
-              setViewMode('shop');
-              setActiveHub('sparks');
+              if (onNavigateWithinWorkshop) {
+                onNavigateWithinWorkshop({ hub: 'sparks', viewMode: 'shop' });
+              } else {
+                setViewMode('shop');
+                setActiveHub('sparks');
+              }
             }}
             className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 border-2 border-yellow-500 rounded-full text-amber-950 font-black text-xs shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all shrink-0"
             title="Sparks Balance"
@@ -907,6 +925,10 @@ export default function WorkshopModal({
                           'Equip Now'
                         )}
                       </button>
+                    ) : selectedItemDetail.isConsumable && selectedItemDetail.id === 'kibo_shield' && (consumables?.shieldCount ?? 1) >= 2 ? (
+                      <div className="w-full py-1.5 text-xs font-black text-slate-400 bg-slate-100 rounded-xl text-center">
+                        Full (2/2)
+                      </div>
                     ) : (
                       <button
                         type="button"
@@ -1257,7 +1279,7 @@ export default function WorkshopModal({
                 {(() => {
                   const soloSubPricing = getEffectiveSubscriptionPricing('kibo_club_sub', currentDate);
                   const soloAnnualPricing = getEffectiveSubscriptionPricing('kibo_club_sub_annual', currentDate);
-                  const hasSubDiscount = soloSubPricing.isDiscounted || soloAnnualPricing.isDiscounted;
+                  const isFam = storageService.hasFamilyPlan();
 
                   return (
                     <div
@@ -1265,47 +1287,50 @@ export default function WorkshopModal({
                         soundFx.playKeyTap();
                         setShowFamilyPlanModal(true);
                       }}
-                      className="bg-gradient-to-r from-purple-700 via-indigo-700 to-amber-600 text-white rounded-3xl p-4 sm:p-5 shadow-md hover:scale-[1.01] active:scale-98 transition-all cursor-pointer relative overflow-hidden group border-2 border-amber-300/40"
+                      className="bg-indigo-900 border border-indigo-700/60 text-white rounded-2xl p-3.5 sm:p-4 shadow-sm hover:border-amber-400/50 transition-all cursor-pointer relative overflow-hidden group"
                     >
-                      <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-110 transition-transform duration-500 pointer-events-none" />
-                      
-                      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
                         <div className="space-y-1.5 min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-md flex items-center gap-1">
                               <Sparkles className="w-3 h-3 fill-amber-950" /> Kibo Club
                             </span>
-                            {hasSubDiscount && (
-                              <span className="bg-amber-300 text-amber-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-2xs animate-pulse">
-                                Sale Active!
-                              </span>
-                            )}
-                            <span className="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-                              Solo & Family ({soloAnnualPricing.isDiscounted ? `Save ${soloAnnualPricing.discountPercent + 30}%` : 'Save ~35%'} Annual)
-                            </span>
-                            <span className="bg-emerald-500 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-2xs">
+                            <span className="text-indigo-200 text-xs font-semibold">
                               From {soloSubPricing.price} or {soloAnnualPricing.price}
                             </span>
                           </div>
-                          <h3 className="text-base sm:text-lg font-black tracking-tight text-white drop-shadow-xs">
-                            Unlock 1.25x Sparks Forever, 15% VIP Store Discounts & Daily Vault
+
+                          <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                            {isMember
+                              ? `Club Member Active (${isFam ? 'Family' : 'Solo'})`
+                              : 'Boost your climb with VIP perks'}
                           </h3>
-                          <p className="text-xs text-indigo-100 font-medium leading-snug max-w-xl">
-                            Supercharge learning with 1.25x Sparks, 15% VIP discounts on gear & packs, 3.3x Daily Vault bonuses, golden tags 👑, and up to 6 siblings on Family Plan!
-                          </p>
+
+                          {/* 3 Clear Benefit Badges */}
+                          <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                            <span className="text-[11px] font-medium bg-indigo-950/70 border border-indigo-700/50 text-indigo-100 px-2 py-0.5 rounded-md">
+                              ⚡ 1.25x Sparks
+                            </span>
+                            <span className="text-[11px] font-medium bg-indigo-950/70 border border-indigo-700/50 text-indigo-100 px-2 py-0.5 rounded-md">
+                              🏷️ {isFam ? '20%' : '15%'} Off Packs & Gear
+                            </span>
+                            <span className="text-[11px] font-medium bg-indigo-950/70 border border-indigo-700/50 text-indigo-100 px-2 py-0.5 rounded-md">
+                              🎁 3.3x Daily Vault
+                            </span>
+                          </div>
                         </div>
 
-                    <div className="shrink-0 flex items-center">
-                      <button
-                        type="button"
-                        className="w-full sm:w-auto bg-white text-indigo-950 hover:bg-amber-50 font-black text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all group-hover:shadow-lg"
-                      >
-                        <span>View Plans & Details</span>
-                        <ChevronRight className="w-4 h-4 text-indigo-900" />
-                      </button>
+                        <div className="shrink-0">
+                          <button
+                            type="button"
+                            className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center justify-center gap-1 transition-all"
+                          >
+                            <span>{isMember ? 'Manage Plan' : 'View Plans'}</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-indigo-200" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
                   );
                 })()}
 
@@ -1313,18 +1338,18 @@ export default function WorkshopModal({
                 {authService.getAuthState().isAnonymous && onRequestAccountLink && (
                   <div
                     onClick={onRequestAccountLink}
-                    className="bg-gradient-to-r from-amber-100 to-yellow-200 border border-amber-300 rounded-2xl p-3 flex items-center justify-between gap-2.5 shadow-2xs cursor-pointer hover:scale-[1.01] transition-all"
+                    className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-2xs cursor-pointer hover:border-amber-300 transition-all"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-amber-50 border border-amber-400 flex items-center justify-center shrink-0">
-                        <Zap className="w-4 h-4 text-amber-500 fill-amber-400" />
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
+                        <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-xs font-black text-amber-950 truncate">Link Account for +200 ⚡ Free</h4>
-                        <p className="text-[10px] font-bold text-amber-800">Save progress and get Sparks!</p>
+                        <h4 className="text-xs font-bold text-amber-950 truncate">Link Account for +200 ⚡ Free</h4>
+                        <p className="text-[10px] text-amber-700">Save progress across devices</p>
                       </div>
                     </div>
-                    <button className="bg-amber-500 text-white font-black text-[11px] px-3 py-1.5 rounded-xl shadow-xs whitespace-nowrap">
+                    <button className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] px-2.5 py-1 rounded-lg shadow-2xs whitespace-nowrap">
                       Link Free
                     </button>
                   </div>
@@ -1332,76 +1357,50 @@ export default function WorkshopModal({
 
                 {/* Active Real-Money Sale Event Banner */}
                 {activeRealMoneySale && (
-                  <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-purple-600 text-white p-3.5 rounded-2xl shadow-md space-y-1 text-left relative overflow-hidden">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 font-black text-xs sm:text-sm">
-                        <Sparkles className="w-4 h-4 fill-amber-300 text-amber-200 animate-pulse" />
-                        <span>{activeRealMoneySale.name} Active!</span>
-                      </div>
-                      <span className="text-[10px] bg-white/20 border border-white/30 backdrop-blur-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
-                        +{activeRealMoneySale.sparksBonusPercent}% Bonus Sparks
-                      </span>
+                  <div className="bg-amber-500 text-white px-3 py-2 rounded-xl shadow-2xs flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 font-bold text-xs min-w-0">
+                      <Sparkles className="w-3.5 h-3.5 fill-amber-200 text-amber-100 shrink-0" />
+                      <span className="truncate">{activeRealMoneySale.name}</span>
+                      <span className="text-amber-100 font-normal hidden sm:inline truncate">— {activeRealMoneySale.description}</span>
                     </div>
-                    <p className="text-xs text-amber-100 font-medium leading-relaxed">
-                      {activeRealMoneySale.description}
-                    </p>
+                    <span className="text-[10px] bg-black/20 px-2 py-0.5 rounded-md font-extrabold uppercase shrink-0">
+                      +{activeRealMoneySale.sparksBonusPercent}% Sparks
+                    </span>
                   </div>
                 )}
 
-                {/* VIP Pricing & Savings Value Callout */}
-                <div className="bg-gradient-to-r from-amber-50 to-purple-50 border border-amber-200 rounded-2xl p-3 text-left space-y-0.5">
-                  <div className="flex items-center gap-1.5 text-xs font-black text-amber-950">
-                    <span>
-                      {storageService.hasFamilyPlan()
-                        ? 'Kibo Club Family Pricing: Save 20% on All Spark Bundles'
-                        : 'Kibo Club Solo Pricing: Save 15% on All Packs & Bundles'}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 font-medium">
-                    {storageService.hasFamilyPlan()
-                      ? 'Your Family membership provides our maximum 20% discount on Spark top-ups to outfit all sibling profiles.'
-                      : 'Your subscription pays for itself with everyday savings on Spark packs, bundles, and exclusive gear.'}
-                  </p>
-                </div>
-
                 {/* Sparks Packages Grid */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-500">Spark Bundles</h4>
-                    {activeRealMoneySale && (
-                      <span className="text-[10px] font-black text-amber-600 uppercase tracking-tight">
-                        ⚡ +{activeRealMoneySale.sparksBonusPercent}% Event Bonus Included
-                      </span>
-                    )}
+                <div className="space-y-1.5 pt-0.5">
+                  <div className="flex items-center justify-between px-0.5">
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Spark Bundles</h4>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {SPARKS_PACKAGES.map((rawPack) => {
                       const pack = getEffectiveSparksPackage(rawPack, currentDate);
                       const savings = calculateSparksPackageSavings(pack);
                       const isFam = storageService.hasFamilyPlan();
                       const clubPrice = getRealMoneyItemClubPrice(pack, isFam);
                       const displayPrice = isMember && clubPrice ? clubPrice : (pack.realMoneyPrice || pack.price);
-                      const clubSavings = getRealMoneyItemClubSavings(pack, isFam);
 
                       return (
                         <div
                           key={pack.id}
-                          className="bg-white p-3 rounded-2xl border-2 border-slate-200 hover:border-amber-300 shadow-2xs flex items-center justify-between gap-2.5 transition-all"
+                          className="bg-white p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 shadow-2xs flex items-center justify-between gap-2 transition-all"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <ItemThumbnail itemId={pack.id} rarity={pack.rarity || 'legendary'} className="w-9 h-9 rounded-xl shrink-0 p-0.5" />
+                            <ItemThumbnail itemId={pack.id} rarity={pack.rarity || 'legendary'} className="w-8 h-8 rounded-lg shrink-0 p-0.5" />
                             <div className="min-w-0">
-                              <h5 className="font-extrabold text-xs sm:text-sm text-slate-800 truncate">{pack.name}</h5>
-                              <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                              <h5 className="font-bold text-xs text-slate-800 truncate">{pack.name}</h5>
+                              <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="text-xs font-black text-amber-600">⚡ {pack.totalSparks || pack.sparks}</span>
                                 {pack.hasBonus && (
-                                  <span className="text-[9px] font-black text-amber-800 bg-amber-200 border border-amber-300 px-1 py-0.2 rounded">
-                                    +{pack.bonusPercent}% Bonus ({pack.bonusSparks})
+                                  <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded">
+                                    +{pack.bonusPercent}% bonus
                                   </span>
                                 )}
                                 {savings !== null && !pack.hasBonus && (
-                                  <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1 py-0.2 rounded">
-                                    -{savings}%
+                                  <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
+                                    Save {savings}%
                                   </span>
                                 )}
                               </div>
@@ -1412,14 +1411,9 @@ export default function WorkshopModal({
                             {isMember ? (
                               <>
                                 {pack.realMoneyPrice && clubPrice && (
-                                  <div className="flex flex-col items-end justify-center leading-none pr-0.5">
-                                    <span className="text-[10px] text-slate-400 line-through font-bold">
-                                      {pack.realMoneyPrice}
-                                    </span>
-                                    <span className="text-[9px] font-black text-amber-600 uppercase tracking-wider flex items-center gap-0.5 mt-0.5">
-                                      <Sparkles className="w-2.5 h-2.5 fill-amber-500 text-amber-500" /> {isFam ? '20% VIP' : 'VIP'}
-                                    </span>
-                                  </div>
+                                  <span className="text-[10px] text-slate-400 line-through font-semibold pr-0.5">
+                                    {pack.realMoneyPrice}
+                                  </span>
                                 )}
                                 <button
                                   type="button"
@@ -1433,7 +1427,7 @@ export default function WorkshopModal({
                                       onOpenParentZone('verification', 'real_money_purchases');
                                     }
                                   }}
-                                  className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-2xs whitespace-nowrap active:scale-95 transition-all flex items-center gap-1 cursor-pointer border border-amber-400"
+                                  className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg shadow-2xs whitespace-nowrap active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
                                 >
                                   {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-amber-100" />}
                                   <span>{clubPrice || pack.realMoneyPrice || pack.price}</span>
@@ -1450,9 +1444,9 @@ export default function WorkshopModal({
                                       onOpenParentZone('verification', 'real_money_purchases');
                                     }
                                   }}
-                                  className="bg-purple-600 hover:bg-purple-700 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-2xs whitespace-nowrap active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg shadow-2xs whitespace-nowrap active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
                                 >
-                                  {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-purple-200" />}
+                                  {!allowRealMoneyPurchases && <Lock className="w-3 h-3 text-indigo-200" />}
                                   <span>{pack.realMoneyPrice || pack.price}</span>
                                 </button>
                                 {pack.clubRealMoneyPrice && (
@@ -1463,12 +1457,11 @@ export default function WorkshopModal({
                                       soundFx.playKeyTap();
                                       setShowFamilyPlanModal(true);
                                     }}
-                                    title={`Join Kibo Club to unlock VIP price ${pack.clubRealMoneyPrice}`}
-                                    className="group/club flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-50 to-purple-50 hover:from-amber-100 hover:to-purple-100 border border-amber-200 hover:border-amber-300 text-amber-950 font-bold text-xs shadow-2xs active:scale-95 transition-all cursor-pointer"
+                                    title={`Join Kibo Club to get this for ${pack.clubRealMoneyPrice}`}
+                                    className="flex items-center gap-0.5 px-2 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-semibold text-[11px] shadow-2xs active:scale-95 transition-all cursor-pointer"
                                   >
-                                    <Sparkles className="w-3 h-3 text-amber-500 fill-amber-400 group-hover/club:rotate-12 transition-transform shrink-0" />
-                                    <span className="text-[10px] uppercase font-black tracking-tight text-amber-800">Club</span>
-                                    <span className="font-black text-xs text-amber-950">{pack.clubRealMoneyPrice}</span>
+                                    <Sparkles className="w-2.5 h-2.5 text-amber-600 fill-amber-400" />
+                                    <span>{pack.clubRealMoneyPrice}</span>
                                   </button>
                                 )}
                               </>
@@ -1480,27 +1473,25 @@ export default function WorkshopModal({
                   </div>
                 </div>
 
-                {/* Promo Code Redemption Card inside Sparks & Club Hub */}
+                {/* Promo Code Redemption Card */}
                 <div
                   onClick={() => openPromoDialogWithCode()}
-                  className="bg-gradient-to-r from-amber-100 via-amber-50 to-orange-100 border-2 border-dashed border-amber-300 hover:border-amber-400 rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-2xs cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all text-left group"
+                  className="bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 shadow-2xs cursor-pointer transition-all text-left group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-amber-200 border border-amber-400 flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform">
-                      <Ticket className="w-5 h-5 text-amber-800 stroke-[2.5]" />
+                    <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                      <Ticket className="w-4 h-4 text-slate-600 stroke-[2]" />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-xs sm:text-sm font-black text-amber-950 truncate flex items-center gap-1">
-                        <span>Have a Promo Code?</span>
-                      </h4>
-                      <p className="text-[11px] font-bold text-amber-800">
-                        Redeem creator, event, or gift codes for bonus Sparks & items
+                      <h4 className="text-xs font-bold text-slate-800 truncate">Have a Promo Code?</h4>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        Redeem creator, event, or gift codes for bonus items
                       </p>
                     </div>
                   </div>
                   <button
                     type="button"
-                    className="shrink-0 px-3 py-1.5 bg-amber-500 group-hover:bg-amber-600 text-white font-black text-xs rounded-xl shadow-xs transition-all pointer-events-none"
+                    className="shrink-0 px-2.5 py-1 bg-white border border-slate-200 text-slate-700 font-bold text-xs rounded-lg shadow-2xs group-hover:border-slate-300 transition-all pointer-events-none"
                   >
                     Enter Code
                   </button>
@@ -1529,8 +1520,12 @@ export default function WorkshopModal({
                     type="button"
                     onClick={() => {
                       soundFx.playKeyTap();
-                      setViewMode('shop');
-                      setActiveHub('wearables');
+                      if (onNavigateWithinWorkshop) {
+                        onNavigateWithinWorkshop({ hub: 'wearables', viewMode: 'shop' });
+                      } else {
+                        setViewMode('shop');
+                        setActiveHub('wearables');
+                      }
                     }}
                     className="btn-3d-orange px-4 py-2 text-xs rounded-xl font-black"
                   >
@@ -1564,6 +1559,8 @@ export default function WorkshopModal({
                   return (
                     <div
                       key={item.id}
+                      id={`shop-item-${item.id}`}
+                      data-item-id={item.id}
                       onClick={() => handleItemCardClick(item)}
                       className={`group relative bg-white rounded-2xl border-2 p-2 sm:p-2.5 flex flex-col justify-between transition-all duration-200 cursor-pointer text-center select-none ${
                         isJustPurchased
@@ -1736,7 +1733,15 @@ export default function WorkshopModal({
                             type="button"
                             onClick={() => {
                               soundFx.playKeyTap();
-                              setActiveHub('sparks');
+                              if (onNavigateWithinWorkshop) {
+                                onNavigateWithinWorkshop({
+                                  hub: 'sparks',
+                                  viewMode: 'shop',
+                                  highlightItemId: item.id
+                                });
+                              } else {
+                                setActiveHub('sparks');
+                              }
                             }}
                             className="w-full py-1 text-[10px] font-black rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 flex items-center justify-center gap-0.5 cursor-pointer"
                           >
@@ -2014,19 +2019,25 @@ export default function WorkshopModal({
                   </button>
                 </div>
               ) : selectedItemDetail.isConsumable ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleBuyClick(selectedItemDetail);
-                    setSelectedItemDetail(null);
-                  }}
-                  className="w-full py-2.5 text-xs font-black rounded-xl btn-3d-purple flex items-center justify-center gap-1 cursor-pointer"
-                >
-                  <span>Buy for</span>
-                  <span className="text-amber-300 font-black">
-                    {getItemEffectivePrice(selectedItemDetail, currentDate, isMember).cost}⚡
-                  </span>
-                </button>
+                selectedItemDetail.id === 'kibo_shield' && (consumables?.shieldCount ?? 1) >= 2 ? (
+                  <div className="w-full py-2.5 text-xs font-black text-slate-400 bg-slate-100 rounded-xl text-center">
+                    Full (2/2)
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleBuyClick(selectedItemDetail);
+                      setSelectedItemDetail(null);
+                    }}
+                    className="w-full py-2.5 text-xs font-black rounded-xl btn-3d-purple flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>Buy for</span>
+                    <span className="text-amber-300 font-black">
+                      {getItemEffectivePrice(selectedItemDetail, currentDate, isMember).cost}⚡
+                    </span>
+                  </button>
+                )
               ) : (
                 <div className="space-y-2">
                   <button

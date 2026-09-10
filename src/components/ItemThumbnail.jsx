@@ -1,7 +1,7 @@
 import React from 'react';
 import { WORKSHOP_ITEMS } from '../utils/itemsCatalog';
 
-export default function ItemThumbnail({ itemId, rarity = 'common', className = "w-12 h-12", saleDiscount = 0 }) {
+export default function ItemThumbnail({ itemId, rarity = 'common', className = "w-12 h-12", saleDiscount = 0, borderless = false }) {
   const containerClasses = {
     common: 'bg-gradient-to-br from-slate-100 to-slate-200 border-slate-300 text-slate-700',
     rare: 'bg-gradient-to-br from-sky-100 via-teal-100 to-teal-200 border-teal-300 text-teal-800',
@@ -9,10 +9,12 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
     legendary: 'bg-gradient-to-br from-amber-100 via-yellow-200 to-amber-300 border-amber-400 text-amber-950 shadow-md'
   };
 
-  const currentClass = containerClasses[rarity] || containerClasses.common;
+  const currentClass = borderless
+    ? 'bg-transparent border-none shadow-none p-0'
+    : `${containerClasses[rarity] || containerClasses.common} border-2 shadow-inner rounded-2xl p-1.5`;
 
   return (
-    <div className={`relative flex items-center justify-center rounded-2xl border-2 shadow-inner shrink-0 overflow-hidden p-1.5 ${currentClass} ${className}`}>
+    <div className={`relative flex items-center justify-center shrink-0 overflow-hidden ${currentClass} ${className}`}>
       <svg
         viewBox="0 0 100 100"
         className="w-full h-full drop-shadow-xs overflow-visible"

@@ -21,6 +21,7 @@ import ClimbHeader from './climb/ClimbHeader';
 import ClimbPreCard from './climb/ClimbPreCard';
 import CompanionsRow from './climb/CompanionsRow';
 import ToastBanner from './climb/ToastBanner';
+import ItemThumbnail from './ItemThumbnail';
 
 
 export default function CodingSessionView({
@@ -625,7 +626,7 @@ export default function CodingSessionView({
     if (owned <= 0) {
       setFeedbackBanner({
         type: 'info',
-        text: 'Out of Hint Scrolls! Opening Shop... 🧪'
+        text: 'Out of Hint Scrolls! Opening Shop... 📜'
       });
       if (onOpenWorkshop) onOpenWorkshop();
       return;
@@ -639,7 +640,7 @@ export default function CodingSessionView({
     soundFx.playPowerUp();
     setFeedbackBanner({
       type: 'success',
-      text: 'Logic Trace Hint Revealed! 💡'
+      text: 'Logic Trace Hint Revealed! 📜'
     });
   };
 
@@ -805,7 +806,8 @@ export default function CodingSessionView({
                         : 'Out of Hint Scrolls • Tap to get in Shop!'
                     }
                   >
-                    💡 {revealedHint ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}
+                    <ItemThumbnail itemId="hint_scroll" borderless className="w-4 h-4 shrink-0" />
+                    <span>{revealedHint ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}</span>
                   </button>
 
                   {/* 50:50 DISTRACTOR PRUNER BUTTON (Shown when active or count > 0) */}
@@ -820,7 +822,8 @@ export default function CodingSessionView({
                       }`}
                       title="Prune 2 wrong choices (50:50)!"
                     >
-                      ✂️ {eliminatedOptions.length > 0 ? 'Active' : `50:50 (${consumables?.letterPrunerCount ?? 0})`}
+                      <ItemThumbnail itemId="letter_pruner" borderless className="w-4 h-4 shrink-0" />
+                      <span>{eliminatedOptions.length > 0 ? 'Active' : `50:50 (${consumables?.letterPrunerCount ?? 0})`}</span>
                     </button>
                   )}
                 </div>
