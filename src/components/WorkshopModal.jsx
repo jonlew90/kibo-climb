@@ -661,6 +661,9 @@ export default function WorkshopModal({
           if (selectedItemDetail?.id === item.id) {
             setSelectedItemDetail(null);
           }
+          if (itemsToPreview.length >= Object.values(previewSlots).filter(Boolean).length) {
+            setIsMobilePreviewOpen(false);
+          }
           return;
         }
 
@@ -676,6 +679,9 @@ export default function WorkshopModal({
           });
           return next;
         });
+
+        // Automatically slide up try-on drawer on mobile
+        setIsMobilePreviewOpen(true);
       }
       // On desktop, selecting an item highlights details/stage; on mobile, keep item detail closed so preview handles it
       if (typeof window !== 'undefined' && window.innerWidth >= 768) {

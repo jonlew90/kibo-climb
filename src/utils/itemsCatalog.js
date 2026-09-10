@@ -353,7 +353,7 @@ export const WORKSHOP_ITEMS = [
     category: 'pets',
     cost: 50,
     rarity: 'common',
-    description: 'Adorable snowy owl companion resting by Kibo.'
+    description: 'Adorable, fluffy snowy owl chick with golden amber eyes and soft speckled down feathers, perched faithfully beside Kibo.'
   },
   {
     id: 'alpine_fox',
@@ -361,7 +361,7 @@ export const WORKSHOP_ITEMS = [
     category: 'pets',
     cost: 180,
     rarity: 'rare',
-    description: 'Playful arctic mountain fox cub companion.'
+    description: 'Curious mountain fox cub with pure arctic-white chest fur, perky dark-tipped ears, and a bushy white-plumed tail.'
   },
   {
     id: 'mini_robot',
@@ -369,7 +369,7 @@ export const WORKSHOP_ITEMS = [
     category: 'pets',
     cost: 350,
     rarity: 'rare',
-    description: 'A friendly floating robot companion to beep and boop by your side.'
+    description: 'High-tech floating scout bot with a glowing blue LED visor, pulse beacon antenna, and gentle antigravity thrusters.'
   },
   {
     id: 'phoenix_pet',
@@ -377,7 +377,7 @@ export const WORKSHOP_ITEMS = [
     category: 'pets',
     cost: 650,
     rarity: 'epic',
-    description: 'Mythical fiery phoenix companion floating beside Kibo!'
+    description: 'Radiant mythical phoenix companion cloaked in blazing plumage, sporting a flame crest, glowing golden wings, and trailing embers.'
   },
   {
     id: 'frost_dragon',
@@ -386,7 +386,7 @@ export const WORKSHOP_ITEMS = [
     cost: 900,
     rarity: 'epic',
     requiredRank: 1300,
-    description: 'Mystic ice dragon companion floating with frost sparkles!'
+    description: 'Majestic crystalline ice dragon with swept-back frost horns, sparkling sapphire eyes, faceted wings, and chilling winter breath.'
   },
   {
     id: 'cosmic_griffin',
@@ -395,7 +395,7 @@ export const WORKSHOP_ITEMS = [
     cost: 1800,
     rarity: 'legendary',
     requiredRank: 1500,
-    description: 'Royal golden celestial griffin companion!'
+    description: 'Legendary celestial monarch! Regal golden eagle visage with starlight eyes, expansive wings infused with cosmic nebulae, and orbiting starbursts.'
   },
 
   // VISUAL FX (Category: fx)
@@ -609,10 +609,10 @@ export const WORKSHOP_ITEMS = [
     id: 'border_diamond',
     name: 'Diamond Encrusted',
     category: 'borders',
-    cost: 800,
+    cost: 1250,
     rarity: 'legendary',
     requiredRank: 1200,
-    description: 'A dazzling border encrusted with sparkling diamonds.'
+    description: 'A prestigious royal summit frame encrusted with brilliant cut diamonds that refract radiant beams of light.'
   },
   {
     id: 'border_fire',
@@ -668,13 +668,13 @@ export const WORKSHOP_ITEMS = [
     name: 'Monarch Butterfly Pet',
     category: 'seasonal',
     slot: 'pets',
-    cost: 175,
+    cost: 280,
     rarity: 'epic',
     seasonId: 'spring',
     seasonName: 'Spring Bloom',
     seasonType: 'season',
     recurringSchedule: { startMonth: 3, startDay: 1, endMonth: 5, endDay: 31, previewDays: 14 },
-    description: 'A sparkling monarch butterfly floating gracefully alongside Kibo! (Spring Exclusive)'
+    description: 'A stunning monarch butterfly companion with stained-glass orange wings, intricate black venation, and glowing spring pollen dust! (Spring Exclusive)'
   },
 
   // 2. SUMMER SEASON (June 1 – August 31)
@@ -763,13 +763,13 @@ export const WORKSHOP_ITEMS = [
     name: 'Acorn Squirrel Pal',
     category: 'seasonal',
     slot: 'pets',
-    cost: 190,
+    cost: 290,
     rarity: 'epic',
     seasonId: 'autumn',
     seasonName: 'Autumn Harvest',
     seasonType: 'season',
     recurringSchedule: { startMonth: 9, startDay: 1, endMonth: 11, endDay: 30, previewDays: 14 },
-    description: 'A bushy-tailed woodland squirrel friend holding a shiny golden acorn! (Autumn Exclusive)'
+    description: 'A plump, cheerful woodland squirrel with an oversized fluffy tail curled over its back, clutching a gleaming golden summit acorn! (Autumn Exclusive)'
   },
 
   // 4. WINTER SEASON (December 1 – February 28/29)
@@ -791,13 +791,13 @@ export const WORKSHOP_ITEMS = [
     name: 'Mini Snowman Pal',
     category: 'seasonal',
     slot: 'pets',
-    cost: 210,
+    cost: 310,
     rarity: 'epic',
     seasonId: 'winter',
     seasonName: 'Winter Frost',
     seasonType: 'season',
     recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 2, endDay: 28, previewDays: 14 },
-    description: 'A cute mini snowman companion with a carrot nose and little top hat! (Winter Exclusive)'
+    description: 'A sculpted 3-tier winter snowman pal with charcoal smile, sweet carrot nose, windblown striped scarf, and a jaunty top hat with holly! (Winter Exclusive)'
   },
   {
     id: 'winter_ice_skates',
@@ -847,13 +847,13 @@ export const WORKSHOP_ITEMS = [
     name: 'Harmony Dove Companion',
     category: 'seasonal',
     slot: 'pets',
-    cost: 180,
+    cost: 280,
     rarity: 'epic',
     seasonId: 'mlk_day',
     seasonName: 'MLK Day of Service',
     seasonType: 'holiday',
     recurringSchedule: { floatingHoliday: 'mlk_day', daysBefore: 3, daysAfter: 3, previewDays: 7 },
-    description: 'A peaceful white dove companion carrying a green olive branch! (MLK Day Exclusive)'
+    description: 'A graceful white dove of peace with outstretched layered wings and a gentle aura, carrying a fresh olive branch of harmony! (MLK Day Exclusive)'
   },
   {
     id: 'mlk_dream_sash',
@@ -970,13 +970,13 @@ export const WORKSHOP_ITEMS = [
     name: 'Lucky Rainbow Arc',
     category: 'seasonal',
     slot: 'fx',
-    cost: 220,
+    cost: 480,
     rarity: 'legendary',
     seasonId: 'st_patricks',
     seasonName: 'St. Patrick\'s Luck',
     seasonType: 'holiday',
     recurringSchedule: { startMonth: 3, startDay: 14, endMonth: 3, endDay: 18, previewDays: 7 },
-    description: 'A vibrant full-spectrum rainbow arching behind Kibo with lucky shamrock sparkles! (St. Patrick\'s Exclusive)'
+    description: 'A brilliant full-spectrum celestial rainbow arching behind Kibo with crackling golden sparks and four-leaf clover bursts! (St. Patrick\'s Exclusive)'
   },
 
   // 10. EARTH DAY / ARBOR DAY (April 20 – April 24)
@@ -1082,13 +1082,13 @@ export const WORKSHOP_ITEMS = [
     name: 'Liberty Skyrockets FX',
     category: 'seasonal',
     slot: 'fx',
-    cost: 240,
+    cost: 520,
     rarity: 'legendary',
     seasonId: 'independence_day',
     seasonName: '4th of July Jubilee',
     seasonType: 'holiday',
     recurringSchedule: { startMonth: 7, startDay: 1, endMonth: 7, endDay: 6, previewDays: 7 },
-    description: 'Spectacular red, white, and blue firework rockets bursting over Kibo! (4th of July Exclusive)'
+    description: 'A spectacular grand finale display of patriotic red, white, and blue rocket starbursts illuminating the summit sky! (4th of July Exclusive)'
   },
   {
     id: 'july4_sparkler_pinwheel',
@@ -1164,13 +1164,13 @@ export const WORKSHOP_ITEMS = [
     name: 'Spooky Boo Ghost',
     category: 'seasonal',
     slot: 'pets',
-    cost: 220,
+    cost: 320,
     rarity: 'epic',
     seasonId: 'halloween',
     seasonName: 'Spooky Summit',
     seasonType: 'holiday',
     recurringSchedule: { startMonth: 10, startDay: 24, endMonth: 11, endDay: 2, previewDays: 14 },
-    description: 'A cute, friendly glowing ghost companion floating and waving by Kibo! (Halloween Exclusive)'
+    description: 'A friendly floating phantom with ethereal translucent ripples, playful glowing spectral eyes, and tiny dancing will-o\'-the-wisps! (Halloween Exclusive)'
   },
   {
     id: 'halloween_witch_broom',
@@ -1274,13 +1274,13 @@ export const WORKSHOP_ITEMS = [
     name: 'Gingerbread Buddy Pet',
     category: 'seasonal',
     slot: 'pets',
-    cost: 200,
+    cost: 300,
     rarity: 'epic',
     seasonId: 'holiday_season',
     seasonName: 'Holiday Wonderland',
     seasonType: 'holiday',
     recurringSchedule: { startMonth: 12, startDay: 18, endMonth: 12, endDay: 27, previewDays: 14 },
-    description: 'A sweet gingerbread friend iced with frosting and candy gumdrop buttons! (Holiday Exclusive)'
+    description: 'A delicious golden-baked gingerbread pal piped with royal icing cuffs, swirl frosting hair, and colorful gumdrop buttons! (Holiday Exclusive)'
   },
   {
     id: 'holiday_candy_cane_staff',
@@ -1300,13 +1300,13 @@ export const WORKSHOP_ITEMS = [
     name: 'Festive Holiday Lights',
     category: 'seasonal',
     slot: 'fx',
-    cost: 220,
+    cost: 480,
     rarity: 'legendary',
     seasonId: 'holiday_season',
     seasonName: 'Holiday Wonderland',
     seasonType: 'holiday',
     recurringSchedule: { startMonth: 12, startDay: 18, endMonth: 12, endDay: 27, previewDays: 14 },
-    description: 'Glowing multi-colored festive holiday fairy lights twinkling around Kibo! (Holiday Exclusive)'
+    description: 'A dazzling cascade of multi-colored fairy lights and golden stardust twinkling joyfully around Kibo! (Holiday Exclusive)'
   },
   {
     id: 'holiday_wreath_border',
@@ -1366,7 +1366,7 @@ export const WORKSHOP_ITEMS = [
     realMoneyPrice: '$2.99',
     clubRealMoneyPrice: '$2.49',
     rarity: 'epic',
-    description: 'A tiny fire-breathing dragon companion that flies beside Kibo. Real money exclusive.'
+    description: 'A playful baby flame whelp with curled golden horns, fluttering wings, warm ember glow, and tiny adorable smoke puffs. Real money exclusive.'
   },
   {
     id: 'galaxy_skin_premium',
