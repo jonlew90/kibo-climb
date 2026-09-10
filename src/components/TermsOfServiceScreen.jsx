@@ -47,10 +47,10 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
             <div>
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Terms & Conditions of Use</h1>
               <p className="text-sm text-slate-600 mt-1 font-medium leading-relaxed">
-                Welcome to Kibo Climb. By creating an account, practicing on our application, or accessing our services, you agree to these Terms of Service.
+                Welcome to Kibo Climb. These Terms of Service are entered into by and between you and Kibo Climb LLC ("Kibo Climb", "Company", "we", "us", or "our"). By creating an account, practicing on our application, or accessing our services, you agree to these Terms of Service.
               </p>
               <div className="mt-3 text-xs font-semibold text-slate-400">
-                Effective Date: August 28, 2026
+                Effective Date: September 9, 2026
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
             <h3 className="text-base font-extrabold tracking-tight">1. Acceptance & Parent Responsibility</h3>
           </div>
           <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            Kibo Climb is designed for children and families. If a user is under 18 years old, a parent or legal guardian must review and accept these terms on behalf of the child before establishing an account or subscribing to premium features. Our collection and handling of educational data is governed by our COPPA Privacy Policy, which is incorporated into these Terms.
+            Kibo Climb is designed for children and families. If a user is under 18 years old, a parent or legal guardian must review and accept these terms on behalf of the child before establishing an account or subscribing to premium features. These Terms are governed by the laws of the State of Texas, without regard to conflict of law principles. Our collection and handling of educational data is governed by our COPPA Privacy Policy, which is incorporated into these Terms.
           </p>
         </section>
 
@@ -184,6 +184,11 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
           <p className="text-sm text-slate-600 leading-relaxed font-medium">
             If you have questions about these Terms of Service, please contact our support team:
           </p>
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-semibold text-slate-800 space-y-1.5">
+            <p><strong>Entity:</strong> Kibo Climb LLC</p>
+            <p><strong>Mailing Address:</strong> 906 W McDermott Dr, Suite 116, PMB 345, Allen, TX 75013</p>
+            <p><strong>Support Email:</strong> <a href="mailto:support@kiboclimb.com" className="text-emerald-700 underline font-bold">support@kiboclimb.com</a></p>
+          </div>
           <a
             href="mailto:support@kiboclimb.com?subject=Kibo%20Climb%20Terms%20Inquiry"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl font-extrabold text-sm transition-colors"
