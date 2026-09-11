@@ -1330,7 +1330,7 @@ export default function WorkshopModal({
                               🏷️ {isFam ? '20%' : '15%'} Off Packs & Gear
                             </span>
                             <span className="text-[11px] font-medium bg-purple-950/40 border border-purple-300/30 text-purple-100 px-2 py-0.5 rounded-md">
-                              🎁 3.3x Daily Vault
+                              🎁 4x Daily Vault
                             </span>
                           </div>
                         </div>

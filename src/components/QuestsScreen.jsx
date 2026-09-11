@@ -321,7 +321,7 @@ export default function QuestsScreen({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar pb-2 mb-3">
+        <div className="grid grid-cols-4 gap-1 sm:flex sm:items-center sm:gap-2 overflow-x-auto hide-scrollbar pb-2 mb-3">
           {[
             {
               id: 'daily',
@@ -342,7 +342,7 @@ export default function QuestsScreen({
             {
               id: 'team2',
               label: '2-Person Tandem',
-              shortLabel: '2P Tandem',
+              shortLabel: '2P Squad',
               icon: Users,
               count: questState?.team2?.length,
               unclaimed: (questState?.team2 || []).filter(q => q.completed && !q.claimed).length
@@ -366,17 +366,17 @@ export default function QuestsScreen({
                   soundFx.playKeyTap();
                   setActiveTab(tab.id);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-black text-xs whitespace-nowrap transition-all cursor-pointer shadow-2xs shrink-0 relative ${
+                className={`flex items-center justify-center gap-1 sm:gap-1.5 px-1 py-2 sm:px-3 rounded-xl font-black text-[10px] xs:text-[11px] sm:text-xs whitespace-nowrap transition-all cursor-pointer shadow-2xs sm:shrink-0 relative ${
                   isActive
                     ? 'bg-purple-600 text-white shadow-purple-200 scale-102'
                     : 'bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-300' : 'text-slate-400'}`} />
+                <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-amber-300' : 'text-slate-400'}`} />
                 <span className="hidden sm:inline">{tab.label}</span>
-                <span className="sm:hidden">{tab.shortLabel}</span>
+                <span className="sm:hidden truncate">{tab.shortLabel}</span>
                 {tab.unclaimed > 0 && (
-                  <span className={`inline-flex items-center justify-center px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                  <span className={`inline-flex items-center justify-center px-1 py-0.2 rounded-full text-[9px] font-black shrink-0 ${
                     isActive ? 'bg-amber-400 text-purple-950 animate-pulse' : 'bg-amber-500 text-white'
                   }`}>
                     {tab.unclaimed}

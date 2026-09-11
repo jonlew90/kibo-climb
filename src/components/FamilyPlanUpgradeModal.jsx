@@ -193,7 +193,7 @@ export default function FamilyPlanUpgradeModal({
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Daily Vault 3.3x bonus Sparks & shields</span>
+                  <span>Daily Vault 4x bonus Sparks & shields</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -220,7 +220,7 @@ export default function FamilyPlanUpgradeModal({
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Daily Vault 3.3x bonus Sparks & shields for all</span>
+                  <span>Daily Vault 4x bonus Sparks & shields for all</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />

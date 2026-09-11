@@ -669,7 +669,7 @@ export default function ParentDashboardModal({
                       </div>
                       <p className="text-xs text-slate-600 leading-snug">
                         {hasFamily
-                          ? 'All child profiles enjoy 1.25x Sparks, 15% VIP store discounts, 3.3x Daily Vault bonuses, and full diagnostic coaching.'
+                          ? 'All child profiles enjoy 1.25x Sparks, 15% VIP store discounts, 4x Daily Vault bonuses, and full diagnostic coaching.'
                           : 'Active 1.25x Sparks multiplier, 15% store discounts, and full diagnostic coaching.'}
                       </p>
                     </div>
@@ -1728,7 +1728,7 @@ export default function ParentDashboardModal({
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>Daily Vault 3.3x bonus Sparks & shields</span>
+                            <span>Daily Vault 4x bonus Sparks & shields</span>
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
@@ -1831,7 +1831,7 @@ export default function ParentDashboardModal({
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>Daily Vault 3.3x rewards & golden tags for all profiles</span>
+                            <span>Daily Vault 4x rewards & golden tags for all profiles</span>
                           </li>
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />

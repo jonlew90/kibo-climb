@@ -1534,9 +1534,8 @@ export const storageService = {
 
     const hasClub = isKiboClub || this.hasClubMembership(pid);
     
-    // Reward payloads: 
-    // Free gets: 35 sparks + 1 scroll + 1 spyglass + (1 shield if < 2 shields, otherwise 1 potion)
-    // VIP gets: 120 sparks + 1 potion + 2 scrolls + 1 spyglass + 1 pruner + (1 shield if < 2 shields, otherwise +1 potion)
+    // Free gets: 25 sparks + 1 scroll + 1 spyglass + (1 shield if < 2 shields, otherwise 1 potion)
+    // VIP gets: 100 sparks + 1 potion + 2 scrolls + 1 spyglass + 1 pruner + (1 shield if < 2 shields, otherwise +1 potion)
     const curConsumables = this.getConsumables(pid);
     const currentShields = curConsumables.shieldCount ?? 1;
 
@@ -1554,7 +1553,7 @@ export const storageService = {
       potionsGranted += 1;
     }
 
-    const sparksGranted = hasClub ? 120 : 35;
+    const sparksGranted = hasClub ? 100 : 25;
 
     // Update sparks
     const currentSparks = profile.userData?.sparks ?? 0;

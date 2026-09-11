@@ -102,7 +102,7 @@ export default function DailyBonusRewardModal({
               </h3>
               <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xs mx-auto">
                 {hasClub
-                  ? 'Unlock today\'s VIP chest packed with 3.3x bonus Sparks, shields, and potions!'
+                  ? 'Unlock today\'s VIP chest packed with 4x bonus Sparks, shields, and potions!'
                   : 'Tap below to claim your daily Sparks and power-up rewards!'}
               </p>
             </div>
@@ -155,7 +155,7 @@ export default function DailyBonusRewardModal({
                     +{rewardData.sparks} Sparks
                   </span>
                   <span className="text-[10px] text-amber-200 font-bold block">
-                    {hasClub ? '3.3x VIP Boost' : 'Daily Grant'}
+                    {hasClub ? '4x VIP Boost' : 'Daily Grant'}
                   </span>
                 </div>
               </div>
