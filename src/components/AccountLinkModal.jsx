@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Sparkles, CheckCircle2, X, ArrowRight, Mail, Zap, AlertTriangle, Lock, Cloud, Smartphone } from 'lucide-react';
+import { ShieldCheck, Sparkles, CheckCircle2, X, ArrowRight, Mail, Zap, AlertTriangle, Lock, Cloud, Smartphone, Crown } from 'lucide-react';
 import { authService } from '../services/authService';
 import { storageService } from '../services/storageService';
 import { parentChildService } from '../services/parentChildService';
@@ -121,11 +121,20 @@ export default function AccountLinkModal({
 
       if (res.success) {
         const earnedSparks = res.earnedSparks ?? storageService.grantAccountLinkSparksReward();
+        const trialResult = res.trialResult ?? storageService.grantAccountLinkTrialReward();
 
         const label = provider === 'google' ? 'Google' : provider === 'apple' ? 'Apple' : 'Email Magic Link';
 
+        const perks = [];
+        if (trialResult?.granted) {
+          perks.push('Free 7-Day Kibo Club Solo Trial');
+        }
         if (earnedSparks > 0) {
-          setSuccessMessage(`Account linked successfully with ${label}! Your progress is now permanently synced. +200 ⚡ Earned!`);
+          perks.push(`+${earnedSparks} ⚡ Bonus`);
+        }
+
+        if (perks.length > 0) {
+          setSuccessMessage(`Account linked successfully with ${label}! Your progress is permanently synced. Unlocked: ${perks.join(' & ')}!`);
         } else {
           setSuccessMessage(`Account linked successfully with ${label}! Your progress is now permanently synced.`);
         }
@@ -260,9 +269,16 @@ export default function AccountLinkModal({
 
         {/* Incentive Badge (Only for Save Mode) */}
         {!successMessage && activeMode === 'save' && (
-          <div className="bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-300 rounded-2xl p-2.5 flex items-center justify-center gap-2 text-amber-950 shadow-sm animate-pulse">
-            <Zap className="w-5 h-5 text-amber-600 fill-amber-400 stroke-[2.5]" />
-            <span className="font-black text-sm">Link now for a +200 ⚡ Bonus!</span>
+          <div className="bg-gradient-to-r from-amber-100 via-amber-200 to-yellow-200 border-2 border-amber-300 rounded-2xl p-2.5 flex flex-col sm:flex-row items-center justify-center gap-2 text-amber-950 shadow-sm animate-pulse text-center">
+            <div className="flex items-center gap-1.5">
+              <Crown className="w-5 h-5 text-amber-600 fill-amber-400 stroke-[2.5]" />
+              <span className="font-black text-xs sm:text-sm">Free 7-Day Kibo Club Solo Trial</span>
+            </div>
+            <span className="hidden sm:inline text-amber-500 font-black">•</span>
+            <div className="flex items-center gap-1">
+              <Zap className="w-4 h-4 text-amber-600 fill-amber-400 stroke-[2.5]" />
+              <span className="font-black text-xs sm:text-sm">+200 ⚡ Bonus!</span>
+            </div>
           </div>
         )}
 

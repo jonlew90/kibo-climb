@@ -16,6 +16,7 @@ import MathSessionView from './components/MathSessionView';
 import WordsSessionView from './components/WordsSessionView';
 import WorldSessionView from './components/WorldSessionView';
 import CodingSessionView from './components/CodingSessionView';
+import PracticeModeModal from './components/PracticeModeModal';
 import BadgesModal from './components/BadgesModal';
 import AscentRoadmapModal from './components/AscentRoadmapModal';
 import DevControlPanel from './components/DevControlPanel';
@@ -738,6 +739,7 @@ export default function App() {
   const [levelUpReason, setLevelUpReason] = useState('');
   const [isBossMode, setIsBossMode] = useState(false);
   const [isPlacementTest, setIsPlacementTest] = useState(false);
+  const [isPracticeModeOpen, setIsPracticeModeOpen] = useState(false);
   const [placementResultInfo, setPlacementResultInfo] = useState(null);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
 
@@ -2259,6 +2261,26 @@ export default function App() {
                   </button>
                 </div>
 
+                {/* Kibo Club / Membership Status in Dropdown */}
+                <div className="p-2 bg-amber-50/60 border-y border-amber-100/60">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      handleOpenModal(VIEWS.FAMILY_UPGRADE);
+                    }}
+                    className="w-full flex items-center justify-between p-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-black text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 fill-white" />
+                      <span>{isKiboClub ? 'Kibo Club Active (1.25x)' : 'Join Kibo Club'}</span>
+                    </div>
+                    <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-md">
+                      {isKiboClub ? 'Perks' : 'Upgrade'}
+                    </span>
+                  </button>
+                </div>
+
                 <div className="h-px bg-slate-100 w-full" />
 
                 {/* Invite & Earn Sparks Button */}
@@ -3139,6 +3161,7 @@ export default function App() {
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
           onClimbActiveChange={setIsClimbActive}
+          onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
         />
       )}
 
@@ -3182,6 +3205,7 @@ export default function App() {
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
           onClimbActiveChange={setIsClimbActive}
+          onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
         />
       )}
 
@@ -3225,6 +3249,7 @@ export default function App() {
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
           onClimbActiveChange={setIsClimbActive}
+          onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
         />
       )}
 
@@ -3267,6 +3292,7 @@ export default function App() {
           }}
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
           onClimbActiveChange={setIsClimbActive}
+          onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
         />
       )}
 
@@ -3554,6 +3580,18 @@ export default function App() {
         isOpen={showAscentRoadmapModal}
         onClose={handleGoBack}
         profileId={activeProfileId}
+      />
+
+      {/* TRAINING CAMP / PRACTICE MODE MODAL */}
+      <PracticeModeModal
+        isOpen={isPracticeModeOpen}
+        onClose={() => setIsPracticeModeOpen(false)}
+        activeSubject={activeSubject}
+        onAwardPracticeSparks={(amt) => {
+          const updated = (sparks || 0) + amt;
+          setSparks(updated);
+          storageService.saveUserData({ sparks: updated }, activeSubject);
+        }}
       />
 
       {/* PARENT SPEED INFO MODAL (ℹ️) */}

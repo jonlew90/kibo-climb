@@ -1,8 +1,11 @@
 import React from 'react';
-import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, ShieldCheck, Mail, ArrowLeft, Music } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, ShieldCheck, Mail, ArrowLeft, Music, Globe } from 'lucide-react';
 import { soundFx } from '../utils/audio';
+import { useTranslation } from '../i18n';
+import { storageService } from '../services/storageService';
 
 export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter, onNavigate, onBack, onOpenFeedback, onOpenParentZone, onSwitchProfile }) {
+  const { t, dialect, setDialect, acceptAllDialects, setAcceptAllDialects } = useTranslation();
   const isMuted = preferences?.isMuted ?? false;
   const isMusicMuted = preferences?.isMusicMuted ?? false;
   const isHapticsEnabled = preferences?.isHapticsEnabled ?? true;
@@ -163,6 +166,77 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
               >
                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${isHapticsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
+            </div>
+
+            {/* Language & Regional Spelling Dialect */}
+            <div className="p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl border-2 bg-amber-100 border-amber-300 text-amber-700">
+                  <Globe className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-slate-700 block text-sm">{t('settings.spellingDialect')}</span>
+                  <span className="text-xs text-slate-500">Regional spelling convention for Kibo Words</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setDialect('en-US');
+                    const activeProfile = storageService.getActiveProfile();
+                    if (activeProfile?.id) {
+                      storageService.updateProfile(activeProfile.id, { spellingDialect: 'en-US' });
+                    }
+                  }}
+                  className={`py-2 px-3 rounded-xl border-2 text-xs font-black transition-all cursor-pointer ${
+                    dialect === 'en-US'
+                      ? 'bg-amber-500 text-white border-amber-600 shadow-xs scale-[1.02]'
+                      : 'bg-white text-slate-700 border-slate-200 hover:border-amber-300'
+                  }`}
+                >
+                  🇺🇸 US English
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    setDialect('en-GB');
+                    const activeProfile = storageService.getActiveProfile();
+                    if (activeProfile?.id) {
+                      storageService.updateProfile(activeProfile.id, { spellingDialect: 'en-GB' });
+                    }
+                  }}
+                  className={`py-2 px-3 rounded-xl border-2 text-xs font-black transition-all cursor-pointer ${
+                    dialect === 'en-GB'
+                      ? 'bg-amber-500 text-white border-amber-600 shadow-xs scale-[1.02]'
+                      : 'bg-white text-slate-700 border-slate-200 hover:border-amber-300'
+                  }`}
+                >
+                  🇬🇧 UK / Int'l
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                <span className="text-xs font-bold text-slate-600">{t('settings.acceptBoth')}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    const nextVal = !acceptAllDialects;
+                    setAcceptAllDialects(nextVal);
+                    const activeProfile = storageService.getActiveProfile();
+                    if (activeProfile?.id) {
+                      storageService.updateProfile(activeProfile.id, { acceptAllDialects: nextVal });
+                    }
+                  }}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${acceptAllDialects ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${acceptAllDialects ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
             </div>
 
             {/* 100% Offline Capability Highlight */}

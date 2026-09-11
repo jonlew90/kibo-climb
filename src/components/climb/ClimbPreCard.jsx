@@ -11,13 +11,14 @@ export default function ClimbPreCard({
   onTriggerToastBanner,
   onOpenWorkshop,
   onStartClimb,
-  onResumeClimb
+  onResumeClimb,
+  onOpenPracticeMode
 }) {
   const isResumeAvailable = savedClimbState && savedClimbState.sessionQuestionIndex <= 12;
   const ownedDoubleSparks = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
 
   return (
-    <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 sm:p-5 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[42vh]">
+    <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 sm:p-5 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[44vh]">
       <div className="space-y-1.5">
         <span className="text-xs sm:text-sm font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
           {isAutoPaused
@@ -42,8 +43,8 @@ export default function ClimbPreCard({
         </p>
       </div>
 
-      {/* START / RESUME CLIMB MAIN CTA BUTTON */}
-      <div className="w-full space-y-1.5 order-2">
+      {/* START / RESUME CLIMB MAIN CTA BUTTON & PRACTICE BUTTON */}
+      <div className="w-full space-y-2 order-2">
         <button
           type="button"
           onClick={isResumeAvailable ? onResumeClimb : onStartClimb}
@@ -52,6 +53,16 @@ export default function ClimbPreCard({
           <Play className="w-7 h-7 fill-current" />
           <span>{isResumeAvailable ? 'RESUME CLIMB 🏔️' : 'START CLIMB 🏔️'}</span>
         </button>
+
+        {onOpenPracticeMode && (
+          <button
+            type="button"
+            onClick={onOpenPracticeMode}
+            className="w-full py-2 px-3 bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 hover:border-indigo-300 text-indigo-800 font-black text-xs sm:text-sm rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs active:scale-98"
+          >
+            <span>🏋️ Training Camp (Free Practice Mode)</span>
+          </button>
+        )}
       </div>
 
       {/* PRE-CLIMB POWERUPS & CONSUMABLES SELECTOR */}

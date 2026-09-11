@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Sparkles, CheckCircle2, ChevronRight, ShieldCheck, Users } from 'lucide-react';
 import { storageService } from '../services/storageService';
+import { authService } from '../services/authService';
 import { getActiveRealMoneySaleEvent, getEffectiveSubscriptionPricing } from '../utils/itemsCatalog';
 
 export default function FamilyPlanUpgradeModal({
@@ -120,7 +121,11 @@ export default function FamilyPlanUpgradeModal({
             >
               <div className="flex items-center justify-between gap-1">
                 <span className="text-[10px] font-black uppercase text-purple-700 truncate">Solo</span>
-                {soloPricing.isDiscounted ? (
+                {authService.getAuthState().isAnonymous && !storageService.hasClubMembership() ? (
+                  <span className="text-[8px] font-black uppercase text-amber-900 bg-amber-200 px-1.5 py-0.5 rounded-full shrink-0 border border-amber-300">
+                    7-Day Free Trial
+                  </span>
+                ) : soloPricing.isDiscounted ? (
                   <span className="text-[8px] font-black uppercase text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded-full shrink-0">
                     -{soloPricing.discountPercent}% Sale
                   </span>
@@ -202,6 +207,10 @@ export default function FamilyPlanUpgradeModal({
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   <span>100% offline-ready practice & parent progress tracking</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span><strong>Unlimited printable worksheets & weak-spot packets 🖨️</strong></span>
                 </li>
               </ul>
             ) : (

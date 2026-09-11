@@ -201,5 +201,27 @@ export const analyticsService = {
       description: redactedMessage.substring(0, 100),
       fatal: additionalParams.fatal === true
     });
+  },
+
+  /**
+   * Log when a worksheet is printed or previewed.
+   */
+  logWorksheetPrint: (worksheetId, subject, isKiboClubOnly) => {
+    safeLogEvent('print_worksheet', {
+      worksheet_id: worksheetId,
+      subject: subject,
+      is_kibo_club_only: Boolean(isKiboClubOnly)
+    });
+  },
+
+  /**
+   * Log when a worksheet card or dedicated worksheet URL is viewed.
+   */
+  logWorksheetView: (worksheetId, subject) => {
+    safeLogEvent('view_item', {
+      item_id: worksheetId,
+      item_category: 'worksheet',
+      subject: subject
+    });
   }
 };

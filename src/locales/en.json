@@ -1,0 +1,34 @@
+{
+  "app": {
+    "title": "Kibo Climb",
+    "subtitle": "Ascend Knowledge",
+    "practice": "Practice",
+    "continue": "Continue",
+    "submit": "Submit",
+    "next": "Next",
+    "skip": "Skip",
+    "done": "Done",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "words": {
+    "acceptedVariant": "Accepted! ({{dialect}} spelling)",
+    "correct": "Correct!",
+    "niceJob": "Great climb!",
+    "spellingReview": "Review the spelling:",
+    "typeSpelling": "Type the missing letters"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "spellingDialect": "Spelling Dialect",
+    "usEnglish": "American English (en-US)",
+    "ukEnglish": "British / Commonwealth English (en-GB)",
+    "acceptBoth": "Accept Both US & UK Spellings",
+    "timezone": "Timezone"
+  },
+  "streak": {
+    "days": "Day Streak",
+    "protected": "Shield Protected!"
+  }
+}

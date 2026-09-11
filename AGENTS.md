@@ -5,3 +5,4 @@
 3. **No Conversational Filler:** Omit conversational introductions, conversational preambles, and unnecessary summaries.
 4. **Targeted Context:** Limit file reading strictly to files explicitly tagged in the prompt or direct imports of those files. Do not conduct workspace-wide exploratory searches unless requested.
 5. **Skip Preamble on Tool Results:** Do not summarize tool outputs before acting on them.
+6. **Mascot Identity:** Kibo is the Red Panda mascot (represented in the favicon and `Mascot.jsx`), NOT a mountain. Mount Kibo is the climb setting/theme, not the mascot.

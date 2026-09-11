@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star, Compass, Lock, Ticket } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star, Compass, Lock, Ticket, Printer, User, GraduationCap } from 'lucide-react';
+import PrintablesTab from './PrintablesTab';
 import { CURRICULUM_TIERS, getTierFromRating, GRADE_STARTING_RATINGS, getRITBandDetails, calculateMapDomainBreakdown } from '../utils/mathCurriculum';
 import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { BADGES_CATALOG } from '../data/badges';
@@ -165,6 +166,10 @@ export default function ParentDashboardModal({
   const [editChildName, setEditChildName] = useState('');
   const [editProfileError, setEditProfileError] = useState('');
   const [showFamilyUpgradeModal, setShowFamilyUpgradeModal] = useState(false);
+  const [showAddChildModal, setShowAddChildModal] = useState(false);
+  const [newChildName, setNewChildName] = useState('');
+  const [newChildGrade, setNewChildGrade] = useState('Grade 1–2');
+  const [newChildError, setNewChildError] = useState('');
 
   // Data Privacy Confirmation States
   const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
@@ -234,6 +239,30 @@ export default function ParentDashboardModal({
       setShowEditProfile(false);
       if (onProfileSwitch) onProfileSwitch();
     }
+  };
+
+  const handleAddChildSubmit = (e) => {
+    e.preventDefault();
+    const error = validateSafeChildUsername(newChildName);
+    if (error) {
+      setNewChildError(error);
+      return;
+    }
+    const newProfile = storageService.createProfile(newChildName.trim(), newChildGrade);
+    if (!newProfile) {
+      setNewChildError('Maximum profile limit of 6 reached.');
+      return;
+    }
+    soundFx.playVictory();
+    const updatedList = storageService.getAllProfiles();
+    setProfilesList(updatedList);
+    setViewingProfileId(newProfile.id);
+    storageService.setActiveProfileId(newProfile.id);
+    setLiveUserData(getProfileSubjectData(newProfile.id, selectedSubject));
+    setNewChildName('');
+    setNewChildError('');
+    setShowAddChildModal(false);
+    if (onProfileSwitch) onProfileSwitch();
   };
 
   const [dismissedAlerts, setDismissedAlerts] = useState(() => {
@@ -520,6 +549,43 @@ export default function ParentDashboardModal({
                 </button>
               );
             })}
+
+            {/* Add Child / Profile Button (Family Plan Upsell if at limit) */}
+            {profilesList.length < 6 && (() => {
+              const hasFamily = storageService.hasFamilyPlan();
+              const isLocked = !hasFamily && profilesList.length >= 1;
+              return (
+                <button
+                  key="add-child-profile-btn"
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    if (isLocked) {
+                      setShowFamilyUpgradeModal(true);
+                    } else {
+                      setNewChildName('');
+                      setNewChildError('');
+                      setShowAddChildModal(true);
+                    }
+                  }}
+                  title={isLocked ? 'Add Child Profile (Upgrade to Family Plan)' : 'Add Child Profile'}
+                  className={`px-3 py-1.5 rounded-full border-2 border-dashed text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
+                    isLocked
+                      ? 'border-amber-400 bg-amber-50/80 text-amber-900 hover:bg-amber-100 hover:border-amber-500'
+                      : 'border-purple-300 bg-purple-50/70 text-purple-900 hover:bg-purple-100 hover:border-purple-400'
+                  }`}
+                >
+                  <Plus className={`w-3.5 h-3.5 ${isLocked ? 'text-amber-600' : 'text-purple-600'}`} />
+                  <span>Add Child</span>
+                  {isLocked && (
+                    <span className="text-[10px] bg-amber-200 text-amber-950 font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider flex items-center gap-0.5">
+                      <Lock className="w-2.5 h-2.5 text-amber-800" />
+                      Family
+                    </span>
+                  )}
+                </button>
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -529,52 +595,59 @@ export default function ParentDashboardModal({
         <div className="flex bg-slate-200/80 p-1 rounded-2xl font-extrabold text-xs sm:text-sm shadow-inner gap-1">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`flex-1 min-w-0 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
+            className={`flex-1 min-w-0 py-2 sm:py-2.5 px-1 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'overview'
                 ? 'bg-white text-purple-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Layers className="w-4 h-4 shrink-0 stroke-[2.5]" />
-            <span className="truncate">
-              <span className="hidden sm:inline">Child </span>Overview
-            </span>
+            <span className="truncate">Stats</span>
           </button>
 
           <button
             onClick={() => setActiveTab('schedule')}
-            className={`flex-1 min-w-0 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
+            className={`flex-1 min-w-0 py-2 sm:py-2.5 px-1 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'schedule'
                 ? 'bg-white text-purple-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Calendar className="w-4 h-4 shrink-0 stroke-[2.5]" />
+            <span className="truncate">Schedule</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('printables')}
+            className={`flex-1 min-w-0 py-2 sm:py-2.5 px-1 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
+              activeTab === 'printables'
+                ? 'bg-white text-purple-700 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Printer className="w-4 h-4 shrink-0 stroke-[2.5]" />
             <span className="truncate">
-              <span className="hidden sm:inline">Schedule & Notifications</span>
-              <span className="sm:hidden">Schedule</span>
+              <span className="hidden sm:inline">Worksheets</span>
+              <span className="sm:hidden">Sheets</span>
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab('verification')}
-            className={`flex-1 min-w-0 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
+            className={`flex-1 min-w-0 py-2 sm:py-2.5 px-1 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'verification'
                 ? 'bg-white text-purple-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <ShieldCheck className="w-4 h-4 shrink-0 stroke-[2.5]" />
-            <span className="truncate">
-              <span className="hidden sm:inline">Verification & Controls</span>
-              <span className="sm:hidden">Controls</span>
-            </span>
+            <span className="truncate">Controls</span>
           </button>
         </div>
       </div>
 
-      {/* SUBJECT SELECTOR BAR (PINNED TO FIXED TOP SECTION WHEN IN OVERVIEW) */}
-      {activeTab === 'overview' && (
+      {/* SUBJECT SELECTOR BAR (PINNED TO FIXED TOP SECTION WHEN IN OVERVIEW OR PRINTABLES) */}
+      {(activeTab === 'overview' || activeTab === 'printables') && (
         <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 pt-2 shrink-0">
           <div className="bg-white border-2 border-purple-200 rounded-2xl p-2 sm:p-2.5 shadow-xs text-left">
             <div className="flex items-center justify-between gap-2 mb-1.5 px-0.5">
@@ -1583,7 +1656,31 @@ export default function ParentDashboardModal({
           );
         })()}
 
-        {/* TAB 3: VERIFICATION & CONTROLS */}
+        {/* TAB 3: PRINTABLE WORKSHEETS & OFFLINE PACKETS */}
+        {activeTab === 'printables' && (() => {
+          const viewingProfile = profilesList.find((p) => p.id === viewingProfileId) || storageService.getProfileById(viewingProfileId) || storageService.getActiveProfile();
+          const childName = viewingProfile?.name || 'Kibo Climber';
+          const currentPlan = storageService.getSubscriptionPlan();
+          const isClubMember = currentPlan?.tier === 'family' || currentPlan?.tier === 'single';
+          const recentMistakes = liveUserData?.mistakeHistory || [];
+
+          return (
+            <div className="flex-1 space-y-4 my-1">
+              <PrintablesTab
+                selectedSubject={selectedSubject}
+                isKiboClub={isClubMember}
+                childName={childName}
+                recentMistakes={recentMistakes}
+                onOpenKiboClubUpgrade={() => {
+                  setActiveTab('verification');
+                  setActiveHighlight('family_plan');
+                }}
+              />
+            </div>
+          );
+        })()}
+
+        {/* TAB 4: VERIFICATION & CONTROLS */}
         {activeTab === 'verification' && (
           <div className="flex-1 space-y-4 my-1">
 
@@ -1733,6 +1830,10 @@ export default function ParentDashboardModal({
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                             <span>Golden profile tag 👑 & summit gear</span>
+                          </li>
+                          <li className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span><strong>Unlimited printable worksheets & weak-spot packets 🖨️</strong></span>
                           </li>
                         </ul>
                       </div>
@@ -2185,22 +2286,27 @@ export default function ParentDashboardModal({
                     </span>
                     <span className="text-xs text-slate-500 font-medium block">
                       {authService.getAuthState().isAnonymous
-                        ? 'Link with Google, Apple, or Email to back up progress across devices'
+                        ? 'Link with Google, Apple, or Email to back up progress across devices. Includes free 7-day Kibo Club Solo trial + 200 ⚡!'
                         : 'Cloud backup active with parent authentication'}
                     </span>
                   </div>
 
                   {authService.getAuthState().isAnonymous && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        soundFx.playKeyTap();
-                        setShowAccountLinkModal(true);
-                      }}
-                      className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-extrabold shrink-0"
-                    >
-                      🔗 Link Account
-                    </button>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playKeyTap();
+                          setShowAccountLinkModal(true);
+                        }}
+                        className="btn-3d-purple px-3 py-1.5 text-xs rounded-xl font-extrabold"
+                      >
+                        🔗 Link Account
+                      </button>
+                      <span className="text-[10px] font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                        7-Day Trial Included
+                      </span>
+                    </div>
                   )}
                 </div>
 
@@ -2471,6 +2577,92 @@ export default function ParentDashboardModal({
           setActiveHighlight(targetHighlight);
         }}
       />
+
+      {/* Add Child Profile Modal */}
+      {showAddChildModal && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in"
+          onClick={() => setShowAddChildModal(false)}
+        >
+          <div
+            className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border-4 border-purple-200 animate-pop cursor-default p-5 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-purple-100">
+              <div className="flex items-center gap-2 text-purple-700">
+                <GraduationCap className="w-5 h-5 stroke-[2.5]" />
+                <h3 className="text-base font-black text-slate-800">Add Child Profile</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddChildModal(false)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddChildSubmit} className="space-y-3.5 text-left">
+              <div>
+                <label className="text-xs font-black uppercase tracking-wide text-slate-500 block mb-1">
+                  Child's Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 stroke-[2.5]" />
+                  <input
+                    type="text"
+                    value={newChildName}
+                    onChange={(e) => { setNewChildName(e.target.value); setNewChildError(''); }}
+                    placeholder="e.g. Leo"
+                    maxLength={20}
+                    autoFocus
+                    required
+                    className={`w-full pl-9 pr-3 py-2 text-xs sm:text-sm font-bold text-slate-800 bg-slate-50 border rounded-xl focus:outline-none transition-colors ${
+                      newChildError ? 'border-rose-500 bg-rose-50' : 'border-slate-300 focus:border-purple-600 focus:bg-white'
+                    }`}
+                  />
+                </div>
+                {newChildError && <p className="text-xs text-rose-500 font-bold mt-1">{newChildError}</p>}
+              </div>
+
+              <div>
+                <label className="text-xs font-black uppercase tracking-wide text-slate-500 block mb-1">
+                  Grade Level
+                </label>
+                <select
+                  value={newChildGrade}
+                  onChange={(e) => setNewChildGrade(e.target.value)}
+                  className="w-full px-3 py-2 text-xs sm:text-sm font-bold text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:border-purple-600 focus:bg-white cursor-pointer"
+                >
+                  {Object.keys(GRADE_STARTING_RATINGS).map((g) => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-slate-400 font-medium mt-1">
+                  Sets the starting difficulty level for questions across all subjects.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddChildModal(false)}
+                  className="px-3.5 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-3d-purple px-4 py-2 text-xs rounded-xl font-black cursor-pointer"
+                >
+                  Create Profile
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* General Privacy Policy Modal */}
       {showPrivacyPolicyModal && (

@@ -196,6 +196,9 @@ class UserSyncService {
       });
 
       const userDocRef = doc(db, USERS_COLLECTION, targetUid);
+      const subPlan = storageService.getSubscriptionPlan();
+      const trialStatus = storageService.getTrialStatus();
+
       const payload = {
         uid: targetUid,
         activeProfileId: storageService.getActiveProfileId(),
@@ -203,6 +206,16 @@ class UserSyncService {
         updatedAt: serverTimestamp(),
         lastSyncedMillis: now
       };
+
+      if (trialStatus.isTrial || localStorage.getItem('kibo_has_received_club_trial') || subPlan?.isTrial) {
+        payload.hasReceivedClubTrial = true;
+        if (subPlan?.trialStartedAt) payload.trialStartedAt = subPlan.trialStartedAt;
+        if (subPlan?.currentPeriodEnd) payload.trialPeriodEnd = subPlan.currentPeriodEnd;
+      }
+      const lastTrialEnded = localStorage.getItem('kibo_last_trial_ended_at');
+      if (lastTrialEnded) {
+        payload.lastTrialEndedAt = lastTrialEnded;
+      }
 
       if (overwriteEntireDocument) {
         await setDoc(userDocRef, payload);

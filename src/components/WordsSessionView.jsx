@@ -19,6 +19,7 @@ import KiboBreakOverlay from './KiboBreakOverlay';
 import { KiboAudioManager } from '../utils/KiboAudioManager';
 import { evaluateBadges } from '../utils/badgeManager';
 import { storageService } from '../services/storageService';
+import { checkSpellingAttempt } from '../utils/spellingEngine';
 import { getConceptForProblem } from '../utils/skipDiagnosticEngine';
 import useInactivityAutoPause from '../hooks/useInactivityAutoPause';
 import { getStreakTierConfig } from '../utils/streakTierConfig';
@@ -55,7 +56,8 @@ export default function WordsSessionView({
   onConsumeLetterPruner,
   onConsumeShield,
   onResetDoubleSparks,
-  onClimbActiveChange
+  onClimbActiveChange,
+  onOpenPracticeMode
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     return storageService.getUserData('words').adaptiveCompetenceRating || storageService.getUserData('words').competenceRank || 1000;
@@ -797,7 +799,8 @@ export default function WordsSessionView({
     const normTargetAns = (currentProblem.answerString || currentProblem.answer || '').toString().toLowerCase();
     const fullWordGuess = getFullWordFromInput(rawInput);
 
-    const isCorrect = fullWordGuess === normTargetAns;
+    const spellCheck = checkSpellingAttempt(fullWordGuess, normTargetAns, true);
+    const isCorrect = spellCheck.isCorrect;
     const latencyMs = performance.now() - problemStartTimeRef.current;
     const timeElapsedSec = latencyMs / 1000;
     const concept = currentProblem.concept || currentProblem.type || currentProblem.hint || 'Vocabulary';
@@ -1306,7 +1309,7 @@ export default function WordsSessionView({
         triggerGivenHighlight(matchedTrailingIdx);
         const normTargetAns = (currentProblem.answerString || currentProblem.answer || '').toString().toLowerCase();
         const fullWordGuess = getFullWordFromInput(inputVal);
-        if (fullWordGuess === normTargetAns) {
+        if (checkSpellingAttempt(fullWordGuess, normTargetAns, true).isCorrect) {
           processAnswerEvaluation(inputVal);
         }
         return;
@@ -1319,7 +1322,7 @@ export default function WordsSessionView({
     const fullWordGuess = getFullWordFromInput(newInput);
     const blanksCount = blankSlotIndices.length;
 
-    const isCorrect = fullWordGuess === normTargetAns;
+    const isCorrect = checkSpellingAttempt(fullWordGuess, normTargetAns, true).isCorrect;
 
     if (isCorrect) {
       processAnswerEvaluation(newInput);
@@ -1553,6 +1556,7 @@ export default function WordsSessionView({
             onOpenWorkshop={onOpenWorkshop}
             onStartClimb={handleStartClimb}
             onResumeClimb={handleResumeClimb}
+            onOpenPracticeMode={onOpenPracticeMode}
           />
         ) : (
           /* ACTIVE ADAPTIVE MATH QUESTION CARD */

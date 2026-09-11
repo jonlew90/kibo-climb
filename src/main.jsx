@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './index.css'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { analyticsService } from './services/analyticsService'
+import { I18nProvider } from './i18n'
 
 // Catch unhandled errors globally
 window.addEventListener('error', (event) => {
@@ -45,7 +46,9 @@ console.error = (...args) => {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <I18nProvider>
+        <App />
+      </I18nProvider>
     </ErrorBoundary>
   </React.StrictMode>,
 )

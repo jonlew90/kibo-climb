@@ -1,4 +1,5 @@
 import { isNearTierThreshold } from './wordsCurriculum.js';
+import { getPreferredSpelling } from './spellingEngine.js';
 
 export const WORD_LISTS = {
   "1": [
@@ -8649,21 +8650,24 @@ function selectRevealedIndices(length, count) {
   return indices.sort((a, b) => a - b);
 }
 
-function formatWordProblem(item, effectiveTier, answer) {
-  const revealCount = calculateRevealedLetterCount(answer.length, effectiveTier);
-  const revealedIndices = selectRevealedIndices(answer.length, revealCount);
+function formatWordProblem(item, effectiveTier, answer, dialect = null) {
+  const activeDialect = dialect || (typeof localStorage !== 'undefined' ? localStorage.getItem('kibo_spelling_dialect') : 'en-US') || 'en-US';
+  const effectiveAnswer = getPreferredSpelling(answer, activeDialect);
+  const revealCount = calculateRevealedLetterCount(effectiveAnswer.length, effectiveTier);
+  const revealedIndices = selectRevealedIndices(effectiveAnswer.length, revealCount);
 
-  const displayString = answer.split('').map((char, index) => {
+  const displayString = effectiveAnswer.split('').map((char, index) => {
     return revealedIndices.includes(index) ? char : '_';
   }).join(' ');
 
   return {
     tier: effectiveTier,
-    answer: answer,
-    answerString: answer,
+    answer: effectiveAnswer,
+    answerString: effectiveAnswer,
     displayString: displayString,
     hint: item.hint,
-    type: 'word'
+    type: 'word',
+    dialect: activeDialect
   };
 }
 

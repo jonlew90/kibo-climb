@@ -261,7 +261,7 @@ export default function DevControlPanel({
                   if (onStateRefresh) onStateRefresh();
                 }}
                 className={`py-2 px-2 rounded-xl border text-center font-bold text-xs transition-all active:scale-95 ${
-                  storageService.hasSinglePlan() && !storageService.hasFamilyPlan()
+                  storageService.hasSinglePlan() && !storageService.hasFamilyPlan() && !storageService.getTrialStatus().isTrial
                     ? 'bg-amber-500/30 border-amber-400 text-amber-200 font-extrabold shadow-sm'
                     : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-300'
                 }`}
@@ -301,6 +301,123 @@ export default function DevControlPanel({
               >
                 Free / None
               </button>
+            </div>
+
+            {/* Kibo Club Solo Trial Simulator */}
+            <div className="pt-2 border-t border-slate-700/60 space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                <span className="text-amber-300/90 text-[11px] font-extrabold uppercase tracking-wide">
+                  7-Day Solo Trial Simulator
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium">
+                  {(() => {
+                    const trial = storageService.getTrialStatus();
+                    if (!trial.isTrial) return 'No trial active';
+                    return `Day ${trial.dayNumber} of 7 (${trial.daysRemaining}d left)`;
+                  })()}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-4 gap-1">
+                {[1, 3, 5, 7].map((d) => {
+                  const trial = storageService.getTrialStatus();
+                  const isCurrent = trial.isTrial && trial.dayNumber === d;
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => {
+                        const activeProfId = storageService.getActiveProfileId();
+                        storageService.setTrialDay(d, activeProfId);
+                        showToast(`Set active profile to Trial Day ${d} (7-Day Solo)!`);
+                        if (onStateRefresh) onStateRefresh();
+                      }}
+                      className={`py-1.5 px-1 rounded-lg border text-center font-bold text-[11px] transition-all active:scale-95 ${
+                        isCurrent
+                          ? 'bg-amber-500/40 border-amber-400 text-amber-200 font-extrabold shadow-xs'
+                          : 'bg-slate-900/90 hover:bg-slate-800 border-slate-700 text-slate-300'
+                      }`}
+                    >
+                      Day {d}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const activeProfId = storageService.getActiveProfileId();
+                    storageService.setTrialDay(8, activeProfId);
+                    showToast('Set active profile to Trial Day 8 (Expired)!');
+                    if (onStateRefresh) onStateRefresh();
+                  }}
+                  className="py-1.5 px-2 rounded-lg border border-rose-800/80 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 font-bold text-[11px] transition-all active:scale-95 text-center"
+                >
+                  ⌛ Day 8 (Expired)
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.removeItem('kibo_has_received_club_trial');
+                    localStorage.removeItem('kibo_device_trial_claimed');
+                    localStorage.removeItem('kibo_last_trial_ended_at');
+                    showToast('Reset Trial Eligibility (can claim again)');
+                    if (onStateRefresh) onStateRefresh();
+                  }}
+                  className="py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-400 font-bold text-[11px] transition-all active:scale-95 text-center"
+                >
+                  🔄 Reset Trial Claim
+                </button>
+              </div>
+
+              {/* 60-Day Win-Back Section */}
+              <div className="pt-2 border-t border-slate-700/50 space-y-1.5">
+                <div className="flex items-center justify-between text-[10px] font-extrabold text-amber-300/80 uppercase">
+                  <span>60-Day Win-Back Re-Gift</span>
+                  <span className={storageService.canClaimWinBackTrial() ? 'text-emerald-400 font-black' : 'text-slate-400'}>
+                    {storageService.canClaimWinBackTrial() ? '✅ Eligible Now' : '🔒 In Cooldown / Need 7d Streak'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      storageService.setWinBackTrialCooldownDays(61);
+                      // Ensure active profile has 7-day streak for test
+                      const u = storageService.getUserData('math');
+                      storageService.saveUserData({ streak: Math.max(7, u.streak || 7) }, 'math');
+                      showToast('Simulated: Last Trial Ended 61 Days Ago + 7d Streak');
+                      if (onStateRefresh) onStateRefresh();
+                    }}
+                    className="py-1 px-2 rounded-lg border border-purple-700/70 bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 font-bold text-[10px] transition-all active:scale-95 text-center"
+                  >
+                    ⏩ Fast-Forward 60+ Days
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!storageService.canClaimWinBackTrial()}
+                    onClick={() => {
+                      const res = storageService.grantWinBackTrialReward();
+                      if (res.granted) {
+                        showToast('🎁 Unlocked 7-Day Win-Back Solo Trial!');
+                      } else {
+                        showToast(`Failed: ${res.reason}`);
+                      }
+                      if (onStateRefresh) onStateRefresh();
+                    }}
+                    className={`py-1 px-2 rounded-lg border font-black text-[10px] transition-all active:scale-95 text-center ${
+                      storageService.canClaimWinBackTrial()
+                        ? 'border-amber-400 bg-amber-500/30 text-amber-200 hover:bg-amber-500/50'
+                        : 'border-slate-800 bg-slate-900 text-slate-600 cursor-not-allowed'
+                    }`}
+                  >
+                    🎁 Claim Win-Back Trial
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 

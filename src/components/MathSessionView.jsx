@@ -54,7 +54,8 @@ export default function MathSessionView({
   onConsumeLetterPruner,
   onConsumeShield,
   onResetDoubleSparks,
-  onClimbActiveChange
+  onClimbActiveChange,
+  onOpenPracticeMode
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     return storageService.getUserData('math').adaptiveCompetenceRating || storageService.getUserData('math').competenceRank || 1000;
@@ -1594,6 +1595,7 @@ export default function MathSessionView({
             onOpenWorkshop={onOpenWorkshop}
             onStartClimb={handleStartClimb}
             onResumeClimb={handleResumeClimb}
+            onOpenPracticeMode={onOpenPracticeMode}
           />
         ) : (
           /* ACTIVE ADAPTIVE MATH QUESTION CARD */

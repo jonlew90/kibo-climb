@@ -68,7 +68,8 @@ export default function WorldSessionView({
   onConsumeLetterPruner,
   onConsumeShield,
   onResetDoubleSparks,
-  onClimbActiveChange
+  onClimbActiveChange,
+  onOpenPracticeMode
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     return storageService.getUserData('world').adaptiveCompetenceRating || storageService.getUserData('world').competenceRank || 1000;
@@ -1508,6 +1509,7 @@ export default function WorldSessionView({
             onOpenWorkshop={onOpenWorkshop}
             onStartClimb={handleStartClimb}
             onResumeClimb={handleResumeClimb}
+            onOpenPracticeMode={onOpenPracticeMode}
           />
         ) : (
           /* ACTIVE ADAPTIVE WORLD QUESTION CARD */

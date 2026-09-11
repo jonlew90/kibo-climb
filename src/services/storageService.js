@@ -42,6 +42,9 @@ const DEFAULT_PROFILE = {
   dailyReminderEnabled: true,
   reminderTime: '17:00',
   lastActiveSubject: 'math',
+  language: 'en',
+  spellingDialect: 'en-US',
+  acceptAllDialects: true,
   userData: {
     adaptiveCompetenceRating: 1000,
     subjectRatings: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, k) => { acc[k] = 1000; return acc; }, {}),
@@ -173,6 +176,9 @@ export const storageService = {
       dailyReminderEnabled: prof.dailyReminderEnabled !== undefined ? prof.dailyReminderEnabled : true,
       reminderTime: prof.reminderTime || '17:00',
       lastActiveSubject: prof.lastActiveSubject || 'math',
+      language: prof.language || 'en',
+      spellingDialect: prof.spellingDialect || 'en-US',
+      acceptAllDialects: prof.acceptAllDialects !== undefined ? prof.acceptAllDialects : true,
       ...prof
     };
   },
@@ -183,6 +189,9 @@ export const storageService = {
       dailyReminderEnabled: prof.dailyReminderEnabled !== undefined ? prof.dailyReminderEnabled : true,
       reminderTime: prof.reminderTime || '17:00',
       lastActiveSubject: prof.lastActiveSubject || 'math',
+      language: prof.language || 'en',
+      spellingDialect: prof.spellingDialect || 'en-US',
+      acceptAllDialects: prof.acceptAllDialects !== undefined ? prof.acceptAllDialects : true,
       ...prof
     };
   },
@@ -1054,10 +1063,14 @@ export const storageService = {
 
     // Check tracked subscription object first
     if (state.subscription && state.subscription.planId) {
-      // Check if scheduled cancellation period has expired
-      if (state.subscription.cancelAtPeriodEnd && state.subscription.currentPeriodEnd) {
+      // Check if scheduled cancellation or trial period has expired
+      if ((state.subscription.cancelAtPeriodEnd || state.subscription.isTrial) && state.subscription.currentPeriodEnd) {
         const periodEndDate = new Date(state.subscription.currentPeriodEnd);
         if (now >= periodEndDate) {
+          if (state.subscription.isTrial) {
+            state.lastTrialEndedAt = periodEndDate.toISOString();
+            localStorage.setItem('kibo_last_trial_ended_at', periodEndDate.toISOString());
+          }
           state.subscription = null;
           safeSaveProfilesState(state);
           this.updateSubscriptionState('free', null, true);
@@ -1070,6 +1083,8 @@ export const storageService = {
         tier: state.subscription.tier,
         cycle: state.subscription.cycle,
         cancelAtPeriodEnd: !!state.subscription.cancelAtPeriodEnd,
+        isTrial: !!state.subscription.isTrial,
+        trialStartedAt: state.subscription.trialStartedAt || null,
         currentPeriodEnd: state.subscription.currentPeriodEnd,
         canceledAt: state.subscription.canceledAt || null
       };
@@ -1339,6 +1354,291 @@ export const storageService = {
       return { success: true };
     }
     return { success: false, reason: 'No pending cancellation found' };
+  },
+
+  /**
+   * Grants a one-time 7-day Kibo Club Solo trial for account linking.
+   */
+  grantAccountLinkTrialReward(targetProfileId = null) {
+    const trialGranted = localStorage.getItem('kibo_has_received_club_trial');
+    const deviceTrialGranted = localStorage.getItem('kibo_device_trial_claimed');
+    const state = safeGetProfilesState();
+    const pid = targetProfileId || state.activeProfileId || Object.keys(state.profiles)[0];
+
+    // Check if profile, state, or device already claimed trial
+    if (trialGranted || deviceTrialGranted || state.subscription?.isTrial || state.subscription?.trialStartedAt || state.profiles[pid]?.userData?.hasReceivedClubTrial) {
+      return { granted: false, reason: 'Trial already claimed' };
+    }
+    const now = this.getSimulatedDate() || new Date();
+    const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    // Ensure shopState exists and unlock kibo_club_sub for target profile
+    if (pid && state.profiles[pid]) {
+      state.profiles[pid].shopState = state.profiles[pid].shopState || {};
+      state.profiles[pid].shopState.unlockedItems = state.profiles[pid].shopState.unlockedItems || [];
+      if (!state.profiles[pid].shopState.unlockedItems.includes('kibo_club_sub')) {
+        state.profiles[pid].shopState.unlockedItems.push('kibo_club_sub');
+      }
+      state.primaryProfileId = pid;
+    }
+
+    state.isKiboClubFamily = false;
+    state.needsProfileDowngradeSelection = false;
+
+    state.subscription = {
+      planId: 'kibo_club_sub',
+      tier: 'single',
+      cycle: 'trial',
+      status: 'trialing',
+      isTrial: true,
+      trialStartedAt: now.toISOString(),
+      activatedAt: now.toISOString(),
+      currentPeriodEnd: trialEnd.toISOString(),
+      cancelAtPeriodEnd: false,
+      canceledAt: null,
+      targetProfileId: pid
+    };
+
+    if (pid && state.profiles[pid]) {
+      state.profiles[pid].userData = state.profiles[pid].userData || {};
+      state.profiles[pid].userData.hasReceivedClubTrial = true;
+    }
+
+    safeSaveProfilesState(state);
+    localStorage.setItem('kibo_has_received_club_trial', 'true');
+    localStorage.setItem('kibo_device_trial_claimed', 'true');
+
+    this.recordLedgerEntry({
+      type: 'TRIAL_ACTIVATED',
+      planId: 'kibo_club_sub',
+      tier: 'single',
+      days: 7,
+      profileId: pid,
+      currentPeriodEnd: trialEnd.toISOString()
+    });
+
+    return {
+      granted: true,
+      daysRemaining: 7,
+      currentPeriodEnd: trialEnd.toISOString()
+    };
+  },
+
+  /**
+   * Returns current trial status for active subscription.
+   */
+  getTrialStatus(profileId = null) {
+    const plan = this.getSubscriptionPlan(profileId);
+    if (!plan || !plan.isTrial || !plan.currentPeriodEnd) {
+      return { isTrial: false, dayNumber: 0, daysRemaining: 0, isExpired: false };
+    }
+
+    const now = this.getSimulatedDate() || new Date();
+    const trialEnd = new Date(plan.currentPeriodEnd);
+    const msRemaining = trialEnd.getTime() - now.getTime();
+
+    if (msRemaining <= 0) {
+      return { isTrial: true, dayNumber: 8, daysRemaining: 0, isExpired: true };
+    }
+
+    const daysRemaining = Math.max(1, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
+    const dayNumber = Math.min(7, Math.max(1, 8 - daysRemaining));
+
+    return {
+      isTrial: true,
+      dayNumber,
+      daysRemaining,
+      isExpired: false,
+      currentPeriodEnd: plan.currentPeriodEnd
+    };
+  },
+
+  /**
+   * Checks whether an active learner is eligible for a re-gifted 7-day win-back trial.
+   * Requirements:
+   * 1. Has no active membership or active trial.
+   * 2. Has previously completed a trial/subscription at least 60 days ago.
+   * 3. Exhibits verified active engagement on free tier (at least 7-day streak OR active across >= 7 distinct practice days).
+   */
+  canClaimWinBackTrial(profileId = null) {
+    if (this.hasClubMembership(profileId)) return false;
+
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || Object.keys(state.profiles)[0];
+    const rawEndedAt = state.lastTrialEndedAt || localStorage.getItem('kibo_last_trial_ended_at');
+    if (!rawEndedAt) return false; // Never completed a first trial yet
+
+    const now = this.getSimulatedDate() || new Date();
+    const endedAt = new Date(rawEndedAt);
+    const msSinceEnded = now.getTime() - endedAt.getTime();
+    const daysSinceEnded = msSinceEnded / (1000 * 60 * 60 * 24);
+
+    if (daysSinceEnded < 60) return false; // In 60-day cooldown
+
+    // Engagement requirement: active streak of >= 7 days
+    const prof = state.profiles[pid];
+    const streak = prof?.userData?.streak || 0;
+    const sprintHistory = prof?.userData?.subjects?.math?.sprintHistory || [];
+    const distinctActiveDays = new Set(
+      sprintHistory.map(h => typeof h.date === 'string' ? h.date.split('T')[0] : '')
+    ).size;
+
+    const isEngaged = streak >= 7 || distinctActiveDays >= 7;
+    return isEngaged;
+  },
+
+  /**
+   * Grants a re-gifted 7-day Solo trial to an eligible re-engaged free learner.
+   */
+  grantWinBackTrialReward(profileId = null) {
+    if (!this.canClaimWinBackTrial(profileId)) {
+      return { granted: false, reason: 'Not eligible for win-back trial' };
+    }
+
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || Object.keys(state.profiles)[0];
+    const now = this.getSimulatedDate() || new Date();
+    const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    if (pid && state.profiles[pid]) {
+      state.profiles[pid].shopState = state.profiles[pid].shopState || {};
+      state.profiles[pid].shopState.unlockedItems = state.profiles[pid].shopState.unlockedItems || [];
+      if (!state.profiles[pid].shopState.unlockedItems.includes('kibo_club_sub')) {
+        state.profiles[pid].shopState.unlockedItems.push('kibo_club_sub');
+      }
+      state.primaryProfileId = pid;
+    }
+
+    state.isKiboClubFamily = false;
+    state.needsProfileDowngradeSelection = false;
+
+    state.subscription = {
+      planId: 'kibo_club_sub',
+      tier: 'single',
+      cycle: 'trial',
+      status: 'trialing',
+      isTrial: true,
+      isWinBack: true,
+      trialStartedAt: now.toISOString(),
+      activatedAt: now.toISOString(),
+      currentPeriodEnd: trialEnd.toISOString(),
+      cancelAtPeriodEnd: false,
+      canceledAt: null,
+      targetProfileId: pid
+    };
+
+    safeSaveProfilesState(state);
+
+    this.recordLedgerEntry({
+      type: 'WINBACK_TRIAL_ACTIVATED',
+      planId: 'kibo_club_sub',
+      tier: 'single',
+      days: 7,
+      profileId: pid,
+      currentPeriodEnd: trialEnd.toISOString()
+    });
+
+    return {
+      granted: true,
+      daysRemaining: 7,
+      currentPeriodEnd: trialEnd.toISOString()
+    };
+  },
+
+  /**
+   * Sets the active trial to Day X for testing / dev simulation.
+   * Days 1-7: active trial. Day 8+: expired.
+   */
+  setTrialDay(dayNumber, profileId = null) {
+    const state = safeGetProfilesState();
+    const pid = profileId || state.activeProfileId || Object.keys(state.profiles)[0];
+    const now = this.getSimulatedDate() || new Date();
+    const day = Math.max(1, Number(dayNumber) || 1);
+
+    if (day > 7) {
+      // Expired trial: set periodEnd in the past
+      const expiredEnd = new Date(now.getTime() - 1000);
+      const trialStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      state.subscription = {
+        planId: 'kibo_club_sub',
+        tier: 'single',
+        cycle: 'trial',
+        status: 'expired',
+        isTrial: true,
+        trialStartedAt: trialStart.toISOString(),
+        activatedAt: trialStart.toISOString(),
+        currentPeriodEnd: expiredEnd.toISOString(),
+        cancelAtPeriodEnd: false,
+        canceledAt: null,
+        targetProfileId: pid
+      };
+      safeSaveProfilesState(state);
+      // Calling getSubscriptionPlan triggers auto-cleanup of expired subscription
+      this.getSubscriptionPlan(pid);
+      return { dayNumber: day, isExpired: true };
+    }
+
+    // Days 1-7:
+    // Day 1: 7 days remaining (trialStartedAt = now, end = now + 7 days)
+    // Day X: (8 - X) days remaining (trialStartedAt = now - (X - 1) days, end = now + (8 - X) days)
+    const daysElapsed = day - 1;
+    const daysRemaining = 7 - daysElapsed;
+    const trialStart = new Date(now.getTime() - daysElapsed * 24 * 60 * 60 * 1000);
+    const trialEnd = new Date(now.getTime() + daysRemaining * 24 * 60 * 60 * 1000);
+
+    if (pid && state.profiles[pid]) {
+      state.profiles[pid].shopState = state.profiles[pid].shopState || {};
+      state.profiles[pid].shopState.unlockedItems = state.profiles[pid].shopState.unlockedItems || [];
+      if (!state.profiles[pid].shopState.unlockedItems.includes('kibo_club_sub')) {
+        state.profiles[pid].shopState.unlockedItems.push('kibo_club_sub');
+      }
+      state.primaryProfileId = pid;
+    }
+
+    state.isKiboClubFamily = false;
+    state.needsProfileDowngradeSelection = false;
+
+    state.subscription = {
+      planId: 'kibo_club_sub',
+      tier: 'single',
+      cycle: 'trial',
+      status: 'trialing',
+      isTrial: true,
+      trialStartedAt: trialStart.toISOString(),
+      activatedAt: trialStart.toISOString(),
+      currentPeriodEnd: trialEnd.toISOString(),
+      cancelAtPeriodEnd: false,
+      canceledAt: null,
+      targetProfileId: pid
+    };
+
+    safeSaveProfilesState(state);
+    localStorage.setItem('kibo_has_received_club_trial', 'true');
+
+    return {
+      dayNumber: day,
+      daysRemaining,
+      isExpired: false,
+      currentPeriodEnd: trialEnd.toISOString()
+    };
+  },
+
+  /**
+   * Sets lastTrialEndedAt to X days in the past to test win-back trial cooldowns.
+   */
+  setWinBackTrialCooldownDays(daysAgo = 60) {
+    const state = safeGetProfilesState();
+    const now = this.getSimulatedDate() || new Date();
+    const endedAt = new Date(now.getTime() - Number(daysAgo) * 24 * 60 * 60 * 1000);
+
+    state.lastTrialEndedAt = endedAt.toISOString();
+    localStorage.setItem('kibo_last_trial_ended_at', endedAt.toISOString());
+    safeSaveProfilesState(state);
+
+    return {
+      lastTrialEndedAt: endedAt.toISOString(),
+      daysAgo: Number(daysAgo)
+    };
   },
 
   /**

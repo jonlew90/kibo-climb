@@ -25,7 +25,8 @@ import {
   Eye,
   CheckCircle2,
   Package,
-  Sparkle
+  Sparkle,
+  Crown
 } from 'lucide-react';
 import Mascot from './Mascot';
 import ItemThumbnail from './ItemThumbnail';
@@ -1332,6 +1333,9 @@ export default function WorkshopModal({
                             <span className="text-[11px] font-medium bg-purple-950/40 border border-purple-300/30 text-purple-100 px-2 py-0.5 rounded-md">
                               🎁 4x Daily Vault
                             </span>
+                            <span className="text-[11px] font-medium bg-purple-950/40 border border-purple-300/30 text-purple-100 px-2 py-0.5 rounded-md">
+                              🖨️ VIP Worksheets
+                            </span>
                           </div>
                         </div>
 
@@ -1353,19 +1357,21 @@ export default function WorkshopModal({
                 {authService.getAuthState().isAnonymous && onRequestAccountLink && (
                   <div
                     onClick={onRequestAccountLink}
-                    className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-2xs cursor-pointer hover:border-amber-300 transition-all"
+                    className="bg-gradient-to-r from-amber-50 via-amber-100/70 to-yellow-50 border-2 border-amber-300 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-2xs cursor-pointer hover:border-amber-400 hover:shadow-xs transition-all"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-lg bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
-                        <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+                      <div className="w-8 h-8 rounded-lg bg-amber-200 border border-amber-400 flex items-center justify-center shrink-0">
+                        <Crown className="w-4 h-4 text-amber-800 fill-amber-500" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-amber-950 truncate">Link Account for +200 ⚡ Free</h4>
-                        <p className="text-[10px] text-amber-700">Save progress across devices</p>
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-xs font-black text-amber-950 truncate">Free 7-Day Solo Trial + 200 ⚡</h4>
+                        </div>
+                        <p className="text-[10px] text-amber-800 font-bold truncate">Link account to test Kibo Club & save progress</p>
                       </div>
                     </div>
-                    <button className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] px-2.5 py-1 rounded-lg shadow-2xs whitespace-nowrap">
-                      Link Free
+                    <button className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-2xs whitespace-nowrap cursor-pointer">
+                      Claim Free
                     </button>
                   </div>
                 )}

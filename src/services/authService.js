@@ -46,24 +46,36 @@ const _handleLinkCollision = async (linkedUser, authProviderName, email, provide
   let requiresConflictResolution = false;
   let cloudProfiles = {};
   let cloudHasFamilyPlan = false;
+  let cloudHasReceivedClubTrial = false;
   const hasFamilyPlan = storageService.hasFamilyPlan();
 
   try {
     const docSnap = await getDoc(userDocRef);
     if (docSnap.exists()) {
       const cloudData = docSnap.data();
-      if (cloudData && cloudData.profiles) {
-        cloudProfiles = cloudData.profiles;
-        const profileCount = Object.keys(cloudProfiles).length;
+      if (cloudData) {
+        if (cloudData.hasReceivedClubTrial) {
+          cloudHasReceivedClubTrial = true;
+        }
+        if (cloudData.lastTrialEndedAt) {
+          localStorage.setItem('kibo_last_trial_ended_at', cloudData.lastTrialEndedAt);
+        }
+        if (cloudData.profiles) {
+          cloudProfiles = cloudData.profiles;
+          const profileCount = Object.keys(cloudProfiles).length;
 
-        Object.values(cloudProfiles).forEach(p => {
-          if (p.shopState && p.shopState.unlockedItems && p.shopState.unlockedItems.includes('kibo_club_family')) {
-            cloudHasFamilyPlan = true;
+          Object.values(cloudProfiles).forEach(p => {
+            if (p.shopState && p.shopState.unlockedItems && p.shopState.unlockedItems.includes('kibo_club_family')) {
+              cloudHasFamilyPlan = true;
+            }
+            if (p.userData && p.userData.hasReceivedClubTrial) {
+              cloudHasReceivedClubTrial = true;
+            }
+          });
+
+          if (profileCount >= 6 || (profileCount >= 1 && !cloudHasFamilyPlan && !hasFamilyPlan)) {
+            requiresConflictResolution = true;
           }
-        });
-
-        if (profileCount >= 6 || (profileCount >= 1 && !cloudHasFamilyPlan && !hasFamilyPlan)) {
-          requiresConflictResolution = true;
         }
       }
     }
@@ -113,10 +125,20 @@ const _handleLinkCollision = async (linkedUser, authProviderName, email, provide
   storageService.setGlobalAccountLinkedState(mergedUserData);
   const earnedSparks = storageService.grantAccountLinkSparksReward();
 
+  // Check if cloud account already used their trial
+  let trialResult = { granted: false, reason: 'Already claimed' };
+  if (cloudHasReceivedClubTrial) {
+    localStorage.setItem('kibo_has_received_club_trial', 'true');
+    localStorage.setItem('kibo_device_trial_claimed', 'true');
+  } else {
+    trialResult = storageService.grantAccountLinkTrialReward();
+  }
+
   return {
     success: true,
     user: storageService.getUserData('math'),
-    earnedSparks
+    earnedSparks,
+    trialResult
   };
 };
 
@@ -667,14 +689,19 @@ export const authService = {
       const guestUid = newFirebaseUser ? newFirebaseUser.uid : `guest_${Date.now()}`;
 
       // Wipe all local storage keys starting with 'kibo_' so the device returns to a completely fresh 2-step onboarding install state
+      // Note: Preserve device-level trial claimed flag to prevent unlink & re-link trial abuse
+      const deviceTrialClaimed = localStorage.getItem('kibo_device_trial_claimed');
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith('kibo_')) {
+        if (key && key.startsWith('kibo_') && key !== 'kibo_device_trial_claimed') {
           keysToRemove.push(key);
         }
       }
       keysToRemove.forEach(key => localStorage.removeItem(key));
+      if (deviceTrialClaimed) {
+        localStorage.setItem('kibo_device_trial_claimed', deviceTrialClaimed);
+      }
       sessionStorage.removeItem('kibo_parent_gate_session');
 
       // Reload page to re-initialize app state cleanly

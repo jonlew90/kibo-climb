@@ -48,7 +48,8 @@ export default function CodingSessionView({
   onConsumeLetterPruner,
   onConsumeShield,
   onResetDoubleSparks,
-  onClimbActiveChange
+  onClimbActiveChange,
+  onOpenPracticeMode
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     const data = storageService.getUserData('coding');
@@ -765,6 +766,7 @@ export default function CodingSessionView({
               onOpenWorkshop={onOpenWorkshop}
               onStartClimb={handleStartClimb}
               onResumeClimb={handleResumeClimb}
+              onOpenPracticeMode={onOpenPracticeMode}
             />
           ) : (
             /* ACTIVE CODING QUESTION CARD */
