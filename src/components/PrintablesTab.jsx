@@ -9,7 +9,8 @@ export default function PrintablesTab({
   isKiboClub = false,
   childName = 'Kibo Climber',
   recentMistakes = [],
-  onOpenKiboClubUpgrade
+  onOpenKiboClubUpgrade,
+  onSelectWorksheet
 }) {
   const [activeSubTab, setActiveSubTab] = useState('all'); // 'all', 'starter', 'vip'
   const [statusMsg, setStatusMsg] = useState('');
@@ -37,13 +38,10 @@ export default function PrintablesTab({
       return;
     }
 
-    const success = openPrintableWorksheet(worksheet, childName, recentMistakes);
-    if (success) {
-      setStatusMsg(`Opened "${worksheet.title}" in print preview!`);
-      setTimeout(() => setStatusMsg(''), 4000);
+    if (onSelectWorksheet) {
+      onSelectWorksheet(worksheet.id);
     } else {
-      setStatusMsg('Pop-up was blocked. Please allow pop-ups to print worksheets.');
-      setTimeout(() => setStatusMsg(''), 5000);
+      openPrintableWorksheet(worksheet, childName, recentMistakes);
     }
   };
 

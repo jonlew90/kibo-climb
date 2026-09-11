@@ -67,7 +67,8 @@ export default function ParentDashboardModal({
   onOpenWorkshop,
   onRedeemPromoCode,
   onBack,
-  renderFooter
+  renderFooter,
+  onSelectWorksheet
 }) {
   const [activeTab, setActiveTab] = useState(initialTab || 'overview'); // 'overview' | 'schedule' | 'verification'
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
@@ -1672,6 +1673,7 @@ export default function ParentDashboardModal({
                 isKiboClub={isClubMember}
                 childName={childName}
                 recentMistakes={recentMistakes}
+                onSelectWorksheet={onSelectWorksheet}
                 onOpenKiboClubUpgrade={() => {
                   setActiveTab('verification');
                   setActiveHighlight('family_plan');

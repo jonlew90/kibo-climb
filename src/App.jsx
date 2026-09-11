@@ -2938,6 +2938,7 @@ export default function App() {
       {(appState === 'worksheet_viewer' || appState === VIEWS.WORKSHEET_VIEWER) && (
         <WorksheetViewerScreen
           worksheetId={activeWorksheetId}
+          fromParentDashboard={navigationHistory.getStack().some(e => e.id === VIEWS.PARENT_DASHBOARD)}
           onBack={handleGoBack}
           onNavigate={handleNavigateTo}
           onOpenKiboClubUpgrade={() => {
@@ -3050,6 +3051,10 @@ export default function App() {
           }}
           onRedeemPromoCode={handleRedeemPromoCode}
           renderFooter={renderNavigationFooter}
+          onSelectWorksheet={(sheetId) => {
+            setActiveWorksheetId(sheetId);
+            handleNavigateTo(`/worksheets/${sheetId}`, VIEWS.WORKSHEET_VIEWER);
+          }}
         />
       )}
 

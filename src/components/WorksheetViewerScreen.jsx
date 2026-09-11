@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Printer, Share2, Lock, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Printer, Share2, Lock, Sparkles, CheckCircle2, Home } from 'lucide-react';
 import { getWorksheetById, generateProblemsForWorksheet, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
 import { soundFx } from '../utils/audio';
 import { analyticsService } from '../services/analyticsService';
@@ -9,7 +9,8 @@ export default function WorksheetViewerScreen({
   worksheetId,
   onBack,
   onNavigate,
-  onOpenKiboClubUpgrade
+  onOpenKiboClubUpgrade,
+  fromParentDashboard = false
 }) {
   const [copied, setCopied] = useState(false);
   const worksheet = getWorksheetById(worksheetId) || getWorksheetById('math_starter_k2');
@@ -25,7 +26,6 @@ export default function WorksheetViewerScreen({
   const problems = generateProblemsForWorksheet(worksheet?.id || 'math_starter_k2', recentMistakes);
 
   useEffect(() => {
-    // Dynamic document title & meta for SEO
     if (worksheet) {
       document.title = `${worksheet.title} (${worksheet.gradeLabel}) • Printable Worksheet | Kibo Climb`;
       analyticsService.logWorksheetView(worksheet.id, worksheet.subject);
@@ -55,19 +55,40 @@ export default function WorksheetViewerScreen({
     }
   };
 
+  const handleReturn = () => {
+    soundFx.playKeyTap();
+    if (fromParentDashboard) {
+      if (onBack) onBack();
+      else if (onNavigate) onNavigate('/parent', 'parent_dashboard');
+    } else {
+      // Direct external / public visitor returning to home
+      if (onNavigate) onNavigate('/', 'adaptive_session');
+      else if (onBack) onBack();
+    }
+  };
+
   if (!worksheet) return null;
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col items-center py-4 px-2 sm:px-4 text-slate-800">
-      {/* Interactive Controls Bar (Hidden during print) */}
-      <div className="w-full max-w-4xl mb-4 flex items-center justify-between bg-white border border-slate-200 rounded-2xl p-3 shadow-xs no-print">
+      {/* Interactive Top Bar (Hidden on print) */}
+      <div className="w-full max-w-4xl mb-4 flex items-center justify-between bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-xs no-print">
         <button
           type="button"
-          onClick={onBack || (() => onNavigate && onNavigate('/parent', 'parent_dashboard'))}
+          onClick={handleReturn}
           className="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs flex items-center gap-1.5 cursor-pointer hover:bg-slate-100 transition-all"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Parent Dashboard</span>
+          {fromParentDashboard ? (
+            <>
+              <ArrowLeft className="w-4 h-4" />
+              <span>Parent Dashboard</span>
+            </>
+          ) : (
+            <>
+              <Home className="w-4 h-4 text-teal-600" />
+              <span>Kibo Climb Home</span>
+            </>
+          )}
         </button>
 
         <div className="flex items-center gap-2">
@@ -77,7 +98,7 @@ export default function WorksheetViewerScreen({
             className="px-3 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-50 font-bold text-xs text-slate-700 flex items-center gap-1.5 cursor-pointer transition-all"
           >
             <Share2 className="w-3.5 h-3.5" />
-            <span>{copied ? 'Link Copied!' : 'Share URL'}</span>
+            <span>{copied ? 'Copied!' : 'Share'}</span>
           </button>
 
           <button
@@ -92,12 +113,12 @@ export default function WorksheetViewerScreen({
             {isLocked ? (
               <>
                 <Lock className="w-3.5 h-3.5" />
-                <span>Unlock with Kibo Club</span>
+                <span>Unlock VIP</span>
               </>
             ) : (
               <>
                 <Printer className="w-3.5 h-3.5" />
-                <span>Print Worksheet 🖨️</span>
+                <span>Print Sheet 🖨️</span>
               </>
             )}
           </button>
@@ -108,17 +129,17 @@ export default function WorksheetViewerScreen({
       <div className="w-full max-w-4xl space-y-6">
         
         {/* PAGE 1: QUESTIONS */}
-        <div className="bg-white border border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col justify-between min-h-[920px] page-1-print">
+        <div className="bg-white border border-slate-300 rounded-2xl p-5 sm:p-8 shadow-sm flex flex-col justify-between min-h-[920px] page-1-print">
           <div>
             {/* Header with Mascot SVG */}
-            <div className="flex justify-between items-center border-b-2 border-teal-600 pb-3 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-teal-600 pb-3 mb-4">
               <div className="flex items-center gap-3">
                 <div 
                   className="w-12 h-12 rounded-xl overflow-hidden shrink-0 shadow-2xs"
                   dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }}
                 />
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none">
+                  <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight leading-none">
                     Kibo Climb • {worksheet.title}
                   </h1>
                   <span className="text-xs text-slate-600 font-bold mt-1 block">
@@ -127,43 +148,47 @@ export default function WorksheetViewerScreen({
                 </div>
               </div>
 
-              <div>
-                <span className={`text-[11px] font-black uppercase px-2.5 py-1 rounded-full border ${
+              {/* Responsive Badge Container (never word-wraps awkwardly) */}
+              <div className="self-start sm:self-auto flex items-center gap-1.5">
+                <span className={`text-[10px] sm:text-[11px] font-black uppercase whitespace-nowrap px-2.5 py-1 rounded-full border shrink-0 ${
                   worksheet.isKiboClubOnly
                     ? 'bg-amber-100 text-amber-900 border-amber-300'
                     : 'bg-teal-100 text-teal-900 border-teal-300'
                 }`}>
-                  {worksheet.isKiboClubOnly ? '👑 Kibo Club VIP' : 'Free Starter'} • {worksheet.gradeLabel}
+                  {worksheet.isKiboClubOnly ? '👑 Kibo Club VIP' : 'Free Starter'}
+                </span>
+                <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full border border-slate-200 whitespace-nowrap shrink-0">
+                  {worksheet.gradeLabel}
                 </span>
               </div>
             </div>
 
             {/* Climber Meta Info Box */}
-            <div className="grid grid-cols-3 gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3 mb-5 text-xs font-bold text-slate-600">
-              <div>Climber: <span className="underline ml-1 font-extrabold text-slate-900">{childName !== 'Kibo Climber' ? childName : '_______________'}</span></div>
-              <div>Date: <span className="underline ml-1 font-extrabold text-slate-900">_______________</span></div>
-              <div>Score: <span className="underline ml-1 font-extrabold text-slate-900">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 16</span></div>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-slate-50 border border-slate-200 rounded-xl p-2.5 sm:p-3 mb-5 text-[11px] sm:text-xs font-bold text-slate-600">
+              <div>Climber: <span className="underline ml-1 font-extrabold text-slate-900">{childName !== 'Kibo Climber' ? childName : '___________'}</span></div>
+              <div>Date: <span className="underline ml-1 font-extrabold text-slate-900">___________</span></div>
+              <div>Score: <span className="underline ml-1 font-extrabold text-slate-900">&nbsp;&nbsp;&nbsp;&nbsp;/ 16</span></div>
             </div>
 
             {/* 16 Questions in a 8x2 Responsive Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 mb-6">
               {problems.map((p, idx) => (
                 <div
                   key={idx}
-                  className="border border-slate-300 rounded-xl p-3 bg-white flex items-center justify-between min-h-[46px]"
+                  className="border border-slate-300 rounded-xl p-2.5 sm:p-3 bg-white flex items-center justify-between min-h-[44px]"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-teal-600">#{idx + 1}</span>
-                    <span className="text-sm font-bold text-slate-900">{p.q}</span>
+                  <div className="flex items-center gap-2 min-w-0 pr-2">
+                    <span className="text-xs font-black text-teal-600 shrink-0">#{idx + 1}</span>
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">{p.q}</span>
                   </div>
-                  <div className="w-14 border-b-2 border-slate-700 h-5"></div>
+                  <div className="w-12 sm:w-14 border-b-2 border-slate-700 h-4 shrink-0"></div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Page 1 Footer */}
-          <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-[11px] text-slate-500 font-bold">
+          <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-[10px] sm:text-[11px] text-slate-500 font-bold">
             <div className="flex items-center gap-1.5">
               <span>🐾 Kibo the Red Panda Mascot</span>
               <span>•</span>
@@ -174,42 +199,42 @@ export default function WorksheetViewerScreen({
         </div>
 
         {/* PAGE 2: PARENT ANSWER KEY */}
-        <div className="bg-white border border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col justify-between min-h-[920px] page-2-print">
+        <div className="bg-white border border-slate-300 rounded-2xl p-5 sm:p-8 shadow-sm flex flex-col justify-between min-h-[920px] page-2-print">
           <div>
-            <div className="flex justify-between items-center border-b-2 border-purple-600 pb-3 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-purple-600 pb-3 mb-4">
               <div className="flex items-center gap-3">
                 <div 
                   className="w-10 h-10 rounded-xl overflow-hidden shrink-0"
                   dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }}
                 />
                 <div>
-                  <h2 className="text-lg sm:text-xl font-black text-purple-950 leading-none">
-                    🔑 Parent Answer Key & Verification Guide
+                  <h2 className="text-base sm:text-xl font-black text-purple-950 leading-none">
+                    🔑 Parent Answer Key & Guide
                   </h2>
                   <span className="text-xs text-purple-700 font-bold mt-0.5 block">
                     {worksheet.title} • Verified Solutions
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] font-black uppercase bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full border border-purple-300">
+              <span className="self-start sm:self-auto text-[10px] font-black uppercase bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full border border-purple-300 whitespace-nowrap">
                 Page 2 of 2
               </span>
             </div>
 
             <div className="bg-purple-50/70 border border-purple-200 rounded-xl p-3 text-xs text-purple-900 font-medium mb-5">
-              <strong>🐾 Mascot Kibo's Learning Note:</strong> Encourage your learner to explain their thinking out loud. Mistakes are the trail markers of learning!
+              <strong>🐾 Mascot Kibo's Learning Note:</strong> Encourage your learner to explain their thinking out loud. Mistakes are valuable milestones!
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 mb-6">
               {problems.map((p, idx) => (
                 <div
                   key={idx}
-                  className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold"
+                  className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold"
                 >
-                  <span className="text-slate-700">
+                  <span className="text-slate-700 truncate pr-2">
                     <strong>#{idx + 1}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
                   </span>
-                  <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black">
+                  <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
                     {p.ans}
                   </span>
                 </div>
@@ -217,7 +242,7 @@ export default function WorksheetViewerScreen({
             </div>
           </div>
 
-          <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-[11px] text-slate-500 font-bold">
+          <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-[10px] sm:text-[11px] text-slate-500 font-bold">
             <div>Kibo Climb Offline Practice Solutions • Not for redistribution</div>
             <div>Page 2 of 2 • Solutions Guide</div>
           </div>
