@@ -96,7 +96,7 @@ export default function WorksheetViewerScreen({
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col items-center py-4 px-2 sm:px-4 text-slate-800">
       {/* Interactive Top Bar (Hidden on print) */}
-      <div className="w-full max-w-4xl mb-4 flex items-center justify-between bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-xs no-print gap-2">
+      <div className="w-full max-w-4xl mb-3 flex items-center justify-between bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-xs no-print gap-2">
         <button
           type="button"
           onClick={handleReturn}
@@ -173,6 +173,75 @@ export default function WorksheetViewerScreen({
           </button>
         </div>
       </div>
+
+      {/* Curriculum Progression Links (Near top, hidden on print) */}
+      {(() => {
+        const subjectSheets = getWorksheetsForSubject(worksheet.subject).filter(w => !w.isDynamic);
+        const currentIndex = subjectSheets.findIndex(w => w.id === worksheet.id);
+        const prevSheet = currentIndex > 0 ? subjectSheets[currentIndex - 1] : null;
+        const nextSheet = currentIndex >= 0 && currentIndex < subjectSheets.length - 1 ? subjectSheets[currentIndex + 1] : null;
+
+        if (!prevSheet && !nextSheet) return null;
+
+        return (
+          <div className="w-full max-w-4xl mb-4 bg-white border border-slate-200 rounded-2xl p-3 shadow-xs no-print flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+              <span className="text-[10px] sm:text-xs font-black uppercase text-slate-500 tracking-wider">
+                {worksheet.subject.toUpperCase()} Tiers
+              </span>
+              <span className="text-[10px] sm:text-xs font-extrabold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                Step {currentIndex + 1} of {subjectSheets.length}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+              {prevSheet ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    if (onNavigate) onNavigate(`/worksheets/${prevSheet.id}`, 'worksheet_viewer');
+                  }}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all text-left flex items-center gap-1.5 cursor-pointer group shrink-0"
+                  title={`Go to previous difficulty: ${prevSheet.title}`}
+                >
+                  <ChevronLeft className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-800 shrink-0" />
+                  <div className="text-left">
+                    <span className="text-[10px] font-bold text-slate-400 block sm:hidden">Prev</span>
+                    <span className="text-xs font-black text-slate-700 hidden sm:inline truncate max-w-[140px]">{prevSheet.title}</span>
+                  </div>
+                </button>
+              ) : (
+                <span className="text-[11px] font-bold text-slate-400 px-2 py-1 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
+                  🌱 Base Tier
+                </span>
+              )}
+
+              {nextSheet ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    if (onNavigate) onNavigate(`/worksheets/${nextSheet.id}`, 'worksheet_viewer');
+                  }}
+                  className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100 hover:border-indigo-300 transition-all text-right flex items-center gap-1.5 cursor-pointer group shrink-0"
+                  title={`Go to next difficulty: ${nextSheet.title}`}
+                >
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold text-indigo-500 block sm:hidden">Next</span>
+                    <span className="text-xs font-black text-indigo-900 hidden sm:inline truncate max-w-[140px]">{nextSheet.title}</span>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-indigo-600 group-hover:text-indigo-900 shrink-0" />
+                </button>
+              ) : (
+                <span className="text-[11px] font-bold text-slate-400 px-2 py-1 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
+                  🏔️ Summit Tier
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Printable 2-Page Container */}
       <div className="w-full max-w-4xl flex flex-col gap-8 print:gap-0">
@@ -359,78 +428,6 @@ export default function WorksheetViewerScreen({
             <div>Page 2 of 2 • Solutions Guide</div>
           </div>
         </div>
-
-        {/* Curriculum Progression Links (Hidden on print) */}
-        {(() => {
-          const subjectSheets = getWorksheetsForSubject(worksheet.subject).filter(w => !w.isDynamic);
-          const currentIndex = subjectSheets.findIndex(w => w.id === worksheet.id);
-          const prevSheet = currentIndex > 0 ? subjectSheets[currentIndex - 1] : null;
-          const nextSheet = currentIndex >= 0 && currentIndex < subjectSheets.length - 1 ? subjectSheets[currentIndex + 1] : null;
-
-          if (!prevSheet && !nextSheet) return null;
-
-          return (
-            <div className="w-full bg-white border border-slate-200 rounded-2xl p-4 shadow-xs no-print space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider">
-                  Curriculum Progression • {worksheet.subject.toUpperCase()} Tiers
-                </h4>
-                <span className="text-[11px] font-bold text-slate-400">
-                  Step {currentIndex + 1} of {subjectSheets.length}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {prevSheet ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      if (onNavigate) onNavigate(`/worksheets/${prevSheet.id}`, 'worksheet_viewer');
-                    }}
-                    className="p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all text-left flex items-center gap-2.5 cursor-pointer group"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-slate-200 shrink-0">
-                      <ChevronLeft className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[10px] font-bold text-slate-400 uppercase">← Lower / Review Tier</div>
-                      <div className="text-xs font-black text-slate-800 truncate">{prevSheet.title}</div>
-                      <div className="text-[10px] font-semibold text-slate-500">{prevSheet.gradeLabel}</div>
-                    </div>
-                  </button>
-                ) : (
-                  <div className="p-3 rounded-xl border border-dashed border-slate-200 text-left flex items-center gap-2.5 opacity-60">
-                    <div className="text-xs font-bold text-slate-400">🌱 Foundational Base Tier</div>
-                  </div>
-                )}
-
-                {nextSheet ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playKeyTap();
-                      if (onNavigate) onNavigate(`/worksheets/${nextSheet.id}`, 'worksheet_viewer');
-                    }}
-                    className="p-3 rounded-xl border border-indigo-200 bg-indigo-50/40 hover:bg-indigo-50 hover:border-indigo-300 transition-all text-left flex items-center justify-between gap-2.5 cursor-pointer group"
-                  >
-                    <div className="min-w-0">
-                      <div className="text-[10px] font-bold text-indigo-600 uppercase">Next Higher Tier →</div>
-                      <div className="text-xs font-black text-slate-800 truncate">{nextSheet.title}</div>
-                      <div className="text-[10px] font-semibold text-slate-500">{nextSheet.gradeLabel}</div>
-                    </div>
-                    <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-200 shrink-0">
-                      <ChevronRight className="w-4 h-4" />
-                    </div>
-                  </button>
-                ) : (
-                  <div className="p-3 rounded-xl border border-dashed border-slate-200 text-left flex items-center gap-2.5 opacity-60">
-                    <div className="text-xs font-bold text-slate-400">🏔️ Summit Tier Reached!</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })()}
 
       </div>
 
