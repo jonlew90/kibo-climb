@@ -9,11 +9,14 @@ export default function FamilyPlanUpgradeModal({
   onOpenParentZone
 }) {
   const [billingCycle, setBillingCycle] = useState('annual'); // 'monthly' | 'annual'
+  const [selectedPlan, setSelectedPlan] = useState('family'); // 'solo' | 'family'
 
   if (!isOpen) return null;
 
   const hasSinglePlan = storageService.hasSinglePlan();
   const hasFamilyPlan = storageService.hasFamilyPlan();
+
+  const isSoloSelected = selectedPlan === 'solo';
 
   const activeRealMoneySale = getActiveRealMoneySaleEvent(new Date());
   const soloPricing = getEffectiveSubscriptionPricing(
@@ -79,10 +82,7 @@ export default function FamilyPlanUpgradeModal({
             >
               <span>Annual</span>
               <span className="text-[9px] bg-emerald-500 text-white px-1.5 py-0.2 rounded-full uppercase font-black tracking-wide">
-                {(() => {
-                  const annualPricing = getEffectiveSubscriptionPricing('kibo_club_family_annual', new Date());
-                  return annualPricing.isDiscounted ? `Save ${annualPricing.discountPercent + 30}%` : 'Save ~35%';
-                })()}
+                Save ~35%
               </span>
             </button>
           </div>
@@ -109,14 +109,26 @@ export default function FamilyPlanUpgradeModal({
 
           {/* Plan Comparison Summary */}
           <div className="grid grid-cols-2 gap-2 text-left">
-            <div className="bg-white border border-slate-200 rounded-xl p-2.5 space-y-1 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase text-purple-700 block">Solo</span>
-                {soloPricing.isDiscounted && (
-                  <span className="text-[8px] font-black uppercase text-purple-700 bg-purple-100 px-1 rounded">
-                    -{soloPricing.discountPercent}%
+            <button
+              type="button"
+              onClick={() => setSelectedPlan('solo')}
+              className={`rounded-xl p-2.5 space-y-1 shadow-2xs text-left transition-all cursor-pointer ${
+                isSoloSelected
+                  ? 'bg-purple-50/60 border-2 border-purple-500 ring-2 ring-purple-400/30'
+                  : 'bg-white border border-slate-200 hover:border-purple-300'
+              }`}
+            >
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] font-black uppercase text-purple-700 truncate">Solo</span>
+                {soloPricing.isDiscounted ? (
+                  <span className="text-[8px] font-black uppercase text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded-full shrink-0">
+                    -{soloPricing.discountPercent}% Sale
                   </span>
-                )}
+                ) : isSoloSelected ? (
+                  <span className="text-[8px] font-black uppercase text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded-full">
+                    Selected
+                  </span>
+                ) : null}
               </div>
               <div className="text-sm font-black text-slate-900 leading-none">
                 {soloPricing.isDiscounted && (
@@ -129,9 +141,17 @@ export default function FamilyPlanUpgradeModal({
               <span className="text-[10px] text-slate-500 font-medium block">
                 {billingCycle === 'annual' ? `(${soloPricing.monthlyEquivalent} • 1 Profile)` : '1 Child Profile'}
               </span>
-            </div>
+            </button>
 
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-400 rounded-xl p-2.5 space-y-1 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setSelectedPlan('family')}
+              className={`rounded-xl p-2.5 space-y-1 shadow-2xs text-left transition-all cursor-pointer ${
+                !isSoloSelected
+                  ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-400 ring-2 ring-amber-400/30'
+                  : 'bg-white border border-slate-200 hover:border-amber-300'
+              }`}
+            >
               <div className="flex items-center justify-between gap-1">
                 <span className="text-[10px] font-black uppercase text-amber-800 truncate">Family</span>
                 <span className="text-[8px] font-black uppercase text-amber-900 bg-amber-200 px-1.5 py-0.5 rounded-full shrink-0">
@@ -149,40 +169,69 @@ export default function FamilyPlanUpgradeModal({
               <span className="text-[10px] text-amber-800 font-medium block">
                 {billingCycle === 'annual' ? `(${familyPricing.monthlyEquivalent} • Up to 6)` : 'Up to 6 Sibling Profiles'}
               </span>
-            </div>
+            </button>
           </div>
 
           <div className="bg-white border-2 border-amber-100 rounded-xl p-3 text-left shadow-2xs space-y-2">
             <div className="text-[11px] font-extrabold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-600 shrink-0" />
-              <span>Everything in Solo, plus:</span>
+              <span>{isSoloSelected ? 'Included with Solo Plan:' : 'Everything in Solo, plus:'}</span>
             </div>
-            <ul className="space-y-1.5 text-xs font-bold text-slate-700">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span><strong>Up to 6 sibling climber profiles</strong> (vs 1 on Solo)</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>1.25x Sparks & 15% VIP discounts for <strong>every child</strong></span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span><strong>Deeper 20% discount</strong> on Spark top-up packs</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Daily Vault 3.3x bonus Sparks & shields for all</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Golden profile tags & summit-exclusive gear</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Unified multi-child parent reports 📊</span>
-              </li>
-            </ul>
+            {isSoloSelected ? (
+              <ul className="space-y-1.5 text-xs font-bold text-slate-700">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span><strong>1 active child climber profile</strong></span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span><strong>1.25x Sparks multiplier</strong> on all activities</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span><strong>15% VIP store discount</strong> on gear & packs</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Daily Vault 3.3x bonus Sparks & shields</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Golden profile tag 👑 & summit gear</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>100% offline-ready practice & parent progress tracking</span>
+                </li>
+              </ul>
+            ) : (
+              <ul className="space-y-1.5 text-xs font-bold text-slate-700">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span><strong>Up to 6 sibling climber profiles</strong> (vs 1 on Solo)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>1.25x Sparks & 15% VIP discounts for <strong>every child</strong></span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span><strong>Deeper 20% discount</strong> on Spark top-up packs</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Daily Vault 3.3x bonus Sparks & shields for all</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Golden profile tags & summit-exclusive gear</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Unified multi-child parent reports 📊</span>
+                </li>
+              </ul>
+            )}
           </div>
 
           <div className="space-y-2 pt-1">
@@ -191,7 +240,7 @@ export default function FamilyPlanUpgradeModal({
               onClick={() => {
                 onClose();
                 if (onOpenParentZone) {
-                  onOpenParentZone('verification', 'family_plan');
+                  onOpenParentZone('verification', isSoloSelected ? 'family_plan' : 'family_plan');
                 }
               }}
               className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-black rounded-xl shadow-md transform transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"

@@ -1655,10 +1655,7 @@ export default function ParentDashboardModal({
                         >
                           <span>Annual</span>
                           <span className="text-[9px] bg-emerald-600 text-white px-1.5 py-0.2 rounded-full uppercase font-black">
-                            {(() => {
-                              const annualPricing = getEffectiveSubscriptionPricing('kibo_club_family_annual', new Date());
-                              return annualPricing.isDiscounted ? `Save ${annualPricing.discountPercent + 30}%` : 'Save ~35%';
-                            })()}
+                            Save ~35%
                           </span>
                         </button>
                       </div>
