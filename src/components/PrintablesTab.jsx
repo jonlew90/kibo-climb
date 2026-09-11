@@ -14,6 +14,7 @@ export default function PrintablesTab({
 }) {
   const [activeSubTab, setActiveSubTab] = useState('all'); // 'all', 'starter', 'vip'
   const [statusMsg, setStatusMsg] = useState('');
+  const [copiedWorksheetId, setCopiedWorksheetId] = useState(null);
 
   const worksheets = getWorksheetsForSubject(selectedSubject);
   const filteredWorksheets = worksheets.filter(w => {
@@ -50,8 +51,12 @@ export default function PrintablesTab({
     const url = `${window.location.origin}/worksheets/${worksheet.id}`;
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(url).then(() => {
+        setCopiedWorksheetId(worksheet.id);
         setStatusMsg(`Copied share link for "${worksheet.title}"!`);
-        setTimeout(() => setStatusMsg(''), 3000);
+        setTimeout(() => {
+          setCopiedWorksheetId(null);
+          setStatusMsg('');
+        }, 3000);
       });
     }
   };
@@ -175,10 +180,22 @@ export default function PrintablesTab({
                   <button
                     type="button"
                     onClick={() => handleCopyWorksheetLink(w)}
-                    className="text-slate-400 hover:text-slate-600 p-1 rounded-md transition-colors cursor-pointer"
-                    title="Copy direct share link for SEO / bookmarks"
+                    className={`flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
+                      copiedWorksheetId === w.id
+                        ? 'text-teal-600 bg-teal-50'
+                        : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                    }`}
+                    title={copiedWorksheetId === w.id ? 'Copied link to clipboard!' : 'Copy direct link to clipboard'}
+                    aria-label={copiedWorksheetId === w.id ? 'Copied link to clipboard' : 'Copy direct link'}
                   >
-                    <Share2 className="w-3.5 h-3.5" />
+                    {copiedWorksheetId === w.id ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                        <span className="text-[11px] text-teal-700">Copied!</span>
+                      </>
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 shrink-0" />
+                    )}
                   </button>
                 </div>
 

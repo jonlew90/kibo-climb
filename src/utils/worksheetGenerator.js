@@ -42,6 +42,7 @@ export const WORKSHEET_CATALOG = [
   {
     id: 'math_starter_k2',
     subject: 'math',
+    tier: 1,
     title: 'Base Camp Sums & Differences',
     gradeLabel: 'Grades K–2',
     description: 'Addition & subtraction fluency up to 20 with clear layout.',
@@ -51,15 +52,27 @@ export const WORKSHEET_CATALOG = [
   {
     id: 'math_starter_34',
     subject: 'math',
-    title: 'Alpine Multiplication Sprint',
+    tier: 3,
+    title: 'Alpine Multiplication Sprint (0–12)',
     gradeLabel: 'Grades 3–4',
-    description: 'Multiplication tables (0–9) & rapid recall drills.',
+    description: 'Multiplication tables up to 12×12 & rapid recall drills.',
     isKiboClubOnly: false,
+    problemCount: 16
+  },
+  {
+    id: 'math_club_multidigit',
+    subject: 'math',
+    tier: 4,
+    title: 'Summit Multi-Digit & Mental Math',
+    gradeLabel: 'Grades 4–6',
+    description: '2-digit mental multiplication, 11s shortcut, and tens distribution.',
+    isKiboClubOnly: true,
     problemCount: 16
   },
   {
     id: 'math_club_fractions_decimals',
     subject: 'math',
+    tier: 5,
     title: 'Summit Fractions & Decimals Mastery',
     gradeLabel: 'Grades 4–6',
     description: 'Equivalent fractions, mixed numbers, and decimal operations with answer key.',
@@ -69,6 +82,7 @@ export const WORKSHEET_CATALOG = [
   {
     id: 'math_club_weak_spot',
     subject: 'math',
+    tier: 0,
     title: 'Personalized Weak-Spot Drill Packet',
     gradeLabel: 'Adaptive to Climber',
     description: 'Custom worksheet generated from recent mistakes and missed problem types in session history.',
@@ -138,6 +152,21 @@ export const WORKSHEET_CATALOG = [
   }
 ];
 
+// Simple Mulberry32 deterministic PRNG
+export function createSeededRandom(seedInput = 0) {
+  let s = typeof seedInput === 'string'
+    ? Array.from(seedInput).reduce((acc, ch) => ((acc << 5) - acc) + ch.charCodeAt(0) | 0, 0)
+    : (Number(seedInput) || 0);
+
+  return function next() {
+    s |= 0;
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 export function getWorksheetsForSubject(subject = 'math') {
   return WORKSHEET_CATALOG.filter(w => w.subject === subject);
 }
@@ -146,69 +175,168 @@ export function getWorksheetById(id) {
   return WORKSHEET_CATALOG.find(w => w.id === id);
 }
 
-export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
+export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], seed = 0) {
   const problems = [];
+  const rng = createSeededRandom(seed);
+  const randInt = (min, max) => Math.floor(rng() * (max - min + 1)) + min;
+
+  // If seed is 0 or falsy, use the pristine default list for stable SEO / base render
+  const isDefaultSeed = !seed || seed === 0 || seed === 'default' || seed === '0';
 
   if (worksheetId === 'math_starter_k2') {
-    const list = [
-      { q: '7 + 5 = ___', ans: '12' },
-      { q: '14 - 6 = ___', ans: '8' },
-      { q: '9 + 8 = ___', ans: '17' },
-      { q: '15 - 9 = ___', ans: '6' },
-      { q: '6 + 7 = ___', ans: '13' },
-      { q: '18 - 9 = ___', ans: '9' },
-      { q: '8 + 8 = ___', ans: '16' },
-      { q: '13 - 7 = ___', ans: '6' },
-      { q: '5 + 9 = ___', ans: '14' },
-      { q: '12 - 5 = ___', ans: '7' },
-      { q: '11 + 6 = ___', ans: '17' },
-      { q: '16 - 8 = ___', ans: '8' },
-      { q: '4 + 8 = ___', ans: '12' },
-      { q: '17 - 8 = ___', ans: '9' },
-      { q: '9 + 9 = ___', ans: '18' },
-      { q: '20 - 7 = ___', ans: '13' }
-    ];
-    problems.push(...list);
+    if (isDefaultSeed) {
+      const list = [
+        { q: '7 + 5 = ___', ans: '12' },
+        { q: '14 - 6 = ___', ans: '8' },
+        { q: '9 + 8 = ___', ans: '17' },
+        { q: '15 - 9 = ___', ans: '6' },
+        { q: '6 + 7 = ___', ans: '13' },
+        { q: '18 - 9 = ___', ans: '9' },
+        { q: '8 + 8 = ___', ans: '16' },
+        { q: '13 - 7 = ___', ans: '6' },
+        { q: '5 + 9 = ___', ans: '14' },
+        { q: '12 - 5 = ___', ans: '7' },
+        { q: '11 + 6 = ___', ans: '17' },
+        { q: '16 - 8 = ___', ans: '8' },
+        { q: '4 + 8 = ___', ans: '12' },
+        { q: '17 - 8 = ___', ans: '9' },
+        { q: '9 + 9 = ___', ans: '18' },
+        { q: '20 - 7 = ___', ans: '13' }
+      ];
+      problems.push(...list);
+    } else {
+      // Procedural Kumon-style generation: Addition & Subtraction up to 20
+      for (let i = 0; i < 16; i++) {
+        const isAddition = i % 2 === 0;
+        if (isAddition) {
+          const a = randInt(2, 9);
+          const b = randInt(2, 9);
+          problems.push({ q: `${a} + ${b} = ___`, ans: String(a + b) });
+        } else {
+          const ans = randInt(2, 9);
+          const sub = randInt(2, 9);
+          const total = ans + sub;
+          problems.push({ q: `${total} - ${sub} = ___`, ans: String(ans) });
+        }
+      }
+    }
   } else if (worksheetId === 'math_starter_34') {
-    const list = [
-      { q: '6 × 7 = ___', ans: '42' },
-      { q: '8 × 4 = ___', ans: '32' },
-      { q: '9 × 6 = ___', ans: '54' },
-      { q: '7 × 8 = ___', ans: '56' },
-      { q: '4 × 9 = ___', ans: '36' },
-      { q: '8 × 8 = ___', ans: '64' },
-      { q: '7 × 7 = ___', ans: '49' },
-      { q: '6 × 8 = ___', ans: '48' },
-      { q: '9 × 9 = ___', ans: '81' },
-      { q: '5 × 12 = ___', ans: '60' },
-      { q: '7 × 9 = ___', ans: '63' },
-      { q: '8 × 3 = ___', ans: '24' },
-      { q: '6 × 6 = ___', ans: '36' },
-      { q: '9 × 8 = ___', ans: '72' },
-      { q: '4 × 7 = ___', ans: '28' },
-      { q: '11 × 6 = ___', ans: '66' }
-    ];
-    problems.push(...list);
+    if (isDefaultSeed) {
+      const list = [
+        { q: '6 × 7 = ___', ans: '42' },
+        { q: '8 × 4 = ___', ans: '32' },
+        { q: '9 × 6 = ___', ans: '54' },
+        { q: '7 × 8 = ___', ans: '56' },
+        { q: '4 × 9 = ___', ans: '36' },
+        { q: '8 × 8 = ___', ans: '64' },
+        { q: '7 × 7 = ___', ans: '49' },
+        { q: '6 × 8 = ___', ans: '48' },
+        { q: '9 × 9 = ___', ans: '81' },
+        { q: '5 × 12 = ___', ans: '60' },
+        { q: '7 × 9 = ___', ans: '63' },
+        { q: '8 × 3 = ___', ans: '24' },
+        { q: '6 × 6 = ___', ans: '36' },
+        { q: '9 × 8 = ___', ans: '72' },
+        { q: '11 × 11 = ___', ans: '121' },
+        { q: '12 × 12 = ___', ans: '144' }
+      ];
+      problems.push(...list);
+    } else {
+      // Procedural Kumon-style multiplication tables sprint (covering 2s through 12s)
+      for (let i = 0; i < 16; i++) {
+        const a = randInt(2, 12);
+        const b = randInt(2, 12);
+        problems.push({ q: `${a} × ${b} = ___`, ans: String(a * b) });
+      }
+    }
+  } else if (worksheetId === 'math_club_multidigit') {
+    if (isDefaultSeed) {
+      const list = [
+        { q: '11 × 23 = ___', ans: '253' },
+        { q: '14 × 5 = ___', ans: '70' },
+        { q: '11 × 45 = ___', ans: '495' },
+        { q: '16 × 4 = ___', ans: '64' },
+        { q: '25 × 4 = ___', ans: '100' },
+        { q: '12 × 15 = ___', ans: '180' },
+        { q: '11 × 36 = ___', ans: '396' },
+        { q: '18 × 3 = ___', ans: '54' },
+        { q: '24 × 5 = ___', ans: '120' },
+        { q: '11 × 52 = ___', ans: '572' },
+        { q: '15 × 6 = ___', ans: '90' },
+        { q: '13 × 7 = ___', ans: '91' },
+        { q: '25 × 6 = ___', ans: '150' },
+        { q: '11 × 63 = ___', ans: '693' },
+        { q: '32 × 3 = ___', ans: '96' },
+        { q: '14 × 8 = ___', ans: '112' }
+      ];
+      problems.push(...list);
+    } else {
+      for (let i = 0; i < 16; i++) {
+        if (i % 3 === 0) {
+          // 11s split trick: 11 × (two-digit number whose digits sum <= 9)
+          const tens = randInt(1, 4);
+          const ones = randInt(1, 5);
+          const num = tens * 10 + ones;
+          problems.push({ q: `11 × ${num} = ___`, ans: String(11 * num) });
+        } else if (i % 3 === 1) {
+          // 2-digit × 1-digit
+          const a = randInt(13, 29);
+          const b = randInt(3, 8);
+          problems.push({ q: `${a} × ${b} = ___`, ans: String(a * b) });
+        } else {
+          // Landmark multiples (e.g. 15s, 25s, 12s)
+          const landmark = [12, 14, 15, 20, 25][randInt(0, 4)];
+          const b = randInt(3, 9);
+          problems.push({ q: `${landmark} × ${b} = ___`, ans: String(landmark * b) });
+        }
+      }
+    }
   } else if (worksheetId === 'math_club_fractions_decimals') {
-    const list = [
-      { q: '1/2 + 1/4 = ___', ans: '3/4' },
-      { q: '2/5 + 1/5 = ___', ans: '3/5' },
-      { q: '3/4 - 1/4 = ___', ans: '2/4 (or 1/2)' },
-      { q: '0.5 + 0.25 = ___', ans: '0.75' },
-      { q: '1.2 + 0.8 = ___', ans: '2.0' },
-      { q: '4.5 - 1.2 = ___', ans: '3.3' },
-      { q: '2/3 of 12 = ___', ans: '8' },
-      { q: '3/5 of 20 = ___', ans: '12' },
-      { q: '0.1 × 10 = ___', ans: '1' },
-      { q: '2.5 × 2 = ___', ans: '5.0' },
-      { q: '1/3 + 1/6 = ___', ans: '1/2' },
-      { q: '5/8 - 3/8 = ___', ans: '2/8 (or 1/4)' },
-      { q: '0.75 - 0.25 = ___', ans: '0.50' },
-      { q: '3/4 + 1/2 = ___', ans: '5/4 (or 1 1/4)' },
-      { q: '0.4 × 5 = ___', ans: '2.0' },
-      { q: '7/10 + 2/10 = ___', ans: '9/10 (or 0.9)' }
-    ];
-    problems.push(...list);
+    if (isDefaultSeed) {
+      const list = [
+        { q: '1/2 + 1/4 = ___', ans: '3/4' },
+        { q: '2/5 + 1/5 = ___', ans: '3/5' },
+        { q: '3/4 - 1/4 = ___', ans: '2/4 (or 1/2)' },
+        { q: '0.5 + 0.25 = ___', ans: '0.75' },
+        { q: '1.2 + 0.8 = ___', ans: '2.0' },
+        { q: '4.5 - 1.2 = ___', ans: '3.3' },
+        { q: '2/3 of 12 = ___', ans: '8' },
+        { q: '3/5 of 20 = ___', ans: '12' },
+        { q: '0.1 × 10 = ___', ans: '1' },
+        { q: '2.5 × 2 = ___', ans: '5.0' },
+        { q: '1/3 + 1/6 = ___', ans: '1/2' },
+        { q: '5/8 - 3/8 = ___', ans: '2/8 (or 1/4)' },
+        { q: '0.75 - 0.25 = ___', ans: '0.50' },
+        { q: '3/4 + 1/2 = ___', ans: '5/4 (or 1 1/4)' },
+        { q: '0.4 × 5 = ___', ans: '2.0' },
+        { q: '7/10 + 2/10 = ___', ans: '9/10 (or 0.9)' }
+      ];
+      problems.push(...list);
+    } else {
+      // Procedural fractions & decimals drills
+      for (let i = 0; i < 16; i++) {
+        const type = i % 4;
+        if (type === 0) {
+          const denom = [4, 5, 8, 10][randInt(0, 3)];
+          const n1 = randInt(1, denom - 2);
+          const n2 = randInt(1, denom - n1);
+          problems.push({ q: `${n1}/${denom} + ${n2}/${denom} = ___`, ans: `${n1 + n2}/${denom}` });
+        } else if (type === 1) {
+          const denom = [4, 5, 8, 10][randInt(0, 3)];
+          const n1 = randInt(3, denom);
+          const n2 = randInt(1, n1 - 1);
+          problems.push({ q: `${n1}/${denom} - ${n2}/${denom} = ___`, ans: `${n1 - n2}/${denom}` });
+        } else if (type === 2) {
+          const a = (randInt(1, 9) * 0.1).toFixed(1);
+          const b = (randInt(1, 9) * 0.1).toFixed(1);
+          problems.push({ q: `${a} + ${b} = ___`, ans: (parseFloat(a) + parseFloat(b)).toFixed(1) });
+        } else {
+          const mult = randInt(2, 6);
+          const target = mult * randInt(2, 8);
+          problems.push({ q: `1/${mult} of ${target} = ___`, ans: String(target / mult) });
+        }
+      }
+    }
   } else if (worksheetId === 'math_club_weak_spot') {
     if (recentMistakes && recentMistakes.length > 0) {
       recentMistakes.slice(0, 16).forEach((m, idx) => {
@@ -219,8 +347,8 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       });
     }
     while (problems.length < 16) {
-      const a = Math.floor(Math.random() * 12) + 6;
-      const b = Math.floor(Math.random() * 9) + 3;
+      const a = randInt(6, 12);
+      const b = randInt(3, 9);
       problems.push({ q: `${a} × ${b} = ___`, ans: String(a * b) });
     }
   } else if (worksheetId === 'words_starter_phonics') {
@@ -240,9 +368,18 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       { q: 'Sight Word: C - O - U - L - D = ___', ans: 'COULD' },
       { q: 'p _ n (Used for writing in ink: a, e, i, o, u)', ans: 'pen' },
       { q: 'Rhyme with "ring": s _ n _', ans: 'sing' },
-      { q: 'Sight Word: B - E - C - A - U - S - E = ___', ans: 'BECAUSE' }
+      { q: 'Sight Word: B - E - C - A - U - S - E = ___', ans: 'BECAUSE' },
+      { q: 'Rhyme with "star": c _ r', ans: 'car' },
+      { q: 'Sight Word: W - O - U - L - D = ___', ans: 'WOULD' },
+      { q: 'Rhyme with "boat": c _ _ t', ans: 'coat' },
+      { q: 'Sight Word: T - H - R - O - U - G - H = ___', ans: 'THROUGH' }
     ];
-    problems.push(...list);
+    if (isDefaultSeed) {
+      problems.push(...list.slice(0, 16));
+    } else {
+      const shuffled = [...list].sort(() => rng() - 0.5);
+      problems.push(...shuffled.slice(0, 16));
+    }
   } else if (worksheetId === 'words_club_spelling_mastery') {
     const list = [
       { q: 'What is the plural of "CHILD"?', ans: 'children' },
@@ -260,9 +397,16 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       { q: 'What does "DILIGENT" mean?', ans: 'Hardworking and thorough' },
       { q: 'What does "RELUCTANT" mean?', ans: 'Hesitant or unwilling' },
       { q: 'Plural form of "TOOTH":', ans: 'teeth' },
-      { q: 'What is the root word of "UNBREAKABLE"?', ans: 'break' }
+      { q: 'What is the root word of "UNBREAKABLE"?', ans: 'break' },
+      { q: 'What is the plural of "CACTUS"?', ans: 'cacti' },
+      { q: 'Prefix meaning "BEFORE" in "preview":', ans: 'pre-' }
     ];
-    problems.push(...list);
+    if (isDefaultSeed) {
+      problems.push(...list.slice(0, 16));
+    } else {
+      const shuffled = [...list].sort(() => rng() - 0.5);
+      problems.push(...shuffled.slice(0, 16));
+    }
   } else if (worksheetId === 'world_starter_capitals') {
     const list = [
       { q: 'What is the capital of France?', ans: 'Paris' },
@@ -280,9 +424,16 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       { q: 'Which continent is the Amazon Rainforest in?', ans: 'South America' },
       { q: 'What is the capital of Mexico?', ans: 'Mexico City' },
       { q: 'What is the capital of India?', ans: 'New Delhi' },
-      { q: 'Which continent has the South Pole?', ans: 'Antarctica' }
+      { q: 'Which continent has the South Pole?', ans: 'Antarctica' },
+      { q: 'What is the capital of Norway?', ans: 'Oslo' },
+      { q: 'What is the capital of Kenya?', ans: 'Nairobi' }
     ];
-    problems.push(...list);
+    if (isDefaultSeed) {
+      problems.push(...list.slice(0, 16));
+    } else {
+      const shuffled = [...list].sort(() => rng() - 0.5);
+      problems.push(...shuffled.slice(0, 16));
+    }
   } else if (worksheetId === 'world_club_geography_deep_dive') {
     const list = [
       { q: 'What is the imaginary line at 0° latitude?', ans: 'The Equator' },
@@ -302,7 +453,12 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       { q: 'What is the capital of South Korea?', ans: 'Seoul' },
       { q: 'What is the driest non-polar desert on Earth?', ans: 'Atacama Desert' }
     ];
-    problems.push(...list);
+    if (isDefaultSeed) {
+      problems.push(...list.slice(0, 16));
+    } else {
+      const shuffled = [...list].sort(() => rng() - 0.5);
+      problems.push(...shuffled.slice(0, 16));
+    }
   } else if (worksheetId === 'coding_starter_logic') {
     const list = [
       { q: 'Algorithm step 1: Turn Right. Step 2: Move 2 steps. Which direction did Kibo face?', ans: 'Right' },
@@ -322,7 +478,12 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       { q: 'What loop runs as long as a condition remains true?', ans: 'while loop' },
       { q: 'In code, what does "=" do in x = 10?', ans: 'Assignment (stores 10 in x)' }
     ];
-    problems.push(...list);
+    if (isDefaultSeed) {
+      problems.push(...list.slice(0, 16));
+    } else {
+      const shuffled = [...list].sort(() => rng() - 0.5);
+      problems.push(...shuffled.slice(0, 16));
+    }
   } else if (worksheetId === 'coding_club_syntax_loops') {
     const list = [
       { q: 'For loop: for (let i = 0; i < 5; i++). How many iterations occur?', ans: '5 (i = 0, 1, 2, 3, 4)' },
@@ -342,7 +503,12 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       { q: 'What is the output of: Math.floor(4.9) ?', ans: '4' },
       { q: 'What is the time complexity of searching a sorted array with binary search?', ans: 'O(log n)' }
     ];
-    problems.push(...list);
+    if (isDefaultSeed) {
+      problems.push(...list.slice(0, 16));
+    } else {
+      const shuffled = [...list].sort(() => rng() - 0.5);
+      problems.push(...shuffled.slice(0, 16));
+    }
   } else {
     for (let i = 1; i <= 16; i++) {
       problems.push({ q: `Practice Question #${i}: Solve for the missing answer`, ans: `Answer #${i}` });
@@ -352,14 +518,17 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
   return problems.slice(0, 16);
 }
 
-export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', recentMistakes = []) {
-  const problems = generateProblemsForWorksheet(worksheet.id, recentMistakes);
+export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', recentMistakes = [], seed = 0) {
+  const problems = generateProblemsForWorksheet(worksheet.id, recentMistakes, seed);
+  const isDefaultSeed = !seed || seed === 0 || seed === 'default' || seed === '0';
+  const canonicalUrl = `https://www.kiboclimb.com/worksheets/${worksheet.id}`;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Kibo Climb • ${worksheet.title}</title>
+  <title>Kibo Climb • ${worksheet.title}${!isDefaultSeed ? ` (Set #${seed})` : ''}</title>
+  <link rel="canonical" href="${canonicalUrl}" />
   <style>
     @page {
       margin: 1.2cm;
@@ -648,12 +817,13 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
 </html>`;
 }
 
-export function openPrintableWorksheet(worksheet, childName = 'Kibo Climber', recentMistakes = []) {
+export function openPrintableWorksheet(worksheet, childName = 'Kibo Climber', recentMistakes = [], seed = 0) {
   // Navigate directly to dedicated worksheet URL for SEO & history
   if (typeof window !== 'undefined') {
-    const targetUrl = `/worksheets/${worksheet.id}`;
+    const seedParam = seed ? `?seed=${seed}` : '';
+    const targetUrl = `/worksheets/${worksheet.id}${seedParam}`;
     if (window.history && window.history.pushState) {
-      window.history.pushState({ worksheetId: worksheet.id }, '', targetUrl);
+      window.history.pushState({ worksheetId: worksheet.id, seed }, '', targetUrl);
       window.dispatchEvent(new PopStateEvent('popstate'));
       return true;
     }

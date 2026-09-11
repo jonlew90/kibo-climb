@@ -102,8 +102,15 @@ export default function App() {
       if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE === 'test') {
         return false;
       }
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        return !window.sessionStorage.getItem('kibo_splash_shown');
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname || '';
+        // Standalone utility screens should never display the 2-second splash
+        if (path.startsWith('/worksheets') || path === '/privacy' || path === '/terms' || path === '/coppa-privacy') {
+          return false;
+        }
+        if (window.sessionStorage) {
+          return !window.sessionStorage.getItem('kibo_splash_shown');
+        }
       }
     } catch (e) {
       // Fallback
@@ -665,15 +672,19 @@ export default function App() {
     else if (path === '/settings') initialRoute = VIEWS.SETTINGS;
     else if (path === '/leaderboard') initialRoute = VIEWS.LEADERBOARD;
     else if (path === '/quests') initialRoute = VIEWS.QUESTS;
-    else if (path.startsWith('/worksheets')) {
+    let initialWorksheetId = activeWorksheetId;
+    if (path.startsWith('/worksheets')) {
       initialRoute = VIEWS.WORKSHEET_VIEWER;
       const sheetSlug = path.replace(/^\/worksheets\/?/, '').trim();
-      if (sheetSlug) setActiveWorksheetId(sheetSlug);
+      if (sheetSlug) {
+        initialWorksheetId = sheetSlug;
+        setActiveWorksheetId(sheetSlug);
+      }
     } else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') {
       initialRoute = VIEWS.PARENT_DASHBOARD;
     }
 
-    const routeParams = initialRoute === VIEWS.ADAPTIVE_SESSION ? { subject: initialSubject } : (initialRoute === VIEWS.WORKSHEET_VIEWER ? { worksheetId: activeWorksheetId } : {});
+    const routeParams = initialRoute === VIEWS.ADAPTIVE_SESSION ? { subject: initialSubject } : (initialRoute === VIEWS.WORKSHEET_VIEWER ? { worksheetId: initialWorksheetId } : {});
     navigationHistory.reset({
       type: VIEW_TYPES.ROUTE,
       id: initialRoute,
@@ -3384,7 +3395,7 @@ export default function App() {
 
       {/* FIRST LAUNCH ONBOARDING MODAL */}
       <FirstLaunchOnboardingModal
-        isOpen={showFirstLaunchOnboardingModal}
+        isOpen={showFirstLaunchOnboardingModal && (appState === 'adaptive_session' || appState === VIEWS.ADAPTIVE_SESSION)}
         equippedItems={equippedItems}
         hasVisitedParentZone={hasVisitedParentZone}
         onUsernameSet={(username) => {

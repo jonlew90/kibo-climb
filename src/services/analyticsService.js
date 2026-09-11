@@ -217,11 +217,12 @@ export const analyticsService = {
   /**
    * Log when a worksheet card or dedicated worksheet URL is viewed.
    */
-  logWorksheetView: (worksheetId, subject) => {
+  logWorksheetView: (worksheetId, subject, seed = 0) => {
     safeLogEvent('view_item', {
       item_id: worksheetId,
       item_category: 'worksheet',
-      subject: subject
+      subject: subject,
+      variant_seed: String(seed || 'default')
     });
   }
 };
