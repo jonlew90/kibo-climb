@@ -87,3 +87,82 @@ export function formatTime(dateInput, locale = getDefaultLocale(), options = {})
     return String(dateInput);
   }
 }
+
+// US IANA timezones and territories
+const US_TIMEZONES = new Set([
+  'America/New_York',
+  'America/Detroit',
+  'America/Kentucky/Louisville',
+  'America/Kentucky/Monticello',
+  'America/Indiana/Indianapolis',
+  'America/Indiana/Vincennes',
+  'America/Indiana/Winamac',
+  'America/Indiana/Marengo',
+  'America/Indiana/Petersburg',
+  'America/Indiana/Vevay',
+  'America/Indiana/Tell_City',
+  'America/Indiana/Knox',
+  'America/Chicago',
+  'America/Menominee',
+  'America/North_Dakota/Center',
+  'America/North_Dakota/New_Salem',
+  'America/North_Dakota/Beulah',
+  'America/Denver',
+  'America/Boise',
+  'America/Phoenix',
+  'America/Los_Angeles',
+  'America/Anchorage',
+  'America/Juneau',
+  'America/Sitka',
+  'America/Metlakatla',
+  'America/Yakutat',
+  'America/Nome',
+  'America/Adak',
+  'Pacific/Honolulu',
+  'America/Puerto_Rico',
+  'Pacific/Guam',
+  'Pacific/Saipan',
+  'Pacific/Pago_Pago',
+  'America/St_Thomas'
+]);
+
+/**
+ * Determines whether the current client is detected to be within the US.
+ * Supports explicit preference override ('enabled' | 'disabled' | 'auto').
+ *
+ * Detection heuristics:
+ * 1. Explicit override ('enabled' -> true, 'disabled' -> false)
+ * 2. Client timezone matches known US timezones
+ * 3. Client locale indicates US (e.g. en-US, es-US)
+ *
+ * @param {'auto'|'enabled'|'disabled'|null} [overrideSetting]
+ * @returns {boolean}
+ */
+export function isUSRegion(overrideSetting = 'auto') {
+  if (overrideSetting === 'enabled') return true;
+  if (overrideSetting === 'disabled') return false;
+
+  try {
+    const tz = getCurrentTimezone();
+    if (tz && US_TIMEZONES.has(tz)) {
+      return true;
+    }
+
+    // Secondary fallback: check navigator locale
+    if (typeof navigator !== 'undefined') {
+      const lang = navigator.language || (navigator.languages && navigator.languages[0]) || '';
+      if (/-US$/i.test(lang)) {
+        // If language is en-US or es-US and timezone is not explicitly outside America
+        if (!tz || tz.startsWith('America/') || tz === 'UTC') {
+          return true;
+        }
+      }
+    }
+  } catch {
+    // Default to true in case of detection error to avoid disrupting existing users
+    return true;
+  }
+
+  return false;
+}
+

@@ -726,67 +726,68 @@ export default function FirstLaunchOnboardingModal({
             })}
           </div>
 
-            {/* OR Calibrate with School MAP Growth RIT Score */}
-            <div className="pt-2 border-t border-white/20">
-              {!showRitInput ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    setShowRitInput(true);
-                  }}
-                  className="w-full py-2.5 px-3.5 rounded-xl border-2 border-indigo-400/60 bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-100 hover:text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-950/40 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4 text-amber-300" />
-                  <span>Have a school MAP® Growth RIT score? (Optional)</span>
-                </button>
-              ) : (
-                <div className="bg-indigo-900/80 border-2 border-indigo-400/70 shadow-xl shadow-indigo-950/60 rounded-2xl p-3.5 text-left space-y-2.5 animate-pop">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase text-amber-300 tracking-wider flex items-center gap-1.5">
-                      <span>🎯</span> NWEA MAP® Math RIT Score
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowRitInput(false);
-                        setRitError('');
-                      }}
-                      className="text-xs text-slate-300 hover:text-white font-bold cursor-pointer transition-colors"
-                    >
-                      Cancel
-                    </button>
+            {/* OR Calibrate with School MAP Growth RIT Score (US-based or parent-enabled only) */}
+            {storageService.isMapGrowthVisible() && (
+              <div className="pt-2 border-t border-white/20">
+                {!showRitInput ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      setShowRitInput(true);
+                    }}
+                    className="w-full py-2.5 px-3.5 rounded-xl border-2 border-indigo-400/60 bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-100 hover:text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-950/40 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-300" />
+                    <span>Have a school MAP® Growth RIT score? (Optional)</span>
+                  </button>
+                ) : (
+                  <div className="bg-indigo-900/80 border-2 border-indigo-400/70 shadow-xl shadow-indigo-950/60 rounded-2xl p-3.5 text-left space-y-2.5 animate-pop">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black uppercase text-amber-300 tracking-wider flex items-center gap-1.5">
+                        <span>🎯</span> NWEA MAP® Math RIT Score
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowRitInput(false);
+                          setRitError('');
+                        }}
+                        className="text-xs text-slate-300 hover:text-white font-bold cursor-pointer transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-100 leading-snug font-medium">
+                      Enter the 3-digit Math RIT from your child’s school report (130–270) to pinpoint their starting difficulty.
+                    </p>
+                    <form onSubmit={handleRitSubmit} className="flex gap-2">
+                      <input
+                        type="number"
+                        min="130"
+                        max="270"
+                        value={ritInput}
+                        onChange={(e) => {
+                          setRitInput(e.target.value);
+                          setRitError('');
+                        }}
+                        placeholder="e.g. 198"
+                        className="w-24 px-3 py-1.5 bg-slate-900/90 border-2 border-indigo-300 rounded-xl text-white font-black text-sm text-center focus:outline-none focus:border-amber-400 shadow-inner"
+                      />
+                      <button
+                        type="submit"
+                        className="flex-1 py-1.5 px-3 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black text-xs rounded-xl shadow-sm transition-transform active:scale-95 cursor-pointer"
+                      >
+                        Calibrate & Start
+                      </button>
+                    </form>
+                    {ritError && (
+                      <p className="text-xs text-rose-300 font-bold">{ritError}</p>
+                    )}
                   </div>
-                  <p className="text-xs text-slate-100 leading-snug font-medium">
-                    Enter the 3-digit Math RIT from your child’s school report (130–270) to pinpoint their starting difficulty.
-                  </p>
-                  <form onSubmit={handleRitSubmit} className="flex gap-2">
-                    <input
-                      type="number"
-                      min="130"
-                      max="270"
-                      value={ritInput}
-                      onChange={(e) => {
-                        setRitInput(e.target.value);
-                        setRitError('');
-                      }}
-                      placeholder="e.g. 198"
-                      className="w-24 px-3 py-1.5 bg-slate-900/90 border-2 border-indigo-300 rounded-xl text-white font-black text-sm text-center focus:outline-none focus:border-amber-400 shadow-inner"
-                    />
-                    <button
-                      type="submit"
-                      disabled={!ritInput.trim()}
-                      className="flex-1 px-3 py-1.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 disabled:opacity-50 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer"
-                    >
-                      Calibrate & Start
-                    </button>
-                  </form>
-                  {ritError && (
-                    <p className="text-xs text-rose-300 font-bold">{ritError}</p>
-                  )}
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         {showPrivacyModal && (
           <PrivacyPolicyScreen

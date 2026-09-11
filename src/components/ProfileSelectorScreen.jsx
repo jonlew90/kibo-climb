@@ -296,52 +296,54 @@ function AddProfilePanel({ onCancel, onCreated }) {
           </select>
         </div>
 
-        {/* Optional MAP RIT Score Field */}
-        <div>
-          {!showRit ? (
-            <button
-              type="button"
-              onClick={() => setShowRit(true)}
-              className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <span>🎯</span>
-              <span>Calibrate with school MAP® Math RIT score?</span>
-            </button>
-          ) : (
-            <div className="bg-indigo-50/70 border border-indigo-200 rounded-xl p-2.5 space-y-1.5 animate-pop">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase text-indigo-900 flex items-center gap-1">
-                  <span>🎯</span> MAP® Math RIT Score
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowRit(false);
-                    setRitInput('');
-                    setCustomRating(null);
-                  }}
-                  className="text-[10px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
-                >
-                  Clear
-                </button>
+        {/* Optional MAP RIT Score Field (US-based or parent-enabled only) */}
+        {storageService.isMapGrowthVisible() && (
+          <div>
+            {!showRit ? (
+              <button
+                type="button"
+                onClick={() => setShowRit(true)}
+                className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <span>🎯</span>
+                <span>Calibrate with school MAP® Math RIT score?</span>
+              </button>
+            ) : (
+              <div className="bg-indigo-50/70 border border-indigo-200 rounded-xl p-2.5 space-y-1.5 animate-pop">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase text-indigo-900 flex items-center gap-1">
+                    <span>🎯</span> MAP® Math RIT Score
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRit(false);
+                      setRitInput('');
+                      setCustomRating(null);
+                    }}
+                    className="text-[10px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="130"
+                    max="270"
+                    value={ritInput}
+                    onChange={(e) => handleRitChange(e.target.value)}
+                    placeholder="e.g. 195"
+                    className="w-20 px-2 py-1 bg-white border border-indigo-300 rounded-lg text-xs font-bold text-center text-slate-800 focus:outline-none focus:border-indigo-500"
+                  />
+                  <span className="text-[11px] text-slate-600">
+                    {customRating ? `Calibrated to ${childGrade}!` : 'Enter 130–270'}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="130"
-                  max="270"
-                  value={ritInput}
-                  onChange={(e) => handleRitChange(e.target.value)}
-                  placeholder="e.g. 195"
-                  className="w-20 px-2 py-1 bg-white border border-indigo-300 rounded-lg text-xs font-bold text-center text-slate-800 focus:outline-none focus:border-indigo-500"
-                />
-                <span className="text-[11px] text-slate-600">
-                  {customRating ? `Calibrated to ${childGrade}!` : 'Enter 130–270'}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Live Subject Curriculum Preview Card */}
         <div className="bg-slate-50/90 border border-slate-200/80 rounded-xl p-2 sm:p-2.5 space-y-1 text-left">

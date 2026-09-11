@@ -52,4 +52,29 @@ describe('MAP Growth Calibration Utilities', () => {
     expect(opDomain.correct).toBe(17);
     expect(opDomain.accuracyPct).toBe(85);
   });
+
+  describe('US Region Detection and Visibility Gating', () => {
+    it('respects explicit enable / disable overrides', async () => {
+      const { isUSRegion } = await import('../../src/utils/localeUtils.js');
+      expect(isUSRegion('enabled')).toBe(true);
+      expect(isUSRegion('disabled')).toBe(false);
+    });
+
+    it('manages storageService MAP growth preferences correctly', async () => {
+      const { storageService } = await import('../../src/services/storageService.js');
+      expect(storageService.getMapGrowthPreference()).toBe('auto');
+
+      storageService.setMapGrowthPreference('enabled');
+      expect(storageService.getMapGrowthPreference()).toBe('enabled');
+      expect(storageService.isMapGrowthVisible()).toBe(true);
+
+      storageService.setMapGrowthPreference('disabled');
+      expect(storageService.getMapGrowthPreference()).toBe('disabled');
+      expect(storageService.isMapGrowthVisible()).toBe(false);
+
+      storageService.setMapGrowthPreference('auto');
+      expect(storageService.getMapGrowthPreference()).toBe('auto');
+    });
+  });
 });
+

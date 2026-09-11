@@ -53,6 +53,7 @@ import StripeCheckoutModal from './components/StripeCheckoutModal';
 import FamilyPlanUpgradeModal from './components/FamilyPlanUpgradeModal';
 import DailyBonusRewardModal from './components/DailyBonusRewardModal';
 import SettingsScreen from './components/SettingsScreen';
+import WorksheetViewerScreen from './components/WorksheetViewerScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import CoppaPrivacyPolicyScreen from './components/CoppaPrivacyPolicyScreen';
 import ShareModal from './components/ShareModal';
@@ -664,11 +665,15 @@ export default function App() {
     else if (path === '/settings') initialRoute = VIEWS.SETTINGS;
     else if (path === '/leaderboard') initialRoute = VIEWS.LEADERBOARD;
     else if (path === '/quests') initialRoute = VIEWS.QUESTS;
-    else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') {
+    else if (path.startsWith('/worksheets')) {
+      initialRoute = VIEWS.WORKSHEET_VIEWER;
+      const sheetSlug = path.replace(/^\/worksheets\/?/, '').trim();
+      if (sheetSlug) setActiveWorksheetId(sheetSlug);
+    } else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') {
       initialRoute = VIEWS.PARENT_DASHBOARD;
     }
 
-    const routeParams = initialRoute === VIEWS.ADAPTIVE_SESSION ? { subject: initialSubject } : {};
+    const routeParams = initialRoute === VIEWS.ADAPTIVE_SESSION ? { subject: initialSubject } : (initialRoute === VIEWS.WORKSHEET_VIEWER ? { worksheetId: activeWorksheetId } : {});
     navigationHistory.reset({
       type: VIEW_TYPES.ROUTE,
       id: initialRoute,
@@ -712,7 +717,11 @@ export default function App() {
         else if (path === '/settings') targetRoute = VIEWS.SETTINGS;
         else if (path === '/leaderboard') targetRoute = VIEWS.LEADERBOARD;
         else if (path === '/quests') targetRoute = VIEWS.QUESTS;
-        else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') targetRoute = VIEWS.PARENT_DASHBOARD;
+        else if (path.startsWith('/worksheets')) {
+          targetRoute = VIEWS.WORKSHEET_VIEWER;
+          const sheetSlug = path.replace(/^\/worksheets\/?/, '').trim();
+          if (sheetSlug) setActiveWorksheetId(sheetSlug);
+        } else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') targetRoute = VIEWS.PARENT_DASHBOARD;
         handleNavigateTo(path, targetRoute);
       }
     };
@@ -740,6 +749,7 @@ export default function App() {
   const [isBossMode, setIsBossMode] = useState(false);
   const [isPlacementTest, setIsPlacementTest] = useState(false);
   const [isPracticeModeOpen, setIsPracticeModeOpen] = useState(false);
+  const [activeWorksheetId, setActiveWorksheetId] = useState('math_starter_k2');
   const [placementResultInfo, setPlacementResultInfo] = useState(null);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
 
@@ -2924,6 +2934,20 @@ export default function App() {
         />
       )}
 
+      {/* DEDICATED WORKSHEET VIEWER & PRINT SCREEN */}
+      {(appState === 'worksheet_viewer' || appState === VIEWS.WORKSHEET_VIEWER) && (
+        <WorksheetViewerScreen
+          worksheetId={activeWorksheetId}
+          onBack={handleGoBack}
+          onNavigate={handleNavigateTo}
+          onOpenKiboClubUpgrade={() => {
+            setParentDashboardTab('verification');
+            setParentDashboardHighlight('family_plan');
+            handleNavigateTo('/parent', VIEWS.PARENT_DASHBOARD);
+          }}
+        />
+      )}
+
       {/* PARENT DASHBOARD SCREEN */}
       {(appState === 'parent_dashboard' || appState === VIEWS.PARENT_DASHBOARD) && (
         <ParentDashboardModal
@@ -3695,7 +3719,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && renderNavigationFooter()}
+      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && appState !== 'worksheet_viewer' && renderNavigationFooter()}
 
       {/* Workshop Modal */}
       <WorkshopModal

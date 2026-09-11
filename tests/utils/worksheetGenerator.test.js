@@ -39,7 +39,7 @@ describe('worksheetGenerator', () => {
   it('should format clean 2-page HTML with mascot branding and answer keys', () => {
     const sheet = WORKSHEET_CATALOG[0];
     const html = generateWorksheetHtml(sheet, 'Alex', []);
-    expect(html).toContain('🐾 Kibo');
+    expect(html).toContain('Kibo the Red Panda Mascot 🐾');
     expect(html).toContain('page-1');
     expect(html).toContain('page-2');
     expect(html).toContain('Parent Answer Key');

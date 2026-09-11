@@ -6,6 +6,7 @@ import { getWeekStr } from '../utils/dateUtils.js';
 import { leaderboardService } from './leaderboardService.js';
 import { userSyncService } from './userSyncService.js';
 import { SUBJECTS_CONFIG } from '../config/subjects.js';
+import { isUSRegion } from '../utils/localeUtils.js';
 
 const KEYS = {
   PROFILES: 'kibo_profiles_data',
@@ -15,7 +16,8 @@ const KEYS = {
   GATE_FAILED_ATTEMPTS: 'kibo_parent_gate_failed_attempts',
   GATE_LOCKOUT_UNTIL: 'kibo_parent_gate_lockout_until',
   APP_RATING_STATUS: 'kibo_app_rating_status',
-  HAS_ONBOARDED: 'kibo_has_onboarded'
+  HAS_ONBOARDED: 'kibo_has_onboarded',
+  MAP_GROWTH_PREF: 'kibo_map_growth_preference'
 };
 
 const DEFAULT_PROFILE_ID = 'default_child';
@@ -821,6 +823,31 @@ export const storageService = {
   hasCustomPin() {
     const { pin } = this.getParentSettings();
     return !!(pin && pin !== '1234');
+  },
+
+  // MAP Growth / RIT Visibility Preferences ('auto' | 'enabled' | 'disabled')
+  getMapGrowthPreference() {
+    try {
+      return localStorage.getItem(KEYS.MAP_GROWTH_PREF) || 'auto';
+    } catch {
+      return 'auto';
+    }
+  },
+  setMapGrowthPreference(pref = 'auto') {
+    try {
+      if (pref === 'auto') {
+        localStorage.removeItem(KEYS.MAP_GROWTH_PREF);
+      } else {
+        localStorage.setItem(KEYS.MAP_GROWTH_PREF, pref);
+      }
+      return true;
+    } catch (e) {
+      console.error('StorageService: error writing map growth pref', e);
+      return false;
+    }
+  },
+  isMapGrowthVisible() {
+    return isUSRegion(this.getMapGrowthPreference());
   },
 
   // In-App Rating Prompt Status (Max 60-day cooldown)

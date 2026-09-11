@@ -4,6 +4,39 @@
  * and strict 2-page print layout (Page 1 = Questions, Page 2 = Answer Key).
  */
 
+export const KIBO_RED_PANDA_FAVICON_SVG = `<svg viewBox="0 0 512 512" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="512" height="512" rx="115" ry="115" fill="#F97316" />
+  <path d="M 0 0 L 190 0 C 160 50, 110 110, 0 140 Z" fill="#C2410C" />
+  <path d="M 18 18 L 145 18 C 125 55, 90 95, 18 110 Z" fill="#FFF9F2" stroke="#FED7AA" stroke-width="4" />
+  <path d="M 512 0 L 322 0 C 352 50, 402 110, 512 140 Z" fill="#C2410C" />
+  <path d="M 494 18 L 367 18 C 387 55, 422 95, 494 110 Z" fill="#FFF9F2" stroke="#FED7AA" stroke-width="4" />
+  <path d="M 0 240 L 45 270 L 0 305 L 55 350 L 0 400 Z" fill="#C2410C" />
+  <path d="M 512 240 L 467 270 L 512 305 L 457 350 L 512 400 Z" fill="#C2410C" />
+  <g id="face-markings">
+    <ellipse cx="165" cy="270" rx="95" ry="115" fill="#FFFFFF" />
+    <ellipse cx="347" cy="270" rx="95" ry="115" fill="#FFFFFF" />
+    <ellipse cx="256" cy="365" rx="115" ry="90" fill="#FFFFFF" />
+  </g>
+  <ellipse cx="105" cy="360" rx="42" ry="24" fill="#FF4D79" />
+  <ellipse cx="407" cy="360" rx="42" ry="24" fill="#FF4D79" />
+  <path d="M 85 335 L 0 315 M 85 360 L 0 360 M 95 385 L 0 410" stroke="#3D1000" stroke-width="10" stroke-linecap="round" />
+  <path d="M 427 335 L 512 315 M 427 360 L 512 360 M 417 385 L 512 410" stroke="#3D1000" stroke-width="10" stroke-linecap="round" />
+  <path d="M 140 160 C 130 148, 172 138, 185 152 C 192 165, 155 175, 142 162 Z" fill="#FFFFFF" stroke="#9A3412" stroke-width="3" />
+  <path d="M 372 160 C 382 148, 340 138, 327 152 C 320 165, 357 175, 370 162 Z" fill="#FFFFFF" stroke="#9A3412" stroke-width="3" />
+  <g id="eyes">
+    <ellipse cx="175" cy="265" rx="56" ry="68" fill="#1E0700" />
+    <circle cx="158" cy="236" r="22" fill="#FFFFFF" />
+    <circle cx="202" cy="256" r="11" fill="#FFFFFF" />
+    <circle cx="182" cy="302" r="8" fill="#FFFFFF" />
+    <ellipse cx="337" cy="265" rx="56" ry="68" fill="#1E0700" />
+    <circle cx="320" cy="236" r="22" fill="#FFFFFF" />
+    <circle cx="364" cy="256" r="11" fill="#FFFFFF" />
+    <circle cx="344" cy="302" r="8" fill="#FFFFFF" />
+  </g>
+  <ellipse cx="256" cy="330" rx="26" ry="18" fill="#1E0700" />
+  <path d="M 222 355 C 230 380, 248 380, 256 360 C 264 380, 282 380, 290 355" stroke="#1E0700" stroke-width="13" stroke-linecap="round" fill="none" />
+</svg>`;
+
 export const WORKSHEET_CATALOG = [
   // MATH
   {
@@ -240,7 +273,7 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       { q: 'What is the capital of Egypt?', ans: 'Cairo' },
       { q: 'What is the capital of Australia?', ans: 'Canberra' },
       { q: 'What is the capital of Brazil?', ans: 'Brasília' },
-      { q: 'Which continent is Mount Kilimanjaro (Kibo) on?', ans: 'Africa' },
+      { q: 'Which continent is Mount Kilimanjaro on?', ans: 'Africa' },
       { q: 'What is the largest ocean on Earth?', ans: 'Pacific Ocean' },
       { q: 'What is the capital of Germany?', ans: 'Berlin' },
       { q: 'What is the capital of Spain?', ans: 'Madrid' },
@@ -259,7 +292,7 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       { q: 'What biome is characterized by frozen permafrost?', ans: 'Tundra' },
       { q: 'Which country has the most natural lakes?', ans: 'Canada' },
       { q: 'What is the tallest summit above sea level on Earth?', ans: 'Mount Everest (8,849m)' },
-      { q: 'What is the highest mountain peak in Africa?', ans: 'Mount Kilimanjaro / Kibo (5,895m)' },
+      { q: 'What is the highest mountain peak in Africa?', ans: 'Mount Kilimanjaro (5,895m)' },
       { q: 'Which strait separates Europe and Africa?', ans: 'Strait of Gibraltar' },
       { q: 'What is the largest desert on Earth by land area?', ans: 'Antarctic Desert' },
       { q: 'What country spans 11 time zones?', ans: 'Russia' },
@@ -277,7 +310,7 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       { q: 'What symbol represents the "AND" logic operator in JavaScript?', ans: '&&' },
       { q: 'What symbol represents the "OR" logic operator in JavaScript?', ans: '||' },
       { q: 'What data type is the value: true ?', ans: 'Boolean' },
-      { q: 'What data type is the value: "Mount Kibo" ?', ans: 'String' },
+      { q: 'What data type is the value: "Kibo the Red Panda" ?', ans: 'String' },
       { q: 'What data type is the number: 42 ?', ans: 'Number' },
       { q: 'If x = 5 and x = x + 3, what is x?', ans: '8' },
       { q: 'What is an unexpected flaw or glitch in code called?', ans: 'Bug' },
@@ -302,7 +335,7 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = []) {
       { q: 'What will Boolean("") evaluate to?', ans: 'false (empty string is falsy)' },
       { q: 'What will Boolean("Kibo") evaluate to?', ans: 'true (non-empty string is truthy)' },
       { q: 'What data structure follows FIFO (First-In, First-Out)?', ans: 'Queue' },
-      { q: 'What data structure follows LIFO (Last-In, First-Out)?', ans: 'Stack' },
+      { q: 'What data structure follows LIFO (Last-In, Last-Out)?', ans: 'Stack' },
       { q: 'What method adds an element to the end of an array?', ans: '.push()' },
       { q: 'What method removes the last element of an array?', ans: '.pop()' },
       { q: 'What does JSON stand for?', ans: 'JavaScript Object Notation' },
@@ -375,7 +408,13 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
       color: #0f172a;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+    }
+    .mascot-avatar {
+      width: 36px;
+      height: 36px;
+      display: inline-block;
+      vertical-align: middle;
     }
     .badge {
       font-size: 11px;
@@ -476,6 +515,9 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
       color: #5b21b6;
       font-size: 20px;
       font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .key-grid {
       display: grid;
@@ -529,7 +571,10 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
     <div>
       <div class="header">
         <div>
-          <div class="brand-title">🐾 Kibo Climb • ${worksheet.title}</div>
+          <div class="brand-title">
+            <span class="mascot-avatar">${KIBO_RED_PANDA_FAVICON_SVG}</span>
+            <span>Kibo Climb • ${worksheet.title}</span>
+          </div>
           <div style="font-size: 12px; color: #475569; margin-top: 2px;">${worksheet.description}</div>
         </div>
         <div>
@@ -565,14 +610,17 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
   <div class="page page-2">
     <div>
       <div class="key-header">
-        <div class="key-title">🔑 Parent Answer Key & Guide</div>
+        <div class="key-title">
+          <span class="mascot-avatar">${KIBO_RED_PANDA_FAVICON_SVG}</span>
+          <span>Parent Answer Key & Verification Guide</span>
+        </div>
         <span class="badge" style="background:#ede9fe; color:#5b21b6; border-color:#c4b5fd;">
           Page 2 of 2
         </span>
       </div>
 
       <div class="parent-tip">
-        <strong>🐾 Mascot Kibo's Learning Tip:</strong> Review any missed problems with your child using scrap paper or manipulatives. Celebrate effort and daily consistency!
+        <strong>🐾 Mascot Kibo's Learning Tip:</strong> Review any missed problems with your child using scrap paper or counters. Mistakes are valuable milestones!
       </div>
 
       <div class="key-grid">
@@ -586,7 +634,7 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
     </div>
 
     <div class="footer">
-      <div>Kibo Climb Offline Learning Resources • Verified Solutions</div>
+      <div>Kibo Climb Offline Practice Solutions • Verified Solutions</div>
       <div>Page 2 of 2 • Answer Key</div>
     </div>
   </div>
@@ -601,16 +649,14 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
 }
 
 export function openPrintableWorksheet(worksheet, childName = 'Kibo Climber', recentMistakes = []) {
-  const html = generateWorksheetHtml(worksheet, childName, recentMistakes);
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-    }, 400);
-    return true;
+  // Navigate directly to dedicated worksheet URL for SEO & history
+  if (typeof window !== 'undefined') {
+    const targetUrl = `/worksheets/${worksheet.id}`;
+    if (window.history && window.history.pushState) {
+      window.history.pushState({ worksheetId: worksheet.id }, '', targetUrl);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      return true;
+    }
   }
   return false;
 }

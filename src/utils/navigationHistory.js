@@ -13,6 +13,7 @@ export const VIEWS = {
   LEADERBOARD: 'leaderboard',
   QUESTS: 'quests',
   PARENT_DASHBOARD: 'parent_dashboard',
+  WORKSHEET_VIEWER: 'worksheet_viewer',
 
   // Modals
   WORKSHOP: 'workshop',
@@ -69,6 +70,8 @@ export const getPathForId = (id, params = {}) => {
       return '/quests';
     case VIEWS.PARENT_DASHBOARD:
       return '/parent';
+    case VIEWS.WORKSHEET_VIEWER:
+      return params?.worksheetId ? `/worksheets/${params.worksheetId}` : '/worksheets/math_starter_k2';
     case VIEWS.ADAPTIVE_SESSION:
     default:
       if (params?.subject && SUBJECT_ROUTES[params.subject]) {

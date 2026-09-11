@@ -170,6 +170,7 @@ export default function ParentDashboardModal({
   const [newChildName, setNewChildName] = useState('');
   const [newChildGrade, setNewChildGrade] = useState('Grade 1–2');
   const [newChildError, setNewChildError] = useState('');
+  const [mapGrowthPref, setMapGrowthPref] = useState(() => storageService.getMapGrowthPreference());
 
   // Data Privacy Confirmation States
   const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
@@ -1126,7 +1127,7 @@ export default function ParentDashboardModal({
                   </p>
 
                   {/* NWEA MAP® Growth Math Alignment (Free Estimated RIT Band + Sub-domain Teaser) */}
-                  {selectedSubject === 'math' && (() => {
+                  {selectedSubject === 'math' && storageService.isMapGrowthVisible() && (() => {
                     const ritInfo = getRITBandDetails(actualRating);
                     const isMember = storageService.hasClubMembership(viewingProfileId);
                     const domainBreakdown = calculateMapDomainBreakdown(activeUserData.sprintHistory || [], actualRating);
@@ -2133,6 +2134,80 @@ export default function ParentDashboardModal({
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Academic Standards & Assessment Benchmarks Card */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-indigo-700">
+                  <span className="text-base">🎯</span>
+                  <h4 className="font-extrabold text-sm text-slate-800">Academic Assessment Standards</h4>
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
+                  NWEA MAP®
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                NWEA MAP® Growth RIT scores benchmark student skill levels against U.S. national norm studies. If your child attends a school outside the U.S. or does not take MAP assessments, you can hide these metrics throughout Kibo Climb.
+              </p>
+
+              <div className="bg-white border border-slate-200 p-3 rounded-xl flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <span className="font-extrabold text-xs text-slate-800 block">Show MAP® Growth RIT Alignment</span>
+                  <span className="text-[11px] text-slate-500 block">
+                    Current status: {storageService.isMapGrowthVisible() ? 'Visible' : 'Hidden'}
+                  </span>
+                </div>
+
+                <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      storageService.setMapGrowthPreference('auto');
+                      setMapGrowthPref('auto');
+                    }}
+                    className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                      mapGrowthPref === 'auto'
+                        ? 'bg-white text-indigo-900 shadow-xs font-black'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Auto
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      storageService.setMapGrowthPreference('enabled');
+                      setMapGrowthPref('enabled');
+                    }}
+                    className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                      mapGrowthPref === 'enabled'
+                        ? 'bg-indigo-600 text-white shadow-xs font-black'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    On
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playKeyTap();
+                      storageService.setMapGrowthPreference('disabled');
+                      setMapGrowthPref('disabled');
+                    }}
+                    className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                      mapGrowthPref === 'disabled'
+                        ? 'bg-rose-600 text-white shadow-xs font-black'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Off
+                  </button>
+                </div>
               </div>
             </div>
 
