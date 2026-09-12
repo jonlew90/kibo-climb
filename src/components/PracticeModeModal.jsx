@@ -90,7 +90,7 @@ export default function PracticeModeModal({
             Tier {selectedTier}
           </span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 max-h-48 overflow-y-auto pr-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pr-0.5">
           {tiersList.map((t, idx) => {
             const tierNum = t.tier || idx + 1;
             const isSelected = selectedTier === tierNum;
@@ -169,11 +169,11 @@ export default function PracticeModeModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-pop cursor-pointer"
+      className="fixed inset-0 z-[1000] flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-pop cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg bg-gradient-to-b from-slate-50 via-white to-sky-50 border-4 border-indigo-400 rounded-3xl p-4 sm:p-6 shadow-2xl text-slate-800 space-y-4 max-h-[92vh] overflow-y-auto cursor-default flex flex-col justify-between"
+        className="w-full max-w-lg bg-gradient-to-b from-slate-50 via-white to-sky-50 border-4 border-indigo-400 rounded-3xl p-4 sm:p-6 shadow-2xl text-slate-800 space-y-3.5 max-h-[96vh] sm:max-h-[92vh] overflow-y-auto cursor-default flex flex-col justify-between"
       >
         {/* Top Header */}
         <div className="flex items-center justify-between pb-2 border-b border-slate-200 shrink-0">
@@ -186,7 +186,7 @@ export default function PracticeModeModal({
                 Training Camp • {currentSubjectConfig.label.toUpperCase()}
               </h3>
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                Targeted Practice • Streak-Safe • Mistake Recycling
+                Targeted Practice • Streak-Safe
               </span>
             </div>
           </div>

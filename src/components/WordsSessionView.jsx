@@ -491,12 +491,7 @@ export default function WordsSessionView({
   const handleExitOrPauseClimb = () => {
     soundFx.playKeyTap();
     if (isPracticeMode) {
-      if (questionsAnswered > 0) {
-        setShowPracticeExitConfirm(true);
-        return;
-      }
-      setHasStartedClimb(false);
-      if (onExitPractice) onExitPractice();
+      setShowPracticeExitConfirm(true);
       return;
     }
     saveCurrentClimbProgress();
