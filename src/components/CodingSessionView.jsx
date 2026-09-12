@@ -525,7 +525,7 @@ export default function CodingSessionView({
       onAwardSparks(earnedSparks);
     }
     if (onIncrementLifetimeProblems) {
-      onIncrementLifetimeProblems(isCorrect);
+      onIncrementLifetimeProblems(isCorrect, { isPracticeMode });
     }
     if (!isPracticeMode && onUpdateCompetenceRating) {
       onUpdateCompetenceRating(nextRating);
@@ -687,7 +687,7 @@ export default function CodingSessionView({
   // Use 50:50 Distractor Pruner Power-up (Eliminate 2 wrong answers)
   const handleUsePruner = () => {
     if (!currentProblem || !currentProblem.options || currentProblem.options.length <= 2) return;
-    if (eliminatedOptions.length > 0) return;
+    if (isPracticeMode || eliminatedOptions.length > 0) return;
 
     const owned = consumables?.letterPrunerCount ?? 0;
     if (owned <= 0) {
@@ -719,6 +719,17 @@ export default function CodingSessionView({
   const handleUseHint = () => {
     if (!currentProblem) return;
     if (revealedHint) return;
+
+    if (isPracticeMode) {
+      setRevealedHint(currentProblem.hint || 'Carefully step through each line of code.');
+      setIsClueActive(true);
+      soundFx.playPowerUp();
+      setFeedbackBanner({
+        type: 'success',
+        text: 'Training Hint Revealed! 💡'
+      });
+      return;
+    }
 
     const owned = consumables?.hintScrollCount ?? 0;
     if (owned <= 0) {
@@ -784,6 +795,9 @@ export default function CodingSessionView({
         isNewStreakRecord={completedBlockStats.isNewStreakRecord}
         profileId={profileId}
         activeSubject="coding"
+        isPracticeMode={isPracticeMode}
+        practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+        onExitPractice={onExitPractice}
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
           if (isPracticeMode && onExitPractice) {
@@ -917,22 +931,24 @@ export default function CodingSessionView({
                     className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       revealedHint
                         ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
-                        : (consumables?.hintScrollCount ?? 0) > 0
+                        : (isPracticeMode || (consumables?.hintScrollCount ?? 0) > 0)
                         ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
                         : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
                     }`}
                     title={
-                      (consumables?.hintScrollCount ?? 0) > 0
+                      isPracticeMode
+                        ? 'Free Training Hint!'
+                        : (consumables?.hintScrollCount ?? 0) > 0
                         ? 'Use Wisdom Scroll to reveal a logic clue!'
                         : 'Out of Hint Scrolls • Tap to get in Shop!'
                     }
                   >
                     <ItemThumbnail itemId="hint_scroll" borderless className="w-4 h-4 shrink-0" />
-                    <span>{revealedHint ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}</span>
+                    <span>{revealedHint ? 'Active' : isPracticeMode ? 'Hint (Free)' : (consumables?.hintScrollCount ?? 0) > 0 ? `Hint (${consumables.hintScrollCount})` : 'Hint'}</span>
                   </button>
 
-                  {/* 50:50 DISTRACTOR PRUNER BUTTON (Shown when active or count > 0) */}
-                  {(eliminatedOptions.length > 0 || (consumables?.letterPrunerCount ?? 0) > 0) && (
+                  {/* 50:50 DISTRACTOR PRUNER BUTTON (Shown when active or count > 0, hidden in practice mode) */}
+                  {!isPracticeMode && (eliminatedOptions.length > 0 || (consumables?.letterPrunerCount ?? 0) > 0) && (
                     <button
                       type="button"
                       onClick={handleUsePruner}

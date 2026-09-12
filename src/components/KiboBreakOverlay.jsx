@@ -20,6 +20,9 @@ export default function KiboBreakOverlay({
   isNewStreakRecord = false,
   profileId,
   activeSubject = 'math',
+  isPracticeMode = false,
+  practiceTitle = 'Training Camp',
+  onExitPractice,
   onOpenWorkshop,
   onResumeClimb
 }) {
@@ -41,13 +44,17 @@ export default function KiboBreakOverlay({
       <div className="w-full max-w-md mx-auto h-full flex flex-col justify-between p-4 sm:p-5 box-border relative z-10 text-center">
         {/* TOP CONTAINER (flex-shrink: 0) */}
         <div className="shrink-0 flex flex-col items-center text-center space-y-1">
-          <span className="text-xs sm:text-sm font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 px-3.5 py-1 rounded-full border border-amber-500 shadow-xs inline-block tracking-wider animate-pulse">
-            🏔️ Ascent Checkpoint Reached
+          <span className={`text-xs sm:text-sm font-black uppercase px-3.5 py-1 rounded-full border shadow-xs inline-block tracking-wider animate-pulse ${
+            isPracticeMode
+              ? 'text-indigo-950 bg-gradient-to-r from-indigo-200 via-purple-200 to-indigo-300 border-indigo-400'
+              : 'text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 border-amber-500'
+          }`}>
+            {isPracticeMode ? '🏋️ Training Camp Complete' : '🏔️ Ascent Checkpoint Reached'}
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight drop-shadow-xs leading-tight">
-            Climb Block Complete!
+            {isPracticeMode ? 'Training Sprint Complete!' : 'Climb Block Complete!'}
           </h1>
-          {isNewSpeedRecord && (
+          {!isPracticeMode && isNewSpeedRecord && (
             <div className="w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 border-2 border-amber-500 rounded-2xl py-1.5 px-3 shadow-md animate-bounce">
               <span className="text-xs sm:text-sm font-black text-amber-950 flex items-center justify-center gap-1.5">
                 🏆 NEW PR! Fastest Flawless Climb: {blockTimeSec ? `${blockTimeSec}s` : 'Speed Record'} ⚡
@@ -55,7 +62,7 @@ export default function KiboBreakOverlay({
             </div>
           )}
 
-          {!isNewSpeedRecord && isNewStreakRecord && (
+          {!isPracticeMode && !isNewSpeedRecord && isNewStreakRecord && (
             <div className="w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 border-2 border-orange-500 rounded-2xl py-1.5 px-3 shadow-md animate-bounce">
               <span className="text-xs sm:text-sm font-black text-orange-950 flex items-center justify-center gap-1.5">
                 🔥 NEW PR! Best Question Streak: {streak} Qs in a row! 🌟
@@ -63,7 +70,7 @@ export default function KiboBreakOverlay({
             </div>
           )}
 
-          {!isNewSpeedRecord && !isNewStreakRecord && isPerfectBlock && (
+          {!isPracticeMode && !isNewSpeedRecord && !isNewStreakRecord && isPerfectBlock && (
             <div className="w-full bg-emerald-100 border border-emerald-300 rounded-xl py-1 px-3 shadow-xs">
               <span className="text-xs font-black text-emerald-900 flex items-center justify-center gap-1.5">
                 🎯 Flawless 12/12 Climb Ascent! {blockTimeSec ? `(${blockTimeSec}s)` : ''}
@@ -71,8 +78,18 @@ export default function KiboBreakOverlay({
             </div>
           )}
 
+          {isPracticeMode && isPerfectBlock && (
+            <div className="w-full bg-emerald-100 border border-emerald-300 rounded-xl py-1 px-3 shadow-xs">
+              <span className="text-xs font-black text-emerald-900 flex items-center justify-center gap-1.5">
+                🎯 100% Training Mastery! {blockTimeSec ? `(${blockTimeSec}s)` : ''}
+              </span>
+            </div>
+          )}
+
           <p className="text-xs sm:text-sm font-bold text-purple-900">
-            You completed 12 adaptive problems on Mount Kibo! {blockTimeSec && !isPerfectBlock ? `(${blockTimeSec}s)` : ''}
+            {isPracticeMode
+              ? `You completed your ${totalCount}-problem practice sprint in ${practiceTitle}! ${blockTimeSec && !isPerfectBlock ? `(${blockTimeSec}s)` : ''}`
+              : `You completed ${totalCount} adaptive problems on Mount Kibo! ${blockTimeSec && !isPerfectBlock ? `(${blockTimeSec}s)` : ''}`}
           </p>
 
           {/* Kibo Mascot Image */}
@@ -163,68 +180,105 @@ export default function KiboBreakOverlay({
             </span>
           </div>
 
-          {/* Global Climber Ascent & Altitude XP Progress */}
-          <div className="bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-100 border border-teal-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex flex-col gap-1.5 shadow-xs shrink-0 text-left">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <span className="text-base">{questLevelInfo.icon || '🏕️'}</span>
-                <span className="text-xs sm:text-sm font-black text-teal-950">
-                  Ascent {questLevelInfo.ascentTier} • Lv. {questLevelInfo.level} ({questLevelInfo.title})
+          {/* In Climb Mode: Global Climber Ascent & Altitude XP Progress + Multi-Subject Bonus */}
+          {!isPracticeMode ? (
+            <>
+              <div className="bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-100 border border-teal-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex flex-col gap-1.5 shadow-xs shrink-0 text-left">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base">{questLevelInfo.icon || '🏕️'}</span>
+                    <span className="text-xs sm:text-sm font-black text-teal-950">
+                      Ascent {questLevelInfo.ascentTier} • Lv. {questLevelInfo.level} ({questLevelInfo.title})
+                    </span>
+                  </div>
+                  <span className="text-xs font-extrabold text-teal-700 bg-white/80 px-2 py-0.5 rounded-full border border-teal-200">
+                    +{altitudeEarned}m Altitude
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-teal-200/80 rounded-full overflow-hidden border border-teal-300/50">
+                  <div
+                    className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: `${questLevelInfo.progressPct || 0}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Multi-Subject Daily Bonus Status */}
+              <div className={`rounded-xl py-2 px-3 border text-xs font-black flex items-center justify-center shrink-0 gap-1.5 whitespace-nowrap overflow-hidden shadow-2xs ${
+                isMultiSubjectClaimed || dailySubjects.length >= 2
+                  ? 'bg-amber-100/90 border-amber-300 text-amber-950'
+                  : 'bg-slate-100/90 border-slate-200 text-slate-700'
+              }`}>
+                <span className="text-xs shrink-0">🌟</span>
+                <span className="font-extrabold truncate">
+                  {isMultiSubjectClaimed
+                    ? 'Bonus Claimed (+75 ⚡)'
+                    : dailySubjects.length === 1
+                    ? '1/2 subjects (play another for +75 ⚡)'
+                    : dailySubjects.length >= 2
+                    ? '2/2 ready to claim!'
+                    : '0/2 subjects (play 2 for +75 ⚡)'}
                 </span>
               </div>
-              <span className="text-xs font-extrabold text-teal-700 bg-white/80 px-2 py-0.5 rounded-full border border-teal-200">
-                +{altitudeEarned}m Altitude
+            </>
+          ) : (
+            /* In Practice Mode: Targeted Practice Completion Card */
+            <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-100 border border-indigo-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex items-center justify-between shadow-xs shrink-0 text-left">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🏋️</span>
+                <div>
+                  <span className="text-xs sm:text-sm font-black text-indigo-950 block">
+                    {practiceTitle}
+                  </span>
+                  <span className="text-[11px] font-bold text-indigo-700">
+                    Streak Protected • Free Hints
+                  </span>
+                </div>
+              </div>
+              <span className="text-xs font-black text-indigo-900 bg-white/90 px-2.5 py-1 rounded-full border border-indigo-200">
+                +10 ⚡ Practice Bonus
               </span>
             </div>
-            <div className="w-full h-2 bg-teal-200/80 rounded-full overflow-hidden border border-teal-300/50">
-              <div
-                className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-500"
-                style={{ width: `${questLevelInfo.progressPct || 0}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Multi-Subject Daily Bonus Status */}
-          <div className={`rounded-xl py-2 px-3 border text-xs font-black flex items-center justify-center shrink-0 gap-1.5 whitespace-nowrap overflow-hidden shadow-2xs ${
-            isMultiSubjectClaimed || dailySubjects.length >= 2
-              ? 'bg-amber-100/90 border-amber-300 text-amber-950'
-              : 'bg-slate-100/90 border-slate-200 text-slate-700'
-          }`}>
-            <span className="text-xs shrink-0">🌟</span>
-            <span className="font-extrabold truncate">
-              {isMultiSubjectClaimed
-                ? 'Bonus Claimed (+75 ⚡)'
-                : dailySubjects.length === 1
-                ? '1/2 subjects (play another for +75 ⚡)'
-                : dailySubjects.length >= 2
-                ? '2/2 ready to claim!'
-                : '0/2 subjects (play 2 for +75 ⚡)'}
-            </span>
-          </div>
+          )}
         </div>
 
         {/* BOTTOM CONTAINER (flex-shrink: 0) */}
         <div className="shrink-0 space-y-2 pt-1 w-full">
           <button
             type="button"
-            onClick={onResumeClimb}
-            className="btn-3d-orange w-full h-14 min-h-[56px] py-3.5 text-base sm:text-lg font-black rounded-xl flex items-center justify-center gap-2 shadow-bouncy-orange active:scale-95 transition-transform"
+            onClick={isPracticeMode && onExitPractice ? onExitPractice : onResumeClimb}
+            className={`w-full h-14 min-h-[56px] py-3.5 text-base sm:text-lg font-black rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform ${
+              isPracticeMode
+                ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg cursor-pointer'
+                : 'btn-3d-orange shadow-bouncy-orange'
+            }`}
           >
-            <Play className="w-5 h-5 fill-white stroke-[2.5]" />
-            Keep Climbing! 🏔️
+            {isPracticeMode ? (
+              <>
+                <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+                Finish Training 🏁
+              </>
+            ) : (
+              <>
+                <Play className="w-5 h-5 fill-white stroke-[2.5]" />
+                Keep Climbing! 🏔️
+              </>
+            )}
           </button>
 
           <button
             type="button"
             onClick={onOpenWorkshop}
-            className="btn-3d-purple w-full h-12 min-h-[48px] py-3 text-xs sm:text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-bouncy-purple active:scale-95 transition-transform"
+            className="btn-3d-purple w-full h-12 min-h-[48px] py-3 text-xs sm:text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-bouncy-purple active:scale-95 transition-transform cursor-pointer"
           >
             <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
             Visit Kibo's Corner 🐾
           </button>
 
           <span className="text-xs sm:text-sm font-bold text-slate-500 block text-center pt-1">
-            Kibo Math by Kibo Climb • Bite-Sized Daily Climbs
+            {isPracticeMode
+              ? 'Training Camp • Targeted Skill Building'
+              : 'Kibo Math by Kibo Climb • Bite-Sized Daily Climbs'}
           </span>
         </div>
       </div>

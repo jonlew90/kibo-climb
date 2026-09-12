@@ -242,7 +242,7 @@ class QuestService {
 
   recordProgress(profileId, event) {
     const state = this.getQuests(profileId);
-    const { subject = 'any', isCorrect = true, streak = 0 } = event;
+    const { subject = 'any', isCorrect = true, streak = 0, isPracticeMode = false } = event;
 
     // Helper to evaluate and advance a quest
     const updateQuest = (q) => {
@@ -325,34 +325,38 @@ class QuestService {
       }
     });
 
-    // 4. Direct Base Altitude XP gain per problem attempt
-    const earnedAltitudeXp = typeof event.earnedXp === 'number' ? event.earnedXp : (isCorrect ? 10 : 2);
-    const previousXp = state.totalXp || 0;
-    const previousLevelInfo = getQuestLevelInfo(previousXp);
-    state.totalXp = previousXp + earnedAltitudeXp;
-    const newLevelInfo = getQuestLevelInfo(state.totalXp);
-    state.levelInfo = newLevelInfo;
-
+    // 4. Direct Base Altitude XP gain per problem attempt (disabled in practice mode)
+    let earnedAltitudeXp = 0;
     let leveledUp = null;
-    if (newLevelInfo.ascentTier > previousLevelInfo.ascentTier) {
-      leveledUp = {
-        isSummit: true,
-        oldTier: previousLevelInfo.ascentTier,
-        newTier: newLevelInfo.ascentTier,
-        oldAscentMode: previousLevelInfo.ascentMode,
-        newAscentMode: newLevelInfo.ascentMode,
-        level: newLevelInfo.level,
-        reward: previousLevelInfo.ascentMode?.summitReward || { sparks: 500, shields: 3 }
-      };
-    } else if (newLevelInfo.level > previousLevelInfo.level) {
-      leveledUp = {
-        isSummit: false,
-        oldLevel: previousLevelInfo.level,
-        newLevel: newLevelInfo.level,
-        ascentTier: newLevelInfo.ascentTier,
-        rank: newLevelInfo,
-        reward: newLevelInfo.reward || newLevelInfo.rank?.reward || { sparks: 50 + newLevelInfo.level * 15 }
-      };
+
+    if (!isPracticeMode) {
+      earnedAltitudeXp = typeof event.earnedXp === 'number' ? event.earnedXp : (isCorrect ? 10 : 2);
+      const previousXp = state.totalXp || 0;
+      const previousLevelInfo = getQuestLevelInfo(previousXp);
+      state.totalXp = previousXp + earnedAltitudeXp;
+      const newLevelInfo = getQuestLevelInfo(state.totalXp);
+      state.levelInfo = newLevelInfo;
+
+      if (newLevelInfo.ascentTier > previousLevelInfo.ascentTier) {
+        leveledUp = {
+          isSummit: true,
+          oldTier: previousLevelInfo.ascentTier,
+          newTier: newLevelInfo.ascentTier,
+          oldAscentMode: previousLevelInfo.ascentMode,
+          newAscentMode: newLevelInfo.ascentMode,
+          level: newLevelInfo.level,
+          reward: previousLevelInfo.ascentMode?.summitReward || { sparks: 500, shields: 3 }
+        };
+      } else if (newLevelInfo.level > previousLevelInfo.level) {
+        leveledUp = {
+          isSummit: false,
+          oldLevel: previousLevelInfo.level,
+          newLevel: newLevelInfo.level,
+          ascentTier: newLevelInfo.ascentTier,
+          rank: newLevelInfo,
+          reward: newLevelInfo.reward || newLevelInfo.rank?.reward || { sparks: 50 + newLevelInfo.level * 15 }
+        };
+      }
     }
 
     this.saveRawState(profileId, state);

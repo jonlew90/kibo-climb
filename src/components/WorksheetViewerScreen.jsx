@@ -24,6 +24,17 @@ export default function WorksheetViewerScreen({
 
   const worksheet = getWorksheetById(worksheetId) || getWorksheetById('math_starter_k2');
 
+  // Reset seed when switching between different worksheets
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const s = params.get('seed');
+      setSeed(s ? Number(s) || s : 0);
+    } else {
+      setSeed(0);
+    }
+  }, [worksheetId]);
+
   const currentPlan = storageService.getSubscriptionPlan();
   const isClubMember = currentPlan?.tier === 'family' || currentPlan?.tier === 'single';
   const isLocked = worksheet?.isKiboClubOnly && !isClubMember;
@@ -110,7 +121,7 @@ export default function WorksheetViewerScreen({
           ) : (
             <>
               <Home className="w-4 h-4 text-teal-600 shrink-0" />
-              <span className="whitespace-nowrap">Kibo Climb Home</span>
+              <span className="whitespace-nowrap">Home</span>
             </>
           )}
         </button>
@@ -145,7 +156,8 @@ export default function WorksheetViewerScreen({
             ) : (
               <>
                 <Copy className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                <span>Copy Link</span>
+                <span className="hidden sm:inline">Copy Link</span>
+                <span className="sm:hidden">Copy</span>
               </>
             )}
           </button>
@@ -167,7 +179,8 @@ export default function WorksheetViewerScreen({
             ) : (
               <>
                 <Printer className="w-3.5 h-3.5" />
-                <span>Print Sheet</span>
+                <span className="hidden sm:inline">Print Sheet</span>
+                <span className="sm:hidden">Print</span>
               </>
             )}
           </button>
@@ -187,10 +200,10 @@ export default function WorksheetViewerScreen({
           <div className="w-full max-w-4xl mb-4 bg-white border border-slate-200 rounded-2xl p-3 shadow-xs no-print flex flex-col sm:flex-row items-center justify-between gap-2.5">
             <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
               <span className="text-[10px] sm:text-xs font-black uppercase text-slate-500 tracking-wider">
-                {worksheet.subject.toUpperCase()} Tiers
+                {worksheet.subject.toUpperCase()} Difficulty
               </span>
-              <span className="text-[10px] sm:text-xs font-extrabold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                Step {currentIndex + 1} of {subjectSheets.length}
+              <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                Tier {currentIndex + 1} of {subjectSheets.length}
               </span>
             </div>
 
@@ -200,15 +213,15 @@ export default function WorksheetViewerScreen({
                   type="button"
                   onClick={() => {
                     soundFx.playKeyTap();
-                    if (onNavigate) onNavigate(`/worksheets/${prevSheet.id}`, 'worksheet_viewer');
+                    if (onNavigate) onNavigate(`/worksheets/${prevSheet.id}`, 'worksheet_viewer', { worksheetId: prevSheet.id });
                   }}
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all text-left flex items-center gap-1.5 cursor-pointer group shrink-0"
+                  className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 hover:border-indigo-300 transition-all text-left flex items-center gap-1.5 cursor-pointer group shrink-0 active:scale-95 shadow-2xs"
                   title={`Go to previous difficulty: ${prevSheet.title}`}
                 >
-                  <ChevronLeft className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-800 shrink-0" />
+                  <ChevronLeft className="w-3.5 h-3.5 text-indigo-600 group-hover:text-indigo-900 shrink-0" />
                   <div className="text-left">
-                    <span className="text-[10px] font-bold text-slate-400 block sm:hidden">Prev</span>
-                    <span className="text-xs font-black text-slate-700 hidden sm:inline truncate max-w-[140px]">{prevSheet.title}</span>
+                    <span className="text-[10px] font-black text-indigo-600 block sm:hidden">Prev</span>
+                    <span className="text-xs font-black text-indigo-900 hidden sm:inline truncate max-w-[140px]">{prevSheet.title}</span>
                   </div>
                 </button>
               ) : (
@@ -222,13 +235,13 @@ export default function WorksheetViewerScreen({
                   type="button"
                   onClick={() => {
                     soundFx.playKeyTap();
-                    if (onNavigate) onNavigate(`/worksheets/${nextSheet.id}`, 'worksheet_viewer');
+                    if (onNavigate) onNavigate(`/worksheets/${nextSheet.id}`, 'worksheet_viewer', { worksheetId: nextSheet.id });
                   }}
-                  className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100 hover:border-indigo-300 transition-all text-right flex items-center gap-1.5 cursor-pointer group shrink-0"
+                  className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 hover:border-indigo-300 transition-all text-right flex items-center gap-1.5 cursor-pointer group shrink-0 active:scale-95 shadow-2xs"
                   title={`Go to next difficulty: ${nextSheet.title}`}
                 >
                   <div className="text-right">
-                    <span className="text-[10px] font-bold text-indigo-500 block sm:hidden">Next</span>
+                    <span className="text-[10px] font-black text-indigo-600 block sm:hidden">Next</span>
                     <span className="text-xs font-black text-indigo-900 hidden sm:inline truncate max-w-[140px]">{nextSheet.title}</span>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-indigo-600 group-hover:text-indigo-900 shrink-0" />

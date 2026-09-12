@@ -363,6 +363,12 @@ export default function App() {
         if (params.highlight !== undefined) setParentDashboardHighlight(params.highlight);
       }
 
+      if (current.id === VIEWS.WORKSHEET_VIEWER || current.id === 'worksheet_viewer') {
+        const pathSlug = current.path ? current.path.replace(/^\/worksheets\/?/, '').trim() : '';
+        const targetSheetId = current.params?.worksheetId || pathSlug;
+        if (targetSheetId) setActiveWorksheetId(targetSheetId);
+      }
+
       if (typeof window !== 'undefined' && window.location.pathname !== current.path) {
         window.history.pushState({}, '', current.path);
       }
@@ -406,14 +412,15 @@ export default function App() {
     applyNavState(nextEntry, stack, baseRoute);
   };
 
-  const handleNavigateTo = (path, stateName) => {
+  const handleNavigateTo = (path, stateName, params = {}) => {
     soundFx.playKeyTap();
     setShowProfileDropdown(false);
     setShowSubjectDropdown(false);
     const entry = navigationHistory.push({
       type: VIEW_TYPES.ROUTE,
       id: stateName || VIEWS.ADAPTIVE_SESSION,
-      path: path || getPathForId(stateName || VIEWS.ADAPTIVE_SESSION)
+      path: path || getPathForId(stateName || VIEWS.ADAPTIVE_SESSION, params),
+      params
     });
     applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
     if (typeof window !== 'undefined') {
@@ -926,6 +933,7 @@ export default function App() {
   }, [sparks]);
 
   const recordDailyPractice = () => {
+    if (activePracticeSession) return;
 
     const todayStr = getTodayStr();
     const uData = storageService.getUserData(activeSubject);
@@ -1067,7 +1075,8 @@ export default function App() {
     );
   };
 
-  const handleIncrementLifetimeProblems = (isCorrect = true) => {
+  const handleIncrementLifetimeProblems = (isCorrect = true, options = {}) => {
+    const isPractice = Boolean(activePracticeSession) || Boolean(options?.isPracticeMode);
     const nextTotal = (totalProblemsSolved || 0) + 1;
     setTotalProblemsSolved(nextTotal);
 
@@ -1089,7 +1098,7 @@ export default function App() {
     let newBaseline = uData.baselineRating;
     let newlyCalibrated = uData.isCalibrated || false;
 
-    if (nextTotal >= 15 && !uData.isCalibrated) {
+    if (nextTotal >= 15 && !uData.isCalibrated && !isPractice) {
       newBaseline = currentRating;
       newlyCalibrated = true;
       extraSparks = 30;
@@ -1100,10 +1109,11 @@ export default function App() {
     const questProg = questService.recordProgress(activeProfileId, {
       subject: activeSubject,
       isCorrect,
-      streak: nextStreak
+      streak: nextStreak,
+      isPracticeMode: isPractice
     });
 
-    if (questProg?.leveledUp) {
+    if (!isPractice && questProg?.leveledUp) {
       soundFx.playVictory?.();
       setGlobalAscentLevelUpEvent(questProg.leveledUp);
     }

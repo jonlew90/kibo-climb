@@ -340,6 +340,7 @@ export default function WordsSessionView({
   }, [isLetterPrunerActive, targetStr, effectiveWordSlots]);
 
   const handleUseLetterSpyglass = () => {
+    if (isPracticeMode) return;
     const owned = consumables?.letterSpyglassCount ?? 0;
     if (owned <= 0) {
       triggerToastBanner({
@@ -394,7 +395,7 @@ export default function WordsSessionView({
   };
 
   const handleUseLetterPruner = () => {
-    if (isLetterPrunerActive) return;
+    if (isPracticeMode || isLetterPrunerActive) return;
     const owned = consumables?.letterPrunerCount ?? 0;
     if (owned <= 0) {
       triggerToastBanner({
@@ -755,6 +756,7 @@ export default function WordsSessionView({
 
   // Ensure new problems generated dynamically when queue gets low (deduplicated across active block)
   const replenishQueueIfNeeded = (nextIndex) => {
+    if (isPracticeMode || isReviewPhase) return;
     if (nextIndex >= problemQueue.length - 3) {
       const nextTier = getTierFromRating(competenceRank);
       const recentWords = storageService.getUserData('words').recentWords || [];
@@ -1018,18 +1020,19 @@ export default function WordsSessionView({
       const nextQuestionsAnswered = questionsAnswered + 1;
       setQuestionsAnswered(nextQuestionsAnswered);
       setSessionQuestionIndex((prev) => prev + 1);
-      if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(true);
+      if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(true, { isPracticeMode });
       setInputVal('');
 
       // Check if primary question block is completed
-      const reachedBlockEnd = nextQuestionsAnswered > 0 && nextQuestionsAnswered % totalBlockQuestions === 0;
+      const reachedBlockEnd = !isReviewPhase && nextQuestionsAnswered > 0 && nextQuestionsAnswered % totalBlockQuestions === 0;
+      const isReviewComplete = isReviewPhase && currentIndex >= problemQueue.length - 1;
 
       if (reachedBlockEnd && missedReviewQueue.length > 0) {
         // Transition into Mistake Review Phase
         setIsReviewPhase(true);
         setProblemQueue((prev) => [...prev, ...missedReviewQueue]);
         setMissedReviewQueue([]);
-      } else if (reachedBlockEnd && missedReviewQueue.length === 0) {
+      } else if ((reachedBlockEnd && missedReviewQueue.length === 0) || isReviewComplete) {
         // Full block + reviews completed: Trigger Kibo Break Overlay
         setIsReviewPhase(false);
         KiboAudioManager.playBreakSFX();
@@ -1058,14 +1061,18 @@ export default function WordsSessionView({
           totalQuestions: totalBlockQuestions,
           sparksEarned: finalBlockSparks,
           accuracyPct: Math.round((finalBlockCorrect / totalBlockQuestions) * 100),
-          ratingGain: nextBlockRatingGain,
-          answers: nextBlockAnswers
+          ratingGain: isPracticeMode ? 0 : nextBlockRatingGain,
+          answers: nextBlockAnswers,
+          isPractice: isPracticeMode
         };
 
+        const existingHistory = activeUserData.sprintHistory || [];
+        const updatedHistory = [newSessionRecord, ...existingHistory];
+
         const currentRecords = activeUserData.personalRecords || {};
-        const isNewSpeedRecord = isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
-        const isNewStreakRecord = evalResult.nextInSessionStreak > (currentRecords.highestCorrectStreak || 0);
-        const updatedRecords = {
+        const isNewSpeedRecord = !isPracticeMode && isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
+        const isNewStreakRecord = !isPracticeMode && evalResult.nextInSessionStreak > (currentRecords.highestCorrectStreak || 0);
+        const updatedRecords = isPracticeMode ? currentRecords : {
           ...currentRecords,
           fastest12QuestionsTime: isNewSpeedRecord ? blockTimeSec : currentRecords.fastest12QuestionsTime,
           highestCorrectStreak: Math.max(currentRecords.highestCorrectStreak || 0, evalResult.nextInSessionStreak),
@@ -1077,7 +1084,7 @@ export default function WordsSessionView({
         setCompletedBlockStats({
           correctCount: finalBlockCorrect,
           sparksEarned: finalBlockSparks,
-          blockRatingGain: nextBlockRatingGain,
+          blockRatingGain: isPracticeMode ? 0 : nextBlockRatingGain,
           shieldsUsed: blockShieldsUsed,
           blockTimeSec,
           isNewSpeedRecord,
@@ -1093,10 +1100,11 @@ export default function WordsSessionView({
 
         storageService.saveUserData({
           sprintHistory: updatedHistory,
-          personalRecords: updatedRecords
+          personalRecords: updatedRecords,
+          ...(isPracticeMode ? {} : { completedClimbsCount: (activeUserData.completedClimbsCount || 0) + 1 })
         }, 'words');
-        if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
-        if (onRecordDailyPractice) onRecordDailyPractice();
+        if (!isPracticeMode && onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
+        if (!isPracticeMode && onRecordDailyPractice) onRecordDailyPractice();
 
         // Immediately evaluate and claim any newly met badges at block completion (e.g. Flawless Ascent, Trailblazer Record, 3rd Perfect Run)
         const postBlockUserData = storageService.getUserData('words');
@@ -1142,6 +1150,9 @@ export default function WordsSessionView({
         setFeedbackBanner(null);
       }, 3500);
     } else {
+      let isShieldAbsorbed = false;
+      let nextBlockRatingGain = blockRatingGain;
+
       if (isPracticeMode) {
         // Training camp is 100% streak-safe: do not drop streak, do not consume shields
         triggerToastBanner({
@@ -1149,7 +1160,6 @@ export default function WordsSessionView({
           text: 'Practice Mode: Streak Protected! 🛡️'
         }, 1500);
       } else {
-        let isShieldAbsorbed = false;
         const ownedShields = (consumables?.shieldCount || 0) + (consumables?.streakSaverCount || 0);
 
         if (ownedShields > 0 && onConsumeShield) {
@@ -1186,7 +1196,7 @@ export default function WordsSessionView({
           setShowFrustrationCard(true);
         }
 
-        const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
+        nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
         setBlockRatingGain(nextBlockRatingGain);
 
         storageService.saveUserData({
@@ -1256,10 +1266,12 @@ export default function WordsSessionView({
     const nextQuestionsAnswered = data.nextQuestionsAnswered;
     setQuestionsAnswered(nextQuestionsAnswered);
     setSessionQuestionIndex((prev) => prev + 1);
-    if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(false);
+    if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(false, { isPracticeMode });
 
     // If questions reached but missed questions remain, transition to review phase
-    const reachedBlockEnd = nextQuestionsAnswered > 0 && nextQuestionsAnswered % totalBlockQuestions === 0;
+    const reachedBlockEnd = !isReviewPhase && nextQuestionsAnswered > 0 && nextQuestionsAnswered % totalBlockQuestions === 0;
+    const isReviewComplete = isReviewPhase && currentIndex >= problemQueue.length - 1;
+
     if (reachedBlockEnd && missedReviewQueue.length > 0) {
       setIsReviewPhase(true);
       setProblemQueue((prev) => [...prev, ...missedReviewQueue]);
@@ -1269,7 +1281,7 @@ export default function WordsSessionView({
       setAcknowledgedGivenIndices(new Set());
       setCurrentIndex(nextIdx);
       problemStartTimeRef.current = performance.now();
-    } else if (data.isBlockComplete) {
+    } else if ((reachedBlockEnd && missedReviewQueue.length === 0) || isReviewComplete) {
       setIsReviewPhase(false);
       KiboAudioManager.playBreakSFX();
       setMascotState('break');
@@ -1297,7 +1309,8 @@ export default function WordsSessionView({
         sparksEarned: finalBlockSparks,
         accuracyPct: Math.round((finalBlockCorrect / totalBlockQuestions) * 100),
         ratingGain: isPracticeMode ? 0 : data.nextBlockRatingGain,
-        answers: data.nextBlockAnswers
+        answers: data.nextBlockAnswers,
+        isPractice: isPracticeMode
       };
 
       const activeUserData = storageService.getUserData('words');
@@ -1307,7 +1320,7 @@ export default function WordsSessionView({
       setCompletedBlockStats({
         correctCount: finalBlockCorrect,
         sparksEarned: finalBlockSparks,
-        blockRatingGain: data.nextBlockRatingGain,
+        blockRatingGain: isPracticeMode ? 0 : data.nextBlockRatingGain,
         shieldsUsed: blockShieldsUsed
       });
 
@@ -1325,10 +1338,11 @@ export default function WordsSessionView({
 
       storageService.saveUserData({
         sprintHistory: updatedHistory,
-        personalRecords: updatedRecords
+        personalRecords: updatedRecords,
+        ...(isPracticeMode ? {} : { completedClimbsCount: (activeUserData.completedClimbsCount || 0) + 1 })
       }, 'words');
-      if (onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
-      if (onRecordDailyPractice) onRecordDailyPractice();
+      if (!isPracticeMode && onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
+      if (!isPracticeMode && onRecordDailyPractice) onRecordDailyPractice();
 
       const postBlockUserData = storageService.getUserData('words');
       const blockBadgeEval = evaluateBadges({
@@ -1549,6 +1563,9 @@ export default function WordsSessionView({
         isNewStreakRecord={completedBlockStats.isNewStreakRecord}
         profileId={profileId}
         activeSubject="words"
+        isPracticeMode={isPracticeMode}
+        practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+        onExitPractice={onExitPractice}
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
           if (isPracticeMode && onExitPractice) {
@@ -1740,6 +1757,14 @@ export default function WordsSessionView({
                         onClick={() => {
                           setShouldPulseHint(false);
                           if (showFrustrationCard) return;
+                          if (isPracticeMode) {
+                            setShowFrustrationCard(true);
+                            triggerToastBanner({
+                              type: 'success',
+                              text: 'Training Clue Unlocked! 💡'
+                            }, 1200);
+                            return;
+                          }
                           const owned = consumables?.hintScrollCount ?? 0;
                           if (owned > 0 && onConsumeHintScroll) {
                             onConsumeHintScroll();
@@ -1761,22 +1786,24 @@ export default function WordsSessionView({
                             ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                             : shouldPulseHint
                             ? 'bg-amber-300 text-amber-950 border-amber-500 animate-pulse ring-2 ring-amber-400 shadow-md scale-105'
-                            : (consumables?.hintScrollCount ?? 0) > 0
+                            : (isPracticeMode || (consumables?.hintScrollCount ?? 0) > 0)
                             ? 'bg-indigo-100 text-indigo-900 border-indigo-300 hover:bg-indigo-200 shadow-2xs'
                             : 'bg-slate-100 text-slate-500 border-dashed border-slate-300 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-400'
                         }`}
                         title={
-                          (consumables?.hintScrollCount ?? 0) > 0
+                          isPracticeMode
+                            ? 'Free Training Clue!'
+                            : (consumables?.hintScrollCount ?? 0) > 0
                             ? 'Use Wisdom Scroll for phonics & word structure clues!'
                             : 'Out of Hint Scrolls • Tap to get in Shop!'
                         }
                       >
                         <ItemThumbnail itemId="hint_scroll" borderless className="w-4 h-4 shrink-0" />
-                        <span>{showFrustrationCard ? 'Active' : (consumables?.hintScrollCount ?? 0) > 0 ? `Clue (${consumables.hintScrollCount})` : 'Clue +'}</span>
+                        <span>{showFrustrationCard ? 'Active' : isPracticeMode ? 'Clue (Free)' : (consumables?.hintScrollCount ?? 0) > 0 ? `Clue (${consumables.hintScrollCount})` : 'Clue +'}</span>
                       </button>
 
-                      {/* LETTER SPYGLASS BUTTON (Only when owned or active) */}
-                      {((consumables?.letterSpyglassCount ?? 0) > 0 || Object.keys(spyglassRevealedSlots).length > 0) && (
+                      {/* LETTER SPYGLASS BUTTON (Only when owned or active, hidden in practice mode) */}
+                      {!isPracticeMode && ((consumables?.letterSpyglassCount ?? 0) > 0 || Object.keys(spyglassRevealedSlots).length > 0) && (
                         <button
                           type="button"
                           onClick={handleUseLetterSpyglass}
@@ -1788,8 +1815,8 @@ export default function WordsSessionView({
                         </button>
                       )}
 
-                      {/* LETTER PRUNER BUTTON (Only when owned or active) */}
-                      {((consumables?.letterPrunerCount ?? 0) > 0 || isLetterPrunerActive) && (
+                      {/* LETTER PRUNER BUTTON (Only when owned or active, hidden in practice mode) */}
+                      {!isPracticeMode && ((consumables?.letterPrunerCount ?? 0) > 0 || isLetterPrunerActive) && (
                         <button
                           type="button"
                           onClick={handleUseLetterPruner}

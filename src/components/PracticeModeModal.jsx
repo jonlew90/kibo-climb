@@ -152,7 +152,7 @@ export default function PracticeModeModal({
       {/* Safety Notice */}
       <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-2 text-xs font-bold text-amber-900">
         <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
-        <span>100% Streak Safe • Zero Rating Penalty • Mistakes are Recycled for Mastery</span>
+        <span>100% Streak Safe • Free Hints • No Power-Ups • Zero Rating Penalty</span>
       </div>
 
       <button

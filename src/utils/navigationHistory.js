@@ -88,6 +88,15 @@ export const normalizeEntry = (entry) => {
   const id = entry?.id || VIEWS.ADAPTIVE_SESSION;
   const isModal = isModalView(id);
   const params = entry?.params ? { ...entry.params } : {};
+
+  // If worksheetId isn't explicitly in params, extract it from the path
+  if ((id === VIEWS.WORKSHEET_VIEWER || id === 'worksheet_viewer') && !params.worksheetId && entry?.path?.startsWith('/worksheets')) {
+    const slug = entry.path.replace(/^\/worksheets\/?/, '').split('?')[0].trim();
+    if (slug) {
+      params.worksheetId = slug;
+    }
+  }
+
   return {
     type: entry?.type || (isModal ? VIEW_TYPES.MODAL : VIEW_TYPES.ROUTE),
     id,
@@ -132,8 +141,12 @@ export class NavigationHistory {
     const normalized = normalizeEntry(entry);
     const current = this.getCurrent();
 
-    // Avoid pushing duplicate consecutive state with identical id and params
-    if (current.id === normalized.id && JSON.stringify(current.params) === JSON.stringify(normalized.params)) {
+    // Avoid pushing duplicate consecutive state with identical id, path, and params
+    if (
+      current.id === normalized.id &&
+      current.path === normalized.path &&
+      JSON.stringify(current.params) === JSON.stringify(normalized.params)
+    ) {
       return current;
     }
 
