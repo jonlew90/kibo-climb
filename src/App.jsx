@@ -760,6 +760,7 @@ export default function App() {
   const [isBossMode, setIsBossMode] = useState(false);
   const [isPlacementTest, setIsPlacementTest] = useState(false);
   const [isPracticeModeOpen, setIsPracticeModeOpen] = useState(false);
+  const [activePracticeSession, setActivePracticeSession] = useState(null);
   const [activeWorksheetId, setActiveWorksheetId] = useState('math_starter_k2');
   const [placementResultInfo, setPlacementResultInfo] = useState(null);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
@@ -3202,6 +3203,8 @@ export default function App() {
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
           onClimbActiveChange={setIsClimbActive}
           onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
+          practiceConfig={activePracticeSession?.subject === 'math' ? activePracticeSession : null}
+          onExitPractice={() => setActivePracticeSession(null)}
         />
       )}
 
@@ -3246,6 +3249,8 @@ export default function App() {
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
           onClimbActiveChange={setIsClimbActive}
           onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
+          practiceConfig={activePracticeSession?.subject === 'words' ? activePracticeSession : null}
+          onExitPractice={() => setActivePracticeSession(null)}
         />
       )}
 
@@ -3290,6 +3295,8 @@ export default function App() {
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
           onClimbActiveChange={setIsClimbActive}
           onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
+          practiceConfig={activePracticeSession?.subject === 'world' ? activePracticeSession : null}
+          onExitPractice={() => setActivePracticeSession(null)}
         />
       )}
 
@@ -3333,6 +3340,8 @@ export default function App() {
           onOpenWorkshop={() => handleOpenWorkshop('adaptive_session')}
           onClimbActiveChange={setIsClimbActive}
           onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
+          practiceConfig={activePracticeSession?.subject === 'coding' ? activePracticeSession : null}
+          onExitPractice={() => setActivePracticeSession(null)}
         />
       )}
 
@@ -3627,10 +3636,14 @@ export default function App() {
         isOpen={isPracticeModeOpen}
         onClose={() => setIsPracticeModeOpen(false)}
         activeSubject={activeSubject}
-        onAwardPracticeSparks={(amt) => {
-          const updated = (sparks || 0) + amt;
-          setSparks(updated);
-          storageService.saveUserData({ sparks: updated }, activeSubject);
+        userTier={tier}
+        onStartPracticeSession={(config) => {
+          if (config.subject && config.subject !== activeSubject) {
+            setActiveSubject(config.subject);
+          }
+          setActivePracticeSession(config);
+          setAppState('adaptive_session');
+          setIsPracticeModeOpen(false);
         }}
       />
 

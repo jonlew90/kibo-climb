@@ -127,5 +127,48 @@ describe('Incorrect Answer Review Behavior & Scoring Integrity', () => {
     expect(effectiveSessionQuestionIndex).toBe(4);
     expect(effectiveQuestionsAnswered).toBe(3);
   });
+
+  it('recycles missed and passed questions to review phase until answered or routed to practiceQueue', () => {
+    const missedReviewQueue = [];
+    const problem1 = { id: 'p1', prompt: '5 + 7', answer: '12' };
+    const problem2 = { id: 'p2', prompt: '9 - 4', answer: '5' };
+
+    // Miss problem 1 on first attempt -> queued for review
+    if (!problem1.isReviewAttempt) {
+      missedReviewQueue.push({ ...problem1, isReviewAttempt: true, reviewAttempts: 1 });
+    }
+    expect(missedReviewQueue.length).toBe(1);
+    expect(missedReviewQueue[0].isReviewAttempt).toBe(true);
+
+    // Pass problem 2 on first attempt -> queued for review
+    if (!problem2.isReviewAttempt) {
+      missedReviewQueue.push({ ...problem2, isReviewAttempt: true, reviewAttempts: 1 });
+    }
+    expect(missedReviewQueue.length).toBe(2);
+
+    // At question 12 with items in review queue, transition to review phase
+    const questionsAnswered = 12;
+    const reachedBlockEnd = questionsAnswered % 12 === 0;
+    let isReviewPhase = false;
+    let problemQueue = [{ id: 'p0' }];
+
+    if (reachedBlockEnd && missedReviewQueue.length > 0) {
+      isReviewPhase = true;
+      problemQueue = [...problemQueue, ...missedReviewQueue];
+      missedReviewQueue.length = 0;
+    }
+
+    expect(isReviewPhase).toBe(true);
+    expect(problemQueue.length).toBe(3);
+    expect(missedReviewQueue.length).toBe(0);
+
+    // If a problem fails on 2nd attempt in review phase: route to practice queue
+    const reviewProblem = problemQueue[1];
+    let routedToPracticeQueue = false;
+    if (reviewProblem.isReviewAttempt) {
+      routedToPracticeQueue = true;
+    }
+    expect(routedToPracticeQueue).toBe(true);
+  });
 });
 

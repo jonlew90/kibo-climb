@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Cloud Functions build artifacts
+functions/lib/
+functions/node_modules/
+
+# Common build outputs and caches
+dist/
+build/
+.next/
+*.log
+.firebase/

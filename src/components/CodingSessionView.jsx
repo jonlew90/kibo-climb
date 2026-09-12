@@ -49,7 +49,9 @@ export default function CodingSessionView({
   onConsumeShield,
   onResetDoubleSparks,
   onClimbActiveChange,
-  onOpenPracticeMode
+  onOpenPracticeMode,
+  practiceConfig = null,
+  onExitPractice
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     const data = storageService.getUserData('coding');
@@ -161,8 +163,14 @@ export default function CodingSessionView({
   const activeTier = getTierFromRating(competenceRank);
   const streakConfig = getStreakTierConfig(streak);
 
+  const isPracticeMode = Boolean(practiceConfig);
+  const practiceSprintLength = practiceConfig?.sprintLength || 12;
+
   // Session & Question Queues
   const [problemQueue, setProblemQueue] = useState(() => {
+    if (practiceConfig) {
+      return generateProblems(practiceSprintLength, practiceConfig.tier);
+    }
     const saved = storageService.getActiveClimbState(profileId, 'coding');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isCodingProblem)) {
       return saved.problemQueue;
@@ -172,7 +180,39 @@ export default function CodingSessionView({
     }
     return generateProblems(15, activeTier);
   });
+
+  // When practiceConfig changes, configure problemQueue and start climb automatically
+  useEffect(() => {
+    if (practiceConfig) {
+      const batch = generateProblems(practiceSprintLength, practiceConfig.tier);
+      setProblemQueue(batch);
+      setCurrentProblemIndex(0);
+      setSessionQuestionIndex(1);
+      setQuestionsAnswered(0);
+      setSessionAnswers([]);
+      setMissedReviewQueue([]);
+      setIsReviewPhase(false);
+      setBlockCorrectCount(0);
+      setBlockSparksEarned(0);
+      setBlockRatingGain(0);
+      setBlockShieldsUsed(0);
+      setEliminatedOptions([]);
+      setRevealedHint(null);
+      setIsClueActive(false);
+      setProblemStartTime(Date.now());
+      setHasStartedClimb(true);
+    }
+  }, [practiceConfig]);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
+  const [showPracticeExitConfirm, setShowPracticeExitConfirm] = useState(false);
+  const [missedReviewQueue, setMissedReviewQueue] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'coding');
+    return saved?.missedReviewQueue || [];
+  });
+  const [isReviewPhase, setIsReviewPhase] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'coding');
+    return Boolean(saved?.isReviewPhase);
+  });
   const [eliminatedOptions, setEliminatedOptions] = useState(() => {
     const saved = storageService.getActiveClimbState(profileId, 'coding');
     return saved?.eliminatedOptions || [];
@@ -202,6 +242,7 @@ export default function CodingSessionView({
   const [sessionAnswers, setSessionAnswers] = useState([]);
 
   const saveCurrentClimbProgress = () => {
+    if (isPracticeMode) return;
     const climbState = {
       subject: 'coding',
       problemQueue,
@@ -216,6 +257,8 @@ export default function CodingSessionView({
       mistakeCount,
       competenceRank,
       sessionAnswers,
+      missedReviewQueue,
+      isReviewPhase,
       eliminatedOptions,
       isLetterPrunerActive: Boolean(eliminatedOptions && eliminatedOptions.length > 0),
       revealedHint,
@@ -240,6 +283,8 @@ export default function CodingSessionView({
     setBlockRatingGain(0);
     setBlockShieldsUsed(0);
     setMistakeCount(0);
+    setMissedReviewQueue([]);
+    setIsReviewPhase(false);
     setCurrentProblemIndex(0);
     setEliminatedOptions([]);
     setRevealedHint(null);
@@ -268,10 +313,14 @@ export default function CodingSessionView({
       setMistakeCount(saved.mistakeCount || 0);
       setCompetenceRank(saved.competenceRank || 1000);
       setSessionAnswers(saved.sessionAnswers || []);
+      if (Array.isArray(saved.missedReviewQueue)) setMissedReviewQueue(saved.missedReviewQueue);
+      setIsReviewPhase(Boolean(saved.isReviewPhase));
       setEliminatedOptions(saved.eliminatedOptions || []);
       setRevealedHint(saved.revealedHint || null);
       setIsClueActive(Boolean(saved.isClueActive));
     } else {
+      setMissedReviewQueue([]);
+      setIsReviewPhase(false);
       setEliminatedOptions([]);
       setRevealedHint(null);
       setIsClueActive(false);
@@ -282,8 +331,24 @@ export default function CodingSessionView({
 
   const handleExitOrPauseClimb = () => {
     soundFx.playKeyTap();
+    if (isPracticeMode) {
+      if (questionsAnswered > 0) {
+        setShowPracticeExitConfirm(true);
+        return;
+      }
+      setHasStartedClimb(false);
+      if (onExitPractice) onExitPractice();
+      return;
+    }
     saveCurrentClimbProgress();
     setHasStartedClimb(false);
+  };
+
+  const handleConfirmExitPractice = () => {
+    soundFx.playKeyTap();
+    setShowPracticeExitConfirm(false);
+    setHasStartedClimb(false);
+    if (onExitPractice) onExitPractice();
   };
 
   // Window unload / unmount saving & auto-pause
@@ -347,14 +412,16 @@ export default function CodingSessionView({
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden || !document.hasFocus()) {
-        if (hasStartedClimb) {
+        if (hasStartedClimb && !isPracticeMode) {
           saveCurrentClimbProgress();
           setHasStartedClimb(false);
           setIsAutoPaused(true);
         }
       } else {
-        const saved = storageService.getActiveClimbState(profileId, 'coding');
-        setSavedClimbState(saved);
+        if (!isPracticeMode) {
+          const saved = storageService.getActiveClimbState(profileId, 'coding');
+          setSavedClimbState(saved);
+        }
       }
     };
 
@@ -432,7 +499,9 @@ export default function CodingSessionView({
     const earnedSparks = isDoubleSparksActive ? evalResult.totalSparksEarned * 2 : evalResult.totalSparksEarned;
 
     // Update state
-    setCompetenceRank(nextRating);
+    if (!isPracticeMode) {
+      setCompetenceRank(nextRating);
+    }
     setQuestionsAnswered(prev => prev + 1);
     setSessionQuestionIndex(prev => prev + 1);
 
@@ -441,12 +510,20 @@ export default function CodingSessionView({
       setBlockCorrectCount(prev => prev + 1);
       setMistakeCount(0);
     } else {
-      setMistakeCount(prev => prev + 1);
+      if (!isPracticeMode) {
+        setMistakeCount(prev => prev + 1);
+      }
+      if (!currentProblem.isReviewAttempt) {
+        setMissedReviewQueue((prev) => [...prev, { ...currentProblem, isReviewAttempt: true, reviewAttempts: 1 }]);
+      } else {
+        storageService.addToPracticeQueue(currentProblem, 'coding');
+      }
     }
 
     setBlockSparksEarned(prev => prev + earnedSparks);
     setSessionSparksEarned(prev => prev + earnedSparks);
-    setBlockRatingGain(prev => prev + evalResult.rankDelta);
+    const effectiveRankDelta = isPracticeMode ? 0 : evalResult.rankDelta;
+    setBlockRatingGain(prev => prev + effectiveRankDelta);
 
     // Callbacks to parent App
     if (earnedSparks > 0 && onAwardSparks) {
@@ -455,11 +532,9 @@ export default function CodingSessionView({
     if (onIncrementLifetimeProblems) {
       onIncrementLifetimeProblems(isCorrect);
     }
-    if (onUpdateCompetenceRating) {
+    if (!isPracticeMode && onUpdateCompetenceRating) {
       onUpdateCompetenceRating(nextRating);
     }
-
-
 
     // Record answer in session history
     const record = {
@@ -478,15 +553,39 @@ export default function CodingSessionView({
     // Save climb state
     const nextIndex = currentProblemIndex + 1;
     const nextSessionQNum = sessionQuestionIndex + 1;
-    if (nextSessionQNum > 12 || nextIndex >= problemQueue.length) {
+
+    // Check if primary questions reached
+    const totalBlockQuestions = isPracticeMode ? practiceSprintLength : 12;
+    const reachedBlockEnd = nextSessionQNum > totalBlockQuestions;
+
+    // Duolingo mistake recycling review transition
+    const effectiveReviewQueue = !isCorrect && !currentProblem.isReviewAttempt
+      ? [...missedReviewQueue, { ...currentProblem, isReviewAttempt: true, reviewAttempts: 1 }]
+      : missedReviewQueue;
+
+    if (reachedBlockEnd && effectiveReviewQueue.length > 0) {
+      setIsReviewPhase(true);
+      setProblemQueue((prev) => [...prev, ...effectiveReviewQueue]);
+      setMissedReviewQueue([]);
+      setCurrentProblemIndex(nextIndex);
+      setEliminatedOptions([]);
+      setRevealedHint(null);
+      setIsClueActive(false);
+      setProblemStartTime(Date.now());
+    } else if (reachedBlockEnd || nextIndex >= problemQueue.length) {
+      setIsReviewPhase(false);
       storageService.clearActiveClimbState(profileId, 'coding');
       setSavedClimbState(null);
       analyticsService.logLevelUp('coding', blockCorrectCount + (isCorrect ? 1 : 0));
+      const practiceBonus = isPracticeMode ? 10 : 0;
+      if (practiceBonus > 0 && onAwardSparks) {
+        onAwardSparks(practiceBonus);
+      }
       // Trigger Break Overlay
       setCompletedBlockStats({
         correctCount: blockCorrectCount + (isCorrect ? 1 : 0),
-        sparksEarned: blockSparksEarned + earnedSparks,
-        blockRatingGain: blockRatingGain + evalResult.rankDelta,
+        sparksEarned: blockSparksEarned + earnedSparks + practiceBonus,
+        blockRatingGain: isPracticeMode ? 0 : (blockRatingGain + evalResult.rankDelta),
         shieldsUsed: blockShieldsUsed
       });
       setShowBreakOverlay(true);
@@ -511,7 +610,9 @@ export default function CodingSessionView({
         blockRatingGain: blockRatingGain + evalResult.rankDelta,
         mistakeCount: isCorrect ? 0 : mistakeCount + 1,
         competenceRank: nextRating,
-        sessionAnswers: nextAnswers
+        sessionAnswers: nextAnswers,
+        missedReviewQueue: effectiveReviewQueue,
+        isReviewPhase
       };
       storageService.saveActiveClimbState(climbState, profileId, 'coding');
       setSavedClimbState(climbState);
@@ -672,10 +773,11 @@ export default function CodingSessionView({
   };
 
   if (showBreakOverlay) {
+    const totalBlockQuestions = isPracticeMode ? practiceSprintLength : 12;
     return (
       <KiboBreakOverlay
         correctCount={completedBlockStats.correctCount}
-        totalCount={12}
+        totalCount={totalBlockQuestions}
         streak={streak}
         sparksEarned={completedBlockStats.sparksEarned}
         blockRatingGain={completedBlockStats.blockRatingGain}
@@ -689,6 +791,10 @@ export default function CodingSessionView({
         activeSubject="coding"
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
+          if (isPracticeMode && onExitPractice) {
+            onExitPractice();
+            return;
+          }
           if (onResetDoubleSparks) onResetDoubleSparks();
           storageService.clearActiveClimbState(profileId, 'coding');
           setSavedClimbState(null);
@@ -708,10 +814,20 @@ export default function CodingSessionView({
           setCurrentProblemIndex(0);
           if (onOpenWorkshop) onOpenWorkshop();
         }}
-        onResumeClimb={handleContinueClimb}
+        onResumeClimb={() => {
+          if (isPracticeMode && onExitPractice) {
+            setShowBreakOverlay(false);
+            onExitPractice();
+            return;
+          }
+          handleContinueClimb();
+        }}
       />
     );
   }
+
+  const totalBlockQuestions = isPracticeMode ? practiceSprintLength : 12;
+  const currentQuestionNum = ((sessionQuestionIndex - 1) % totalBlockQuestions) + 1;
 
   return (
     <div className="w-full h-full flex-1 min-h-0 relative overflow-visible animate-pop flex flex-col">
@@ -728,7 +844,11 @@ export default function CodingSessionView({
         {/* DUOLINGO-STYLE CLIMB FOCUS TOP BAR (Active during climb) */}
         {hasStartedClimb && (
           <ClimbHeader
-            currentQuestionNum={sessionQuestionIndex}
+            currentQuestionNum={currentQuestionNum}
+            totalQuestions={totalBlockQuestions}
+            isReviewPhase={isReviewPhase}
+            isPracticeMode={isPracticeMode}
+            practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
             inSessionStreak={streak}
             consumables={consumables}
             onExitOrPause={handleExitOrPauseClimb}
@@ -745,11 +865,12 @@ export default function CodingSessionView({
           mascotState={mascotState}
         />
 
-        {/* DEDICATED CHALLENGE BANNER (Concept Drill / 2x Sparks) */}
+        {/* DEDICATED CHALLENGE BANNER (Concept Drill / 2x Sparks / Practice) */}
         {hasStartedClimb && currentProblem && (
           <ChallengeBanner
             concept={currentProblem.concept || 'Logic Drill'}
             isDoubleSparks={Boolean(isDoubleSparksActive)}
+            isPracticeMode={isPracticeMode}
           />
         )}
 
@@ -909,6 +1030,39 @@ export default function CodingSessionView({
             rawProblem: currentProblem
           }}
         />
+
+        {/* TRAINING CAMP EXIT CONFIRMATION MODAL */}
+        {showPracticeExitConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
+            <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full shadow-2xl border-4 border-amber-200 text-center space-y-4 animate-scale-up">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-100 flex items-center justify-center text-3xl shadow-inner">
+                🏕️
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-slate-800">Leave Practice?</h3>
+                <p className="text-sm font-medium text-slate-600 mt-1.5 leading-relaxed">
+                  Your current practice progress will be reset.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPracticeExitConfirm(false)}
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-sm shadow-md hover:from-emerald-600 hover:to-teal-700 active:scale-98 transition-all cursor-pointer"
+                >
+                  Keep Practicing
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmExitPractice}
+                  className="w-full py-2.5 px-4 rounded-xl bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Exit Camp
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

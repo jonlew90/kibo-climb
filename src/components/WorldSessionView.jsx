@@ -69,7 +69,9 @@ export default function WorldSessionView({
   onConsumeShield,
   onResetDoubleSparks,
   onClimbActiveChange,
-  onOpenPracticeMode
+  onOpenPracticeMode,
+  practiceConfig = null,
+  onExitPractice
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     return storageService.getUserData('world').adaptiveCompetenceRating || storageService.getUserData('world').competenceRank || 1000;
@@ -206,8 +208,17 @@ export default function WorldSessionView({
     }
   }, [profileId]);
 
-  // Generate adaptive problem queue for active tier based on competence rating
+  const isPracticeMode = Boolean(practiceConfig);
+  const practiceSprintLength = practiceConfig?.sprintLength || 12;
+
+  // Generate adaptive problem queue for active tier based on competence rating (or practiceConfig)
   const [problemQueue, setProblemQueue] = useState(() => {
+    if (practiceConfig) {
+      const seen = new Set();
+      const batch = generateProblems(practiceSprintLength, practiceConfig.tier, [], seen);
+      blockSeenKeysRef.current = seen;
+      return batch;
+    }
     const saved = storageService.getActiveClimbState(profileId, 'world');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWorldProblem)) {
       const seen = new Set();
@@ -231,10 +242,45 @@ export default function WorldSessionView({
     blockSeenKeysRef.current = seen;
     return batch;
   });
+
+  // When practiceConfig changes, configure problemQueue and start climb automatically
+  useEffect(() => {
+    if (practiceConfig) {
+      const seen = new Set();
+      const batch = generateProblems(practiceSprintLength, practiceConfig.tier, [], seen);
+      blockSeenKeysRef.current = seen;
+      setProblemQueue(batch);
+      setCurrentIndex(0);
+      setSessionQuestionIndex(1);
+      setQuestionsAnswered(0);
+      setBlockAnswers([]);
+      setMissedReviewQueue([]);
+      setIsReviewPhase(false);
+      setBlockCorrectCount(0);
+      setBlockSparksEarned(0);
+      setBlockRatingGain(0);
+      setBlockShieldsUsed(0);
+      setInSessionStreak(0);
+      setInSessionIncorrectStreak(0);
+      setConsecutiveSkips(0);
+      setHasStartedClimb(true);
+      blockStartTimeRef.current = performance.now();
+      problemStartTimeRef.current = performance.now();
+    }
+  }, [practiceConfig]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showPracticeExitConfirm, setShowPracticeExitConfirm] = useState(false);
   const [blockAnswers, setBlockAnswers] = useState(() => {
     const saved = storageService.getActiveClimbState(profileId, 'world');
     return saved?.blockAnswers || [];
+  });
+  const [missedReviewQueue, setMissedReviewQueue] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'world');
+    return saved?.missedReviewQueue || [];
+  });
+  const [isReviewPhase, setIsReviewPhase] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'world');
+    return Boolean(saved?.isReviewPhase);
   });
   const [shouldPulseHint, setShouldPulseHint] = useState(false);
   const [highlightedGivenIndex, setHighlightedGivenIndex] = useState(null);
@@ -426,6 +472,7 @@ export default function WorldSessionView({
   };
 
   const saveCurrentClimbProgress = () => {
+    if (isPracticeMode) return;
     if (!hasStartedClimb || showBreakOverlay) return;
     if (sessionQuestionIndex > 12 || (questionsAnswered > 0 && questionsAnswered % 12 === 0)) return;
 
@@ -468,6 +515,8 @@ export default function WorldSessionView({
       consecutiveSkips,
       competenceRank,
       blockAnswers: effectiveBlockAnswers,
+      missedReviewQueue,
+      isReviewPhase,
       accumulatedBlockTime,
       accumulatedProblemTime,
       isDoubleSparksActive,
@@ -490,6 +539,8 @@ export default function WorldSessionView({
     storageService.clearActiveClimbState(profileId, 'world');
     setSavedClimbState(null);
     setBlockAnswers([]);
+    setMissedReviewQueue([]);
+    setIsReviewPhase(false);
     setIsLetterPrunerActive(false);
     setPrunedOptions(new Set());
     setShowHintCard(false);
@@ -500,8 +551,24 @@ export default function WorldSessionView({
 
   const handleExitOrPauseClimb = () => {
     soundFx.playKeyTap();
+    if (isPracticeMode) {
+      if (questionsAnswered > 0) {
+        setShowPracticeExitConfirm(true);
+        return;
+      }
+      setHasStartedClimb(false);
+      if (onExitPractice) onExitPractice();
+      return;
+    }
     saveCurrentClimbProgress();
     setHasStartedClimb(false);
+  };
+
+  const handleConfirmExitPractice = () => {
+    soundFx.playKeyTap();
+    setShowPracticeExitConfirm(false);
+    setHasStartedClimb(false);
+    if (onExitPractice) onExitPractice();
   };
 
   const handleResumeClimb = () => {
@@ -532,6 +599,8 @@ export default function WorldSessionView({
       setConsecutiveSkips(saved.consecutiveSkips || 0);
       if (saved.competenceRank) setCompetenceRank(saved.competenceRank);
       if (Array.isArray(saved.blockAnswers)) setBlockAnswers(saved.blockAnswers);
+      if (Array.isArray(saved.missedReviewQueue)) setMissedReviewQueue(saved.missedReviewQueue);
+      setIsReviewPhase(Boolean(saved.isReviewPhase));
 
       setIsLetterPrunerActive(Boolean(saved.isLetterPrunerActive));
       setPrunedOptions(saved.prunedOptions ? new Set(saved.prunedOptions) : new Set());
@@ -557,9 +626,9 @@ export default function WorldSessionView({
     setHasStartedClimb(true);
   };
 
-  // Inactivity auto-pause mid-climb
+  // Inactivity auto-pause mid-climb (ranked sessions only)
   useInactivityAutoPause({
-    isActive: hasStartedClimb && !isPaused && !showBreakOverlay,
+    isActive: hasStartedClimb && !isPracticeMode && !isPaused && !showBreakOverlay,
     timeoutMs: 60000,
     onAutoPause: () => {
       if (hasStartedClimb) {
@@ -668,13 +737,15 @@ export default function WorldSessionView({
         if (!pauseStartRef.current) {
           pauseStartRef.current = performance.now();
         }
-        if (hasStartedClimb) {
+        if (hasStartedClimb && !isPracticeMode) {
           saveCurrentClimbProgress();
           setHasStartedClimb(false);
         }
       } else {
-        const saved = storageService.getActiveClimbState(profileId, 'world');
-        setSavedClimbState(saved);
+        if (!isPracticeMode) {
+          const saved = storageService.getActiveClimbState(profileId, 'world');
+          setSavedClimbState(saved);
+        }
         if (pauseStartRef.current && !isPaused) {
           const pauseDuration = performance.now() - pauseStartRef.current;
           if (problemStartTimeRef.current !== null && problemStartTimeRef.current !== 0) {
@@ -804,17 +875,19 @@ export default function WorldSessionView({
       problemTier: currentProblem.tier || getTierFromRating(competenceRank)
     });
 
-    setInSessionStreak(0);
-    setCompetenceRank(evalResult.nextCompetenceRank);
-    if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
+    if (!isPracticeMode) {
+      setInSessionStreak(0);
+      setCompetenceRank(evalResult.nextCompetenceRank);
+      if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
 
-    const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
-    setBlockRatingGain(nextBlockRatingGain);
+      const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
+      setBlockRatingGain(nextBlockRatingGain);
 
-    storageService.saveUserData({
-      adaptiveCompetenceRating: evalResult.nextCompetenceRank,
-      competenceRank: evalResult.nextCompetenceRank
-    }, 'world');
+      storageService.saveUserData({
+        adaptiveCompetenceRating: evalResult.nextCompetenceRank,
+        competenceRank: evalResult.nextCompetenceRank
+      }, 'world');
+    }
 
     const answerRecord = {
       problemId: currentProblem.id || `prob_${currentIndex}`,
@@ -831,6 +904,10 @@ export default function WorldSessionView({
       type: 'success',
       text: 'Trying another problem 🔄'
     }, 1100);
+
+    if (!currentProblem.isReviewAttempt) {
+      setMissedReviewQueue((prev) => [...prev, { ...currentProblem, isReviewAttempt: true, reviewAttempts: 1 }]);
+    }
 
     const nextQuestionsAnswered = questionsAnswered + 1;
     setQuestionsAnswered(nextQuestionsAnswered);
@@ -904,12 +981,14 @@ export default function WorldSessionView({
       setBlockSparksEarned((prev) => prev + blockEarned);
       if (onAwardSparks) onAwardSparks(blockEarned);
 
-      setCompetenceRank(evalResult.nextCompetenceRank);
-      if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
+      if (!isPracticeMode) {
+        setCompetenceRank(evalResult.nextCompetenceRank);
+        if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
+      }
       setShowFrustrationCard(false);
 
       // Rapid initial calibration: inject Probe Challenge during Provisional Phase (<15 solved) on 3+ streak
-      if (shouldTriggerProbeQuestion({ totalProblemsSolved: totalProblemsSolved + 1, inSessionStreak: evalResult.nextInSessionStreak })) {
+      if (!isPracticeMode && shouldTriggerProbeQuestion({ totalProblemsSolved: totalProblemsSolved + 1, inSessionStreak: evalResult.nextInSessionStreak })) {
         const curTier = getTierFromRating(evalResult.nextCompetenceRank);
         const probeTier = getProbeTargetTier(curTier);
         const recentWords = storageService.getUserData('world').recentWords || [];
@@ -936,24 +1015,26 @@ export default function WorldSessionView({
         });
       }
 
-      const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
-      setBlockRatingGain(nextBlockRatingGain);
+      const nextBlockRatingGain = isPracticeMode ? 0 : (blockRatingGain + evalResult.rankDelta);
+      if (!isPracticeMode) {
+        setBlockRatingGain(nextBlockRatingGain);
 
-      const activeWord = (normTargetAns || '').toString().toLowerCase();
-      const existingRecent = storageService.getUserData('world').recentWords || [];
-      const updatedRecent = activeWord ? [activeWord, ...existingRecent.filter(w => w !== activeWord)].slice(0, 60) : existingRecent;
+        const activeWord = (normTargetAns || '').toString().toLowerCase();
+        const existingRecent = storageService.getUserData('world').recentWords || [];
+        const updatedRecent = activeWord ? [activeWord, ...existingRecent.filter(w => w !== activeWord)].slice(0, 60) : existingRecent;
 
-      const isCapitalQuestion = ['state_capital', 'country_capital', 'capital_state', 'capital_country', 'tricky_capital'].includes(currentProblem.type) ||
-        currentProblem.concept?.includes('Capitals');
-      const prevCapitalSolved = Number(storageService.getUserData('world').capitalQuestionsSolved) || 0;
-      const nextCapitalSolved = isCapitalQuestion ? prevCapitalSolved + 1 : prevCapitalSolved;
+        const isCapitalQuestion = ['state_capital', 'country_capital', 'capital_state', 'capital_country', 'tricky_capital'].includes(currentProblem.type) ||
+          currentProblem.concept?.includes('Capitals');
+        const prevCapitalSolved = Number(storageService.getUserData('world').capitalQuestionsSolved) || 0;
+        const nextCapitalSolved = isCapitalQuestion ? prevCapitalSolved + 1 : prevCapitalSolved;
 
-      storageService.saveUserData({
-        adaptiveCompetenceRating: evalResult.nextCompetenceRank,
-        competenceRank: evalResult.nextCompetenceRank,
-        recentWords: updatedRecent,
-        ...(isCapitalQuestion ? { capitalQuestionsSolved: nextCapitalSolved } : {})
-      }, 'world');
+        storageService.saveUserData({
+          adaptiveCompetenceRating: evalResult.nextCompetenceRank,
+          competenceRank: evalResult.nextCompetenceRank,
+          recentWords: updatedRecent,
+          ...(isCapitalQuestion ? { capitalQuestionsSolved: nextCapitalSolved } : {})
+        }, 'world');
+      }
 
       const activeUserData = storageService.getUserData('world');
       const badgeEvalRes = evaluateBadges({
@@ -964,15 +1045,15 @@ export default function WorldSessionView({
         blockRatingGain: nextBlockRatingGain,
         lastProblemType: currentProblem.type,
         lastProblemTier: currentProblem.tier || getTierFromRating(evalResult.nextCompetenceRank),
-        capitalQuestionsSolved: nextCapitalSolved
+        capitalQuestionsSolved: activeUserData.capitalQuestionsSolved
       });
 
-      if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
+      if (!isPracticeMode && badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
         onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
       }
 
       // --- CELEBRATION REWARDS (ONLY FOR NEW BADGE UNLOCKS TO PREVENT POPUP FATIGUE) ---
-      if (badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
+      if (!isPracticeMode && badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
         const priorityOrder = [
           'world_summit_master', 'hemisphere_voyager', 'country_diplomat',
           'state_cartographer', 'continent_navigator',
@@ -1015,8 +1096,17 @@ export default function WorldSessionView({
       if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(true);
       setInputVal('');
 
-      // Trigger Kibo Break Overlay every 12 problems solved & record personal bests
-      if (nextQuestionsAnswered > 0 && nextQuestionsAnswered % 12 === 0) {
+      // Check if primary question block is completed
+      const reachedBlockEnd = nextQuestionsAnswered > 0 && nextQuestionsAnswered % totalBlockQuestions === 0;
+
+      if (reachedBlockEnd && missedReviewQueue.length > 0) {
+        // Transition into Mistake Review Phase
+        setIsReviewPhase(true);
+        setProblemQueue((prev) => [...prev, ...missedReviewQueue]);
+        setMissedReviewQueue([]);
+      } else if (reachedBlockEnd && missedReviewQueue.length === 0) {
+        // Full block + reviews completed: Trigger Kibo Break Overlay
+        setIsReviewPhase(false);
         KiboAudioManager.playBreakSFX();
         setMascotState('break');
         setShowBreakOverlay(true);
@@ -1025,9 +1115,12 @@ export default function WorldSessionView({
         setSavedClimbState(null);
 
         const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
-        const finalBlockCorrect = Math.min(12, blockCorrectCount + 1);
-        const finalBlockSparks = blockSparksEarned + blockEarned;
-        const isPerfectBlock = finalBlockCorrect === 12;
+        const finalBlockCorrect = Math.min(totalBlockQuestions, blockCorrectCount + 1);
+        const finalBlockSparks = isPracticeMode ? (blockSparksEarned + blockEarned + 10) : (blockSparksEarned + blockEarned);
+        if (isPracticeMode && onAwardSparks) {
+          onAwardSparks(10);
+        }
+        const isPerfectBlock = finalBlockCorrect === totalBlockQuestions;
 
         // RECORD COMPLETED CLIMB BLOCK INTO SPRINT HISTORY FOR ACCURATE PRACTICE TIME TRACKING
         const newSessionRecord = {
@@ -1037,9 +1130,9 @@ export default function WorldSessionView({
           tier: getTierFromRating(evalResult.nextCompetenceRank),
           totalTimeSec: blockTimeSec,
           correctCount: finalBlockCorrect,
-          totalQuestions: 12,
+          totalQuestions: totalBlockQuestions,
           sparksEarned: finalBlockSparks,
-          accuracyPct: Math.round((finalBlockCorrect / 12) * 100),
+          accuracyPct: Math.round((finalBlockCorrect / totalBlockQuestions) * 100),
           ratingGain: nextBlockRatingGain,
           answers: nextBlockAnswers
         };
@@ -1124,81 +1217,97 @@ export default function WorldSessionView({
         setFeedbackBanner(null);
       }, 3500);
     } else {
-      let isShieldAbsorbed = false;
-      const ownedShields = (consumables?.shieldCount || 0) + (consumables?.streakSaverCount || 0);
+      if (isPracticeMode) {
+        // Training camp is 100% streak-safe: do not drop streak, do not consume shields
+        triggerToastBanner({
+          type: 'info',
+          text: 'Practice Mode: Streak Protected! 🛡️'
+        }, 1500);
+      } else {
+        let isShieldAbsorbed = false;
+        const ownedShields = (consumables?.shieldCount || 0) + (consumables?.streakSaverCount || 0);
 
-      if (ownedShields > 0 && onConsumeShield) {
-        isShieldAbsorbed = onConsumeShield();
+        if (ownedShields > 0 && onConsumeShield) {
+          isShieldAbsorbed = onConsumeShield();
+          if (isShieldAbsorbed) {
+            // Protect the streak!
+            setInSessionStreak(inSessionStreak);
+          }
+        }
+
         if (isShieldAbsorbed) {
-          // Protect the streak!
-          setInSessionStreak(inSessionStreak);
+          setBlockShieldsUsed(prev => prev + 1);
+          KiboAudioManager.playStreakSFX();
+          setMascotState('streak');
+          setTimeout(() => setMascotState('idle'), 700);
+
+          triggerToastBanner({
+            type: 'success',
+            text: `🛡️ Kibo Shield Absorbed the Mistake! (Streak Protected ✨)`
+          }, 1800);
+        } else {
+          KiboAudioManager.playIncorrectSFX();
+          setMascotState('incorrect');
+          setTimeout(() => setMascotState('idle'), 500);
+
+          setIsShaking(true);
+          setTimeout(() => setIsShaking(false), 400);
+        }
+
+        setCompetenceRank(evalResult.nextCompetenceRank);
+        if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
+
+        if (evalResult.triggerFrustrationCircuit) {
+          setShowFrustrationCard(true);
+        }
+
+        const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
+        setBlockRatingGain(nextBlockRatingGain);
+
+        const activeWord = (normTargetAns || '').toString().toLowerCase();
+        const existingRecent = storageService.getUserData('world').recentWords || [];
+        const updatedRecent = activeWord ? [activeWord, ...existingRecent.filter(w => w !== activeWord)].slice(0, 60) : existingRecent;
+
+        storageService.saveUserData({
+          adaptiveCompetenceRating: evalResult.nextCompetenceRank,
+          competenceRank: evalResult.nextCompetenceRank,
+          recentWords: updatedRecent
+        }, 'world');
+
+        const activeUserData = storageService.getUserData('world');
+        const badgeEvalRes = evaluateBadges({
+          ...activeUserData,
+          subjectId: 'world',
+          inSessionStreak: evalResult.nextInSessionStreak,
+          competenceRank: evalResult.nextCompetenceRank,
+          blockRatingGain: nextBlockRatingGain,
+          lastProblemType: currentProblem.type,
+          lastProblemTier: currentProblem.tier || getTierFromRating(evalResult.nextCompetenceRank)
+        });
+
+        if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
+          onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
+        }
+
+        const existingMastery = activeUserData.recentSkillMastery || [];
+        const updatedMastery = checkSkillMasteryEvents(competenceRank, evalResult.nextCompetenceRank, existingMastery);
+        if (updatedMastery.length !== existingMastery.length) {
+          storageService.saveUserData({ recentSkillMastery: updatedMastery }, 'world');
         }
       }
 
-      if (isShieldAbsorbed) {
-        setBlockShieldsUsed(prev => prev + 1);
-        KiboAudioManager.playStreakSFX();
-        setMascotState('streak');
-        setTimeout(() => setMascotState('idle'), 700);
-
-        triggerToastBanner({
-          type: 'success',
-          text: `🛡️ Kibo Shield Absorbed the Mistake! (Streak Protected ✨)`
-        }, 1800);
-      } else {
-        KiboAudioManager.playIncorrectSFX();
-        setMascotState('incorrect');
-        setTimeout(() => setMascotState('idle'), 500);
-
-        setIsShaking(true);
-        setTimeout(() => setIsShaking(false), 400);
-      }
-
-      setCompetenceRank(evalResult.nextCompetenceRank);
-      if (onUpdateCompetenceRating) onUpdateCompetenceRating(evalResult.nextCompetenceRank);
-
-      if (evalResult.triggerFrustrationCircuit) {
-        setShowFrustrationCard(true);
-      }
-
-      const nextBlockRatingGain = blockRatingGain + evalResult.rankDelta;
-      setBlockRatingGain(nextBlockRatingGain);
-
-      const activeWord = (normTargetAns || '').toString().toLowerCase();
-      const existingRecent = storageService.getUserData('world').recentWords || [];
-      const updatedRecent = activeWord ? [activeWord, ...existingRecent.filter(w => w !== activeWord)].slice(0, 60) : existingRecent;
-
-      storageService.saveUserData({
-        adaptiveCompetenceRating: evalResult.nextCompetenceRank,
-        competenceRank: evalResult.nextCompetenceRank,
-        recentWords: updatedRecent
-      }, 'world');
-
-      const activeUserData = storageService.getUserData('world');
-      const badgeEvalRes = evaluateBadges({
-        ...activeUserData,
-        subjectId: 'world',
-        inSessionStreak: evalResult.nextInSessionStreak,
-        competenceRank: evalResult.nextCompetenceRank,
-        blockRatingGain: nextBlockRatingGain,
-        lastProblemType: currentProblem.type,
-        lastProblemTier: currentProblem.tier || getTierFromRating(evalResult.nextCompetenceRank)
-      });
-
-      if (badgeEvalRes?.updatedUnlocked && onUnlockedBadgesChange) {
-        onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
-      }
-
-      const existingMastery = activeUserData.recentSkillMastery || [];
-      const updatedMastery = checkSkillMasteryEvents(competenceRank, evalResult.nextCompetenceRank, existingMastery);
-      if (updatedMastery.length !== existingMastery.length) {
-        storageService.saveUserData({ recentSkillMastery: updatedMastery }, 'world');
-      }
-
-      const isBlockComplete = (questionsAnswered + 1) % 12 === 0;
+      const isBlockComplete = (questionsAnswered + 1) % totalBlockQuestions === 0;
 
       if (isBlockComplete) {
         analyticsService.logLevelUp('world', blockCorrectCount + 1);
+      }
+
+      // Duolingo mistake recycling:
+      if (!currentProblem.isReviewAttempt) {
+        setMissedReviewQueue((prev) => [...prev, { ...currentProblem, isReviewAttempt: true, reviewAttempts: 1 }]);
+      } else {
+        // Second attempt failure in review: seamlessly persist to practiceQueue for spaced repetition
+        storageService.addToPracticeQueue(currentProblem, 'world');
       }
 
       // Allow the user to see and review the correct answer before moving on
@@ -1212,7 +1321,7 @@ export default function WorldSessionView({
         nextBlockAnswers,
         nextBlockRatingGain,
         isShieldAbsorbed,
-        isBlockComplete
+        isBlockComplete: isBlockComplete && missedReviewQueue.length === 0 && (!currentProblem.isReviewAttempt ? 1 : 0) === 0
       });
     }
   };
@@ -1229,7 +1338,19 @@ export default function WorldSessionView({
     setSessionQuestionIndex((prev) => prev + 1);
     if (onIncrementLifetimeProblems) onIncrementLifetimeProblems(false);
 
-    if (data.isBlockComplete) {
+    // If questions reached but missed questions remain, transition to review phase
+    const reachedBlockEnd = nextQuestionsAnswered > 0 && nextQuestionsAnswered % totalBlockQuestions === 0;
+    if (reachedBlockEnd && missedReviewQueue.length > 0) {
+      setIsReviewPhase(true);
+      setProblemQueue((prev) => [...prev, ...missedReviewQueue]);
+      setMissedReviewQueue([]);
+      const nextIdx = currentIndex + 1;
+      replenishQueueIfNeeded(nextIdx);
+      setAcknowledgedGivenIndices(new Set());
+      setCurrentIndex(nextIdx);
+      problemStartTimeRef.current = performance.now();
+    } else if (data.isBlockComplete) {
+      setIsReviewPhase(false);
       KiboAudioManager.playBreakSFX();
       setMascotState('break');
       setShowBreakOverlay(true);
@@ -1239,7 +1360,10 @@ export default function WorldSessionView({
 
       const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
       const finalBlockCorrect = blockCorrectCount;
-      const finalBlockSparks = blockSparksEarned;
+      const finalBlockSparks = isPracticeMode ? (blockSparksEarned + 10) : blockSparksEarned;
+      if (isPracticeMode && onAwardSparks) {
+        onAwardSparks(10);
+      }
       const isPerfectBlock = false;
 
       const newSessionRecord = {
@@ -1249,10 +1373,10 @@ export default function WorldSessionView({
         tier: getTierFromRating(data.evalResult.nextCompetenceRank),
         totalTimeSec: blockTimeSec,
         correctCount: finalBlockCorrect,
-        totalQuestions: 12,
+        totalQuestions: totalBlockQuestions,
         sparksEarned: finalBlockSparks,
-        accuracyPct: Math.round((finalBlockCorrect / 12) * 100),
-        ratingGain: data.nextBlockRatingGain,
+        accuracyPct: Math.round((finalBlockCorrect / totalBlockQuestions) * 100),
+        ratingGain: isPracticeMode ? 0 : data.nextBlockRatingGain,
         answers: data.nextBlockAnswers
       };
 
@@ -1319,7 +1443,8 @@ export default function WorldSessionView({
     processAnswerEvaluation(inputVal);
   };
 
-  const currentQuestionNum = ((sessionQuestionIndex - 1) % 12) + 1;
+  const totalBlockQuestions = isPracticeMode ? practiceSprintLength : 12;
+  const currentQuestionNum = ((sessionQuestionIndex - 1) % totalBlockQuestions) + 1;
 
   // Physical Desktop Keyboard Listener
   useEffect(() => {
@@ -1375,7 +1500,7 @@ export default function WorldSessionView({
     return (
       <KiboBreakOverlay
         correctCount={completedBlockStats.correctCount}
-        totalCount={12}
+        totalCount={totalBlockQuestions}
         streak={inSessionStreak}
         sparksEarned={completedBlockStats.sparksEarned}
         blockRatingGain={completedBlockStats.blockRatingGain}
@@ -1389,6 +1514,10 @@ export default function WorldSessionView({
         activeSubject="world"
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
+          if (isPracticeMode && onExitPractice) {
+            onExitPractice();
+            return;
+          }
           if (onResetDoubleSparks) onResetDoubleSparks();
           storageService.clearActiveClimbState(profileId, 'world');
           setSavedClimbState(null);
@@ -1416,6 +1545,10 @@ export default function WorldSessionView({
         }}
         onResumeClimb={() => {
           setShowBreakOverlay(false);
+          if (isPracticeMode && onExitPractice) {
+            onExitPractice();
+            return;
+          }
           if (onResetDoubleSparks) onResetDoubleSparks();
           storageService.clearActiveClimbState(profileId, 'world');
           setSavedClimbState(null);
@@ -1461,6 +1594,10 @@ export default function WorldSessionView({
       {hasStartedClimb && (
         <ClimbHeader
           currentQuestionNum={currentQuestionNum}
+          totalQuestions={totalBlockQuestions}
+          isReviewPhase={isReviewPhase}
+          isPracticeMode={isPracticeMode}
+          practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
           inSessionStreak={inSessionStreak}
           consumables={consumables}
           onExitOrPause={handleExitOrPauseClimb}
@@ -1487,12 +1624,13 @@ export default function WorldSessionView({
         mascotState={mascotState}
       />
 
-      {/* DEDICATED CHALLENGE BANNER (Probe / Gatekeeper / 2x Sparks) */}
+      {/* DEDICATED CHALLENGE BANNER (Probe / Gatekeeper / 2x Sparks / Practice) */}
       {hasStartedClimb && currentProblem && (
         <ChallengeBanner
           isProbe={Boolean(currentProblem.isProbe)}
           isGatekeeper={Boolean(isNearTierThreshold(competenceRank))}
           isDoubleSparks={Boolean(isDoubleSparksActive)}
+          isPracticeMode={isPracticeMode}
         />
       )}
 
@@ -1818,6 +1956,39 @@ export default function WorldSessionView({
           rawProblem: currentProblem
         }}
       />
+
+      {/* TRAINING CAMP EXIT CONFIRMATION MODAL */}
+      {showPracticeExitConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full shadow-2xl border-4 border-amber-200 text-center space-y-4 animate-scale-up">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-100 flex items-center justify-center text-3xl shadow-inner">
+              🏕️
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-800">Leave Practice?</h3>
+              <p className="text-sm font-medium text-slate-600 mt-1.5 leading-relaxed">
+                Your current practice progress will be reset.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowPracticeExitConfirm(false)}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-sm shadow-md hover:from-emerald-600 hover:to-teal-700 active:scale-98 transition-all cursor-pointer"
+              >
+                Keep Practicing
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmExitPractice}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Exit Camp
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

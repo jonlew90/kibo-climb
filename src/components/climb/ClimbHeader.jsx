@@ -4,6 +4,10 @@ import { soundFx } from '../../utils/audio';
 
 export default function ClimbHeader({
   currentQuestionNum,
+  totalQuestions = 12,
+  isReviewPhase = false,
+  isPracticeMode = false,
+  practiceTitle = 'Training Camp',
   inSessionStreak,
   consumables,
   onExitOrPause,
@@ -33,22 +37,34 @@ export default function ClimbHeader({
         type="button"
         onClick={onExitOrPause}
         className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full bg-white/90 hover:bg-slate-100 active:scale-90 text-slate-500 hover:text-slate-800 border-2 border-slate-200 shadow-2xs transition-all cursor-pointer shrink-0"
-        title="Pause & Save Climb"
-        aria-label="Pause Climb"
+        title={isPracticeMode ? 'Exit Training Camp' : 'Pause & Save Climb'}
+        aria-label={isPracticeMode ? 'Exit Training Camp' : 'Pause Climb'}
       >
         <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
       </button>
 
-      {/* Center: Sleek 12-segment progress bar */}
+      {/* Center: Sleek segment progress bar */}
       <div className="flex-1 flex flex-col gap-0.5 min-w-0">
         <div className="flex items-center justify-between px-1 text-[10px] sm:text-xs font-black text-slate-500">
-          <span className="uppercase tracking-wider">Question {currentQuestionNum} of 12</span>
-          <span>{Math.round(((currentQuestionNum - 1) / 12) * 100)}%</span>
+          <span className={`uppercase tracking-wider ${isReviewPhase ? 'text-indigo-600 font-extrabold flex items-center gap-1' : isPracticeMode ? 'text-indigo-700 font-extrabold flex items-center gap-1' : ''}`}>
+            {isReviewPhase
+              ? '🔁 Mistake Review'
+              : isPracticeMode
+              ? `🏋️ ${practiceTitle} • Q${currentQuestionNum}/${totalQuestions}`
+              : `Question ${currentQuestionNum} of ${totalQuestions}`}
+          </span>
+          <span>{isReviewPhase ? 'Bonus Practice' : isPracticeMode ? 'Streak-Safe 🛡️' : `${Math.round(((currentQuestionNum - 1) / totalQuestions) * 100)}%`}</span>
         </div>
         <div className="w-full h-2.5 sm:h-3 bg-slate-200/80 rounded-full overflow-hidden p-0.5 border border-slate-300/60 shadow-inner">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 transition-all duration-500 shadow-xs"
-            style={{ width: `${Math.max(5, (currentQuestionNum / 12) * 100)}%` }}
+            className={`h-full rounded-full transition-all duration-500 shadow-xs ${
+              isReviewPhase
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-pulse'
+                : isPracticeMode
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-teal-400'
+                : 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500'
+            }`}
+            style={{ width: `${isReviewPhase ? 100 : Math.max(5, (currentQuestionNum / totalQuestions) * 100)}%` }}
           />
         </div>
       </div>
@@ -101,7 +117,7 @@ export default function ClimbHeader({
           </div>
         )}
 
-        {shieldCount > 0 && (
+        {shieldCount > 0 && !isPracticeMode && (
           <div className="relative">
             <button
               type="button"

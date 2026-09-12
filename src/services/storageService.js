@@ -630,6 +630,37 @@ export const storageService = {
     }
   },
 
+  // Spaced Repetition Practice Queue Management
+  getPracticeQueue(subjectId = 'math') {
+    const userData = this.getUserData(subjectId);
+    return Array.isArray(userData.practiceQueue) ? userData.practiceQueue : [];
+  },
+
+  addToPracticeQueue(problemItem, subjectId = 'math') {
+    if (!problemItem) return;
+    const currentQueue = this.getPracticeQueue(subjectId);
+    const itemKey = (problemItem.key || problemItem.displayString || problemItem.prompt || problemItem.id || '').toString().toLowerCase().trim();
+    
+    // Check if already in queue
+    const exists = currentQueue.some(q => {
+      const qKey = (q.key || q.displayString || q.prompt || q.id || '').toString().toLowerCase().trim();
+      return qKey === itemKey;
+    });
+
+    if (!exists) {
+      const sanitizedItem = {
+        ...problemItem,
+        queuedAt: new Date().toISOString(),
+        reviewAttempts: (problemItem.reviewAttempts || 0) + 1
+      };
+      // Keep queue bounded to 50 items
+      const updatedQueue = [sanitizedItem, ...currentQueue].slice(0, 50);
+      this.saveUserData({ practiceQueue: updatedQueue }, subjectId);
+      return updatedQueue;
+    }
+    return currentQueue;
+  },
+
   // Skip Event Diagnostics Logging
   getSkipLogs(subjectId = 'math') {
     const userData = this.getUserData(subjectId);

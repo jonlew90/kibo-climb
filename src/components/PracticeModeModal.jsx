@@ -1,200 +1,170 @@
 import React, { useState, useEffect } from 'react';
-import { X, Dumbbell, Sparkles, CheckCircle2, RotateCcw, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { X, Dumbbell, CheckCircle2, ShieldCheck, Play } from 'lucide-react';
 import { soundFx } from '../utils/audio';
+import { CURRICULUM_TIERS } from '../utils/mathCurriculum';
+import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
+import { WORLD_CURRICULUM_TIERS } from '../utils/worldCurriculum';
+import { CODING_CURRICULUM_TIERS } from '../utils/codingCurriculum';
 
-const PRACTICE_TOPICS = {
-  math: [
-    { id: 'math_add_sub', title: 'Addition & Subtraction', desc: 'Sums and differences up to 20 & 100' },
-    { id: 'math_mult', title: 'Multiplication Tables', desc: '0s through 12s recall drills' },
-    { id: 'math_div', title: 'Division Foundations', desc: 'Fact families and equal sharing' },
-    { id: 'math_frac', title: 'Fractions & Decimals', desc: 'Halves, quarters, and decimal equivalents' }
-  ],
-  words: [
-    { id: 'words_phonics', title: 'Phonics & Missing Letters', desc: 'Vowels, blends, and rhyming patterns' },
-    { id: 'words_spelling', title: 'Spelling Sprint', desc: 'Common words and tricky letter patterns' },
-    { id: 'words_vocab', title: 'Vocabulary Definitions', desc: 'Context clues and meaning match' }
-  ],
-  world: [
-    { id: 'world_capitals', title: 'Capitals of the World', desc: 'Countries and capital cities' },
-    { id: 'world_geography', title: 'Mountains & Continents', desc: 'Summits, landforms, and ocean basins' }
-  ],
-  coding: [
-    { id: 'coding_logic', title: 'Sequencing & Algorithms', desc: 'Step-by-step logic commands' },
-    { id: 'coding_loops', title: 'Loops & Conditionals', desc: 'Repeat blocks and boolean if/else' }
-  ]
+const SUBJECT_CATALOGS = {
+  math: { label: 'Math', tiers: CURRICULUM_TIERS, color: 'from-amber-500 to-orange-500' },
+  words: { label: 'Words', tiers: WORDS_CURRICULUM_TIERS, color: 'from-emerald-500 to-teal-500' },
+  world: { label: 'World', tiers: WORLD_CURRICULUM_TIERS, color: 'from-cyan-500 to-blue-500' },
+  coding: { label: 'Coding', tiers: CODING_CURRICULUM_TIERS, color: 'from-purple-500 to-indigo-500' }
 };
-
-function generatePracticeQuestion(subject, topicId) {
-  if (subject === 'math') {
-    if (topicId === 'math_mult') {
-      const a = Math.floor(Math.random() * 10) + 2;
-      const b = Math.floor(Math.random() * 9) + 2;
-      const correct = a * b;
-      const options = [correct, correct + a, Math.max(1, correct - b), correct + 2].sort(() => Math.random() - 0.5);
-      return {
-        prompt: `What is ${a} × ${b}?`,
-        options: Array.from(new Set(options)).slice(0, 4).map(String),
-        correctAnswer: String(correct),
-        explanation: `${a} groups of ${b} equals ${correct}.`
-      };
-    } else if (topicId === 'math_div') {
-      const b = Math.floor(Math.random() * 8) + 2;
-      const ans = Math.floor(Math.random() * 9) + 2;
-      const a = b * ans;
-      const options = [ans, ans + 1, Math.max(1, ans - 1), ans + 2].sort(() => Math.random() - 0.5);
-      return {
-        prompt: `What is ${a} ÷ ${b}?`,
-        options: Array.from(new Set(options)).slice(0, 4).map(String),
-        correctAnswer: String(ans),
-        explanation: `${a} divided into ${b} equal parts is ${ans}.`
-      };
-    } else if (topicId === 'math_frac') {
-      const pairs = [
-        { q: 'What is 1/2 + 1/2?', ans: '1', opts: ['1', '1/4', '2/4', '2'] },
-        { q: 'What is 1/4 + 1/4?', ans: '1/2', opts: ['1/2', '2/8', '1/4', '1'] },
-        { q: 'Which is equal to 0.5?', ans: '1/2', opts: ['1/2', '1/4', '3/4', '1/5'] },
-        { q: 'Which is equal to 0.25?', ans: '1/4', opts: ['1/4', '1/2', '2/5', '1/10'] }
-      ];
-      const selected = pairs[Math.floor(Math.random() * pairs.length)];
-      return {
-        prompt: selected.q,
-        options: selected.opts.sort(() => Math.random() - 0.5),
-        correctAnswer: selected.ans,
-        explanation: `Correct! ${selected.q} = ${selected.ans}`
-      };
-    } else {
-      const isSub = Math.random() > 0.5;
-      const a = Math.floor(Math.random() * 15) + 5;
-      const b = Math.floor(Math.random() * a) + 1;
-      const ans = isSub ? a - b : a + b;
-      const op = isSub ? '−' : '+';
-      const options = [ans, ans + 2, Math.max(1, ans - 2), ans + 1].sort(() => Math.random() - 0.5);
-      return {
-        prompt: `What is ${a} ${op} ${b}?`,
-        options: Array.from(new Set(options)).slice(0, 4).map(String),
-        correctAnswer: String(ans),
-        explanation: `${a} ${op} ${b} = ${ans}`
-      };
-    }
-  } else if (subject === 'words') {
-    const list = [
-      { q: 'Which letter completes: C _ T ?', ans: 'A', opts: ['A', 'E', 'O', 'U'], exp: 'CAT makes a furry pet!' },
-      { q: 'Which word rhymes with "SUN"?', ans: 'FUN', opts: ['FUN', 'SONG', 'SAND', 'SIT'], exp: 'Sun and Fun both end in -un.' },
-      { q: 'Which is spelled correctly?', ans: 'FRIEND', opts: ['FRIEND', 'FREIND', 'FREND', 'FRIND'], exp: 'Remember: i before e in FRIEND!' },
-      { q: 'What does "ENORMOUS" mean?', ans: 'Very Big', opts: ['Very Big', 'Tiny', 'Fast', 'Cold'], exp: 'Enormous means gigantic or very big.' }
-    ];
-    const picked = list[Math.floor(Math.random() * list.length)];
-    return {
-      prompt: picked.q,
-      options: picked.opts.sort(() => Math.random() - 0.5),
-      correctAnswer: picked.ans,
-      explanation: picked.exp
-    };
-  } else if (subject === 'world') {
-    const list = [
-      { q: 'What is the capital of France?', ans: 'Paris', opts: ['Paris', 'Rome', 'Madrid', 'Berlin'], exp: 'Paris is the capital of France!' },
-      { q: 'What is the tallest mountain in Africa?', ans: 'Mount Kilimanjaro', opts: ['Mount Kilimanjaro', 'Mount Everest', 'Mont Blanc', 'Mount Fuji'], exp: 'Mount Kilimanjaro (Kibo) is 5,895m!' },
-      { q: 'What is the capital of Japan?', ans: 'Tokyo', opts: ['Tokyo', 'Kyoto', 'Seoul', 'Beijing'], exp: 'Tokyo is the capital of Japan!' },
-      { q: 'Which continent has the most countries?', ans: 'Africa', opts: ['Africa', 'Asia', 'Europe', 'South America'], exp: 'Africa has 54 sovereign nations!' }
-    ];
-    const picked = list[Math.floor(Math.random() * list.length)];
-    return {
-      prompt: picked.q,
-      options: picked.opts.sort(() => Math.random() - 0.5),
-      correctAnswer: picked.ans,
-      explanation: picked.exp
-    };
-  } else {
-    // coding
-    const list = [
-      { q: 'If repeat(3) { moveForward() }, how many times does Kibo move?', ans: '3', opts: ['3', '1', '2', '4'], exp: 'The loop executes 3 times.' },
-      { q: 'Which command checks if a path is clear?', ans: 'if (isPathClear())', opts: ['if (isPathClear())', 'loop()', 'stop()', 'print()'], exp: 'Conditionals start with "if"!' },
-      { q: 'What is a bug in programming?', ans: 'An error in code', opts: ['An error in code', 'A computer virus', 'A fast program', 'A keyboard button'], exp: 'A bug is an unexpected mistake or glitch in logic.' }
-    ];
-    const picked = list[Math.floor(Math.random() * list.length)];
-    return {
-      prompt: picked.q,
-      options: picked.opts.sort(() => Math.random() - 0.5),
-      correctAnswer: picked.ans,
-      explanation: picked.exp
-    };
-  }
-}
 
 export default function PracticeModeModal({
   isOpen,
   onClose,
   activeSubject = 'math',
-  onAwardPracticeSparks
+  userTier = 1,
+  onStartPracticeSession
 }) {
-  const [selectedTopicId, setSelectedTopicId] = useState(null);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [isAnswerChecked, setIsAnswerChecked] = useState(false);
-  const [sessionStats, setSessionStats] = useState({ correct: 0, total: 0, sparksEarned: 0 });
-
-  const topics = PRACTICE_TOPICS[activeSubject] || PRACTICE_TOPICS.math;
+  const [selectedSubject, setSelectedSubject] = useState(activeSubject);
+  const [selectedTier, setSelectedTier] = useState(userTier || 1);
+  const [sprintLength, setSprintLength] = useState(12);
 
   useEffect(() => {
     if (isOpen) {
-      // Pick first topic by default
-      const initialTopic = topics[0]?.id || 'math_add_sub';
-      setSelectedTopicId(initialTopic);
-      setCurrentQuestion(generatePracticeQuestion(activeSubject, initialTopic));
-      setSelectedAnswer(null);
-      setIsAnswerChecked(false);
-      setSessionStats({ correct: 0, total: 0, sparksEarned: 0 });
+      setSelectedSubject(activeSubject || 'math');
+      setSelectedTier(userTier || 1);
     }
-  }, [isOpen, activeSubject]);
+  }, [isOpen, activeSubject, userTier]);
 
   if (!isOpen) return null;
 
-  const handleSelectTopic = (topicId) => {
+  const currentSubjectConfig = SUBJECT_CATALOGS[selectedSubject] || SUBJECT_CATALOGS.math;
+  const tiersList = currentSubjectConfig.tiers || [];
+
+  const handleStartSession = () => {
     soundFx.playKeyTap();
-    setSelectedTopicId(topicId);
-    setCurrentQuestion(generatePracticeQuestion(activeSubject, topicId));
-    setSelectedAnswer(null);
-    setIsAnswerChecked(false);
-  };
-
-  const handleAnswerClick = (option) => {
-    if (isAnswerChecked) return;
-    soundFx.playKeyTap();
-    setSelectedAnswer(option);
-  };
-
-  const handleCheckAnswer = () => {
-    if (!selectedAnswer || isAnswerChecked) return;
-    const isCorrect = String(selectedAnswer).trim().toLowerCase() === String(currentQuestion.correctAnswer).trim().toLowerCase();
-    setIsAnswerChecked(true);
-
-    if (isCorrect) {
-      soundFx.playCorrect();
-      // Cap at 10 practice sparks per day
-      const newSparks = sessionStats.sparksEarned < 10 ? 1 : 0;
-      setSessionStats(prev => ({
-        correct: prev.correct + 1,
-        total: prev.total + 1,
-        sparksEarned: prev.sparksEarned + newSparks
-      }));
-      if (newSparks > 0 && onAwardPracticeSparks) {
-        onAwardPracticeSparks(newSparks);
-      }
-    } else {
-      soundFx.playIncorrect();
-      setSessionStats(prev => ({
-        ...prev,
-        total: prev.total + 1
-      }));
+    if (onStartPracticeSession) {
+      onStartPracticeSession({
+        subject: selectedSubject,
+        tier: selectedTier,
+        sprintLength: sprintLength
+      });
     }
+    onClose();
   };
 
-  const handleNextQuestion = () => {
-    soundFx.playKeyTap();
-    setCurrentQuestion(generatePracticeQuestion(activeSubject, selectedTopicId));
-    setSelectedAnswer(null);
-    setIsAnswerChecked(false);
-  };
+  const renderSetupStage = () => (
+    <div className="space-y-4">
+      {/* Subject Tabs */}
+      <div>
+        <label className="text-xs font-black uppercase tracking-wider text-slate-500 block mb-1.5">
+          Select Subject:
+        </label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {Object.entries(SUBJECT_CATALOGS).map(([subjKey, cfg]) => {
+            const isSelected = selectedSubject === subjKey;
+            return (
+              <button
+                key={subjKey}
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setSelectedSubject(subjKey);
+                  setSelectedTier(1);
+                }}
+                className={`py-2 px-1 rounded-xl border-2 text-xs font-black transition-all cursor-pointer text-center ${
+                  isSelected
+                    ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300'
+                }`}
+              >
+                {cfg.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Tier Selector */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs font-black uppercase tracking-wider text-slate-500 block">
+            Select Training Tier (1–{tiersList.length}):
+          </label>
+          <span className="text-[11px] font-extrabold text-indigo-600">
+            Tier {selectedTier}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 max-h-48 overflow-y-auto pr-1">
+          {tiersList.map((t, idx) => {
+            const tierNum = t.tier || idx + 1;
+            const isSelected = selectedTier === tierNum;
+            return (
+              <button
+                key={tierNum}
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setSelectedTier(tierNum);
+                }}
+                className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  isSelected
+                    ? 'bg-indigo-50 border-indigo-500 ring-2 ring-indigo-400/40'
+                    : 'bg-white border-slate-200 hover:border-indigo-200'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1 mb-0.5">
+                  <span className="text-xs font-black text-slate-800">
+                    {t.icon || '🧗'} T{tierNum}
+                  </span>
+                  {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />}
+                </div>
+                <div className="text-[10px] font-bold text-slate-600 truncate">
+                  {t.title || t.name || `Tier ${tierNum}`}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Sprint Length Toggle */}
+      <div>
+        <label className="text-xs font-black uppercase tracking-wider text-slate-500 block mb-1.5">
+          Climb Length:
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {[6, 12].map(count => (
+            <button
+              key={count}
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setSprintLength(count);
+              }}
+              className={`py-2 rounded-xl border-2 font-black text-xs transition-all cursor-pointer ${
+                sprintLength === count
+                  ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300'
+              }`}
+            >
+              {count} Questions {count === 12 ? ' (Full Climb)' : ' (Quick Sprint)'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Safety Notice */}
+      <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-2 text-xs font-bold text-amber-900">
+        <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
+        <span>100% Streak Safe • Zero Rating Penalty • Mistakes are Recycled for Mastery</span>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleStartSession}
+        className="w-full py-3.5 px-4 rounded-2xl font-black text-base bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+      >
+        <Play className="w-5 h-5 fill-white" />
+        <span>Start Training Camp</span>
+      </button>
+    </div>
+  );
 
   return (
     <div
@@ -213,10 +183,10 @@ export default function PracticeModeModal({
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-slate-900 leading-none">
-                Training Camp • {activeSubject.toUpperCase()}
+                Training Camp • {currentSubjectConfig.label.toUpperCase()}
               </h3>
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                Unlimited Untimed Practice • Streak-Safe
+                Targeted Practice • Streak-Safe • Mistake Recycling
               </span>
             </div>
           </div>
@@ -229,125 +199,8 @@ export default function PracticeModeModal({
           </button>
         </div>
 
-        {/* Stats Pill */}
-        <div className="flex items-center justify-between bg-indigo-50/80 border border-indigo-200 px-3 py-1.5 rounded-xl text-xs font-black text-indigo-950 shrink-0">
-          <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Solved: {sessionStats.correct} / {sessionStats.total}</span>
-          </div>
-          <div className="flex items-center gap-1 text-amber-700">
-            <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
-            <span>+{sessionStats.sparksEarned} Sparks (Max 10)</span>
-          </div>
-        </div>
-
-        {/* Topic Selector Chips */}
-        <div className="space-y-1.5 shrink-0">
-          <label className="text-[11px] font-black uppercase tracking-wider text-slate-500 block">
-            Choose Skill Focus:
-          </label>
-          <div className="grid grid-cols-2 gap-1.5">
-            {topics.map(t => {
-              const isSelected = t.id === selectedTopicId;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => handleSelectTopic(t.id)}
-                  className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-indigo-600 text-white border-indigo-700 shadow-2xs'
-                      : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300'
-                  }`}
-                >
-                  <div className="text-xs font-black truncate">{t.title}</div>
-                  <div className={`text-[10px] truncate ${isSelected ? 'text-indigo-200' : 'text-slate-400'}`}>
-                    {t.desc}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Question Area */}
-        {currentQuestion && (
-          <div className="bg-white border-2 border-indigo-100 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4 text-center my-1">
-            <div className="text-xs font-bold uppercase tracking-wider text-indigo-600">
-              Practice Question
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900">
-              {currentQuestion.prompt}
-            </h2>
-
-            {/* Answer Options */}
-            <div className="grid grid-cols-2 gap-2">
-              {currentQuestion.options.map((opt, idx) => {
-                const isSelected = selectedAnswer === opt;
-                let btnStyle = 'bg-slate-50 text-slate-800 border-slate-200 hover:border-indigo-400';
-
-                if (isAnswerChecked) {
-                  const isCorrect = String(opt).trim().toLowerCase() === String(currentQuestion.correctAnswer).trim().toLowerCase();
-                  if (isCorrect) {
-                    btnStyle = 'bg-emerald-500 text-white border-emerald-600 ring-2 ring-emerald-300';
-                  } else if (isSelected) {
-                    btnStyle = 'bg-rose-500 text-white border-rose-600';
-                  } else {
-                    btnStyle = 'bg-slate-100 text-slate-400 border-slate-200 opacity-60';
-                  }
-                } else if (isSelected) {
-                  btnStyle = 'bg-indigo-100 text-indigo-900 border-indigo-500 ring-2 ring-indigo-400/30';
-                }
-
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    disabled={isAnswerChecked}
-                    onClick={() => handleAnswerClick(opt)}
-                    className={`p-3 rounded-xl border-2 font-black text-base transition-all active:scale-95 cursor-pointer flex items-center justify-center ${btnStyle}`}
-                  >
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Feedback / Explanation */}
-            {isAnswerChecked && (
-              <div className="p-2.5 rounded-xl bg-indigo-50/80 border border-indigo-200 text-xs font-bold text-indigo-900 animate-pop">
-                {currentQuestion.explanation}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Action Controls */}
-        <div className="pt-2 shrink-0">
-          {!isAnswerChecked ? (
-            <button
-              type="button"
-              disabled={!selectedAnswer}
-              onClick={handleCheckAnswer}
-              className={`w-full py-3 px-4 rounded-xl font-black text-sm transition-all shadow-md flex items-center justify-center gap-2 ${
-                selectedAnswer
-                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer active:scale-98'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-              }`}
-            >
-              <span>Check Answer</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleNextQuestion}
-              className="w-full py-3 px-4 rounded-xl font-black text-sm bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md cursor-pointer transition-all active:scale-98 flex items-center justify-center gap-2"
-            >
-              <span>Next Practice Problem</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+        {/* Content Body: Setup & Launch */}
+        {renderSetupStage()}
       </div>
     </div>
   );
