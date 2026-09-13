@@ -33,6 +33,9 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
   if (!isOpen || !packageInfo) return null;
 
   const handleCheckout = async () => {
+    setError("Real-money purchases are temporarily disabled during rapid development.");
+    return;
+
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       setError("Internet connection required for secure real-money purchases. Please reconnect to Wi-Fi or data.");
       return;
