@@ -544,6 +544,8 @@ exports.createStripeCheckoutSession = onCall(
     secrets: [STRIPE_SECRET_KEY]
   },
   async (request) => {
+    throw new HttpsError('failed-precondition', 'Real-money purchases are temporarily disabled during rapid development.');
+
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required.');
     }
