@@ -171,7 +171,7 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
           </div>
         )}
 
-        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 flex items-center justify-between">
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4 flex items-center justify-between">
           <div className="text-left">
             <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Item</span>
             <span className="block text-sm font-black text-slate-800">{packageInfo.name}</span>
@@ -181,6 +181,12 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
             <span className="block text-sm font-black text-slate-800">{packageInfo.price}</span>
           </div>
         </div>
+
+        {packageInfo.isSubscription && (
+          <p className="text-[11px] text-slate-500 font-medium mb-4 bg-amber-50/70 border border-amber-200/80 p-2.5 rounded-xl text-left leading-relaxed">
+            ℹ️ <strong>Auto-Renewal Terms:</strong> This subscription renews automatically at the standard regular price upon the expiration of each billing cycle (or promotional period) unless cancelled in Parent Zone before the renewal date.
+          </p>
+        )}
 
         <div className="space-y-3">
           <button

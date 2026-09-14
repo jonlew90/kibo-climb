@@ -105,6 +105,9 @@ export default function TermsOfServiceScreen({ onBack, renderFooter }) {
                   <strong>Recurring Subscriptions:</strong> Optional recurring memberships (such as Kibo Club Solo and Family plans, billed monthly or annually) granting premium learning benefits, reward multipliers, and exclusive features.
                 </li>
                 <li>
+                  <strong>Promotional & Introductory Pricing:</strong> Any sale discounts, introductory offers, or promotional codes applied to subscriptions are valid only for the specified promotional duration (e.g., the first month or first year). Upon completion of the promotional period, the subscription will automatically renew at the regular standard recurring price in effect at that time unless cancelled before the renewal date.
+                </li>
+                <li>
                   <strong>Virtual Currency (Sparks Packs):</strong> One-time consumable packages of Sparks used to acquire virtual gear, trails, badges, and customizations.
                 </li>
                 <li>

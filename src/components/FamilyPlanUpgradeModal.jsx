@@ -259,6 +259,12 @@ export default function FamilyPlanUpgradeModal({
             </button>
           </div>
 
+          <p className="text-[10px] text-slate-500 font-medium leading-tight">
+            {(isSoloSelected ? soloPricing.isDiscounted : familyPricing.isDiscounted)
+              ? `Introductory promo rate applies to the first ${billingCycle === 'annual' ? 'year' : 'month'}. Renews automatically at regular ${(isSoloSelected ? soloPricing.renewalPrice : familyPricing.renewalPrice)} unless cancelled.`
+              : `Renews automatically at ${(isSoloSelected ? soloPricing.price : familyPricing.price)} unless cancelled.`}
+          </p>
+
           <p className="text-[10px] text-slate-400 font-bold mt-1">
             Subscriptions are purchased and managed securely inside the Parent Zone.
           </p>

@@ -1813,6 +1813,11 @@ export default function ParentDashboardModal({
                         <span className="text-[10px] text-purple-700 font-extrabold block">
                           {billingCycle === 'annual' ? `Equivalent to ${soloPricing.monthlyEquivalent} (Billed annually)` : 'Billed monthly • Cancel anytime'}
                         </span>
+                        {soloPricing.isDiscounted && (
+                          <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-bold block">
+                            ⏳ Promo price for 1st {billingCycle === 'annual' ? 'year' : 'month'}. Auto-renews at regular {soloPricing.renewalPrice}.
+                          </span>
+                        )}
                         <ul className="space-y-1 text-xs text-slate-600 font-bold">
                           <li className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
@@ -1917,6 +1922,11 @@ export default function ParentDashboardModal({
                         <span className="text-[10px] text-amber-900 font-extrabold block">
                           {billingCycle === 'annual' ? `Equivalent to ${familyPricing.monthlyEquivalent} (Billed annually)` : 'Billed monthly • Cancel anytime'}
                         </span>
+                        {familyPricing.isDiscounted && (
+                          <span className="text-[10px] text-amber-800 bg-amber-100/80 border border-amber-300 px-2 py-0.5 rounded-md font-bold block">
+                            ⏳ Promo price for 1st {billingCycle === 'annual' ? 'year' : 'month'}. Auto-renews at regular {familyPricing.renewalPrice}.
+                          </span>
+                        )}
                         <div className="text-[11px] font-extrabold text-amber-800 bg-amber-100/70 border border-amber-200 rounded-lg px-2 py-1">
                           ✨ Everything in Solo, plus:
                         </div>
@@ -1982,7 +1992,10 @@ export default function ParentDashboardModal({
                     </div>
                   </div>
 
-                  {/* Cancellation & Retention Notice */}
+                  {/* Auto-Renewal & Promo Terms Note */}
+                  <p className="text-[10px] text-slate-500 font-medium leading-relaxed bg-white/60 p-2.5 rounded-xl border border-slate-200">
+                    ℹ️ <strong>Auto-Renewal & Promotions:</strong> Subscriptions renew automatically at regular price at the conclusion of each billing period unless cancelled. Promotional rates apply to the initial period only and revert to the catalog regular price upon renewal. You may cancel at any time in Parent Zone to prevent future billing.
+                  </p>
                   {currentPlan?.cancelAtPeriodEnd ? (
                     <div className="bg-amber-500/10 border border-amber-400/60 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-amber-950">
                       <div className="space-y-0.5">

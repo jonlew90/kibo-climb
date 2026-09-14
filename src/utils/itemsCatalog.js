@@ -1708,6 +1708,8 @@ export function getEffectiveSubscriptionPricing(planOrId, currentDate = new Date
       ...defaultPricing,
       price: promo.promoPrice,
       originalPrice: defaultPricing.price,
+      renewalPrice: defaultPricing.price,
+      renewalNotice: `Renews at regular price (${defaultPricing.price}) after first ${defaultPricing.billingPeriod === 'annual' ? 'year' : 'month'}`,
       monthlyEquivalent: promo.monthlyEquivalent || defaultPricing.monthlyEquivalent,
       isDiscounted: true,
       discountPercent: promo.discountPercent,
@@ -1716,7 +1718,11 @@ export function getEffectiveSubscriptionPricing(planOrId, currentDate = new Date
     };
   }
 
-  return defaultPricing;
+  return {
+    ...defaultPricing,
+    renewalPrice: defaultPricing.price,
+    renewalNotice: `Renews automatically at ${defaultPricing.price} until cancelled`
+  };
 }
 
 export function getItemEffectivePrice(item, currentDate = new Date(), isKiboClub = false) {
