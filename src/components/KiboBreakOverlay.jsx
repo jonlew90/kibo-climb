@@ -25,6 +25,7 @@ export default function KiboBreakOverlay({
   practiceTitle = 'Training Camp',
   practiceTier = null,
   onExitPractice,
+  onOpenPracticeMode,
   onOpenWorkshop,
   onResumeClimb
 }) {

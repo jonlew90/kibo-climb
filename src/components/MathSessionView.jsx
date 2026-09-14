@@ -1368,7 +1368,7 @@ export default function MathSessionView({
 
     let newInput = inputVal;
 
-    if (val === '.' || val === ':' || val === '/' || val === '-') {
+    if (val === '.' || val === ':' || val === '/') {
       if (val === '.') {
         if (!newInput || newInput === '0') {
           newInput = '0.';
@@ -1382,12 +1382,6 @@ export default function MathSessionView({
       } else if (val === '/') {
         if (!newInput.includes('/')) {
           newInput = newInput + '/';
-        }
-      } else if (val === '-') {
-        if (newInput.startsWith('-')) {
-          newInput = newInput.slice(1);
-        } else {
-          newInput = '-' + newInput;
         }
       }
     } else {
