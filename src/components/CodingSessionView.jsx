@@ -491,7 +491,8 @@ export default function CodingSessionView({
     });
 
     const nextRating = evalResult.nextCompetenceRank;
-    const earnedSparks = isDoubleSparksActive ? evalResult.totalSparksEarned * 2 : evalResult.totalSparksEarned;
+    const baseEarned = isPracticeMode ? (isCorrect ? 1 : 0) : evalResult.totalSparksEarned;
+    const earnedSparks = isDoubleSparksActive ? baseEarned * 2 : baseEarned;
 
     // Update state
     if (!isPracticeMode) {
@@ -572,14 +573,10 @@ export default function CodingSessionView({
       storageService.clearActiveClimbState(profileId, 'coding');
       setSavedClimbState(null);
       analyticsService.logLevelUp('coding', blockCorrectCount + (isCorrect ? 1 : 0));
-      const practiceBonus = isPracticeMode ? 10 : 0;
-      if (practiceBonus > 0 && onAwardSparks) {
-        onAwardSparks(practiceBonus);
-      }
       // Trigger Break Overlay
       setCompletedBlockStats({
         correctCount: blockCorrectCount + (isCorrect ? 1 : 0),
-        sparksEarned: blockSparksEarned + earnedSparks + practiceBonus,
+        sparksEarned: blockSparksEarned + earnedSparks,
         blockRatingGain: isPracticeMode ? 0 : (blockRatingGain + evalResult.rankDelta),
         shieldsUsed: blockShieldsUsed
       });
@@ -796,6 +793,7 @@ export default function CodingSessionView({
         profileId={profileId}
         activeSubject="coding"
         isPracticeMode={isPracticeMode}
+        practiceTier={practiceConfig?.tier || userTier}
         practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
         onExitPractice={() => {
           setShowBreakOverlay(false);

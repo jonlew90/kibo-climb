@@ -11,3 +11,8 @@
    - Never inspect or traverse `functions/node_modules/` or root `node_modules/`.
 7. **Silent Tool Invocations:** Do not output status messages or preambles describing tool calls before running them.
 8. **Mascot Identity:** Kibo is the Red Panda mascot (represented in the favicon and `Mascot.jsx`), NOT a mountain. Mount Kibo is the climb setting/theme, not the mascot.
+9. **Code Exploration Rules:**
+   - Before reading files, search using exact string matches rather than broad regex patterns.
+   - Read files in full or large contiguous sections (up to 200 lines) instead of multiple tiny fragmented chunks.
+   - Never read more than 3 distinct files without pausing to report findings or ask for clarification.
+   - Exclude build artifacts, generated types, and package lock files from searches.

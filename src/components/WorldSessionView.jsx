@@ -971,7 +971,7 @@ export default function WorldSessionView({
 
       setCorrectCount((prev) => prev + 1);
       setBlockCorrectCount((prev) => prev + 1);
-      const baseEarned = evalResult.totalSparksEarned;
+      const baseEarned = isPracticeMode ? 1 : evalResult.totalSparksEarned;
       blockEarned = isDoubleSparksActive ? baseEarned * 2 : baseEarned;
       setSessionSparksEarned((prev) => prev + blockEarned);
       setBlockSparksEarned((prev) => prev + blockEarned);
@@ -1113,10 +1113,7 @@ export default function WorldSessionView({
 
         const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
         const finalBlockCorrect = Math.min(totalBlockQuestions, blockCorrectCount + 1);
-        const finalBlockSparks = isPracticeMode ? (blockSparksEarned + blockEarned + 10) : (blockSparksEarned + blockEarned);
-        if (isPracticeMode && onAwardSparks) {
-          onAwardSparks(10);
-        }
+        const finalBlockSparks = blockSparksEarned + blockEarned;
         const isPerfectBlock = finalBlockCorrect === totalBlockQuestions;
 
         // RECORD COMPLETED CLIMB BLOCK INTO SPRINT HISTORY FOR ACCURATE PRACTICE TIME TRACKING
@@ -1368,10 +1365,7 @@ export default function WorldSessionView({
 
       const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
       const finalBlockCorrect = blockCorrectCount;
-      const finalBlockSparks = isPracticeMode ? (blockSparksEarned + 10) : blockSparksEarned;
-      if (isPracticeMode && onAwardSparks) {
-        onAwardSparks(10);
-      }
+      const finalBlockSparks = blockSparksEarned;
       const isPerfectBlock = false;
 
       const newSessionRecord = {
@@ -1525,6 +1519,7 @@ export default function WorldSessionView({
         profileId={profileId}
         activeSubject="world"
         isPracticeMode={isPracticeMode}
+        practiceTier={practiceConfig?.tier || userTier}
         practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
         onExitPractice={() => {
           setShowBreakOverlay(false);

@@ -44,7 +44,7 @@ export default function Keypad({
 
   if (isBooleanQuestion) {
     return (
-      <div className="w-full max-w-sm mx-auto flex flex-col justify-center min-h-[220px] sm:min-h-[240px] p-2.5 sm:p-3.5 bg-slate-100/90 rounded-2xl sm:rounded-3xl border-2 border-slate-200 shadow-inner my-1.5 sm:my-3">
+      <div className="w-full max-w-sm mx-auto flex flex-col justify-center h-[264px] sm:h-[276px] p-2.5 sm:p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner my-2">
         <div className="flex items-center justify-center gap-3.5 w-full">
           <button
             onClick={() => {
@@ -117,7 +117,7 @@ export default function Keypad({
       : (choiceOptions.length > 2 ? 'grid grid-cols-2 sm:grid-cols-4 gap-2' : 'flex items-center justify-center gap-3.5');
 
     return (
-      <div className="w-full max-w-sm mx-auto flex flex-col justify-center min-h-[220px] sm:min-h-[240px] p-2.5 sm:p-3.5 bg-slate-100/90 rounded-2xl sm:rounded-3xl border-2 border-slate-200 shadow-inner my-1.5 sm:my-3">
+      <div className="w-full max-w-sm mx-auto flex flex-col justify-center h-[264px] sm:h-[276px] p-2.5 sm:p-3.5 bg-slate-100/90 rounded-3xl border-2 border-slate-200 shadow-inner my-2">
         <div className={`w-full ${gridLayoutClass}`}>
           {choiceOptions.map((opt, idx) => {
           const pruned = isKeyPruned(opt);

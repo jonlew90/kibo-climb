@@ -5,6 +5,7 @@ import ConfettiCanvas from './ConfettiCanvas';
 import RollingNumberTicker from './RollingNumberTicker';
 import { questService } from '../services/questService';
 import { storageService } from '../services/storageService';
+import { SUBJECTS_CONFIG } from '../config/subjects';
 
 export default function KiboBreakOverlay({
   correctCount = 12,
@@ -22,6 +23,7 @@ export default function KiboBreakOverlay({
   activeSubject = 'math',
   isPracticeMode = false,
   practiceTitle = 'Training Camp',
+  practiceTier = null,
   onExitPractice,
   onOpenWorkshop,
   onResumeClimb
@@ -35,6 +37,11 @@ export default function KiboBreakOverlay({
   const dailySubjects = questService.getDailySubjectsCompleted(activeProfileId);
   const isMultiSubjectClaimed = questService.isDailyMultiSubjectBonusClaimed(activeProfileId);
   const altitudeEarned = (displayCorrect * 10) + (Math.max(0, totalCount - displayCorrect) * 2);
+
+  const effectivePracticeTier = practiceTier || (practiceTitle ? parseInt(practiceTitle.replace(/\D+/g, ''), 10) || 1 : 1);
+  const subjectStrands = SUBJECTS_CONFIG[activeSubject]?.SKILL_STRANDS || SUBJECTS_CONFIG.math.SKILL_STRANDS || [];
+  const practicedStrand = subjectStrands.find((s) => s.tier === effectivePracticeTier);
+  const strandLabel = practicedStrand ? practicedStrand.name : `Tier ${effectivePracticeTier}`;
 
   return (
     <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-hidden select-none animate-pop border-none">
@@ -65,38 +72,17 @@ export default function KiboBreakOverlay({
           {!isPracticeMode && !isNewSpeedRecord && isNewStreakRecord && (
             <div className="w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 border-2 border-orange-500 rounded-2xl py-1.5 px-3 shadow-md animate-bounce">
               <span className="text-xs sm:text-sm font-black text-orange-950 flex items-center justify-center gap-1.5">
-                🔥 NEW PR! Best Question Streak: {streak} Qs in a row! 🌟
+                🔥 NEW RECORD! Longest Flawless Streak: {streak} in a row! ⚡
               </span>
             </div>
           )}
+        </div>
 
-          {!isPracticeMode && !isNewSpeedRecord && !isNewStreakRecord && isPerfectBlock && (
-            <div className="w-full bg-emerald-100 border border-emerald-300 rounded-xl py-1 px-3 shadow-xs">
-              <span className="text-xs font-black text-emerald-900 flex items-center justify-center gap-1.5">
-                🎯 Flawless 12/12 Climb Ascent! {blockTimeSec ? `(${blockTimeSec}s)` : ''}
-              </span>
-            </div>
-          )}
-
-          {isPracticeMode && isPerfectBlock && (
-            <div className="w-full bg-emerald-100 border border-emerald-300 rounded-xl py-1 px-3 shadow-xs">
-              <span className="text-xs font-black text-emerald-900 flex items-center justify-center gap-1.5">
-                🎯 100% Training Mastery! {blockTimeSec ? `(${blockTimeSec}s)` : ''}
-              </span>
-            </div>
-          )}
-
-          <p className="text-xs sm:text-sm font-bold text-purple-900">
-            {isPracticeMode
-              ? `You completed your ${totalCount}-problem practice sprint in ${practiceTitle}! ${blockTimeSec && !isPerfectBlock ? `(${blockTimeSec}s)` : ''}`
-              : `You completed ${totalCount} adaptive problems on Mount Kibo! ${blockTimeSec && !isPerfectBlock ? `(${blockTimeSec}s)` : ''}`}
-          </p>
-
-          {/* Kibo Mascot Image */}
-          <div className="relative py-1 flex items-center justify-center p-1 overflow-visible">
-            <div className="absolute w-28 h-28 rounded-full bg-amber-400/30 blur-xl animate-pulse pointer-events-none" />
+        {/* MASCOT HERO ANIMATION (flex-shrink: 0) */}
+        <div className="shrink-0 flex items-center justify-center py-1 select-none">
+          <div className="relative">
             <Mascot
-              mood="happy"
+              mood={isPerfectBlock ? 'happy' : 'idle'}
               state="break"
               equipped={equippedItems}
               className="w-24 h-24 sm:w-32 sm:h-32 aspect-square filter drop-shadow-md animate-bounce"
@@ -106,8 +92,8 @@ export default function KiboBreakOverlay({
 
         {/* MIDDLE CONTAINER (flex: 1, display: flex, flex-direction: column, justify-content: center) */}
         <div className="flex-1 min-h-0 flex flex-col justify-center gap-3 py-2">
-          {/* 4-Tile Detailed Climb Stats Matrix (2x2 Grid) */}
-          <div className="grid grid-cols-2 gap-2.5 bg-white border-2 border-amber-200/90 rounded-2xl p-3 sm:p-4 shadow-md text-center flex-1 min-h-0 flex flex-col justify-center">
+          {/* Detailed Climb Stats Matrix */}
+          <div className={`grid ${isPracticeMode ? 'grid-cols-3' : 'grid-cols-2'} gap-2.5 bg-white border-2 border-amber-200/90 rounded-2xl p-3 sm:p-4 shadow-md text-center flex-1 min-h-0 flex flex-col justify-center`}>
             {/* Accuracy Tile */}
             <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center relative overflow-hidden">
               <span className="text-xs font-black uppercase text-emerald-800 flex items-center justify-center gap-1">
@@ -159,26 +145,47 @@ export default function KiboBreakOverlay({
               </div>
             </div>
 
-            {/* Competence Rank Delta Tile */}
-            <div className="bg-cyan-50/80 border border-cyan-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center">
-              <span className="text-xs font-black uppercase text-cyan-800 flex items-center justify-center gap-1">
-                <TrendingUp className="w-3.5 h-3.5 text-cyan-600" /> Rank Delta
-              </span>
-              <div className="text-2xl sm:text-3xl font-black text-cyan-700 flex items-center justify-center">
-                {blockRatingGain >= 0 ? `+${blockRatingGain}` : `${blockRatingGain}`} ⭐
+            {/* Competence Rank Delta Tile (Hidden in practice mode) */}
+            {!isPracticeMode && (
+              <div className="bg-cyan-50/80 border border-cyan-200/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center space-y-0.5 text-center">
+                <span className="text-xs font-black uppercase text-cyan-800 flex items-center justify-center gap-1">
+                  <TrendingUp className="w-3.5 h-3.5 text-cyan-600" /> Rank Delta
+                </span>
+                <div className="text-2xl sm:text-3xl font-black text-cyan-700 flex items-center justify-center">
+                  {blockRatingGain >= 0 ? `+${blockRatingGain}` : `${blockRatingGain}`} ⭐
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Competence Rank Banner */}
-          <div className="bg-gradient-to-r from-amber-100 via-yellow-100 to-purple-100 border border-amber-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex items-center justify-between shadow-xs shrink-0">
-            <span className="text-xs sm:text-sm font-black text-purple-900 flex items-center gap-1.5 uppercase">
-              <Trophy className="w-4 h-4 text-amber-600 fill-amber-400 stroke-[2.5]" /> Competence Rank
-            </span>
-            <span className="text-sm sm:text-base font-black text-purple-950 bg-white px-2.5 py-0.5 sm:py-1 rounded-xl border border-purple-200 shadow-inner">
-              <RollingNumberTicker value={competenceRating} showDeltaBadge={false} suffix=" ⭐" />
-            </span>
-          </div>
+          {/* Competence Rank Banner (Climb Mode) / Tier Practiced Banner (Practice Mode) */}
+          {!isPracticeMode ? (
+            <div className="bg-gradient-to-r from-amber-100 via-yellow-100 to-purple-100 border border-amber-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex items-center justify-between shadow-xs shrink-0">
+              <span className="text-xs sm:text-sm font-black text-purple-900 flex items-center gap-1.5 uppercase">
+                <Trophy className="w-4 h-4 text-amber-600 fill-amber-400 stroke-[2.5]" /> Competence Rank
+              </span>
+              <span className="text-sm sm:text-base font-black text-purple-950 bg-white px-2.5 py-0.5 sm:py-1 rounded-xl border border-purple-200 shadow-inner">
+                <RollingNumberTicker value={competenceRating} showDeltaBadge={false} suffix=" ⭐" />
+              </span>
+            </div>
+          ) : (
+            <div className="bg-gradient-to-r from-indigo-100 via-purple-100 to-indigo-100 border border-indigo-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex items-center justify-between shadow-xs shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-base sm:text-lg shrink-0">🎯</span>
+                <div className="text-left min-w-0">
+                  <span className="text-[10px] sm:text-xs font-black text-indigo-800 uppercase tracking-wider block">
+                    Tier Practiced
+                  </span>
+                  <span className="text-xs sm:text-sm font-black text-indigo-950 truncate block">
+                    Tier {effectivePracticeTier} • {strandLabel}
+                  </span>
+                </div>
+              </div>
+              <span className="text-xs sm:text-sm font-black text-indigo-950 bg-white px-2.5 py-0.5 sm:py-1 rounded-xl border border-indigo-200 shadow-inner shrink-0 ml-2">
+                Tier {effectivePracticeTier}
+              </span>
+            </div>
+          )}
 
           {/* In Climb Mode: Global Climber Ascent & Altitude XP Progress + Multi-Subject Bonus */}
           {!isPracticeMode ? (
@@ -222,7 +229,7 @@ export default function KiboBreakOverlay({
               </div>
             </>
           ) : (
-            /* In Practice Mode: Targeted Practice Completion Card */
+            /* In Practice Mode: Targeted Practice Completion Card without bonus badge */
             <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-100 border border-indigo-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex items-center justify-between shadow-xs shrink-0 text-left">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🏋️</span>
@@ -236,7 +243,7 @@ export default function KiboBreakOverlay({
                 </div>
               </div>
               <span className="text-xs font-black text-indigo-900 bg-white/90 px-2.5 py-1 rounded-full border border-indigo-200">
-                +10 ⚡ Practice Bonus
+                Practice Complete
               </span>
             </div>
           )}
