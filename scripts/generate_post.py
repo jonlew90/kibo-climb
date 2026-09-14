@@ -1,12 +1,14 @@
 import os
 import json
 import re
+import time
 from datetime import datetime, timezone
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from google.genai.errors import APIError
 
 load_dotenv()
 
@@ -19,7 +21,7 @@ client = genai.Client(api_key=api_key)
 BASE_URL = "https://kiboclimb.com"
 
 # -------------------------------------------------------------
-# 1. System Prompt & High-Intent Structured Generation
+# 1. System Prompt & Structured Generation Configuration
 # -------------------------------------------------------------
 system_prompt = """
 You are an expert educational writer and SEO strategist for Kibo Climb, an adaptive math learning app.
@@ -59,17 +61,44 @@ response_schema = {
     "required": ["title", "slug", "meta_description", "tags", "featured_asset", "content_markdown", "social_copy"]
 }
 
-print("Generating post with Gemini API...")
-response = client.models.generate_content(
-    model="gemini-3.6-flash",
-    contents=user_prompt,
-    config=types.GenerateContentConfig(
-        system_instruction=system_prompt,
-        response_mime_type="application/json",
-        response_schema=response_schema,
-        temperature=0.7,
-    ),
-)
+# -------------------------------------------------------------
+# 2. Resilient API Call (Retries + Model Fallback)
+# -------------------------------------------------------------
+MODELS_TO_TRY = ["gemini-3.6-flash", "gemini-2.5-pro"]
+max_retries = 3
+response = None
+
+for model_name in MODELS_TO_TRY:
+    delay = 4
+    for attempt in range(1, max_retries + 1):
+        try:
+            print(f"Calling Gemini API using {model_name} (Attempt {attempt}/{max_retries})...")
+            response = client.models.generate_content(
+                model=model_name,
+                contents=user_prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    response_mime_type="application/json",
+                    response_schema=response_schema,
+                    temperature=0.7,
+                ),
+            )
+            break
+        except APIError as e:
+            if e.code in (503, 500, 429) and attempt < max_retries:
+                print(f"Temporary server issue ({e.code}). Retrying in {delay}s...")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                print(f"Failed with {model_name}: {e.message}")
+                break
+
+    if response:
+        print(f"Successfully received response via {model_name}.")
+        break
+
+if not response:
+    raise RuntimeError("All configured Gemini models failed due to persistent server load.")
 
 data = json.loads(response.text)
 
@@ -82,7 +111,7 @@ data["slug"] = slug
 data["published_at"] = pub_date_iso
 
 # -------------------------------------------------------------
-# 2. Write Post JSON (For Client PWA / React Consumer)
+# 3. Write Post JSON (For Client PWA / React Consumer)
 # -------------------------------------------------------------
 json_dir = os.path.join("src", "content", "blog")
 os.makedirs(json_dir, exist_ok=True)
@@ -93,7 +122,7 @@ with open(json_file_path, "w", encoding="utf-8") as f:
 print(f" Saved JSON: {json_file_path}")
 
 # -------------------------------------------------------------
-# 3. Update public/sitemap.xml
+# 4. Update public/sitemap.xml
 # -------------------------------------------------------------
 public_dir = "public"
 os.makedirs(public_dir, exist_ok=True)
@@ -139,7 +168,7 @@ with open(sitemap_path, "w", encoding="utf-8") as f:
 print(f" Updated Sitemap: {sitemap_path}")
 
 # -------------------------------------------------------------
-# 4. Generate Pre-Rendered Branded HTML (For Crawlers & Direct Hits)
+# 5. Generate Pre-Rendered Branded HTML (For Crawlers & Direct Hits)
 # -------------------------------------------------------------
 html_out_dir = os.path.join(public_dir, "blog", slug)
 os.makedirs(html_out_dir, exist_ok=True)

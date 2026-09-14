@@ -69,3 +69,7 @@ test_word_reveals.js
 # IntelliJ / Android Studio
 .idea/
 *.iml
+
+__pycache__/
+*.py[cod]
+*$py.class
