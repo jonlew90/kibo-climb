@@ -1136,7 +1136,7 @@ export default function WorldSessionView({
         };
 
         const existingHistory = activeUserData.sprintHistory || [];
-        const updatedHistory = [newSessionRecord, ...existingHistory];
+        const updatedHistory = isPracticeMode ? existingHistory : [newSessionRecord, ...existingHistory];
 
         const currentRecords = activeUserData.personalRecords || {};
         const isNewSpeedRecord = !isPracticeMode && isPerfectBlock && (!currentRecords.fastest12QuestionsTime || blockTimeSec < currentRecords.fastest12QuestionsTime);
@@ -1176,36 +1176,38 @@ export default function WorldSessionView({
         if (!isPracticeMode && onRecordDailyPractice) onRecordDailyPractice();
 
         // Immediately evaluate and claim any newly met badges at block completion (e.g. Flawless Ascent, Trailblazer Record, 3rd Perfect Run)
-        const postBlockUserData = storageService.getUserData('world');
-        const blockBadgeEval = evaluateBadges({
-          ...postBlockUserData,
-          inSessionStreak: evalResult.nextInSessionStreak,
-          competenceRank: evalResult.nextCompetenceRank,
-          blockRatingGain: nextBlockRatingGain,
-          isNewSpeedRecord,
-          hasSetPersonalRecord: isNewSpeedRecord || isPerfectBlock,
-          subjectId: 'world'
-        }, newSessionRecord);
+        if (!isPracticeMode) {
+          const postBlockUserData = storageService.getUserData('world');
+          const blockBadgeEval = evaluateBadges({
+            ...postBlockUserData,
+            inSessionStreak: evalResult.nextInSessionStreak,
+            competenceRank: evalResult.nextCompetenceRank,
+            blockRatingGain: nextBlockRatingGain,
+            isNewSpeedRecord,
+            hasSetPersonalRecord: isNewSpeedRecord || isPerfectBlock,
+            subjectId: 'world'
+          }, newSessionRecord);
 
-        if (blockBadgeEval?.updatedUnlocked && onUnlockedBadgesChange) {
-          onUnlockedBadgesChange(blockBadgeEval.updatedUnlocked);
-        }
+          if (blockBadgeEval?.updatedUnlocked && onUnlockedBadgesChange) {
+            onUnlockedBadgesChange(blockBadgeEval.updatedUnlocked);
+          }
 
-        if (blockBadgeEval?.newlyUnlocked && blockBadgeEval.newlyUnlocked.length > 0) {
-          const highestBadge = blockBadgeEval.newlyUnlocked[0];
-          const bonusSparks = 25;
-          if (onAwardSparks) onAwardSparks(bonusSparks);
-          setSessionSparksEarned((prev) => prev + bonusSparks);
-          setBlockSparksEarned((prev) => prev + bonusSparks);
-          soundFx.playVictory();
-          setCelebrationEvent({
-            type: 'badge',
-            title: '🏆 NEW BADGE UNLOCKED!',
-            icon: highestBadge.icon || '🏅',
-            name: highestBadge.title || highestBadge.name,
-            description: highestBadge.description,
-            bonusSparks: bonusSparks
-          });
+          if (blockBadgeEval?.newlyUnlocked && blockBadgeEval.newlyUnlocked.length > 0) {
+            const highestBadge = blockBadgeEval.newlyUnlocked[0];
+            const bonusSparks = 25;
+            if (onAwardSparks) onAwardSparks(bonusSparks);
+            setSessionSparksEarned((prev) => prev + bonusSparks);
+            setBlockSparksEarned((prev) => prev + bonusSparks);
+            soundFx.playVictory();
+            setCelebrationEvent({
+              type: 'badge',
+              title: '🏆 NEW BADGE UNLOCKED!',
+              icon: highestBadge.icon || '🏅',
+              name: highestBadge.title || highestBadge.name,
+              description: highestBadge.description,
+              bonusSparks: bonusSparks
+            });
+          }
         }
       }
 
@@ -1389,7 +1391,7 @@ export default function WorldSessionView({
 
       const activeUserData = storageService.getUserData('world');
       const existingHistory = activeUserData.sprintHistory || [];
-      const updatedHistory = [newSessionRecord, ...existingHistory];
+      const updatedHistory = isPracticeMode ? existingHistory : [newSessionRecord, ...existingHistory];
 
       setCompletedBlockStats({
         correctCount: finalBlockCorrect,
@@ -1418,19 +1420,21 @@ export default function WorldSessionView({
       if (!isPracticeMode && onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
       if (!isPracticeMode && onRecordDailyPractice) onRecordDailyPractice();
 
-      const postBlockUserData = storageService.getUserData('world');
-      const blockBadgeEval = evaluateBadges({
-        ...postBlockUserData,
-        inSessionStreak: data.evalResult.nextInSessionStreak,
-        competenceRank: data.evalResult.nextCompetenceRank,
-        blockRatingGain: data.nextBlockRatingGain,
-        isNewSpeedRecord: false,
-        hasSetPersonalRecord: false,
-        subjectId: 'world'
-      }, newSessionRecord);
+      if (!isPracticeMode) {
+        const postBlockUserData = storageService.getUserData('world');
+        const blockBadgeEval = evaluateBadges({
+          ...postBlockUserData,
+          inSessionStreak: data.evalResult.nextInSessionStreak,
+          competenceRank: data.evalResult.nextCompetenceRank,
+          blockRatingGain: data.nextBlockRatingGain,
+          isNewSpeedRecord: false,
+          hasSetPersonalRecord: false,
+          subjectId: 'world'
+        }, newSessionRecord);
 
-      if (blockBadgeEval?.updatedUnlocked && onUnlockedBadgesChange) {
-        onUnlockedBadgesChange(blockBadgeEval.updatedUnlocked);
+        if (blockBadgeEval?.updatedUnlocked && onUnlockedBadgesChange) {
+          onUnlockedBadgesChange(blockBadgeEval.updatedUnlocked);
+        }
       }
     } else {
       const nextIdx = currentIndex + 1;
@@ -1522,7 +1526,11 @@ export default function WorldSessionView({
         activeSubject="world"
         isPracticeMode={isPracticeMode}
         practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
-        onExitPractice={onExitPractice}
+        onExitPractice={() => {
+          setShowBreakOverlay(false);
+          setHasStartedClimb(false);
+          if (onExitPractice) onExitPractice();
+        }}
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
           if (isPracticeMode && onExitPractice) {

@@ -797,7 +797,11 @@ export default function CodingSessionView({
         activeSubject="coding"
         isPracticeMode={isPracticeMode}
         practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
-        onExitPractice={onExitPractice}
+        onExitPractice={() => {
+          setShowBreakOverlay(false);
+          setHasStartedClimb(false);
+          if (onExitPractice) onExitPractice();
+        }}
         onOpenWorkshop={() => {
           setShowBreakOverlay(false);
           if (isPracticeMode && onExitPractice) {
