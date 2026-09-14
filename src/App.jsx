@@ -74,6 +74,7 @@ import CinematicSplash from './components/CinematicSplash';
 import { setHapticsEnabled } from './utils/audio';
 import { navigationHistory, VIEWS, VIEW_TYPES, getPathForId, SUBJECT_ROUTES } from './utils/navigationHistory';
 import { updateDocumentSeo } from './utils/seoMetadata';
+import { getWorksheetById, getCanonicalPath } from './utils/worksheetGenerator';
 
 export default function App() {
   // App State: 'adaptive_session' | 'settings' | 'privacy' | 'terms' | 'leaderboard'
@@ -682,10 +683,12 @@ export default function App() {
     let initialWorksheetId = activeWorksheetId;
     if (path.startsWith('/worksheets')) {
       initialRoute = VIEWS.WORKSHEET_VIEWER;
-      const sheetSlug = path.replace(/^\/worksheets\/?/, '').trim();
-      if (sheetSlug) {
-        initialWorksheetId = sheetSlug;
-        setActiveWorksheetId(sheetSlug);
+      // New format: /worksheets/{subject}/{slug}
+      const newMatch = path.match(/^\/worksheets\/([^/]+)\/([^/?]+)/);
+      if (newMatch) {
+        // worksheetId stays as the full slug path; WorksheetViewerScreen resolves by URL
+        initialWorksheetId = `${newMatch[1]}/${newMatch[2]}`;
+        setActiveWorksheetId(initialWorksheetId);
       }
     } else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') {
       initialRoute = VIEWS.PARENT_DASHBOARD;
@@ -737,8 +740,8 @@ export default function App() {
         else if (path === '/quests') targetRoute = VIEWS.QUESTS;
         else if (path.startsWith('/worksheets')) {
           targetRoute = VIEWS.WORKSHEET_VIEWER;
-          const sheetSlug = path.replace(/^\/worksheets\/?/, '').trim();
-          if (sheetSlug) setActiveWorksheetId(sheetSlug);
+          const newMatch = path.match(/^\/worksheets\/([^/]+)\/([^/?]+)/);
+          if (newMatch) setActiveWorksheetId(`${newMatch[1]}/${newMatch[2]}`);
         } else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') targetRoute = VIEWS.PARENT_DASHBOARD;
         handleNavigateTo(path, targetRoute);
       }
@@ -2968,6 +2971,11 @@ export default function App() {
             setParentDashboardHighlight('family_plan');
             handleNavigateTo('/parent', VIEWS.PARENT_DASHBOARD);
           }}
+          onOpenTrainingCamp={({ subject } = {}) => {
+            if (subject) setActiveSubject(subject);
+            handleNavigateTo('/', VIEWS.ADAPTIVE_SESSION);
+            setTimeout(() => setIsPracticeModeOpen(true), 100);
+          }}
         />
       )}
 
@@ -3074,8 +3082,10 @@ export default function App() {
           onRedeemPromoCode={handleRedeemPromoCode}
           renderFooter={renderNavigationFooter}
           onSelectWorksheet={(sheetId) => {
+            const sheet = getWorksheetById(sheetId);
+            const path = sheet ? getCanonicalPath(sheet) : `/worksheets/${sheetId}`;
             setActiveWorksheetId(sheetId);
-            handleNavigateTo(`/worksheets/${sheetId}`, VIEWS.WORKSHEET_VIEWER);
+            handleNavigateTo(path, VIEWS.WORKSHEET_VIEWER);
           }}
         />
       )}

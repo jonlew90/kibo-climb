@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Printer, Copy, Lock, Sparkles, CheckCircle2, Home, Dices, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getWorksheetById, getWorksheetsForSubject, generateProblemsForWorksheet, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
+import { ArrowLeft, Printer, Copy, Lock, Sparkles, CheckCircle2, Home, Dices, ChevronLeft, ChevronRight, Dumbbell } from 'lucide-react';
+import { getWorksheetBySlug, getWorksheetsForSubject, generateProblemsForWorksheet, getCanonicalPath, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
+import { updateWorksheetSeo } from '../utils/seoMetadata';
 import { soundFx } from '../utils/audio';
 import { analyticsService } from '../services/analyticsService';
 import { storageService } from '../services/storageService';
@@ -10,6 +11,7 @@ export default function WorksheetViewerScreen({
   onBack,
   onNavigate,
   onOpenKiboClubUpgrade,
+  onOpenTrainingCamp,
   fromParentDashboard = false
 }) {
   const [copied, setCopied] = useState(false);
@@ -22,14 +24,39 @@ export default function WorksheetViewerScreen({
     return 0;
   });
 
-  const worksheet = getWorksheetById(worksheetId) || getWorksheetById('math_starter_k2');
+  // Resolve worksheet: first try new /worksheets/{subject}/{slug} URL format,
+  // then fall back to the ID passed via prop (used by internal Parent Dashboard nav).
+  const worksheet = (() => {
+    if (typeof window !== 'undefined') {
+      const pathMatch = window.location.pathname.match(/^\/worksheets\/([^/]+)\/([^/?]+)/);
+      if (pathMatch) {
+        const [, subject, slug] = pathMatch;
+        const bySlug = getWorksheetBySlug(subject, slug);
+        if (bySlug) return bySlug;
+      }
+    }
+    // Fall back to ID lookup (from PrintablesTab / Parent Dashboard)
+    const WORKSHEET_CATALOG = getWorksheetsForSubject('math')
+      .concat(getWorksheetsForSubject('words'))
+      .concat(getWorksheetsForSubject('world'))
+      .concat(getWorksheetsForSubject('coding'));
+    return WORKSHEET_CATALOG.find(w => w.id === worksheetId) || getWorksheetsForSubject('math')[0];
+  })();
 
-  // Reset seed when switching between different worksheets
+  // Reset seed when switching between worksheets
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const s = params.get('seed');
       setSeed(s ? Number(s) || s : 0);
+
+      // Ensure the URL reflects the canonical path (handles internal nav from Parent Dashboard)
+      if (worksheet && !window.location.pathname.includes(`/${worksheet.subject}/${worksheet.slug}`)) {
+        const canonical = getCanonicalPath(worksheet);
+        const url = new URL(window.location.href);
+        url.pathname = canonical;
+        window.history.replaceState({ worksheetId: worksheet.id }, '', url.toString());
+      }
     } else {
       setSeed(0);
     }
@@ -48,8 +75,7 @@ export default function WorksheetViewerScreen({
 
   useEffect(() => {
     if (worksheet) {
-      const isDefault = !seed || seed === 0;
-      document.title = `${worksheet.title}${!isDefault ? ` (Set #${seed})` : ''} (${worksheet.gradeLabel}) • Printable Worksheet | Kibo Climb`;
+      updateWorksheetSeo(worksheet, seed);
       analyticsService.logWorksheetView(worksheet.id, worksheet.subject, seed);
     }
     return () => {
@@ -59,16 +85,18 @@ export default function WorksheetViewerScreen({
 
   const handleGenerateNewSet = () => {
     soundFx.playKeyTap();
-    // Generate a fresh random integer seed (1 - 99999)
     const nextSeed = Math.floor(Math.random() * 99000) + 1000;
     setSeed(nextSeed);
 
     if (typeof window !== 'undefined' && window.history && window.history.pushState) {
+      const canonical = worksheet ? getCanonicalPath(worksheet) : window.location.pathname;
       const url = new URL(window.location.href);
+      url.pathname = canonical;
       url.searchParams.set('seed', nextSeed);
-      window.history.pushState({ worksheetId: worksheet.id, seed: nextSeed }, '', url.toString());
+      window.history.pushState({ worksheetId: worksheet?.id, seed: nextSeed }, '', url.toString());
     }
   };
+
 
   const handlePrint = () => {
     soundFx.playKeyTap();
@@ -213,7 +241,7 @@ export default function WorksheetViewerScreen({
                   type="button"
                   onClick={() => {
                     soundFx.playKeyTap();
-                    if (onNavigate) onNavigate(`/worksheets/${prevSheet.id}`, 'worksheet_viewer', { worksheetId: prevSheet.id });
+                    if (onNavigate) onNavigate(getCanonicalPath(prevSheet), 'worksheet_viewer', { worksheetId: prevSheet.id });
                   }}
                   className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 hover:border-indigo-300 transition-all text-left flex items-center gap-1.5 cursor-pointer group shrink-0 active:scale-95 shadow-2xs"
                   title={`Go to previous difficulty: ${prevSheet.title}`}
@@ -235,7 +263,7 @@ export default function WorksheetViewerScreen({
                   type="button"
                   onClick={() => {
                     soundFx.playKeyTap();
-                    if (onNavigate) onNavigate(`/worksheets/${nextSheet.id}`, 'worksheet_viewer', { worksheetId: nextSheet.id });
+                    if (onNavigate) onNavigate(getCanonicalPath(nextSheet), 'worksheet_viewer', { worksheetId: nextSheet.id });
                   }}
                   className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 hover:border-indigo-300 transition-all text-right flex items-center gap-1.5 cursor-pointer group shrink-0 active:scale-95 shadow-2xs"
                   title={`Go to next difficulty: ${nextSheet.title}`}
@@ -255,6 +283,31 @@ export default function WorksheetViewerScreen({
           </div>
         );
       })()}
+
+      {/* Try Live in Training Camp CTA (hidden on print, hidden when accessed from within the app) */}
+      {!fromParentDashboard && (
+        <div className="w-full max-w-4xl mb-4 no-print bg-indigo-50 border border-indigo-200 rounded-2xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black text-indigo-900">🏋️ Want to practice this live?</p>
+            <p className="text-[11px] text-indigo-700 font-medium mt-0.5">Try Training Camp — same topic, interactive, streak-safe. Free with a Kibo account.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playKeyTap();
+              if (onOpenTrainingCamp) {
+                onOpenTrainingCamp({ subject: worksheet.subject });
+              } else if (onNavigate) {
+                onNavigate('/', 'adaptive_session', { openTrainingCamp: true, subject: worksheet.subject });
+              }
+            }}
+            className="shrink-0 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+          >
+            <Dumbbell className="w-3.5 h-3.5" />
+            Try Live →
+          </button>
+        </div>
+      )}
 
       {/* Printable 2-Page Container */}
       <div className="w-full max-w-4xl flex flex-col gap-8 print:gap-0">

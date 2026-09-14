@@ -113,3 +113,47 @@ export function updateDocumentSeo({ route, subject = 'math' } = {}) {
   setMeta('name', 'twitter:title', title);
   setMeta('name', 'twitter:description', description);
 };
+
+/**
+ * Sets document meta tags for a specific printable worksheet page.
+ * Replaces the manual document.title assignment in WorksheetViewerScreen.
+ * @param {Object} worksheet - Worksheet catalog entry (must have slug, subject, title, gradeLabel, desc)
+ * @param {number|string} [seed=0] - Active seed; 0 means default set
+ */
+export function updateWorksheetSeo(worksheet, seed = 0) {
+  if (typeof document === 'undefined' || !worksheet) return;
+
+  const setNum = seed && seed !== 0 && seed !== '0' ? ` (Set #${seed})` : '';
+  const subjectLabel = worksheet.subject.charAt(0).toUpperCase() + worksheet.subject.slice(1);
+  const title = `${worksheet.title}${setNum} – Free Printable ${subjectLabel} Worksheet (${worksheet.gradeLabel}) | Kibo Climb`;
+  const description = `Free printable ${worksheet.gradeLabel} ${subjectLabel} worksheet: ${worksheet.desc} 16 problems + parent answer key. Print or share instantly — no account required.`;
+  const canonicalUrl = `https://kiboclimb.com/worksheets/${worksheet.subject}/${worksheet.slug}`;
+
+  document.title = title;
+
+  const setMeta = (attrName, attrValue, val) => {
+    let el = document.querySelector(`meta[${attrName}="${attrValue}"]`);
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute(attrName, attrValue);
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', val);
+  };
+
+  setMeta('name', 'description', description);
+
+  let canonicalEl = document.querySelector('link[rel="canonical"]');
+  if (!canonicalEl) {
+    canonicalEl = document.createElement('link');
+    canonicalEl.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonicalEl);
+  }
+  canonicalEl.setAttribute('href', canonicalUrl);
+
+  setMeta('property', 'og:title', title);
+  setMeta('property', 'og:description', description);
+  setMeta('property', 'og:url', canonicalUrl);
+  setMeta('name', 'twitter:title', title);
+  setMeta('name', 'twitter:description', description);
+}

@@ -43,9 +43,10 @@ export const WORKSHEET_CATALOG = [
     id: 'math_starter_k2',
     subject: 'math',
     tier: 1,
+    slug: 'addition-subtraction-grades-k-2',
     title: 'Base Camp Sums & Differences',
     gradeLabel: 'Grades K–2',
-    description: 'Addition & subtraction fluency up to 20 with clear layout.',
+    desc: 'Addition & subtraction fluency up to 20 with clear layout.',
     isKiboClubOnly: false,
     problemCount: 16
   },
@@ -53,9 +54,10 @@ export const WORKSHEET_CATALOG = [
     id: 'math_starter_34',
     subject: 'math',
     tier: 3,
+    slug: 'multiplication-sprint-grades-3-4',
     title: 'Alpine Multiplication Sprint (0–12)',
     gradeLabel: 'Grades 3–4',
-    description: 'Multiplication tables up to 12×12 & rapid recall drills.',
+    desc: 'Multiplication tables up to 12×12 & rapid recall drills.',
     isKiboClubOnly: false,
     problemCount: 16
   },
@@ -63,9 +65,10 @@ export const WORKSHEET_CATALOG = [
     id: 'math_club_multidigit',
     subject: 'math',
     tier: 4,
+    slug: 'multi-digit-mental-math-grades-4-6',
     title: 'Summit Multi-Digit & Mental Math',
     gradeLabel: 'Grades 4–6',
-    description: '2-digit mental multiplication, 11s shortcut, and tens distribution.',
+    desc: '2-digit mental multiplication, 11s shortcut, and tens distribution.',
     isKiboClubOnly: true,
     problemCount: 16
   },
@@ -73,9 +76,10 @@ export const WORKSHEET_CATALOG = [
     id: 'math_club_fractions_decimals',
     subject: 'math',
     tier: 5,
+    slug: 'fractions-decimals-mastery-grades-4-6',
     title: 'Summit Fractions & Decimals Mastery',
     gradeLabel: 'Grades 4–6',
-    description: 'Equivalent fractions, mixed numbers, and decimal operations with answer key.',
+    desc: 'Equivalent fractions, mixed numbers, and decimal operations with answer key.',
     isKiboClubOnly: true,
     problemCount: 16
   },
@@ -83,9 +87,10 @@ export const WORKSHEET_CATALOG = [
     id: 'math_club_weak_spot',
     subject: 'math',
     tier: 0,
+    slug: 'personalized-weak-spot-drill',
     title: 'Personalized Weak-Spot Drill Packet',
     gradeLabel: 'Adaptive to Climber',
-    description: 'Custom worksheet generated from recent mistakes and missed problem types in session history.',
+    desc: 'Custom worksheet generated from recent mistakes and missed problem types in session history.',
     isKiboClubOnly: true,
     isDynamic: true,
     problemCount: 16
@@ -95,18 +100,20 @@ export const WORKSHEET_CATALOG = [
   {
     id: 'words_starter_phonics',
     subject: 'words',
+    slug: 'phonics-sight-words-grades-k-2',
     title: 'Trailhead Phonics & Sight Words',
     gradeLabel: 'Grades K–2',
-    description: 'Missing vowels, rhyming pairs, and high-frequency sight words.',
+    desc: 'Missing vowels, rhyming pairs, and high-frequency sight words.',
     isKiboClubOnly: false,
     problemCount: 16
   },
   {
     id: 'words_club_spelling_mastery',
     subject: 'words',
+    slug: 'vocabulary-spelling-grades-3-6',
     title: 'Summit Vocabulary & Spelling Expedition',
     gradeLabel: 'Grades 3–6',
-    description: 'Context clues, irregular plurals, prefixes, and word definitions.',
+    desc: 'Context clues, irregular plurals, prefixes, and word definitions.',
     isKiboClubOnly: true,
     problemCount: 16
   },
@@ -115,18 +122,20 @@ export const WORKSHEET_CATALOG = [
   {
     id: 'world_starter_capitals',
     subject: 'world',
+    slug: 'continents-capitals-world-explorer',
     title: 'World Explorer: Continents & Capitals',
     gradeLabel: 'All Ages',
-    description: 'Match countries to capitals and identify mountain summits.',
+    desc: 'Match countries to capitals and identify mountain summits.',
     isKiboClubOnly: false,
     problemCount: 16
   },
   {
     id: 'world_club_geography_deep_dive',
     subject: 'world',
+    slug: 'cartography-physical-geography-grades-3-8',
     title: 'Peak Cartography & Physical Geography',
     gradeLabel: 'Grades 3–8',
-    description: 'Biomes, latitude/longitude navigation, and mountain topography.',
+    desc: 'Biomes, latitude/longitude navigation, and mountain topography.',
     isKiboClubOnly: true,
     problemCount: 16
   },
@@ -135,18 +144,20 @@ export const WORKSHEET_CATALOG = [
   {
     id: 'coding_starter_logic',
     subject: 'coding',
+    slug: 'algorithm-pattern-paths-grades-1-4',
     title: 'Junior Algorithm & Pattern Paths',
     gradeLabel: 'Grades 1–4',
-    description: 'Trace step-by-step directional algorithms and sequence paths.',
+    desc: 'Trace step-by-step directional algorithms and sequence paths.',
     isKiboClubOnly: false,
     problemCount: 16
   },
   {
     id: 'coding_club_syntax_loops',
     subject: 'coding',
+    slug: 'loops-logic-puzzles-grades-3-8',
     title: 'Summit Loops & Logic Puzzles',
     gradeLabel: 'Grades 3–8',
-    description: 'Loop iterations, conditional branching logic, and bug hunt tracing.',
+    desc: 'Loop iterations, conditional branching logic, and bug hunt tracing.',
     isKiboClubOnly: true,
     problemCount: 16
   }
@@ -173,6 +184,16 @@ export function getWorksheetsForSubject(subject = 'math') {
 
 export function getWorksheetById(id) {
   return WORKSHEET_CATALOG.find(w => w.id === id);
+}
+
+/** Resolve a worksheet by subject path segment + URL slug (new canonical route format) */
+export function getWorksheetBySlug(subject, slug) {
+  return WORKSHEET_CATALOG.find(w => w.subject === subject && w.slug === slug);
+}
+
+/** Returns the canonical public URL path for a worksheet, e.g. /worksheets/math/multiplication-sprint-grades-3-4 */
+export function getCanonicalPath(worksheet) {
+  return `/worksheets/${worksheet.subject}/${worksheet.slug}`;
 }
 
 export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], seed = 0) {

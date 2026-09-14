@@ -1636,6 +1636,13 @@ export default function WordsSessionView({
 
   return (
     <div className="w-full h-full flex-1 min-h-0 relative overflow-visible animate-pop flex flex-col">
+      {/* TRAINING CAMP IDENTITY BANNER */}
+      {isPracticeMode && (
+        <div className="w-full bg-indigo-700 text-white text-[11px] font-black text-center py-1 flex items-center justify-center gap-1.5 shrink-0 z-40">
+          <span>🏋️</span>
+          <span>Training Camp — Streak-Safe · Not Scored · Free Hints</span>
+        </div>
+      )}
       <div className="w-full h-full flex flex-col items-center justify-between sm:justify-end pb-1 sm:pb-2 pt-1 px-1.5 sm:px-3 max-w-4xl mx-auto relative overflow-visible flex-1 min-h-0">
 
       {/* CELEBRATION OVERLAY FOR BADGES, MILESTONES & PERSONAL RECORDS */}
