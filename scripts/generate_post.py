@@ -18,16 +18,19 @@ client = genai.Client(api_key=api_key)
 
 BASE_URL = "https://kiboclimb.com"
 
-# 1. Prompt configured for high-intent educational SEO
+# -------------------------------------------------------------
+# 1. System Prompt & High-Intent Structured Generation
+# -------------------------------------------------------------
 system_prompt = """
 You are an expert educational writer and SEO strategist for Kibo Climb, an adaptive math learning app.
 Write an engaging, authoritative 600-word article focusing on a specific, high-intent math topic (mental math shortcuts, fraction strategies, tackling math anxiety, or gamified mastery).
 
-SEO Rules:
-- Structure with clear Markdown headers (## for main sections, ### for sub-steps).
+SEO & Content Rules:
+- Structure with clear Markdown headers (## for main sections, ### for sub-steps). Do not use em dashes anywhere.
 - Include concrete, step-by-step worked numerical examples.
-- Naturally include an internal call-to-action mentioning Kibo Climb (https://kiboclimb.com).
+- Naturally weave in mentions of how climbing Mount Kilimanjaro with Kibo the red panda turns repetitive math practice into an adventure.
 - Keep the tone encouraging, clear, and actionable for parents, teachers, and upper elementary students.
+- Choose the single best featured_asset from the allowed list that visually complements the article topic.
 """
 
 user_prompt = "Generate a fresh, high-value math strategy article as structured JSON."
@@ -39,6 +42,10 @@ response_schema = {
         "slug": {"type": "STRING"},
         "meta_description": {"type": "STRING"},
         "tags": {"type": "ARRAY", "items": {"type": "STRING"}},
+        "featured_asset": {
+            "type": "STRING",
+            "enum": ["kibo-summit.png", "kibo-thinking.png", "kibo-climbing.png"]
+        },
         "content_markdown": {"type": "STRING"},
         "social_copy": {
             "type": "OBJECT",
@@ -49,7 +56,7 @@ response_schema = {
             "required": ["x_post", "short_blurb"]
         }
     },
-    "required": ["title", "slug", "meta_description", "tags", "content_markdown", "social_copy"]
+    "required": ["title", "slug", "meta_description", "tags", "featured_asset", "content_markdown", "social_copy"]
 }
 
 print("Generating post with Gemini API...")
@@ -66,7 +73,7 @@ response = client.models.generate_content(
 
 data = json.loads(response.text)
 
-# Sanitize slug & add metadata
+# Sanitize slug & add timestamps
 slug = re.sub(r'[^a-zA-Z0-9-]', '', data["slug"].lower().replace(" ", "-"))
 pub_date_iso = datetime.now(timezone.utc).isoformat()
 pub_date_short = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -75,7 +82,7 @@ data["slug"] = slug
 data["published_at"] = pub_date_iso
 
 # -------------------------------------------------------------
-# 2. Write Post JSON (For Your React App to consume)
+# 2. Write Post JSON (For Client PWA / React Consumer)
 # -------------------------------------------------------------
 json_dir = os.path.join("src", "content", "blog")
 os.makedirs(json_dir, exist_ok=True)
@@ -104,12 +111,10 @@ if os.path.exists(sitemap_path):
         root = ET.Element(f"{{{ns}}}urlset")
 else:
     root = ET.Element(f"{{{ns}}}urlset")
-    # Add homepage if creating new sitemap
     home_url = ET.SubElement(root, f"{{{ns}}}url")
     ET.SubElement(home_url, f"{{{ns}}}loc").text = f"{BASE_URL}/"
     ET.SubElement(home_url, f"{{{ns}}}priority").text = "1.0"
 
-# Check if URL already exists; update or append
 existing = None
 for url_elem in root.findall(f"{{{ns}}}url"):
     loc = url_elem.find(f"{{{ns}}}loc")
@@ -127,7 +132,6 @@ else:
     if lastmod is not None:
         lastmod.text = pub_date_short
 
-# Format and write sitemap
 rough_string = ET.tostring(root, "utf-8")
 reparsed = minidom.parseString(rough_string)
 with open(sitemap_path, "w", encoding="utf-8") as f:
@@ -135,22 +139,25 @@ with open(sitemap_path, "w", encoding="utf-8") as f:
 print(f" Updated Sitemap: {sitemap_path}")
 
 # -------------------------------------------------------------
-# 4. Generate Pre-Rendered Static HTML (For Crawlers & Social Bots)
+# 4. Generate Pre-Rendered Branded HTML (For Crawlers & Direct Hits)
 # -------------------------------------------------------------
-# Anything in public/ gets copied verbatim to dist/ by Vite,
-# allowing Firebase Hosting to serve this full HTML instantly.
 html_out_dir = os.path.join(public_dir, "blog", slug)
 os.makedirs(html_out_dir, exist_ok=True)
 html_file_path = os.path.join(html_out_dir, "index.html")
 
-# Convert newlines to simple HTML paragraphs for pre-render fallback
+# Format paragraphs from markdown for the static crawler view
 paragraphs = "".join([f"<p>{line}</p>" for line in data["content_markdown"].split("\n\n") if line.strip()])
+
+# Featured image resolution
+featured_filename = data.get("featured_asset", "kibo-climbing.png")
+featured_image_url = f"{BASE_URL}/images/blog/{featured_filename}"
 
 json_ld = json.dumps({
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": data["title"],
     "description": data["meta_description"],
+    "image": featured_image_url,
     "datePublished": pub_date_iso,
     "author": {
         "@type": "Organization",
@@ -185,14 +192,14 @@ html_template = f"""<!DOCTYPE html>
   <meta property="og:url" content="{post_url}" />
   <meta property="og:title" content="{data["title"]}" />
   <meta property="og:description" content="{data["meta_description"]}" />
-  <meta property="og:image" content="{BASE_URL}/icons/og-image.png" />
+  <meta property="og:image" content="{featured_image_url}" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="{post_url}" />
   <meta name="twitter:title" content="{data["title"]}" />
   <meta name="twitter:description" content="{data["meta_description"]}" />
-  <meta name="twitter:image" content="{BASE_URL}/icons/og-image.png" />
+  <meta name="twitter:image" content="{featured_image_url}" />
 
   <!-- Schema.org JSON-LD -->
   <script type="application/ld+json">
@@ -200,19 +207,111 @@ html_template = f"""<!DOCTYPE html>
   </script>
 
   <style>
-    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 720px; margin: 0 auto; padding: 2rem 1rem; color: #222; }}
-    h1 {{ line-height: 1.25; margin-bottom: 0.5rem; }}
-    .date {{ color: #777; font-size: 0.9rem; margin-bottom: 2rem; }}
-    a.home-link {{ text-decoration: none; color: #2563eb; display: inline-block; margin-bottom: 1.5rem; font-weight: 500; }}
+    :root {{
+      --primary: #e0533c;
+      --primary-dark: #c23d28;
+      --bg: #fffbf9;
+      --text: #2d3748;
+      --card-bg: #ffffff;
+      --border: #f0e6e2;
+    }}
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.7;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }}
+    .nav-bar {{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem;
+    }}
+    .nav-logo {{
+      font-weight: 800;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 1.2rem;
+    }}
+    .nav-cta {{
+      background: var(--primary);
+      color: white;
+      padding: 0.5rem 1.2rem;
+      border-radius: 9999px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s ease;
+    }}
+    .nav-cta:hover {{ background: var(--primary-dark); }}
+    .article-container {{
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1rem 1rem 4rem 1rem;
+    }}
+    .hero-img {{
+      width: 100%;
+      max-height: 360px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin: 1.5rem 0;
+      background-color: #f7fafc;
+    }}
+    h1 {{ font-size: 2.2rem; line-height: 1.25; margin-bottom: 0.5rem; color: #1a202c; }}
+    .date {{ color: #718096; font-size: 0.9rem; margin-bottom: 1.5rem; }}
+    article p {{ margin-bottom: 1.25rem; }}
+    article h2 {{ margin-top: 2rem; color: #1a202c; }}
+    article h3 {{ margin-top: 1.5rem; color: #2d3748; }}
+    .cta-card {{
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 2.25rem 2rem;
+      margin-top: 3.5rem;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }}
+    .cta-card h3 {{ margin-top: 0; font-size: 1.45rem; color: #1a202c; }}
+    .cta-card p {{ color: #4a5568; max-width: 540px; margin: 0.75rem auto 1.5rem auto; }}
+    .cta-button {{
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 0.85rem 2.2rem;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s ease;
+    }}
+    .cta-button:hover {{ background: var(--primary-dark); }}
   </style>
 </head>
 <body>
-  <a href="/" class="home-link">← Back to Kibo Climb</a>
-  <h1>{data["title"]}</h1>
-  <div class="date">{pub_date_short}</div>
-  <article>
-    {paragraphs}
-  </article>
+  <nav class="nav-bar">
+    <a href="/" class="nav-logo">🐾 Kibo Climb</a>
+    <a href="/" class="nav-cta">Play Free</a>
+  </nav>
+
+  <main class="article-container">
+    <h1>{data["title"]}</h1>
+    <div class="date">Published {pub_date_short} • Adaptive Math Strategies</div>
+    
+    <img src="{featured_image_url}" alt="{data['title']}" class="hero-img" />
+
+    <article>
+      {paragraphs}
+    </article>
+
+    <section class="cta-card">
+      <h3>Turn Math Practice Into a Mountain Adventure</h3>
+      <p>Help Kibo summit Mount Kilimanjaro by tackling mental math shortcuts, adaptive levels, and skill-building challenges tailored directly to your student.</p>
+      <a href="/" class="cta-button">Start the Climb - Free to Play</a>
+    </section>
+  </main>
 </body>
 </html>
 """

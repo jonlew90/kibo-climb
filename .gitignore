@@ -3,6 +3,7 @@ dist
 dist-ssr
 *.local
 .DS_Store
+**/.DS_Store
 
 # Ignore build outputs and dependencies
 node_modules/
@@ -51,6 +52,7 @@ coverage
 # Root test/screenshot captures
 *.png
 !public/**
+public/**/.DS_Store
 !ios/**
 !android/**
 

@@ -14,6 +14,7 @@ export const VIEWS = {
   QUESTS: 'quests',
   PARENT_DASHBOARD: 'parent_dashboard',
   WORKSHEET_VIEWER: 'worksheet_viewer',
+  BLOG_POST: 'blog_post',
 
   // Modals
   WORKSHOP: 'workshop',
@@ -72,6 +73,8 @@ export const getPathForId = (id, params = {}) => {
       return '/parent';
     case VIEWS.WORKSHEET_VIEWER:
       return params?.worksheetId ? `/worksheets/${params.worksheetId}` : '/worksheets/math_starter_k2';
+    case VIEWS.BLOG_POST:
+      return params?.slug ? `/blog/${params.slug}` : '/blog';
     case VIEWS.ADAPTIVE_SESSION:
     default:
       if (params?.subject && SUBJECT_ROUTES[params.subject]) {
@@ -94,6 +97,14 @@ export const normalizeEntry = (entry) => {
     const slug = entry.path.replace(/^\/worksheets\/?/, '').split('?')[0].trim();
     if (slug) {
       params.worksheetId = slug;
+    }
+  }
+
+  // If slug isn't explicitly in params for blog post, extract it from path
+  if ((id === VIEWS.BLOG_POST || id === 'blog_post') && !params.slug && entry?.path?.startsWith('/blog')) {
+    const slug = entry.path.replace(/^\/blog\/?/, '').split('?')[0].trim();
+    if (slug) {
+      params.slug = slug;
     }
   }
 

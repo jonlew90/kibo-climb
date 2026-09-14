@@ -54,6 +54,7 @@ import FamilyPlanUpgradeModal from './components/FamilyPlanUpgradeModal';
 import DailyBonusRewardModal from './components/DailyBonusRewardModal';
 import SettingsScreen from './components/SettingsScreen';
 import WorksheetViewerScreen from './components/WorksheetViewerScreen';
+import BlogPost from './components/BlogPost';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import CoppaPrivacyPolicyScreen from './components/CoppaPrivacyPolicyScreen';
 import ShareModal from './components/ShareModal';
@@ -106,7 +107,7 @@ export default function App() {
       if (typeof window !== 'undefined') {
         const path = window.location.pathname || '';
         // Standalone utility screens should never display the 2-second splash
-        if (path.startsWith('/worksheets') || path === '/privacy' || path === '/terms' || path === '/coppa-privacy') {
+        if (path.startsWith('/worksheets') || path.startsWith('/blog') || path === '/privacy' || path === '/terms' || path === '/coppa-privacy') {
           return false;
         }
         if (window.sessionStorage) {
@@ -150,6 +151,7 @@ export default function App() {
 
   const [appState, setAppState] = useState(() => {
     const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+    if (path.startsWith('/blog') || path.startsWith('/blog/')) return 'blog_post';
     if (path === '/coppa-privacy' || path === '/coppa-privacy/' || path === '/coppa' || path === '/coppa/') return 'coppa_privacy';
     if (path === '/privacy' || path === '/privacy/') return 'privacy';
     if (path === '/terms' || path === '/terms/') return 'terms';
@@ -370,6 +372,12 @@ export default function App() {
         if (targetSheetId) setActiveWorksheetId(targetSheetId);
       }
 
+      if (current.id === VIEWS.BLOG_POST || current.id === 'blog_post') {
+        const pathSlug = current.path ? current.path.replace(/^\/blog\/?/, '').trim() : '';
+        const targetSlug = current.params?.slug || pathSlug;
+        if (targetSlug) setActiveBlogSlug(targetSlug);
+      }
+
       if (typeof window !== 'undefined' && window.location.pathname !== current.path) {
         window.history.pushState({}, '', current.path);
       }
@@ -381,6 +389,7 @@ export default function App() {
       else if (current.id === 'terms') screenName = 'TermsOfService';
       else if (current.id === 'leaderboard') screenName = 'Leaderboard';
       else if (current.id === 'quests') screenName = 'Quests';
+      else if (current.id === 'blog_post' || current.id === VIEWS.BLOG_POST) screenName = 'BlogPost';
       else if (current.id === 'parent_dashboard' || current.id === VIEWS.PARENT_DASHBOARD) screenName = 'ParentDashboard';
       else if (current.id === VIEWS.ADAPTIVE_SESSION || current.id === 'adaptive_session') {
         const sub = current.params?.subject || activeSubject || 'math';
@@ -681,6 +690,7 @@ export default function App() {
     else if (path === '/leaderboard') initialRoute = VIEWS.LEADERBOARD;
     else if (path === '/quests') initialRoute = VIEWS.QUESTS;
     let initialWorksheetId = activeWorksheetId;
+    let initialBlogSlug = activeBlogSlug;
     if (path.startsWith('/worksheets')) {
       initialRoute = VIEWS.WORKSHEET_VIEWER;
       // New format: /worksheets/{subject}/{slug}
@@ -690,11 +700,18 @@ export default function App() {
         initialWorksheetId = `${newMatch[1]}/${newMatch[2]}`;
         setActiveWorksheetId(initialWorksheetId);
       }
+    } else if (path.startsWith('/blog')) {
+      initialRoute = VIEWS.BLOG_POST;
+      const match = path.match(/^\/blog\/([^/?]+)/);
+      if (match) {
+        initialBlogSlug = match[1];
+        setActiveBlogSlug(initialBlogSlug);
+      }
     } else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') {
       initialRoute = VIEWS.PARENT_DASHBOARD;
     }
 
-    const routeParams = initialRoute === VIEWS.ADAPTIVE_SESSION ? { subject: initialSubject } : (initialRoute === VIEWS.WORKSHEET_VIEWER ? { worksheetId: initialWorksheetId } : {});
+    const routeParams = initialRoute === VIEWS.ADAPTIVE_SESSION ? { subject: initialSubject } : (initialRoute === VIEWS.WORKSHEET_VIEWER ? { worksheetId: initialWorksheetId } : (initialRoute === VIEWS.BLOG_POST ? { slug: initialBlogSlug } : {}));
     navigationHistory.reset({
       type: VIEW_TYPES.ROUTE,
       id: initialRoute,
@@ -742,6 +759,10 @@ export default function App() {
           targetRoute = VIEWS.WORKSHEET_VIEWER;
           const newMatch = path.match(/^\/worksheets\/([^/]+)\/([^/?]+)/);
           if (newMatch) setActiveWorksheetId(`${newMatch[1]}/${newMatch[2]}`);
+        } else if (path.startsWith('/blog')) {
+          targetRoute = VIEWS.BLOG_POST;
+          const match = path.match(/^\/blog\/([^/?]+)/);
+          if (match) setActiveBlogSlug(match[1]);
         } else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') targetRoute = VIEWS.PARENT_DASHBOARD;
         handleNavigateTo(path, targetRoute);
       }
@@ -772,6 +793,13 @@ export default function App() {
   const [isPracticeModeOpen, setIsPracticeModeOpen] = useState(false);
   const [activePracticeSession, setActivePracticeSession] = useState(null);
   const [activeWorksheetId, setActiveWorksheetId] = useState('math_starter_k2');
+  const [activeBlogSlug, setActiveBlogSlug] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const match = window.location.pathname.match(/^\/blog\/([^/?]+)/);
+      if (match) return match[1];
+    }
+    return null;
+  });
   const [placementResultInfo, setPlacementResultInfo] = useState(null);
   const [showPlacementRevealModal, setShowPlacementRevealModal] = useState(false);
 
@@ -2956,6 +2984,15 @@ export default function App() {
         <TermsOfServiceScreen
           onBack={handleGoBack}
           renderFooter={renderNavigationFooter}
+        />
+      )}
+
+      {/* BLOG POST SCREEN */}
+      {(appState === 'blog_post' || appState === VIEWS.BLOG_POST) && (
+        <BlogPost
+          slug={activeBlogSlug}
+          onBack={handleGoBack}
+          onNavigate={handleNavigateTo}
         />
       )}
 
