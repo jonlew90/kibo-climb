@@ -139,6 +139,76 @@ article li {
   margin-bottom: 0.5rem;
 }
 
+article a {
+  color: var(--kibo-teal-dark);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+article a:hover {
+  color: var(--kibo-orange);
+}
+
+.worksheet-callout-card {
+  background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%);
+  border: 2px solid #5EEAD4;
+  border-radius: 20px;
+  padding: 1.75rem 1.5rem;
+  margin: 2.5rem 0;
+  box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.worksheet-callout-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #0F766E;
+  letter-spacing: 0.05em;
+}
+
+.worksheet-callout-card h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #134E4A;
+}
+
+.worksheet-callout-card p {
+  margin: 0;
+  color: #334155;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.worksheet-cta-button {
+  align-self: flex-start;
+  margin-top: 0.5rem;
+  font-family: 'Fredoka', sans-serif;
+  background: linear-gradient(180deg, #14B8A6 0%, #0D9488 100%);
+  color: white !important;
+  padding: 0.65rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none !important;
+  border-bottom: 3px solid #0F766E;
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.worksheet-cta-button:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+}
+
 .cta-card {
   background: linear-gradient(180deg, #FFFFFF 0%, var(--kibo-bg) 50%, #FFF7ED 100%);
   border: 3px solid rgba(255, 255, 255, 0.9);

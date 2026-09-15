@@ -11,10 +11,16 @@ const BLOG_JSON_DIR = path.join(ROOT_DIR, 'src', 'content', 'blog');
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
 const SITEMAP_PATH = path.join(PUBLIC_DIR, 'sitemap.xml');
 
+import { WORKSHEET_CATALOG, getBestWorksheetForTier, getWorksheetBySlug } from '../src/utils/worksheetGenerator.js';
+
 function formatInlineMarkdown(text) {
   if (!text) return '';
-  const safeText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return safeText.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  let safeText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // Bold **text**
+  safeText = safeText.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Markdown links [text](url)
+  safeText = safeText.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  return safeText;
 }
 
 function markdownToHtml(mdText) {
@@ -59,6 +65,33 @@ function markdownToHtml(mdText) {
   }
 
   return htmlParts.join('\n      ');
+}
+
+function resolveRelatedWorksheet(data) {
+  if (data.worksheet_slug) {
+    const match = WORKSHEET_CATALOG.find(w => w.slug === data.worksheet_slug);
+    if (match) return match;
+  }
+  const subject = data.subject || 'math';
+  const tier = Number(data.tier) || 1;
+  return getBestWorksheetForTier(subject, tier);
+}
+
+function renderWorksheetCallout(worksheet) {
+  if (!worksheet) return '';
+  const worksheetUrl = `/worksheets/${worksheet.subject}/${worksheet.slug}`;
+  return `
+    <div class="worksheet-callout-card">
+      <div class="worksheet-callout-header">
+        <span>🎯 Free Printable Practice</span>
+        <span>•</span>
+        <span>${worksheet.gradeLabel || 'Grades K–6'}</span>
+      </div>
+      <h3>Practice This Skill: ${worksheet.title}</h3>
+      <p>${worksheet.desc || 'Reinforce this strategy offline with 16 targeted curriculum problems and a complete parent answer key.'}</p>
+      <a href="${worksheetUrl}" class="worksheet-cta-button">Download Printable Worksheet & Key →</a>
+    </div>
+  `;
 }
 
 function formatDate(isoString) {
@@ -117,6 +150,8 @@ function generatePostHtml(data) {
   const postUrl = `${BASE_URL}/blog/${slug}`;
 
   const contentHtml = markdownToHtml(data.content_markdown || '');
+  const relatedWorksheet = resolveRelatedWorksheet(data);
+  const worksheetCalloutHtml = renderWorksheetCallout(relatedWorksheet);
 
   const jsonLd = JSON.stringify({
     '@context': 'https://schema.org',
@@ -229,6 +264,7 @@ ${jsonLd}
 
     <article>
       ${contentHtml}
+      ${worksheetCalloutHtml}
     </article>
 
     <section class="cta-card">

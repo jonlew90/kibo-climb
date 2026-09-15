@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo } from 'react';
 import { soundFx } from '../utils/audio';
+import { WORKSHEET_CATALOG, getBestWorksheetForTier } from '../utils/worksheetGenerator.js';
 import '../../public/css/blog.css';
 
 // Dynamically glob all JSON articles in src/content/blog/
 const blogModules = import.meta.glob('../content/blog/*.json', { eager: true });
 
-function formatInlineMarkdown(text) {
+function formatInlineMarkdown(text, onNavigate) {
   if (!text) return '';
-  // Split on bold formatting: **bold**
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  const regex = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
+  const parts = text.split(regex);
+
   return parts.map((part, index) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return (
@@ -17,11 +19,36 @@ function formatInlineMarkdown(text) {
         </strong>
       );
     }
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (linkMatch) {
+      const [, label, href] = linkMatch;
+      const isInternal = href.startsWith('/');
+      return (
+        <a
+          key={index}
+          href={href}
+          onClick={(e) => {
+            if (isInternal) {
+              e.preventDefault();
+              soundFx?.playKeyTap?.();
+              if (onNavigate) {
+                onNavigate(href);
+              } else {
+                window.history.pushState({}, '', href);
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }
+            }
+          }}
+        >
+          {label}
+        </a>
+      );
+    }
     return part;
   });
 }
 
-function renderMarkdown(mdText) {
+function renderMarkdown(mdText, onNavigate) {
   if (!mdText) return null;
   const blocks = mdText.split(/\n\n+/);
 
@@ -31,13 +58,13 @@ function renderMarkdown(mdText) {
 
     if (trimmed.startsWith('### ')) {
       return (
-        <h3 key={idx}>{formatInlineMarkdown(trimmed.replace(/^###\s+/, ''))}</h3>
+        <h3 key={idx}>{formatInlineMarkdown(trimmed.replace(/^###\s+/, ''), onNavigate)}</h3>
       );
     }
 
     if (trimmed.startsWith('## ')) {
       return (
-        <h2 key={idx}>{formatInlineMarkdown(trimmed.replace(/^##\s+/, ''))}</h2>
+        <h2 key={idx}>{formatInlineMarkdown(trimmed.replace(/^##\s+/, ''), onNavigate)}</h2>
       );
     }
 
@@ -46,7 +73,7 @@ function renderMarkdown(mdText) {
       return (
         <ul key={idx}>
           {items.map((item, itemIdx) => (
-            <li key={itemIdx}>{formatInlineMarkdown(item)}</li>
+            <li key={itemIdx}>{formatInlineMarkdown(item, onNavigate)}</li>
           ))}
         </ul>
       );
@@ -57,14 +84,14 @@ function renderMarkdown(mdText) {
       return (
         <ol key={idx}>
           {items.map((item, itemIdx) => (
-            <li key={itemIdx}>{formatInlineMarkdown(item)}</li>
+            <li key={itemIdx}>{formatInlineMarkdown(item, onNavigate)}</li>
           ))}
         </ol>
       );
     }
 
     return (
-      <p key={idx}>{formatInlineMarkdown(trimmed)}</p>
+      <p key={idx}>{formatInlineMarkdown(trimmed, onNavigate)}</p>
     );
   });
 }
@@ -157,6 +184,28 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
 
   const featuredImg = post.featured_asset ? `/images/blog/${post.featured_asset}` : '/images/blog/kibo-climbing.jpeg';
 
+  const relatedWorksheet = useMemo(() => {
+    if (post.worksheet_slug) {
+      const match = WORKSHEET_CATALOG.find(w => w.slug === post.worksheet_slug);
+      if (match) return match;
+    }
+    const subject = post.subject || 'math';
+    const tier = Number(post.tier) || 1;
+    return getBestWorksheetForTier(subject, tier);
+  }, [post]);
+
+  const handleWorksheetClick = (e, worksheet) => {
+    if (e && e.preventDefault) e.preventDefault();
+    soundFx?.playKeyTap?.();
+    const url = `/worksheets/${worksheet.subject}/${worksheet.slug}`;
+    if (onNavigate) {
+      onNavigate(url);
+    } else {
+      window.history.pushState({}, '', url);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  };
+
   return (
     <div className="blog-page-wrapper fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B]">
       <nav className="nav-bar">
@@ -176,7 +225,26 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
         <img src={featuredImg} alt={post.title} className="hero-img" />
 
         <article>
-          {renderMarkdown(post.content_markdown)}
+          {renderMarkdown(post.content_markdown, onNavigate)}
+
+          {relatedWorksheet && (
+            <div className="worksheet-callout-card">
+              <div className="worksheet-callout-header">
+                <span>🎯 Free Printable Practice</span>
+                <span>•</span>
+                <span>{relatedWorksheet.gradeLabel || 'Grades K–6'}</span>
+              </div>
+              <h3>Practice This Skill: {relatedWorksheet.title}</h3>
+              <p>{relatedWorksheet.desc || 'Reinforce this strategy offline with 16 targeted curriculum problems and a complete parent answer key.'}</p>
+              <a
+                href={`/worksheets/${relatedWorksheet.subject}/${relatedWorksheet.slug}`}
+                onClick={(e) => handleWorksheetClick(e, relatedWorksheet)}
+                className="worksheet-cta-button"
+              >
+                Download Printable Worksheet & Key →
+              </a>
+            </div>
+          )}
         </article>
 
         <section className="cta-card">
