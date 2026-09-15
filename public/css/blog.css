@@ -45,6 +45,12 @@ h1, h2, h3, h4, .font-heading {
   gap: 0.4rem;
 }
 
+.nav-logo img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
 .nav-cta {
   font-family: 'Fredoka', sans-serif;
   background: linear-gradient(180deg, #FF7B47 0%, var(--kibo-orange) 50%, var(--kibo-orange-dark) 100%);

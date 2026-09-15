@@ -153,7 +153,7 @@ def generate_post_html(data: dict) -> str:
 </head>
 <body>
   <nav class="nav-bar">
-    <a href="/" class="nav-logo">🐾 Kibo Climb</a>
+    <a href="/" class="nav-logo"><img src="/favicon.svg" alt="Kibo" width="28" height="28" /> Kibo Climb</a>
     <a href="/" class="nav-cta">Play Free</a>
   </nav>
 
