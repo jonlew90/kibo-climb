@@ -71,7 +71,8 @@ export default function WorldSessionView({
   onClimbActiveChange,
   onOpenPracticeMode,
   practiceConfig = null,
-  onExitPractice
+  onExitPractice,
+  onViewWorksheet
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     return storageService.getUserData('world').adaptiveCompetenceRating || storageService.getUserData('world').competenceRank || 1000;
@@ -1521,6 +1522,7 @@ export default function WorldSessionView({
         isPracticeMode={isPracticeMode}
         practiceTier={practiceConfig?.tier || userTier}
         practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+        onViewWorksheet={onViewWorksheet}
         onExitPractice={() => {
           setShowBreakOverlay(false);
           setHasStartedClimb(false);

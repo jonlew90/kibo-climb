@@ -51,7 +51,8 @@ export default function CodingSessionView({
   onClimbActiveChange,
   onOpenPracticeMode,
   practiceConfig = null,
-  onExitPractice
+  onExitPractice,
+  onViewWorksheet
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     const data = storageService.getUserData('coding');
@@ -795,6 +796,7 @@ export default function CodingSessionView({
         isPracticeMode={isPracticeMode}
         practiceTier={practiceConfig?.tier || userTier}
         practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+        onViewWorksheet={onViewWorksheet}
         onExitPractice={() => {
           setShowBreakOverlay(false);
           setHasStartedClimb(false);

@@ -57,7 +57,8 @@ export default function MathSessionView({
   onClimbActiveChange,
   onOpenPracticeMode,
   practiceConfig = null,
-  onExitPractice
+  onExitPractice,
+  onViewWorksheet
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     return storageService.getUserData('math').adaptiveCompetenceRating || storageService.getUserData('math').competenceRank || 1000;
@@ -1603,6 +1604,7 @@ export default function MathSessionView({
         isPracticeMode={isPracticeMode}
         practiceTier={practiceConfig?.tier || userTier}
         practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+        onViewWorksheet={onViewWorksheet}
         onExitPractice={() => {
           setShowBreakOverlay(false);
           setHasStartedClimb(false);

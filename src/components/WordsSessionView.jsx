@@ -59,7 +59,8 @@ export default function WordsSessionView({
   onClimbActiveChange,
   onOpenPracticeMode,
   practiceConfig = null,
-  onExitPractice
+  onExitPractice,
+  onViewWorksheet
 }) {
   const [competenceRank, setCompetenceRank] = useState(() => {
     return storageService.getUserData('words').adaptiveCompetenceRating || storageService.getUserData('words').competenceRank || 1000;
@@ -1564,6 +1565,7 @@ export default function WordsSessionView({
         isPracticeMode={isPracticeMode}
         practiceTier={practiceConfig?.tier || userTier}
         practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+        onViewWorksheet={onViewWorksheet}
         onExitPractice={() => {
           setShowBreakOverlay(false);
           setHasStartedClimb(false);

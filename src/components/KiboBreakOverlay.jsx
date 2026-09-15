@@ -1,11 +1,12 @@
 import React from 'react';
-import { ShoppingBag, Play, Trophy, Zap, Flame, TrendingUp, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { ShoppingBag, Play, Trophy, Zap, Flame, TrendingUp, CheckCircle2, ShieldAlert, FileText, Printer } from 'lucide-react';
 import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import RollingNumberTicker from './RollingNumberTicker';
 import { questService } from '../services/questService';
 import { storageService } from '../services/storageService';
 import { SUBJECTS_CONFIG } from '../config/subjects';
+import { getBestWorksheetForTier } from '../utils/worksheetGenerator';
 
 export default function KiboBreakOverlay({
   correctCount = 12,
@@ -27,6 +28,7 @@ export default function KiboBreakOverlay({
   onExitPractice,
   onOpenPracticeMode,
   onOpenWorkshop,
+  onViewWorksheet,
   onResumeClimb
 }) {
   const displayCorrect = Math.min(12, Math.max(0, correctCount));
@@ -43,6 +45,7 @@ export default function KiboBreakOverlay({
   const subjectStrands = SUBJECTS_CONFIG[activeSubject]?.SKILL_STRANDS || SUBJECTS_CONFIG.math.SKILL_STRANDS || [];
   const practicedStrand = subjectStrands.find((s) => s.tier === effectivePracticeTier);
   const strandLabel = practicedStrand ? practicedStrand.name : `Tier ${effectivePracticeTier}`;
+  const recommendedWorksheet = isPracticeMode ? getBestWorksheetForTier(activeSubject, effectivePracticeTier) : null;
 
   return (
     <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-hidden select-none animate-pop border-none">
@@ -230,22 +233,52 @@ export default function KiboBreakOverlay({
               </div>
             </>
           ) : (
-            /* In Practice Mode: Targeted Practice Completion Card without bonus badge */
-            <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-100 border border-indigo-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex items-center justify-between shadow-xs shrink-0 text-left">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🏋️</span>
-                <div>
-                  <span className="text-xs sm:text-sm font-black text-indigo-950 block">
-                    {practiceTitle}
-                  </span>
-                  <span className="text-[11px] font-bold text-indigo-700">
-                    Streak Protected • Free Hints
-                  </span>
+            /* In Practice Mode: Targeted Practice Completion Card with Offline Worksheet CTA */
+            <div className="space-y-2 shrink-0">
+              <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-100 border border-indigo-300 rounded-2xl p-2.5 sm:p-3 px-3.5 sm:px-4 flex items-center justify-between shadow-xs text-left">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🏋️</span>
+                  <div>
+                    <span className="text-xs sm:text-sm font-black text-indigo-950 block">
+                      {practiceTitle}
+                    </span>
+                    <span className="text-[11px] font-bold text-indigo-700">
+                      Streak Protected • Free Hints
+                    </span>
+                  </div>
                 </div>
+                <span className="text-xs font-black text-indigo-900 bg-white/90 px-2.5 py-1 rounded-full border border-indigo-200">
+                  Practice Complete
+                </span>
               </div>
-              <span className="text-xs font-black text-indigo-900 bg-white/90 px-2.5 py-1 rounded-full border border-indigo-200">
-                Practice Complete
-              </span>
+
+              {recommendedWorksheet && (
+                <div className="bg-white/95 border border-indigo-200 rounded-xl p-2.5 px-3 flex items-center justify-between shadow-2xs text-left gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-[11px] font-black text-slate-800 truncate block">
+                        📄 Print offline drill: {recommendedWorksheet.title}
+                      </span>
+                      <span className="text-[10px] font-semibold text-slate-500 block">
+                        16 problems + parent answer key
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onViewWorksheet) {
+                        onViewWorksheet(recommendedWorksheet.id);
+                      }
+                    }}
+                    className="shrink-0 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-300 rounded-lg text-xs font-black flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                  >
+                    <Printer className="w-3 h-3 text-indigo-700" />
+                    <span>Print Sheet</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

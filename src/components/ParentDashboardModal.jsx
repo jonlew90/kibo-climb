@@ -1665,11 +1665,13 @@ export default function ParentDashboardModal({
           const currentPlan = storageService.getSubscriptionPlan();
           const isClubMember = currentPlan?.tier === 'family' || currentPlan?.tier === 'single';
           const recentMistakes = liveUserData?.mistakeHistory || [];
+          const childTier = getCompetenceTierObj(liveUserData?.competenceRating || 1000, selectedSubject)?.tier || 1;
 
           return (
             <div className="flex-1 space-y-4 my-1">
               <PrintablesTab
                 selectedSubject={selectedSubject}
+                userTier={childTier}
                 isKiboClub={isClubMember}
                 childName={childName}
                 recentMistakes={recentMistakes}

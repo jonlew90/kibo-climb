@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Printer, Lock, Sparkles, Download, CheckCircle2, AlertCircle, FileText, Share2, Copy } from 'lucide-react';
-import { getWorksheetsForSubject, openPrintableWorksheet } from '../utils/worksheetGenerator';
+import { Printer, Lock, Sparkles, Download, CheckCircle2, AlertCircle, FileText, Share2, Copy, Star } from 'lucide-react';
+import { getWorksheetsForSubject, getBestWorksheetForTier, getCanonicalPath, openPrintableWorksheet } from '../utils/worksheetGenerator';
 import { soundFx } from '../utils/audio';
 import { analyticsService } from '../services/analyticsService';
 
 export default function PrintablesTab({
   selectedSubject = 'math',
+  userTier = 1,
   isKiboClub = false,
   childName = 'Kibo Climber',
   recentMistakes = [],
@@ -17,6 +18,8 @@ export default function PrintablesTab({
   const [copiedWorksheetId, setCopiedWorksheetId] = useState(null);
 
   const worksheets = getWorksheetsForSubject(selectedSubject);
+  const recommendedWorksheet = getBestWorksheetForTier(selectedSubject, userTier);
+
   const filteredWorksheets = worksheets.filter(w => {
     if (activeSubTab === 'starter') return !w.isKiboClubOnly;
     if (activeSubTab === 'vip') return w.isKiboClubOnly;
@@ -48,7 +51,8 @@ export default function PrintablesTab({
 
   const handleCopyWorksheetLink = (worksheet) => {
     soundFx.playKeyTap();
-    const url = `${window.location.origin}/worksheets/${worksheet.id}`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kiboclimb.com';
+    const url = `${origin}${getCanonicalPath(worksheet)}`;
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(url).then(() => {
         setCopiedWorksheetId(worksheet.id);
@@ -90,6 +94,34 @@ export default function PrintablesTab({
         <div className="bg-teal-50 border border-teal-300 text-teal-900 text-xs font-bold p-3 rounded-xl flex items-center gap-2 animate-pop">
           <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
           <span>{statusMsg}</span>
+        </div>
+      )}
+
+      {/* RECOMMENDED FOR CURRENT LEVEL BANNER */}
+      {recommendedWorksheet && (
+        <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-teal-50 border-2 border-indigo-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black uppercase text-indigo-900 bg-indigo-100 px-2.5 py-0.5 rounded-full border border-indigo-300 flex items-center gap-1">
+                <Star className="w-3 h-3 text-indigo-600 fill-indigo-600" />
+                <span>Recommended for {childName} (Tier {userTier})</span>
+              </span>
+            </div>
+            <h4 className="text-sm sm:text-base font-black text-slate-900">
+              {recommendedWorksheet.title}
+            </h4>
+            <p className="text-xs text-slate-600 font-medium max-w-xl">
+              {recommendedWorksheet.desc || recommendedWorksheet.description}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => handlePrint(recommendedWorksheet)}
+            className="shrink-0 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Print Current Level 🖨️</span>
+          </button>
         </div>
       )}
 
@@ -162,7 +194,7 @@ export default function PrintablesTab({
                   {w.title}
                 </h4>
                 <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                  {w.description}
+                  {w.desc || w.description}
                 </p>
                 {w.isDynamic && (
                   <div className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg p-1.5 flex items-center gap-1">

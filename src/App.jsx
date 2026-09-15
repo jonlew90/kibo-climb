@@ -3262,6 +3262,12 @@ export default function App() {
           onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
           practiceConfig={activePracticeSession?.subject === 'math' ? activePracticeSession : null}
           onExitPractice={() => setActivePracticeSession(null)}
+          onViewWorksheet={(sheetId) => {
+            const sheet = getWorksheetById(sheetId);
+            const path = sheet ? getCanonicalPath(sheet) : `/worksheets/${sheetId}`;
+            setActiveWorksheetId(sheetId);
+            handleNavigateTo(path, VIEWS.WORKSHEET_VIEWER);
+          }}
         />
       )}
 
@@ -3308,6 +3314,12 @@ export default function App() {
           onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
           practiceConfig={activePracticeSession?.subject === 'words' ? activePracticeSession : null}
           onExitPractice={() => setActivePracticeSession(null)}
+          onViewWorksheet={(sheetId) => {
+            const sheet = getWorksheetById(sheetId);
+            const path = sheet ? getCanonicalPath(sheet) : `/worksheets/${sheetId}`;
+            setActiveWorksheetId(sheetId);
+            handleNavigateTo(path, VIEWS.WORKSHEET_VIEWER);
+          }}
         />
       )}
 
@@ -3354,6 +3366,12 @@ export default function App() {
           onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
           practiceConfig={activePracticeSession?.subject === 'world' ? activePracticeSession : null}
           onExitPractice={() => setActivePracticeSession(null)}
+          onViewWorksheet={(sheetId) => {
+            const sheet = getWorksheetById(sheetId);
+            const path = sheet ? getCanonicalPath(sheet) : `/worksheets/${sheetId}`;
+            setActiveWorksheetId(sheetId);
+            handleNavigateTo(path, VIEWS.WORKSHEET_VIEWER);
+          }}
         />
       )}
 
@@ -3399,6 +3417,12 @@ export default function App() {
           onOpenPracticeMode={() => setIsPracticeModeOpen(true)}
           practiceConfig={activePracticeSession?.subject === 'coding' ? activePracticeSession : null}
           onExitPractice={() => setActivePracticeSession(null)}
+          onViewWorksheet={(sheetId) => {
+            const sheet = getWorksheetById(sheetId);
+            const path = sheet ? getCanonicalPath(sheet) : `/worksheets/${sheetId}`;
+            setActiveWorksheetId(sheetId);
+            handleNavigateTo(path, VIEWS.WORKSHEET_VIEWER);
+          }}
         />
       )}
 
