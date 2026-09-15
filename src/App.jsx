@@ -3829,7 +3829,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && appState !== 'worksheet_viewer' && renderNavigationFooter()}
+      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && appState !== 'worksheet_viewer' && appState !== 'blog_post' && appState !== VIEWS.BLOG_POST && renderNavigationFooter()}
 
       {/* Workshop Modal */}
       <WorkshopModal

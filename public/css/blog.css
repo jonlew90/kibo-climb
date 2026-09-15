@@ -11,13 +11,20 @@
   --kibo-border: #F0E6E2;
 }
 
-body {
+html, body {
+  background-color: var(--kibo-bg);
+  min-height: 100%;
+}
+
+body, .blog-page-wrapper {
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.7;
   background-color: var(--kibo-bg);
   color: var(--kibo-dark);
   margin: 0;
   padding: 0;
+  min-height: 100vh;
+  width: 100%;
 }
 
 h1, h2, h3, h4, .font-heading {

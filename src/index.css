@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "../public/css/blog.css";
 
 @layer utilities {
   /* 3D Volumetric Tactile Buttons (Duolingo Claymorphism Style) */

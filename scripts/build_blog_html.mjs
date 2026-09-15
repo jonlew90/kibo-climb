@@ -140,8 +140,9 @@ function generateFullHtml({ post, bodyHtml }) {
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Shared Blog Stylesheet -->
+    <link rel="stylesheet" href="/css/blog.css" />
 
     <!-- Schema.org JSON-LD -->
     <script type="application/ld+json">
