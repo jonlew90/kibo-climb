@@ -13,6 +13,7 @@ export const VIEWS = {
   LEADERBOARD: 'leaderboard',
   QUESTS: 'quests',
   PARENT_DASHBOARD: 'parent_dashboard',
+  WORKSHEET_HUB: 'worksheet_hub',
   WORKSHEET_VIEWER: 'worksheet_viewer',
   BLOG_INDEX: 'blog_index',
   BLOG_POST: 'blog_post',
@@ -72,6 +73,8 @@ export const getPathForId = (id, params = {}) => {
       return '/quests';
     case VIEWS.PARENT_DASHBOARD:
       return '/parent';
+    case VIEWS.WORKSHEET_HUB:
+      return '/worksheets';
     case VIEWS.WORKSHEET_VIEWER:
       return params?.worksheetId ? `/worksheets/${params.worksheetId}` : '/worksheets/math_starter_k2';
     case VIEWS.BLOG_INDEX:
@@ -91,15 +94,22 @@ export const normalizeEntry = (entry) => {
   if (typeof entry === 'string') {
     entry = { id: entry };
   }
-  const id = entry?.id || VIEWS.ADAPTIVE_SESSION;
+  let id = entry?.id || VIEWS.ADAPTIVE_SESSION;
   const isModal = isModalView(id);
   const params = entry?.params ? { ...entry.params } : {};
+
+  // Check for worksheet hub root path
+  if (entry?.path === '/worksheets' || entry?.path === '/worksheets/') {
+    id = VIEWS.WORKSHEET_HUB;
+  }
 
   // If worksheetId isn't explicitly in params, extract it from the path
   if ((id === VIEWS.WORKSHEET_VIEWER || id === 'worksheet_viewer') && !params.worksheetId && entry?.path?.startsWith('/worksheets')) {
     const slug = entry.path.replace(/^\/worksheets\/?/, '').split('?')[0].trim();
     if (slug) {
       params.worksheetId = slug;
+    } else {
+      id = VIEWS.WORKSHEET_HUB;
     }
   }
 

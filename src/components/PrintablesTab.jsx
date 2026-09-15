@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Printer, Lock, Sparkles, Download, CheckCircle2, AlertCircle, FileText, Share2, Copy, Star } from 'lucide-react';
+import { Printer, Lock, Sparkles, Download, CheckCircle2, Star, ArrowRight, BookOpen, Layers } from 'lucide-react';
 import { getWorksheetsForSubject, getBestWorksheetForTier, getCanonicalPath, openPrintableWorksheet } from '../utils/worksheetGenerator';
 import { soundFx } from '../utils/audio';
 import { analyticsService } from '../services/analyticsService';
@@ -11,11 +11,10 @@ export default function PrintablesTab({
   childName = 'Kibo Climber',
   recentMistakes = [],
   onOpenKiboClubUpgrade,
-  onSelectWorksheet
+  onSelectWorksheet,
+  onNavigateToHub
 }) {
   const [activeSubTab, setActiveSubTab] = useState('all'); // 'all', 'starter', 'vip'
-  const [statusMsg, setStatusMsg] = useState('');
-  const [copiedWorksheetId, setCopiedWorksheetId] = useState(null);
 
   const worksheets = getWorksheetsForSubject(selectedSubject);
   const recommendedWorksheet = getBestWorksheetForTier(selectedSubject, userTier);
@@ -31,7 +30,7 @@ export default function PrintablesTab({
     analyticsService.logScreenView('ParentDashboard_Worksheets');
   }, [selectedSubject]);
 
-  const handlePrint = (worksheet) => {
+  const handleLaunchWorksheet = (worksheet) => {
     soundFx.playKeyTap();
     analyticsService.logWorksheetPrint(worksheet.id, selectedSubject, worksheet.isKiboClubOnly);
 
@@ -49,19 +48,13 @@ export default function PrintablesTab({
     }
   };
 
-  const handleCopyWorksheetLink = (worksheet) => {
+  const handleOpenHub = () => {
     soundFx.playKeyTap();
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kiboclimb.com';
-    const url = `${origin}${getCanonicalPath(worksheet)}`;
-    if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText(url).then(() => {
-        setCopiedWorksheetId(worksheet.id);
-        setStatusMsg(`Copied share link for "${worksheet.title}"!`);
-        setTimeout(() => {
-          setCopiedWorksheetId(null);
-          setStatusMsg('');
-        }, 3000);
-      });
+    if (onNavigateToHub) {
+      onNavigateToHub();
+    } else if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', '/worksheets');
+      window.dispatchEvent(new PopStateEvent('popstate'));
     }
   };
 
@@ -72,10 +65,10 @@ export default function PrintablesTab({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-xl">🖨️</span>
-            <h3 className="text-base sm:text-lg font-black tracking-tight">Printable Worksheets & Offline Packets</h3>
+            <h3 className="text-base sm:text-lg font-black tracking-tight">Printable Learning Hub &amp; Offline Packets</h3>
           </div>
           <p className="text-xs sm:text-sm text-teal-100 font-medium max-w-xl">
-            Offline learning with Mascot Kibo! Print focused 16-problem drill sheets (Page 1) with clean parent answer keys (Page 2).
+            Offline practice with Mascot Kibo! High-contrast 16-problem drill sheets (Page 1) with clean parent answer keys (Page 2).
           </p>
         </div>
         {!isKiboClub && (
@@ -90,14 +83,33 @@ export default function PrintablesTab({
         )}
       </div>
 
-      {statusMsg && (
-        <div className="bg-teal-50 border border-teal-300 text-teal-900 text-xs font-bold p-3 rounded-xl flex items-center gap-2 animate-pop">
-          <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
-          <span>{statusMsg}</span>
+      {/* FULL HUB GATEWAY BANNER */}
+      <div className="bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border-2 border-orange-200/90 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+        <div className="space-y-1 max-w-xl">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black uppercase text-orange-800 bg-orange-100 px-2.5 py-0.5 rounded-full border border-orange-300 flex items-center gap-1">
+              <Layers className="w-3 h-3 text-orange-600" />
+              <span>Full Resource Catalog</span>
+            </span>
+          </div>
+          <h4 className="text-sm sm:text-base font-black text-slate-900">
+            Explore Full Printable Learning Hub
+          </h4>
+          <p className="text-xs text-slate-600 font-medium">
+            Browse our complete library of printable math activities, vocabulary drills, geography maps, and progression packs.
+          </p>
         </div>
-      )}
+        <button
+          type="button"
+          onClick={handleOpenHub}
+          className="shrink-0 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+        >
+          <span>Browse All Worksheets (/worksheets)</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
 
-      {/* RECOMMENDED FOR CURRENT LEVEL BANNER */}
+      {/* RECOMMENDED FOR CURRENT LEVEL QUICK-ACCESS CARD */}
       {recommendedWorksheet && (
         <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-teal-50 border-2 border-indigo-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="space-y-1">
@@ -116,11 +128,11 @@ export default function PrintablesTab({
           </div>
           <button
             type="button"
-            onClick={() => handlePrint(recommendedWorksheet)}
+            onClick={() => handleLaunchWorksheet(recommendedWorksheet)}
             className="shrink-0 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
           >
             <Printer className="w-4 h-4" />
-            <span>Print Current Level 🖨️</span>
+            <span>Open &amp; Print Sheet 🖨️</span>
           </button>
         </div>
       )}
@@ -170,10 +182,11 @@ export default function PrintablesTab({
           return (
             <div
               key={w.id}
-              className={`border-2 rounded-2xl p-4 flex flex-col justify-between gap-3 transition-all relative overflow-hidden ${
+              onClick={() => handleLaunchWorksheet(w)}
+              className={`border-2 rounded-2xl p-4 flex flex-col justify-between gap-3 transition-all relative overflow-hidden cursor-pointer ${
                 isLocked
-                  ? 'bg-slate-50/90 border-slate-200'
-                  : 'bg-white border-purple-100 hover:border-purple-300 shadow-2xs'
+                  ? 'bg-slate-50/90 border-slate-200 hover:border-amber-300'
+                  : 'bg-white border-purple-100 hover:border-purple-300 shadow-2xs hover:shadow-xs'
               }`}
             >
               <div className="space-y-1.5">
@@ -199,44 +212,27 @@ export default function PrintablesTab({
                 {w.isDynamic && (
                   <div className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg p-1.5 flex items-center gap-1">
                     <Sparkles className="w-3 h-3 shrink-0 text-indigo-600" />
-                    <span>Auto-calibrated using {childName}'s recent mistakes & weak areas.</span>
+                    <span>Auto-calibrated using {childName}'s recent mistakes &amp; weak areas.</span>
                   </div>
                 )}
               </div>
 
               <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-extrabold text-slate-500">
-                    16 Questions + Key
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopyWorksheetLink(w)}
-                    className={`flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
-                      copiedWorksheetId === w.id
-                        ? 'text-teal-600 bg-teal-50'
-                        : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
-                    }`}
-                    title={copiedWorksheetId === w.id ? 'Copied link to clipboard!' : 'Copy direct link to clipboard'}
-                    aria-label={copiedWorksheetId === w.id ? 'Copied link to clipboard' : 'Copy direct link'}
-                  >
-                    {copiedWorksheetId === w.id ? (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                        <span className="text-[11px] text-teal-700">Copied!</span>
-                      </>
-                    ) : (
-                      <Copy className="w-3.5 h-3.5 shrink-0" />
-                    )}
-                  </button>
-                </div>
+                <span className="text-xs font-extrabold text-slate-500">
+                  16 Questions + Key
+                </span>
 
                 <button
                   type="button"
-                  onClick={() => handlePrint(w)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLaunchWorksheet(w);
+                  }}
                   className={`px-3.5 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 ${
                     isLocked
                       ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 hover:from-amber-500 hover:to-amber-600 shadow-xs'
+                      : isKiboClub && w.isKiboClubOnly
+                      ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-xs'
                       : 'bg-teal-600 hover:bg-teal-700 text-white shadow-xs'
                   }`}
                 >
@@ -248,7 +244,7 @@ export default function PrintablesTab({
                   ) : (
                     <>
                       <Printer className="w-3.5 h-3.5" />
-                      <span>Print Sheet 🖨️</span>
+                      <span>{isKiboClub && w.isKiboClubOnly ? 'Open VIP Sheet' : 'Open Sheet'} 🖨️</span>
                     </>
                   )}
                 </button>
@@ -260,3 +256,4 @@ export default function PrintablesTab({
     </div>
   );
 }
+

@@ -53,6 +53,7 @@ import StripeCheckoutModal from './components/StripeCheckoutModal';
 import FamilyPlanUpgradeModal from './components/FamilyPlanUpgradeModal';
 import DailyBonusRewardModal from './components/DailyBonusRewardModal';
 import SettingsScreen from './components/SettingsScreen';
+import WorksheetHubScreen from './components/WorksheetHubScreen';
 import WorksheetViewerScreen from './components/WorksheetViewerScreen';
 import BlogIndex from './components/BlogIndex';
 import BlogPost from './components/BlogPost';
@@ -152,6 +153,8 @@ export default function App() {
 
   const [appState, setAppState] = useState(() => {
     const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+    if (path === '/worksheets' || path === '/worksheets/') return 'worksheet_hub';
+    if (path.startsWith('/worksheets/')) return 'worksheet_viewer';
     if (path === '/blog' || path === '/blog/') return 'blog_index';
     if (path.startsWith('/blog/')) {
       const match = path.match(/^\/blog\/([^/?]+)/);
@@ -698,14 +701,16 @@ export default function App() {
     else if (path === '/quests') initialRoute = VIEWS.QUESTS;
     let initialWorksheetId = activeWorksheetId;
     let initialBlogSlug = activeBlogSlug;
-    if (path.startsWith('/worksheets')) {
-      initialRoute = VIEWS.WORKSHEET_VIEWER;
-      // New format: /worksheets/{subject}/{slug}
+    if (path === '/worksheets' || path === '/worksheets/') {
+      initialRoute = VIEWS.WORKSHEET_HUB;
+    } else if (path.startsWith('/worksheets')) {
       const newMatch = path.match(/^\/worksheets\/([^/]+)\/([^/?]+)/);
       if (newMatch) {
-        // worksheetId stays as the full slug path; WorksheetViewerScreen resolves by URL
+        initialRoute = VIEWS.WORKSHEET_VIEWER;
         initialWorksheetId = `${newMatch[1]}/${newMatch[2]}`;
         setActiveWorksheetId(initialWorksheetId);
+      } else {
+        initialRoute = VIEWS.WORKSHEET_HUB;
       }
     } else if (path === '/blog' || path === '/blog/') {
       initialRoute = VIEWS.BLOG_INDEX;
@@ -3021,6 +3026,18 @@ export default function App() {
         />
       )}
 
+      {/* PUBLIC PRINTABLE WORKSHEET HUB SCREEN */}
+      {(appState === 'worksheet_hub' || appState === VIEWS.WORKSHEET_HUB) && (
+        <WorksheetHubScreen
+          onNavigate={handleNavigateTo}
+          onOpenKiboClubUpgrade={() => {
+            setParentDashboardTab('verification');
+            setParentDashboardHighlight('family_plan');
+            handleNavigateTo('/parent', VIEWS.PARENT_DASHBOARD);
+          }}
+        />
+      )}
+
       {/* DEDICATED WORKSHEET VIEWER & PRINT SCREEN */}
       {(appState === 'worksheet_viewer' || appState === VIEWS.WORKSHEET_VIEWER) && (
         <WorksheetViewerScreen
@@ -3148,6 +3165,9 @@ export default function App() {
             const path = sheet ? getCanonicalPath(sheet) : `/worksheets/${sheetId}`;
             setActiveWorksheetId(sheetId);
             handleNavigateTo(path, VIEWS.WORKSHEET_VIEWER);
+          }}
+          onNavigateToHub={() => {
+            handleNavigateTo('/worksheets', VIEWS.WORKSHEET_HUB);
           }}
         />
       )}
@@ -3854,7 +3874,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && appState !== 'worksheet_viewer' && appState !== 'blog_index' && appState !== VIEWS.BLOG_INDEX && appState !== 'blog_post' && appState !== VIEWS.BLOG_POST && renderNavigationFooter()}
+      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && appState !== 'worksheet_hub' && appState !== VIEWS.WORKSHEET_HUB && appState !== 'worksheet_viewer' && appState !== VIEWS.WORKSHEET_VIEWER && appState !== 'blog_index' && appState !== VIEWS.BLOG_INDEX && appState !== 'blog_post' && appState !== VIEWS.BLOG_POST && renderNavigationFooter()}
 
       {/* Workshop Modal */}
       <WorkshopModal

@@ -335,3 +335,87 @@ export function updateBlogPostSeo(post) {
   scriptEl.textContent = JSON.stringify(jsonLdData);
 }
 
+/**
+ * Sets document meta tags & Schema.org CollectionPage / LearningResource
+ * structured data for the main Printable Learning Hub (/worksheets).
+ * @param {Array} worksheets - Catalog of worksheets for schema listing
+ */
+export function updateWorksheetHubSeo(worksheets = []) {
+  if (typeof document === 'undefined') return;
+
+  const title = 'Free Printable Worksheets for Kids – Math, Reading, Geography & Coding | Kibo Climb';
+  const description = 'Explore hundreds of free printable worksheets with answer keys for elementary and middle school students. Practice addition, multiplication, fractions, vocabulary, and geography offline with Mascot Kibo.';
+  const canonicalUrl = 'https://kiboclimb.com/worksheets';
+
+  document.title = title;
+
+  const setMeta = (attrName, attrValue, val) => {
+    let el = document.querySelector(`meta[${attrName}="${attrValue}"]`);
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute(attrName, attrValue);
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', val);
+  };
+
+  setMeta('name', 'description', description);
+
+  let canonicalEl = document.querySelector('link[rel="canonical"]');
+  if (!canonicalEl) {
+    canonicalEl = document.createElement('link');
+    canonicalEl.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonicalEl);
+  }
+  canonicalEl.setAttribute('href', canonicalUrl);
+
+  setMeta('property', 'og:title', title);
+  setMeta('property', 'og:description', description);
+  setMeta('property', 'og:url', canonicalUrl);
+  setMeta('name', 'twitter:title', title);
+  setMeta('name', 'twitter:description', description);
+
+  // Schema.org CollectionPage with nested LearningResource items
+  let scriptEl = document.getElementById('worksheet-hub-jsonld');
+  if (!scriptEl) {
+    scriptEl = document.createElement('script');
+    scriptEl.id = 'worksheet-hub-jsonld';
+    scriptEl.type = 'application/ld+json';
+    document.head.appendChild(scriptEl);
+  }
+
+  const itemsList = (worksheets || []).map((w, idx) => ({
+    '@type': 'LearningResource',
+    'position': idx + 1,
+    'name': w.title,
+    'description': w.desc || w.description,
+    'educationalLevel': w.gradeLabel,
+    'learningResourceType': 'Worksheet',
+    'isAccessibleForFree': !w.isKiboClubOnly,
+    'url': `https://kiboclimb.com/worksheets/${w.subject}/${w.slug}`
+  }));
+
+  const jsonLdData = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    'name': title,
+    'description': description,
+    'url': canonicalUrl,
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'Kibo Climb',
+      'logo': {
+        '@type': 'ImageObject',
+        'url': 'https://kiboclimb.com/favicon.png'
+      }
+    },
+    'mainEntity': {
+      '@type': 'ItemList',
+      'numberOfItems': itemsList.length,
+      'itemListElement': itemsList
+    }
+  };
+
+  scriptEl.textContent = JSON.stringify(jsonLdData);
+}
+

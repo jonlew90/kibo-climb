@@ -204,6 +204,13 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
         </a>
         <div className="flex items-center gap-3">
           <a
+            href="/worksheets"
+            onClick={(e) => handleNavigateTo('/worksheets', e)}
+            className="hidden sm:inline-flex text-sm font-bold text-[#64748B] hover:text-[#FF6B35] transition-colors"
+          >
+            Worksheets
+          </a>
+          <a
             href="/blog"
             onClick={(e) => handleNavigateTo('/blog', e)}
             className="hidden sm:inline-flex text-sm font-bold text-[#64748B] hover:text-[#FF6B35] transition-colors"
