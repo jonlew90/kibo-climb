@@ -61,4 +61,13 @@ describe('worksheetGenerator', () => {
     expect(set1).toEqual(set2);
     expect(set1).not.toEqual(set3);
   });
+
+  it('should generate deterministic static problem sets when seed is default 0 or undefined', () => {
+    const defaultSet1 = generateProblemsForWorksheet('math_starter_k2');
+    const defaultSet2 = generateProblemsForWorksheet('math_starter_k2', [], 0);
+
+    expect(defaultSet1.length).toBe(16);
+    expect(defaultSet2.length).toBe(16);
+    expect(defaultSet1).toEqual(defaultSet2);
+  });
 });

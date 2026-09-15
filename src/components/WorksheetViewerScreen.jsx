@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, Printer, Copy, Lock, Sparkles, CheckCircle2, Home, Dices, ChevronLeft, ChevronRight, Dumbbell } from 'lucide-react';
 import { getWorksheetBySlug, getWorksheetsForSubject, generateProblemsForWorksheet, getCanonicalPath, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
 import { updateWorksheetSeo } from '../utils/seoMetadata';
@@ -71,7 +71,9 @@ export default function WorksheetViewerScreen({
   const childName = fromParentDashboard && activeProf?.name ? activeProf.name : '___________';
   const recentMistakes = storageService.getUserData(worksheet?.subject || 'math')?.mistakeHistory || [];
 
-  const problems = generateProblemsForWorksheet(worksheet?.id || 'math_starter_k2', recentMistakes, seed);
+  const problems = useMemo(() => {
+    return generateProblemsForWorksheet(worksheet?.id || 'math_starter_k2', recentMistakes, seed);
+  }, [worksheet?.id, seed, recentMistakes]);
 
   useEffect(() => {
     if (worksheet) {

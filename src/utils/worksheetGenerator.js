@@ -275,11 +275,10 @@ export function getBestWorksheetForTier(subject = 'math', tier = 1) {
 export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], seed = 0) {
   const worksheet = getWorksheetById(worksheetId);
   const problems = [];
-  const rng = createSeededRandom(seed);
+  const effectiveSeed = (seed !== 0 && seed !== undefined && seed !== null && seed !== '') ? seed : (worksheetId || 101);
+  const rng = createSeededRandom(effectiveSeed);
   const originalRandom = Math.random;
-  if (seed !== 0 && seed !== undefined && seed !== null) {
-    Math.random = rng;
-  }
+  Math.random = rng;
 
   try {
     // Dynamic weak-spot worksheet
