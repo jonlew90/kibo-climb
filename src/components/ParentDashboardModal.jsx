@@ -10,7 +10,7 @@ import { getNotificationPrefs, saveNotificationPrefs, saveProfileReminderPrefs, 
 import { promptForPushPermissions } from '../config/onesignal';
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { calculateConceptBreakdown, generateParentInsightCards } from '../utils/skipDiagnosticEngine';
-import { getCompetenceRankTier, getCompetenceDescription } from '../utils/GameEconomyModel';
+import { getCompetenceRankTier, getCompetenceDescription, getCompetenceTierObj } from '../utils/GameEconomyModel';
 import { getGradeLevelForSubject } from '../utils/SkillTreeConfig';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';

@@ -37,7 +37,7 @@ h1, h2, h3, h4, .font-heading {
 .nav-logo {
   font-family: 'Fredoka', sans-serif;
   font-weight: 700;
-  color: var(--kibo-orange);
+  color: var(--kibo-dark);
   text-decoration: none;
   font-size: 1.35rem;
   display: flex;
