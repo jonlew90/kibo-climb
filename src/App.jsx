@@ -54,6 +54,7 @@ import FamilyPlanUpgradeModal from './components/FamilyPlanUpgradeModal';
 import DailyBonusRewardModal from './components/DailyBonusRewardModal';
 import SettingsScreen from './components/SettingsScreen';
 import WorksheetViewerScreen from './components/WorksheetViewerScreen';
+import BlogIndex from './components/BlogIndex';
 import BlogPost from './components/BlogPost';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import CoppaPrivacyPolicyScreen from './components/CoppaPrivacyPolicyScreen';
@@ -151,7 +152,12 @@ export default function App() {
 
   const [appState, setAppState] = useState(() => {
     const path = typeof window !== 'undefined' ? window.location.pathname : '/';
-    if (path.startsWith('/blog') || path.startsWith('/blog/')) return 'blog_post';
+    if (path === '/blog' || path === '/blog/') return 'blog_index';
+    if (path.startsWith('/blog/')) {
+      const match = path.match(/^\/blog\/([^/?]+)/);
+      if (match && match[1]) return 'blog_post';
+      return 'blog_index';
+    }
     if (path === '/coppa-privacy' || path === '/coppa-privacy/' || path === '/coppa' || path === '/coppa/') return 'coppa_privacy';
     if (path === '/privacy' || path === '/privacy/') return 'privacy';
     if (path === '/terms' || path === '/terms/') return 'terms';
@@ -389,6 +395,7 @@ export default function App() {
       else if (current.id === 'terms') screenName = 'TermsOfService';
       else if (current.id === 'leaderboard') screenName = 'Leaderboard';
       else if (current.id === 'quests') screenName = 'Quests';
+      else if (current.id === 'blog_index' || current.id === VIEWS.BLOG_INDEX) screenName = 'BlogIndex';
       else if (current.id === 'blog_post' || current.id === VIEWS.BLOG_POST) screenName = 'BlogPost';
       else if (current.id === 'parent_dashboard' || current.id === VIEWS.PARENT_DASHBOARD) screenName = 'ParentDashboard';
       else if (current.id === VIEWS.ADAPTIVE_SESSION || current.id === 'adaptive_session') {
@@ -700,12 +707,16 @@ export default function App() {
         initialWorksheetId = `${newMatch[1]}/${newMatch[2]}`;
         setActiveWorksheetId(initialWorksheetId);
       }
+    } else if (path === '/blog' || path === '/blog/') {
+      initialRoute = VIEWS.BLOG_INDEX;
     } else if (path.startsWith('/blog')) {
-      initialRoute = VIEWS.BLOG_POST;
       const match = path.match(/^\/blog\/([^/?]+)/);
-      if (match) {
+      if (match && match[1]) {
+        initialRoute = VIEWS.BLOG_POST;
         initialBlogSlug = match[1];
         setActiveBlogSlug(initialBlogSlug);
+      } else {
+        initialRoute = VIEWS.BLOG_INDEX;
       }
     } else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') {
       initialRoute = VIEWS.PARENT_DASHBOARD;
@@ -759,10 +770,16 @@ export default function App() {
           targetRoute = VIEWS.WORKSHEET_VIEWER;
           const newMatch = path.match(/^\/worksheets\/([^/]+)\/([^/?]+)/);
           if (newMatch) setActiveWorksheetId(`${newMatch[1]}/${newMatch[2]}`);
+        } else if (path === '/blog' || path === '/blog/') {
+          targetRoute = VIEWS.BLOG_INDEX;
         } else if (path.startsWith('/blog')) {
-          targetRoute = VIEWS.BLOG_POST;
           const match = path.match(/^\/blog\/([^/?]+)/);
-          if (match) setActiveBlogSlug(match[1]);
+          if (match && match[1]) {
+            targetRoute = VIEWS.BLOG_POST;
+            setActiveBlogSlug(match[1]);
+          } else {
+            targetRoute = VIEWS.BLOG_INDEX;
+          }
         } else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') targetRoute = VIEWS.PARENT_DASHBOARD;
         handleNavigateTo(path, targetRoute);
       }
@@ -2987,6 +3004,14 @@ export default function App() {
         />
       )}
 
+      {/* BLOG INDEX SCREEN */}
+      {(appState === 'blog_index' || appState === VIEWS.BLOG_INDEX) && (
+        <BlogIndex
+          onBack={handleGoBack}
+          onNavigate={handleNavigateTo}
+        />
+      )}
+
       {/* BLOG POST SCREEN */}
       {(appState === 'blog_post' || appState === VIEWS.BLOG_POST) && (
         <BlogPost
@@ -3829,7 +3854,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && appState !== 'worksheet_viewer' && appState !== 'blog_post' && appState !== VIEWS.BLOG_POST && renderNavigationFooter()}
+      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && appState !== 'worksheet_viewer' && appState !== 'blog_index' && appState !== VIEWS.BLOG_INDEX && appState !== 'blog_post' && appState !== VIEWS.BLOG_POST && renderNavigationFooter()}
 
       {/* Workshop Modal */}
       <WorkshopModal

@@ -51,6 +51,14 @@ export const ROUTE_SEO_CONFIG = {
   parent_dashboard: {
     title: 'Parent Zone & Progress Dashboard – Kibo Climb',
     description: 'Review weekly progress digests, topic mastery breakdowns, and family subscription settings.'
+  },
+  blog: {
+    title: 'Kibo Climb Blog – Math Strategies, Mental Math Shortcuts & Parent Guides',
+    description: 'Discover expert mental math shortcuts, adaptive learning strategies, and parent/teacher tips to make math practice exciting with Kibo Climb.'
+  },
+  blog_index: {
+    title: 'Kibo Climb Blog – Math Strategies, Mental Math Shortcuts & Parent Guides',
+    description: 'Discover expert mental math shortcuts, adaptive learning strategies, and parent/teacher tips to make math practice exciting with Kibo Climb.'
   }
 };
 
@@ -157,3 +165,173 @@ export function updateWorksheetSeo(worksheet, seed = 0) {
   setMeta('name', 'twitter:title', title);
   setMeta('name', 'twitter:description', description);
 }
+
+/**
+ * Sets document meta tags and JSON-LD structured data for the main Blog Index page.
+ * @param {Array} posts - Array of normalized blog post objects
+ */
+export function updateBlogIndexSeo(posts = []) {
+  if (typeof document === 'undefined') return;
+
+  const title = 'Kibo Climb Blog – Math Strategies, Mental Math Shortcuts & Parent Guides';
+  const description = 'Explore expert mental math shortcuts, adaptive learning strategies, and printable resources to make math exciting with Kibo Climb.';
+  const canonicalUrl = 'https://kiboclimb.com/blog';
+  const imageUrl = 'https://kiboclimb.com/images/blog/kibo-climbing.jpeg';
+
+  document.title = title;
+
+  const setMeta = (attrName, attrValue, val) => {
+    let el = document.querySelector(`meta[${attrName}="${attrValue}"]`);
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute(attrName, attrValue);
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', val);
+  };
+
+  setMeta('name', 'description', description);
+
+  let canonicalEl = document.querySelector('link[rel="canonical"]');
+  if (!canonicalEl) {
+    canonicalEl = document.createElement('link');
+    canonicalEl.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonicalEl);
+  }
+  canonicalEl.setAttribute('href', canonicalUrl);
+
+  // Open Graph
+  setMeta('property', 'og:type', 'website');
+  setMeta('property', 'og:title', title);
+  setMeta('property', 'og:description', description);
+  setMeta('property', 'og:url', canonicalUrl);
+  setMeta('property', 'og:image', imageUrl);
+
+  // Twitter Card
+  setMeta('name', 'twitter:card', 'summary_large_image');
+  setMeta('name', 'twitter:title', title);
+  setMeta('name', 'twitter:description', description);
+  setMeta('name', 'twitter:image', imageUrl);
+
+  // JSON-LD Structured Data for Blog & CollectionPage
+  let scriptEl = document.getElementById('blog-index-jsonld');
+  if (!scriptEl) {
+    scriptEl = document.createElement('script');
+    scriptEl.id = 'blog-index-jsonld';
+    scriptEl.type = 'application/ld+json';
+    document.head.appendChild(scriptEl);
+  }
+
+  const jsonLdData = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    'name': 'Kibo Climb Learning Blog',
+    'url': canonicalUrl,
+    'description': description,
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'Kibo Climb',
+      'logo': {
+        '@type': 'ImageObject',
+        'url': 'https://kiboclimb.com/favicon.png'
+      }
+    },
+    'blogPost': posts.slice(0, 20).map(post => ({
+      '@type': 'BlogPosting',
+      'headline': post.title,
+      'url': `https://kiboclimb.com/blog/${post.slug}`,
+      'datePublished': post.published_at,
+      'description': post.excerpt || post.meta_description,
+      'image': post.featured_asset ? `https://kiboclimb.com/images/blog/${post.featured_asset}` : imageUrl,
+      'author': {
+        '@type': 'Organization',
+        'name': 'Kibo Climb Team'
+      }
+    }))
+  };
+
+  scriptEl.textContent = JSON.stringify(jsonLdData);
+}
+
+/**
+ * Sets document meta tags and JSON-LD structured data for a single Blog Post page.
+ * @param {Object} post - Blog post data object
+ */
+export function updateBlogPostSeo(post) {
+  if (typeof document === 'undefined' || !post) return;
+
+  const title = `${post.title} | Kibo Climb Blog`;
+  const description = post.meta_description || post.social_copy?.short_blurb || 'Adaptive math strategies and parent tips from Kibo Climb.';
+  const canonicalUrl = `https://kiboclimb.com/blog/${post.slug}`;
+  const asset = post.featured_asset ? `/images/blog/${post.featured_asset}` : '/images/blog/kibo-climbing.jpeg';
+  const imageUrl = `https://kiboclimb.com${asset}`;
+
+  document.title = title;
+
+  const setMeta = (attrName, attrValue, val) => {
+    let el = document.querySelector(`meta[${attrName}="${attrValue}"]`);
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute(attrName, attrValue);
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', val);
+  };
+
+  setMeta('name', 'description', description);
+
+  let canonicalEl = document.querySelector('link[rel="canonical"]');
+  if (!canonicalEl) {
+    canonicalEl = document.createElement('link');
+    canonicalEl.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonicalEl);
+  }
+  canonicalEl.setAttribute('href', canonicalUrl);
+
+  // Open Graph
+  setMeta('property', 'og:type', 'article');
+  setMeta('property', 'og:title', title);
+  setMeta('property', 'og:description', description);
+  setMeta('property', 'og:url', canonicalUrl);
+  setMeta('property', 'og:image', imageUrl);
+
+  // Twitter Card
+  setMeta('name', 'twitter:card', 'summary_large_image');
+  setMeta('name', 'twitter:title', title);
+  setMeta('name', 'twitter:description', description);
+  setMeta('name', 'twitter:image', imageUrl);
+
+  // JSON-LD Structured Data for Article
+  let scriptEl = document.getElementById('blog-post-jsonld');
+  if (!scriptEl) {
+    scriptEl = document.createElement('script');
+    scriptEl.id = 'blog-post-jsonld';
+    scriptEl.type = 'application/ld+json';
+    document.head.appendChild(scriptEl);
+  }
+
+  const jsonLdData = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    'headline': post.title,
+    'description': description,
+    'datePublished': post.published_at,
+    'url': canonicalUrl,
+    'image': imageUrl,
+    'author': {
+      '@type': 'Organization',
+      'name': 'Kibo Climb Team'
+    },
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'Kibo Climb',
+      'logo': {
+        '@type': 'ImageObject',
+        'url': 'https://kiboclimb.com/favicon.png'
+      }
+    }
+  };
+
+  scriptEl.textContent = JSON.stringify(jsonLdData);
+}
+

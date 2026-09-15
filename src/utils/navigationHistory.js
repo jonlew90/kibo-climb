@@ -14,6 +14,7 @@ export const VIEWS = {
   QUESTS: 'quests',
   PARENT_DASHBOARD: 'parent_dashboard',
   WORKSHEET_VIEWER: 'worksheet_viewer',
+  BLOG_INDEX: 'blog_index',
   BLOG_POST: 'blog_post',
 
   // Modals
@@ -73,6 +74,8 @@ export const getPathForId = (id, params = {}) => {
       return '/parent';
     case VIEWS.WORKSHEET_VIEWER:
       return params?.worksheetId ? `/worksheets/${params.worksheetId}` : '/worksheets/math_starter_k2';
+    case VIEWS.BLOG_INDEX:
+      return '/blog';
     case VIEWS.BLOG_POST:
       return params?.slug ? `/blog/${params.slug}` : '/blog';
     case VIEWS.ADAPTIVE_SESSION:
@@ -97,6 +100,13 @@ export const normalizeEntry = (entry) => {
     const slug = entry.path.replace(/^\/worksheets\/?/, '').split('?')[0].trim();
     if (slug) {
       params.worksheetId = slug;
+    }
+  }
+
+  // If blog index path
+  if (entry?.path === '/blog' || entry?.path === '/blog/') {
+    if (id === VIEWS.BLOG_POST || id === 'blog_post') {
+      // should be blog index if no slug
     }
   }
 

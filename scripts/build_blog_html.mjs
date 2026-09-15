@@ -116,6 +116,21 @@ function updateSitemap(posts) {
 
   let sitemapContent = fs.readFileSync(SITEMAP_PATH, 'utf8');
 
+  // Sync /blog index URL in sitemap
+  const blogIndexUrl = `${BASE_URL}/blog`;
+  const blogIndexLocPattern = new RegExp(`<loc>${blogIndexUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>([\\s\\S]*?)</url>`, 'i');
+  const todayDate = new Date().toISOString().slice(0, 10);
+
+  if (blogIndexLocPattern.test(sitemapContent)) {
+    sitemapContent = sitemapContent.replace(
+      blogIndexLocPattern,
+      `<loc>${blogIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>`
+    );
+  } else {
+    const newEntry = `  <url>\n    <loc>${blogIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>`;
+    sitemapContent = sitemapContent.replace('</urlset>', newEntry);
+  }
+
   for (const post of posts) {
     const slug = post.slug;
     const postUrl = `${BASE_URL}/blog/${slug}`;
@@ -136,7 +151,7 @@ function updateSitemap(posts) {
   }
 
   fs.writeFileSync(SITEMAP_PATH, sitemapContent, 'utf8');
-  console.log(` Synchronized Sitemap with ${posts.length} posts: ${SITEMAP_PATH}`);
+  console.log(` Synchronized Sitemap with blog index and ${posts.length} posts: ${SITEMAP_PATH}`);
 }
 
 function generatePostHtml(data) {
@@ -278,6 +293,229 @@ ${jsonLd}
 `;
 }
 
+function generateBlogIndexHtml(posts) {
+  const title = 'Kibo Climb Blog – Math Strategies, Mental Math Shortcuts & Parent Guides';
+  const metaDescription = 'Discover expert mental math shortcuts, adaptive learning strategies, and printable resources to turn math practice into an exciting mountain climb.';
+  const canonicalUrl = `${BASE_URL}/blog`;
+  const defaultImage = `${BASE_URL}/images/blog/kibo-climbing.jpeg`;
+
+  const sortedPosts = [...posts].sort((a, b) => {
+    return new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime();
+  });
+
+  const featured = sortedPosts[0];
+  const gridPosts = sortedPosts.slice(1);
+
+  const featuredHtml = featured ? `
+    <section aria-label="Featured Article">
+      <a href="/blog/${featured.slug}" class="blog-featured-card">
+        <div class="featured-img-container">
+          <img
+            src="${BASE_URL}/images/blog/${featured.featured_asset || 'kibo-climbing.jpeg'}"
+            alt="${featured.title.replace(/"/g, '&quot;')}"
+            class="featured-cover-img"
+          />
+          <span class="featured-card-badge">⭐ Featured Guide</span>
+        </div>
+        <div class="featured-content">
+          <div class="featured-meta">
+            <span>${featured.topic || (featured.tags && featured.tags[0]) || 'Mental Math'}</span>
+          </div>
+          <h2 class="featured-title">${featured.title}</h2>
+          <p class="featured-excerpt">${(featured.social_copy?.short_blurb || featured.meta_description || '').replace(/"/g, '&quot;')}</p>
+          <div class="featured-footer">
+            <span class="featured-author-meta">Published ${formatDate(featured.published_at)}</span>
+            <span class="featured-cta-link">Read Article →</span>
+          </div>
+        </div>
+      </a>
+    </section>
+  ` : '';
+
+  const gridCardsHtml = gridPosts.map(post => `
+    <article class="flex">
+      <a href="/blog/${post.slug}" class="blog-card w-full">
+        <div class="blog-card-img-wrap">
+          <img
+            src="${BASE_URL}/images/blog/${post.featured_asset || 'kibo-climbing.jpeg'}"
+            alt="${post.title.replace(/"/g, '&quot;')}"
+            class="blog-card-img"
+            loading="lazy"
+          />
+        </div>
+        <div class="blog-card-body">
+          <div class="blog-card-meta">
+            <span class="blog-category-badge">${(post.tags && post.tags[0]) || post.topic || 'Math Strategies'}</span>
+            <span class="blog-card-date">${formatDate(post.published_at)}</span>
+          </div>
+          <h3 class="blog-card-title">${post.title}</h3>
+          <p class="blog-card-excerpt">${(post.social_copy?.short_blurb || post.meta_description || '').replace(/"/g, '&quot;')}</p>
+          <div class="blog-card-footer">
+            <span class="blog-read-time">3 min read</span>
+            <span class="blog-card-read-link">Read Guide →</span>
+          </div>
+        </div>
+      </a>
+    </article>
+  `).join('\n');
+
+  const jsonLd = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: 'Kibo Climb Learning Blog',
+    url: canonicalUrl,
+    description: metaDescription,
+    publisher: {
+      '@type': 'Organization',
+      name: 'Kibo Climb',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${BASE_URL}/icons/icon-512.png`
+      }
+    },
+    blogPost: sortedPosts.map(p => ({
+      '@type': 'BlogPosting',
+      headline: p.title,
+      url: `${BASE_URL}/blog/${p.slug}`,
+      datePublished: p.published_at,
+      description: p.social_copy?.short_blurb || p.meta_description,
+      image: `${BASE_URL}/images/blog/${p.featured_asset || 'kibo-climbing.jpeg'}`
+    }))
+  }, null, 2);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>${title}</title>
+  <meta name="description" content="${metaDescription.replace(/"/g, '&quot;')}" />
+  <link rel="canonical" href="${canonicalUrl}" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Google Analytics 4 (COPPA Compliant) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PNQ5D8DFHP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      'ad_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied',
+      'analytics_storage': 'granted'
+    });
+    gtag('set', {
+      'restricted_data_processing': true,
+      'allow_google_signals': false,
+      'allow_ad_personalization_signals': false
+    });
+    gtag('js', new Date());
+    gtag('config', 'G-PNQ5D8DFHP');
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Shared Blog Stylesheet -->
+  <link rel="stylesheet" href="/css/blog.css" />
+
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=kibo-duo-v2" />
+  <link rel="shortcut icon" href="/favicon.ico?v=kibo-duo-v2" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=kibo-duo-v2" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=kibo-duo-v2" />
+  <link rel="icon" type="image/png" href="/favicon.png?v=kibo-duo-v2" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=kibo-duo-v2" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=kibo-duo-v2" />
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="Kibo Climb" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="${canonicalUrl}" />
+  <meta property="og:title" content="${title.replace(/"/g, '&quot;')}" />
+  <meta property="og:description" content="${metaDescription.replace(/"/g, '&quot;')}" />
+  <meta property="og:image" content="${defaultImage}" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="${canonicalUrl}" />
+  <meta name="twitter:title" content="${title.replace(/"/g, '&quot;')}" />
+  <meta name="twitter:description" content="${metaDescription.replace(/"/g, '&quot;')}" />
+  <meta name="twitter:image" content="${defaultImage}" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+${jsonLd}
+  </script>
+</head>
+<body>
+  <nav class="nav-bar">
+    <a href="/" class="nav-logo">
+      <img src="/favicon.svg" alt="Kibo" width="28" height="28" />
+      <span>Kibo Climb</span>
+    </a>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="/worksheets" style="color: #0F766E; font-weight: 700; text-decoration: none; font-size: 0.9rem;">Worksheets</a>
+      <a href="/" class="nav-cta">Play Free</a>
+    </div>
+  </nav>
+
+  <main class="blog-index-container">
+    <nav aria-label="Breadcrumb" class="blog-breadcrumbs">
+      <a href="/"><span>Home</span></a>
+      <span class="crumb-separator" aria-hidden="true">&gt;</span>
+      <span class="current-crumb">Blog</span>
+    </nav>
+
+    <header class="blog-header-section">
+      <div class="blog-header-badge">
+        <span>✨ Kibo Learning Hub</span>
+      </div>
+      <h1 class="blog-main-title">Math Strategies, Mental Tricks &amp; Parent Guides</h1>
+      <p class="blog-sub-title">
+        Discover expert mental math shortcuts, adaptive learning strategies, and printable resources designed to turn everyday arithmetic into an exciting mountain adventure.
+      </p>
+    </header>
+
+    ${featuredHtml}
+
+    <section aria-label="Article Feed">
+      <div class="blog-grid-header">
+        <h2 class="blog-grid-title">Latest Articles &amp; Guides</h2>
+        <span class="blog-grid-count">${sortedPosts.length} articles</span>
+      </div>
+      <div class="blog-grid">
+        ${gridCardsHtml}
+      </div>
+    </section>
+
+    <!-- Worksheet Center Banner -->
+    <section class="blog-worksheet-banner" aria-label="Printable Worksheets Promotion">
+      <div class="worksheet-banner-icon" aria-hidden="true">📄</div>
+      <div class="worksheet-banner-text">
+        <h3>Looking for Hands-On Practice?</h3>
+        <p>Explore our free and printable math worksheets for all grade levels. Reinforce mental math, multiplication, and problem-solving with targeted offline practice and parent answer keys.</p>
+      </div>
+      <div>
+        <a href="/worksheets" class="worksheet-banner-btn">Visit Worksheet Center</a>
+      </div>
+    </section>
+
+    <!-- Footer Core Product Banner -->
+    <section class="cta-card" aria-label="Start Learning Adventure">
+      <h3>Turn Math Practice Into a Kilimanjaro Quest</h3>
+      <p>Help Kibo the red panda summit Mount Kilimanjaro! Tackling adaptive math prompts, mental arithmetic shortcuts, and daily streak quests tailored directly to your student.</p>
+      <a href="/" class="cta-button">Start the Climb - Free to Play</a>
+    </section>
+  </main>
+</body>
+</html>
+`;
+}
+
 function buildAll() {
   if (!fs.existsSync(BLOG_JSON_DIR)) {
     console.log(`Directory ${BLOG_JSON_DIR} does not exist. Nothing to build.`);
@@ -309,8 +547,17 @@ function buildAll() {
     posts.push(data);
   }
 
+  // Render static blog index HTML
+  const blogIndexDir = path.join(PUBLIC_DIR, 'blog');
+  fs.mkdirSync(blogIndexDir, { recursive: true });
+  const blogIndexHtml = generateBlogIndexHtml(posts);
+  const blogIndexFilePath = path.join(blogIndexDir, 'index.html');
+  fs.writeFileSync(blogIndexFilePath, blogIndexHtml, 'utf8');
+  console.log(` Rendered Static Blog Index HTML: ${blogIndexFilePath}`);
+
   updateSitemap(posts);
-  console.log(` Successfully built ${posts.length} static blog posts.`);
+  console.log(` Successfully built ${posts.length} static blog posts and blog index.`);
 }
 
 buildAll();
+

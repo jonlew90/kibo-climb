@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
 import { soundFx } from '../utils/audio';
 import { WORKSHEET_CATALOG, getBestWorksheetForTier } from '../utils/worksheetGenerator.js';
+import { getBlogPostBySlug, formatDate } from '../utils/blogLoader';
+import { updateBlogPostSeo } from '../utils/seoMetadata';
 import '../../public/css/blog.css';
-
-// Dynamically glob all JSON articles in src/content/blog/
-const blogModules = import.meta.glob('../content/blog/*.json', { eager: true });
 
 function formatInlineMarkdown(text, onNavigate) {
   if (!text) return '';
@@ -97,24 +96,14 @@ function renderMarkdown(mdText, onNavigate) {
 }
 
 export default function BlogPost({ slug, onBack, onNavigate }) {
-  // Find article by matching slug or filename
+  // Find article dynamically
   const post = useMemo(() => {
-    if (!slug) return null;
-    const cleanSlug = slug.toLowerCase().replace(/^\/+|\/+$/g, '');
-    for (const path in blogModules) {
-      const data = blogModules[path]?.default || blogModules[path];
-      if (data) {
-        if (data.slug === cleanSlug) return data;
-        const fileMatch = path.match(/([^/]+)\.json$/);
-        if (fileMatch && fileMatch[1].toLowerCase() === cleanSlug) return data;
-      }
-    }
-    return null;
+    return getBlogPostBySlug(slug);
   }, [slug]);
 
   useEffect(() => {
-    if (post?.title) {
-      document.title = `${post.title} | Kibo Climb Blog`;
+    if (post) {
+      updateBlogPostSeo(post);
     } else {
       document.title = 'Kibo Climb Blog – Math Strategies & Adaptive Learning';
     }
@@ -131,6 +120,17 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
     }
   };
 
+  const handleNavigateTo = (path, e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    soundFx?.playKeyTap?.();
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      window.history.pushState({}, '', path);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  };
+
   const handlePlayCta = (e) => {
     if (e && e.preventDefault) e.preventDefault();
     soundFx?.playKeyTap?.();
@@ -142,26 +142,12 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
     }
   };
 
-  const formatDate = (isoString) => {
-    if (!isoString) return 'September 14, 2026';
-    try {
-      const d = new Date(isoString);
-      return d.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    } catch (e) {
-      return isoString.slice(0, 10);
-    }
-  };
-
   if (!post) {
     return (
       <div className="blog-page-wrapper fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B]">
         <nav className="nav-bar">
-          <a href="/" onClick={handleBack} className="nav-logo">
-            <img src="/favicon.svg" alt="Kibo" width="28" height="28" />
+          <a href="/" onClick={(e) => handleNavigateTo('/', e)} className="nav-logo">
+            <img src="/favicon.svg" alt="Kibo Red Panda" width="28" height="28" />
             <span>Kibo Climb</span>
           </a>
           <a href="/" onClick={handlePlayCta} className="nav-cta">
@@ -172,9 +158,12 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
         <main className="article-container" style={{ textAlign: 'center', paddingTop: '4rem', paddingBottom: '4rem' }}>
           <h1>Article Not Found</h1>
           <p>We couldn't find the article you were looking for. It may have been moved or updated.</p>
-          <div style={{ marginTop: '2rem' }}>
+          <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <a href="/blog" onClick={(e) => handleNavigateTo('/blog', e)} className="blog-filter-pill active">
+              ← Return to Blog
+            </a>
             <a href="/" onClick={handlePlayCta} className="cta-button">
-              Start the Climb - Free to Play
+              Start the Climb
             </a>
           </div>
         </main>
@@ -209,18 +198,40 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
   return (
     <div className="blog-page-wrapper fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B]">
       <nav className="nav-bar">
-        <a href="/" onClick={handleBack} className="nav-logo">
-          <img src="/favicon.svg" alt="Kibo" width="28" height="28" />
+        <a href="/" onClick={(e) => handleNavigateTo('/', e)} className="nav-logo">
+          <img src="/favicon.svg" alt="Kibo Red Panda" width="28" height="28" />
           <span>Kibo Climb</span>
         </a>
-        <a href="/" onClick={handlePlayCta} className="nav-cta">
-          Play Free
-        </a>
+        <div className="flex items-center gap-3">
+          <a
+            href="/blog"
+            onClick={(e) => handleNavigateTo('/blog', e)}
+            className="hidden sm:inline-flex text-sm font-bold text-[#64748B] hover:text-[#FF6B35] transition-colors"
+          >
+            All Articles
+          </a>
+          <a href="/" onClick={handlePlayCta} className="nav-cta">
+            Play Free
+          </a>
+        </div>
       </nav>
 
       <main className="article-container">
+        {/* Breadcrumbs Navigation */}
+        <nav aria-label="Breadcrumb" className="blog-breadcrumbs">
+          <a href="/" onClick={(e) => handleNavigateTo('/', e)}>
+            <span>Home</span>
+          </a>
+          <span className="crumb-separator" aria-hidden="true">&gt;</span>
+          <a href="/blog" onClick={(e) => handleNavigateTo('/blog', e)}>
+            <span>Blog</span>
+          </a>
+          <span className="crumb-separator" aria-hidden="true">&gt;</span>
+          <span className="current-crumb truncate max-w-[240px] sm:max-w-none">{post.title}</span>
+        </nav>
+
         <h1>{post.title}</h1>
-        <div className="date">Published {formatDate(post.published_at)} • Adaptive Math Strategies</div>
+        <div className="date">Published {formatDate(post.published_at)} • {post.topic || 'Adaptive Math Strategies'}</div>
 
         <img src={featuredImg} alt={post.title} className="hero-img" />
 
@@ -241,7 +252,7 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
                 onClick={(e) => handleWorksheetClick(e, relatedWorksheet)}
                 className="worksheet-cta-button"
               >
-                Download Printable Worksheet & Key →
+                Download Printable Worksheet &amp; Key →
               </a>
             </div>
           )}
@@ -256,3 +267,4 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
     </div>
   );
 }
+
