@@ -63,16 +63,19 @@
   <url>
     <loc>https://kiboclimb.com/blog/mental-math-shortcuts-for-fast-climbers</loc>
     <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiboclimb.com/blog/unlocking-mental-math-left-to-right-addition</loc>
     <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiboclimb.com/blog/master-mental-addition-compensation-strategy</loc>
     <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 </urlset>

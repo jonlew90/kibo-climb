@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:blog": "python3 scripts/build_blog_html.py",
+    "build:blog": "node scripts/build_blog_html.mjs",
     "build": "npm run build:blog && vite build",
     "indexnow": "node scripts/notify_indexnow.js",
     "preview": "vite preview",
