@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
   WORKSHEET_CATALOG,
+  KIBO_RED_PANDA_FAVICON_SVG,
   getWorksheetsForSubject,
   getWorksheetById,
+  getCanonicalPath,
   generateProblemsForWorksheet,
   generateWorksheetHtml
 } from '../../src/utils/worksheetGenerator';
@@ -39,13 +41,13 @@ describe('worksheetGenerator', () => {
   it('should format clean 2-page HTML with mascot branding, canonical link, and answer keys', () => {
     const sheet = WORKSHEET_CATALOG[0];
     const html = generateWorksheetHtml(sheet, 'Alex', [], 42);
-    expect(html).toContain('Kibo the Red Panda Mascot 🐾');
+    expect(html).toContain(KIBO_RED_PANDA_FAVICON_SVG);
     expect(html).toContain('page-1');
     expect(html).toContain('page-2');
     expect(html).toContain('Parent Answer Key');
     expect(html).toContain('@media print');
     expect(html).toContain('Alex');
-    expect(html).toContain('<link rel="canonical" href="https://www.kiboclimb.com/worksheets/math_starter_k2" />');
+    expect(html).toContain(`<link rel="canonical" href="https://www.kiboclimb.com${getCanonicalPath(sheet)}" />`);
     expect(html).toContain('(Set #42)');
   });
 

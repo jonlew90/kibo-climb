@@ -276,9 +276,14 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
   const worksheet = getWorksheetById(worksheetId);
   const problems = [];
   const rng = createSeededRandom(seed);
+  const originalRandom = Math.random;
+  if (seed !== 0 && seed !== undefined && seed !== null) {
+    Math.random = rng;
+  }
 
-  // Dynamic weak-spot worksheet
-  if (worksheetId === 'math_club_weak_spot' || worksheet?.isDynamic) {
+  try {
+    // Dynamic weak-spot worksheet
+    if (worksheetId === 'math_club_weak_spot' || worksheet?.isDynamic) {
     if (recentMistakes && recentMistakes.length > 0) {
       recentMistakes.slice(0, 16).forEach((m, idx) => {
         problems.push({
@@ -372,6 +377,9 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
   }
 
   return shuffled.slice(0, 16);
+  } finally {
+    Math.random = originalRandom;
+  }
 }
 
 export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', recentMistakes = [], seed = 0) {
