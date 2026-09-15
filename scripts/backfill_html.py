@@ -52,7 +52,7 @@ for filename in os.listdir(json_dir):
     html_file_path = os.path.join(html_out_dir, "index.html")
 
     paragraphs = "".join([f"<p>{line}</p>" for line in data.get("content_markdown", "").split("\n\n") if line.strip()])
-    featured_filename = data.get("featured_asset", "kibo-climbing.png")
+    featured_filename = data.get("featured_asset", "kibo-climbing.jpeg")
     featured_image_url = f"{BASE_URL}/images/blog/{featured_filename}"
 
     json_ld = json.dumps({

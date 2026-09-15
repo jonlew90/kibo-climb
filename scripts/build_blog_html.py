@@ -63,7 +63,7 @@ def generate_post_html(data: dict) -> str:
     published_at = data.get("published_at", "")
     pub_date_short = published_at[:10] if len(published_at) >= 10 else "2026-09-14"
 
-    featured_filename = data.get("featured_asset", "kibo-climbing.png")
+    featured_filename = data.get("featured_asset", "kibo-climbing.jpeg")
     featured_image_url = f"{BASE_URL}/images/blog/{featured_filename}"
     post_url = f"{BASE_URL}/blog/{slug}"
 

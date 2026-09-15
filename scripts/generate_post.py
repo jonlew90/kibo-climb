@@ -49,7 +49,7 @@ response_schema = {
         "tags": {"type": "ARRAY", "items": {"type": "STRING"}},
         "featured_asset": {
             "type": "STRING",
-            "enum": ["kibo-summit.png", "kibo-thinking.png", "kibo-climbing.png"]
+            "enum": ["kibo-summit.jpeg", "kibo-thinking.jpeg", "kibo-climbing.jpeg"]
         },
         "content_markdown": {"type": "STRING"},
         "social_copy": {
