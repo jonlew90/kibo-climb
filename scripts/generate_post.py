@@ -1,141 +1,293 @@
-import os
+import html
 import json
+import os
 import re
-import time
-from datetime import datetime, timezone
-import sys
-from dotenv import load_dotenv
-from google import genai
-from google.genai import types
-from google.genai.errors import APIError
-
-# Add scripts directory to sys.path if not present
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import build_blog_html
-
-load_dotenv()
-
-api_key = os.environ.get("GEMINI_API_KEY")
-if not api_key:
-    raise ValueError("GEMINI_API_KEY environment variable is missing.")
-
-client = genai.Client(api_key=api_key)
+import xml.etree.ElementTree as ET
 
 BASE_URL = "https://kiboclimb.com"
+BLOG_JSON_DIR = os.path.join("src", "content", "blog")
+PUBLIC_DIR = "public"
+SITEMAP_PATH = os.path.join(PUBLIC_DIR, "sitemap.xml")
 
-# -------------------------------------------------------------
-# 1. System Prompt & Structured Generation Configuration
-# -------------------------------------------------------------
-system_prompt = """
-You are an educational writer and content strategist for Kibo Climb (kiboclimb.com), a learning platform that turns core academic practice into an adventure alongside Kibo, an energetic red panda climbing Mount Kilimanjaro.
 
-Write a 600-word blog post that is educational, casual, and genuinely fun to read. Keep paragraphs punchy and easy to scan, with light humor and practical takeaways for parents, teachers, and curious kids.
+def _format_inline(text: str) -> str:
+    """Escapes HTML entities and applies basic bold formatting."""
+    safe_text = html.escape(text.strip())
+    return re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", safe_text)
 
-Topic Scope:
-Write on a specific, high-intent topic from across the Kibo Climb curriculum, including:
-- Math (mental math tricks, fraction hacks, multiplication mastery, tackling math anxiety)
-- Coding & Logic (computational thinking, simple algorithms, puzzle-solving strategies)
-- Language Arts (spelling patterns, vocabulary roots, memory tricks for tough words)
-- Geography (map reading, world trivia, continental landmarks)
 
-Voice & Style:
-- Tone: Clean, encouraging, conversational, and witty. Keep it approachable rather than overly academic.
-- Structure: Use clear Markdown headings (## for sections, ### for sub-steps). Break up dense text with bullet points, short callouts, or quick checklists.
-- Punctuation Constraint: Do not use em dashes anywhere in the response. Use commas, parentheses, or periods instead.
-- Concrete Examples: Provide practical, worked examples (e.g., step-by-step problem breakdowns, short pseudocode snippets, or memorable mnemonic sentences).
-- Product Integration: Naturally weave in how Kibo Climb turns repetitive drills into an expedition up Mount Kilimanjaro, reinforcing skills through bite-sized, adaptive practice.
-- Assets: Choose the single best featured_asset from the allowed list that visually complements the article.
+def markdown_to_html(md_text: str) -> str:
+    """Converts basic markdown headers, lists, bold text, and paragraphs into semantic HTML."""
+    blocks = [b.strip() for b in md_text.strip().split("\n\n") if b.strip()]
+    html_parts = []
+
+    for block in blocks:
+        lines = [line.strip() for line in block.split("\n") if line.strip()]
+        if not lines:
+            continue
+
+        first_line = lines[0]
+
+        if first_line.startswith("### "):
+            heading_text = _format_inline(first_line[4:])
+            html_parts.append(f"<h3>{heading_text}</h3>")
+            for sub_line in lines[1:]:
+                html_parts.append(f"<p>{_format_inline(sub_line)}</p>")
+
+        elif first_line.startswith("## "):
+            heading_text = _format_inline(first_line[3:])
+            html_parts.append(f"<h2>{heading_text}</h2>")
+            for sub_line in lines[1:]:
+                html_parts.append(f"<p>{_format_inline(sub_line)}</p>")
+
+        elif re.match(r"^\d+\.\s", first_line):
+            items = []
+            for l in lines:
+                item_text = re.sub(r"^\d+\.\s*", "", l)
+                items.append(f"<li>{_format_inline(item_text)}</li>")
+            html_parts.append(f"<ol>{''.join(items)}</ol>")
+
+        elif first_line.startswith("- ") or first_line.startswith("* "):
+            items = []
+            for l in lines:
+                item_text = re.sub(r"^[-*]\s*", "", l)
+                items.append(f"<li>{_format_inline(item_text)}</li>")
+            html_parts.append(f"<ul>{''.join(items)}</ul>")
+
+        else:
+            text = " ".join(lines)
+            html_parts.append(f"<p>{_format_inline(text)}</p>")
+
+    return "\n      ".join(html_parts)
+
+
+def generate_post_html(data: dict) -> str:
+    """Renders a single blog post into full static HTML."""
+    slug = data["slug"]
+    title = data["title"]
+    meta_description = data.get("meta_description") or data.get("summary", "")
+    published_at = data.get("published_at", "")
+    pub_date_short = published_at[:10] if len(published_at) >= 10 else "2026-09-14"
+
+    featured_filename = data.get("featured_asset", "kibo-climbing.jpeg")
+    featured_image_url = f"{BASE_URL}/images/blog/{featured_filename}"
+    post_url = f"{BASE_URL}/blog/{slug}"
+
+    content_html = markdown_to_html(data.get("content_markdown", ""))
+
+    json_ld = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": title,
+        "description": meta_description,
+        "image": featured_image_url,
+        "datePublished": published_at,
+        "author": {
+            "@type": "Organization",
+            "name": "Kibo Climb",
+            "url": BASE_URL
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Kibo Climb",
+            "logo": {
+                "@type": "ImageObject",
+                "url": f"{BASE_URL}/icons/icon-512.png"
+            }
+        },
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": post_url
+        }
+    }, indent=2)
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{html.escape(title)} | Kibo Climb</title>
+  <meta name="description" content="{html.escape(meta_description)}" />
+  <link rel="canonical" href="{post_url}" />
+
+  <!-- Google Analytics 4 (COPPA Compliant) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PNQ5D8DFHP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){{dataLayer.push(arguments);}}
+    gtag('consent', 'default', {{
+      'ad_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied',
+      'analytics_storage': 'granted'
+    }});
+    gtag('set', {{
+      'restricted_data_processing': true,
+      'allow_google_signals': false,
+      'allow_ad_personalization_signals': false
+    }});
+    gtag('js', new Date());
+    gtag('config', 'G-PNQ5D8DFHP');
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Shared Blog Stylesheet -->
+  <link rel="stylesheet" href="/css/blog.css" />
+
+  <!-- Open Graph / Facebook / LinkedIn -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="{post_url}" />
+  <meta property="og:title" content="{html.escape(title)}" />
+  <meta property="og:description" content="{html.escape(meta_description)}" />
+  <meta property="og:image" content="{featured_image_url}" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="{post_url}" />
+  <meta name="twitter:title" content="{html.escape(title)}" />
+  <meta name="twitter:description" content="{html.escape(meta_description)}" />
+  <meta name="twitter:image" content="{featured_image_url}" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+{json_ld}
+  </script>
+</head>
+<body>
+  <nav class="nav-bar">
+    <a href="/" class="nav-logo"><img src="/favicon.svg" alt="Kibo" width="28" height="28" /> Kibo Climb</a>
+    <a href="/" class="nav-cta">Play Free</a>
+  </nav>
+
+  <main class="article-container">
+    <h1>{html.escape(title)}</h1>
+    <div class="date">Published {pub_date_short} • Adaptive Math Strategies</div>
+    
+    <img src="{featured_image_url}" alt="{html.escape(title)}" class="hero-img" />
+
+    <article>
+      {content_html}
+    </article>
+
+    <section class="cta-card">
+      <h3>Turn Math Practice Into a Mountain Adventure</h3>
+      <p>Help Kibo summit Mount Kilimanjaro by tackling mental math shortcuts, adaptive levels, and skill-building challenges tailored directly to your student.</p>
+      <a href="/" class="cta-button">Start the Climb - Free to Play</a>
+    </section>
+  </main>
+</body>
+</html>
 """
 
-user_prompt = "Generate a fresh, high-value math strategy article as structured JSON."
 
-response_schema = {
-    "type": "OBJECT",
-    "properties": {
-        "title": {"type": "STRING"},
-        "slug": {"type": "STRING"},
-        "meta_description": {"type": "STRING"},
-        "tags": {"type": "ARRAY", "items": {"type": "STRING"}},
-        "featured_asset": {
-            "type": "STRING",
-            "enum": ["kibo-summit.jpeg", "kibo-thinking.jpeg", "kibo-climbing.jpeg"]
-        },
-        "content_markdown": {"type": "STRING"},
-        "social_copy": {
-            "type": "OBJECT",
-            "properties": {
-                "x_post": {"type": "STRING"},
-                "short_blurb": {"type": "STRING"}
-            },
-            "required": ["x_post", "short_blurb"]
-        }
-    },
-    "required": ["title", "slug", "meta_description", "tags", "featured_asset", "content_markdown", "social_copy"]
-}
+def update_sitemap(posts: list[dict]):
+    """Updates public/sitemap.xml with strictly fixed publication dates."""
+    ns = "http://www.sitemaps.org/schemas/sitemap/0.9"
+    ET.register_namespace("", ns)
+    os.makedirs(PUBLIC_DIR, exist_ok=True)
 
-# -------------------------------------------------------------
-# 2. Resilient API Call (Retries + Model Fallback)
-# -------------------------------------------------------------
-MODELS_TO_TRY = ["gemini-3.6-flash", "gemini-2.5-pro"]
-max_retries = 3
-response = None
-
-for model_name in MODELS_TO_TRY:
-    delay = 4
-    for attempt in range(1, max_retries + 1):
+    if os.path.exists(SITEMAP_PATH):
         try:
-            print(f"Calling Gemini API using {model_name} (Attempt {attempt}/{max_retries})...")
-            response = client.models.generate_content(
-                model=model_name,
-                contents=user_prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_prompt,
-                    response_mime_type="application/json",
-                    response_schema=response_schema,
-                    temperature=0.7,
-                ),
-            )
+            tree = ET.parse(SITEMAP_PATH)
+            root = tree.getroot()
+        except ET.ParseError:
+            root = ET.Element(f"{{{ns}}}urlset")
+    else:
+        root = ET.Element(f"{{{ns}}}urlset")
+
+    home_found = False
+    for url_elem in root.findall(f"{{{ns}}}url"):
+        loc = url_elem.find(f"{{{ns}}}loc")
+        if loc is not None and loc.text == f"{BASE_URL}/":
+            home_found = True
             break
-        except APIError as e:
-            if e.code in (503, 500, 429) and attempt < max_retries:
-                print(f"Temporary server issue ({e.code}). Retrying in {delay}s...")
-                time.sleep(delay)
-                delay *= 2
+
+    if not home_found:
+        home_url = ET.Element(f"{{{ns}}}url")
+        ET.SubElement(home_url, f"{{{ns}}}loc").text = f"{BASE_URL}/"
+        ET.SubElement(home_url, f"{{{ns}}}priority").text = "1.0"
+        root.insert(0, home_url)
+
+    existing_url_map = {}
+    for url_elem in root.findall(f"{{{ns}}}url"):
+        loc = url_elem.find(f"{{{ns}}}loc")
+        if loc is not None and loc.text:
+            existing_url_map[loc.text] = url_elem
+
+    for post in posts:
+        slug = post["slug"]
+        post_url = f"{BASE_URL}/blog/{slug}"
+        published_at = post.get("published_at", "")
+        pub_date_short = published_at[:10] if len(published_at) >= 10 else "2026-09-14"
+
+        if post_url in existing_url_map:
+            url_elem = existing_url_map[post_url]
+            lastmod = url_elem.find(f"{{{ns}}}lastmod")
+            if lastmod is not None:
+                lastmod.text = pub_date_short
             else:
-                print(f"Failed with {model_name}: {e.message}")
-                break
+                ET.SubElement(url_elem, f"{{{ns}}}lastmod").text = pub_date_short
+        else:
+            new_url_elem = ET.SubElement(root, f"{{{ns}}}url")
+            ET.SubElement(new_url_elem, f"{{{ns}}}loc").text = post_url
+            ET.SubElement(new_url_elem, f"{{{ns}}}lastmod").text = pub_date_short
+            ET.SubElement(new_url_elem, f"{{{ns}}}priority").text = "0.8"
 
-    if response:
-        print(f"Successfully received response via {model_name}.")
-        break
+    def clean_elem(elem):
+        if elem.text:
+            elem.text = elem.text.strip() or None
+        if elem.tail:
+            elem.tail = elem.tail.strip() or None
+        for child in elem:
+            clean_elem(child)
 
-if not response:
-    raise RuntimeError("All configured Gemini models failed due to persistent server load.")
+    clean_elem(root)
+    ET.indent(root, space="  ")
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="utf-8").decode("utf-8") + '\n'
+    with open(SITEMAP_PATH, "w", encoding="utf-8") as f:
+        f.write(xml_content)
+    print(f"Synchronized Sitemap with {len(posts)} posts: {SITEMAP_PATH}")
 
-data = json.loads(response.text)
 
-# Sanitize slug & add timestamps
-slug = re.sub(r'[^a-zA-Z0-9-]', '', data["slug"].lower().replace(" ", "-"))
-pub_date_iso = datetime.now(timezone.utc).isoformat()
-pub_date_short = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+def build_all():
+    """Iterates over all blog JSON files, renders HTML pages, and syncs sitemap.xml."""
+    if not os.path.exists(BLOG_JSON_DIR):
+        print(f"Directory {BLOG_JSON_DIR} does not exist. Nothing to build.")
+        return
 
-data["slug"] = slug
-data["published_at"] = pub_date_iso
+    json_files = [f for f in os.listdir(BLOG_JSON_DIR) if f.endswith(".json")]
+    if not json_files:
+        print(f"No blog posts found in {BLOG_JSON_DIR}.")
+        return
 
-# -------------------------------------------------------------
-# 3. Write Post JSON (For Client PWA / React Consumer)
-# -------------------------------------------------------------
-json_dir = os.path.join("src", "content", "blog")
-os.makedirs(json_dir, exist_ok=True)
-json_file_path = os.path.join(json_dir, f"{slug}.json")
+    posts = []
+    for filename in sorted(json_files):
+        filepath = os.path.join(BLOG_JSON_DIR, filename)
+        with open(filepath, "r", encoding="utf-8") as f:
+            data = json.load(f)
 
-with open(json_file_path, "w", encoding="utf-8") as f:
-    json.dump(data, f, indent=2)
-print(f" Saved JSON: {json_file_path}")
+        if not data.get("slug"):
+            continue
 
-# -------------------------------------------------------------
-# 4. Rebuild All Static HTML & Synchronize Sitemap
-# -------------------------------------------------------------
-print(" Rebuilding all blog HTML pages and updating sitemap...")
-build_blog_html.build_all()
-print(" Pipeline Complete.")
+        slug = data["slug"]
+        html_out_dir = os.path.join(PUBLIC_DIR, "blog", slug)
+        os.makedirs(html_out_dir, exist_ok=True)
+        html_file_path = os.path.join(html_out_dir, "index.html")
+
+        html_content = generate_post_html(data)
+        with open(html_file_path, "w", encoding="utf-8") as f:
+            f.write(html_content)
+
+        print(f"Rendered HTML: {html_file_path}")
+        posts.append(data)
+
+    update_sitemap(posts)
+    print(f"Successfully built {len(posts)} static blog posts.")
+
+
+if __name__ == "__main__":
+    build_all()
