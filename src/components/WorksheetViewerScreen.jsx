@@ -137,30 +137,32 @@ export default function WorksheetViewerScreen({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-100 flex flex-col items-center py-4 px-2 sm:px-4 text-slate-800">
       {/* Interactive Top Bar (Hidden on print) */}
-      <div className="w-full max-w-4xl mb-3 flex items-center justify-between bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-xs no-print gap-2">
+      <div className="w-full max-w-4xl mb-3 flex items-center justify-between bg-white border border-slate-200 rounded-2xl p-2 sm:p-3 shadow-xs no-print gap-1.5 sm:gap-2">
         <button
           type="button"
           onClick={handleReturn}
-          className="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs inline-flex items-center gap-1.5 shrink-0 cursor-pointer hover:bg-slate-100 transition-all text-left"
+          className="px-2 sm:px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs inline-flex items-center gap-1 sm:gap-1.5 shrink-0 cursor-pointer hover:bg-slate-100 transition-all text-left"
         >
           {fromParentDashboard ? (
             <>
               <ArrowLeft className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap">Parent Dashboard</span>
+              <span className="whitespace-nowrap hidden xs:inline">Parent Dashboard</span>
+              <span className="whitespace-nowrap xs:hidden">Dashboard</span>
             </>
           ) : (
             <>
               <ArrowLeft className="w-4 h-4 text-teal-600 shrink-0" />
-              <span className="whitespace-nowrap">All Worksheets</span>
+              <span className="whitespace-nowrap hidden xs:inline">All Worksheets</span>
+              <span className="whitespace-nowrap xs:hidden">Worksheets</span>
             </>
           )}
         </button>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={handleGenerateNewSet}
-            className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 font-black text-xs text-indigo-800 inline-flex items-center gap-1.5 cursor-pointer transition-all shrink-0 active:scale-95"
+            className="px-2 sm:px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 font-black text-xs text-indigo-800 inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all shrink-0 active:scale-95"
             title="Generate a new set of 16 practice questions"
           >
             <Dices className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
@@ -171,7 +173,7 @@ export default function WorksheetViewerScreen({
           <button
             type="button"
             onClick={handleShare}
-            className={`px-3 py-1.5 rounded-xl border font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-all shrink-0 ${
+            className={`px-2 sm:px-3 py-1.5 rounded-xl border font-bold text-xs inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all shrink-0 ${
               copied
                 ? 'bg-teal-50 border-teal-300 text-teal-700'
                 : 'border-slate-300 hover:bg-slate-50 text-slate-700'
@@ -195,7 +197,7 @@ export default function WorksheetViewerScreen({
           <button
             type="button"
             onClick={handlePrint}
-            className={`px-4 py-1.5 rounded-xl font-black text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-all active:scale-95 shrink-0 ${
+            className={`px-2.5 sm:px-4 py-1.5 rounded-xl font-black text-xs inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer shadow-xs transition-all active:scale-95 shrink-0 ${
               isLocked
                 ? 'bg-amber-500 hover:bg-amber-600 text-amber-950'
                 : 'bg-teal-600 hover:bg-teal-700 text-white'
@@ -204,7 +206,8 @@ export default function WorksheetViewerScreen({
             {isLocked ? (
               <>
                 <Lock className="w-3.5 h-3.5" />
-                <span>Unlock VIP</span>
+                <span className="hidden sm:inline">Unlock VIP</span>
+                <span className="sm:hidden">VIP</span>
               </>
             ) : (
               <>
