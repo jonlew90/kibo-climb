@@ -3045,6 +3045,8 @@ export default function App() {
       {/* PUBLIC PRINTABLE WORKSHEET HUB SCREEN */}
       {(appState === 'worksheet_hub' || appState === VIEWS.WORKSHEET_HUB) && (
         <WorksheetHubScreen
+          fromParentDashboard={navigationHistory.getStack().some(e => e.id === VIEWS.PARENT_DASHBOARD)}
+          onBack={handleGoBack}
           onNavigate={handleNavigateTo}
           onOpenKiboClubUpgrade={() => {
             setParentDashboardTab('verification');

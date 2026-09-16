@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Printer, Lock, Sparkles, Download, CheckCircle2, ChevronRight, BookOpen, Filter, ArrowRight } from 'lucide-react';
+import { Search, Printer, Lock, Sparkles, Download, CheckCircle2, ChevronRight, BookOpen, Filter, ArrowRight, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { WORKSHEET_CATALOG, getCanonicalPath, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
 import { updateWorksheetHubSeo } from '../utils/seoMetadata';
 import { soundFx } from '../utils/audio';
@@ -31,7 +31,7 @@ const TIERS = [
   { id: 'premium', label: 'Premium VIP' }
 ];
 
-export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }) {
+export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, fromParentDashboard = false, onBack }) {
   const [selectedTopic, setSelectedTopic] = useState('all');
   const [selectedGrade, setSelectedGrade] = useState('all');
   const [selectedTier, setSelectedTier] = useState('all');
@@ -175,7 +175,7 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
             </span>
           </a>
 
-          <nav className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+          <nav className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <a
               href="/worksheets"
               onClick={(e) => handleNavigateTo('/worksheets', e)}
@@ -190,13 +190,28 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
             >
               Blog
             </a>
-            <a
-              href="/"
-              onClick={(e) => handleNavigateTo('/', e)}
-              className="ml-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-            >
-              Play Free
-            </a>
+            {fromParentDashboard ? (
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  if (onBack) onBack();
+                  else if (onNavigate) onNavigate('/parent', 'parent_dashboard');
+                }}
+                className="ml-1 sm:ml-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+              >
+                <ShieldCheck className="w-4 h-4 text-teal-200" />
+                <span>Parent Zone</span>
+              </button>
+            ) : (
+              <a
+                href="/"
+                onClick={(e) => handleNavigateTo('/', e)}
+                className="ml-1 sm:ml-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+              >
+                Play Free
+              </a>
+            )}
           </nav>
         </div>
       </header>
