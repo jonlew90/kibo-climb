@@ -43,7 +43,7 @@ export const KIBO_RED_PANDA_FAVICON_SVG = `<svg viewBox="0 0 512 512" width="100
 </svg>`;
 
 export const WORKSHEET_CATALOG = [
-  // MATH
+  // MATH (Free Foundational Starter + VIP Booster for Grades K-6+)
   {
     id: 'math_starter_k',
     subject: 'math',
@@ -93,15 +93,39 @@ export const WORKSHEET_CATALOG = [
     problemCount: 16
   },
   {
+    id: 'math_starter_g4',
+    subject: 'math',
+    tier: 4,
+    curriculumTiers: [4],
+    slug: 'grade-4-mental-division-fundamentals',
+    title: 'Grade 4 Mental Division & Factors',
+    gradeLabel: 'Grade 4',
+    desc: 'Division fact families, remainders, and factors foundations.',
+    isKiboClubOnly: false,
+    problemCount: 16
+  },
+  {
     id: 'math_club_g4',
     subject: 'math',
     tier: 4,
     curriculumTiers: [4, 6],
     slug: 'grade-4-multi-digit-division',
-    title: 'Grade 4 Multi-Digit & Division Mental Math',
+    title: 'Grade 4 Multi-Digit & Division Speed Drill',
     gradeLabel: 'Grade 4',
     desc: '11s shortcut, halving ladders, and mental division fact families.',
     isKiboClubOnly: true,
+    problemCount: 16
+  },
+  {
+    id: 'math_starter_g5',
+    subject: 'math',
+    tier: 5,
+    curriculumTiers: [5],
+    slug: 'grade-5-fractions-foundations',
+    title: 'Grade 5 Fractions & Decimals Foundations',
+    gradeLabel: 'Grade 5',
+    desc: 'Basic equivalent fractions, unit fractions, and decimal place values.',
+    isKiboClubOnly: false,
     problemCount: 16
   },
   {
@@ -110,10 +134,22 @@ export const WORKSHEET_CATALOG = [
     tier: 5,
     curriculumTiers: [5, 7],
     slug: 'grade-5-fractions-decimals',
-    title: 'Grade 5 Fractions & Decimals Mastery',
+    title: 'Grade 5 Fractions & Decimals Mastery Pack',
     gradeLabel: 'Grade 5',
     desc: 'Equivalent fractions, mixed numbers, money change, and decimal operations.',
     isKiboClubOnly: true,
+    problemCount: 16
+  },
+  {
+    id: 'math_starter_g6',
+    subject: 'math',
+    tier: 7,
+    curriculumTiers: [7],
+    slug: 'grade-6-pre-algebra-foundations',
+    title: 'Grade 6 Pre-Algebra & Order of Operations',
+    gradeLabel: 'Grade 6',
+    desc: 'Order of operations (PEMDAS), simple variable expressions, and LCM/GCF.',
+    isKiboClubOnly: false,
     problemCount: 16
   },
   {
@@ -122,9 +158,9 @@ export const WORKSHEET_CATALOG = [
     tier: 7,
     curriculumTiers: [7, 8],
     slug: 'grade-6-pre-algebra-pemdas',
-    title: 'Grade 6 Pre-Algebra & Order of Operations',
+    title: 'Grade 6 Pre-Algebra & Exponents Summit Pack',
     gradeLabel: 'Grade 6',
-    desc: 'Order of operations (PEMDAS), GCF, LCM, and foundational pre-algebra.',
+    desc: 'Order of operations (PEMDAS), exponents, GCF, LCM, and advanced pre-algebra.',
     isKiboClubOnly: true,
     problemCount: 16
   },
@@ -168,14 +204,26 @@ export const WORKSHEET_CATALOG = [
     problemCount: 16
   },
   {
+    id: 'words_starter_g46',
+    subject: 'words',
+    tier: 5,
+    curriculumTiers: [5, 6],
+    slug: 'grade-4-6-vocabulary-foundations',
+    title: 'Grade 4–6 Vocabulary & Context Clues',
+    gradeLabel: 'Grades 4–6',
+    desc: 'Context clues, root words, prefixes, and grade-level vocabulary.',
+    isKiboClubOnly: false,
+    problemCount: 16
+  },
+  {
     id: 'words_club_g46',
     subject: 'words',
     tier: 5,
     curriculumTiers: [5, 6, 7],
     slug: 'grade-4-6-advanced-vocabulary',
-    title: 'Summit Vocabulary & Context Clues',
+    title: 'Summit Advanced Vocabulary Expedition',
     gradeLabel: 'Grades 4–6',
-    desc: 'Context clues, root words, prefixes, and advanced vocabulary mastery.',
+    desc: 'Advanced context clues, Latin roots, prefixes, and vocabulary mastery.',
     isKiboClubOnly: true,
     problemCount: 16
   },
@@ -190,6 +238,18 @@ export const WORKSHEET_CATALOG = [
     title: 'World Explorer: Continents & Capitals',
     gradeLabel: 'Grades 1–3',
     desc: 'Match countries to capitals, identify continents, and find mountain summits.',
+    isKiboClubOnly: false,
+    problemCount: 16
+  },
+  {
+    id: 'world_starter_g48',
+    subject: 'world',
+    tier: 5,
+    curriculumTiers: [5, 6],
+    slug: 'grade-4-8-world-geography-basics',
+    title: 'Grade 4–8 World Geography & Maps',
+    gradeLabel: 'Grades 4–8',
+    desc: 'Major landforms, continents, ocean currents, and global capitals.',
     isKiboClubOnly: false,
     problemCount: 16
   },
@@ -216,6 +276,18 @@ export const WORKSHEET_CATALOG = [
     title: 'Junior Algorithm & Pattern Paths',
     gradeLabel: 'Grades 1–3',
     desc: 'Trace step-by-step directional algorithms and sequence paths.',
+    isKiboClubOnly: false,
+    problemCount: 16
+  },
+  {
+    id: 'coding_starter_g48',
+    subject: 'coding',
+    tier: 3,
+    curriculumTiers: [3, 4],
+    slug: 'grade-4-8-coding-logic-fundamentals',
+    title: 'Grade 4–8 Coding Logic & Conditionals',
+    gradeLabel: 'Grades 4–8',
+    desc: 'If/else conditional branching, step sequencing, and debugging logic.',
     isKiboClubOnly: false,
     problemCount: 16
   },
@@ -388,26 +460,29 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
       const wordList = WORD_LISTS[chosenTier] || WORD_LISTS[1] || [];
       const item = wordList.length > 0 ? wordList[Math.floor(rng() * wordList.length)] : null;
       const prob = generateWordsTierProblem(chosenTier, false, new Set(), item);
-      const q = prob.prompt || prob.question || `Spell the word for: ${prob.hint || item?.hint || 'this term'}`;
+      let q = prob.prompt || prob.question || (item?.hint ? `Clue: ${item.hint}` : `Spell: ${item?.word || 'term'}`);
+      q = q.replace(/^Spell the word for:\s*/i, '').replace(/^Complete the word:\s*/i, '').replace(/^What word matches:\s*/i, '').trim();
       const ans = String(prob.correctAnswer || prob.answer || item?.word || '');
       return { q, ans };
     }
 
     if (subject === 'world') {
       const prob = generateWorldTierProblem(chosenTier, false, new Set());
-      const q = prob.prompt || prob.question || 'Identify the correct geographical answer:';
+      let q = prob.prompt || prob.question || 'Geographical question';
+      q = q.replace(/^Identify the correct geographical answer:\s*/i, '').replace(/^What is the capital of\s*/i, 'Capital of ').trim();
       const ans = String(prob.correctAnswer || prob.answer || prob.answerString || '');
       return { q, ans };
     }
 
     if (subject === 'coding') {
       const prob = generateCodingProblem(chosenTier, false, new Set());
-      const q = prob.prompt || prob.question || prob.displayString || 'Solve this coding logic puzzle:';
+      let q = prob.prompt || prob.question || prob.displayString || 'Coding puzzle';
+      q = q.replace(/^Solve this coding logic puzzle:\s*/i, '').trim();
       const ans = String(prob.correctAnswer || prob.answer || prob.answerString || '');
       return { q, ans };
     }
 
-    return { q: 'Solve the problem:', ans: 'Correct answer' };
+    return { q: 'Solve the problem', ans: 'Answer' };
   };
 
   // Generate 48 problem candidates from the live curriculum generator, deduplicate, and seeded-shuffle

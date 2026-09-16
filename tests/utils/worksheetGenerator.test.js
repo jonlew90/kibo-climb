@@ -52,9 +52,9 @@ describe('worksheetGenerator', () => {
   });
 
   it('should generate deterministic problem sets for identical seeds', () => {
-    const set1 = generateProblemsForWorksheet('math_starter_k2', [], 12345);
-    const set2 = generateProblemsForWorksheet('math_starter_k2', [], 12345);
-    const set3 = generateProblemsForWorksheet('math_starter_k2', [], 99999);
+    const set1 = generateProblemsForWorksheet('math_starter_k', [], 12345);
+    const set2 = generateProblemsForWorksheet('math_starter_k', [], 12345);
+    const set3 = generateProblemsForWorksheet('math_starter_k', [], 99999);
 
     expect(set1.length).toBe(16);
     expect(set2.length).toBe(16);
@@ -63,8 +63,8 @@ describe('worksheetGenerator', () => {
   });
 
   it('should generate deterministic static problem sets when seed is default 0 or undefined', () => {
-    const defaultSet1 = generateProblemsForWorksheet('math_starter_k2');
-    const defaultSet2 = generateProblemsForWorksheet('math_starter_k2', [], 0);
+    const defaultSet1 = generateProblemsForWorksheet('math_starter_k');
+    const defaultSet2 = generateProblemsForWorksheet('math_starter_k', [], 0);
 
     expect(defaultSet1.length).toBe(16);
     expect(defaultSet2.length).toBe(16);

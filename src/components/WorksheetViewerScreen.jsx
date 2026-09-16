@@ -365,24 +365,24 @@ export default function WorksheetViewerScreen({
             </div>
 
             {/* 16 Questions in a 8x2 Responsive Grid (or Locked Preview) */}
-            <div className="relative mb-6">
-              <div className={`grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 ${isLocked ? 'select-none' : ''}`}>
+            <div className="relative mb-4 sm:mb-6">
+              <div className={`grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 ${isLocked ? 'select-none' : ''}`}>
                 {problems.map((p, idx) => {
                   const isPreviewVisible = !isLocked || idx < 2;
                   return (
                     <div
                       key={idx}
-                      className={`border border-slate-300 rounded-xl p-2.5 sm:p-3 bg-white flex items-center justify-between min-h-[44px] transition-all ${
+                      className={`border border-slate-300 rounded-xl px-2.5 py-2 sm:px-3 sm:py-2.5 bg-white flex items-center justify-between gap-2 min-h-[42px] transition-all ${
                         !isPreviewVisible ? 'blur-xs opacity-25 select-none pointer-events-none' : ''
                       }`}
                     >
-                      <div className="flex items-center gap-2 min-w-0 pr-2">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
                         <span className="text-xs font-black text-teal-600 shrink-0">#{idx + 1}</span>
-                        <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                        <span className="text-xs sm:text-[13px] font-bold text-slate-900 leading-snug break-words">
                           {isPreviewVisible ? p.q : 'Sample problem preview...'}
                         </span>
                       </div>
-                      <div className="w-12 sm:w-14 border-b-2 border-slate-700 h-4 shrink-0"></div>
+                      <div className="w-10 sm:w-12 border-b-2 border-slate-700 h-3 shrink-0 ml-2"></div>
                     </div>
                   );
                 })}
@@ -480,9 +480,9 @@ export default function WorksheetViewerScreen({
                 {problems.map((p, idx) => (
                   <div
                     key={idx}
-                    className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold"
+                    className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold gap-2"
                   >
-                    <span className="text-slate-700 truncate pr-2">
+                    <span className="text-slate-700 leading-snug break-words min-w-0 flex-1">
                       <strong>#{idx + 1}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
                     </span>
                     <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
@@ -504,6 +504,10 @@ export default function WorksheetViewerScreen({
 
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
+          @page {
+            size: letter portrait;
+            margin: 0.4in;
+          }
           body { background: white !important; padding: 0 !important; }
           .no-print { display: none !important; }
           .page-1-print {
@@ -512,15 +516,15 @@ export default function WorksheetViewerScreen({
             padding: 0 !important;
             page-break-after: always !important;
             break-after: page !important;
-            min-height: 100vh !important;
+            min-height: auto !important;
           }
           .page-2-print {
             border: none !important;
             box-shadow: none !important;
-            padding-top: 24px !important;
+            padding-top: 16px !important;
             page-break-before: always !important;
             break-before: page !important;
-            min-height: 100vh !important;
+            min-height: auto !important;
           }
         }
       `}} />
