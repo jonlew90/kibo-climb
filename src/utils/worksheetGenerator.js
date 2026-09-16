@@ -460,10 +460,11 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
       const wordList = WORD_LISTS[chosenTier] || WORD_LISTS[1] || [];
       const item = wordList.length > 0 ? wordList[Math.floor(rng() * wordList.length)] : null;
       const prob = generateWordsTierProblem(chosenTier, false, new Set(), item);
-      let q = prob.prompt || prob.question || (item?.hint ? `Clue: ${item.hint}` : `Spell: ${item?.word || 'term'}`);
-      q = q.replace(/^Spell the word for:\s*/i, '').replace(/^Complete the word:\s*/i, '').replace(/^What word matches:\s*/i, '').trim();
+      let qText = item?.hint || prob.prompt || prob.question || 'Word definition';
+      qText = qText.replace(/^Clue:\s*/i, '').replace(/^Spell the word for:\s*/i, '').replace(/^Complete the word:\s*/i, '').replace(/^What word matches:\s*/i, '').trim();
       const ans = String(prob.correctAnswer || prob.answer || item?.word || '');
-      return { q, ans };
+      const scaffold = prob.displayString || '';
+      return { q: qText, ans, scaffold };
     }
 
     if (subject === 'world') {

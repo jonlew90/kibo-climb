@@ -1095,6 +1095,18 @@ html, body, #root {
   animation: petSmokeWisp 2.2s ease-out infinite 0.8s;
 }
 
-
-
-
+/* --- GLOBAL PRINT ENGINE RULES --- */
+@media print {
+  html, body, #root, .app-viewport-root {
+    width: auto !important;
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

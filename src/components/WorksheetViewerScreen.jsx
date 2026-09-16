@@ -315,10 +315,10 @@ export default function WorksheetViewerScreen({
       )}
 
       {/* Printable 2-Page Container */}
-      <div className="w-full max-w-4xl flex flex-col gap-8 print:gap-0">
+      <div className="printable-document w-full max-w-4xl flex flex-col gap-8 print:gap-0 print:block">
         
         {/* PAGE 1: QUESTIONS */}
-        <div className="bg-white border border-slate-300 rounded-2xl p-5 sm:p-8 shadow-sm flex flex-col justify-between min-h-[920px] page-1-print relative">
+        <div className="bg-white border border-slate-300 rounded-2xl p-5 sm:p-8 shadow-sm flex flex-col justify-between min-h-[920px] print:min-h-0 page-1-print relative">
           <div>
             {/* Header with Mascot SVG */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-teal-600 pb-3 mb-4">
@@ -364,28 +364,68 @@ export default function WorksheetViewerScreen({
               <div>Score: <span className="underline ml-1 font-extrabold text-slate-900">&nbsp;&nbsp;&nbsp;&nbsp;/ 16</span></div>
             </div>
 
-            {/* 16 Questions in a 8x2 Responsive Grid (or Locked Preview) */}
+            {/* 16 Questions in Column-First Vertical Layout (#1-8 on Left, #9-16 on Right) */}
             <div className="relative mb-4 sm:mb-6">
-              <div className={`grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 ${isLocked ? 'select-none' : ''}`}>
-                {problems.map((p, idx) => {
-                  const isPreviewVisible = !isLocked || idx < 2;
-                  return (
-                    <div
-                      key={idx}
-                      className={`border border-slate-300 rounded-xl px-2.5 py-2 sm:px-3 sm:py-2.5 bg-white flex items-center justify-between gap-2 min-h-[42px] transition-all ${
-                        !isPreviewVisible ? 'blur-xs opacity-25 select-none pointer-events-none' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <span className="text-xs font-black text-teal-600 shrink-0">#{idx + 1}</span>
-                        <span className="text-xs sm:text-[13px] font-bold text-slate-900 leading-snug break-words">
-                          {isPreviewVisible ? p.q : 'Sample problem preview...'}
-                        </span>
+              <div className={`grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-start ${isLocked ? 'select-none' : ''}`}>
+                {/* Column 1: Problems 1 to 8 */}
+                <div className="space-y-2 sm:space-y-2.5">
+                  {problems.slice(0, 8).map((p, i) => {
+                    const idx = i; // 0..7 => #1..#8
+                    const isPreviewVisible = !isLocked || idx < 2;
+                    return (
+                      <div
+                        key={idx}
+                        className={`border border-slate-300 rounded-xl px-2.5 py-2 sm:px-3 sm:py-2.5 bg-white flex items-center justify-between gap-2 min-h-[42px] transition-all ${
+                          !isPreviewVisible ? 'blur-xs opacity-25 select-none pointer-events-none' : ''
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span className="text-xs font-black text-teal-600 shrink-0">#{idx + 1}</span>
+                          <span className="text-xs sm:text-[13px] font-bold text-slate-900 leading-snug break-words">
+                            {isPreviewVisible ? p.q : 'Sample problem preview...'}
+                          </span>
+                        </div>
+                        {p.scaffold ? (
+                          <div className="font-mono font-black text-xs sm:text-sm text-slate-800 tracking-wider bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md shrink-0 ml-2">
+                            {isPreviewVisible ? p.scaffold : '_ _ _'}
+                          </div>
+                        ) : (
+                          <div className="w-10 sm:w-12 border-b-2 border-slate-700 h-3 shrink-0 ml-2"></div>
+                        )}
                       </div>
-                      <div className="w-10 sm:w-12 border-b-2 border-slate-700 h-3 shrink-0 ml-2"></div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+
+                {/* Column 2: Problems 9 to 16 */}
+                <div className="space-y-2 sm:space-y-2.5">
+                  {problems.slice(8, 16).map((p, i) => {
+                    const idx = i + 8; // 8..15 => #9..#16
+                    const isPreviewVisible = !isLocked;
+                    return (
+                      <div
+                        key={idx}
+                        className={`border border-slate-300 rounded-xl px-2.5 py-2 sm:px-3 sm:py-2.5 bg-white flex items-center justify-between gap-2 min-h-[42px] transition-all ${
+                          !isPreviewVisible ? 'blur-xs opacity-25 select-none pointer-events-none' : ''
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span className="text-xs font-black text-teal-600 shrink-0">#{idx + 1}</span>
+                          <span className="text-xs sm:text-[13px] font-bold text-slate-900 leading-snug break-words">
+                            {isPreviewVisible ? p.q : 'Sample problem preview...'}
+                          </span>
+                        </div>
+                        {p.scaffold ? (
+                          <div className="font-mono font-black text-xs sm:text-sm text-slate-800 tracking-wider bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md shrink-0 ml-2">
+                            {isPreviewVisible ? p.scaffold : '_ _ _'}
+                          </div>
+                        ) : (
+                          <div className="w-10 sm:w-12 border-b-2 border-slate-700 h-3 shrink-0 ml-2"></div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* VIP Upsell Overlay when locked */}
@@ -419,18 +459,20 @@ export default function WorksheetViewerScreen({
           </div>
 
           {/* Page 1 Footer */}
-          <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-[10px] sm:text-[11px] text-slate-500 font-bold">
-            <div className="flex items-center gap-1.5">
-              <span>🐾 Kibo the Red Panda Mascot</span>
+          <div className="border-t border-slate-200 pt-3 flex flex-col sm:flex-row justify-between items-center text-[10px] text-slate-500 font-bold gap-1">
+            <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
+              <span>🐾 Kibo Climb</span>
               <span>•</span>
-              <span>www.kiboclimb.com</span>
+              <span className="text-slate-700">www.kiboclimb.com</span>
+              <span>•</span>
+              <span>© 2026 Kibo Climb. Single classroom &amp; personal home use only.</span>
             </div>
-            <div>Page 1 of 2 • Practice Worksheet</div>
+            <div className="shrink-0 text-slate-600 font-extrabold">Page 1 of 2 • Practice Drill</div>
           </div>
         </div>
 
         {/* PAGE 2: PARENT ANSWER KEY */}
-        <div className="bg-white border border-slate-300 rounded-2xl p-5 sm:p-8 shadow-sm flex flex-col justify-between min-h-[920px] page-2-print relative">
+        <div className="bg-white border border-slate-300 rounded-2xl p-5 sm:p-8 shadow-sm flex flex-col justify-between min-h-[920px] print:min-h-0 page-2-print relative">
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-purple-600 pb-3 mb-4">
               <div className="flex items-center gap-3">
@@ -476,27 +518,53 @@ export default function WorksheetViewerScreen({
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 mb-6">
-                {problems.map((p, idx) => (
-                  <div
-                    key={idx}
-                    className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold gap-2"
-                  >
-                    <span className="text-slate-700 leading-snug break-words min-w-0 flex-1">
-                      <strong>#{idx + 1}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
-                    </span>
-                    <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
-                      {p.ans}
-                    </span>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-start mb-6">
+                {/* Column 1: Answers 1 to 8 */}
+                <div className="space-y-2 sm:space-y-2.5">
+                  {problems.slice(0, 8).map((p, i) => (
+                    <div
+                      key={i}
+                      className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold gap-2 min-h-[38px]"
+                    >
+                      <span className="text-slate-700 leading-snug break-words min-w-0 flex-1">
+                        <strong>#{i + 1}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
+                      </span>
+                      <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
+                        {p.ans}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Column 2: Answers 9 to 16 */}
+                <div className="space-y-2 sm:space-y-2.5">
+                  {problems.slice(8, 16).map((p, i) => (
+                    <div
+                      key={i + 8}
+                      className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold gap-2 min-h-[38px]"
+                    >
+                      <span className="text-slate-700 leading-snug break-words min-w-0 flex-1">
+                        <strong>#{i + 9}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
+                      </span>
+                      <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
+                        {p.ans}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-[10px] sm:text-[11px] text-slate-500 font-bold">
-            <div>Kibo Climb Offline Practice Solutions • Not for redistribution</div>
-            <div>Page 2 of 2 • Solutions Guide</div>
+          <div className="border-t border-slate-200 pt-3 flex flex-col sm:flex-row justify-between items-center text-[10px] text-slate-500 font-bold gap-1">
+            <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
+              <span>🔑 Kibo Climb Answer Key</span>
+              <span>•</span>
+              <span className="text-slate-700">www.kiboclimb.com</span>
+              <span>•</span>
+              <span>© 2026 Kibo Climb. Not for redistribution or resale.</span>
+            </div>
+            <div className="shrink-0 text-purple-900 font-extrabold">Page 2 of 2 • Solutions Guide</div>
           </div>
         </div>
 
@@ -506,25 +574,70 @@ export default function WorksheetViewerScreen({
         @media print {
           @page {
             size: letter portrait;
-            margin: 0.4in;
+            margin: 0.35in 0.4in;
           }
-          body { background: white !important; padding: 0 !important; }
-          .no-print { display: none !important; }
-          .page-1-print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          html, body, #root, .app-viewport-root {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            position: static !important;
+            display: block !important;
+          }
+          .fixed.inset-0 {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            position: static !important;
+            overflow: visible !important;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+          .printable-document {
+            display: block !important;
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            gap: 0 !important;
+          }
+          .page-1-print, .page-2-print {
+            background: #ffffff !important;
             border: none !important;
+            border-radius: 0 !important;
             box-shadow: none !important;
             padding: 0 !important;
+            margin: 0 !important;
+            min-height: auto !important;
+            max-height: none !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .page-1-print {
             page-break-after: always !important;
             break-after: page !important;
-            min-height: auto !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
           }
           .page-2-print {
-            border: none !important;
-            box-shadow: none !important;
-            padding-top: 16px !important;
             page-break-before: always !important;
             break-before: page !important;
-            min-height: auto !important;
+            padding-top: 0 !important;
+            margin-top: 0 !important;
           }
         }
       `}} />
