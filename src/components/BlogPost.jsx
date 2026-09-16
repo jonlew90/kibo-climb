@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
 import { soundFx } from '../utils/audio';
 import { WORKSHEET_CATALOG, getBestWorksheetForTier, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator.js';
-import { getBlogPostBySlug, formatDate } from '../utils/blogLoader';
+import { getBlogPostBySlug, getAdjacentBlogPosts, formatDate } from '../utils/blogLoader';
 import { updateBlogPostSeo } from '../utils/seoMetadata';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
 import '../../public/css/blog.css';
 
 function formatInlineMarkdown(text, onNavigate) {
@@ -196,26 +196,30 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
     }
   };
 
+  const { prev: prevPost, next: nextPost } = useMemo(() => {
+    return getAdjacentBlogPosts(slug);
+  }, [slug]);
+
   return (
     <div className="blog-page-wrapper fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B] flex flex-col selection:bg-orange-200">
       {/* Global Nav Bar (Consistent with Worksheets Hub & App) */}
       <header className="border-b border-orange-100/70 bg-white/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
           <a
             href="/"
             onClick={(e) => handleNavigateTo('/', e)}
-            className="flex items-center gap-2.5 group cursor-pointer"
+            className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer shrink-0"
           >
             <div
-              className="w-8 h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
               dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }}
             />
-            <span className="font-heading font-black text-xl text-[#1E293B] tracking-tight group-hover:text-orange-600 transition-colors">
+            <span className="font-heading font-black text-lg sm:text-xl text-[#1E293B] tracking-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
               Kibo Climb
             </span>
           </a>
 
-          <nav className="flex items-center gap-2 sm:gap-4">
+          <nav className="flex items-center gap-1.5 sm:gap-4 shrink-0">
             <a
               href="/worksheets"
               onClick={(e) => handleNavigateTo('/worksheets', e)}
@@ -228,7 +232,7 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
               onClick={(e) => handleNavigateTo('/blog', e)}
               className="text-sm font-bold text-slate-600 hover:text-orange-600 px-2 py-1.5 rounded-xl transition-colors"
             >
-              All Articles
+              Blog
             </a>
             <a
               href="/"
@@ -242,22 +246,15 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
       </header>
 
       <main className="article-container">
-        {/* Breadcrumbs Navigation */}
+        {/* Breadcrumbs Navigation - Starts with Blog Home */}
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-500 mb-5">
-          <a
-            href="/"
-            onClick={(e) => handleNavigateTo('/', e)}
-            className="hover:text-orange-600 transition-colors"
-          >
-            Home
-          </a>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           <a
             href="/blog"
             onClick={(e) => handleNavigateTo('/blog', e)}
-            className="hover:text-orange-600 transition-colors"
+            className="hover:text-orange-600 transition-colors inline-flex items-center gap-1 text-slate-600"
           >
-            Blog
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Blog</span>
           </a>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           <span className="text-orange-600 font-black truncate max-w-[240px] sm:max-w-none">{post.title}</span>
@@ -283,13 +280,50 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
               <a
                 href={`/worksheets/${relatedWorksheet.subject}/${relatedWorksheet.slug}`}
                 onClick={(e) => handleWorksheetClick(e, relatedWorksheet)}
-                className="worksheet-cta-button"
+                className="worksheet-cta-button cursor-pointer"
               >
                 Download Printable Worksheet &amp; Key →
               </a>
             </div>
           )}
         </article>
+
+        {/* Previous & Next Article Sequential Navigation */}
+        {(prevPost || nextPost) && (
+          <nav aria-label="Related Articles" className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-8 pt-6 border-t border-orange-100">
+            {prevPost ? (
+              <a
+                href={`/blog/${prevPost.slug}`}
+                onClick={(e) => handleNavigateTo(`/blog/${prevPost.slug}`, e)}
+                className="group flex flex-col justify-between p-4 bg-white rounded-2xl border-2 border-slate-200/80 hover:border-orange-400 transition-all shadow-2xs hover:shadow-md cursor-pointer"
+              >
+                <div className="flex items-center gap-1.5 text-xs font-black text-slate-400 uppercase tracking-wider mb-1">
+                  <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform text-orange-500" />
+                  <span>Previous Article</span>
+                </div>
+                <h4 className="text-sm font-black text-slate-800 group-hover:text-orange-600 line-clamp-2 transition-colors">
+                  {prevPost.title}
+                </h4>
+              </a>
+            ) : <div className="hidden sm:block" />}
+
+            {nextPost && (
+              <a
+                href={`/blog/${nextPost.slug}`}
+                onClick={(e) => handleNavigateTo(`/blog/${nextPost.slug}`, e)}
+                className="group flex flex-col justify-between p-4 bg-white rounded-2xl border-2 border-slate-200/80 hover:border-orange-400 transition-all shadow-2xs hover:shadow-md cursor-pointer text-left sm:text-right"
+              >
+                <div className="flex items-center sm:justify-end gap-1.5 text-xs font-black text-slate-400 uppercase tracking-wider mb-1">
+                  <span>Next Article</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-orange-500" />
+                </div>
+                <h4 className="text-sm font-black text-slate-800 group-hover:text-orange-600 line-clamp-2 transition-colors">
+                  {nextPost.title}
+                </h4>
+              </a>
+            )}
+          </nav>
+        )}
 
         <section className="cta-card">
           <h3>Turn Math Practice Into a Mountain Adventure</h3>

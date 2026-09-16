@@ -100,6 +100,23 @@ export function getFeaturedPost(posts = getAllBlogPosts()) {
 }
 
 /**
+ * Return previous and next blog posts for sequential reading
+ */
+export function getAdjacentBlogPosts(slug, posts = getAllBlogPosts()) {
+  if (!slug || !posts || posts.length === 0) return { prev: null, next: null };
+  const cleanSlug = slug.toLowerCase().replace(/^\/+|\/+$/g, '');
+  const currentIndex = posts.findIndex(p => p.slug.toLowerCase() === cleanSlug);
+  if (currentIndex === -1) return { prev: null, next: null };
+
+  // Note: posts are sorted newest first (descending).
+  // prev = older post (next index), next = newer post (previous index)
+  const prevPost = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null;
+  const nextPost = currentIndex > 0 ? posts[currentIndex - 1] : null;
+
+  return { prev: prevPost, next: nextPost };
+}
+
+/**
  * Extract distinct categories/tags across all posts
  */
 export function getBlogCategories(posts = getAllBlogPosts()) {

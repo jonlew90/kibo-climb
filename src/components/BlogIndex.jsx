@@ -100,22 +100,22 @@ export default function BlogIndex({ onBack, onNavigate }) {
     <div className="blog-page-wrapper fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B] flex flex-col selection:bg-orange-200">
       {/* Global Nav Bar (Consistent with Worksheets Hub & App) */}
       <header className="border-b border-orange-100/70 bg-white/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
           <a
             href="/"
             onClick={(e) => navigateTo('/', e)}
-            className="flex items-center gap-2.5 group cursor-pointer"
+            className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer shrink-0"
           >
             <div
-              className="w-8 h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
               dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }}
             />
-            <span className="font-heading font-black text-xl text-[#1E293B] tracking-tight group-hover:text-orange-600 transition-colors">
+            <span className="font-heading font-black text-lg sm:text-xl text-[#1E293B] tracking-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
               Kibo Climb
             </span>
           </a>
 
-          <nav className="flex items-center gap-2 sm:gap-4">
+          <nav className="flex items-center gap-1.5 sm:gap-4 shrink-0">
             <a
               href="/worksheets"
               onClick={handleWorksheetCta}
@@ -143,21 +143,6 @@ export default function BlogIndex({ onBack, onNavigate }) {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
-        {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-500">
-          <a
-            href="/"
-            onClick={(e) => navigateTo('/', e)}
-            className="hover:text-orange-600 transition-colors"
-          >
-            Home
-          </a>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-          <span className="text-orange-600 font-black">
-            Blog {selectedCategory !== 'All' && `> ${selectedCategory}`}
-          </span>
-        </nav>
-
         {/* Hero Banner (Compact on mobile, matching WorksheetHubScreen) */}
         <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white p-4 sm:p-10 shadow-lg border border-orange-500/30">
           <div className="relative z-10 max-w-2xl space-y-1.5 sm:space-y-3">

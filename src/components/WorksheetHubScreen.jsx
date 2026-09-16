@@ -127,22 +127,22 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
     <div className="fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B] flex flex-col selection:bg-orange-200">
       {/* Global Nav Bar (Consistent with /blog & App) */}
       <header className="border-b border-orange-100/70 bg-white/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
           <a
             href="/"
             onClick={(e) => handleNavigateTo('/', e)}
-            className="flex items-center gap-2.5 group cursor-pointer"
+            className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer shrink-0"
           >
             <div
-              className="w-8 h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
               dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }}
             />
-            <span className="font-heading font-black text-xl text-[#1E293B] tracking-tight group-hover:text-orange-600 transition-colors">
+            <span className="font-heading font-black text-lg sm:text-xl text-[#1E293B] tracking-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
               Kibo Climb
             </span>
           </a>
 
-          <nav className="flex items-center gap-2 sm:gap-4">
+          <nav className="flex items-center gap-1.5 sm:gap-4 shrink-0">
             <a
               href="/worksheets"
               onClick={(e) => handleNavigateTo('/worksheets', e)}
@@ -170,22 +170,6 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
-        
-        {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-500">
-          <a
-            href="/"
-            onClick={(e) => handleNavigateTo('/', e)}
-            className="hover:text-orange-600 transition-colors"
-          >
-            Home
-          </a>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-          <span className="text-orange-600 font-black">
-            Worksheets {selectedTopic !== 'all' && `> ${TOPICS.find(t => t.id === selectedTopic)?.label}`}
-          </span>
-        </nav>
-
         {/* Hero Banner - Compact on mobile */}
         <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-teal-700 via-teal-800 to-emerald-900 text-white p-4 sm:p-10 shadow-lg border border-teal-600/30">
           <div className="relative z-10 max-w-2xl space-y-1.5 sm:space-y-3">
@@ -220,84 +204,72 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
             />
           </div>
 
-          {/* Multi-facet Filter Rows - Swipeable / Flex on Mobile */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 pt-1">
-            {/* Topic Filter */}
+          {/* Multi-facet Filter Dropdowns - Compact layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 pt-1">
+            {/* Topic Filter Dropdown */}
             <div className="space-y-1">
-              <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
+              <label htmlFor="topic-select" className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
                 <Filter className="w-3 h-3" /> Topic / Subject
               </label>
-              <div className="flex overflow-x-auto no-scrollbar sm:flex-wrap gap-1.5 pb-1 sm:pb-0">
+              <select
+                id="topic-select"
+                value={selectedTopic}
+                onChange={(e) => {
+                  soundFx?.playKeyTap?.();
+                  setSelectedTopic(e.target.value);
+                }}
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white cursor-pointer transition-all"
+              >
                 {TOPICS.map(topic => (
-                  <button
-                    key={topic.id}
-                    type="button"
-                    onClick={() => {
-                      soundFx?.playKeyTap?.();
-                      setSelectedTopic(topic.id);
-                    }}
-                    className={`text-xs font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-                      selectedTopic === topic.id
-                        ? 'bg-orange-500 text-white shadow-xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
+                  <option key={topic.id} value={topic.id}>
                     {topic.label}
-                  </button>
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
 
-            {/* Grade Filter */}
+            {/* Grade Filter Dropdown */}
             <div className="space-y-1">
-              <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
+              <label htmlFor="grade-select" className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
                 Grade Level
               </label>
-              <div className="flex overflow-x-auto no-scrollbar sm:flex-wrap gap-1.5 pb-1 sm:pb-0">
+              <select
+                id="grade-select"
+                value={selectedGrade}
+                onChange={(e) => {
+                  soundFx?.playKeyTap?.();
+                  setSelectedGrade(e.target.value);
+                }}
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white cursor-pointer transition-all"
+              >
                 {GRADES.map(grade => (
-                  <button
-                    key={grade.id}
-                    type="button"
-                    onClick={() => {
-                      soundFx?.playKeyTap?.();
-                      setSelectedGrade(grade.id);
-                    }}
-                    className={`text-xs font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-                      selectedGrade === grade.id
-                        ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
+                  <option key={grade.id} value={grade.id}>
                     {grade.label}
-                  </button>
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
 
-            {/* Access Tier Filter */}
+            {/* Access Tier Filter Dropdown */}
             <div className="space-y-1">
-              <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
+              <label htmlFor="tier-select" className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
                 Access Level
               </label>
-              <div className="flex overflow-x-auto no-scrollbar sm:flex-wrap gap-1.5 pb-1 sm:pb-0">
+              <select
+                id="tier-select"
+                value={selectedTier}
+                onChange={(e) => {
+                  soundFx?.playKeyTap?.();
+                  setSelectedTier(e.target.value);
+                }}
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white cursor-pointer transition-all"
+              >
                 {TIERS.map(tier => (
-                  <button
-                    key={tier.id}
-                    type="button"
-                    onClick={() => {
-                      soundFx?.playKeyTap?.();
-                      setSelectedTier(tier.id);
-                    }}
-                    className={`text-xs font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-                      selectedTier === tier.id
-                        ? 'bg-teal-600 text-white shadow-xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
+                  <option key={tier.id} value={tier.id}>
                     {tier.label}
-                  </button>
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
           </div>
         </section>

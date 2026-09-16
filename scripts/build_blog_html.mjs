@@ -154,7 +154,7 @@ function updateSitemap(posts) {
   console.log(` Synchronized Sitemap with blog index and ${posts.length} posts: ${SITEMAP_PATH}`);
 }
 
-function generatePostHtml(data) {
+function generatePostHtml(data, allPosts = []) {
   const slug = data.slug;
   const title = data.title;
   const metaDescription = data.meta_description || data.summary || '';
@@ -167,6 +167,27 @@ function generatePostHtml(data) {
   const contentHtml = markdownToHtml(data.content_markdown || '');
   const relatedWorksheet = resolveRelatedWorksheet(data);
   const worksheetCalloutHtml = renderWorksheetCallout(relatedWorksheet);
+
+  const currentIndex = allPosts.findIndex(p => p.slug === slug);
+  const prevPost = currentIndex !== -1 && currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+  const nextPost = currentIndex !== -1 && currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+
+  const prevNextHtml = (prevPost || nextPost) ? `
+    <nav aria-label="Related Articles" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin: 2rem 0; padding-top: 1.5rem; border-top: 1px solid #FED7AA;">
+      ${prevPost ? `
+        <a href="/blog/${prevPost.slug}" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1rem; background: #FFFFFF; border-radius: 1rem; border: 2px solid #E2E8F0; text-decoration: none; color: inherit;">
+          <span style="font-size: 0.75rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; margin-bottom: 0.25rem;">← Previous Article</span>
+          <strong style="font-size: 0.9rem; color: #1E293B;">${prevPost.title}</strong>
+        </a>
+      ` : '<div></div>'}
+      ${nextPost ? `
+        <a href="/blog/${nextPost.slug}" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1rem; background: #FFFFFF; border-radius: 1rem; border: 2px solid #E2E8F0; text-decoration: none; color: inherit; text-align: right;">
+          <span style="font-size: 0.75rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; margin-bottom: 0.25rem;">Next Article →</span>
+          <strong style="font-size: 0.9rem; color: #1E293B;">${nextPost.title}</strong>
+        </a>
+      ` : ''}
+    </nav>
+  ` : '';
 
   const jsonLd = JSON.stringify({
     '@context': 'https://schema.org',
@@ -228,8 +249,6 @@ function generatePostHtml(data) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Shared Blog Stylesheet -->
   <link rel="stylesheet" href="/css/blog.css" />
 
   <!-- Favicon & Touch Icons -->
@@ -268,10 +287,20 @@ ${jsonLd}
       <img src="/favicon.svg" alt="Kibo" width="28" height="28" />
       <span>Kibo Climb</span>
     </a>
-    <a href="/" class="nav-cta">Play Free</a>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <a href="/worksheets" style="font-weight: 700; color: #475569; text-decoration: none; font-size: 0.875rem;">Worksheets</a>
+      <a href="/blog" style="font-weight: 700; color: #475569; text-decoration: none; font-size: 0.875rem;">Blog</a>
+      <a href="/" class="nav-cta">Play Free</a>
+    </div>
   </nav>
 
   <main class="article-container">
+    <div style="margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 700; color: #64748B;">
+      <a href="/blog" style="color: #475569; text-decoration: none;">← Blog</a>
+      <span style="margin: 0 0.5rem; color: #CBD5E1;">›</span>
+      <span style="color: #EA580C; font-weight: 900;">${title}</span>
+    </div>
+
     <h1>${title}</h1>
     <div class="date">Published ${formattedDate} • Adaptive Math Strategies</div>
     
@@ -281,6 +310,8 @@ ${jsonLd}
       ${contentHtml}
       ${worksheetCalloutHtml}
     </article>
+
+    ${prevNextHtml}
 
     <section class="cta-card">
       <h3>Turn Math Practice Into a Mountain Adventure</h3>
@@ -532,19 +563,22 @@ function buildAll() {
   for (const filename of jsonFiles.sort()) {
     const filepath = path.join(BLOG_JSON_DIR, filename);
     const data = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+    if (data.slug) posts.push(data);
+  }
 
-    if (!data.slug) continue;
+  // Sort descending by published_at (newest first)
+  posts.sort((a, b) => new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime());
 
+  for (const data of posts) {
     const slug = data.slug;
     const htmlOutDir = path.join(PUBLIC_DIR, 'blog', slug);
     fs.mkdirSync(htmlOutDir, { recursive: true });
 
-    const htmlContent = generatePostHtml(data);
+    const htmlContent = generatePostHtml(data, posts);
     const htmlFilePath = path.join(htmlOutDir, 'index.html');
     fs.writeFileSync(htmlFilePath, htmlContent, 'utf8');
 
     console.log(` Rendered Static HTML: ${htmlFilePath}`);
-    posts.push(data);
   }
 
   // Render static blog index HTML

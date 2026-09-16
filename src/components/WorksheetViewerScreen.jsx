@@ -126,8 +126,8 @@ export default function WorksheetViewerScreen({
       if (onBack) onBack();
       else if (onNavigate) onNavigate('/parent', 'parent_dashboard');
     } else {
-      // Direct external / public visitor returning to home
-      if (onNavigate) onNavigate('/', 'adaptive_session');
+      // Direct visitor returning to worksheets catalog hub
+      if (onNavigate) onNavigate('/worksheets', 'worksheet_hub');
       else if (onBack) onBack();
     }
   };
@@ -150,8 +150,8 @@ export default function WorksheetViewerScreen({
             </>
           ) : (
             <>
-              <Home className="w-4 h-4 text-teal-600 shrink-0" />
-              <span className="whitespace-nowrap">Home</span>
+              <ArrowLeft className="w-4 h-4 text-teal-600 shrink-0" />
+              <span className="whitespace-nowrap">All Worksheets</span>
             </>
           )}
         </button>
