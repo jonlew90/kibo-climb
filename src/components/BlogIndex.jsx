@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { soundFx } from '../utils/audio';
 import { getAllBlogPosts, getBlogCategories, getFeaturedPost } from '../utils/blogLoader';
 import { updateBlogIndexSeo } from '../utils/seoMetadata';
-import { Sparkles, BookOpen, ArrowRight, FileText, Compass } from 'lucide-react';
+import { KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
+import { Sparkles, BookOpen, ArrowRight, FileText, Compass, ChevronRight } from 'lucide-react';
 import '../../public/css/blog.css';
 
 const POSTS_PER_PAGE = 12;
@@ -96,65 +97,100 @@ export default function BlogIndex({ onBack, onNavigate }) {
   };
 
   return (
-    <div className="blog-page-wrapper fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B]">
-      {/* Top Global Navigation Bar */}
-      <nav className="nav-bar">
-        <a href="/" onClick={(e) => navigateTo('/', e)} className="nav-logo">
-          <img src="/favicon.svg" alt="Kibo Red Panda" width="28" height="28" />
-          <span>Kibo Climb</span>
-        </a>
-        <div className="flex items-center gap-3">
+    <div className="blog-page-wrapper fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B] flex flex-col selection:bg-orange-200">
+      {/* Global Nav Bar (Consistent with Worksheets Hub & App) */}
+      <header className="border-b border-orange-100/70 bg-white/80 backdrop-blur-md sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <a
-            href="/worksheets"
-            onClick={handleWorksheetCta}
-            className="hidden sm:inline-flex text-sm font-bold text-[#0F766E] hover:text-[#0D9488] transition-colors"
+            href="/"
+            onClick={(e) => navigateTo('/', e)}
+            className="flex items-center gap-2.5 group cursor-pointer"
           >
-            Worksheets
+            <div
+              className="w-8 h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
+              dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }}
+            />
+            <span className="font-heading font-black text-xl text-[#1E293B] tracking-tight group-hover:text-orange-600 transition-colors">
+              Kibo Climb
+            </span>
           </a>
-          <a href="/" onClick={handlePlayCta} className="nav-cta">
-            Play Free
-          </a>
-        </div>
-      </nav>
 
-      <main className="blog-index-container">
+          <nav className="flex items-center gap-2 sm:gap-4">
+            <a
+              href="/worksheets"
+              onClick={handleWorksheetCta}
+              className="text-sm font-bold text-slate-600 hover:text-orange-600 px-2 py-1.5 rounded-xl transition-colors"
+            >
+              Worksheets
+            </a>
+            <a
+              href="/blog"
+              onClick={(e) => navigateTo('/blog', e)}
+              className="text-sm font-black text-orange-600 bg-orange-50 px-3 py-1.5 rounded-xl transition-colors"
+            >
+              Blog
+            </a>
+            <a
+              href="/"
+              onClick={handlePlayCta}
+              className="ml-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+            >
+              Play Free
+            </a>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
         {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="blog-breadcrumbs">
-          <a href="/" onClick={(e) => navigateTo('/', e)}>
-            <span>Home</span>
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-500">
+          <a
+            href="/"
+            onClick={(e) => navigateTo('/', e)}
+            className="hover:text-orange-600 transition-colors"
+          >
+            Home
           </a>
-          <span className="crumb-separator" aria-hidden="true">&gt;</span>
-          <span className="current-crumb">Blog</span>
-          {selectedCategory !== 'All' && (
-            <>
-              <span className="crumb-separator" aria-hidden="true">&gt;</span>
-              <span className="text-[#0F766E] font-bold">{selectedCategory}</span>
-            </>
-          )}
+          <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span className="text-orange-600 font-black">
+            Blog {selectedCategory !== 'All' && `> ${selectedCategory}`}
+          </span>
         </nav>
 
-        {/* Hero Header Section */}
-        <header className="blog-header-section">
-          <div className="blog-header-badge">
-            <Sparkles size={14} className="text-[#FF6B35]" />
-            <span>Kibo Learning Hub</span>
+        {/* Hero Banner (Compact on mobile, matching WorksheetHubScreen) */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white p-4 sm:p-10 shadow-lg border border-orange-500/30">
+          <div className="relative z-10 max-w-2xl space-y-1.5 sm:space-y-3">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/15 backdrop-blur-xs text-amber-100 text-[10px] sm:text-xs font-black uppercase tracking-wider border border-white/20">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-200" />
+              <span>Kibo Learning Hub</span>
+            </div>
+            <h1 className="text-xl sm:text-4xl font-heading font-black tracking-tight leading-tight">
+              Math Strategies, Mental Tricks &amp; Parent Guides
+            </h1>
+            <p className="hidden sm:block text-sm sm:text-base text-amber-100/90 font-medium leading-relaxed">
+              Discover expert mental math shortcuts, adaptive learning strategies, and printable resources designed to turn everyday arithmetic into an exciting mountain adventure.
+            </p>
           </div>
-          <h1 className="blog-main-title font-heading">
-            Math Strategies, Mental Tricks &amp; Parent Guides
-          </h1>
-          <p className="blog-sub-title">
-            Discover expert mental math shortcuts, adaptive learning strategies, and printable resources designed to turn everyday arithmetic into an exciting mountain adventure.
-          </p>
-        </header>
+          
+          <div className="absolute right-0 bottom-0 opacity-10 sm:opacity-20 translate-x-12 translate-y-8 pointer-events-none w-48 h-48 sm:w-64 sm:h-64">
+            <div dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }} />
+          </div>
+        </div>
 
-        {/* Quick Category Filter Pills */}
-        <div className="blog-filter-bar" role="tablist" aria-label="Article categories">
+        {/* Quick Category Filter Pills - Horizontally Swipeable on Mobile */}
+        <div className="flex items-center overflow-x-auto no-scrollbar sm:justify-center gap-2 py-1 pb-2 sm:pb-1" role="tablist" aria-label="Article categories">
           {categories.map((category) => (
             <button
               key={category}
+              type="button"
               role="tab"
               aria-selected={selectedCategory === category}
-              className={`blog-filter-pill ${selectedCategory === category ? 'active' : ''}`}
+              className={`text-xs sm:text-sm font-black px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                selectedCategory === category
+                  ? 'bg-orange-500 text-white shadow-xs'
+                  : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50'
+              }`}
               onClick={() => handleCategorySelect(category)}
             >
               {category}

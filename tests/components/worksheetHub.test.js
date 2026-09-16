@@ -37,10 +37,15 @@ describe('Worksheet Hub & Parent Experience Refactor', () => {
     });
   });
 
-  it('should support navigation history mapping for VIEWS.WORKSHEET_HUB', () => {
+  it('should support navigation history mapping for VIEWS.WORKSHEET_HUB and VIEWS.BLOG_INDEX', () => {
     expect(getPathForId(VIEWS.WORKSHEET_HUB)).toBe('/worksheets');
-    const normalized = normalizeEntry({ path: '/worksheets' });
-    expect(normalized.id).toBe(VIEWS.WORKSHEET_HUB);
-    expect(normalized.path).toBe('/worksheets');
+    const normalizedWs = normalizeEntry({ path: '/worksheets' });
+    expect(normalizedWs.id).toBe(VIEWS.WORKSHEET_HUB);
+    expect(normalizedWs.path).toBe('/worksheets');
+
+    expect(getPathForId(VIEWS.BLOG_INDEX)).toBe('/blog');
+    const normalizedBlog = normalizeEntry({ path: '/blog' });
+    expect(normalizedBlog.id).toBe(VIEWS.BLOG_INDEX);
+    expect(normalizedBlog.path).toBe('/blog');
   });
 });

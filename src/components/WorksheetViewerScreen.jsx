@@ -135,7 +135,7 @@ export default function WorksheetViewerScreen({
   if (!worksheet) return null;
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col items-center py-4 px-2 sm:px-4 text-slate-800">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-100 flex flex-col items-center py-4 px-2 sm:px-4 text-slate-800">
       {/* Interactive Top Bar (Hidden on print) */}
       <div className="w-full max-w-4xl mb-3 flex items-center justify-between bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-xs no-print gap-2">
         <button

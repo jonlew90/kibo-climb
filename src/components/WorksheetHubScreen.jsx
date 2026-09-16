@@ -124,7 +124,7 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFDF9] text-[#1E293B] flex flex-col selection:bg-orange-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B] flex flex-col selection:bg-orange-200">
       {/* Global Nav Bar (Consistent with /blog & App) */}
       <header className="border-b border-orange-100/70 bg-white/80 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -186,49 +186,28 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
           </span>
         </nav>
 
-        {/* Hero Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-700 via-teal-800 to-emerald-900 text-white p-6 sm:p-10 shadow-lg border border-teal-600/30">
-          <div className="relative z-10 max-w-2xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-xs text-teal-100 text-xs font-black uppercase tracking-wider border border-white/20">
-              <Printer className="w-3.5 h-3.5" />
+        {/* Hero Banner - Compact on mobile */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-teal-700 via-teal-800 to-emerald-900 text-white p-4 sm:p-10 shadow-lg border border-teal-600/30">
+          <div className="relative z-10 max-w-2xl space-y-1.5 sm:space-y-3">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/15 backdrop-blur-xs text-teal-100 text-[10px] sm:text-xs font-black uppercase tracking-wider border border-white/20">
+              <Printer className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               <span>Printable Learning Hub</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-heading font-black tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-4xl font-heading font-black tracking-tight leading-tight">
               Free Printable Skill Worksheets &amp; Answer Keys
             </h1>
-            <p className="text-sm sm:text-base text-teal-100/90 font-medium leading-relaxed">
+            <p className="hidden sm:block text-sm sm:text-base text-teal-100/90 font-medium leading-relaxed">
               Targeted 16-problem drill sheets paired with complete parent grading keys. Practice mental math, spelling, geography, and coding offline with Mascot Kibo!
             </p>
           </div>
           
-          <div className="absolute right-0 bottom-0 opacity-10 sm:opacity-20 translate-x-12 translate-y-8 pointer-events-none w-64 h-64">
+          <div className="absolute right-0 bottom-0 opacity-10 sm:opacity-20 translate-x-12 translate-y-8 pointer-events-none w-48 h-48 sm:w-64 sm:h-64">
             <div dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }} />
           </div>
         </div>
 
-        {/* Blog Bridge Banner */}
-        <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-2 border-amber-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-600 shrink-0">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-black text-slate-900">Looking for Strategy &amp; Teaching Guides?</h4>
-              <p className="text-xs text-slate-600 font-medium">Read our step-by-step math breakdowns, mental arithmetic tips, and parent guides on the blog.</p>
-            </div>
-          </div>
-          <a
-            href="/blog"
-            onClick={(e) => handleNavigateTo('/blog', e)}
-            className="shrink-0 bg-white hover:bg-amber-100 text-amber-950 font-black text-xs px-4 py-2.5 rounded-xl border border-amber-300 shadow-2xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>Explore Strategy Blog</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </a>
-        </div>
-
         {/* Filter Controls & Search */}
-        <section className="space-y-4 bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
+        <section className="space-y-3 sm:space-y-4 bg-white border border-slate-200/80 rounded-2xl p-3 sm:p-5 shadow-xs">
           {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -237,18 +216,18 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search worksheets by skill, topic, or grade (e.g. Multiplication, Fractions, K-2)..."
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all"
+              className="w-full pl-10 pr-4 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all"
             />
           </div>
 
-          {/* Multi-facet Filter Rows */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+          {/* Multi-facet Filter Rows - Swipeable / Flex on Mobile */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 pt-1">
             {/* Topic Filter */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
                 <Filter className="w-3 h-3" /> Topic / Subject
               </label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex overflow-x-auto no-scrollbar sm:flex-wrap gap-1.5 pb-1 sm:pb-0">
                 {TOPICS.map(topic => (
                   <button
                     key={topic.id}
@@ -257,7 +236,7 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
                       soundFx?.playKeyTap?.();
                       setSelectedTopic(topic.id);
                     }}
-                    className={`text-xs font-bold px-2.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    className={`text-xs font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                       selectedTopic === topic.id
                         ? 'bg-orange-500 text-white shadow-xs'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -270,11 +249,11 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
             </div>
 
             {/* Grade Filter */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
                 Grade Level
               </label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex overflow-x-auto no-scrollbar sm:flex-wrap gap-1.5 pb-1 sm:pb-0">
                 {GRADES.map(grade => (
                   <button
                     key={grade.id}
@@ -283,7 +262,7 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
                       soundFx?.playKeyTap?.();
                       setSelectedGrade(grade.id);
                     }}
-                    className={`text-xs font-bold px-2.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    className={`text-xs font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                       selectedGrade === grade.id
                         ? 'bg-indigo-600 text-white shadow-xs'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -296,11 +275,11 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
             </div>
 
             {/* Access Tier Filter */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-                Access Tier
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
+                Access Level
               </label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex overflow-x-auto no-scrollbar sm:flex-wrap gap-1.5 pb-1 sm:pb-0">
                 {TIERS.map(tier => (
                   <button
                     key={tier.id}
@@ -309,7 +288,7 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
                       soundFx?.playKeyTap?.();
                       setSelectedTier(tier.id);
                     }}
-                    className={`text-xs font-bold px-2.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    className={`text-xs font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                       selectedTier === tier.id
                         ? 'bg-teal-600 text-white shadow-xs'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -474,6 +453,27 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
             </div>
           )}
         </section>
+
+        {/* Blog Cross-Link Bridge Banner */}
+        <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-2 border-amber-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-600 shrink-0">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-slate-900">Looking for Strategy &amp; Teaching Guides?</h4>
+              <p className="text-xs text-slate-600 font-medium">Read our step-by-step math breakdowns, mental arithmetic tips, and parent guides on the blog.</p>
+            </div>
+          </div>
+          <a
+            href="/blog"
+            onClick={(e) => handleNavigateTo('/blog', e)}
+            className="shrink-0 bg-white hover:bg-amber-100 text-amber-950 font-black text-xs px-4 py-2.5 rounded-xl border border-amber-300 shadow-2xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>Explore Strategy Blog</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
       </main>
 
       {/* Footer */}

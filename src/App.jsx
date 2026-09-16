@@ -436,10 +436,26 @@ export default function App() {
     soundFx.playKeyTap();
     setShowProfileDropdown(false);
     setShowSubjectDropdown(false);
+
+    let resolvedStateName = stateName;
+    if (!resolvedStateName && path) {
+      if (path === '/blog' || path === '/blog/') resolvedStateName = VIEWS.BLOG_INDEX;
+      else if (path.startsWith('/blog/')) resolvedStateName = VIEWS.BLOG_POST;
+      else if (path === '/worksheets' || path === '/worksheets/') resolvedStateName = VIEWS.WORKSHEET_HUB;
+      else if (path.startsWith('/worksheets/')) resolvedStateName = VIEWS.WORKSHEET_VIEWER;
+      else if (path === '/settings') resolvedStateName = VIEWS.SETTINGS;
+      else if (path === '/privacy') resolvedStateName = VIEWS.PRIVACY;
+      else if (path === '/terms') resolvedStateName = VIEWS.TERMS;
+      else if (path === '/leaderboard') resolvedStateName = VIEWS.LEADERBOARD;
+      else if (path === '/quests') resolvedStateName = VIEWS.QUESTS;
+      else if (path === '/parent' || path === '/parents') resolvedStateName = VIEWS.PARENT_DASHBOARD;
+      else resolvedStateName = VIEWS.ADAPTIVE_SESSION;
+    }
+
     const entry = navigationHistory.push({
       type: VIEW_TYPES.ROUTE,
-      id: stateName || VIEWS.ADAPTIVE_SESSION,
-      path: path || getPathForId(stateName || VIEWS.ADAPTIVE_SESSION, params),
+      id: resolvedStateName || VIEWS.ADAPTIVE_SESSION,
+      path: path || getPathForId(resolvedStateName || VIEWS.ADAPTIVE_SESSION, params),
       params
     });
     applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
@@ -2154,7 +2170,7 @@ export default function App() {
         </div>
       )}
       {/* Sticky Top HUD Header Bar */}
-      {!isClimbActive && (
+      {!isClimbActive && appState !== 'worksheet_hub' && appState !== VIEWS.WORKSHEET_HUB && appState !== 'worksheet_viewer' && appState !== VIEWS.WORKSHEET_VIEWER && (
       <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between shadow-xs shrink-0">
         {/* Brand Logo, User Profile & Stats */}
         <div className="flex items-center gap-2 w-full justify-between max-w-4xl mx-auto min-w-0">

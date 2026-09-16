@@ -115,9 +115,7 @@ export const normalizeEntry = (entry) => {
 
   // If blog index path
   if (entry?.path === '/blog' || entry?.path === '/blog/') {
-    if (id === VIEWS.BLOG_POST || id === 'blog_post') {
-      // should be blog index if no slug
-    }
+    id = VIEWS.BLOG_INDEX;
   }
 
   // If slug isn't explicitly in params for blog post, extract it from path
@@ -125,6 +123,8 @@ export const normalizeEntry = (entry) => {
     const slug = entry.path.replace(/^\/blog\/?/, '').split('?')[0].trim();
     if (slug) {
       params.slug = slug;
+    } else {
+      id = VIEWS.BLOG_INDEX;
     }
   }
 
