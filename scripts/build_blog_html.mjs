@@ -182,13 +182,30 @@ function updateSitemap(posts) {
   console.log(` Synchronized Sitemap with blog index, ${posts.length} posts, and ${publicSheets.length} worksheets: ${SITEMAP_PATH}`);
 }
 
+const AVAILABLE_BLOG_IMAGES = [
+  'kibo_sitting_on_boulder_thinking_20260916125021.jpeg',
+  'kibo_rock_climbing_granite_cliff_20260916124919.jpeg',
+  'kibo-climbing.jpeg',
+  'Kibo_atop_mountain_summit_20260916124858.jpeg',
+  'kibo_sitting_on_boulder_20260916124901.jpeg',
+  'Kibo_celebrating_at_mountain_summit_20260916124923.jpeg',
+  'kibo_solving_stone_pattern.jpeg',
+  'Kibo_atop_mountain_summit_20260916124910.jpeg',
+  'kibo-summit.jpeg',
+  'Kibo_atop_mountain_summit_20260916124937.jpeg',
+  'kibo-thinking.jpeg',
+  'kibo_solving_stone_pattern2.jpeg'
+];
+
 function generatePostHtml(data, allPosts = []) {
   const slug = data.slug;
   const title = data.title;
   const metaDescription = data.meta_description || data.summary || '';
   const publishedAt = data.published_at || '';
   const formattedDate = formatDate(publishedAt);
-  const featuredFilename = data.featured_asset || 'kibo-climbing.jpeg';
+  const postIndex = allPosts.findIndex(p => p.slug === slug);
+  const fallbackImage = AVAILABLE_BLOG_IMAGES[(postIndex >= 0 ? postIndex : 0) % AVAILABLE_BLOG_IMAGES.length];
+  const featuredFilename = data.featured_asset || fallbackImage;
   const featuredImageUrl = `${BASE_URL}/images/blog/${featuredFilename}`;
   const postUrl = `${BASE_URL}/blog/${slug}`;
 

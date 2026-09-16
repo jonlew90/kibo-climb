@@ -41,14 +41,30 @@ export function getExcerpt(post) {
   return sentences.slice(0, 2).join(' ');
 }
 
+export const AVAILABLE_BLOG_IMAGES = [
+  'kibo_sitting_on_boulder_thinking_20260916125021.jpeg',
+  'kibo_rock_climbing_granite_cliff_20260916124919.jpeg',
+  'kibo-climbing.jpeg',
+  'Kibo_atop_mountain_summit_20260916124858.jpeg',
+  'kibo_sitting_on_boulder_20260916124901.jpeg',
+  'Kibo_celebrating_at_mountain_summit_20260916124923.jpeg',
+  'kibo_solving_stone_pattern.jpeg',
+  'Kibo_atop_mountain_summit_20260916124910.jpeg',
+  'kibo-summit.jpeg',
+  'Kibo_atop_mountain_summit_20260916124937.jpeg',
+  'kibo-thinking.jpeg',
+  'kibo_solving_stone_pattern2.jpeg'
+];
+
 /**
  * Returns all blog posts sorted chronologically (newest first).
  */
 export function getAllBlogPosts() {
   const posts = [];
+  const entries = Object.entries(blogModules);
 
-  for (const path in blogModules) {
-    const rawData = blogModules[path]?.default || blogModules[path];
+  entries.forEach(([path, mod], idx) => {
+    const rawData = mod?.default || mod;
     if (rawData && rawData.title) {
       const fileMatch = path.match(/([^/]+)\.json$/);
       const fileSlug = fileMatch ? fileMatch[1] : '';
@@ -58,6 +74,10 @@ export function getAllBlogPosts() {
       const excerpt = getExcerpt(rawData);
       const formattedDate = formatDate(publishedAt);
 
+      // Fallback cycles through available assets if no unique asset is specified
+      const fallbackImage = AVAILABLE_BLOG_IMAGES[idx % AVAILABLE_BLOG_IMAGES.length];
+      const featured_asset = rawData.featured_asset || fallbackImage;
+
       posts.push({
         ...rawData,
         slug,
@@ -66,10 +86,10 @@ export function getAllBlogPosts() {
         formattedDate,
         published_at: publishedAt,
         tags: Array.isArray(rawData.tags) ? rawData.tags : [],
-        featured_asset: rawData.featured_asset || 'kibo-climbing.jpeg'
+        featured_asset
       });
     }
-  }
+  });
 
   // Sort descending by published_at (newest first)
   posts.sort((a, b) => {
