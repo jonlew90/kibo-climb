@@ -10,6 +10,7 @@ const BASE_URL = 'https://kiboclimb.com';
 const BLOG_JSON_DIR = path.join(ROOT_DIR, 'src', 'content', 'blog');
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
 const SITEMAP_PATH = path.join(PUBLIC_DIR, 'sitemap.xml');
+const RSS_FEED_PATH = path.join(PUBLIC_DIR, 'feed.xml');
 
 import { WORKSHEET_CATALOG, getBestWorksheetForTier, getWorksheetBySlug } from '../src/utils/worksheetGenerator.js';
 
@@ -180,6 +181,58 @@ function updateSitemap(posts) {
 
   fs.writeFileSync(SITEMAP_PATH, sitemapContent, 'utf8');
   console.log(` Synchronized Sitemap with blog index, ${posts.length} posts, and ${publicSheets.length} worksheets: ${SITEMAP_PATH}`);
+}
+
+function generateRssFeed(posts) {
+  const sortedPosts = [...posts].sort((a, b) => new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime());
+  const nowRfc822 = new Date().toUTCString();
+
+  const itemsXml = sortedPosts.map(post => {
+    const postUrl = `${BASE_URL}/blog/${post.slug}`;
+    const pubDateRfc822 = post.published_at ? new Date(post.published_at).toUTCString() : nowRfc822;
+    const titleClean = (post.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const descClean = (post.social_copy?.short_blurb || post.meta_description || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const featuredImage = post.featured_asset ? `${BASE_URL}/images/blog/${post.featured_asset}` : `${BASE_URL}/images/blog/kibo-climbing.jpeg`;
+    const contentHtml = markdownToHtml(post.content_markdown || '');
+    const categories = Array.isArray(post.tags) ? post.tags : [post.subject || 'mental math'];
+
+    const categoriesXml = categories.map(cat => `      <category><![CDATA[${cat}]]></category>`).join('\n');
+
+    return `    <item>
+      <title>${titleClean}</title>
+      <link>${postUrl}</link>
+      <guid isPermaLink="true">${postUrl}</guid>
+      <pubDate>${pubDateRfc822}</pubDate>
+      <description><![CDATA[${descClean}]]></description>
+      <content:encoded><![CDATA[${contentHtml}]]></content:encoded>
+      <enclosure url="${featuredImage}" type="image/jpeg" length="0" />
+      <author>support@kiboclimb.com (Kibo Climb)</author>
+${categoriesXml}
+    </item>`;
+  }).join('\n');
+
+  const rssContent = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" 
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kibo Climb Blog – Math Strategies, Phonics, Geography &amp; Coding for Kids</title>
+    <link>${BASE_URL}/blog</link>
+    <atom:link href="${BASE_URL}/feed.xml" rel="self" type="application/rss+xml" />
+    <description>Discover expert mental math shortcuts, adaptive phonics, geography insights, coding logic, and printable worksheet practice to turn daily learning into an exciting mountain climb.</description>
+    <language>en-US</language>
+    <lastBuildDate>${nowRfc822}</lastBuildDate>
+    <image>
+      <url>${BASE_URL}/icons/icon-512.png</url>
+      <title>Kibo Climb</title>
+      <link>${BASE_URL}/blog</link>
+    </image>
+${itemsXml}
+  </channel>
+</rss>`;
+
+  fs.writeFileSync(RSS_FEED_PATH, rssContent, 'utf8');
+  console.log(` Generated RSS Feed with ${sortedPosts.length} posts backfilled: ${RSS_FEED_PATH}`);
 }
 
 const AVAILABLE_BLOG_IMAGES = [
@@ -635,7 +688,8 @@ function buildAll() {
   console.log(` Rendered Static Blog Index HTML: ${blogIndexFilePath}`);
 
   updateSitemap(posts);
-  console.log(` Successfully built ${posts.length} static blog posts and blog index.`);
+  generateRssFeed(posts);
+  console.log(` Successfully built ${posts.length} static blog posts, RSS feed, and blog index.`);
 }
 
 buildAll();
