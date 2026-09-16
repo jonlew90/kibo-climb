@@ -16,3 +16,5 @@
    - Read files in full or large contiguous sections (up to 200 lines) instead of multiple tiny fragmented chunks.
    - Never read more than 3 distinct files without pausing to report findings or ask for clarification.
    - Exclude build artifacts, generated types, and package lock files from searches.
+10. **No Prose:** Do not explain the code unless explicitly asked.
+11. **Use Local CLI Tools first:** Use internal commands like `grep` or `find` to map files instead of forcing the LLM to read through directory files to search for things.

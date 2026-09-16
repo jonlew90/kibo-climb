@@ -4,6 +4,9 @@ node_modules/
 dist/
 build/
 *.log
+.git/
+.venv/
+.venv/
 
 # Ignore lock files and static binaries
 package-lock.json
