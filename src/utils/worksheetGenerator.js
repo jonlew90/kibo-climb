@@ -45,50 +45,86 @@ export const KIBO_RED_PANDA_FAVICON_SVG = `<svg viewBox="0 0 512 512" width="100
 export const WORKSHEET_CATALOG = [
   // MATH
   {
-    id: 'math_starter_k2',
+    id: 'math_starter_k',
     subject: 'math',
     tier: 1,
     curriculumTiers: [1],
-    slug: 'addition-subtraction-grades-k-2',
-    title: 'Base Camp Sums & Differences',
-    gradeLabel: 'Grades K–2',
-    desc: 'Addition & subtraction fluency up to 20 with clear layout.',
+    slug: 'kindergarten-sums-to-10',
+    title: 'Base Camp Sums to 10',
+    gradeLabel: 'Kindergarten',
+    desc: 'Foundational single-digit addition and subtraction within 10.',
     isKiboClubOnly: false,
     problemCount: 16
   },
   {
-    id: 'math_starter_34',
+    id: 'math_starter_g1',
+    subject: 'math',
+    tier: 1,
+    curriculumTiers: [1],
+    slug: 'grade-1-addition-subtraction',
+    title: 'Grade 1 Sums & Differences to 20',
+    gradeLabel: 'Grade 1',
+    desc: 'Addition and subtraction fluency up to 20 and Anchor to 10 regrouping.',
+    isKiboClubOnly: false,
+    problemCount: 16
+  },
+  {
+    id: 'math_starter_g2',
+    subject: 'math',
+    tier: 1,
+    curriculumTiers: [1, 4],
+    slug: 'grade-2-regrouping-addition',
+    title: 'Grade 2 Mental Regrouping & Addition',
+    gradeLabel: 'Grade 2',
+    desc: '2-digit mental addition, left-to-right tens first, and making tens.',
+    isKiboClubOnly: false,
+    problemCount: 16
+  },
+  {
+    id: 'math_starter_g3',
     subject: 'math',
     tier: 2,
     curriculumTiers: [2, 3],
-    slug: 'multiplication-sprint-grades-3-4',
-    title: 'Alpine Multiplication Sprint (0–12)',
-    gradeLabel: 'Grades 3–4',
-    desc: 'Multiplication tables up to 12×12 & rapid recall drills.',
+    slug: 'grade-3-multiplication-facts',
+    title: 'Grade 3 Multiplication Facts (0–12)',
+    gradeLabel: 'Grade 3',
+    desc: 'Multiplication tables up to 12×12, 5s clock trick, and rapid recall drills.',
     isKiboClubOnly: false,
     problemCount: 16
   },
   {
-    id: 'math_club_multidigit',
+    id: 'math_club_g4',
     subject: 'math',
     tier: 4,
-    curriculumTiers: [4],
-    slug: 'multi-digit-mental-math-grades-4-6',
-    title: 'Summit Multi-Digit & Mental Math',
-    gradeLabel: 'Grades 4–6',
-    desc: '2-digit mental multiplication, 11s shortcut, and tens distribution.',
+    curriculumTiers: [4, 6],
+    slug: 'grade-4-multi-digit-division',
+    title: 'Grade 4 Multi-Digit & Division Mental Math',
+    gradeLabel: 'Grade 4',
+    desc: '11s shortcut, halving ladders, and mental division fact families.',
     isKiboClubOnly: true,
     problemCount: 16
   },
   {
-    id: 'math_club_fractions_decimals',
+    id: 'math_club_g5',
     subject: 'math',
     tier: 5,
-    curriculumTiers: [5, 6, 7],
-    slug: 'fractions-decimals-mastery-grades-4-6',
-    title: 'Summit Fractions & Decimals Mastery',
-    gradeLabel: 'Grades 4–6',
-    desc: 'Equivalent fractions, mixed numbers, and decimal operations with answer key.',
+    curriculumTiers: [5, 7],
+    slug: 'grade-5-fractions-decimals',
+    title: 'Grade 5 Fractions & Decimals Mastery',
+    gradeLabel: 'Grade 5',
+    desc: 'Equivalent fractions, mixed numbers, money change, and decimal operations.',
+    isKiboClubOnly: true,
+    problemCount: 16
+  },
+  {
+    id: 'math_club_g6',
+    subject: 'math',
+    tier: 7,
+    curriculumTiers: [7, 8],
+    slug: 'grade-6-pre-algebra-pemdas',
+    title: 'Grade 6 Pre-Algebra & Order of Operations',
+    gradeLabel: 'Grade 6',
+    desc: 'Order of operations (PEMDAS), GCF, LCM, and foundational pre-algebra.',
     isKiboClubOnly: true,
     problemCount: 16
   },
@@ -108,51 +144,63 @@ export const WORKSHEET_CATALOG = [
 
   // WORDS
   {
-    id: 'words_starter_phonics',
+    id: 'words_starter_gk1',
     subject: 'words',
     tier: 1,
     curriculumTiers: [1, 2],
-    slug: 'phonics-sight-words-grades-k-2',
+    slug: 'grade-k-1-phonics-sight-words',
     title: 'Trailhead Phonics & Sight Words',
-    gradeLabel: 'Grades K–2',
+    gradeLabel: 'Grades K–1',
     desc: 'Missing vowels, rhyming pairs, and high-frequency sight words.',
     isKiboClubOnly: false,
     problemCount: 16
   },
   {
-    id: 'words_club_spelling_mastery',
+    id: 'words_starter_g23',
     subject: 'words',
-    tier: 4,
-    curriculumTiers: [4, 5, 6],
-    slug: 'vocabulary-spelling-grades-3-6',
-    title: 'Summit Vocabulary & Spelling Expedition',
-    gradeLabel: 'Grades 3–6',
-    desc: 'Context clues, irregular plurals, prefixes, and word definitions.',
+    tier: 3,
+    curriculumTiers: [3, 4],
+    slug: 'grade-2-3-spelling-patterns',
+    title: 'Grade 2–3 Spelling Rules & Compound Words',
+    gradeLabel: 'Grades 2–3',
+    desc: 'Spelling rules, compound words, and irregular plurals.',
+    isKiboClubOnly: false,
+    problemCount: 16
+  },
+  {
+    id: 'words_club_g46',
+    subject: 'words',
+    tier: 5,
+    curriculumTiers: [5, 6, 7],
+    slug: 'grade-4-6-advanced-vocabulary',
+    title: 'Summit Vocabulary & Context Clues',
+    gradeLabel: 'Grades 4–6',
+    desc: 'Context clues, root words, prefixes, and advanced vocabulary mastery.',
     isKiboClubOnly: true,
     problemCount: 16
   },
 
   // WORLD
   {
-    id: 'world_starter_capitals',
+    id: 'world_starter_g13',
     subject: 'world',
     tier: 1,
     curriculumTiers: [1, 2, 3],
-    slug: 'continents-capitals-world-explorer',
+    slug: 'grade-1-3-world-capitals',
     title: 'World Explorer: Continents & Capitals',
-    gradeLabel: 'All Ages',
-    desc: 'Match countries to capitals and identify mountain summits.',
+    gradeLabel: 'Grades 1–3',
+    desc: 'Match countries to capitals, identify continents, and find mountain summits.',
     isKiboClubOnly: false,
     problemCount: 16
   },
   {
-    id: 'world_club_geography_deep_dive',
+    id: 'world_club_g48',
     subject: 'world',
     tier: 5,
     curriculumTiers: [5, 6, 7, 8],
-    slug: 'cartography-physical-geography-grades-3-8',
+    slug: 'grade-4-8-physical-geography',
     title: 'Peak Cartography & Physical Geography',
-    gradeLabel: 'Grades 3–8',
+    gradeLabel: 'Grades 4–8',
     desc: 'Biomes, latitude/longitude navigation, and mountain topography.',
     isKiboClubOnly: true,
     problemCount: 16
@@ -160,25 +208,25 @@ export const WORKSHEET_CATALOG = [
 
   // CODING
   {
-    id: 'coding_starter_logic',
+    id: 'coding_starter_g13',
     subject: 'coding',
     tier: 1,
     curriculumTiers: [1, 2],
-    slug: 'algorithm-pattern-paths-grades-1-4',
+    slug: 'grade-1-3-algorithm-sequencing',
     title: 'Junior Algorithm & Pattern Paths',
-    gradeLabel: 'Grades 1–4',
+    gradeLabel: 'Grades 1–3',
     desc: 'Trace step-by-step directional algorithms and sequence paths.',
     isKiboClubOnly: false,
     problemCount: 16
   },
   {
-    id: 'coding_club_syntax_loops',
+    id: 'coding_club_g48',
     subject: 'coding',
     tier: 3,
     curriculumTiers: [3, 4, 5],
-    slug: 'loops-logic-puzzles-grades-3-8',
+    slug: 'grade-4-8-loops-logic-debugging',
     title: 'Summit Loops & Logic Puzzles',
-    gradeLabel: 'Grades 3–8',
+    gradeLabel: 'Grades 4–8',
     desc: 'Loop iterations, conditional branching logic, and bug hunt tracing.',
     isKiboClubOnly: true,
     problemCount: 16
@@ -315,6 +363,20 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
     const chosenTier = targetTiers[tierIdx] || targetTiers[0];
 
     if (subject === 'math') {
+      // Kindergarten specific: sums and differences to 10
+      if (worksheet?.id === 'math_starter_k' || worksheet?.slug === 'kindergarten-sums-to-10') {
+        const isAdd = rng() > 0.4;
+        if (isAdd) {
+          const a = Math.floor(rng() * 5) + 1;
+          const b = Math.floor(rng() * (10 - a)) + 1;
+          return { q: `${a} + ${b}`, ans: String(a + b) };
+        } else {
+          const a = Math.floor(rng() * 9) + 2;
+          const b = Math.floor(rng() * (a - 1)) + 1;
+          return { q: `${a} − ${b}`, ans: String(a - b) };
+        }
+      }
+
       const prob = generateMathTierProblem(chosenTier, true);
       const rawQ = prob.displayString || prob.question || `${prob.num1} ${prob.operatorSymbol} ${prob.num2}`;
       const cleanQ = rawQ.replace(/\s*=\s*(_+|\.\.\.|\?)\s*$/, '').trim();

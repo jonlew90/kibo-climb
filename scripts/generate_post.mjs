@@ -39,9 +39,8 @@ function getCurriculumTier(subject, tier) {
 export function generatePostData({ subject = 'math', tier = 1, customSlug = null, customTitle = null } = {}) {
   const targetTier = Number(tier) || 1;
   const tierData = getCurriculumTier(subject, targetTier);
-  const relatedWorksheet = getBestWorksheetForTier(subject, targetTier);
-
-  const worksheetSlug = relatedWorksheet?.slug || 'multi-digit-mental-math-grades-4-6';
+  const relatedWorksheet = getBestWorksheetForTier(subject, tier);
+  const worksheetSlug = relatedWorksheet?.slug || 'grade-4-multi-digit-division';
   const worksheetTitle = relatedWorksheet?.title || 'Practice Worksheet';
   const worksheetUrl = `/worksheets/${subject}/${worksheetSlug}`;
   const gradeLabel = relatedWorksheet?.gradeLabel || (targetTier === 1 ? 'Grades K–2' : targetTier <= 3 ? 'Grades 3–4' : 'Grades 4–6');

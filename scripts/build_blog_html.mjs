@@ -150,8 +150,36 @@ function updateSitemap(posts) {
     }
   }
 
+  // Sync /worksheets index and public catalog sheets in sitemap
+  const worksheetsIndexUrl = `${BASE_URL}/worksheets`;
+  const wsIndexLocPattern = new RegExp(`<loc>${worksheetsIndexUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>([\\s\\S]*?)</url>`, 'i');
+  if (wsIndexLocPattern.test(sitemapContent)) {
+    sitemapContent = sitemapContent.replace(
+      wsIndexLocPattern,
+      `<loc>${worksheetsIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>`
+    );
+  } else {
+    const newEntry = `  <url>\n    <loc>${worksheetsIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>`;
+    sitemapContent = sitemapContent.replace('</urlset>', newEntry);
+  }
+
+  const publicSheets = WORKSHEET_CATALOG.filter(w => !w.isDynamic);
+  for (const sheet of publicSheets) {
+    const sheetUrl = `${BASE_URL}/worksheets/${sheet.subject}/${sheet.slug}`;
+    const locPattern = new RegExp(`<loc>${sheetUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>([\\s\\S]*?)</url>`, 'i');
+    if (locPattern.test(sitemapContent)) {
+      sitemapContent = sitemapContent.replace(
+        locPattern,
+        `<loc>${sheetUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`
+      );
+    } else {
+      const newEntry = `  <url>\n    <loc>${sheetUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>\n</urlset>`;
+      sitemapContent = sitemapContent.replace('</urlset>', newEntry);
+    }
+  }
+
   fs.writeFileSync(SITEMAP_PATH, sitemapContent, 'utf8');
-  console.log(` Synchronized Sitemap with blog index and ${posts.length} posts: ${SITEMAP_PATH}`);
+  console.log(` Synchronized Sitemap with blog index, ${posts.length} posts, and ${publicSheets.length} worksheets: ${SITEMAP_PATH}`);
 }
 
 function generatePostHtml(data, allPosts = []) {

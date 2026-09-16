@@ -16,9 +16,13 @@ const TOPICS = [
 
 const GRADES = [
   { id: 'all', label: 'All Grades' },
-  { id: 'k2', label: 'Grades K–2' },
-  { id: '34', label: 'Grades 3–4' },
-  { id: '46', label: 'Grades 3–8' }
+  { id: 'k', label: 'Kindergarten' },
+  { id: '1', label: 'Grade 1' },
+  { id: '2', label: 'Grade 2' },
+  { id: '3', label: 'Grade 3' },
+  { id: '4', label: 'Grade 4' },
+  { id: '5', label: 'Grade 5' },
+  { id: '6', label: 'Grade 6+' }
 ];
 
 const TIERS = [
@@ -32,6 +36,7 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
   const [selectedGrade, setSelectedGrade] = useState('all');
   const [selectedTier, setSelectedTier] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [openDropdown, setOpenDropdown] = useState(null); // 'topic' | 'grade' | 'tier' | null
 
   const currentPlan = storageService.getSubscriptionPlan();
   const isClubMember = currentPlan?.tier === 'family' || currentPlan?.tier === 'single';
@@ -39,6 +44,24 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
   useEffect(() => {
     updateWorksheetHubSeo(WORKSHEET_CATALOG);
     analyticsService?.logScreenView?.('WorksheetHub');
+  }, []);
+
+  // Close dropdowns on outside click or escape
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest('.custom-dropdown-container')) {
+        setOpenDropdown(null);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setOpenDropdown(null);
+    };
+    document.addEventListener('click', handleOutsideClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('click', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const filteredWorksheets = useMemo(() => {
@@ -54,14 +77,20 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
       // Filter by Grade
       if (selectedGrade !== 'all') {
         const gradeText = (w.gradeLabel || '').toLowerCase();
-        if (selectedGrade === 'k2' && !gradeText.includes('k–2') && !gradeText.includes('k-2') && !gradeText.includes('all')) {
-          return false;
-        }
-        if (selectedGrade === '34' && !gradeText.includes('3–4') && !gradeText.includes('3-4') && !gradeText.includes('all')) {
-          return false;
-        }
-        if (selectedGrade === '46' && !gradeText.includes('4–6') && !gradeText.includes('3–6') && !gradeText.includes('3–8') && !gradeText.includes('all')) {
-          return false;
+        if (selectedGrade === 'k') {
+          if (!gradeText.includes('kindergarten') && !gradeText.includes('grades k') && !gradeText.includes('all')) return false;
+        } else if (selectedGrade === '1') {
+          if (!gradeText.includes('grade 1') && !gradeText.includes('grades k–1') && !gradeText.includes('grades k-1') && !gradeText.includes('grades 1–3') && !gradeText.includes('grades 1-3') && !gradeText.includes('all')) return false;
+        } else if (selectedGrade === '2') {
+          if (!gradeText.includes('grade 2') && !gradeText.includes('grades 2–3') && !gradeText.includes('grades 2-3') && !gradeText.includes('grades 1–3') && !gradeText.includes('grades 1-3') && !gradeText.includes('all')) return false;
+        } else if (selectedGrade === '3') {
+          if (!gradeText.includes('grade 3') && !gradeText.includes('grades 2–3') && !gradeText.includes('grades 2-3') && !gradeText.includes('grades 1–3') && !gradeText.includes('grades 1-3') && !gradeText.includes('all')) return false;
+        } else if (selectedGrade === '4') {
+          if (!gradeText.includes('grade 4') && !gradeText.includes('grades 4–6') && !gradeText.includes('grades 4-6') && !gradeText.includes('grades 4–8') && !gradeText.includes('grades 4-8') && !gradeText.includes('all')) return false;
+        } else if (selectedGrade === '5') {
+          if (!gradeText.includes('grade 5') && !gradeText.includes('grades 4–6') && !gradeText.includes('grades 4-6') && !gradeText.includes('grades 4–8') && !gradeText.includes('grades 4-8') && !gradeText.includes('all')) return false;
+        } else if (selectedGrade === '6') {
+          if (!gradeText.includes('grade 6') && !gradeText.includes('grades 4–6') && !gradeText.includes('grades 4-6') && !gradeText.includes('grades 4–8') && !gradeText.includes('grades 4-8') && !gradeText.includes('all')) return false;
         }
       }
 
@@ -123,6 +152,10 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
     }
   };
 
+  const currentTopicLabel = TOPICS.find(t => t.id === selectedTopic)?.label || 'All Topics';
+  const currentGradeLabel = GRADES.find(g => g.id === selectedGrade)?.label || 'All Grades';
+  const currentTierLabel = TIERS.find(t => t.id === selectedTier)?.label || 'All Worksheets';
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B] flex flex-col selection:bg-orange-200">
       {/* Global Nav Bar (Consistent with /blog & App) */}
@@ -170,22 +203,22 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
-        {/* Hero Banner - Compact on mobile */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-teal-700 via-teal-800 to-emerald-900 text-white p-4 sm:p-10 shadow-lg border border-teal-600/30">
+        {/* Hero Banner - Warm Kibo Brand Theme */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-10 shadow-lg border border-orange-400/40">
           <div className="relative z-10 max-w-2xl space-y-1.5 sm:space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/15 backdrop-blur-xs text-teal-100 text-[10px] sm:text-xs font-black uppercase tracking-wider border border-white/20">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-xs text-orange-50 text-[10px] sm:text-xs font-black uppercase tracking-wider border border-white/30">
               <Printer className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               <span>Printable Learning Hub</span>
             </div>
             <h1 className="text-xl sm:text-4xl font-heading font-black tracking-tight leading-tight">
-              Free Printable Skill Worksheets &amp; Answer Keys
+              Printable Curriculum Worksheets &amp; Answer Keys
             </h1>
-            <p className="hidden sm:block text-sm sm:text-base text-teal-100/90 font-medium leading-relaxed">
-              Targeted 16-problem drill sheets paired with complete parent grading keys. Practice mental math, spelling, geography, and coding offline with Mascot Kibo!
+            <p className="text-xs sm:text-base text-amber-50/95 font-medium leading-relaxed">
+              Explore 8 free starter worksheets + 7 Kibo Club VIP packets with complete answer keys. Practice mental math, spelling, geography, and coding offline with Mascot Kibo!
             </p>
           </div>
           
-          <div className="absolute right-0 bottom-0 opacity-10 sm:opacity-20 translate-x-12 translate-y-8 pointer-events-none w-48 h-48 sm:w-64 sm:h-64">
+          <div className="absolute right-0 bottom-0 opacity-15 sm:opacity-25 translate-x-10 translate-y-6 pointer-events-none w-48 h-48 sm:w-64 sm:h-64">
             <div dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }} />
           </div>
         </div>
@@ -194,82 +227,148 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade }
         <section className="space-y-3 sm:space-y-4 bg-white border border-slate-200/80 rounded-2xl p-3 sm:p-5 shadow-xs">
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search worksheets by skill, topic, or grade (e.g. Multiplication, Fractions, K-2)..."
+              placeholder="Search worksheets by skill, topic, or grade (e.g. Multiplication, Fractions, Grade 3)..."
               className="w-full pl-10 pr-4 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all"
             />
           </div>
 
-          {/* Multi-facet Filter Dropdowns - Compact layout */}
+          {/* Multi-facet Filter Dropdowns */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 pt-1">
             {/* Topic Filter Dropdown */}
-            <div className="space-y-1">
-              <label htmlFor="topic-select" className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
+            <div className="space-y-1 custom-dropdown-container relative">
+              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
                 <Filter className="w-3 h-3" /> Topic / Subject
-              </label>
-              <select
-                id="topic-select"
-                value={selectedTopic}
-                onChange={(e) => {
+              </span>
+              <button
+                type="button"
+                onClick={() => {
                   soundFx?.playKeyTap?.();
-                  setSelectedTopic(e.target.value);
+                  setOpenDropdown(openDropdown === 'topic' ? null : 'topic');
                 }}
-                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white cursor-pointer transition-all"
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
               >
-                {TOPICS.map(topic => (
-                  <option key={topic.id} value={topic.id}>
-                    {topic.label}
-                  </option>
-                ))}
-              </select>
+                <span className="truncate">{currentTopicLabel}</span>
+                <svg className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-150 ${openDropdown === 'topic' ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+
+              {openDropdown === 'topic' && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden animate-pop">
+                  {TOPICS.map(topic => (
+                    <button
+                      key={topic.id}
+                      type="button"
+                      onClick={() => {
+                        soundFx?.playKeyTap?.();
+                        setSelectedTopic(topic.id);
+                        setOpenDropdown(null);
+                      }}
+                      className={`w-full px-3 py-2 text-left text-xs sm:text-sm font-bold flex items-center justify-between cursor-pointer transition-colors ${
+                        selectedTopic === topic.id
+                          ? 'bg-orange-50 text-orange-600'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>{topic.label}</span>
+                      {selectedTopic === topic.id && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600" />}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Grade Filter Dropdown */}
-            <div className="space-y-1">
-              <label htmlFor="grade-select" className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
+            <div className="space-y-1 custom-dropdown-container relative">
+              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
                 Grade Level
-              </label>
-              <select
-                id="grade-select"
-                value={selectedGrade}
-                onChange={(e) => {
+              </span>
+              <button
+                type="button"
+                onClick={() => {
                   soundFx?.playKeyTap?.();
-                  setSelectedGrade(e.target.value);
+                  setOpenDropdown(openDropdown === 'grade' ? null : 'grade');
                 }}
-                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white cursor-pointer transition-all"
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
               >
-                {GRADES.map(grade => (
-                  <option key={grade.id} value={grade.id}>
-                    {grade.label}
-                  </option>
-                ))}
-              </select>
+                <span className="truncate">{currentGradeLabel}</span>
+                <svg className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-150 ${openDropdown === 'grade' ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+
+              {openDropdown === 'grade' && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden animate-pop max-h-60 overflow-y-auto">
+                  {GRADES.map(grade => (
+                    <button
+                      key={grade.id}
+                      type="button"
+                      onClick={() => {
+                        soundFx?.playKeyTap?.();
+                        setSelectedGrade(grade.id);
+                        setOpenDropdown(null);
+                      }}
+                      className={`w-full px-3 py-2 text-left text-xs sm:text-sm font-bold flex items-center justify-between cursor-pointer transition-colors ${
+                        selectedGrade === grade.id
+                          ? 'bg-orange-50 text-orange-600'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>{grade.label}</span>
+                      {selectedGrade === grade.id && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600" />}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Access Tier Filter Dropdown */}
-            <div className="space-y-1">
-              <label htmlFor="tier-select" className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
+            <div className="space-y-1 custom-dropdown-container relative">
+              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
                 Access Level
-              </label>
-              <select
-                id="tier-select"
-                value={selectedTier}
-                onChange={(e) => {
+              </span>
+              <button
+                type="button"
+                onClick={() => {
                   soundFx?.playKeyTap?.();
-                  setSelectedTier(e.target.value);
+                  setOpenDropdown(openDropdown === 'tier' ? null : 'tier');
                 }}
-                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white cursor-pointer transition-all"
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
               >
-                {TIERS.map(tier => (
-                  <option key={tier.id} value={tier.id}>
-                    {tier.label}
-                  </option>
-                ))}
-              </select>
+                <span className="truncate">{currentTierLabel}</span>
+                <svg className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-150 ${openDropdown === 'tier' ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+
+              {openDropdown === 'tier' && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden animate-pop">
+                  {TIERS.map(tier => (
+                    <button
+                      key={tier.id}
+                      type="button"
+                      onClick={() => {
+                        soundFx?.playKeyTap?.();
+                        setSelectedTier(tier.id);
+                        setOpenDropdown(null);
+                      }}
+                      className={`w-full px-3 py-2 text-left text-xs sm:text-sm font-bold flex items-center justify-between cursor-pointer transition-colors ${
+                        selectedTier === tier.id
+                          ? 'bg-orange-50 text-orange-600'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>{tier.label}</span>
+                      {selectedTier === tier.id && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600" />}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>
