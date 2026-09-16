@@ -19,6 +19,8 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const BLOG_JSON_DIR = path.join(ROOT_DIR, 'src', 'content', 'blog');
 
+import { AVAILABLE_BLOG_IMAGES } from '../src/utils/blogLoader.js';
+
 function getCurriculumTier(subject, tier) {
   const targetTier = Number(tier) || 1;
   if (subject === 'math') {
@@ -36,19 +38,67 @@ function getCurriculumTier(subject, tier) {
   return MATH_TIERS[0];
 }
 
-export function generatePostData({ subject = 'math', tier = 1, customSlug = null, customTitle = null } = {}) {
-  const targetTier = Number(tier) || 1;
-  const tierData = getCurriculumTier(subject, targetTier);
-  const relatedWorksheet = getBestWorksheetForTier(subject, tier);
+function getExistingArticles() {
+  if (!fs.existsSync(BLOG_JSON_DIR)) return [];
+  const files = fs.readdirSync(BLOG_JSON_DIR).filter(f => f.endsWith('.json'));
+  return files.map(file => {
+    try {
+      const content = JSON.parse(fs.readFileSync(path.join(BLOG_JSON_DIR, file), 'utf8'));
+      return { file, ...content };
+    } catch {
+      return null;
+    }
+  }).filter(Boolean);
+}
+
+function selectRandomSubjectAndTier() {
+  const existingPosts = getExistingArticles();
+  const coveredSet = new Set(existingPosts.map(p => `${p.subject || 'math'}:${p.tier || 1}`));
+  const subjects = ['math', 'words', 'world', 'coding'];
+  
+  const allCombinations = [];
+  subjects.forEach(subj => {
+    for (let t = 1; t <= 8; t++) {
+      allCombinations.push({ subject: subj, tier: t });
+    }
+  });
+
+  const uncovered = allCombinations.filter(c => !coveredSet.has(`${c.subject}:${c.tier}`));
+  const pool = uncovered.length > 0 ? uncovered : allCombinations;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function selectFeaturedImage(existingPosts = []) {
+  const usedImages = new Set(existingPosts.map(p => p.featured_asset).filter(Boolean));
+  const unusedImages = AVAILABLE_BLOG_IMAGES.filter(img => !usedImages.has(img));
+  const pool = unusedImages.length > 0 ? unusedImages : AVAILABLE_BLOG_IMAGES;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+export function generatePostData({ subject = null, tier = null, customSlug = null, customTitle = null, featuredAsset = null } = {}) {
+  const existingPosts = getExistingArticles();
+
+  let finalSubject = subject;
+  let finalTier = tier;
+
+  if (!finalSubject || !finalTier) {
+    const randomPick = selectRandomSubjectAndTier();
+    if (!finalSubject) finalSubject = randomPick.subject;
+    if (!finalTier) finalTier = randomPick.tier;
+  }
+
+  const targetTier = Number(finalTier) || 1;
+  const tierData = getCurriculumTier(finalSubject, targetTier);
+  const relatedWorksheet = getBestWorksheetForTier(finalSubject, targetTier);
   const worksheetSlug = relatedWorksheet?.slug || 'grade-4-multi-digit-division';
   const worksheetTitle = relatedWorksheet?.title || 'Practice Worksheet';
-  const worksheetUrl = `/worksheets/${subject}/${worksheetSlug}`;
+  const worksheetUrl = `/worksheets/${finalSubject}/${worksheetSlug}`;
   const gradeLabel = relatedWorksheet?.gradeLabel || (targetTier === 1 ? 'Grades K–2' : targetTier <= 3 ? 'Grades 3–4' : 'Grades 4–6');
 
-  const name = tierData?.name || tierData?.title || `${subject.toUpperCase()} Tier ${targetTier}`;
+  const name = tierData?.name || tierData?.title || `${finalSubject.toUpperCase()} Tier ${targetTier}`;
   const location = tierData?.location || 'Mountain Trail';
   const trick = tierData?.trailTrick || tierData?.hintText || {
-    title: `${subject.toUpperCase()} Shortcut`,
+    title: `${finalSubject.toUpperCase()} Shortcut`,
     description: tierData?.description || 'Core curriculum strategy.',
     summary: tierData?.description || 'Core curriculum strategy.'
   };
@@ -64,7 +114,7 @@ export function generatePostData({ subject = 'math', tier = 1, customSlug = null
   const topicsList = Array.isArray(tierData?.topics) ? tierData.topics : ['Core skill practice and fluency'];
 
   const title = customTitle || `Mastering ${name}: ${trickTitle} for ${gradeLabel}`;
-  let cleanSlug = customSlug || `${subject}-tier-${targetTier}-${trickTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  let cleanSlug = customSlug || `${finalSubject}-tier-${targetTier}-${trickTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
   cleanSlug = cleanSlug.replace(/^-+|-+$/g, '');
 
   const metaDescription = `Master ${name} on Mount Kibo with the ${trickTitle} shortcut. Includes worked examples and free printable worksheet practice for ${gradeLabel}.`;
@@ -79,9 +129,16 @@ export function generatePostData({ subject = 'math', tier = 1, customSlug = null
 `;
   }
 
-  const markdown = `## Conquering ${name} on Mount Kibo
+  const markdown = `:::note
+**WRITING INSTRUCTION FOR AI:**
+Adopt the persona of an empathetic, slightly humorous "Sherpa Guide for Parents." Acknowledge the universal struggle of learning math in the intro paragraph. It is acceptable to use light, self-deprecating humor regarding adult struggles with elementary math (e.g., "confessing we still count on our fingers sometimes"). The goal is relatability and engagement, not specific jokes.
+:::
 
-When ascending through **${location}** on Mount Kilimanjaro with Kibo the red panda mascot, speed and accuracy unlock essential momentum. Traditional paper-and-pencil methods often create unnecessary cognitive friction during timed mental challenges. By mastering intuitive curriculum strategies, students transform tricky calculations into second-nature shortcuts.
+## Conquering ${name} on Mount Kibo
+
+Let's be honest: when our kids hit **${location}** on Mount Kilimanjaro, the anxiety kicks in for both of them—and sometimes us! Kibo the red panda mascot knows that speed and accuracy unlock essential momentum, but traditional paper-and-pencil methods often create unnecessary cognitive friction.
+
+By mastering intuitive curriculum strategies, students transform tricky calculations into second-nature shortcuts (and help us parents remember how to do Tier ${targetTier} math in the process!).
 
 In our Tier ${targetTier} curriculum (${gradeLabel}), students build foundational mastery in:
 ${topicsList.map(t => `- ${t}`).join('\n')}
@@ -109,7 +166,7 @@ Encourage your student to test the ${trickTitle} technique during their next 5-m
 
   const tags = [
     `tier ${targetTier}`,
-    subject,
+    finalSubject,
     'mental math',
     'kibo climb',
     gradeLabel.toLowerCase(),
@@ -121,18 +178,19 @@ Encourage your student to test the ${trickTitle} technique during their next 5-m
     short_blurb: `Learn the ${trickTitle} mental shortcut for ${gradeLabel} students tackling Tier ${targetTier} on Mount Kibo.`
   };
 
+  const selectedImage = featuredAsset || selectFeaturedImage(existingPosts);
   const nowIso = new Date().toISOString();
 
   return {
     title,
     slug: cleanSlug,
-    subject,
+    subject: finalSubject,
     tier: targetTier,
     topic: name,
     worksheet_slug: worksheetSlug,
     meta_description: metaDescription,
     tags,
-    featured_asset: 'kibo-climbing.jpeg',
+    featured_asset: selectedImage,
     content_markdown: markdown,
     social_copy: socialCopy,
     published_at: nowIso
@@ -166,10 +224,11 @@ function printCurriculumList() {
 function parseArgs() {
   const args = process.argv.slice(2);
   const options = {
-    subject: 'math',
-    tier: 1,
+    subject: null,
+    tier: null,
     slug: null,
     title: null,
+    image: null,
     list: false,
     build: false
   };
@@ -184,6 +243,8 @@ function parseArgs() {
       options.slug = args[++i];
     } else if (arg === '--title' && args[i + 1]) {
       options.title = args[++i];
+    } else if (arg === '--image' && args[i + 1]) {
+      options.image = args[++i];
     } else if (arg === '--list-curriculum' || arg === '--list') {
       options.list = true;
     } else if (arg === '--build') {
@@ -206,7 +267,8 @@ async function main() {
     subject: options.subject,
     tier: options.tier,
     customSlug: options.slug,
-    customTitle: options.title
+    customTitle: options.title,
+    featuredAsset: options.image
   });
 
   saveBlogPost(postData);
