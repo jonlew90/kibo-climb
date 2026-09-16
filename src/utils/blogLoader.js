@@ -117,37 +117,46 @@ export function getAdjacentBlogPosts(slug, posts = getAllBlogPosts()) {
 }
 
 /**
- * Extract distinct categories/tags across all posts
+ * Core curated pillar categories for blog navigation.
+ * Keeps the category bar clean and focused as new articles and tags are added.
+ */
+export const BLOG_PILLAR_CATEGORIES = [
+  'All',
+  'Mental Math',
+  'Math Strategies',
+  'Elementary Math',
+  'Addition',
+  'Multiplication',
+  'Parent Resources'
+];
+
+/**
+ * Extract active pillar categories across all available posts.
+ * Only returns pillars that have at least one matching article.
  */
 export function getBlogCategories(posts = getAllBlogPosts()) {
-  const categorySet = new Set();
-  posts.forEach(post => {
-    if (Array.isArray(post.tags)) {
-      post.tags.forEach(t => {
-        if (t && typeof t === 'string') categorySet.add(t.trim());
+  if (!posts || posts.length === 0) return ['All'];
+
+  const activeCategories = ['All'];
+
+  for (const pillar of BLOG_PILLAR_CATEGORIES.slice(1)) {
+    const pillarLower = pillar.toLowerCase();
+    const hasMatchingPost = posts.some(post => {
+      const tagMatch = Array.isArray(post.tags) && post.tags.some(t => {
+        const tLower = t.toLowerCase();
+        return tLower.includes(pillarLower) || pillarLower.includes(tLower);
       });
-    }
-    if (post.topic && typeof post.topic === 'string') {
-      categorySet.add(post.topic.trim());
-    }
-  });
+      const topicMatch = post.topic && (
+        post.topic.toLowerCase().includes(pillarLower) || pillarLower.includes(post.topic.toLowerCase())
+      );
+      const subjectMatch = post.subject && post.subject.toLowerCase() === pillarLower;
+      return tagMatch || topicMatch || subjectMatch;
+    });
 
-  // Standardize common top categories
-  const topCategories = ['All'];
-  const knownTags = ['Mental Math', 'Math Strategies', 'Elementary Math', 'Addition', 'Multiplication', 'Problem Solving'];
-  
-  knownTags.forEach(kt => {
-    if ([...categorySet].some(t => t.toLowerCase() === kt.toLowerCase())) {
-      topCategories.push(kt);
+    if (hasMatchingPost) {
+      activeCategories.push(pillar);
     }
-  });
+  }
 
-  // Add any other categories found
-  categorySet.forEach(tag => {
-    if (!topCategories.some(kt => kt.toLowerCase() === tag.toLowerCase())) {
-      topCategories.push(tag);
-    }
-  });
-
-  return topCategories;
+  return activeCategories;
 }

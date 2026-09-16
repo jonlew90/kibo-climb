@@ -163,8 +163,8 @@ export default function BlogIndex({ onBack, onNavigate }) {
           </div>
         </div>
 
-        {/* Quick Category Filter Pills - Horizontally Swipeable on Mobile */}
-        <div className="flex items-center overflow-x-auto no-scrollbar sm:justify-center gap-2 py-1 pb-2 sm:pb-1" role="tablist" aria-label="Article categories">
+        {/* Quick Category Filter Pills - Wrapped on desktop, scrollable rail on mobile */}
+        <div className="flex items-center overflow-x-auto no-scrollbar sm:flex-wrap sm:justify-center gap-2 py-1 pb-2 sm:pb-0" role="tablist" aria-label="Article categories">
           {categories.map((category) => (
             <button
               key={category}

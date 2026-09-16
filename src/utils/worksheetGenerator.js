@@ -293,10 +293,10 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
     }
     while (problems.length < 16) {
       const prob = generateMathTierProblem(3, true);
-      const qText = prob.displayString || prob.question || `${prob.num1} ${prob.operatorSymbol} ${prob.num2} = ___`;
-      const formattedQ = qText.includes('=') ? qText : `${qText} = ___`;
+      const rawQ = prob.displayString || prob.question || `${prob.num1} ${prob.operatorSymbol} ${prob.num2}`;
+      const cleanQ = rawQ.replace(/\s*=\s*(_+|\.\.\.|\?)\s*$/, '').trim();
       problems.push({
-        q: formattedQ,
+        q: cleanQ,
         ans: String(prob.answer !== undefined ? prob.answer : prob.answerString || '')
       });
     }
@@ -317,9 +317,9 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
     if (subject === 'math') {
       const prob = generateMathTierProblem(chosenTier, true);
       const rawQ = prob.displayString || prob.question || `${prob.num1} ${prob.operatorSymbol} ${prob.num2}`;
-      const q = rawQ.includes('=') ? rawQ : `${rawQ} = ___`;
+      const cleanQ = rawQ.replace(/\s*=\s*(_+|\.\.\.|\?)\s*$/, '').trim();
       const ans = String(prob.answer !== undefined ? prob.answer : (prob.answerString || ''));
-      return { q, ans };
+      return { q: cleanQ, ans };
     }
 
     if (subject === 'words') {
