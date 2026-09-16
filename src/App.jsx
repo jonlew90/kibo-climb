@@ -3049,9 +3049,7 @@ export default function App() {
           onBack={handleGoBack}
           onNavigate={handleNavigateTo}
           onOpenKiboClubUpgrade={() => {
-            setParentDashboardTab('verification');
-            setParentDashboardHighlight('family_plan');
-            handleNavigateTo('/parent', VIEWS.PARENT_DASHBOARD);
+            handleOpenPinGate('family_plan', 'verification', 'family_plan');
           }}
         />
       )}
@@ -3064,9 +3062,7 @@ export default function App() {
           onBack={handleGoBack}
           onNavigate={handleNavigateTo}
           onOpenKiboClubUpgrade={() => {
-            setParentDashboardTab('verification');
-            setParentDashboardHighlight('family_plan');
-            handleNavigateTo('/parent', VIEWS.PARENT_DASHBOARD);
+            handleOpenPinGate('family_plan', 'verification', 'family_plan');
           }}
           onOpenTrainingCamp={({ subject } = {}) => {
             if (subject) setActiveSubject(subject);

@@ -7,6 +7,7 @@ import { leaderboardService } from './leaderboardService.js';
 import { userSyncService } from './userSyncService.js';
 import { SUBJECTS_CONFIG } from '../config/subjects.js';
 import { isUSRegion } from '../utils/localeUtils.js';
+import { generateSafeUsername } from '../utils/safeNames.js';
 
 const KEYS = {
   PROFILES: 'kibo_profiles_data',
@@ -35,87 +36,93 @@ export const createDefaultSubjectState = (startingRating = 1000) => ({
   skipLogs: []
 });
 
-const DEFAULT_PROFILE = {
-  id: DEFAULT_PROFILE_ID,
-  name: 'Kibo Climber',
-  username: '',          // leaderboard handle — set during first-launch onboarding
-  gradeLevel: 'Grade 1–2',
-  practiceDays: [1, 2, 3, 4, 5],
-  dailyReminderEnabled: true,
-  reminderTime: '17:00',
-  lastActiveSubject: 'math',
-  language: 'en',
-  spellingDialect: 'en-US',
-  acceptAllDialects: true,
-  userData: {
-    adaptiveCompetenceRating: 1000,
-    subjectRatings: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, k) => { acc[k] = 1000; return acc; }, {}),
-    competenceRank: 1000,
-    tier: 1,
-    unlockedTiers: [1],
-    tierMasteryPercent: { 1: 0 },
-    tierBestTimes: {},
-    masteredTricks: {},
-    streak: 0,
-    streakShields: 1,
-    sparks: 50,
-    isKiboClub: false,
-    completedClimbsCount: 0,
-    shopPurchasesCount: 0,
-    purchasedRarities: [],
-    hasPromptedLink_2Purchases: false,
-    hasPromptedLink_2Climbs: false,
-    hasPromptedLink_3DayStreak: false,
-    promptedLinkMilestones: [],
-    lastPromptedLinkAt: null,
-    totalProblemsSolved: 0,
-    cumulativeCorrectStreak: 0,
-    personalRecords: {
-      fastest12QuestionsTime: null,
-      highestCorrectStreak: 0,
-      mostPerfectSessions: 0
+function createDefaultProfile(initialName = null) {
+  const safeName = initialName || generateSafeUsername();
+  return {
+    id: DEFAULT_PROFILE_ID,
+    name: safeName,
+    username: safeName,          // leaderboard handle — set during first-launch onboarding
+    gradeLevel: 'Grade 1–2',
+    practiceDays: [1, 2, 3, 4, 5],
+    dailyReminderEnabled: true,
+    reminderTime: '17:00',
+    lastActiveSubject: 'math',
+    language: 'en',
+    spellingDialect: 'en-US',
+    acceptAllDialects: true,
+    userData: {
+      adaptiveCompetenceRating: 1000,
+      subjectRatings: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, k) => { acc[k] = 1000; return acc; }, {}),
+      competenceRank: 1000,
+      tier: 1,
+      unlockedTiers: [1],
+      tierMasteryPercent: { 1: 0 },
+      tierBestTimes: {},
+      masteredTricks: {},
+      streak: 0,
+      streakShields: 1,
+      sparks: 50,
+      isKiboClub: false,
+      completedClimbsCount: 0,
+      shopPurchasesCount: 0,
+      purchasedRarities: [],
+      hasPromptedLink_2Purchases: false,
+      hasPromptedLink_2Climbs: false,
+      hasPromptedLink_3DayStreak: false,
+      promptedLinkMilestones: [],
+      lastPromptedLinkAt: null,
+      totalProblemsSolved: 0,
+      cumulativeCorrectStreak: 0,
+      personalRecords: {
+        fastest12QuestionsTime: null,
+        highestCorrectStreak: 0,
+        mostPerfectSessions: 0
+      },
+      lastSprintDate: null,
+      lastSprintTimestamp: null,
+      lastSprintTimezone: null,
+      hasVisitedParentZone: false,
+      practiceQueue: [],
+      sprintHistory: [],
+      skipLogs: [],
+      unlockedBadges: [],
+      consumables: {
+        shieldCount: 1,
+        streakSaverCount: 0,
+        doubleCoinPotionCount: 0
+      },
+      preferences: {
+        hideSprintTimer: false,
+        isMuted: false,
+        isHapticsEnabled: true
+      },
+      // Subject specific states will be nested under subject data.
+      // Top-level fields above serve as defaults or aggregate fields (for math backwards compatibility)
+      subjects: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, subId) => {
+        acc[subId] = createDefaultSubjectState(1000);
+        return acc;
+      }, {})
     },
-    lastSprintDate: null,
-    lastSprintTimestamp: null,
-    lastSprintTimezone: null,
-    hasVisitedParentZone: false,
-    practiceQueue: [],
-    sprintHistory: [],
-    skipLogs: [],
-    unlockedBadges: [],
-    consumables: {
-      shieldCount: 1,
-      streakSaverCount: 0,
-      doubleCoinPotionCount: 0
+    shopState: {
+      equippedItems: [],
+      unlockedItems: [],
+      redeemedPromoCodes: []
     },
-    preferences: {
-      hideSprintTimer: false,
-      isMuted: false,
-      isHapticsEnabled: true
-    },
-    // Subject specific states will be nested under subject data.
-    // Top-level fields above serve as defaults or aggregate fields (for math backwards compatibility)
-    subjects: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, subId) => {
-      acc[subId] = createDefaultSubjectState(1000);
-      return acc;
-    }, {})
-  },
-  shopState: {
-    equippedItems: [],
-    unlockedItems: [],
-    redeemedPromoCodes: []
-  },
-  friends: [],
-  friendRequests: []
-};
+    friends: [],
+    friendRequests: []
+  };
+}
 
-const DEFAULT_PROFILES_STATE = {
-  activeProfileId: DEFAULT_PROFILE_ID,
-  isKiboClubFamily: false,
-  profiles: {
-    [DEFAULT_PROFILE_ID]: DEFAULT_PROFILE
-  }
-};
+function getInitialProfilesState() {
+  const initialProf = createDefaultProfile();
+  return {
+    activeProfileId: DEFAULT_PROFILE_ID,
+    isKiboClubFamily: false,
+    profiles: {
+      [DEFAULT_PROFILE_ID]: initialProf
+    }
+  };
+}
 
 const DEFAULT_NOTIF_SETTINGS = {
   dailyReminderEnabled: true,
@@ -134,13 +141,21 @@ const DEFAULT_PARENT_SETTINGS = {
 function safeGetProfilesState() {
   try {
     const item = localStorage.getItem(KEYS.PROFILES);
-    if (!item) return JSON.parse(JSON.stringify(DEFAULT_PROFILES_STATE));
+    if (!item) {
+      const freshState = getInitialProfilesState();
+      safeSaveProfilesState(freshState);
+      return freshState;
+    }
     const parsed = JSON.parse(item);
-    if (!parsed.profiles || !parsed.activeProfileId) return JSON.parse(JSON.stringify(DEFAULT_PROFILES_STATE));
+    if (!parsed.profiles || !parsed.activeProfileId) {
+      const freshState = getInitialProfilesState();
+      safeSaveProfilesState(freshState);
+      return freshState;
+    }
     return parsed;
   } catch (e) {
     console.error('StorageService: error reading profiles state', e);
-    return JSON.parse(JSON.stringify(DEFAULT_PROFILES_STATE));
+    return getInitialProfilesState();
   }
 }
 
@@ -278,21 +293,22 @@ export const storageService = {
     }
 
     const id = `child_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const safeName = (name || '').trim().slice(0, 20);
+    const safeName = (name || generateSafeUsername()).trim().slice(0, 20);
     const startingRating = startingRatingOverride !== null && !isNaN(Number(startingRatingOverride))
       ? Number(startingRatingOverride)
       : getStartingRatingForGrade(gradeLevel);
     const startingBadges = getStartingRatingBadges(startingRating);
     const isLinked = this.isAccountGloballyLinked();
     const activeProf = this.getActiveProfile();
+    const baseProf = createDefaultProfile(safeName);
     const newProfile = {
-      ...DEFAULT_PROFILE,
+      ...baseProf,
       id,
       name: safeName,
       username: safeName,
       gradeLevel,
       userData: {
-        ...DEFAULT_PROFILE.userData,
+        ...baseProf.userData,
         adaptiveCompetenceRating: startingRating,
         subjectRatings: { math: startingRating, words: startingRating },
         competenceRank: startingRating,
