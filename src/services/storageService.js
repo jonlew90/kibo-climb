@@ -129,6 +129,8 @@ const DEFAULT_NOTIF_SETTINGS = {
   reminderTime: '17:00',
   weeklyDigestEnabled: true,
   struggleAlertsEnabled: true,
+  blogNewsletterEnabled: true,
+  productUpdatesEnabled: true,
   allowRealMoneyPurchases: false,
   primaryVerificationMethod: 'biometrics' // 'biometrics' | 'challenge'
 };

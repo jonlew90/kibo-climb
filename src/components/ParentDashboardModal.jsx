@@ -1653,6 +1653,65 @@ export default function ParentDashboardModal({
                     </p>
                   )}
                 </div>
+
+                {/* Educational Blog & Math Strategy Newsletter */}
+                <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="font-extrabold text-xs text-slate-800 block">Educational Blog & Strategy Newsletter</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md border border-emerald-200">
+                          ✉️ Email
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-500 font-medium">Mental math shortcuts, printable companions, and strategy guides for parents</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotifPref('blogNewsletterEnabled')}
+                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 shrink-0 ${
+                        notifPrefs.blogNewsletterEnabled !== false ? 'bg-purple-600' : 'bg-slate-300'
+                      }`}
+                      title="Toggle educational blog & newsletter"
+                    >
+                      <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                        notifPrefs.blogNewsletterEnabled !== false ? 'translate-x-5' : 'translate-x-0'
+                      }`} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Product Updates & VIP Drops */}
+                <div className="flex flex-col bg-white border border-slate-200 p-2.5 rounded-xl gap-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="font-extrabold text-xs text-slate-800 block">Product Updates & VIP Worksheet Drops</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-md border border-amber-200">
+                          ✉️ Email
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-500 font-medium">New curriculum alerts, feature releases, and VIP offline worksheets</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotifPref('productUpdatesEnabled')}
+                      className={`w-11 h-6 rounded-full transition-colors relative p-0.5 shrink-0 ${
+                        notifPrefs.productUpdatesEnabled !== false ? 'bg-purple-600' : 'bg-slate-300'
+                      }`}
+                      title="Toggle product updates & drops"
+                    >
+                      <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                        notifPrefs.productUpdatesEnabled !== false ? 'translate-x-5' : 'translate-x-0'
+                      }`} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* COPPA / CAN-SPAM Notice */}
+                <div className="bg-slate-100/90 border border-slate-200 rounded-xl p-2.5 text-[11px] text-slate-600 leading-relaxed">
+                  🛡️ <strong>Parent Consent &amp; Privacy (COPPA &amp; CAN-SPAM):</strong> Emails are sent solely to the verified adult parent/guardian account. Children’s activity data is never sold or used for behavioral advertising. You can toggle off any campaign above or click unsubscribe in any email.
+                </div>
               </div>
 
             </div>
