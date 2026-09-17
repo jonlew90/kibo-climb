@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, ShieldCheck, Mail, ArrowLeft, Music, Globe } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, ShieldCheck, Mail, ArrowLeft, Music, Globe, Printer, BookOpen } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import { useTranslation } from '../i18n';
 import { storageService } from '../services/storageService';
@@ -252,6 +252,67 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
                 All daily climbs (Math, Words, World, Coding) run directly on your device without needing Wi-Fi or cellular data. Your progress will automatically sync to the cloud when you reconnect.
               </p>
             </div>
+          </div>
+
+          {/* Parent & Educator Learning Resources */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-extrabold text-slate-500 uppercase tracking-wider mb-2 px-1">Learning Resources</h3>
+
+            <a
+              href="/worksheets"
+              className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl transition-colors active:scale-95 cursor-pointer shadow-2xs"
+              onClick={(e) => {
+                e.preventDefault();
+                soundFx.playKeyTap();
+                if (onNavigate) {
+                  onNavigate('/worksheets', 'worksheet_hub');
+                } else {
+                  window.history.pushState({}, '', '/worksheets');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-orange-100 text-orange-700 rounded-lg border border-orange-200">
+                  <Printer className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-slate-700 text-sm block">Printable Worksheets Hub</span>
+                  <span className="text-xs text-slate-500 font-medium">Printable drills &amp; infinite practice sheets</span>
+                </div>
+              </div>
+              <span className="text-xs font-black text-orange-700 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-lg">
+                Print 🖨️
+              </span>
+            </a>
+
+            <a
+              href="/blog"
+              className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl transition-colors active:scale-95 cursor-pointer shadow-2xs"
+              onClick={(e) => {
+                e.preventDefault();
+                soundFx.playKeyTap();
+                if (onNavigate) {
+                  onNavigate('/blog', 'blog_index');
+                } else {
+                  window.history.pushState({}, '', '/blog');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-purple-100 text-purple-700 rounded-lg border border-purple-200">
+                  <BookOpen className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-slate-700 text-sm block">Strategy &amp; Teaching Blog</span>
+                  <span className="text-xs text-slate-500 font-medium">Mental math shortcuts &amp; parent guides</span>
+                </div>
+              </div>
+              <span className="text-xs font-black text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg">
+                Read 📖
+              </span>
+            </a>
           </div>
 
           {/* Links */}

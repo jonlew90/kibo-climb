@@ -517,7 +517,7 @@ export default function WorksheetViewerScreen({
                       <div key={i} className="bg-white border border-purple-200/80 rounded-xl p-2.5 space-y-1">
                         <div className="flex items-center justify-between text-xs font-bold">
                           <span className="text-slate-800">
-                            <strong>#{i + 1}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
+                            <strong>#{i + 1}:</strong> {p.q}
                           </span>
                           <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
                             {p.ans}
@@ -579,7 +579,7 @@ export default function WorksheetViewerScreen({
                     >
                       <div className="flex items-center justify-between text-xs font-bold gap-2">
                         <span className="text-slate-700 leading-snug break-words min-w-0 flex-1">
-                          <strong>#{i + 1}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
+                          <strong>#{i + 1}:</strong> {p.q}
                         </span>
                         <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
                           {p.ans}
@@ -603,7 +603,7 @@ export default function WorksheetViewerScreen({
                     >
                       <div className="flex items-center justify-between text-xs font-bold gap-2">
                         <span className="text-slate-700 leading-snug break-words min-w-0 flex-1">
-                          <strong>#{i + 9}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
+                          <strong>#{i + 9}:</strong> {p.q}
                         </span>
                         <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
                           {p.ans}

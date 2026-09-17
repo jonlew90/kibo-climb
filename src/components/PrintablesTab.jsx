@@ -253,6 +253,33 @@ export default function PrintablesTab({
           );
         })}
       </div>
+
+      {/* Blog Cross-Link Bridge Banner for Parents */}
+      <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border-2 border-purple-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs mt-2">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-700 shrink-0">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-slate-900">Parent Strategy &amp; Teaching Guides</h4>
+            <p className="text-xs text-slate-600 font-medium">Read our step-by-step math breakdowns, mental arithmetic tips, and coaching guides on the blog.</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playKeyTap();
+            if (typeof window !== 'undefined') {
+              window.history.pushState({}, '', '/blog');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }
+          }}
+          className="shrink-0 bg-white hover:bg-purple-50 text-purple-950 font-black text-xs px-4 py-2.5 rounded-xl border border-purple-300 shadow-2xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+        >
+          <span>Explore Blog</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
     </div>
   );
 }
