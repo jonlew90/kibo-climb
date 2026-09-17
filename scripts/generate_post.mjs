@@ -142,16 +142,19 @@ export function generatePostData({ subject = null, tier = null, customSlug = nul
 `;
   }
 
-  const markdown = `:::note
-**WRITING INSTRUCTION FOR AI:**
-Adopt the persona of an empathetic, slightly humorous "Sherpa Guide for Parents." Acknowledge the universal struggle of learning math in the intro paragraph. It is acceptable to use light, self-deprecating humor regarding adult struggles with elementary math (e.g., "confessing we still count on our fingers sometimes"). The goal is relatability and engagement, not specific jokes.
-:::
+  const subjectTerminology = finalSubject === 'words' 
+    ? 'spelling and vocabulary strategies' 
+    : finalSubject === 'world' 
+    ? 'geography and world knowledge' 
+    : finalSubject === 'coding' 
+    ? 'coding and logical thinking' 
+    : 'mental math calculations';
 
-## Conquering ${name} on Mount Kibo
+  const markdown = `## Conquering ${name} on Mount Kibo
 
-Let's be honest: when our kids hit **${location}** on Mount Kilimanjaro, the anxiety kicks in for both of them—and sometimes us! Kibo the red panda mascot knows that speed and accuracy unlock essential momentum, but traditional paper-and-pencil methods often create unnecessary cognitive friction.
+Let's be honest: when our kids hit **${location}** on Mount Kilimanjaro, the challenge kicks in for both of them—and sometimes us! Kibo the red panda mascot knows that speed and accuracy unlock essential momentum, but rigid memorization often creates unnecessary friction.
 
-By mastering intuitive curriculum strategies, students transform tricky calculations into second-nature shortcuts (and help us parents remember how to do Tier ${targetTier} math in the process!).
+By mastering intuitive curriculum strategies, students transform tricky challenges into second-nature shortcuts (and help us parents remember how to navigate Tier ${targetTier} concepts in the process!).
 
 In our Tier ${targetTier} curriculum (${gradeLabel}), students build foundational mastery in:
 ${topicsList.map(t => `- ${t}`).join('\n')}
@@ -160,7 +163,7 @@ ${topicsList.map(t => `- ${t}`).join('\n')}
 
 ${trickDesc}
 ${workedExampleSection}
-By visualizing numbers and concepts as adaptable mental landmarks, working memory strain is significantly reduced.
+By visualizing concepts as adaptable mental landmarks, working memory strain is significantly reduced.
 
 ### Trail Pro Tip: ${proTip.title}
 
