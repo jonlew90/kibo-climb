@@ -4,6 +4,7 @@ import { WORKSHEET_CATALOG, getBestWorksheetForTier, KIBO_RED_PANDA_FAVICON_SVG 
 import { getBlogPostBySlug, getAdjacentBlogPosts, formatDate } from '../utils/blogLoader';
 import { updateBlogPostSeo } from '../utils/seoMetadata';
 import { ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
+import SocialFollowStrip from './SocialFollowStrip';
 import '../../public/css/blog.css';
 
 function formatInlineMarkdown(text, onNavigate) {
@@ -324,6 +325,8 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
             )}
           </nav>
         )}
+
+        <SocialFollowStrip className="my-8" title="Follow Kibo Climb on Social &amp; RSS" />
 
         <section className="cta-card">
           <h3>Turn Math Practice Into a Mountain Adventure</h3>

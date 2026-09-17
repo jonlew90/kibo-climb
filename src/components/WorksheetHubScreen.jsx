@@ -5,6 +5,7 @@ import { updateWorksheetHubSeo } from '../utils/seoMetadata';
 import { soundFx } from '../utils/audio';
 import { analyticsService } from '../services/analyticsService';
 import { storageService } from '../services/storageService';
+import SocialFollowStrip from './SocialFollowStrip';
 
 const TOPICS = [
   { id: 'all', label: 'All Topics' },
@@ -616,6 +617,9 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
             <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>
+
+        {/* Social Follow Strip */}
+        <SocialFollowStrip className="my-2" title="Follow Kibo Climb for Daily Worksheets &amp; Updates" />
       </main>
 
       {/* Footer */}

@@ -116,5 +116,14 @@ service cloud.firestore {
       // Disallow reading, updating, or deleting feedback from client SDK
       allow read, update, delete: if false;
     }
+
+    match /newsletter_subscribers/{subscriberId} {
+      // Allow public newsletter signup submissions
+      allow create: if request.resource.data.email is string
+                    && request.resource.data.email.size() >= 5
+                    && request.resource.data.email.size() <= 120
+                    && request.resource.data.source is string;
+      allow read, update, delete: if false;
+    }
   }
 }

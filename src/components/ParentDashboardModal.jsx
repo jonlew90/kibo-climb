@@ -2678,7 +2678,7 @@ export default function ParentDashboardModal({
             <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3.5 space-y-3 text-left">
               <div className="flex items-center gap-2 text-purple-700">
                 <Star className="w-5 h-5 stroke-[2.5]" />
-                <h4 className="font-extrabold text-sm text-slate-800">Support & Feedback</h4>
+                <h4 className="font-extrabold text-sm text-slate-800">Support, Community & Feedback</h4>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -2697,6 +2697,12 @@ export default function ParentDashboardModal({
                   <span>{appRatingStatus?.hasRated ? 'Rate Again' : 'Rate App'}</span>
                 </button>
               </div>
+
+              {/* Official Social Channels & Parent Learning Newsletter */}
+              <SocialFollowStrip
+                className="!p-3.5 !rounded-xl !border-slate-200 !shadow-none !space-y-3"
+                title="Follow Kibo Learning Drops & Practice Sheets"
+              />
             </div>
           </div>
         )}

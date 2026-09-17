@@ -5,6 +5,7 @@ import { updateWorksheetSeo } from '../utils/seoMetadata';
 import { soundFx } from '../utils/audio';
 import { analyticsService } from '../services/analyticsService';
 import { storageService } from '../services/storageService';
+import SocialFollowStrip from './SocialFollowStrip';
 
 export default function WorksheetViewerScreen({
   worksheetId,
@@ -640,14 +641,11 @@ export default function WorksheetViewerScreen({
             <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
               <span>🔑 Kibo Climb Answer Key</span>
               <span>•</span>
-              <span className="text-slate-700">www.kiboclimb.com</span>
-              <span>•</span>
               <span>© 2026 Kibo Climb. Not for redistribution or resale.</span>
             </div>
             <div className="shrink-0 text-purple-900 font-extrabold">Page 2 of 2 • Solutions Guide</div>
           </div>
         </div>
-
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `

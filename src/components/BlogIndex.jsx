@@ -4,6 +4,7 @@ import { getAllBlogPosts, getBlogCategories, getFeaturedPost } from '../utils/bl
 import { updateBlogIndexSeo } from '../utils/seoMetadata';
 import { KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
 import { Sparkles, BookOpen, ArrowRight, FileText, Compass, ChevronRight } from 'lucide-react';
+import SocialFollowStrip from './SocialFollowStrip';
 import '../../public/css/blog.css';
 
 const POSTS_PER_PAGE = 12;
@@ -340,6 +341,9 @@ export default function BlogIndex({ onBack, onNavigate }) {
             </a>
           </div>
         </section>
+
+        {/* Social Follow Strip */}
+        <SocialFollowStrip className="my-6" title="Join Our Learning Community on Social &amp; RSS" />
 
         {/* Footer / Global Bridge to Core Learning App */}
         <section className="cta-card" aria-label="Start Learning Adventure">

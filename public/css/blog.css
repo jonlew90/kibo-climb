@@ -831,3 +831,142 @@ article a:hover {
   margin-bottom: 1.5rem;
 }
 
+/* Social Follow & Newsletter Strip (Blog Post & Static Pages) */
+.social-follow-card {
+  background: #FFFFFF;
+  border: 1px solid #FFEDD5;
+  border-radius: 1.25rem;
+  padding: 1.25rem 1rem;
+  margin: 2rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.social-follow-header {
+  margin-bottom: 0.85rem;
+}
+
+.social-follow-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #EA580C;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+
+.social-follow-title {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #1E293B;
+  margin: 0 0 0.25rem 0;
+}
+
+.social-follow-desc {
+  font-size: 0.8rem;
+  color: #64748B;
+  font-weight: 500;
+  margin: 0 auto;
+  max-width: 440px;
+}
+
+.social-follow-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.social-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-decoration: none !important;
+  color: #FFFFFF !important;
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+.social-btn:hover {
+  filter: brightness(0.92);
+}
+
+.social-btn:active {
+  transform: scale(0.96);
+}
+
+.social-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.social-btn-pinterest { background: #E60023; border: 1px solid #E60023; }
+.social-btn-facebook { background: #1877F2; border: 1px solid #1877F2; }
+.social-btn-x { background: #000000; border: 1px solid #000000; }
+.social-btn-threads { background: #101010; border: 1px solid #101010; }
+.social-btn-linkedin { background: #0A66C2; border: 1px solid #0A66C2; }
+
+.social-newsletter-wrap {
+  border-top: 1px solid #F1F5F9;
+  padding-top: 0.85rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.social-newsletter-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.social-newsletter-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.75rem;
+  outline: none;
+  color: #1E293B;
+  transition: border-color 0.15s ease;
+}
+
+.social-newsletter-input:focus {
+  border-color: #F97316;
+}
+
+.newsletter-submit-btn {
+  padding: 0.5rem 0.9rem;
+  background: linear-gradient(135deg, #F97316, #F59E0B);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 900;
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.1s ease;
+}
+
+.newsletter-submit-btn:active {
+  transform: scale(0.96);
+}
+
+.social-newsletter-subtext {
+  font-size: 0.65rem;
+  color: #94A3B8;
+  font-weight: 500;
+  margin: 0;
+}
+
+
