@@ -71,7 +71,7 @@ export const ROUTE_SEO_CONFIG = {
 export function updateDocumentSeo({ route, subject = 'math' } = {}) {
   if (typeof document === 'undefined') return;
 
-  let title = 'Kibo Climb – Fun Daily Math, Words & Geography Practice for Kids';
+  let title = 'Kibo Climb – Fun Daily Math, Words, Geography & Coding Practice for Kids';
   let description = 'The Daily Climb to Mastery. Fast, engaging Math, Words, World geography, and Coding practice app for children with instant feedback, streak rewards, and stats tracking.';
   let relativePath = '/';
 

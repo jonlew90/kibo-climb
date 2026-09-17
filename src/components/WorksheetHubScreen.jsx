@@ -27,8 +27,8 @@ const GRADES = [
 
 const TIERS = [
   { id: 'all', label: 'All Worksheets' },
-  { id: 'free', label: 'Free Only' },
-  { id: 'premium', label: 'Premium VIP' }
+  { id: 'free', label: 'Free Worksheets' },
+  { id: 'premium', label: 'VIP Skill Boosters' }
 ];
 
 export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, fromParentDashboard = false, onBack }) {
@@ -218,23 +218,43 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
-        {/* Hero Banner - Warm Kibo Brand Theme */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-10 shadow-lg border border-orange-400/40">
-          <div className="relative z-10 max-w-2xl space-y-1.5 sm:space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-xs text-orange-50 text-[10px] sm:text-xs font-black uppercase tracking-wider border border-white/30">
-              <Printer className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              <span>Printable Learning Hub</span>
+        {/* Hero Banner - Warm Brand Theme Matching /blog & App */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white p-5 sm:p-10 shadow-lg border border-orange-500/30">
+          <div className="relative z-10 max-w-2xl space-y-2 sm:space-y-3">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/15 backdrop-blur-xs text-amber-100 text-[10px] sm:text-xs font-black uppercase tracking-wider border border-white/20">
+              <Printer className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-200" />
+              <span>Printable Learning Hub &bull; ♾️ Infinite Variations</span>
             </div>
             <h1 className="text-xl sm:text-4xl font-heading font-black tracking-tight leading-tight">
-              Printable Curriculum Worksheets &amp; Answer Keys
+              Curriculum Worksheets &amp; Parent Step Guides
             </h1>
-            <p className="text-xs sm:text-base text-amber-50/95 font-medium leading-relaxed">
-              Explore 14 free starter worksheets + 6 Kibo Club VIP packets with complete answer keys. Practice mental math, spelling, geography, and coding offline with Mascot Kibo!
+            <p className="text-xs sm:text-base text-amber-100/90 font-medium leading-relaxed">
+              Explore free foundational printables and VIP Skill Boosters with step-by-step parent strategy keys. Every worksheet procedurally generates infinite problem variations on click for unlimited offline practice!
             </p>
           </div>
           
-          <div className="absolute right-0 bottom-0 opacity-15 sm:opacity-25 translate-x-10 translate-y-6 pointer-events-none w-48 h-48 sm:w-64 sm:h-64">
+          <div className="absolute right-0 bottom-0 opacity-10 sm:opacity-20 translate-x-12 translate-y-8 pointer-events-none w-48 h-48 sm:w-64 sm:h-64">
             <div dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }} />
+          </div>
+        </div>
+
+        {/* Infinite Practice Feature Highlight Banner */}
+        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-teal-500/10 border border-orange-200/80 rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-2">
+                <span>Infinite Practice on Every Sheet</span>
+                <span className="text-[10px] bg-orange-100 text-orange-800 font-extrabold px-2 py-0.5 rounded-full border border-orange-200">
+                  Procedural Generator
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-slate-600 font-medium">
+                These aren't static PDFs. Open any worksheet and click <strong className="text-slate-800 font-bold">&quot;New Set&quot;</strong> in the viewer to instantly generate unlimited fresh number permutations!
+              </p>
+            </div>
           </div>
         </div>
 
@@ -498,14 +518,19 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
 
                             {/* Pill Badges Row */}
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
                                   worksheet.isKiboClubOnly
                                     ? 'bg-amber-100 text-amber-900 border-amber-300'
                                     : 'bg-emerald-100 text-emerald-900 border-emerald-300'
                                 }`}>
-                                  {worksheet.isKiboClubOnly ? '👑 VIP Pack' : 'Free Printable'}
+                                  {worksheet.isKiboClubOnly ? '👑 VIP Booster' : 'Free Printable'}
                                 </span>
+                                {worksheet.isKiboClubOnly && (
+                                  <span className="text-[10px] font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80">
+                                    + Parent Strategy Guide
+                                  </span>
+                                )}
                                 <span className="sm:hidden text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
                                   16 Qs + Key
                                 </span>

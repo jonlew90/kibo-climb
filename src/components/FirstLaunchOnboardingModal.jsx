@@ -321,26 +321,26 @@ export default function FirstLaunchOnboardingModal({
               className="w-24 h-24 sm:w-28 sm:h-28 aspect-square filter drop-shadow-xl animate-bounce relative z-10" />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-center gap-1.5 flex-wrap">
-              <span className="text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+              <span className="text-xs font-black uppercase tracking-widest text-amber-300 bg-amber-400/20 border border-amber-400/40 px-3 py-1 rounded-full inline-flex items-center gap-1 shadow-sm">
                 🏔️ Kibo Climb
               </span>
-              <span className="text-xs font-black uppercase tracking-widest text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                🔢 Math, 📚 Words & 🌍 World
+              <span className="text-xs font-black uppercase tracking-widest text-emerald-300 bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-1 rounded-full inline-flex items-center gap-1 shadow-sm">
+                🔢 Math, 📚 Words, 🌍 World & 💻 Coding
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
-              What should we<br />call you, Climber?
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+              What should we<br /><span className="text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.4)]">call you, Climber?</span>
             </h1>
-            <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-200 font-semibold leading-relaxed">
               Choose a fun nickname for your climber profile.
             </p>
           </div>
 
           <form onSubmit={handleUsernameSubmit} className="w-full space-y-3">
             <div className="relative">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 stroke-[2.5]" />
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-300 stroke-[2.5]" />
               <input
                 ref={inputRef}
                 type="text"
@@ -352,10 +352,10 @@ export default function FirstLaunchOnboardingModal({
                 autoCapitalize="none"
                 spellCheck={false}
                 disabled={isCheckingUsername}
-                className={`w-full px-10 py-3.5 text-center bg-white/10 border-2 rounded-2xl text-white font-extrabold text-base placeholder:text-slate-500 focus:outline-none transition-all ${
-                  usernameError ? 'border-rose-500 bg-rose-500/10'
-                  : usernameConfirmed ? 'border-emerald-400 bg-emerald-500/10'
-                  : 'border-white/20 focus:border-purple-400 focus:bg-white/15'
+                className={`w-full px-10 py-3.5 text-center bg-slate-900/90 border-2 rounded-2xl text-white font-black text-lg placeholder:text-slate-400 shadow-inner focus:outline-none transition-all ${
+                  usernameError ? 'border-rose-500 bg-rose-500/20 text-rose-100'
+                  : usernameConfirmed ? 'border-emerald-400 bg-emerald-500/20 text-emerald-100'
+                  : 'border-indigo-400/60 focus:border-amber-400 focus:bg-slate-900 shadow-[0_0_15px_rgba(99,102,241,0.2)]'
                 }`}
               />
               {usernameConfirmed && (
@@ -367,7 +367,7 @@ export default function FirstLaunchOnboardingModal({
             <button
               type="button"
               onClick={handleGenerateSafeName}
-              className="w-full py-2.5 px-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 rounded-xl text-purple-200 text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
+              className="w-full py-2.5 px-3 bg-indigo-900/70 hover:bg-indigo-800/80 border-2 border-indigo-400/60 rounded-xl text-indigo-100 hover:text-white text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-md shadow-indigo-950/50"
             >
               <Dices className="w-4 h-4 text-amber-300" />
               <span>🎲 Regenerate Kid-Safe Tag</span>
@@ -504,7 +504,7 @@ export default function FirstLaunchOnboardingModal({
               What grade is<br />{usernameInput || 'the climber'} in?
             </h1>
             <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed">
-              Calibrates starting difficulty for <strong className="text-amber-300">Math, Words & World</strong> so challenges feel just right.
+              Calibrates starting difficulty for <strong className="text-amber-300">Math, Words, World & Coding</strong> so challenges feel just right.
             </p>
           </div>
 
@@ -703,19 +703,14 @@ export default function FirstLaunchOnboardingModal({
               </p>
             </div>
 
-            {/* Daily Streaks & Shop Card */}
-            <div className="flex flex-col items-start gap-1 sm:gap-2 bg-purple-50/90 border border-purple-200 rounded-2xl p-2 sm:p-2.5 transition-transform hover:scale-[1.02]">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-1">
-                  <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 fill-orange-400" />
-                  <h4 className="text-xs sm:text-sm font-black text-purple-950">Shop</h4>
-                </div>
-                <span className="text-[10px] font-black uppercase text-purple-700 bg-purple-100 px-1 py-0.5 rounded">
-                  🐾 Kibo's
-                </span>
+            {/* Coding Subject Card */}
+            <div className="flex flex-col items-start gap-1 sm:gap-2 bg-rose-50/90 border border-rose-200 rounded-2xl p-2 sm:p-2.5 transition-transform hover:scale-[1.02]">
+              <div className="flex items-center gap-1 w-full">
+                <span className="text-base sm:text-lg">💻</span>
+                <h4 className="text-xs sm:text-sm font-black text-rose-950">Coding</h4>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-tight">
-                Earn Sparks for outfits and companion pets!
+                Logic, algorithms, sequences, loops & data.
               </p>
             </div>
           </div>
@@ -723,7 +718,7 @@ export default function FirstLaunchOnboardingModal({
 
         {/* Subject Start Actions */}
         <div className="shrink-0 space-y-2 pt-1 pb-2 w-full">
-          <div className="grid grid-cols-3 gap-2 max-w-md mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-lg mx-auto">
             <button
               type="button"
               onClick={() => handleStart('math')}
@@ -747,6 +742,14 @@ export default function FirstLaunchOnboardingModal({
             >
               <span>🌍</span>
               <span className="truncate">World</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStart('coding')}
+              className="w-full py-2.5 sm:py-3.5 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-400 hover:to-pink-500 text-white font-black text-xs sm:text-sm md:text-base rounded-2xl border-b-4 border-rose-800 shadow-md shadow-rose-500/20 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-1 cursor-pointer"
+            >
+              <span>💻</span>
+              <span className="truncate">Coding</span>
             </button>
           </div>
 

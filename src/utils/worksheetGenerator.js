@@ -158,7 +158,7 @@ export const WORKSHEET_CATALOG = [
     tier: 7,
     curriculumTiers: [7, 8],
     slug: 'grade-6-pre-algebra-pemdas',
-    title: 'Grade 6 Pre-Algebra & Exponents Summit Pack',
+    title: 'Grade 6 Pre-Algebra & Exponents Summit Booster',
     gradeLabel: 'Grade 6',
     desc: 'Order of operations (PEMDAS), exponents, GCF, LCM, and advanced pre-algebra.',
     isKiboClubOnly: true,
@@ -453,7 +453,8 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
       const rawQ = prob.displayString || prob.question || `${prob.num1} ${prob.operatorSymbol} ${prob.num2}`;
       const cleanQ = rawQ.replace(/\s*=\s*(_+|\.\.\.|\?)\s*$/, '').trim();
       const ans = String(prob.answer !== undefined ? prob.answer : (prob.answerString || ''));
-      return { q: cleanQ, ans };
+      const reasoning = prob.explanation || prob.hint || (prob.strategy ? `${prob.strategy}: ${prob.hint || ''}` : null);
+      return { q: cleanQ, ans, reasoning };
     }
 
     if (subject === 'words') {
@@ -464,7 +465,8 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
       qText = qText.replace(/^Clue:\s*/i, '').replace(/^Spell the word for:\s*/i, '').replace(/^Complete the word:\s*/i, '').replace(/^What word matches:\s*/i, '').trim();
       const ans = String(prob.correctAnswer || prob.answer || item?.word || '');
       const scaffold = prob.displayString || '';
-      return { q: qText, ans, scaffold };
+      const reasoning = prob.explanation || (item?.definition ? `Context: ${item.definition}` : `Phonics rule / root spelling pattern`);
+      return { q: qText, ans, scaffold, reasoning };
     }
 
     if (subject === 'world') {
@@ -472,7 +474,8 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
       let q = prob.prompt || prob.question || 'Geographical question';
       q = q.replace(/^Identify the correct geographical answer:\s*/i, '').replace(/^What is the capital of\s*/i, 'Capital of ').trim();
       const ans = String(prob.correctAnswer || prob.answer || prob.answerString || '');
-      return { q, ans };
+      const reasoning = prob.explanation || `Geographical context: ${prob.hint || ans}`;
+      return { q, ans, reasoning };
     }
 
     if (subject === 'coding') {
@@ -480,7 +483,8 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
       let q = prob.prompt || prob.question || prob.displayString || 'Coding puzzle';
       q = q.replace(/^Solve this coding logic puzzle:\s*/i, '').trim();
       const ans = String(prob.correctAnswer || prob.answer || prob.answerString || '');
-      return { q, ans };
+      const reasoning = prob.explanation || `Trace step-by-step logic & variable state to verify '${ans}'.`;
+      return { q, ans, reasoning };
     }
 
     return { q: 'Solve the problem', ans: 'Answer' };

@@ -162,12 +162,12 @@ export default function WorksheetViewerScreen({
           <button
             type="button"
             onClick={handleGenerateNewSet}
-            className="px-2 sm:px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 font-black text-xs text-indigo-800 inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all shrink-0 active:scale-95"
-            title="Generate a new set of 16 practice questions"
+            className="px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/80 hover:bg-indigo-100 font-black text-xs text-indigo-800 inline-flex items-center gap-1.5 cursor-pointer transition-all shrink-0 active:scale-95 shadow-xs"
+            title="Generate a fresh random version (infinite variations available)"
           >
             <Dices className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-            <span className="hidden sm:inline">New Set</span>
-            <span className="sm:hidden">New</span>
+            <span className="hidden sm:inline">♾️ New Problems</span>
+            <span className="sm:hidden">New Set</span>
           </button>
 
           <button
@@ -499,23 +499,74 @@ export default function WorksheetViewerScreen({
             </div>
 
             {isLocked ? (
-              <div className="border-2 border-dashed border-purple-200 rounded-2xl p-8 bg-purple-50/50 flex flex-col items-center justify-center text-center my-8">
-                <div className="w-12 h-12 bg-purple-200 text-purple-800 rounded-2xl flex items-center justify-center mb-3">
-                  <Lock className="w-6 h-6" />
+              <div className="space-y-4 my-2">
+                {/* Teaser: Unlocked Sample Solutions #1 & #2 with VIP Reasoning */}
+                <div className="bg-purple-50/50 border border-purple-200 rounded-xl p-3 sm:p-4 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase text-purple-900 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                      Sample VIP Parent Key (Questions 1 &amp; 2)
+                    </span>
+                    <span className="text-[10px] bg-purple-200/80 text-purple-900 font-extrabold px-2 py-0.5 rounded-full">
+                      Free Preview
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {problems.slice(0, 2).map((p, i) => (
+                      <div key={i} className="bg-white border border-purple-200/80 rounded-xl p-2.5 space-y-1">
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="text-slate-800">
+                            <strong>#{i + 1}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
+                          </span>
+                          <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
+                            {p.ans}
+                          </span>
+                        </div>
+                        {p.reasoning && (
+                          <div className="text-[11px] text-purple-900 font-medium bg-purple-50/70 rounded-lg px-2 py-1 border border-purple-100 flex items-start gap-1.5">
+                            <span className="font-extrabold text-purple-700 shrink-0">💡 Strategy Note:</span>
+                            <span>{p.reasoning}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <h3 className="text-base font-black text-purple-950 mb-1">
-                  Answer Key Locked for Non-Members
-                </h3>
-                <p className="text-xs text-purple-800/80 max-w-sm font-medium mb-4">
-                  Full step-by-step solutions and scoring guides are reserved for Kibo Club members.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => onOpenKiboClubUpgrade && onOpenKiboClubUpgrade()}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-black text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-                >
-                  Join Kibo Club to View Solutions
-                </button>
+
+                {/* Locked Remaining 14 Problems Banner */}
+                <div className="border-2 border-dashed border-purple-300 rounded-2xl p-5 sm:p-7 bg-purple-50/40 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                  <div className="w-11 h-11 bg-purple-200 text-purple-800 rounded-2xl flex items-center justify-center mb-2.5 shadow-xs">
+                    <Lock className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-black text-purple-950 mb-1">
+                    Unlock Solutions 3–16 &amp; Full Parent Strategy Guide
+                  </h3>
+                  <p className="text-xs text-purple-800/80 max-w-md font-medium mb-3 leading-relaxed">
+                    VIP keys provide complete step-by-step parent reasoning notes, mental shortcut tips, and common learner traps for every problem.
+                  </p>
+
+                  {/* Standard vs VIP Comparison Pill */}
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 w-full max-w-md mb-4 text-left text-[11px]">
+                    <div className="bg-white/80 border border-slate-200 rounded-xl p-2 text-slate-600">
+                      <span className="font-extrabold text-slate-700 block mb-0.5">Standard Key:</span>
+                      <span>Answers only (e.g. &quot;83&quot;)</span>
+                    </div>
+                    <div className="bg-purple-100/90 border border-purple-300 rounded-xl p-2 text-purple-950">
+                      <span className="font-extrabold text-purple-900 block mb-0.5">👑 VIP Key:</span>
+                      <span>Answers + Parent Strategy &amp; Shortcuts</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onOpenKiboClubUpgrade && onOpenKiboClubUpgrade()}
+                    className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-4 h-4 text-purple-200" />
+                    <span>Join Kibo Club to Unlock All Solutions</span>
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-start mb-6">
@@ -524,14 +575,21 @@ export default function WorksheetViewerScreen({
                   {problems.slice(0, 8).map((p, i) => (
                     <div
                       key={i}
-                      className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold gap-2 min-h-[38px]"
+                      className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between text-xs font-bold gap-1 min-h-[38px]"
                     >
-                      <span className="text-slate-700 leading-snug break-words min-w-0 flex-1">
-                        <strong>#{i + 1}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
-                      </span>
-                      <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
-                        {p.ans}
-                      </span>
+                      <div className="flex items-center justify-between text-xs font-bold gap-2">
+                        <span className="text-slate-700 leading-snug break-words min-w-0 flex-1">
+                          <strong>#{i + 1}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
+                        </span>
+                        <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
+                          {p.ans}
+                        </span>
+                      </div>
+                      {p.reasoning && (
+                        <div className="text-[10px] text-purple-900 font-medium bg-purple-50 rounded px-1.5 py-0.5 border border-purple-100">
+                          💡 <strong>Guide:</strong> {p.reasoning}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -541,14 +599,21 @@ export default function WorksheetViewerScreen({
                   {problems.slice(8, 16).map((p, i) => (
                     <div
                       key={i + 8}
-                      className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold gap-2 min-h-[38px]"
+                      className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between text-xs font-bold gap-1 min-h-[38px]"
                     >
-                      <span className="text-slate-700 leading-snug break-words min-w-0 flex-1">
-                        <strong>#{i + 9}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
-                      </span>
-                      <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
-                        {p.ans}
-                      </span>
+                      <div className="flex items-center justify-between text-xs font-bold gap-2">
+                        <span className="text-slate-700 leading-snug break-words min-w-0 flex-1">
+                          <strong>#{i + 9}:</strong> {p.q.replace(/___/g, '').replace(/=.*$/, '=')}
+                        </span>
+                        <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-md font-black shrink-0">
+                          {p.ans}
+                        </span>
+                      </div>
+                      {p.reasoning && (
+                        <div className="text-[10px] text-purple-900 font-medium bg-purple-50 rounded px-1.5 py-0.5 border border-purple-100">
+                          💡 <strong>Guide:</strong> {p.reasoning}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
