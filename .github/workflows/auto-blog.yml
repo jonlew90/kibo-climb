@@ -2,7 +2,8 @@ name: Auto-Generate SEO Blog Post
 
 on:
   schedule:
-    - cron: '0 14 * * 2'
+    # Runs Tuesday & Thursday at 14:00 UTC (9:00 AM US Central / 10:00 AM US Eastern / 7:00 AM US Pacific)
+    - cron: '0 14 * * 2,4'
   workflow_dispatch:
 
 jobs:
@@ -16,26 +17,25 @@ jobs:
         with:
           ref: main
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Run blog generation & static HTML/RSS builder
         run: |
-          pip install google-genai python-dotenv
-
-      - name: Run blog generation script
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          python scripts/generate_post.py
+          node scripts/generate_post.mjs --build
 
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/content/blog/ public/sitemap.xml public/blog/
+          git add src/content/blog/ public/sitemap.xml public/feed.xml public/blog/
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
