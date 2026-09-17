@@ -797,6 +797,12 @@ export default function CodingSessionView({
         practiceTier={practiceConfig?.tier || userTier}
         practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
         onViewWorksheet={onViewWorksheet}
+        onOpenPracticeMode={() => {
+          setShowBreakOverlay(false);
+          setHasStartedClimb(false);
+          if (onExitPractice) onExitPractice();
+          if (onOpenPracticeMode) onOpenPracticeMode();
+        }}
         onExitPractice={() => {
           setShowBreakOverlay(false);
           setHasStartedClimb(false);

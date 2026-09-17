@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Play, Trophy, Zap, Flame, TrendingUp, CheckCircle2, ShieldAlert, FileText, Printer } from 'lucide-react';
+import { ShoppingBag, Play, Trophy, Zap, Flame, TrendingUp, CheckCircle2, ShieldAlert, FileText, Printer, Dumbbell } from 'lucide-react';
 import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
 import RollingNumberTicker from './RollingNumberTicker';
@@ -285,36 +285,58 @@ export default function KiboBreakOverlay({
 
         {/* BOTTOM CONTAINER (flex-shrink: 0) */}
         <div className="shrink-0 space-y-2 pt-1 w-full">
-          <button
-            type="button"
-            onClick={isPracticeMode && onExitPractice ? onExitPractice : onResumeClimb}
-            className={`w-full h-14 min-h-[56px] py-3.5 text-base sm:text-lg font-black rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform ${
-              isPracticeMode
-                ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg cursor-pointer'
-                : 'btn-3d-orange shadow-bouncy-orange'
-            }`}
-          >
-            {isPracticeMode ? (
-              <>
-                <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-                Finish Training 🏁
-              </>
-            ) : (
-              <>
+          {isPracticeMode ? (
+            <>
+              {/* PRIMARY: Train Again */}
+              <button
+                type="button"
+                onClick={onOpenPracticeMode}
+                className="w-full h-14 min-h-[56px] py-3.5 text-base sm:text-lg font-black rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg cursor-pointer"
+              >
+                <Dumbbell className="w-5 h-5 stroke-[2.5]" />
+                Train Again 🏋️
+              </button>
+
+              {/* SECONDARY: Done / Back to Climb */}
+              <button
+                type="button"
+                onClick={onExitPractice}
+                className="w-full h-12 min-h-[48px] py-3 text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 shadow-xs cursor-pointer"
+              >
+                <Play className="w-4 h-4 fill-slate-600 stroke-[2.5]" />
+                Done — Back to Climb 🏔️
+              </button>
+
+              {/* TERTIARY: Shop */}
+              <button
+                type="button"
+                onClick={onOpenWorkshop}
+                className="w-full py-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 underline underline-offset-2 cursor-pointer transition-colors text-center block"
+              >
+                Visit Kibo's Corner 🐾
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={onResumeClimb}
+                className="w-full h-14 min-h-[56px] py-3.5 text-base sm:text-lg font-black rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform btn-3d-orange shadow-bouncy-orange"
+              >
                 <Play className="w-5 h-5 fill-white stroke-[2.5]" />
                 Keep Climbing! 🏔️
-              </>
-            )}
-          </button>
+              </button>
 
-          <button
-            type="button"
-            onClick={onOpenWorkshop}
-            className="btn-3d-purple w-full h-12 min-h-[48px] py-3 text-xs sm:text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-bouncy-purple active:scale-95 transition-transform cursor-pointer"
-          >
-            <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-            Visit Kibo's Corner 🐾
-          </button>
+              <button
+                type="button"
+                onClick={onOpenWorkshop}
+                className="btn-3d-purple w-full h-12 min-h-[48px] py-3 text-xs sm:text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-bouncy-purple active:scale-95 transition-transform cursor-pointer"
+              >
+                <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
+                Visit Kibo's Corner 🐾
+              </button>
+            </>
+          )}
 
           <span className="text-xs sm:text-sm font-bold text-slate-500 block text-center pt-1">
             {isPracticeMode
