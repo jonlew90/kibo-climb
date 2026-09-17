@@ -192,7 +192,10 @@ function generateRssFeed(posts) {
     const pubDateRfc822 = post.published_at ? new Date(post.published_at).toUTCString() : nowRfc822;
     const titleClean = (post.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const descClean = (post.social_copy?.short_blurb || post.meta_description || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const featuredImage = post.featured_asset ? `${BASE_URL}/images/blog/${post.featured_asset}` : `${BASE_URL}/images/blog/kibo-climbing.jpeg`;
+    const postIndex = sortedPosts.findIndex(p => p.slug === post.slug);
+    const fallbackImage = AVAILABLE_BLOG_IMAGES[(postIndex >= 0 ? postIndex : 0) % AVAILABLE_BLOG_IMAGES.length];
+    const featuredFilename = post.featured_asset || fallbackImage;
+    const featuredImage = `${BASE_URL}/images/blog/${featuredFilename}`;
     const contentHtml = markdownToHtml(post.content_markdown || '');
     const categories = Array.isArray(post.tags) ? post.tags : [post.subject || 'mental math'];
 
@@ -203,10 +206,15 @@ function generateRssFeed(posts) {
       <link>${postUrl}</link>
       <guid isPermaLink="true">${postUrl}</guid>
       <pubDate>${pubDateRfc822}</pubDate>
-      <description><![CDATA[${descClean}]]></description>
-      <content:encoded><![CDATA[${contentHtml}]]></content:encoded>
-      <enclosure url="${featuredImage}" type="image/jpeg" length="0" />
+      <dc:creator><![CDATA[Kibo Climb]]></dc:creator>
       <author>support@kiboclimb.com (Kibo Climb)</author>
+      <description><![CDATA[${descClean}]]></description>
+      <content:encoded><![CDATA[<figure><img src="${featuredImage}" alt="${titleClean}" /><figcaption>${titleClean}</figcaption></figure>${contentHtml}]]></content:encoded>
+      <enclosure url="${featuredImage}" type="image/jpeg" length="0" />
+      <media:content url="${featuredImage}" type="image/jpeg" medium="image">
+        <media:title type="plain">${titleClean}</media:title>
+        <media:thumbnail url="${featuredImage}" />
+      </media:content>
 ${categoriesXml}
     </item>`;
   }).join('\n');
@@ -214,7 +222,9 @@ ${categoriesXml}
   const rssContent = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" 
   xmlns:content="http://purl.org/rss/1.0/modules/content/"
-  xmlns:atom="http://www.w3.org/2005/Atom">
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:media="http://search.yahoo.com/mrss/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Kibo Climb Blog – Math Strategies, Phonics, Geography &amp; Coding for Kids</title>
     <link>${BASE_URL}/blog</link>
@@ -232,7 +242,7 @@ ${itemsXml}
 </rss>`;
 
   fs.writeFileSync(RSS_FEED_PATH, rssContent, 'utf8');
-  console.log(` Generated RSS Feed with ${sortedPosts.length} posts backfilled: ${RSS_FEED_PATH}`);
+  console.log(` Generated Enhanced RSS Feed (Flipboard, Telegram & Discord ready) with ${sortedPosts.length} posts: ${RSS_FEED_PATH}`);
 }
 
 const AVAILABLE_BLOG_IMAGES = [

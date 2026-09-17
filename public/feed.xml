@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" 
   xmlns:content="http://purl.org/rss/1.0/modules/content/"
-  xmlns:atom="http://www.w3.org/2005/Atom">
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:media="http://search.yahoo.com/mrss/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Kibo Climb Blog – Math Strategies, Phonics, Geography &amp; Coding for Kids</title>
     <link>https://kiboclimb.com/blog</link>
     <atom:link href="https://kiboclimb.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>Discover expert mental math shortcuts, adaptive phonics, geography insights, coding logic, and printable worksheet practice to turn daily learning into an exciting mountain climb.</description>
     <language>en-US</language>
-    <lastBuildDate>Thu, 17 Sep 2026 01:24:34 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 17 Sep 2026 15:08:53 GMT</lastBuildDate>
     <image>
       <url>https://kiboclimb.com/icons/icon-512.png</url>
       <title>Kibo Climb</title>
@@ -19,8 +21,10 @@
       <link>https://kiboclimb.com/blog/master-mental-addition-compensation-strategy</link>
       <guid isPermaLink="true">https://kiboclimb.com/blog/master-mental-addition-compensation-strategy</guid>
       <pubDate>Mon, 14 Sep 2026 19:01:02 GMT</pubDate>
+      <dc:creator><![CDATA[Kibo Climb]]></dc:creator>
+      <author>support@kiboclimb.com (Kibo Climb)</author>
       <description><![CDATA[Discover how the compensation strategy turns tricky mental addition into quick, intuitive steps for upper elementary students.]]></description>
-      <content:encoded><![CDATA[<h2>What Is the Compensation Strategy?</h2>
+      <content:encoded><![CDATA[<figure><img src="https://kiboclimb.com/images/blog/kibo_sitting_on_boulder_thinking_20260916125021.jpeg" alt="Master Mental Addition With the Compensation Strategy" /><figcaption>Master Mental Addition With the Compensation Strategy</figcaption></figure><h2>What Is the Compensation Strategy?</h2>
       <p>Mental math can sometimes feel overwhelming for young learners when they try to perform traditional column addition inside their heads. Re-grouping numbers and carrying over digits mentally requires significant cognitive effort. Fortunately, smart shortcuts exist to make math intuitive and stress-free.</p>
       <p>One of the most powerful techniques for upper elementary students is the compensation strategy. This strategy works by rounding one of the numbers in an addition problem to the nearest friendly number (such as a multiple of 10 or 100), performing the quick calculation, and then adjusting or compensating the final answer to account for the change. You can also pair this with the <a href="/blog/unlocking-mental-math-left-to-right-addition">Left-to-Right Addition Strategy</a> for even faster calculations.</p>
       <p>By converting tricky numbers into friendly landmarks, students build strong numerical fluency and gain confidence in their problem solving skills.</p>
@@ -41,7 +45,10 @@
       <h2>Try It Today</h2>
       <p>Encourage your child or students to look for numbers ending in 8 or 9 during their next math session. Ask them which nearby friendly number they can jump to first, and remind them to compensate at the end. For offline mastery, download our <a href="/worksheets/math/grade-4-multi-digit-division">Printable Multi-Digit Mental Math Worksheet</a> or check out our guide on <a href="/blog/mental-math-shortcuts-for-fast-climbers">5 Powerful Mental Math Shortcuts</a>.</p>]]></content:encoded>
       <enclosure url="https://kiboclimb.com/images/blog/kibo_sitting_on_boulder_thinking_20260916125021.jpeg" type="image/jpeg" length="0" />
-      <author>support@kiboclimb.com (Kibo Climb)</author>
+      <media:content url="https://kiboclimb.com/images/blog/kibo_sitting_on_boulder_thinking_20260916125021.jpeg" type="image/jpeg" medium="image">
+        <media:title type="plain">Master Mental Addition With the Compensation Strategy</media:title>
+        <media:thumbnail url="https://kiboclimb.com/images/blog/kibo_sitting_on_boulder_thinking_20260916125021.jpeg" />
+      </media:content>
       <category><![CDATA[mental math]]></category>
       <category><![CDATA[math strategies]]></category>
       <category><![CDATA[elementary math]]></category>
@@ -53,8 +60,10 @@
       <link>https://kiboclimb.com/blog/unlocking-mental-math-left-to-right-addition</link>
       <guid isPermaLink="true">https://kiboclimb.com/blog/unlocking-mental-math-left-to-right-addition</guid>
       <pubDate>Mon, 14 Sep 2026 17:28:47 GMT</pubDate>
+      <dc:creator><![CDATA[Kibo Climb]]></dc:creator>
+      <author>support@kiboclimb.com (Kibo Climb)</author>
       <description><![CDATA[Ditch traditional right-to-left addition for mental math. Learn the simple left-to-right technique that reduces mental load and boosts calculation speed.]]></description>
-      <content:encoded><![CDATA[<p>Have you ever tried to add two multi-digit numbers in your head, only to feel like your mental memory is overflowing? You start from the right, add the ones, carry the one, hold that digit in your mind, move to the tens... and by the time you reach the hundreds, you have forgotten where you started.</p>
+      <content:encoded><![CDATA[<figure><img src="https://kiboclimb.com/images/blog/kibo_rock_climbing_granite_cliff_20260916124919.jpeg" alt="Unlocking Mental Math: The Left-to-Right Addition Strategy" /><figcaption>Unlocking Mental Math: The Left-to-Right Addition Strategy</figcaption></figure><p>Have you ever tried to add two multi-digit numbers in your head, only to feel like your mental memory is overflowing? You start from the right, add the ones, carry the one, hold that digit in your mind, move to the tens... and by the time you reach the hundreds, you have forgotten where you started.</p>
       <p>You are not alone. Traditional paper-and-pencil math teaches us to work from right to left. While that is great for write-it-down algorithms, it goes against the natural way our brains process information. When we read text or write sentences, we move from left to right. So why not add from left to right too?</p>
       <p>Welcome to the Left-to-Right Addition strategy, one of the most practical mental math shortcuts you will ever learn (alongside the <a href="/blog/master-mental-addition-compensation-strategy">Compensation Strategy</a>).</p>
       <h3>How It Works</h3>
@@ -71,7 +80,10 @@
       <ol><li><strong>It aligns with reading:</strong> Your brain naturally flows from left to right across the page.</li><li><strong>It gives instant estimations:</strong> By calculating the largest place values first, you immediately get a realistic sense of the scale of the answer.</li><li><strong>It builds strong number sense:</strong> You start viewing numbers as complete values like 40 and 30 rather than isolated digits like 4 and 3.</li></ol>
       <p>Next time you face a mental addition problem on a test, at the grocery store, or during a Kibo Climb session, flip the script. Start on the left, break it down, and watch how quickly the answer comes together! You can also reinforce this skill offline with our <a href="/worksheets/math/grade-4-multi-digit-division">Printable Multi-Digit Mental Math Worksheet</a> or explore <a href="/blog/mental-math-shortcuts-for-fast-climbers">5 Powerful Mental Math Shortcuts</a>.</p>]]></content:encoded>
       <enclosure url="https://kiboclimb.com/images/blog/kibo_rock_climbing_granite_cliff_20260916124919.jpeg" type="image/jpeg" length="0" />
-      <author>support@kiboclimb.com (Kibo Climb)</author>
+      <media:content url="https://kiboclimb.com/images/blog/kibo_rock_climbing_granite_cliff_20260916124919.jpeg" type="image/jpeg" medium="image">
+        <media:title type="plain">Unlocking Mental Math: The Left-to-Right Addition Strategy</media:title>
+        <media:thumbnail url="https://kiboclimb.com/images/blog/kibo_rock_climbing_granite_cliff_20260916124919.jpeg" />
+      </media:content>
       <category><![CDATA[mental math]]></category>
       <category><![CDATA[math tips]]></category>
       <category><![CDATA[addition shortcuts]]></category>
@@ -82,8 +94,10 @@
       <link>https://kiboclimb.com/blog/mental-math-shortcuts-for-fast-climbers</link>
       <guid isPermaLink="true">https://kiboclimb.com/blog/mental-math-shortcuts-for-fast-climbers</guid>
       <pubDate>Mon, 14 Sep 2026 14:00:00 GMT</pubDate>
+      <dc:creator><![CDATA[Kibo Climb]]></dc:creator>
+      <author>support@kiboclimb.com (Kibo Climb)</author>
       <description><![CDATA[Learn practical mental math shortcuts to calculate faster without paper.]]></description>
-      <content:encoded><![CDATA[<h2>Fast Thinking on the Ascent</h2>
+      <content:encoded><![CDATA[<figure><img src="https://kiboclimb.com/images/blog/kibo-climbing.jpeg" alt="5 Powerful Mental Math Shortcuts Every Young Climber Should Know" /><figcaption>5 Powerful Mental Math Shortcuts Every Young Climber Should Know</figcaption></figure><h2>Fast Thinking on the Ascent</h2>
       <p>When climbing Mount Kilimanjaro with Kibo the red panda, speed and accuracy unlock special Sparks and keep your momentum climbing strong. Mental math isn't about memorizing endless tables—it is about finding smart patterns that make difficult arithmetic simple.</p>
       <h3>1. The Break-Apart Strategy for Addition</h3>
       <p>When adding two numbers like 48 + 37, break 37 into friendly numbers: - First add 30: 48 + 30 = 78 - Then add 7: 78 + 7 = 85</p>
@@ -93,7 +107,10 @@
       <h2>Practice Daily with Kibo</h2>
       <p>Short daily practice sprints help turn these mental shortcuts into second nature. Take 5 minutes today to practice arithmetic on the mountain trail, or download our <a href="/worksheets/math/grade-3-multiplication-facts">Printable Multiplication Sprint Worksheet</a> for timed paper practice!</p>]]></content:encoded>
       <enclosure url="https://kiboclimb.com/images/blog/kibo-climbing.jpeg" type="image/jpeg" length="0" />
-      <author>support@kiboclimb.com (Kibo Climb)</author>
+      <media:content url="https://kiboclimb.com/images/blog/kibo-climbing.jpeg" type="image/jpeg" medium="image">
+        <media:title type="plain">5 Powerful Mental Math Shortcuts Every Young Climber Should Know</media:title>
+        <media:thumbnail url="https://kiboclimb.com/images/blog/kibo-climbing.jpeg" />
+      </media:content>
       <category><![CDATA[Mental Math]]></category>
       <category><![CDATA[Math Strategies]]></category>
       <category><![CDATA[Elementary Math]]></category>
