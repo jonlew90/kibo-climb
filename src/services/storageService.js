@@ -13,6 +13,7 @@ const KEYS = {
   PROFILES: 'kibo_profiles_data',
   NOTIF_SETTINGS: 'kibo_parent_notif_prefs',
   PARENT_PIN: 'kibo_parent_pin',
+  PARENT_ACCOUNT_EMAIL: 'kibo_parent_account_email',
   PRACTICE_DAYS: 'kibo_practice_days',
   GATE_FAILED_ATTEMPTS: 'kibo_parent_gate_failed_attempts',
   GATE_LOCKOUT_UNTIL: 'kibo_parent_gate_lockout_until',
@@ -254,8 +255,33 @@ export const storageService = {
     return Object.values(state.profiles).some(p => p.userData && p.userData.isAnonymous === false);
   },
 
+  getParentAccountEmail() {
+    try {
+      return localStorage.getItem(KEYS.PARENT_ACCOUNT_EMAIL) || null;
+    } catch {
+      return null;
+    }
+  },
+
+  setParentAccountEmail(email) {
+    try {
+      if (email) {
+        localStorage.setItem(KEYS.PARENT_ACCOUNT_EMAIL, String(email).trim());
+      } else {
+        localStorage.removeItem(KEYS.PARENT_ACCOUNT_EMAIL);
+      }
+    } catch (e) {
+      console.error('StorageService: error writing parent account email', e);
+    }
+  },
+
   setGlobalAccountLinkedState(accountInfo = {}) {
     const state = safeGetProfilesState();
+    if (accountInfo.email) {
+      this.setParentAccountEmail(accountInfo.email);
+    } else if (accountInfo.isAnonymous === true) {
+      this.setParentAccountEmail(null);
+    }
     Object.keys(state.profiles).forEach(id => {
       const prof = state.profiles[id];
       const newUserData = {

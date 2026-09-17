@@ -169,22 +169,12 @@ export default function FirstLaunchOnboardingModal({
   const [showCoppaModal, setShowCoppaModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
 
-  // Pre-fill if username already set, or auto-fill with a generated kid-safe tag
+  // Pre-fill generated kid-safe tag or existing custom username
   useEffect(() => {
     if (!isOpen) return;
-    const existing = storageService.getUsername();
-    if (existing) {
-      setUsernameInput(existing);
-      checkedUsernameRef.current = existing.trim().toLowerCase();
-      const existingGrade = storageService.getActiveProfile()?.gradeLevel;
-      if (existingGrade) {
-        setSelectedGrade(existingGrade);
-        setStep(3);
-      } else {
-        setStep(2);
-      }
-    } else if (!usernameInput) {
-      const safeName = generateSafeUsername();
+    if (!usernameInput) {
+      const existing = storageService.getUsername();
+      const safeName = existing || generateSafeUsername();
       setUsernameInput(safeName);
       verifyUsernameWithCloud(safeName);
     }

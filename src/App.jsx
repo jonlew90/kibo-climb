@@ -2264,11 +2264,21 @@ export default function App() {
                               </span>
                             ) : null}
                           </div>
-                          <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             <span className="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200/80 px-1.5 py-0.2 rounded-md flex items-center gap-0.5 shrink-0">
                               <Star className="w-3 h-3 fill-sky-500 text-sky-500 inline shrink-0" />
                               {liveCompetenceRating} pts
                             </span>
+                            {currentAuthState.isAuthenticated && !currentAuthState.isAnonymous ? (
+                              <span className="text-[10px] font-black text-teal-700 bg-teal-50 border border-teal-200 px-1.5 py-0.2 rounded-md flex items-center gap-1 shrink-0">
+                                <Cloud className="w-2.5 h-2.5 text-teal-600 stroke-[2.5]" />
+                                Synced
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-black text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-md shrink-0">
+                                Local Profile
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -2434,7 +2444,20 @@ export default function App() {
                 <div className="h-px bg-slate-100 w-full" />
 
                 {/* Account / Save Cloud Section */}
-                <div className="p-2 bg-slate-50/30 flex flex-col gap-1">
+                <div className="p-2 bg-slate-50/50 flex flex-col gap-1.5">
+                  <div className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                    <span>Account Status</span>
+                    {currentAuthState.isAuthenticated && !currentAuthState.isAnonymous ? (
+                      <span className="text-[9px] font-black uppercase tracking-wider bg-teal-100 text-teal-800 px-1.5 py-0.2 rounded border border-teal-200">
+                        Cloud Linked
+                      </span>
+                    ) : (
+                      <span className="text-[9px] font-black uppercase tracking-wider bg-slate-200 text-slate-600 px-1.5 py-0.2 rounded">
+                        Guest / Local
+                      </span>
+                    )}
+                  </div>
+
                   {currentAuthState.isAuthenticated && !currentAuthState.isAnonymous ? (
                     <div className="relative">
                       <button
@@ -2443,14 +2466,15 @@ export default function App() {
                           soundFx.playKeyTap();
                           setShowSavedTooltip(prev => !prev);
                         }}
-                        className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-teal-50 text-teal-800 font-black text-xs border border-teal-200 transition-colors w-full cursor-pointer hover:bg-teal-100/70"
+                        className="flex items-center justify-between px-2.5 py-2 rounded-xl bg-teal-50 text-teal-800 font-black text-xs border border-teal-200 transition-colors w-full cursor-pointer hover:bg-teal-100/70"
+                        title="Click to view cloud backup details"
                       >
-                        <div className="flex items-center gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-teal-600 stroke-[3]" />
-                          <span className="truncate max-w-[120px]">{currentAuthState.user?.email || 'Cloud Active'}</span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Check className="w-3.5 h-3.5 text-teal-600 stroke-[3] shrink-0" />
+                          <span className="truncate text-xs font-black">{currentAuthState.email || 'Cloud Account'}</span>
                         </div>
-                        <span className="text-[10px] bg-teal-200/80 text-teal-900 px-1 py-0.5 rounded font-black uppercase tracking-wider">
-                          Saved
+                        <span className="text-[10px] bg-teal-200/80 text-teal-900 px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0">
+                          Active
                         </span>
                       </button>
 
@@ -2462,7 +2486,7 @@ export default function App() {
                             <span>Cloud Backup Active</span>
                           </div>
                           <p className="text-slate-300 text-[11px] leading-relaxed">
-                            Your account is permanently linked to <strong className="text-white">{currentAuthState.user?.email}</strong>. All streaks, sparks, and progress sync automatically across your family's devices!
+                            Your account is permanently linked{currentAuthState.email ? <> to <strong className="text-white">{currentAuthState.email}</strong></> : ''}. All streaks, sparks, and progress sync automatically across your family's devices!
                           </p>
                           <button
                             type="button"
@@ -2485,10 +2509,10 @@ export default function App() {
                         setShowProfileDropdown(false);
                         handleOpenModal(VIEWS.ACCOUNT_LINK, { milestone: 'Save Progress' });
                       }}
-                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-sky-50 text-sky-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                      className="flex items-center gap-2 px-2.5 py-2 rounded-xl hover:bg-sky-100/70 bg-sky-50 text-sky-800 font-black text-xs border border-sky-200/80 transition-colors cursor-pointer w-full text-left"
                     >
                       <Cloud className="w-3.5 h-3.5 text-sky-600 stroke-[2.5]" />
-                      <span>Save Progress</span>
+                      <span>Save Progress (Link Account)</span>
                     </button>
                   )}
 
@@ -2516,7 +2540,7 @@ export default function App() {
                       className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-indigo-50 text-indigo-700 font-black text-xs transition-colors cursor-pointer w-full text-left"
                     >
                       <LogIn className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5]" />
-                      <span>Log In</span>
+                      <span>Log In (Restore Account)</span>
                     </button>
                   )}
                 </div>

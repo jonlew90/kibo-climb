@@ -648,6 +648,7 @@ export const authService = {
     const firebaseUser = auth.currentUser;
     const data = typeof storageService?.getUserData === 'function' ? storageService.getUserData('math') : null;
     const isGlobalLinked = typeof storageService?.isAccountGloballyLinked === 'function' ? storageService.isAccountGloballyLinked() : false;
+    const parentEmail = typeof storageService?.getParentAccountEmail === 'function' ? storageService.getParentAccountEmail() : null;
 
     // Account is linked if saved in localStorage as non-anonymous OR if firebaseUser is non-anonymous
     const isAnonymous = (isGlobalLinked || (data && data.isAnonymous === false)) 
@@ -658,12 +659,15 @@ export const authService = {
       || (data && data.authProvider) 
       || 'anonymous';
 
+    const email = (firebaseUser && firebaseUser.email) || parentEmail || (data && data.email) || null;
+
     return {
       uid: (firebaseUser && firebaseUser.uid) || (data && data.cloudUid) || getOrCreateGuestId(),
+      isAuthenticated: !isAnonymous,
       isAnonymous,
       authProvider: provider,
       displayName: (firebaseUser && firebaseUser.displayName) || (data && data.displayName) || 'Kibo Climber',
-      email: (firebaseUser && firebaseUser.email) || (data && data.email) || null
+      email
     };
   },
 
