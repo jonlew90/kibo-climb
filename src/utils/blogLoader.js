@@ -41,7 +41,13 @@ export function getExcerpt(post) {
   return sentences.slice(0, 2).join(' ');
 }
 
-export const AVAILABLE_BLOG_IMAGES = [
+// Dynamically discover all images in /public/images/blog/ via Vite's glob
+const blogImageModules = import.meta.glob('/public/images/blog/*.{jpeg,jpg,png,webp}', { eager: true });
+const discoveredImages = Object.keys(blogImageModules)
+  .map(path => path.split('/').pop())
+  .filter(Boolean);
+
+export const AVAILABLE_BLOG_IMAGES = discoveredImages.length > 0 ? discoveredImages : [
   'kibo_sitting_on_boulder_thinking_20260916125021.jpeg',
   'kibo_rock_climbing_granite_cliff_20260916124919.jpeg',
   'kibo-climbing.jpeg',
