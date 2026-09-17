@@ -462,7 +462,7 @@ class LeaderboardService {
     try {
       const allProfiles = storageService.getAllProfiles ? storageService.getAllProfiles() : [];
       for (const p of allProfiles) {
-        const pCode = (p.friendCode || '').trim().toUpperCase();
+        const pCode = (p.friendCode || storageService.getFriendCode(p.id) || '').trim().toUpperCase();
         if (pCode === cleanCode) {
           const uData = p.userData || {};
           const currentSubRating = uData.adaptiveCompetenceRating || 1000;
@@ -470,7 +470,7 @@ class LeaderboardService {
             id: `${this.getCurrentUser()?.uid || 'local'}_${p.id}`,
             uid: this.getCurrentUser()?.uid || 'local',
             profileId: p.id,
-            friendCode: pCode || storageService.getFriendCode(p.id),
+            friendCode: pCode,
             username: p.username || p.name,
             name: p.name || p.username,
             score: currentSubRating,

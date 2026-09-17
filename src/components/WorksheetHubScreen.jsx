@@ -196,7 +196,7 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
                 onClick={() => {
                   soundFx.playKeyTap();
                   if (onBack) onBack();
-                  else if (onNavigate) onNavigate('/parent', 'parent_dashboard');
+                  else if (onNavigate) onNavigate('/parent', 'parent_dashboard', { tab: 'printables' });
                 }}
                 className="ml-1 sm:ml-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
               >

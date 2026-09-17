@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, Printer, Copy, Lock, Sparkles, CheckCircle2, Home, Dices, ChevronLeft, ChevronRight, Dumbbell } from 'lucide-react';
+import { ArrowLeft, Printer, Copy, Share2, Lock, Sparkles, CheckCircle2, Home, Dices, ChevronLeft, ChevronRight, Dumbbell, ShieldCheck } from 'lucide-react';
 import { getWorksheetBySlug, getWorksheetsForSubject, generateProblemsForWorksheet, getCanonicalPath, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
 import { updateWorksheetSeo } from '../utils/seoMetadata';
 import { soundFx } from '../utils/audio';
@@ -110,8 +110,23 @@ export default function WorksheetViewerScreen({
     window.print();
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     soundFx.playKeyTap();
+    const shareData = {
+      title: `Kibo Climb • ${worksheet?.title || 'Worksheet'}`,
+      text: `Practice ${worksheet?.title || 'learning skills'} with Kibo Climb!`,
+      url: window.location.href
+    };
+
+    if (navigator?.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError' || err.name === 'InvalidStateError') return;
+      }
+    }
+
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(window.location.href).then(() => {
         setCopied(true);
@@ -124,7 +139,7 @@ export default function WorksheetViewerScreen({
     soundFx.playKeyTap();
     if (fromParentDashboard) {
       if (onBack) onBack();
-      else if (onNavigate) onNavigate('/parent', 'parent_dashboard');
+      else if (onNavigate) onNavigate('/parent', 'parent_dashboard', { tab: 'printables' });
     } else {
       // Direct visitor returning to worksheets catalog hub
       if (onNavigate) onNavigate('/worksheets', 'worksheet_hub');
@@ -173,12 +188,12 @@ export default function WorksheetViewerScreen({
           <button
             type="button"
             onClick={handleShare}
-            className={`px-2 sm:px-3 py-1.5 rounded-xl border font-bold text-xs inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all shrink-0 ${
+            className={`px-2.5 sm:px-3.5 py-1.5 rounded-xl border font-black text-xs inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all shrink-0 active:scale-95 ${
               copied
                 ? 'bg-teal-50 border-teal-300 text-teal-700'
-                : 'border-slate-300 hover:bg-slate-50 text-slate-700'
+                : 'border-slate-300 hover:bg-slate-50 text-slate-700 shadow-2xs'
             }`}
-            title="Copy direct share link with current problem set"
+            title="Share or copy direct link with current problem set"
           >
             {copied ? (
               <>
@@ -187,9 +202,9 @@ export default function WorksheetViewerScreen({
               </>
             ) : (
               <>
-                <Copy className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                <span className="hidden sm:inline">Copy Link</span>
-                <span className="sm:hidden">Copy</span>
+                <Share2 className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                <span className="hidden sm:inline">Share</span>
+                <span className="sm:hidden">Share</span>
               </>
             )}
           </button>
