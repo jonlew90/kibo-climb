@@ -25,6 +25,7 @@ import AccountLinkModal from './AccountLinkModal';
 import FamilyPlanUpgradeModal from './FamilyPlanUpgradeModal';
 import PrivacyPolicyScreen from './PrivacyPolicyScreen';
 import CoppaPrivacyPolicyScreen from './CoppaPrivacyPolicyScreen';
+import SocialFollowStrip from './SocialFollowStrip';
 import { parentChildService } from '../services/parentChildService';
 import { validateSafeChildUsername } from '../utils/safeNames';
 
