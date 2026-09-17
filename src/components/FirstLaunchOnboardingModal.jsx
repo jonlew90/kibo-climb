@@ -97,7 +97,7 @@ export default function FirstLaunchOnboardingModal({
   onRequestLogin
 }) {
   // step: 0 = welcome/about, 1 = username, 2 = grade selection, 'coppa_consent' = parent consent, 3 = welcome splash
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(1);
   const [usernameInput, setUsernameInput] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [usernameConfirmed, setUsernameConfirmed] = useState(false);
@@ -312,157 +312,6 @@ export default function FirstLaunchOnboardingModal({
     else if (typeof onStartPlacementTest === 'function') onStartPlacementTest();
   };
 
-  // ─── STEP 0: Welcome & Overview ──────────────────────────────────────────
-  if (step === 0) {
-    return (
-      <div className="fixed inset-0 z-[1000] h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-center p-4 sm:p-6 select-none animate-pop overflow-y-auto">
-        <div className="absolute w-96 h-96 rounded-full bg-purple-600/20 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
-
-        <div className="relative z-10 w-full max-w-sm sm:max-w-md flex flex-col items-center gap-4 sm:gap-5 text-center my-auto py-2">
-          {/* Badge with Pronunciation */}
-          <div className="flex items-center justify-center gap-1.5 flex-wrap">
-            <span className="text-xs font-black uppercase tracking-wider text-amber-400 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full inline-flex items-center gap-1.5 shadow-sm">
-              🏔️ Meet Kibo <span className="text-amber-200/90 font-bold lowercase tracking-normal text-[11px] sm:text-xs">(pronounced KEE-boh)</span>
-            </span>
-          </div>
-
-          {/* Mascot Animation */}
-          <div className="relative flex justify-center p-1 overflow-visible">
-            <div className="absolute w-32 h-32 rounded-full bg-amber-400/20 blur-2xl animate-pulse pointer-events-none" />
-            <Mascot mood="happy" state="idle" equipped={equippedItems}
-              className="w-24 h-24 sm:w-28 sm:h-28 aspect-square filter drop-shadow-xl animate-bounce relative z-10" />
-          </div>
-
-          {/* Value Prop & Headline */}
-          <div className="space-y-1.5">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
-              The Daily Climb<br />to Mastery
-            </h1>
-            <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed max-w-xs sm:max-w-sm mx-auto">
-              Bite-sized daily challenges that adapt to every learner — building confidence one peak at a time.
-            </p>
-          </div>
-
-          {/* 3 Core Subjects Card */}
-          <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-2.5 sm:p-3 grid grid-cols-3 gap-2 text-center">
-            <div className="flex flex-col items-center">
-              <span className="text-xl sm:text-2xl mb-0.5">🔢</span>
-              <span className="text-xs sm:text-sm font-black text-amber-300">Math</span>
-              <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-tight">Numbers & logic</span>
-            </div>
-            <div className="flex flex-col items-center border-x border-white/10 px-1">
-              <span className="text-xl sm:text-2xl mb-0.5">📚</span>
-              <span className="text-xs sm:text-sm font-black text-teal-300">Words</span>
-              <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-tight">Reading & vocab</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-xl sm:text-2xl mb-0.5">🌍</span>
-              <span className="text-xs sm:text-sm font-black text-emerald-300">World</span>
-              <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-tight">Maps & capitals</span>
-            </div>
-          </div>
-
-          {/* Feature Highlights: 100% Offline, Zero Ads */}
-          <div className="w-full bg-emerald-500/15 border border-emerald-400/30 rounded-xl px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-black text-emerald-300">
-            <span>✈️ 100% Offline-Ready</span>
-            <span className="text-white/30">•</span>
-            <span>🛡️ Zero Ads</span>
-            <span className="text-white/30">•</span>
-            <span>🔒 Kid-Safe</span>
-          </div>
-
-          {/* Pronunciation & Kilimanjaro Fun Fact */}
-          <div className="text-[11px] sm:text-xs text-slate-400 font-medium flex items-center justify-center gap-1.5 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 w-full">
-            <span>💡</span>
-            <span>Fun fact: <strong>Kibo</strong> (KEE-boh) is the summit of Mt. Kilimanjaro!</span>
-          </div>
-
-          {/* Primary CTA */}
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playKeyTap();
-              setStep(1);
-            }}
-            className="w-full h-13 sm:h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>Start Adventure</span>
-            <ArrowRight className="w-5 h-5 stroke-[2.5]" />
-          </button>
-
-          {/* Secondary Actions */}
-          <div className="flex flex-col items-center gap-2 pt-0.5">
-            {onRequestLogin && (
-              <p className="text-xs text-slate-300 font-medium">
-                Already have a Kibo account?{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    soundFx.playKeyTap();
-                    onRequestLogin();
-                  }}
-                  className="font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer"
-                >
-                  Log In
-                </button>
-              </p>
-            )}
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              <button
-                type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowCoppaModal(true); }}
-                className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
-                <span>COPPA Policy</span>
-              </button>
-              <span className="text-slate-600 text-xs">•</span>
-              <button
-                type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
-                className="text-[11px] font-semibold text-slate-400 hover:text-blue-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-                <span>Privacy Policy</span>
-              </button>
-              <span className="text-slate-600 text-xs">•</span>
-              <button
-                type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowTermsModal(true); }}
-                className="text-[11px] font-semibold text-slate-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
-              >
-                <FileText className="w-3.5 h-3.5 text-amber-400" />
-                <span>Terms of Service</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {showPrivacyModal && (
-          <PrivacyPolicyScreen
-            onBack={() => setShowPrivacyModal(false)}
-            onNavigateCoppa={() => {
-              setShowPrivacyModal(false);
-              setShowCoppaModal(true);
-            }}
-          />
-        )}
-        {showCoppaModal && (
-          <CoppaPrivacyPolicyScreen
-            onBack={() => setShowCoppaModal(false)}
-            onNavigatePrivacy={() => {
-              setShowCoppaModal(false);
-              setShowPrivacyModal(true);
-            }}
-          />
-        )}
-        {showTermsModal && (
-          <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
-        )}
-      </div>
-    );
-  }
-
   // ─── STEP 1: Username ─────────────────────────────────────────────────────
   if (step === 1) {
     return (
@@ -470,24 +319,10 @@ export default function FirstLaunchOnboardingModal({
         <div className="absolute w-96 h-96 rounded-full bg-purple-600/20 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
 
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-4 sm:gap-5 text-center">
-          {/* Step indicator with back button */}
-          <div className="flex items-center justify-between w-full text-xs font-black uppercase tracking-widest text-slate-500">
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setStep(0);
-              }}
-              className="text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1 font-bold text-xs"
-            >
-              ← Back
-            </button>
-            <div className="flex items-center gap-2">
-              <span className="text-amber-400">Step 1</span>
-              <span>/</span>
-              <span>2</span>
-            </div>
-            <div className="w-12" aria-hidden="true" />
+          {/* Dot step indicator */}
+          <div className="flex items-center justify-center gap-2 pt-1">
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
           </div>
 
           <div className="relative flex justify-center p-1 overflow-visible">
@@ -649,7 +484,7 @@ export default function FirstLaunchOnboardingModal({
 
         <div className="relative z-10 w-full max-w-sm sm:max-w-md flex flex-col items-center gap-3.5 sm:gap-4.5 text-center max-h-[96dvh] overflow-hidden py-1 sm:py-2">
           {/* Step indicator with back button */}
-          <div className="flex items-center justify-between w-full text-xs font-black uppercase tracking-widest text-slate-500 shrink-0">
+          <div className="flex items-center justify-between w-full shrink-0">
             <button
               type="button"
               onClick={() => {
@@ -662,9 +497,8 @@ export default function FirstLaunchOnboardingModal({
               ← Back
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-slate-600">Step 1</span>
-              <span>/</span>
-              <span className="text-amber-400">Step 2</span>
+              <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
             </div>
             <div className="w-12" aria-hidden="true" />
           </div>
@@ -818,7 +652,7 @@ export default function FirstLaunchOnboardingModal({
 
   // ─── STEP 3: Welcome Splash ───────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-hidden overflow-x-hidden select-none animate-pop border-none">
+    <div className="fixed inset-0 z-[1000] w-vw h-[100dvh] max-h-[100dvh] bg-[#fdfbf7] bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 text-slate-800 flex flex-col justify-between overflow-hidden overflow-x-hidden select-none animate-fade-in border-none">
       <ConfettiCanvas />
 
       <div className="w-full max-w-2xl mx-auto min-h-full flex flex-col justify-between p-3.5 sm:p-5 md:p-6 box-border relative z-10 text-center gap-3">
@@ -926,66 +760,8 @@ export default function FirstLaunchOnboardingModal({
             </button>
           </div>
 
-          <div className="flex items-center justify-center gap-3 flex-wrap pt-0.5">
-            <button
-              type="button"
-              onClick={() => { soundFx.playKeyTap(); setShowCoppaModal(true); }}
-              className="text-[11px] font-semibold text-slate-500 hover:text-teal-600 transition-colors inline-flex items-center gap-1 cursor-pointer"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-              <span>COPPA Policy</span>
-            </button>
-            <span className="text-slate-300 text-xs">•</span>
-            <button
-              type="button"
-              onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
-              className="text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition-colors inline-flex items-center gap-1 cursor-pointer"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-              <span>Privacy Policy</span>
-            </button>
-            <span className="text-slate-300 text-xs">•</span>
-            <button
-              type="button"
-              onClick={() => { soundFx.playKeyTap(); setShowTermsModal(true); }}
-              className="text-[11px] font-semibold text-slate-500 hover:text-amber-600 transition-colors inline-flex items-center gap-1 cursor-pointer"
-            >
-              <FileText className="w-3.5 h-3.5 text-amber-600" />
-              <span>Terms of Service</span>
-            </button>
-          </div>
-
-          <div className="text-center space-y-0.5">
-            <span className="text-xs sm:text-sm font-extrabold text-slate-500 block">
-              Kibo Climb • Multi-Subject Daily Climbs • Math, Words & World
-            </span>
-            <span className="text-[10px] sm:text-xs font-bold text-slate-400 block">
-              💡 Fun fact: "Kibo" (KEE-boh) is the highest peak of Mount Kilimanjaro!
-            </span>
-          </div>
         </div>
       </div>
-      {showPrivacyModal && (
-        <PrivacyPolicyScreen
-          onBack={() => setShowPrivacyModal(false)}
-          onNavigateCoppa={() => {
-            setShowPrivacyModal(false);
-            setShowCoppaModal(true);
-          }}
-        />
-      )}
-      {showCoppaModal && (
-        <CoppaPrivacyPolicyScreen
-          onBack={() => setShowCoppaModal(false)}
-          onNavigatePrivacy={() => {
-            setShowCoppaModal(false);
-            setShowPrivacyModal(true);
-          }}
-        />
-      )}
-      {showTermsModal && (
-        <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
-      )}
     </div>
   );
 }

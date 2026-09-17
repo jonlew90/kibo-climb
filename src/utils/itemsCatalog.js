@@ -345,6 +345,22 @@ export const WORKSHOP_ITEMS = [
     requiredRank: 1500,
     description: 'Majestic purple velvet cape with golden trim.'
   },
+  {
+    id: 'sherpa_jacket',
+    name: 'Sherpa Mountain Jacket',
+    category: 'outfits',
+    cost: 200,
+    rarity: 'rare',
+    description: 'Cozy shearling-lined sherpa jacket with sturdy zipper for high-altitude climbs!'
+  },
+  {
+    id: 'jungle_explorer_vest',
+    name: 'Jungle Explorer Vest',
+    category: 'outfits',
+    cost: 500,
+    rarity: 'epic',
+    description: 'Rugged olive-green explorer vest loaded with pouches for wild summit expeditions!'
+  },
 
   // PETS (Category: pets)
   {
@@ -503,6 +519,30 @@ export const WORKSHOP_ITEMS = [
     rarity: 'legendary',
     requiredRank: 1700,
     description: 'Shimmering solid 24k gold metallic Kibo skin!'
+  },
+  {
+    id: 'coral_reef_skin',
+    name: 'Coral Reef Glow',
+    category: 'skins',
+    cost: 400,
+    rarity: 'rare',
+    description: 'Vibrant living coral-orange skin with warm ocean-glow undertones!'
+  },
+  {
+    id: 'storm_cloud_skin',
+    name: 'Storm Cloud',
+    category: 'skins',
+    cost: 600,
+    rarity: 'epic',
+    description: 'Crackling dark grey thunderstorm fur with electric lightning streaks!'
+  },
+  {
+    id: 'neon_cyber_pulse_skin',
+    name: 'Neon Cyber Pulse',
+    category: 'skins',
+    cost: 900,
+    rarity: 'epic',
+    description: 'Sleek jet-black skin pulsing with vivid neon circuit-grid lines!'
   },
 
   // SPRINT BACKGROUNDS (Slot: background)
@@ -771,6 +811,19 @@ export const WORKSHOP_ITEMS = [
     recurringSchedule: { startMonth: 9, startDay: 1, endMonth: 11, endDay: 30, previewDays: 14 },
     description: 'A plump, cheerful woodland squirrel with an oversized fluffy tail curled over its back, clutching a gleaming golden summit acorn! (Autumn Exclusive)'
   },
+  {
+    id: 'autumn_leaf_swirl',
+    name: 'Falling Maple Leaf Swirl',
+    category: 'seasonal',
+    slot: 'fx',
+    cost: 190,
+    rarity: 'rare',
+    seasonId: 'autumn',
+    seasonName: 'Autumn Harvest',
+    seasonType: 'season',
+    recurringSchedule: { startMonth: 9, startDay: 1, endMonth: 11, endDay: 30, previewDays: 14 },
+    description: 'A swirling cascade of crimson, amber, and gold maple leaves dancing around Kibo! (Autumn Exclusive)'
+  },
 
   // 4. WINTER SEASON (December 1 – February 28/29)
   {
@@ -811,6 +864,19 @@ export const WORKSHOP_ITEMS = [
     seasonType: 'season',
     recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 2, endDay: 28, previewDays: 14 },
     description: 'Gleaming steel ice skates with crimson laces for frozen summit lakes! (Winter Exclusive)'
+  },
+  {
+    id: 'winter_snow_blizzard',
+    name: 'Arctic Blizzard Flurry',
+    category: 'seasonal',
+    slot: 'fx',
+    cost: 200,
+    rarity: 'rare',
+    seasonId: 'winter',
+    seasonName: 'Winter Frost',
+    seasonType: 'season',
+    recurringSchedule: { startMonth: 12, startDay: 1, endMonth: 2, endDay: 28, previewDays: 14 },
+    description: 'A swirling arctic blizzard of crystalline snowflakes spiraling around Kibo! (Winter Exclusive)'
   },
 
   // 5. NEW YEAR CELEBRATION (December 29 – January 3)
@@ -1185,6 +1251,32 @@ export const WORKSHOP_ITEMS = [
     recurringSchedule: { startMonth: 10, startDay: 24, endMonth: 11, endDay: 2, previewDays: 14 },
     description: 'Flying witch broomstick with a glowing purple star ribbon and tail sparkles! (Halloween Exclusive)'
   },
+  {
+    id: 'bg_haunted_summit',
+    name: 'Haunted Summit',
+    category: 'seasonal',
+    slot: 'background',
+    cost: 420,
+    rarity: 'epic',
+    seasonId: 'halloween',
+    seasonName: 'Spooky Summit',
+    seasonType: 'holiday',
+    recurringSchedule: { startMonth: 10, startDay: 24, endMonth: 11, endDay: 2, previewDays: 14 },
+    description: 'A fog-drenched midnight peak silhouetted against a giant crimson harvest moon with bats circling the summit! (Halloween Exclusive)'
+  },
+  {
+    id: 'halloween_cobweb_border',
+    name: 'Spooky Cobweb Frame',
+    category: 'seasonal',
+    slot: 'borders',
+    cost: 220,
+    rarity: 'rare',
+    seasonId: 'halloween',
+    seasonName: 'Spooky Summit',
+    seasonType: 'holiday',
+    recurringSchedule: { startMonth: 10, startDay: 24, endMonth: 11, endDay: 2, previewDays: 14 },
+    description: 'A creepy cobweb-draped profile border with tiny lurking spiders! (Halloween Exclusive)'
+  },
 
   // 16. VETERANS DAY (November 9 – November 13)
   {
@@ -1399,6 +1491,26 @@ export const WORKSHOP_ITEMS = [
     description: 'VIP aura of cosmic stardust floating behind Kibo during climbs. Kibo Club exclusive.'
   },
   {
+    id: 'kibo_club_jetstream_trail',
+    name: 'Club Jetstream Trail',
+    category: 'fx',
+    slot: 'fx',
+    cost: 800,
+    rarity: 'epic',
+    requiresKiboClub: true,
+    description: 'Blazing speed-streaks of cyan and gold light trailing behind Kibo during every climb. Kibo Club exclusive.'
+  },
+  {
+    id: 'crystal_summit_crown',
+    name: 'Crystal Summit Crown',
+    category: 'headwear',
+    slot: 'headwear',
+    cost: 1000,
+    rarity: 'legendary',
+    requiresKiboClub: true,
+    description: 'Majestic faceted crystal crown with prismatic rainbow refractions. Kibo Club exclusive.'
+  },
+  {
     id: 'kibo_club_sub',
     name: 'Kibo Club Solo',
     category: 'premium',
@@ -1455,10 +1567,10 @@ export const SPARKS_PACKAGES = [
     id: 'sparks_pack_1',
     name: 'Handful of Sparks',
     sparks: 500,
-    price: '$1.99',
-    realMoneyPrice: '$1.99',
-    clubRealMoneyPrice: '$1.69',
-    familyClubRealMoneyPrice: '$1.59',
+    price: '$2.49',
+    realMoneyPrice: '$2.49',
+    clubRealMoneyPrice: '$2.09',
+    familyClubRealMoneyPrice: '$1.99',
     rarity: 'common',
     description: 'A glowing handful of 500 Sparks to grab that special cosmetic or power-up!'
   },

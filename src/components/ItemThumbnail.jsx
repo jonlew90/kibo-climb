@@ -519,12 +519,50 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           </g>
         )}
 
+        {itemId === 'sherpa_jacket' && (
+          <g>
+            {/* Collar / shearling lining */}
+            <path d="M 30 28 Q 50 20 70 28 L 68 48 Q 50 42 32 48 Z" fill="#F5F5F4" stroke="#D6D3D1" strokeWidth="2.5" />
+            {/* Jacket body */}
+            <path d="M 20 48 L 30 28 Q 50 20 70 28 L 80 48 L 80 82 Q 50 90 20 82 Z" fill="#0284C7" stroke="#075985" strokeWidth="3" />
+            {/* Zipper */}
+            <line x1="50" y1="32" x2="50" y2="80" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" />
+            <circle cx="50" cy="58" r="3.5" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+            {/* Fleece texture hint */}
+            <path d="M 28 55 Q 32 52 36 55" stroke="#BAE6FD" strokeWidth="2" strokeLinecap="round" fill="none" />
+            <path d="M 64 55 Q 68 52 72 55" stroke="#BAE6FD" strokeWidth="2" strokeLinecap="round" fill="none" />
+          </g>
+        )}
+
+        {itemId === 'jungle_explorer_vest' && (
+          <g>
+            {/* Vest body */}
+            <path d="M 22 30 Q 50 20 78 30 L 78 80 Q 50 88 22 80 Z" fill="#4D7C0F" stroke="#365314" strokeWidth="3" />
+            {/* Vest opening (V-neck) */}
+            <path d="M 38 28 L 50 52 L 62 28" fill="#374151" stroke="#1F2937" strokeWidth="2.5" />
+            {/* Pockets */}
+            <rect x="26" y="55" width="18" height="14" rx="3" fill="#3F6212" stroke="#365314" strokeWidth="2" />
+            <rect x="56" y="55" width="18" height="14" rx="3" fill="#3F6212" stroke="#365314" strokeWidth="2" />
+            {/* Pocket flap lines */}
+            <line x1="26" y1="62" x2="44" y2="62" stroke="#4D7C0F" strokeWidth="1.5" />
+            <line x1="56" y1="62" x2="74" y2="62" stroke="#4D7C0F" strokeWidth="1.5" />
+            {/* Buttons */}
+            <circle cx="50" cy="42" r="2.5" fill="#F59E0B" />
+            <circle cx="50" cy="54" r="2.5" fill="#F59E0B" />
+          </g>
+        )}
+
         {/* --- HIGH-FIDELITY COMPANION PETS --- */}
         {IS_PET_ID(itemId) && (
           <PetGraphic petId={itemId} isCompanion={false} />
         )}
 
         {/* --- FX --- */}
+        {/* Motion-hint helper: small animated badge shown on all FX items */}
+        {['sparkle_dust','fx_float_bounce','starlight_aura','fx_spin_dance','lightning_sparks','fx_hyper_speed','rainbow_nebula','fx_orbit_moons','celestial_trail','kibo_club_jetstream_trail','autumn_leaf_swirl','winter_snow_blizzard'].includes(itemId) && (
+          <text x="82" y="22" textAnchor="middle" fontSize="13" fill="#A78BFA" opacity="0.85" fontWeight="900">≋</text>
+        )}
+
         {itemId === 'sparkle_dust' && (
           <g>
             <ellipse cx="50" cy="25" rx="22" ry="7" fill="#CBD5E1" />
@@ -595,6 +633,11 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           <g>
             <circle cx="50" cy="50" r="32" fill="#FFFFFF" stroke="#0284C7" strokeWidth="4" />
             <ellipse cx="50" cy="58" rx="20" ry="14" fill="#E0F2FE" />
+            {/* Snowflake overlay */}
+            <line x1="50" y1="28" x2="50" y2="44" stroke="#BAE6FD" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+            <line x1="41" y1="31" x2="59" y2="41" stroke="#BAE6FD" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+            <line x1="41" y1="41" x2="59" y2="31" stroke="#BAE6FD" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+            <circle cx="50" cy="36" r="2" fill="#7DD3FC" />
           </g>
         )}
 
@@ -602,6 +645,12 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           <g>
             <circle cx="50" cy="50" r="32" fill="#1E293B" stroke="#0F172A" strokeWidth="4" />
             <ellipse cx="50" cy="58" rx="20" ry="14" fill="#334155" />
+            {/* Star dot overlay */}
+            <circle cx="36" cy="36" r="1.5" fill="#F8FAFC" opacity="0.9" />
+            <circle cx="62" cy="32" r="1" fill="#F8FAFC" opacity="0.8" />
+            <circle cx="42" cy="28" r="2" fill="#FDE047" opacity="0.75" />
+            <circle cx="66" cy="44" r="1.5" fill="#F8FAFC" opacity="0.7" />
+            <circle cx="58" cy="24" r="1" fill="#F8FAFC" opacity="0.6" />
           </g>
         )}
 
@@ -609,6 +658,11 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           <g>
             <circle cx="50" cy="50" r="32" fill="#10B981" stroke="#047857" strokeWidth="4" />
             <ellipse cx="50" cy="58" rx="20" ry="14" fill="#A7F3D0" />
+            {/* Gem facet lines */}
+            <line x1="50" y1="22" x2="35" y2="42" stroke="#34D399" strokeWidth="1.5" opacity="0.7" strokeLinecap="round" />
+            <line x1="50" y1="22" x2="65" y2="42" stroke="#34D399" strokeWidth="1.5" opacity="0.7" strokeLinecap="round" />
+            <line x1="35" y1="42" x2="65" y2="42" stroke="#6EE7B7" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
+            <circle cx="50" cy="22" r="2.5" fill="#ECFDF5" opacity="0.9" />
           </g>
         )}
 
@@ -616,6 +670,42 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
           <g>
             <circle cx="50" cy="50" r="32" fill="url(#thumbGoldGrad)" stroke="#B45309" strokeWidth="4" />
             <polygon points="50,22 53,30 60,32 55,37 56,45 50,41 44,45 45,37 40,32 47,30" fill="#FFFBEB" />
+          </g>
+        )}
+
+        {itemId === 'coral_reef_skin' && (
+          <g>
+            <circle cx="50" cy="50" r="32" fill="#FB923C" stroke="#EA580C" strokeWidth="4" />
+            <ellipse cx="50" cy="58" rx="20" ry="14" fill="#FED7AA" />
+            {/* Wave ring textures */}
+            <circle cx="50" cy="50" r="22" fill="none" stroke="#F97316" strokeWidth="1.5" opacity="0.5" strokeDasharray="5 4" />
+            <circle cx="50" cy="50" r="14" fill="none" stroke="#FDBA74" strokeWidth="1.5" opacity="0.6" strokeDasharray="4 3" />
+            <circle cx="50" cy="50" r="5" fill="#FFF7ED" opacity="0.7" />
+          </g>
+        )}
+
+        {itemId === 'storm_cloud_skin' && (
+          <g>
+            <circle cx="50" cy="50" r="32" fill="#374151" stroke="#1F2937" strokeWidth="4" />
+            <ellipse cx="50" cy="58" rx="20" ry="14" fill="#4B5563" />
+            {/* Lightning bolt */}
+            <path d="M 53 22 L 46 38 L 52 38 L 45 58 L 56 40 L 50 40 Z" fill="#FDE047" opacity="0.9" />
+            <circle cx="64" cy="28" r="2" fill="#E5E7EB" opacity="0.5" />
+            <circle cx="34" cy="34" r="1.5" fill="#E5E7EB" opacity="0.4" />
+          </g>
+        )}
+
+        {itemId === 'neon_cyber_pulse_skin' && (
+          <g>
+            <circle cx="50" cy="50" r="32" fill="#0F172A" stroke="#06B6D4" strokeWidth="4" />
+            <ellipse cx="50" cy="58" rx="20" ry="14" fill="#164E63" />
+            {/* Neon circuit grid lines */}
+            <line x1="30" y1="40" x2="70" y2="40" stroke="#22D3EE" strokeWidth="1.5" opacity="0.6" />
+            <line x1="30" y1="50" x2="70" y2="50" stroke="#22D3EE" strokeWidth="1.5" opacity="0.4" />
+            <line x1="40" y1="25" x2="40" y2="55" stroke="#A78BFA" strokeWidth="1.5" opacity="0.5" />
+            <line x1="60" y1="25" x2="60" y2="55" stroke="#A78BFA" strokeWidth="1.5" opacity="0.5" />
+            <circle cx="40" cy="40" r="2.5" fill="#22D3EE" opacity="0.9" />
+            <circle cx="60" cy="50" r="2.5" fill="#A78BFA" opacity="0.9" />
           </g>
         )}
 
@@ -1316,6 +1406,115 @@ export default function ItemThumbnail({ itemId, rarity = 'common', className = "
             <circle cx="8" cy="50" r="6" fill="#EF4444" />
             <circle cx="92" cy="50" r="6" fill="#EF4444" />
             <circle cx="50" cy="92" r="6" fill="#EF4444" />
+          </g>
+        )}
+
+        {/* --- NEW SEASONAL: AUTUMN LEAF SWIRL FX --- */}
+        {itemId === 'autumn_leaf_swirl' && (
+          <g>
+            <path d="M 50 50 Q 30 30 22 18" stroke="#DC2626" strokeWidth="2.5" strokeLinecap="round" fill="none" strokeDasharray="5 3" opacity="0.8" />
+            <path d="M 50 50 Q 72 28 78 16" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" fill="none" strokeDasharray="5 3" opacity="0.8" />
+            <path d="M 50 50 Q 78 68 82 80" stroke="#B45309" strokeWidth="2" strokeLinecap="round" fill="none" strokeDasharray="4 3" opacity="0.7" />
+            {/* Crimson maple leaf */}
+            <path d="M 38 32 C 36 26 42 22 44 28 C 46 22 52 24 50 30 C 54 24 58 28 54 32 L 50 44 L 46 32 Z" fill="#EF4444" />
+            {/* Amber leaf */}
+            <path d="M 62 24 C 60 18 66 14 68 20 C 70 14 76 16 74 22 L 70 34 L 66 22 Z" fill="#F59E0B" opacity="0.9" />
+            {/* Gold leaf */}
+            <path d="M 22 68 C 20 62 26 58 28 64 L 26 76 Z" fill="#FDE047" opacity="0.85" />
+          </g>
+        )}
+
+        {/* --- NEW SEASONAL: HAUNTED SUMMIT BACKGROUND --- */}
+        {itemId === 'bg_haunted_summit' && (
+          <g>
+            <rect x="10" y="10" width="80" height="80" rx="16" fill="#0F0A1A" stroke="#4C1D95" strokeWidth="3" />
+            {/* Big crimson harvest moon */}
+            <circle cx="68" cy="30" r="16" fill="#991B1B" opacity="0.85" />
+            <circle cx="68" cy="30" r="12" fill="#B91C1C" opacity="0.6" />
+            {/* Spooky mountain silhouette */}
+            <polygon points="10,90 38,42 66,90" fill="#1C0533" />
+            <polygon points="38,90 62,50 86,90" fill="#13012B" />
+            {/* Bats */}
+            <path d="M 30 28 Q 26 24 24 28 Q 26 26 30 28 Q 34 26 36 28 Q 34 24 30 28 Z" fill="#581C87" />
+            <path d="M 50 20 Q 46 16 44 20 Q 46 18 50 20 Q 54 18 56 20 Q 54 16 50 20 Z" fill="#6D28D9" opacity="0.8" />
+          </g>
+        )}
+
+        {/* --- NEW SEASONAL: HALLOWEEN COBWEB BORDER --- */}
+        {itemId === 'halloween_cobweb_border' && (
+          <g>
+            <rect x="8" y="8" width="84" height="84" rx="12" fill="#1C1917" stroke="#44403C" strokeWidth="9" />
+            {/* Top-left cobweb */}
+            <line x1="8" y1="8" x2="32" y2="8" stroke="#A8A29E" strokeWidth="1" opacity="0.7" />
+            <line x1="8" y1="8" x2="8" y2="32" stroke="#A8A29E" strokeWidth="1" opacity="0.7" />
+            <path d="M 8 8 Q 20 14 32 8" stroke="#A8A29E" strokeWidth="1" fill="none" opacity="0.5" />
+            <path d="M 8 8 Q 14 20 8 32" stroke="#A8A29E" strokeWidth="1" fill="none" opacity="0.5" />
+            <path d="M 8 8 Q 16 16 24 8" stroke="#A8A29E" strokeWidth="0.8" fill="none" opacity="0.4" />
+            {/* Spider */}
+            <circle cx="26" cy="22" r="3" fill="#292524" stroke="#A8A29E" strokeWidth="1" />
+            <line x1="23" y1="21" x2="18" y2="18" stroke="#A8A29E" strokeWidth="0.8" />
+            <line x1="29" y1="21" x2="34" y2="18" stroke="#A8A29E" strokeWidth="0.8" />
+            {/* Orange spider eyes */}
+            <circle cx="25" cy="22" r="1" fill="#F97316" />
+            <circle cx="28" cy="22" r="1" fill="#F97316" />
+            <text x="50" y="58" textAnchor="middle" fontSize="18" opacity="0.3">🕷️</text>
+          </g>
+        )}
+
+        {/* --- NEW SEASONAL: WINTER SNOW BLIZZARD FX --- */}
+        {itemId === 'winter_snow_blizzard' && (
+          <g>
+            {/* Spiraling snowflakes */}
+            <circle cx="50" cy="50" r="3" fill="#E0F2FE" />
+            <circle cx="28" cy="36" r="4" fill="#BAE6FD" opacity="0.9" />
+            <circle cx="74" cy="32" r="3" fill="#BAE6FD" opacity="0.8" />
+            <circle cx="20" cy="62" r="2.5" fill="#E0F2FE" opacity="0.7" />
+            <circle cx="78" cy="65" r="3.5" fill="#7DD3FC" opacity="0.85" />
+            <circle cx="40" cy="76" r="2" fill="#BAE6FD" opacity="0.6" />
+            <circle cx="62" cy="74" r="2.5" fill="#E0F2FE" opacity="0.7" />
+            {/* Snowflake shapes */}
+            <line x1="28" y1="30" x2="28" y2="42" stroke="#7DD3FC" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+            <line x1="22" y1="36" x2="34" y2="36" stroke="#7DD3FC" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+            <line x1="22" y1="30" x2="34" y2="42" stroke="#7DD3FC" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+            <line x1="22" y1="42" x2="34" y2="30" stroke="#7DD3FC" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+            {/* Spiral wind path */}
+            <path d="M 70 22 Q 82 40 70 58 Q 58 76 72 84" stroke="#BAE6FD" strokeWidth="1.5" fill="none" strokeDasharray="4 3" opacity="0.5" />
+          </g>
+        )}
+
+        {/* --- NEW CLUB EXCLUSIVE: JETSTREAM TRAIL FX --- */}
+        {itemId === 'kibo_club_jetstream_trail' && (
+          <g>
+            {/* Speed streaks */}
+            <path d="M 80 35 L 20 35" stroke="#22D3EE" strokeWidth="3.5" strokeLinecap="round" opacity="0.9" />
+            <path d="M 80 45 L 28 45" stroke="#FDE047" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
+            <path d="M 80 55 L 24 55" stroke="#22D3EE" strokeWidth="2.5" strokeLinecap="round" opacity="0.7" />
+            <path d="M 80 65 L 32 65" stroke="#FDE047" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+            {/* Motion gradient fade */}
+            <path d="M 78 30 L 10 30" stroke="#06B6D4" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+            <path d="M 78 70 L 16 70" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+            {/* Glowing lead dot */}
+            <circle cx="80" cy="50" r="7" fill="#22D3EE" opacity="0.9" />
+            <circle cx="80" cy="50" r="4" fill="#FFFFFF" />
+          </g>
+        )}
+
+        {/* --- NEW CLUB EXCLUSIVE: CRYSTAL SUMMIT CROWN --- */}
+        {itemId === 'crystal_summit_crown' && (
+          <g>
+            {/* Crown base */}
+            <path d="M 18 70 Q 20 48 24 38 Q 32 48 40 52 Q 44 34 50 26 Q 56 34 60 52 Q 68 48 76 38 Q 80 48 82 70 Z" fill="#E0F2FE" stroke="#22D3EE" strokeWidth="3" strokeLinejoin="round" />
+            {/* Crystal facets */}
+            <path d="M 18 70 Q 20 48 24 38 L 40 52 L 18 70" fill="#BAE6FD" opacity="0.5" />
+            <path d="M 82 70 Q 80 48 76 38 L 60 52 L 82 70" fill="#BAE6FD" opacity="0.5" />
+            <path d="M 40 52 L 50 26 L 60 52 L 50 62 Z" fill="#7DD3FC" opacity="0.6" />
+            {/* Gem tips */}
+            <circle cx="24" cy="38" r="4" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
+            <circle cx="50" cy="26" r="5" fill="#A78BFA" stroke="#7C3AED" strokeWidth="1.5" />
+            <circle cx="76" cy="38" r="4" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
+            {/* Rainbow refraction glints */}
+            <line x1="44" y1="44" x2="48" y2="40" stroke="#F472B6" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+            <line x1="56" y1="44" x2="52" y2="40" stroke="#FDE047" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
           </g>
         )}
 
