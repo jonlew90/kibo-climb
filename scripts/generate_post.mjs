@@ -19,7 +19,20 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const BLOG_JSON_DIR = path.join(ROOT_DIR, 'src', 'content', 'blog');
 
-import { AVAILABLE_BLOG_IMAGES } from '../src/utils/blogLoader.js';
+export const AVAILABLE_BLOG_IMAGES = [
+  'kibo_sitting_on_boulder_thinking_20260916125021.jpeg',
+  'kibo_rock_climbing_granite_cliff_20260916124919.jpeg',
+  'kibo-climbing.jpeg',
+  'Kibo_atop_mountain_summit_20260916124858.jpeg',
+  'kibo_sitting_on_boulder_20260916124901.jpeg',
+  'Kibo_celebrating_at_mountain_summit_20260916124923.jpeg',
+  'kibo_solving_stone_pattern.jpeg',
+  'Kibo_atop_mountain_summit_20260916124910.jpeg',
+  'kibo-summit.jpeg',
+  'Kibo_atop_mountain_summit_20260916124937.jpeg',
+  'kibo-thinking.jpeg',
+  'kibo_solving_stone_pattern2.jpeg'
+];
 
 function getCurriculumTier(subject, tier) {
   const targetTier = Number(tier) || 1;

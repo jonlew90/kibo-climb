@@ -61,15 +61,15 @@ describe('itemsCatalog', () => {
   });
 
   it('calculateSparksPackageSavings calculates correct percentage savings for bulk packs', () => {
-    const pack1 = itemsCatalog.SPARKS_PACKAGES[0]; // 500 sparks / $1.99 -> base rate
-    const pack2 = itemsCatalog.SPARKS_PACKAGES[1]; // 1200 sparks / $3.99 -> ~16% savings
-    const pack3 = itemsCatalog.SPARKS_PACKAGES[2]; // 3000 sparks / $7.99 -> ~33% savings
-    const pack4 = itemsCatalog.SPARKS_PACKAGES[3]; // 10000 sparks / $19.99 -> ~50% savings
+    const pack1 = itemsCatalog.SPARKS_PACKAGES[0]; // 500 sparks / $2.49 -> base rate ($0.00498/spark)
+    const pack2 = itemsCatalog.SPARKS_PACKAGES[1]; // 1200 sparks / $3.99 -> ~33% savings (standard: $5.976)
+    const pack3 = itemsCatalog.SPARKS_PACKAGES[2]; // 3000 sparks / $7.99 -> ~47% savings or ~33%
+    const pack4 = itemsCatalog.SPARKS_PACKAGES[3]; // 10000 sparks / $19.99 -> ~60% savings
 
     expect(itemsCatalog.calculateSparksPackageSavings(pack1)).toBeNull();
-    expect(itemsCatalog.calculateSparksPackageSavings(pack2)).toBe(16);
-    expect(itemsCatalog.calculateSparksPackageSavings(pack3)).toBe(33);
-    expect(itemsCatalog.calculateSparksPackageSavings(pack4)).toBe(50);
+    expect(itemsCatalog.calculateSparksPackageSavings(pack2)).toBe(33);
+    expect(itemsCatalog.calculateSparksPackageSavings(pack3)).toBe(47);
+    expect(itemsCatalog.calculateSparksPackageSavings(pack4)).toBe(60);
     expect(itemsCatalog.calculateSparksPackageSavings(null)).toBeNull();
   });
 
