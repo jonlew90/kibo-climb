@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "clean:images": "exiftool -all= -overwrite_original -r public/ 2>/dev/null || true",
     "build:blog": "node scripts/build_blog_html.mjs",
-    "build": "npm run build:blog && vite build",
+    "build": "npm run clean:images && npm run build:blog && vite build",
     "indexnow": "node scripts/notify_indexnow.js",
     "preview": "vite preview",
     "test": "vitest run"

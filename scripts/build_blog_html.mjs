@@ -370,6 +370,9 @@ function generatePostHtml(data, allPosts = []) {
   <meta property="og:title" content="${title.replace(/"/g, '&quot;')}" />
   <meta property="og:description" content="${metaDescription.replace(/"/g, '&quot;')}" />
   <meta property="og:image" content="${featuredImageUrl}" />
+  <meta property="article:author" content="Kibo Climb" />
+  <meta property="article:published_time" content="${publishedAt}" />
+  <meta name="author" content="Kibo Climb" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
