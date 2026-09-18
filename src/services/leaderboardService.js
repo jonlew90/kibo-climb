@@ -32,22 +32,13 @@ class LeaderboardService {
     return this.currentUser || auth.currentUser;
   }
 
-  // Ensure anonymous auth session for cloud sync
+  // Listen for active auth session changes without creating phantom accounts for crawlers
   initAuth() {
     if (this.isAuthInitialized) return;
     this.isAuthInitialized = true;
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        this.currentUser = user;
-      } else {
-        try {
-          const userCred = await signInAnonymously(auth);
-          this.currentUser = userCred.user;
-        } catch (error) {
-          console.warn('LeaderboardService: Auth error, fallback to local offline mode', error);
-        }
-      }
+    onAuthStateChanged(auth, (user) => {
+      this.currentUser = user || null;
     });
   }
 
