@@ -446,7 +446,7 @@ export default function AccountLinkModal({
               </span>
             </button>
 
-            {/* Apple 1-Tap Link */}
+            {/* Apple 1-Tap Link (Hidden pending Apple Developer account / DUNS verification)
             <button
               onClick={() => handleLinkProvider('apple')}
               disabled={!!loadingProvider}
@@ -457,6 +457,7 @@ export default function AccountLinkModal({
               </svg>
               <span>{loadingProvider === 'apple' ? 'Signing in with Apple...' : 'Sign in with Apple'}</span>
             </button>
+            */}
 
             {/* Passwordless Magic Link Email Option */}
             {!showEmailInput ? (

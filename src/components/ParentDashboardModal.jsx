@@ -2492,7 +2492,7 @@ export default function ParentDashboardModal({
                     </span>
                     <span className="text-xs text-slate-500 font-medium block">
                       {authService.getAuthState().isAnonymous
-                        ? 'Link with Google, Apple, or Email to back up progress across devices. Includes free 7-day Kibo Club Solo trial + 200 ⚡!'
+                        ? 'Link with Google or Email to back up progress across devices. Includes free 7-day Kibo Club Solo trial + 200 ⚡!'
                         : 'Cloud backup active with parent authentication'}
                     </span>
                   </div>
