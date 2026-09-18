@@ -194,7 +194,6 @@ export default function App() {
     function handleClickOutside(event) {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
-        setShowSavedTooltip(false);
       }
       if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
         setShowSubjectDropdown(false);
@@ -232,7 +231,6 @@ export default function App() {
   const [linkModalIsLoginOnly, setLinkModalIsLoginOnly] = useState(false);
   const [currentAuthState, setCurrentAuthState] = useState(() => authService.getAuthState());
   const [syncStatus, setSyncStatus] = useState('synced');
-  const [showSavedTooltip, setShowSavedTooltip] = useState(false);
 
   useEffect(() => {
     const unsubAuth = authService.subscribeAuthState?.((user) => {
@@ -2459,47 +2457,14 @@ export default function App() {
                   </div>
 
                   {currentAuthState.isAuthenticated && !currentAuthState.isAnonymous ? (
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          soundFx.playKeyTap();
-                          setShowSavedTooltip(prev => !prev);
-                        }}
-                        className="flex items-center justify-between px-2.5 py-2 rounded-xl bg-teal-50 text-teal-800 font-black text-xs border border-teal-200 transition-colors w-full cursor-pointer hover:bg-teal-100/70"
-                        title="Click to view cloud backup details"
-                      >
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <Check className="w-3.5 h-3.5 text-teal-600 stroke-[3] shrink-0" />
-                          <span className="truncate text-xs font-black">{currentAuthState.email || 'Cloud Account'}</span>
-                        </div>
-                        <span className="text-[10px] bg-teal-200/80 text-teal-900 px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0">
-                          Active
-                        </span>
-                      </button>
-
-                      {/* Saved Status Tooltip Card */}
-                      {showSavedTooltip && (
-                        <div className="absolute bottom-full left-0 mb-2 w-64 bg-slate-900/95 text-white p-3 rounded-2xl shadow-2xl border border-slate-700 z-50 text-xs animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md">
-                          <div className="flex items-center gap-1.5 text-teal-400 font-black text-xs mb-1">
-                            <Cloud className="w-4 h-4 text-teal-400 stroke-[2.5]" />
-                            <span>Cloud Backup Active</span>
-                          </div>
-                          <p className="text-slate-300 text-[11px] leading-relaxed">
-                            Your account is permanently linked{currentAuthState.email ? <> to <strong className="text-white">{currentAuthState.email}</strong></> : ''}. All streaks, sparks, and progress sync automatically across your family's devices!
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              soundFx.playKeyTap();
-                              setShowSavedTooltip(false);
-                            }}
-                            className="mt-2 text-teal-300 font-black text-[10px] hover:underline"
-                          >
-                            Close
-                          </button>
-                        </div>
-                      )}
+                    <div className="flex items-center justify-between px-2.5 py-2 rounded-xl bg-teal-50 text-teal-800 font-black text-xs border border-teal-200 w-full select-none">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Check className="w-3.5 h-3.5 text-teal-600 stroke-[3] shrink-0" />
+                        <span className="truncate text-xs font-black">{currentAuthState.email || 'Cloud Account'}</span>
+                      </div>
+                      <span className="text-[10px] bg-teal-200/80 text-teal-900 px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0">
+                        Active
+                      </span>
                     </div>
                   ) : (
                     <button
