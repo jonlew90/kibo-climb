@@ -181,9 +181,8 @@ class SoundSystem {
     osc.stop(now + 0.22);
   }
 
-  // Play key tap click audio + subtle haptic tap
+  // Play key tap click audio
   playKeyTap() {
-    triggerHaptic(15);
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
