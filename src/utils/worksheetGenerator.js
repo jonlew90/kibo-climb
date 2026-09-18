@@ -763,8 +763,14 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
     </div>
 
     <div class="footer">
-      <div>Kibo Climb • Offline Skill Practice & Fluency • https://kiboclimb.com</div>
-      <div>Page 1 of 2 • Student Worksheet</div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=48x48&data=${encodeURIComponent(canonicalUrl)}&margin=0" alt="Scan to practice online" style="width: 32px; height: 32px; border-radius: 4px;" />
+        <div>
+          <div><strong>Scan to practice online:</strong> ${canonicalUrl}</div>
+          <div style="color: #64748b; font-size: 9px;">Kibo Climb • Offline Skill Practice & Fluency</div>
+        </div>
+      </div>
+      <div style="text-align: right;">Page 1 of 2 • Student Worksheet</div>
     </div>
   </div>
 
@@ -794,8 +800,14 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
     </div>
 
     <div class="footer">
-      <div>Kibo Climb • Offline Skill Practice & Fluency • https://kiboclimb.com</div>
-      <div>Page 2 of 2 • Parent Answer Key</div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=48x48&data=${encodeURIComponent(canonicalUrl)}&margin=0" alt="Scan for interactive hints" style="width: 32px; height: 32px; border-radius: 4px;" />
+        <div>
+          <div><strong>Digital Answer Guide & Practice:</strong> ${canonicalUrl}</div>
+          <div style="color: #64748b; font-size: 9px;">Kibo Climb • Verified Solutions & Hint Walkthroughs</div>
+        </div>
+      </div>
+      <div style="text-align: right;">Page 2 of 2 • Parent Answer Key</div>
     </div>
   </div>
 

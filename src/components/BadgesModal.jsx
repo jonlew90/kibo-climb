@@ -140,7 +140,16 @@ export default function BadgesModal({
   const fastestTime = personalRecords?.fastest12QuestionsTime || personalRecords?.fastest10QuestionsTime || null;
   const perfectRuns = personalRecords?.mostPerfectSessions || 0;
 
-  const filteredBadges = BADGES_CATALOG.filter((b) => b.category === activeCategory);
+  // Filter and sort badges: 1. Unlocked/Earned badges at the top, 2. Locked badges below
+  const filteredBadges = BADGES_CATALOG
+    .filter((b) => b.category === activeCategory)
+    .sort((a, b) => {
+      const aUnlocked = unlockedSet.has(a.id);
+      const bUnlocked = unlockedSet.has(b.id);
+      if (aUnlocked && !bUnlocked) return -1;
+      if (!aUnlocked && bUnlocked) return 1;
+      return 0;
+    });
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-amber-50 via-sky-50 to-teal-50 flex flex-col w-full h-full overflow-hidden animate-fade-in text-slate-800">

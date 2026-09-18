@@ -108,9 +108,9 @@ describe('audio.js', () => {
       expect(mockOscillator.start).toHaveBeenCalled();
     });
 
-    it('playKeyTap plays sound and haptics', () => {
+    it('playKeyTap plays sound and does not trigger haptics', () => {
       soundFx.playKeyTap();
-      expect(global.navigator.vibrate).toHaveBeenCalledWith(15);
+      expect(global.navigator.vibrate).not.toHaveBeenCalled();
       expect(mockContext.createOscillator).toHaveBeenCalled();
       expect(mockOscillator.type).toBe('triangle');
       expect(mockOscillator.start).toHaveBeenCalled();

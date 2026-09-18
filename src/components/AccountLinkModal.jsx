@@ -8,6 +8,7 @@ import CoppaPrivacyPolicyScreen from './CoppaPrivacyPolicyScreen';
 import CoppaConsentModal from './CoppaConsentModal';
 import PinGateModal from './PinGateModal';
 import FamilyPlanUpgradeModal from './FamilyPlanUpgradeModal';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function AccountLinkModal({
   isOpen,
@@ -515,9 +516,28 @@ export default function AccountLinkModal({
                 )}
               </div>
             )}
+            {/* Desktop to Mobile Handoff QR Code */}
+            <div className="hidden sm:flex items-center gap-3 p-3 bg-indigo-50/60 border border-indigo-100 rounded-2xl text-left">
+              <div className="bg-white p-1.5 rounded-xl border border-indigo-200 shadow-2xs shrink-0">
+                <QRCodeSVG
+                  value="https://www.kiboclimb.com"
+                  size={56}
+                  level="M"
+                  includeMargin={false}
+                />
+              </div>
+              <div className="space-y-0.5 min-w-0">
+                <span className="text-xs font-black text-indigo-950 flex items-center gap-1.5">
+                  <Smartphone className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Play on Tablet or Phone</span>
+                </span>
+                <p className="text-[11px] text-indigo-800/80 font-medium leading-snug">
+                  Scan with your phone or iPad camera to launch Kibo Climb instantly on mobile.
+                </p>
+              </div>
+            </div>
           </div>
         )}
-
 
         {/* Security & COPPA Footer Note */}
         <div className="space-y-0.5 pt-1.5 border-t border-slate-100">

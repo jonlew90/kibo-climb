@@ -169,17 +169,24 @@ export default function QuestsScreen({
     }
   };
 
-  // Filter quests based on tab
+  // Filter and sort quests based on tab (Claimable -> In-Progress -> Claimed)
   const getFilteredQuests = () => {
     const daily = (questState?.daily || []).map(q => ({ ...q, type: 'daily' }));
     const weekly = (questState?.weekly || []).map(q => ({ ...q, type: 'weekly' }));
     const team2 = (questState?.team2 || []).map(q => ({ ...q, type: 'team2' }));
     const team3 = (questState?.team3 || []).map(q => ({ ...q, type: 'team3' }));
 
-    if (activeTab === 'weekly') return weekly;
-    if (activeTab === 'team2') return team2;
-    if (activeTab === 'team3') return team3;
-    return daily;
+    let list = daily;
+    if (activeTab === 'weekly') list = weekly;
+    else if (activeTab === 'team2') list = team2;
+    else if (activeTab === 'team3') list = team3;
+
+    // Stable sort: 1. Claimable (completed & !claimed), 2. In-Progress, 3. Claimed
+    return [...list].sort((a, b) => {
+      const aClaimable = a.completed && !a.claimed ? 0 : a.claimed ? 2 : 1;
+      const bClaimable = b.completed && !b.claimed ? 0 : b.claimed ? 2 : 1;
+      return aClaimable - bClaimable;
+    });
   };
 
   const filteredQuests = getFilteredQuests();
