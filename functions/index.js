@@ -599,12 +599,73 @@ exports.createStripeCheckoutSession = onCall(
     const isKnownSubscription = !!priceId;
 
     // For one-time sparks purchases, price_data is still needed (no pre-configured price)
-    const sparksMap = { sparks_pack_1: 499, sparks_pack_2: 1199, sparks_pack_3: 2999, sparks_pack_4: 9999 };
-    const sparksAmountCents = sparksMap[itemId];
+    // Synchronized with itemsCatalog.js SPARKS_PACKAGES ($2.49, $3.99, $7.99, $19.99)
+    const sparksPriceMap = {
+      sparks_pack_1: 249,
+      sparks_pack_2: 399,
+      sparks_pack_3: 799,
+      sparks_pack_4: 1999
+    };
+    const sparksAmountCents = sparksPriceMap[itemId];
 
     if (!isKnownSubscription && !sparksAmountCents) {
       throw new HttpsError('invalid-argument', `Unknown item or plan: ${itemId}`);
     }
+
+    // Check for active recurring seasonal sale discounts (Back to School, Cyber Week, New Year, Summer)
+    // Synchronized with itemsCatalog.js REAL_MONEY_SALE_EVENTS
+    const getActiveSeasonalDiscount = () => {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const nowTime = now.getTime();
+
+      const events = [
+        {
+          id: 'back_to_school_sale',
+          name: 'Back to School Sale',
+          startMonth: 8, startDay: 15, endMonth: 9, endDay: 15,
+          discounts: { kibo_club_sub_annual: 25, kibo_club_family_annual: 25 }
+        },
+        {
+          id: 'black_friday_sale',
+          name: 'Cyber Week Mega Sale',
+          startMonth: 11, startDay: 20, endMonth: 12, endDay: 2,
+          discounts: { kibo_club_sub_annual: 33, kibo_club_family_annual: 33 }
+        },
+        {
+          id: 'new_year_sale',
+          name: 'New Year Learning Kickoff',
+          startMonth: 12, startDay: 26, endMonth: 1, endDay: 15,
+          discounts: { kibo_club_sub_annual: 25, kibo_club_family_annual: 25 }
+        },
+        {
+          id: 'summer_kickoff_sale',
+          name: 'Summer Learning Kickoff',
+          startMonth: 6, startDay: 1, endMonth: 6, endDay: 30,
+          discounts: { kibo_club_sub_annual: 20, kibo_club_family_annual: 20 }
+        }
+      ];
+
+      for (const event of events) {
+        for (const yr of [currentYear - 1, currentYear, currentYear + 1]) {
+          const isSpanning = event.startMonth > event.endMonth;
+          const startYear = yr;
+          const endYear = isSpanning ? yr + 1 : yr;
+          const start = new Date(Date.UTC(startYear, event.startMonth - 1, event.startDay, 0, 0, 0));
+          const end = new Date(Date.UTC(endYear, event.endMonth - 1, event.endDay, 23, 59, 59, 999));
+
+          if (nowTime >= start.getTime() && nowTime <= end.getTime()) {
+            const discountPct = event.discounts[itemId];
+            if (discountPct) {
+              return { eventId: event.id, eventName: event.name, discountPct };
+            }
+          }
+        }
+      }
+      return null;
+    };
+
+    const activeDiscount = isKnownSubscription ? getActiveSeasonalDiscount() : null;
 
     try {
       const sessionConfig = {
@@ -629,6 +690,35 @@ exports.createStripeCheckoutSession = onCall(
           isSubscription: isKnownSubscription ? 'true' : 'false',
         },
       };
+
+      // Automatically apply active seasonal sale discount if running
+      if (activeDiscount) {
+        try {
+          const couponId = `AUTO_${activeDiscount.eventId.toUpperCase()}_${activeDiscount.discountPct}PCT`;
+          // Create coupon idempotently in Stripe
+          try {
+            await stripeClient.coupons.create({
+              id: couponId,
+              name: `${activeDiscount.eventName} (${activeDiscount.discountPct}% Off)`,
+              percent_off: activeDiscount.discountPct,
+              duration: 'once', // Discounts initial billing period (1 year), then auto-renews at catalog price
+            });
+          } catch (couponErr) {
+            // If already exists, ignore 400 error
+            if (couponErr.code !== 'resource_already_exists') {
+              console.warn('Coupon creation notice:', couponErr.message);
+            }
+          }
+
+          sessionConfig.discounts = [{ coupon: couponId }];
+        } catch (discErr) {
+          console.error('Could not attach automatic seasonal discount:', discErr);
+          sessionConfig.allow_promotion_codes = true;
+        }
+      } else {
+        // Allow manual promo codes when no automatic event coupon is attached
+        sessionConfig.allow_promotion_codes = true;
+      }
 
       // Reuse existing Customer or always create one (so the Customer ID can be persisted)
       if (existingCustomerId) {

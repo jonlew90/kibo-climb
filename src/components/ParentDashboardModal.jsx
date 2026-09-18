@@ -2355,7 +2355,7 @@ export default function ParentDashboardModal({
               </div>
 
               <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                Have an educator coupon, winback promo code, or gift voucher? Enter it here to grant bonus Sparks, subscriptions, or exclusive items to your child's profile.
+                Have an educator voucher, gift code, or cosmetic unlock code? Enter it here to grant bonus Sparks or exclusive items. (For subscription discount codes, enter them directly during Stripe Checkout).
               </p>
 
               <div className="flex flex-col sm:flex-row items-center gap-2">
