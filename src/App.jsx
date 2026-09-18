@@ -625,31 +625,39 @@ export default function App() {
         if (allProfiles && allProfiles.some(p => p.id === profile)) {
           storageService.setActiveProfileId(profile);
           setActiveProfileId(profile);
+          syncAppStateWithStorage();
         }
       }
 
       if (subject && ['math', 'words', 'world', 'coding'].includes(subject)) {
         setActiveSubject(subject);
         storageService.setLastActiveSubject(subject);
+        syncAppStateWithStorage(subject);
+      }
+
+      // If an explicit action is provided via deep link, dismiss initial profile selector screen
+      if (action) {
+        setShowProfileSelector(false);
       }
 
       if (action === 'shop' || action === 'workshop' || action === 'store' || action === 'closet') {
         const targetMode = mode || (action === 'closet' ? 'closet' : 'shop');
         const targetHub = hub || tab || 'wearables';
         handleOpenWorkshop(null, targetHub, targetMode);
-      } else if (action === 'parent-settings' || action === 'parent-dashboard' || action === 'parent' || action === 'parents') {
+      } else if (action === 'parent-settings' || action === 'parent-dashboard' || action === 'parent' || action === 'parents' || action === 'notifications') {
+        const initialTab = action === 'notifications' ? 'notifications' : (tab || 'overview');
         if (sessionId) {
-          setParentDashboardTab(tab || 'verification');
+          setParentDashboardTab(initialTab);
           setParentDashboardHighlight(highlight || 'family_plan');
           const entry = navigationHistory.push({
             type: VIEW_TYPES.ROUTE,
             id: VIEWS.PARENT_DASHBOARD,
             path: '/parent',
-            params: { tab: tab || 'verification', highlight: highlight || 'family_plan' }
+            params: { tab: initialTab, highlight: highlight || 'family_plan' }
           });
           applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
         } else {
-          handleOpenPinGate('deep_link', tab || 'overview', highlight || null);
+          handleOpenPinGate('deep_link', initialTab, highlight || null);
         }
       } else if (sessionId && !action) {
         // Fallback for returning from Stripe session if action parameter was not retained
