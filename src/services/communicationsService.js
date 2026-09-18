@@ -4,7 +4,8 @@
  */
 
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../config/firebase';
+import { signInAnonymously } from 'firebase/auth';
+import { functions, auth } from '../config/firebase';
 import { generateWeeklyDigestData, formatWeeklyDigestText, formatWeeklyDigestHtml, getAppBaseUrl } from '../utils/weeklyDigest';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 
@@ -97,9 +98,11 @@ class CommunicationsService {
 
     const payloadHtml = htmlBody || this.formatEmailHtml({ subject, message });
 
-    console.log(`📡 [CommunicationsService] Invoking sendParentEmail Cloud Function for: ${email}`);
-
     try {
+      if (!auth.currentUser) {
+        await signInAnonymously(auth);
+      }
+
       const sendEmailCallable = httpsCallable(functions, 'sendParentEmail');
       const response = await sendEmailCallable({
         to: email,
