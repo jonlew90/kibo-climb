@@ -132,7 +132,7 @@ exports.sendParentEmail = onCall(
     const cleanHtml = htmlBody ? sanitizeEmailHtml(String(htmlBody)).slice(0, 150000) : undefined;
     const cleanText = textBody ? String(textBody).slice(0, 50000) : undefined;
 
-    const senderEmail = process.env.SENDER_EMAIL || "Kibo Climb <hello@kiboclimb.com>";
+    const senderEmail = process.env.SENDER_EMAIL || "Kibo Climb <noreply@kiboclimb.com>";
 
     try {
       const response = await resend.emails.send({
