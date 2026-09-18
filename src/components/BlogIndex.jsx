@@ -5,7 +5,6 @@ import { updateBlogIndexSeo } from '../utils/seoMetadata';
 import { KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
 import { Sparkles, BookOpen, ArrowRight, FileText, Compass, ChevronRight } from 'lucide-react';
 import SocialFollowStrip from './SocialFollowStrip';
-import '../../public/css/blog.css';
 
 const POSTS_PER_PAGE = 12;
 

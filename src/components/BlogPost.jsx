@@ -5,7 +5,6 @@ import { getBlogPostBySlug, getAdjacentBlogPosts, formatDate } from '../utils/bl
 import { updateBlogPostSeo } from '../utils/seoMetadata';
 import { ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
 import SocialFollowStrip from './SocialFollowStrip';
-import '../../public/css/blog.css';
 
 function formatInlineMarkdown(text, onNavigate) {
   if (!text) return '';
