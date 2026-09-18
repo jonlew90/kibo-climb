@@ -108,7 +108,12 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
       }
 
       // 2. Initialize Stripe and redirect to checkout
-      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx');
+      const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+      if (!publishableKey) {
+        throw new Error("Stripe checkout configuration is temporarily unavailable. Please try again later.");
+      }
+
+      const stripe = await loadStripe(publishableKey);
 
       if (!stripe) {
         throw new Error("Stripe failed to load");

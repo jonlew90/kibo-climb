@@ -105,6 +105,6 @@ describe('AccountLinkModal Onboarding Login Mode', () => {
     // Should contain login modal elements
     expect(text).toContain('Log In');
     expect(text).toContain('Continue with Google');
-    expect(text).toContain('Sign in with Apple');
+    expect(text).toContain('Log in with Email Magic Link');
   });
 });
