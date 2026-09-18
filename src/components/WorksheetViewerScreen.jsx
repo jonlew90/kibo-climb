@@ -6,6 +6,7 @@ import { soundFx } from '../utils/audio';
 import { analyticsService } from '../services/analyticsService';
 import { storageService } from '../services/storageService';
 import SocialFollowStrip from './SocialFollowStrip';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function WorksheetViewerScreen({
   worksheetId,
@@ -475,13 +476,19 @@ export default function WorksheetViewerScreen({
           </div>
 
           {/* Page 1 Footer */}
-          <div className="border-t border-slate-200 pt-3 flex flex-col sm:flex-row justify-between items-center text-[10px] text-slate-500 font-bold gap-1">
-            <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
-              <span>🐾 Kibo Climb</span>
-              <span>•</span>
-              <span className="text-slate-700">www.kiboclimb.com</span>
-              <span>•</span>
-              <span>© 2026 Kibo Climb. Single classroom &amp; personal home use only.</span>
+          <div className="border-t border-slate-200 pt-3 flex flex-col sm:flex-row justify-between items-center text-[10px] text-slate-500 font-bold gap-2">
+            <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
+              <div className="bg-white p-0.5 rounded border border-slate-200 shadow-2xs shrink-0">
+                <QRCodeSVG
+                  value={`https://www.kiboclimb.com${getCanonicalPath(worksheet)}`}
+                  size={32}
+                  level="M"
+                />
+              </div>
+              <div className="text-left">
+                <div className="font-extrabold text-slate-700">Scan to practice online: https://kiboclimb.com{getCanonicalPath(worksheet)}</div>
+                <div className="text-[9px] text-slate-400">🐾 Kibo Climb • Single classroom &amp; personal home use only.</div>
+              </div>
             </div>
             <div className="shrink-0 text-slate-600 font-extrabold">Page 1 of 2 • Practice Drill</div>
           </div>
@@ -637,11 +644,19 @@ export default function WorksheetViewerScreen({
             )}
           </div>
 
-          <div className="border-t border-slate-200 pt-3 flex flex-col sm:flex-row justify-between items-center text-[10px] text-slate-500 font-bold gap-1">
-            <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
-              <span>🔑 Kibo Climb Answer Key</span>
-              <span>•</span>
-              <span>© 2026 Kibo Climb. Not for redistribution or resale.</span>
+          <div className="border-t border-slate-200 pt-3 flex flex-col sm:flex-row justify-between items-center text-[10px] text-slate-500 font-bold gap-2">
+            <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
+              <div className="bg-white p-0.5 rounded border border-slate-200 shadow-2xs shrink-0">
+                <QRCodeSVG
+                  value={`https://www.kiboclimb.com${getCanonicalPath(worksheet)}`}
+                  size={32}
+                  level="M"
+                />
+              </div>
+              <div className="text-left">
+                <div className="font-extrabold text-purple-950">Digital Answer Guide &amp; Practice: https://kiboclimb.com{getCanonicalPath(worksheet)}</div>
+                <div className="text-[9px] text-slate-400">🔑 Kibo Climb Answer Key • Not for redistribution or resale.</div>
+              </div>
             </div>
             <div className="shrink-0 text-purple-900 font-extrabold">Page 2 of 2 • Solutions Guide</div>
           </div>
