@@ -46,10 +46,6 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
       // 1. Call Firebase Cloud Function to create a Checkout Session
       const createCheckoutSession = httpsCallable(functions, 'createStripeCheckoutSession');
 
-      // Parse the price string (e.g., "$4.99/mo" or "$4.99") to a float amount
-      const priceString = packageInfo.realMoneyPrice || packageInfo.price || "0";
-      const match = priceString.match(/[\d.]+/);
-      const priceAmount = match ? parseFloat(match[0]) : 0;
 
       const activeProfile = storageService.getActiveProfile();
 
@@ -92,9 +88,7 @@ export default function StripeCheckoutModal({ isOpen, onClose, packageInfo, onCo
 
       const response = await createCheckoutSession({
         itemId: packageInfo.id,
-        itemName: packageInfo.name,
-        priceAmount: priceAmount,
-        isSubscription: !!packageInfo.isSubscription || priceString.includes('/'),
+        isSubscription: !!packageInfo.isSubscription,
         profileId: activeProfile?.id,
         successUrl,
         cancelUrl

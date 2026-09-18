@@ -1369,9 +1369,14 @@ export const storageService = {
   },
 
   /**
-   * Enforces the "cancel at period end" policy.
-   * Keeps access until currentPeriodEnd without prorated refund.
-   * Checks for rapid cancellation abuse after purchasing discounted items.
+   * Marks the subscription as canceling in local state for immediate UI feedback.
+   *
+   * ⚠️  DISPLAY-ONLY after Stripe Billing migration.
+   * The authoritative cancel path is the Stripe Customer Portal (`createStripePortalSession`).
+   * When the user cancels there, Stripe fires `customer.subscription.deleted` →
+   * the Cloud Function webhook revokes entitlements in Firestore → the app reads from Firestore.
+   * This method should only be called to optimistically update local UI while
+   * the webhook propagates, not as the primary cancel mechanism.
    */
   cancelSubscription(cancelAtPeriodEnd = true) {
     const state = safeGetProfilesState();

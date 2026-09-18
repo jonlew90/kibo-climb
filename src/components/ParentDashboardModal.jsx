@@ -28,6 +28,9 @@ import CoppaPrivacyPolicyScreen from './CoppaPrivacyPolicyScreen';
 import SocialFollowStrip from './SocialFollowStrip';
 import { parentChildService } from '../services/parentChildService';
 import { validateSafeChildUsername } from '../utils/safeNames';
+import { httpsCallable } from 'firebase/functions';
+import { functions, auth } from '../config/firebase';
+import { signInAnonymously } from 'firebase/auth';
 
 const DAYS_OF_WEEK = [
   { idx: 0, label: 'Su' },
@@ -98,6 +101,24 @@ export default function ParentDashboardModal({
   const [showCancelSubConfirm, setShowCancelSubConfirm] = useState(false);
   const [subActionMsg, setSubActionMsg] = useState('');
   const [subRefreshKey, setSubRefreshKey] = useState(0);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  // Opens the Stripe Customer Portal so parents can manage billing, update card, or cancel.
+  const handleOpenBillingPortal = async () => {
+    setPortalLoading(true);
+    try {
+      if (!auth.currentUser) await signInAnonymously(auth);
+      const createPortalSession = httpsCallable(functions, 'createStripePortalSession');
+      const { data } = await createPortalSession({ returnUrl: window.location.href });
+      if (data?.url) {
+        window.open(data.url, '_blank', 'noopener,noreferrer');
+      }
+    } catch (e) {
+      setSubActionMsg('Could not open billing portal. Please try again or contact support.');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
 
   // Helper to extract a profile's subject specific data
   const getProfileSubjectData = (profileId, subId) => {
@@ -2147,61 +2168,34 @@ export default function ParentDashboardModal({
                       </button>
                     </div>
                   ) : (hasFam || hasSingle) ? (
-                    <div className="pt-2 border-t border-slate-200/80">
-                      {!showCancelSubConfirm ? (
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-slate-500 font-medium">
-                            Auto-renews at end of period. Need to stop renewal?
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              soundFx.playKeyTap();
-                              setShowCancelSubConfirm(true);
-                            }}
-                            className="text-xs text-rose-600 hover:text-rose-700 font-bold underline cursor-pointer"
-                          >
-                            Cancel Membership
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 space-y-2 text-xs">
-                          <div className="flex items-center gap-1.5 font-black text-rose-900">
-                            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                            <span>Confirm Subscription Cancellation</span>
-                          </div>
-                          <p className="text-slate-600 leading-relaxed font-medium">
-                            Per our Terms of Service, cancellations take effect at the conclusion of your active billing period ({currentPlan.currentPeriodEnd ? new Date(currentPlan.currentPeriodEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'current cycle'}). <strong>No prorated cash returns are issued for partial periods.</strong> You retain full VIP access until that date.
-                          </p>
-                          <div className="flex items-center gap-2 pt-1">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                soundFx.playKeyTap();
-                                storageService.cancelSubscription(true);
-                                setShowCancelSubConfirm(false);
-                                setSubActionMsg('Membership scheduled to cancel at period end. Access remains active.');
-                                setSubRefreshKey(k => k + 1);
-                              }}
-                              className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-lg shadow-xs transition-transform active:scale-95 cursor-pointer"
-                            >
-                              Confirm Cancellation
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                soundFx.playKeyTap();
-                                setShowCancelSubConfirm(false);
-                              }}
-                              className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition-transform active:scale-95 cursor-pointer"
-                            >
-                              Never Mind
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                    <div className="pt-2 border-t border-slate-200/80 space-y-2">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className="text-[11px] text-slate-500 font-medium leading-snug">
+                          Need to update your card, change plans, or cancel? Use the billing portal.
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFx.playKeyTap();
+                            handleOpenBillingPortal();
+                          }}
+                          disabled={portalLoading}
+                          className="shrink-0 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs rounded-xl shadow-xs transition-transform active:scale-95 cursor-pointer disabled:opacity-60 flex items-center gap-1.5"
+                        >
+                          {portalLoading ? (
+                            <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                            </svg>
+                          ) : (
+                            <Settings className="w-3.5 h-3.5" />
+                          )}
+                          {portalLoading ? 'Opening...' : 'Manage Billing'}
+                        </button>
+                      </div>
                     </div>
                   ) : null}
+
 
                   {subActionMsg && (
                     <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-1.5">

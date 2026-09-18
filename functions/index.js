@@ -13,6 +13,12 @@ if (!getApps().length) {
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
 
+// Pre-configured Stripe Price IDs (set in Firebase secret manager)
+const STRIPE_PRICE_KIBO_CLUB_SUB         = defineSecret('STRIPE_PRICE_KIBO_CLUB_SUB');
+const STRIPE_PRICE_KIBO_CLUB_SUB_ANNUAL  = defineSecret('STRIPE_PRICE_KIBO_CLUB_SUB_ANNUAL');
+const STRIPE_PRICE_KIBO_CLUB_FAMILY      = defineSecret('STRIPE_PRICE_KIBO_CLUB_FAMILY');
+const STRIPE_PRICE_KIBO_CLUB_FAMILY_ANNUAL = defineSecret('STRIPE_PRICE_KIBO_CLUB_FAMILY_ANNUAL');
+
 /**
  * Sanitizes HTML email content to prevent script injection and dangerous tags.
  */
@@ -537,72 +543,108 @@ exports.getFriendScores = onCall(
 
 /**
  * Callable function to create a Stripe Checkout Session.
+ * Uses pre-configured Stripe Price IDs instead of ad-hoc price_data.
  */
 exports.createStripeCheckoutSession = onCall(
   {
     cors: true,
-    secrets: [STRIPE_SECRET_KEY]
+    secrets: [
+      STRIPE_SECRET_KEY,
+      STRIPE_PRICE_KIBO_CLUB_SUB,
+      STRIPE_PRICE_KIBO_CLUB_SUB_ANNUAL,
+      STRIPE_PRICE_KIBO_CLUB_FAMILY,
+      STRIPE_PRICE_KIBO_CLUB_FAMILY_ANNUAL,
+    ]
   },
   async (request) => {
-    throw new HttpsError('failed-precondition', 'Real-money purchases are temporarily disabled during rapid development.');
-
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required.');
     }
 
-    const { itemId, itemName, priceAmount, isSubscription, profileId, successUrl, cancelUrl } = request.data || {};
+    const { itemId, isSubscription, profileId, successUrl, cancelUrl } = request.data || {};
 
-    if (!itemId || priceAmount === undefined || priceAmount === null) {
-      throw new HttpsError('invalid-argument', 'Missing required item details.');
+    if (!itemId) {
+      throw new HttpsError('invalid-argument', 'Missing required item ID.');
     }
 
     const stripeKey = STRIPE_SECRET_KEY.value();
     if (!stripeKey) {
       throw new HttpsError('internal', 'Stripe secret key not configured.');
     }
+
     const stripeClient = require('stripe')(stripeKey);
+    const uid = request.auth.uid;
+    const db = getFirestore();
+
+    // Reuse existing Stripe Customer ID if available (prepopulates saved card for returning users)
+    let existingCustomerId = null;
+    try {
+      const userSnap = await db.collection('users').doc(uid).get();
+      if (userSnap.exists) {
+        existingCustomerId = userSnap.data()?.stripeCustomerId || null;
+      }
+    } catch (e) {
+      console.warn('Could not fetch existing stripeCustomerId:', e.message);
+    }
+
+    // Map our internal plan IDs to pre-configured Stripe Price IDs
+    const PRICE_ID_MAP = {
+      kibo_club_sub:           STRIPE_PRICE_KIBO_CLUB_SUB.value(),
+      kibo_club_sub_annual:    STRIPE_PRICE_KIBO_CLUB_SUB_ANNUAL.value(),
+      kibo_club_family:        STRIPE_PRICE_KIBO_CLUB_FAMILY.value(),
+      kibo_club_family_annual: STRIPE_PRICE_KIBO_CLUB_FAMILY_ANNUAL.value(),
+    };
+
+    const priceId = PRICE_ID_MAP[itemId];
+    const isKnownSubscription = !!priceId;
+
+    // For one-time sparks purchases, price_data is still needed (no pre-configured price)
+    const sparksMap = { sparks_pack_1: 499, sparks_pack_2: 1199, sparks_pack_3: 2999, sparks_pack_4: 9999 };
+    const sparksAmountCents = sparksMap[itemId];
+
+    if (!isKnownSubscription && !sparksAmountCents) {
+      throw new HttpsError('invalid-argument', `Unknown item or plan: ${itemId}`);
+    }
 
     try {
-      const priceData = {
-        currency: 'usd',
-        product_data: {
-          name: itemName || 'Kibo Item',
-          metadata: { itemId }
+      const sessionConfig = {
+        mode: isKnownSubscription ? 'subscription' : 'payment',
+        line_items: isKnownSubscription
+          ? [{ price: priceId, quantity: 1 }]
+          : [{
+              price_data: {
+                currency: 'usd',
+                product_data: { name: 'Kibo Sparks', metadata: { itemId } },
+                unit_amount: sparksAmountCents,
+              },
+              quantity: 1,
+            }],
+        success_url: successUrl || 'https://kiboclimb.com/?session_id={CHECKOUT_SESSION_ID}',
+        cancel_url: cancelUrl || 'https://kiboclimb.com/',
+        client_reference_id: uid,
+        metadata: {
+          uid,
+          profileId: profileId || '',
+          itemId,
+          isSubscription: isKnownSubscription ? 'true' : 'false',
         },
-        unit_amount: Math.max(50, Math.round(Number(priceAmount) * 100)), // Convert to cents
       };
 
-      if (isSubscription) {
-        // Assume monthly unless it contains 'yr' or 'annual'
-        priceData.recurring = {
-          interval: (itemName || '').toLowerCase().includes('annual') || itemId.includes('annual') ? 'year' : 'month'
+      // Reuse existing Customer or always create one (so the Customer ID can be persisted)
+      if (existingCustomerId) {
+        sessionConfig.customer = existingCustomerId;
+      } else {
+        sessionConfig.customer_creation = 'always';
+      }
+
+      // Embed uid + profileId on the Stripe Subscription object for webhook routing
+      if (isKnownSubscription) {
+        sessionConfig.subscription_data = {
+          metadata: { uid, profileId: profileId || '' },
         };
       }
 
-      const sessionConfig = {
-        line_items: [
-          {
-            price_data: priceData,
-            quantity: 1,
-          },
-        ],
-        mode: isSubscription ? 'subscription' : 'payment',
-        success_url: successUrl || 'https://kiboclimb.com/?session_id={CHECKOUT_SESSION_ID}',
-        cancel_url: cancelUrl || 'https://kiboclimb.com/',
-        client_reference_id: request.auth.uid,
-        metadata: {
-          uid: request.auth.uid,
-          profileId: profileId || 'default_child',
-          itemId,
-          isSubscription: isSubscription ? 'true' : 'false'
-        },
-        managed_payments: {
-          enabled: false
-        },
-      };
-
       const session = await stripeClient.checkout.sessions.create(sessionConfig);
-
       return { sessionId: session.id, url: session.url };
     } catch (error) {
       console.error('Error creating Stripe Checkout session:', error);
@@ -611,8 +653,12 @@ exports.createStripeCheckoutSession = onCall(
   }
 );
 
+
+
 /**
  * HTTP endpoint for Stripe Webhook events.
+ * Handles: checkout.session.completed, customer.subscription.updated,
+ * customer.subscription.deleted, invoice.payment_failed
  */
 exports.stripeWebhook = onRequest(
   { secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET] },
@@ -628,7 +674,6 @@ exports.stripeWebhook = onRequest(
 
     const stripeClient = require('stripe')(stripeKey);
     const sig = request.headers['stripe-signature'];
-
     let event;
 
     try {
@@ -639,20 +684,20 @@ exports.stripeWebhook = onRequest(
       return;
     }
 
-    // Handle checkout.session.completed event
+    const db = getFirestore();
+
+    // ── checkout.session.completed ────────────────────────────────────────────
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const { uid, profileId, itemId, isSubscription } = session.metadata || {};
 
       if (uid && itemId) {
         try {
-          const db = getFirestore();
           const userRef = db.collection('users').doc(uid);
           const userSnap = await userRef.get();
           const userData = userSnap.exists ? userSnap.data() : {};
           const profiles = userData.profiles || {};
 
-          // Known sparks map
           const sparksMap = {
             sparks_pack_1: 500,
             sparks_pack_2: 1200,
@@ -660,34 +705,44 @@ exports.stripeWebhook = onRequest(
             sparks_pack_4: 10000
           };
 
-          const targetProfileId = profileId && profiles[profileId] ? profileId : (userData.activeProfileId || Object.keys(profiles)[0] || 'default_child');
+          const targetProfileId = profileId && profiles[profileId]
+            ? profileId
+            : (userData.activeProfileId || Object.keys(profiles)[0] || '');
 
           if (isSubscription === 'true') {
+            // Store Stripe IDs + entitlements
             await userRef.set({
+              stripeCustomerId: session.customer || null,
+              stripeSubscriptionId: session.subscription || null,
               entitlements: {
                 isPremium: true,
                 subscriptionTier: itemId,
                 subscriptionActivatedAt: FieldValue.serverTimestamp(),
-                lastVerifiedPlatform: 'stripe'
+                lastVerifiedPlatform: 'stripe',
+                paymentStatus: 'active',
               },
               updatedAt: FieldValue.serverTimestamp()
             }, { merge: true });
-          } else if (sparksMap[itemId] && profiles[targetProfileId]) {
-            const currentSparks = Number(profiles[targetProfileId]?.userData?.sparks || 0);
-            const addedSparks = sparksMap[itemId];
-            profiles[targetProfileId].userData = profiles[targetProfileId].userData || {};
-            profiles[targetProfileId].userData.sparks = currentSparks + addedSparks;
-            profiles[targetProfileId].updatedAtMillis = Date.now();
+          } else {
+            // One-time purchase: persist Customer ID for future prepopulated card, add sparks
+            const updates = {
+              stripeCustomerId: session.customer || null,
+              updatedAt: FieldValue.serverTimestamp(),
+            };
 
-            await userRef.set({
-              profiles,
-              updatedAt: FieldValue.serverTimestamp()
-            }, { merge: true });
+            if (sparksMap[itemId] && profiles[targetProfileId]) {
+              const currentSparks = Number(profiles[targetProfileId]?.userData?.sparks || 0);
+              profiles[targetProfileId].userData = profiles[targetProfileId].userData || {};
+              profiles[targetProfileId].userData.sparks = currentSparks + sparksMap[itemId];
+              profiles[targetProfileId].updatedAtMillis = Date.now();
+              updates.profiles = profiles;
+            }
+
+            await userRef.set(updates, { merge: true });
           }
 
-          // Record transaction in audit log
-          const txRef = userRef.collection('transactions').doc(session.id);
-          await txRef.set({
+          // Audit log
+          await userRef.collection('transactions').doc(session.id).set({
             sessionId: session.id,
             itemId,
             amount: session.amount_total,
@@ -699,13 +754,144 @@ exports.stripeWebhook = onRequest(
             timestamp: FieldValue.serverTimestamp()
           });
 
-          console.log(`Successfully processed purchase for user ${uid}, item: ${itemId}`);
+          console.log(`Processed purchase for uid=${uid}, item=${itemId}`);
         } catch (e) {
-          console.error('Error updating user purchase in Firestore', e);
+          console.error('Error processing checkout.session.completed:', e);
         }
+      }
+
+    // ── customer.subscription.updated ────────────────────────────────────────
+    } else if (event.type === 'customer.subscription.updated') {
+      const sub = event.data.object;
+      const uid = sub.metadata?.uid;
+
+      if (uid) {
+        try {
+          const userRef = db.collection('users').doc(uid);
+          const isActive = sub.status === 'active' || sub.status === 'trialing';
+          const cancelAtPeriodEnd = !!sub.cancel_at_period_end;
+
+          // Derive our plan ID from the Stripe Price ID on the subscription
+          const priceId = sub.items?.data?.[0]?.price?.id || '';
+          const PRICE_TO_PLAN = {
+            [STRIPE_PRICE_KIBO_CLUB_SUB.value()]:            'kibo_club_sub',
+            [STRIPE_PRICE_KIBO_CLUB_SUB_ANNUAL.value()]:     'kibo_club_sub_annual',
+            [STRIPE_PRICE_KIBO_CLUB_FAMILY.value()]:         'kibo_club_family',
+            [STRIPE_PRICE_KIBO_CLUB_FAMILY_ANNUAL.value()]:  'kibo_club_family_annual',
+          };
+          const planId = PRICE_TO_PLAN[priceId] || null;
+
+          await userRef.set({
+            entitlements: {
+              isPremium: isActive,
+              subscriptionTier: planId,
+              lastVerifiedPlatform: 'stripe',
+              paymentStatus: sub.status,
+              cancelAtPeriodEnd,
+              currentPeriodEnd: sub.current_period_end
+                ? new Date(sub.current_period_end * 1000).toISOString()
+                : null,
+            },
+            updatedAt: FieldValue.serverTimestamp()
+          }, { merge: true });
+
+          console.log(`Subscription updated for uid=${uid}, status=${sub.status}, cancelAtPeriodEnd=${cancelAtPeriodEnd}`);
+        } catch (e) {
+          console.error('Error processing customer.subscription.updated:', e);
+        }
+      }
+
+    // ── customer.subscription.deleted ────────────────────────────────────────
+    } else if (event.type === 'customer.subscription.deleted') {
+      const sub = event.data.object;
+      const uid = sub.metadata?.uid;
+
+      if (uid) {
+        try {
+          const userRef = db.collection('users').doc(uid);
+          await userRef.set({
+            stripeSubscriptionId: null,
+            entitlements: {
+              isPremium: false,
+              subscriptionTier: null,
+              lastVerifiedPlatform: 'stripe',
+              paymentStatus: 'canceled',
+              cancelAtPeriodEnd: false,
+              currentPeriodEnd: null,
+            },
+            updatedAt: FieldValue.serverTimestamp()
+          }, { merge: true });
+
+          console.log(`Subscription canceled for uid=${uid}`);
+        } catch (e) {
+          console.error('Error processing customer.subscription.deleted:', e);
+        }
+      }
+
+    // ── invoice.payment_failed ────────────────────────────────────────────────
+    } else if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object;
+      // Look up uid via the subscription's customer ID in Firestore
+      try {
+        const customerId = invoice.customer;
+        if (customerId) {
+          const usersSnap = await db.collection('users')
+            .where('stripeCustomerId', '==', customerId)
+            .limit(1)
+            .get();
+
+          if (!usersSnap.empty) {
+            const userRef = usersSnap.docs[0].ref;
+            await userRef.set({
+              entitlements: {
+                paymentStatus: 'past_due',
+              },
+              updatedAt: FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            console.log(`Payment failed for customer=${customerId}`);
+          }
+        }
+      } catch (e) {
+        console.error('Error processing invoice.payment_failed:', e);
       }
     }
 
     response.status(200).send({ received: true });
+  }
+);
+
+/**
+ * Callable function to create a Stripe Customer Portal session.
+ * Allows parents to manage their subscription, update payment, or cancel.
+ */
+exports.createStripePortalSession = onCall(
+  { cors: true, secrets: [STRIPE_SECRET_KEY] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication required.');
+    }
+
+    const db = getFirestore();
+    const userSnap = await db.collection('users').doc(request.auth.uid).get();
+    const customerId = userSnap.exists ? userSnap.data()?.stripeCustomerId : null;
+
+    if (!customerId) {
+      throw new HttpsError('not-found', 'No billing account found. Please subscribe first.');
+    }
+
+    const stripeKey = STRIPE_SECRET_KEY.value();
+    const stripeClient = require('stripe')(stripeKey);
+
+    try {
+      const session = await stripeClient.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: request.data?.returnUrl || 'https://kiboclimb.com/',
+      });
+      return { url: session.url };
+    } catch (error) {
+      console.error('Error creating Stripe Portal session:', error);
+      throw new HttpsError('internal', error.message || 'Failed to create portal session.');
+    }
   }
 );
