@@ -1174,7 +1174,7 @@ export function getNormalizedProblemKey(problem) {
 
 export function generateCodingSession(count = 15, targetTier = 1, history = [], seenKeys = new Set()) {
   const problems = [];
-  const sessionSeen = new Set(seenKeys);
+  const sessionSeen = seenKeys instanceof Set ? seenKeys : new Set(seenKeys);
   let attempts = 0;
   const maxAttempts = count * 6;
 
@@ -1196,6 +1196,13 @@ export function generateCodingSession(count = 15, targetTier = 1, history = [], 
     const isProbe = problems.length > 0 && problems.length % 5 === 0;
     const prob = generateCodingProblem(targetTier, isProbe, sessionSeen);
     problems.push(prob);
+  }
+
+  // Prevent unbounded memory growth if seenKeys is long-lived
+  if (sessionSeen.size > 200) {
+    const keysArray = Array.from(sessionSeen);
+    sessionSeen.clear();
+    keysArray.slice(-100).forEach(k => sessionSeen.add(k));
   }
 
   return problems;

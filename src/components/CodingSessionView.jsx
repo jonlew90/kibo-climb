@@ -167,10 +167,13 @@ export default function CodingSessionView({
   const isPracticeMode = Boolean(practiceConfig);
   const practiceSprintLength = practiceConfig?.sprintLength || 12;
 
+  // Track seen problem keys across consecutive sessions to prevent repetition
+  const blockSeenKeysRef = useRef(new Set());
+
   // Session & Question Queues
   const [problemQueue, setProblemQueue] = useState(() => {
     if (practiceConfig) {
-      return generateProblems(practiceSprintLength, practiceConfig.tier);
+      return generateProblems(practiceSprintLength, practiceConfig.tier, [], blockSeenKeysRef.current);
     }
     const saved = storageService.getActiveClimbState(profileId, 'coding');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isCodingProblem)) {
@@ -179,13 +182,13 @@ export default function CodingSessionView({
     if (saved) {
       storageService.clearActiveClimbState(profileId, 'coding');
     }
-    return generateProblems(15, activeTier);
+    return generateProblems(15, activeTier, [], blockSeenKeysRef.current);
   });
 
   // When practiceConfig changes, configure problemQueue and start climb automatically
   useEffect(() => {
     if (practiceConfig) {
-      const batch = generateProblems(practiceSprintLength, practiceConfig.tier);
+      const batch = generateProblems(practiceSprintLength, practiceConfig.tier, [], blockSeenKeysRef.current);
       setProblemQueue(batch);
       setCurrentProblemIndex(0);
       setSessionQuestionIndex(1);
@@ -291,7 +294,7 @@ export default function CodingSessionView({
     setRevealedHint(null);
     setIsClueActive(false);
 
-    const freshBatch = generateProblems(15, activeTier);
+    const freshBatch = generateProblems(15, activeTier, [], blockSeenKeysRef.current);
     setProblemQueue(freshBatch);
     setProblemStartTime(Date.now());
     setHasStartedClimb(true);
@@ -767,7 +770,7 @@ export default function CodingSessionView({
     setMistakeCount(0);
     setBlockShieldsUsed(0);
     setSessionAnswers([]);
-    const freshProblems = generateProblems(15, activeTier);
+    const freshProblems = generateProblems(15, activeTier, [], blockSeenKeysRef.current);
     setProblemQueue(freshProblems);
     setCurrentProblemIndex(0);
     setEliminatedOptions([]);
@@ -828,7 +831,7 @@ export default function CodingSessionView({
           setBlockShieldsUsed(0);
           setSessionAnswers([]);
           setHasStartedClimb(false);
-          const freshProblems = generateProblems(15, activeTier);
+          const freshProblems = generateProblems(15, activeTier, [], blockSeenKeysRef.current);
           setProblemQueue(freshProblems);
           setCurrentProblemIndex(0);
           if (onOpenWorkshop) onOpenWorkshop();
