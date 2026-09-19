@@ -953,7 +953,8 @@ export default function WorldSessionView({
       inSessionIncorrectStreak,
       totalProblemsSolved,
       isProbeQuestion: !!currentProblem.isProbe,
-      problemTier: currentProblem.tier || getTierFromRating(competenceRank)
+      problemTier: currentProblem.tier || getTierFromRating(competenceRank),
+      problemSubjectId: 'world'
     });
 
     // Update streak states
@@ -987,7 +988,7 @@ export default function WorldSessionView({
       // Rapid initial calibration: inject Probe Challenge during Provisional Phase (<15 solved) on 3+ streak
       if (!isPracticeMode && shouldTriggerProbeQuestion({ totalProblemsSolved: totalProblemsSolved + 1, inSessionStreak: evalResult.nextInSessionStreak })) {
         const curTier = getTierFromRating(evalResult.nextCompetenceRank);
-        const probeTier = getProbeTargetTier(curTier);
+        const probeTier = getProbeTargetTier(curTier, 'world');
         const recentWords = storageService.getUserData('world').recentWords || [];
         const probeExclude = new Set([...blockSeenKeysRef.current, ...recentWords]);
         const probeData = generateTierProblem(probeTier, false, probeExclude);

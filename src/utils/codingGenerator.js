@@ -173,7 +173,7 @@ function generateTier1Problem() {
  * Tier 2: Grid Navigation & Repeat Loops
  */
 function generateTier2Problem() {
-  const type = Math.floor(Math.random() * 3);
+  const type = Math.floor(Math.random() * 5);
 
   if (type === 0) {
     // 2D Grid coordinates step
@@ -229,26 +229,77 @@ function generateTier2Problem() {
     };
   }
 
-  // Total steps in nested loop
-  const outer = Math.floor(Math.random() * 3) + 2;
-  const inner = Math.floor(Math.random() * 3) + 2;
-  const totalSteps = outer * inner;
-  const answer = String(totalSteps);
+  if (type === 2) {
+    // Total steps in nested loop
+    const outer = Math.floor(Math.random() * 3) + 2;
+    const inner = Math.floor(Math.random() * 3) + 2;
+    const totalSteps = outer * inner;
+    const answer = String(totalSteps);
+    const options = ensureUniqueOptions(answer, [
+      String(outer + inner),
+      String(totalSteps + inner),
+      String(totalSteps - inner),
+      String(totalSteps + 2)
+    ]);
+    return {
+      tier: 2,
+      concept: 'Loop Iteration Count',
+      displayString: `A loop runs ${outer} times. Inside, Kibo takes ${inner} steps each time.\nHow many total steps are taken?`,
+      codeSnippet: `for round in 1..${outer}:\n    repeat ${inner} [Step Forward]`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `Multiply rounds by steps per round: ${outer} × ${inner}.`,
+      type: 'coding'
+    };
+  }
+
+  if (type === 3) {
+    // Path-following map trace (follow a sequence of directional moves)
+    const dirs = ['Left', 'Right', 'Up', 'Down'];
+    const moves = Array.from({ length: 4 }, () => dirs[Math.floor(Math.random() * 4)]);
+    let x = 3, y = 3;
+    for (const m of moves) {
+      if (m === 'Right') x++;
+      else if (m === 'Left') x--;
+      else if (m === 'Up') y++;
+      else if (m === 'Down') y--;
+    }
+    const answer = `(${x}, ${y})`;
+    const options = ensureUniqueOptions(answer, [
+      `(${x + 1}, ${y})`, `(${x}, ${y - 1})`, `(${x - 1}, ${y})`, `(${x}, ${y + 1})`
+    ]);
+    const moveLines = moves.map(m => `kibo.move("${m}")`).join('\n');
+    return {
+      tier: 2,
+      concept: 'Path Tracing',
+      displayString: `Kibo starts at (3, 3).\nFollow each move in order.\nWhere does Kibo end up?`,
+      codeSnippet: `x, y = 3, 3\n${moveLines}`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `Trace each move step by step: Right/Left changes x, Up/Down changes y.`,
+      type: 'coding'
+    };
+  }
+
+  // Nested loop asterisk output counter
+  const rows = Math.floor(Math.random() * 3) + 2; // 2-4
+  const cols = Math.floor(Math.random() * 3) + 2; // 2-4
+  const totalStars = rows * cols;
+  const answer = String(totalStars);
   const options = ensureUniqueOptions(answer, [
-    String(outer + inner),
-    String(totalSteps + inner),
-    String(totalSteps - inner),
-    String(totalSteps + 2)
+    String(rows + cols), String(totalStars + cols), String(totalStars - rows), String(rows)
   ]);
   return {
     tier: 2,
-    concept: 'Loop Iteration Count',
-    displayString: `A loop runs ${outer} times. Inside, Kibo takes ${inner} steps each time.\nHow many total steps are taken?`,
-    codeSnippet: `for round in 1..${outer}:\n    repeat ${inner} [Step Forward]`,
+    concept: 'Nested Loop Output',
+    displayString: `How many times is "*" printed in total?`,
+    codeSnippet: `for row in range(${rows}):\n    for col in range(${cols}):\n        print("*")`,
     options,
     answer,
     answerString: answer,
-    hint: `Multiply rounds by steps per round: ${outer} × ${inner}.`,
+    hint: `The outer loop runs ${rows} times. Each time, the inner loop prints ${cols} stars. ${rows} × ${cols} = ${totalStars}.`,
     type: 'coding'
   };
 }
@@ -346,7 +397,7 @@ function generateTier3Problem() {
  * Tier 4: Variables & Binary State
  */
 function generateTier4Problem() {
-  const type = Math.floor(Math.random() * 3);
+  const type = Math.floor(Math.random() * 4);
 
   if (type === 0) {
     // Multi-step variable arithmetic trace
@@ -404,20 +455,45 @@ function generateTier4Problem() {
     };
   }
 
-  // Variable swapping logic
-  const aVal = 5;
-  const bVal = 9;
-  const answer = `${aVal}`;
-  const options = ensureUniqueOptions(answer, [String(bVal), '0', '14', String(aVal + bVal)]);
+  if (type === 2) {
+    // Randomized variable swapping
+    const aVal = Math.floor(Math.random() * 8) + 2;
+    const bVal = Math.floor(Math.random() * 8) + 10;
+    const answer = String(aVal);
+    const options = ensureUniqueOptions(answer, [String(bVal), '0', String(aVal + bVal), String(bVal - aVal)]);
+    return {
+      tier: 4,
+      concept: 'Variable Swapping',
+      displayString: `What is the value of b after running this code?`,
+      codeSnippet: `a = ${aVal}\nb = ${bVal}\ntemp = a\na = b\nb = temp`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `temp stores a (${aVal}). Then b is assigned temp (${aVal}).`,
+      type: 'coding'
+    };
+  }
+
+  // String variable concatenation trace
+  const names = [['Kibo', 'Climber'], ['Summit', 'Explorer'], ['Pixel', 'Coder'], ['Trail', 'Runner']];
+  const [first, second] = names[Math.floor(Math.random() * names.length)];
+  const sep = [' ', '_', '-'][Math.floor(Math.random() * 3)];
+  const answer = `"${first}${sep}${second}"`;
+  const options = ensureUniqueOptions(answer, [
+    `"${second}${sep}${first}"`,
+    `"${first}"`,
+    `"${second}"`,
+    `"${first}${second}"`
+  ]);
   return {
     tier: 4,
-    concept: 'Variable Swapping',
-    displayString: `What is the value of b after running this code?`,
-    codeSnippet: `a = ${aVal}\nb = ${bVal}\ntemp = a\na = b\nb = temp`,
+    concept: 'String Concatenation',
+    displayString: `What is the final value of result?`,
+    codeSnippet: `first = "${first}"\nsecond = "${second}"\nresult = first + "${sep}" + second\nprint(result)`,
     options,
     answer,
     answerString: answer,
-    hint: `temp stores a (${aVal}). Then b is assigned temp (${aVal}).`,
+    hint: `Concatenate "${first}" + "${sep}" + "${second}" = "${first}${sep}${second}".`,
     type: 'coding'
   };
 }
@@ -426,62 +502,122 @@ function generateTier4Problem() {
  * Tier 5: Conditionals & Debugging
  */
 function generateTier5Problem() {
-  const type = Math.floor(Math.random() * 3);
+  const type = Math.floor(Math.random() * 5);
 
   if (type === 0) {
-    // If / Else conditional branch
-    const threshold = 70;
-    const testScore = [65, 75, 80, 50][Math.floor(Math.random() * 4)];
-    const isPass = testScore >= threshold;
-    const answer = isPass ? 'PASS' : 'RETRY';
+    // If / Else conditional branch with randomized thresholds
+    const configs = [
+      { threshold: 70, label: 'score', pass: 'PASS', fail: 'RETRY' },
+      { threshold: 100, label: 'coins', pass: 'Unlock!', fail: 'Keep Climbing' },
+      { threshold: 50, label: 'energy', pass: 'Hike!', fail: 'Rest' },
+    ];
+    const cfg = configs[Math.floor(Math.random() * configs.length)];
+    const pool = [cfg.threshold - 20, cfg.threshold - 5, cfg.threshold + 5, cfg.threshold + 15];
+    const testVal = pool[Math.floor(Math.random() * pool.length)];
+    const isPass = testVal >= cfg.threshold;
+    const answer = isPass ? cfg.pass : cfg.fail;
     return {
       tier: 5,
       concept: 'If / Else Branching',
       displayString: `What does this code output?`,
-      codeSnippet: `score = ${testScore}\n\nif score >= ${threshold}:\n    status = "PASS"\nelse:\n    status = "RETRY"\n\nprint(status)`,
-      options: ['PASS', 'RETRY'],
+      codeSnippet: `${cfg.label} = ${testVal}\n\nif ${cfg.label} >= ${cfg.threshold}:\n    result = "${cfg.pass}"\nelse:\n    result = "${cfg.fail}"\n\nprint(result)`,
+      options: [cfg.pass, cfg.fail],
       answer,
       answerString: answer,
-      hint: `score (${testScore}) is ${isPass ? '>=' : '<'} ${threshold}, so the ${isPass ? 'if' : 'else'} branch runs.`,
+      hint: `${cfg.label} (${testVal}) is ${isPass ? '>=' : '<'} ${cfg.threshold}, so the ${isPass ? 'if' : 'else'} branch runs.`,
       type: 'coding'
     };
   }
 
   if (type === 1) {
-    // Spot the Bug / Off-by-one error
-    const answer = 'Runs 6 times instead of 5';
+    // Spot the Bug — off-by-one (range)
+    const intended = Math.floor(Math.random() * 4) + 4; // 4-7
+    const actual = intended + 1;
+    const answer = `Runs ${actual} times instead of ${intended}`;
     const options = ensureUniqueOptions(answer, [
-      'Runs 4 times instead of 5',
+      `Runs ${intended - 1} times instead of ${intended}`,
       'Causes a syntax error',
       'Never stops running'
     ]);
     return {
       tier: 5,
       concept: 'Spot the Bug',
-      displayString: `This loop is intended to print exactly 5 times. What is the bug?`,
-      codeSnippet: `# Goal: print 5 times\nfor i in range(0, 6):\n    print("Climb!")`,
+      displayString: `This loop is intended to print exactly ${intended} times. What is the bug?`,
+      codeSnippet: `# Goal: print ${intended} times\nfor i in range(0, ${actual}):\n    print("Climb!")`,
       options,
       answer,
       answerString: answer,
-      hint: `range(0, 6) produces 6 values (0 through 5), so it runs 6 times.`,
+      hint: `range(0, ${actual}) produces ${actual} values (0 through ${actual - 1}), so it runs ${actual} times.`,
       type: 'coding'
     };
   }
 
-  // Nested Conditionals
-  const isWeekend = true;
-  const isSunny = false;
-  const answer = 'Read a Book';
-  const options = ensureUniqueOptions(answer, ['Go Hiking', 'Go to School', 'Do Homework']);
+  if (type === 2) {
+    // Spot the Bug — assignment instead of comparison (= vs ==), parameterized
+    const bugCases = [
+      { varName: 'gems',  val: 10,  msg: 'Jackpot!' },
+      { varName: 'lives', val: 3,   msg: 'Full health!' },
+      { varName: 'score', val: 100, msg: 'Level up!' },
+      { varName: 'level', val: 5,   msg: 'Boss fight!' },
+    ];
+    const bc = bugCases[Math.floor(Math.random() * bugCases.length)];
+    const answer = 'Uses = instead of == to compare';
+    const options = ensureUniqueOptions(answer, [
+      'Missing indentation',
+      'Causes an infinite loop',
+      'Variable is undefined'
+    ]);
+    return {
+      tier: 5,
+      concept: 'Spot the Bug',
+      displayString: `What is the bug in this code?\n${bc.varName} = ${bc.val}`,
+      codeSnippet: `${bc.varName} = ${bc.val}\n\nif ${bc.varName} = ${bc.val}:   # BUG HERE\n    print("${bc.msg}")`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `In Python, a single = is assignment. Use == to compare. Fix: if ${bc.varName} == ${bc.val}:`,
+      type: 'coding'
+    };
+  }
+
+  if (type === 3) {
+    // Nested Conditionals — randomized boolean combos
+    const combos = [
+      { w: true,  s: true,  r: '"Go Hiking"',   display: 'True, True' },
+      { w: true,  s: false, r: '"Read a Book"',  display: 'True, False' },
+      { w: false, s: true,  r: '"Go to School"', display: 'False, True' },
+      { w: false, s: false, r: '"Go to School"', display: 'False, False' },
+    ];
+    const combo = combos[Math.floor(Math.random() * combos.length)];
+    const answer = combo.r;
+    const options = ensureUniqueOptions(answer, ['"Go Hiking"', '"Read a Book"', '"Go to School"', '"Do Homework"']);
+    return {
+      tier: 5,
+      concept: 'Nested Conditionals',
+      displayString: `is_weekend = ${combo.w}, is_sunny = ${combo.s}\nWhat activity is chosen?`,
+      codeSnippet: `is_weekend = ${combo.w}\nis_sunny = ${combo.s}\n\nif is_weekend:\n    if is_sunny:\n        activity = "Go Hiking"\n    else:\n        activity = "Read a Book"\nelse:\n    activity = "Go to School"`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `is_weekend is ${combo.w}${combo.w ? `, is_sunny is ${combo.s}` : ''} → ${combo.r}.`,
+      type: 'coding'
+    };
+  }
+
+  // elif chain branching
+  const tierVal = [1, 2, 3][Math.floor(Math.random() * 3)];
+  const labelMap = { 1: '"Basecamp"', 2: '"Summit"', 3: '"Peak"' };
+  const answer = labelMap[tierVal];
+  const options = ensureUniqueOptions(answer, ['"Basecamp"', '"Summit"', '"Peak"']);
   return {
     tier: 5,
-    concept: 'Nested Conditionals',
-    displayString: `What activity is chosen by this program?`,
-    codeSnippet: `is_weekend = True\nis_sunny = False\n\nif is_weekend:\n    if is_sunny:\n        activity = "Go Hiking"\n    else:\n        activity = "Read a Book"\nelse:\n    activity = "Go to School"`,
+    concept: 'elif Chains',
+    displayString: `What is printed when climber_tier = ${tierVal}?`,
+    codeSnippet: `climber_tier = ${tierVal}\n\nif climber_tier == 1:\n    print("Basecamp")\nelif climber_tier == 2:\n    print("Summit")\nelif climber_tier == 3:\n    print("Peak")`,
     options,
     answer,
     answerString: answer,
-    hint: `is_weekend is True and is_sunny is False, so the inner else branch ("Read a Book") runs.`,
+    hint: `climber_tier is ${tierVal}, so the matching elif branch prints ${answer}.`,
     type: 'coding'
   };
 }
@@ -490,11 +626,11 @@ function generateTier5Problem() {
  * Tier 6: Loops & Accumulators
  */
 function generateTier6Problem() {
-  const type = Math.floor(Math.random() * 3);
+  const type = Math.floor(Math.random() * 5);
 
   if (type === 0) {
     // For loop accumulator sum
-    const n = Math.floor(Math.random() * 3) + 3; // 3, 4, or 5
+    const n = Math.floor(Math.random() * 4) + 3; // 3-6
     let expectedSum = 0;
     for (let i = 1; i <= n; i++) expectedSum += i;
     const answer = String(expectedSum);
@@ -519,20 +655,12 @@ function generateTier6Problem() {
 
   if (type === 1) {
     // While loop counter trace
-    const startVal = 1;
-    const maxVal = [8, 16, 20][Math.floor(Math.random() * 3)];
-    let count = 0;
-    let curr = startVal;
-    while (curr < maxVal) {
-      curr *= 2;
-      count++;
-    }
+    const maxVal = [8, 16, 20, 32][Math.floor(Math.random() * 4)];
+    let curr = 1;
+    while (curr < maxVal) curr *= 2;
     const answer = String(curr);
     const options = ensureUniqueOptions(answer, [
-      String(curr / 2),
-      String(curr * 2),
-      String(maxVal),
-      String(curr + 2)
+      String(curr / 2), String(curr * 2), String(maxVal), String(curr + 2)
     ]);
     return {
       tier: 6,
@@ -547,19 +675,63 @@ function generateTier6Problem() {
     };
   }
 
-  // Array length & loop iterations
-  const items = ['"ruby"', '"gem"', '"spark"', '"scroll"'];
-  const answer = '4';
-  const options = ensureUniqueOptions(answer, ['3', '5', '0']);
+  if (type === 2) {
+    // Randomized array iteration count
+    const allItems = ['"ruby"', '"gem"', '"spark"', '"scroll"', '"potion"', '"badge"'];
+    const len = Math.floor(Math.random() * 3) + 3; // 3-5
+    const items = shuffleArray(allItems).slice(0, len);
+    const answer = String(len);
+    const options = ensureUniqueOptions(answer, [String(len - 1), String(len + 1), '0']);
+    return {
+      tier: 6,
+      concept: 'Array Iteration',
+      displayString: `How many times does the print statement run?`,
+      codeSnippet: `backpack = [${items.join(', ')}]\n\nfor item in backpack:\n    print("Found " + item)`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `The backpack list has ${len} items, so the loop runs ${len} times.`,
+      type: 'coding'
+    };
+  }
+
+  if (type === 3) {
+    // List index access
+    const allWords = ['"Kibo"', '"Summit"', '"Spark"', '"Gem"', '"Trail"', '"Peak"'];
+    const listLen = Math.floor(Math.random() * 2) + 4; // 4-5
+    const wordList = shuffleArray(allWords).slice(0, listLen);
+    const idx = Math.floor(Math.random() * listLen);
+    const answer = wordList[idx];
+    const options = ensureUniqueOptions(answer, wordList.filter(w => w !== answer));
+    return {
+      tier: 6,
+      concept: 'List Index Access',
+      displayString: `What is printed by this code?`,
+      codeSnippet: `climbers = [${wordList.join(', ')}]\nprint(climbers[${idx}])`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `List indexes start at 0. climbers[${idx}] is the ${idx === 0 ? '1st' : idx === 1 ? '2nd' : idx === 2 ? '3rd' : `${idx + 1}th`} element: ${answer}.`,
+      type: 'coding'
+    };
+  }
+
+  // List mutation running total (accumulate a list of values)
+  const vals = Array.from({ length: Math.floor(Math.random() * 2) + 3 }, () => Math.floor(Math.random() * 8) + 2);
+  const total = vals.reduce((a, b) => a + b, 0);
+  const answer = String(total);
+  const options = ensureUniqueOptions(answer, [
+    String(total + vals[0]), String(total - vals[vals.length - 1]), String(total * 2), String(total - 1)
+  ]);
   return {
     tier: 6,
-    concept: 'Array Iteration',
-    displayString: `How many times does the print statement run?`,
-    codeSnippet: `backpack = [${items.join(', ')}]\n\nfor item in backpack:\n    print("Found " + item)`,
+    concept: 'List Accumulation',
+    displayString: `What is the value of total after the loop?`,
+    codeSnippet: `scores = [${vals.join(', ')}]\ntotal = 0\nfor s in scores:\n    total += s\nprint(total)`,
     options,
     answer,
     answerString: answer,
-    hint: `The backpack list has 4 items, so the loop runs 4 times.`,
+    hint: `Add all scores: ${vals.join(' + ')} = ${total}.`,
     type: 'coding'
   };
 }
@@ -801,33 +973,34 @@ function generateTier7Problem() {
  * Tier 8: Recursion & Algorithmic Complexity
  */
 function generateTier8Problem() {
-  const type = Math.floor(Math.random() * 3);
+  const type = Math.floor(Math.random() * 8);
 
   if (type === 0) {
-    // Factorial recursive trace
-    const n = 4;
-    const answer = '24';
-    const options = ensureUniqueOptions(answer, ['12', '8', '48']);
+    // Parameterized factorial recursive trace
+    const nOpts = [{ n: 3, ans: 6 }, { n: 4, ans: 24 }, { n: 5, ans: 120 }];
+    const { n, ans } = nOpts[Math.floor(Math.random() * nOpts.length)];
+    const answer = String(ans);
+    const options = ensureUniqueOptions(answer, [
+      String(ans * 2), String(ans / 2), String(ans - n), String(ans + n)
+    ]);
     return {
       tier: 8,
       concept: 'Recursion',
-      displayString: `What does factorial(4) return?`,
-      codeSnippet: `def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(4))`,
+      displayString: `What does factorial(${n}) return?`,
+      codeSnippet: `def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(${n}))`,
       options,
       answer,
       answerString: answer,
-      hint: `factorial(4) = 4 × 3 × 2 × 1 = 24.`,
+      hint: `factorial(${n}) = ${Array.from({ length: n }, (_, i) => n - i).join(' × ')} = ${ans}.`,
       type: 'coding'
     };
   }
 
   if (type === 1) {
-    // Big-O Time Complexity
+    // Big-O — O(1) array index access
     const answer = 'O(1) Constant Time';
     const options = ensureUniqueOptions(answer, [
-      'O(N) Linear Time',
-      'O(N²) Quadratic Time',
-      'O(log N) Logarithmic Time'
+      'O(N) Linear Time', 'O(N²) Quadratic Time', 'O(log N) Logarithmic Time'
     ]);
     return {
       tier: 8,
@@ -842,18 +1015,124 @@ function generateTier8Problem() {
     };
   }
 
-  // Binary Search Step elimination
-  const answer = '50';
-  const options = ensureUniqueOptions(answer, ['25', '75', '100']);
+  if (type === 2) {
+    // Big-O — O(N) linear search
+    const answer = 'O(N) Linear Time';
+    const options = ensureUniqueOptions(answer, [
+      'O(1) Constant Time', 'O(N²) Quadratic Time', 'O(log N) Logarithmic Time'
+    ]);
+    return {
+      tier: 8,
+      concept: 'Time Complexity',
+      displayString: `What is the Big-O time complexity of this search?`,
+      codeSnippet: `def find_item(items, target):\n    for item in items:      # checks each one\n        if item == target:\n            return True\n    return False`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `The loop checks up to N items in the worst case — that is O(N) linear time.`,
+      type: 'coding'
+    };
+  }
+
+  if (type === 3) {
+    // Big-O — O(N²) nested loop
+    const answer = 'O(N²) Quadratic Time';
+    const options = ensureUniqueOptions(answer, [
+      'O(N) Linear Time', 'O(1) Constant Time', 'O(log N) Logarithmic Time'
+    ]);
+    return {
+      tier: 8,
+      concept: 'Time Complexity',
+      displayString: `What is the Big-O time complexity of this algorithm?`,
+      codeSnippet: `for i in range(N):\n    for j in range(N):\n        print(i, j)  # runs N × N times`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `A nested loop where both run N times results in N × N = N² total operations: O(N²).`,
+      type: 'coding'
+    };
+  }
+
+  if (type === 4) {
+    // Fibonacci trace
+    const nFib = [5, 6, 7][Math.floor(Math.random() * 3)];
+    const fibSeq = [0, 1];
+    while (fibSeq.length <= nFib) fibSeq.push(fibSeq[fibSeq.length - 1] + fibSeq[fibSeq.length - 2]);
+    const answer = String(fibSeq[nFib]);
+    const options = ensureUniqueOptions(answer, [
+      String(fibSeq[nFib - 1]), String(fibSeq[nFib + 1] || fibSeq[nFib] + 2), String(fibSeq[nFib] + 1), String(fibSeq[nFib] * 2)
+    ]);
+    return {
+      tier: 8,
+      concept: 'Recursion',
+      displayString: `What does fib(${nFib}) return?`,
+      codeSnippet: `def fib(n):\n    if n <= 1:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nprint(fib(${nFib}))`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13… fib(${nFib}) = ${answer}.`,
+      type: 'coding'
+    };
+  }
+
+  if (type === 5) {
+    // Binary Search — parameterized first midpoint
+    const configs = [
+      { low: 1, high: 100, mid: 50 },
+      { low: 1, high: 64,  mid: 32 },
+      { low: 0, high: 50,  mid: 25 },
+    ];
+    const cfg = configs[Math.floor(Math.random() * configs.length)];
+    const answer = String(cfg.mid);
+    const options = ensureUniqueOptions(answer, [
+      String(cfg.mid - 10), String(cfg.mid + 10), String(cfg.high), String(cfg.low)
+    ]);
+    return {
+      tier: 8,
+      concept: 'Binary Search',
+      displayString: `Searching sorted numbers ${cfg.low} to ${cfg.high} with binary search, what is the first midpoint checked?`,
+      codeSnippet: `low = ${cfg.low}\nhigh = ${cfg.high}\nmid = (low + high) // 2\n# First probe at mid`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `The midpoint between ${cfg.low} and ${cfg.high} is (${cfg.low} + ${cfg.high}) // 2 = ${cfg.mid}.`,
+      type: 'coding'
+    };
+  }
+
+  if (type === 6) {
+    // Big-O — O(1) dictionary / hash map lookup
+    const answer = 'O(1) Constant Time';
+    const options = ensureUniqueOptions(answer, [
+      'O(N) Linear Time', 'O(N²) Quadratic Time', 'O(log N) Logarithmic Time'
+    ]);
+    return {
+      tier: 8,
+      concept: 'Time Complexity',
+      displayString: `What is the Big-O time complexity of looking up a key in a dictionary?`,
+      codeSnippet: `inventory = {"gems": 50, "potions": 3}\ncount = inventory["gems"]   # direct key lookup`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `Dictionary (hash map) key lookups are O(1) — they jump directly to the value without scanning.`,
+      type: 'coding'
+    };
+  }
+
+  // Big-O — O(N log N) sorting
+  const answer = 'O(N log N) Linearithmic Time';
+  const options = ensureUniqueOptions(answer, [
+    'O(N) Linear Time', 'O(N²) Quadratic Time', 'O(log N) Logarithmic Time'
+  ]);
   return {
     tier: 8,
-    concept: 'Binary Search',
-    displayString: `Searching sorted numbers 1 to 100 with binary search, what is the first midpoint checked?`,
-    codeSnippet: `low = 1, high = 100\nmid = (1 + 100) // 2\n# First probe at mid`,
+    concept: 'Time Complexity',
+    displayString: `Merge sort splits and merges a list of N items. What is its Big-O time complexity?`,
+    codeSnippet: `# Merge sort: splits list in half each time\n# then merges N items back — log N levels × N work\nresult = merge_sort(items)`,
     options,
     answer,
     answerString: answer,
-    hint: `The midpoint between 1 and 100 is (1 + 100) // 2 = 50.`,
+    hint: `Merge sort does O(log N) split levels, each requiring O(N) work to merge — total: O(N log N).`,
     type: 'coding'
   };
 }

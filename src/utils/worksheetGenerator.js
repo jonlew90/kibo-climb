@@ -302,6 +302,18 @@ export const WORKSHEET_CATALOG = [
     desc: 'Loop iterations, conditional branching logic, and bug hunt tracing.',
     isKiboClubOnly: true,
     problemCount: 16
+  },
+  {
+    id: 'coding_club_advanced',
+    subject: 'coding',
+    tier: 6,
+    curriculumTiers: [6, 7, 8],
+    slug: 'grade-6-8-functions-recursion-algorithms',
+    title: 'Advanced Functions, Recursion & Algorithms',
+    gradeLabel: 'Grades 6–8+',
+    desc: 'Functions & data structures, recursive tracing, Big-O complexity, and binary search.',
+    isKiboClubOnly: true,
+    problemCount: 16
   }
 ];
 
