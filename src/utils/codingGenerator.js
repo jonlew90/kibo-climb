@@ -565,66 +565,234 @@ function generateTier6Problem() {
 }
 
 /**
- * Tier 7: Functions & Data Structures (Stacks / Queues)
+ * Tier 7: Functions & Data Structures (Stacks / Queues / Dictionaries)
  */
 function generateTier7Problem() {
-  const type = Math.floor(Math.random() * 3);
+  const type = Math.floor(Math.random() * 5);
 
   if (type === 0) {
-    // Function parameter passing & return value
-    const p1 = Math.floor(Math.random() * 5) + 2;
-    const p2 = Math.floor(Math.random() * 4) + 2;
-    const mult = 3;
-    const ansNum = (p1 + p2) * mult;
-    const answer = String(ansNum);
-    const options = ensureUniqueOptions(answer, [
-      String(p1 + p2 * mult),
-      String(ansNum + mult),
-      String(p1 * mult + p2),
-      String(ansNum - mult)
-    ]);
+    // Diverse Function Math & Parameter Return Templates
+    const funcTemplates = [
+      () => {
+        const w = Math.floor(Math.random() * 8) + 3;
+        const h = Math.floor(Math.random() * 6) + 2;
+        const ansNum = w * h;
+        const answer = String(ansNum);
+        const options = ensureUniqueOptions(answer, [
+          String((w + h) * 2),
+          String(ansNum + w),
+          String(ansNum - h),
+          String(w * (h + 1))
+        ]);
+        return {
+          concept: 'Function Returns',
+          displayString: 'What does this function call return?',
+          codeSnippet: `def calculate_area(width, height):\n    return width * height\n\nresult = calculate_area(${w}, ${h})\nprint(result)`,
+          options,
+          answer,
+          answerString: answer,
+          hint: `Substitute width=${w} and height=${h}: ${w} * ${h} = ${ansNum}.`
+        };
+      },
+      () => {
+        const x = Math.floor(Math.random() * 7) + 2;
+        const y = Math.floor(Math.random() * 8) + 1;
+        const ansNum = (x * 2) + y;
+        const answer = String(ansNum);
+        const options = ensureUniqueOptions(answer, [
+          String(x + (y * 2)),
+          String((x + y) * 2),
+          String(ansNum + 2),
+          String(ansNum - 2)
+        ]);
+        return {
+          concept: 'Function Returns',
+          displayString: 'What does this function call return?',
+          codeSnippet: `def double_and_add(x, y):\n    return (x * 2) + y\n\nresult = double_and_add(${x}, ${y})\nprint(result)`,
+          options,
+          answer,
+          answerString: answer,
+          hint: `Substitute x=${x} and y=${y}: (${x} * 2) + ${y} = ${x * 2} + ${y} = ${ansNum}.`
+        };
+      },
+      () => {
+        const base = Math.floor(Math.random() * 6) + 3;
+        const bonus = Math.floor(Math.random() * 4) + 2;
+        const mult = [2, 3, 4][Math.floor(Math.random() * 3)];
+        const ansNum = (base + bonus) * mult;
+        const answer = String(ansNum);
+        const options = ensureUniqueOptions(answer, [
+          String(base + (bonus * mult)),
+          String(ansNum + mult),
+          String(base * mult + bonus),
+          String(ansNum - mult)
+        ]);
+        return {
+          concept: 'Function Returns',
+          displayString: 'What does this function call return?',
+          codeSnippet: `def score_bonus(base, bonus):\n    return (base + bonus) * ${mult}\n\nresult = score_bonus(${base}, ${bonus})\nprint(result)`,
+          options,
+          answer,
+          answerString: answer,
+          hint: `Substitute base=${base} and bonus=${bonus}: (${base} + ${bonus}) * ${mult} = ${base + bonus} * ${mult} = ${ansNum}.`
+        };
+      },
+      () => {
+        const price = (Math.floor(Math.random() * 6) + 4) * 10;
+        const coupon = (Math.floor(Math.random() * 3) + 1) * 5;
+        const ansNum = price - coupon;
+        const answer = String(ansNum);
+        const options = ensureUniqueOptions(answer, [
+          String(price + coupon),
+          String(ansNum - 5),
+          String(ansNum + 10),
+          String(price)
+        ]);
+        return {
+          concept: 'Function Returns',
+          displayString: 'What does this function call return?',
+          codeSnippet: `def apply_discount(price, coupon):\n    return price - coupon\n\nfinal_cost = apply_discount(${price}, ${coupon})\nprint(final_cost)`,
+          options,
+          answer,
+          answerString: answer,
+          hint: `Substitute price=${price} and coupon=${coupon}: ${price} - ${coupon} = ${ansNum}.`
+        };
+      }
+    ];
+
+    const chosen = funcTemplates[Math.floor(Math.random() * funcTemplates.length)]();
     return {
       tier: 7,
-      concept: 'Function Returns',
-      displayString: `What does this function call return?`,
-      codeSnippet: `def calculate(a, b):\n    return (a + b) * ${mult}\n\nresult = calculate(${p1}, ${p2})\nprint(result)`,
-      options,
-      answer,
-      answerString: answer,
-      hint: `Substitute a=${p1} and b=${p2}: (${p1} + ${p2}) * ${mult} = ${ansNum}.`,
+      ...chosen,
       type: 'coding'
     };
   }
 
   if (type === 1) {
-    // Stack LIFO operations
-    const answer = '7';
-    const options = ensureUniqueOptions(answer, ['4', '9', '2']);
+    // Conditional Branching in Functions
+    const condTemplates = [
+      () => {
+        const a = Math.floor(Math.random() * 30) + 10;
+        const b = Math.floor(Math.random() * 30) + 10;
+        const ansNum = Math.max(a, b);
+        const answer = String(ansNum);
+        const options = ensureUniqueOptions(answer, [
+          String(Math.min(a, b)),
+          String(a + b),
+          String(Math.abs(a - b))
+        ]);
+        return {
+          concept: 'Function Conditionals',
+          displayString: 'What is printed after calling find_max?',
+          codeSnippet: `def find_max(a, b):\n    if a > b:\n        return a\n    else:\n        return b\n\nprint(find_max(${a}, ${b}))`,
+          options,
+          answer,
+          answerString: answer,
+          hint: `Compare ${a} and ${b}: ${a > b ? `${a} > ${b}` : `${b} >= ${a}`}, so ${ansNum} is returned.`
+        };
+      },
+      () => {
+        const energy = Math.floor(Math.random() * 50) + 20;
+        const req = 40;
+        const isReady = energy >= req;
+        const answer = isReady ? '"Ready to Climb"' : '"Need Rest"';
+        const options = ensureUniqueOptions(answer, ['"Ready to Climb"', '"Need Rest"', 'None', 'Error']);
+        return {
+          concept: 'Function Conditionals',
+          displayString: 'What does this function call return?',
+          codeSnippet: `def check_status(energy):\n    if energy >= 40:\n        return "Ready to Climb"\n    return "Need Rest"\n\nstatus = check_status(${energy})\nprint(status)`,
+          options,
+          answer,
+          answerString: answer,
+          hint: `energy is ${energy}. Since ${energy} ${isReady ? '>= 40' : '< 40'}, the function returns ${answer}.`
+        };
+      }
+    ];
+
+    const chosen = condTemplates[Math.floor(Math.random() * condTemplates.length)]();
     return {
       tier: 7,
-      concept: 'Stack (LIFO)',
-      displayString: `What value is on TOP of the stack after these operations?`,
-      codeSnippet: `stack = []\nstack.push(4)\nstack.push(9)\nstack.pop()      # Removes top item\nstack.push(7)\nprint(stack.top())`,
-      options,
-      answer,
-      answerString: answer,
-      hint: `Push 4, push 9, then pop removes 9. Push 7 leaves 7 on top.`,
+      ...chosen,
       type: 'coding'
     };
   }
 
-  // Queue FIFO operations
-  const answer = 'Alpha';
-  const options = ensureUniqueOptions(answer, ['Beta', 'Gamma', 'Empty']);
+  if (type === 2) {
+    // Dynamic Stack (LIFO) Operations
+    const isGemTheme = Math.random() > 0.5;
+    if (isGemTheme) {
+      const gemPool = ['"Ruby"', '"Emerald"', '"Sapphire"', '"Diamond"', '"Topaz"', '"Amethyst"'];
+      const picked = shuffleArray(gemPool).slice(0, 4);
+      const answer = picked[3];
+      const options = ensureUniqueOptions(answer, [picked[1], picked[0], picked[2]]);
+      return {
+        tier: 7,
+        concept: 'Stack (LIFO)',
+        displayString: 'What gem is on TOP of the stack after these operations?',
+        codeSnippet: `gem_stack = []\ngem_stack.push(${picked[0]})\ngem_stack.push(${picked[1]})\ngem_stack.pop()         # Removes top gem\ngem_stack.push(${picked[2]})\ngem_stack.pop()         # Removes top gem\ngem_stack.push(${picked[3]})\nprint(gem_stack.top())`,
+        options,
+        answer,
+        answerString: answer,
+        hint: `Pushes and pops leave ${picked[0]}, then ${picked[3]} is pushed onto the top.`,
+        type: 'coding'
+      };
+    } else {
+      const v1 = Math.floor(Math.random() * 10) + 2;
+      const v2 = Math.floor(Math.random() * 10) + 12;
+      const v3 = Math.floor(Math.random() * 10) + 25;
+      const v4 = Math.floor(Math.random() * 10) + 40;
+      const answer = String(v4);
+      const options = ensureUniqueOptions(answer, [String(v2), String(v1), String(v3)]);
+      return {
+        tier: 7,
+        concept: 'Stack (LIFO)',
+        displayString: 'What value is on TOP of the stack after these operations?',
+        codeSnippet: `stack = []\nstack.push(${v1})\nstack.push(${v2})\nstack.pop()      # Removes top item (${v2})\nstack.push(${v3})\nstack.pop()      # Removes top item (${v3})\nstack.push(${v4})\nprint(stack.top())`,
+        options,
+        answer,
+        answerString: answer,
+        hint: `Push ${v1}, push ${v2}, pop removes ${v2}. Push ${v3}, pop removes ${v3}. Push ${v4} places ${v4} on top.`,
+        type: 'coding'
+      };
+    }
+  }
+
+  if (type === 3) {
+    // Dynamic Queue (FIFO) Operations
+    const names = shuffleArray(['"Kibo"', '"Pip"', '"Tara"', '"Leo"', '"Milo"']).slice(0, 3);
+    const answer = names[0];
+    const options = ensureUniqueOptions(answer, [names[1], names[2], '"Empty"']);
+    return {
+      tier: 7,
+      concept: 'Queue (FIFO)',
+      displayString: 'Which climber is served first by dequeue()?',
+      codeSnippet: `climber_queue = []\nclimber_queue.enqueue(${names[0]})\nclimber_queue.enqueue(${names[1]})\nclimber_queue.enqueue(${names[2]})\n\nfirst_up = climber_queue.dequeue()\nprint(first_up)`,
+      options,
+      answer,
+      answerString: answer,
+      hint: `A queue is First-In, First-Out (FIFO). ${names[0]} joined the queue first, so they are dequeued first.`,
+      type: 'coding'
+    };
+  }
+
+  // Dictionary / Key-Value Mapping Lookup
+  const items = [
+    { key: '"sparks"', val: Math.floor(Math.random() * 50) + 25 },
+    { key: '"potions"', val: Math.floor(Math.random() * 5) + 1 },
+    { key: '"scrolls"', val: Math.floor(Math.random() * 6) + 2 }
+  ];
+  const target = items[Math.floor(Math.random() * items.length)];
+  const answer = String(target.val);
+  const options = ensureUniqueOptions(answer, items.map(i => String(i.val)));
   return {
     tier: 7,
-    concept: 'Queue (FIFO)',
-    displayString: `Which item is removed first by dequeue()?`,
-    codeSnippet: `queue = []\nqueue.enqueue("Alpha")\nqueue.enqueue("Beta")\nqueue.enqueue("Gamma")\n\nfirst_out = queue.dequeue()\nprint(first_out)`,
+    concept: 'Dictionaries',
+    displayString: 'What is printed by accessing this dictionary key?',
+    codeSnippet: `inventory = {\n    "sparks": ${items[0].val},\n    "potions": ${items[1].val},\n    "scrolls": ${items[2].val}\n}\n\nprint(inventory[${target.key}])`,
     options,
     answer,
     answerString: answer,
-    hint: `A queue is First-In, First-Out (FIFO). "Alpha" was added first, so it is removed first.`,
+    hint: `Accessing inventory[${target.key}] retrieves the value paired with that key (${target.val}).`,
     type: 'coding'
   };
 }
