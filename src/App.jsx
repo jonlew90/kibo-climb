@@ -108,8 +108,26 @@ export default function App() {
       }
       if (typeof window !== 'undefined') {
         const path = window.location.pathname || '';
-        // Standalone utility screens should never display the 2-second splash
-        if (path.startsWith('/worksheets') || path.startsWith('/blog') || path === '/privacy' || path === '/terms' || path === '/coppa-privacy') {
+        const search = window.location.search || '';
+        // Standalone utility screens, deep links, or direct routes should never display the splash screen
+        if (
+          path.startsWith('/worksheets') ||
+          path.startsWith('/blog') ||
+          path === '/privacy' ||
+          path === '/terms' ||
+          path === '/coppa-privacy' ||
+          path === '/parent' ||
+          path === '/parents' ||
+          path === '/parent-dashboard' ||
+          path === '/settings' ||
+          path === '/leaderboard' ||
+          path === '/quests' ||
+          search.includes('action=') ||
+          search.includes('session_id=') ||
+          search.includes('profile=') ||
+          search.includes('subject=') ||
+          search.includes('tab=')
+        ) {
           return false;
         }
         if (window.sessionStorage) {
@@ -635,8 +653,8 @@ export default function App() {
         syncAppStateWithStorage(subject);
       }
 
-      // If an explicit action is provided via deep link, dismiss initial profile selector screen
-      if (action) {
+      // If an explicit action or profile is provided via deep link, dismiss initial profile selector screen
+      if (action || profile) {
         setShowProfileSelector(false);
       }
 
