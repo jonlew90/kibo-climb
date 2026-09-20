@@ -550,4 +550,24 @@ export function selectSpyglassSlot({ targetStr = '', effectiveWordSlots = [], is
   return blankSlotIndices[0];
 }
 
+/**
+ * Recalculates inputVal when a Spyglass reveals a blank slot, preserving letters
+ * typed into remaining blank slots while omitting the slot that was just revealed.
+ */
+export function adjustInputForSpyglassReveal({
+  inputVal = '',
+  blankSlotIndices = [],
+  targetPos
+} = {}) {
+  if (!inputVal || !blankSlotIndices || blankSlotIndices.length === 0) return '';
+  let nextInput = '';
+  blankSlotIndices.forEach((slotIdx, bIdx) => {
+    if (slotIdx !== targetPos && bIdx < inputVal.length) {
+      nextInput += inputVal[bIdx];
+    }
+  });
+  return nextInput;
+}
+
+
 

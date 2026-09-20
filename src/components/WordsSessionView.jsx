@@ -8,7 +8,7 @@ import FeedbackModal from './FeedbackModal';
 import RollingNumberTicker from './RollingNumberTicker';
 import ConfettiCanvas from './ConfettiCanvas';
 import { generateProblems, generateTierProblem } from '../utils/wordsGenerator';
-import { getTierFromRating, isNearTierThreshold, getClueHintMessage, selectSpyglassSlot } from '../utils/wordsCurriculum';
+import { getTierFromRating, isNearTierThreshold, getClueHintMessage, selectSpyglassSlot, adjustInputForSpyglassReveal } from '../utils/wordsCurriculum';
 import QwertyKeyboard from './QwertyKeyboard';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
@@ -373,12 +373,21 @@ export default function WordsSessionView({
     const letterToReveal = answerStr.charAt(targetPos).toUpperCase();
 
     if (onConsumeLetterSpyglass && onConsumeLetterSpyglass()) {
-      setSpyglassRevealedSlots((prev) => ({
-        ...prev,
+      const newRevealed = {
+        ...spyglassRevealedSlots,
         [targetPos]: letterToReveal
-      }));
-      // Reset or adjust typed input so it only fills the remaining blank slots
-      setInputVal('');
+      };
+      setSpyglassRevealedSlots(newRevealed);
+
+      // Preserve typed input in remaining blank slots (excluding the newly revealed targetPos)
+      const remainingBlankIndices = blankSlotIndices.filter((idx) => idx !== targetPos);
+      const nextInput = adjustInputForSpyglassReveal({
+        inputVal,
+        blankSlotIndices,
+        targetPos
+      });
+
+      setInputVal(nextInput);
       setAcknowledgedGivenIndices(new Set());
 
       triggerToastBanner({
@@ -386,11 +395,39 @@ export default function WordsSessionView({
         text: `Permanent Letter Revealed: "${letterToReveal}"! 🔍`
       }, 1500);
 
-      // If this was the last remaining blank, celebrate and auto-evaluate!
-      if (blankSlotIndices.length === 1) {
+      // If no blanks remain, celebrate and auto-evaluate
+      if (remainingBlankIndices.length === 0) {
         setTimeout(() => {
           processAnswerEvaluation('');
         }, 350);
+      } else if (nextInput.length === remainingBlankIndices.length) {
+        // If all remaining blanks are filled, check if the combined word is correct
+        const displayParts = (currentProblem.displayString || '').split(' ').filter((c) => c.length > 0);
+        const baseSlots = displayParts.length > 0 ? displayParts : (currentProblem.displayString || '').split('');
+        const effectiveSlots = baseSlots.map((char, idx) => (char === '_' && newRevealed[idx] ? newRevealed[idx] : char));
+
+        let fullWord = '';
+        let inputIdx = 0;
+        for (let i = 0; i < effectiveSlots.length; i++) {
+          if (effectiveSlots[i] === '_') {
+            if (inputIdx < nextInput.length) {
+              fullWord += nextInput[inputIdx];
+              inputIdx++;
+            } else {
+              fullWord += '_';
+            }
+          } else {
+            fullWord += effectiveSlots[i];
+          }
+        }
+
+        const normTargetAns = (currentProblem.answerString || currentProblem.answer || '').toString().toLowerCase();
+        const isCorrect = checkSpellingAttempt(fullWord.toLowerCase(), normTargetAns, true).isCorrect;
+        if (isCorrect) {
+          setTimeout(() => {
+            processAnswerEvaluation(nextInput);
+          }, 350);
+        }
       }
     }
   };

@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   getClueHintMessage,
   getClueHintedPositions,
-  selectSpyglassSlot
+  selectSpyglassSlot,
+  adjustInputForSpyglassReveal
 } from '../src/utils/wordsCurriculum';
 
 describe('Clue and Spyglass Non-Overlapping Behavior', () => {
@@ -122,5 +123,47 @@ describe('Clue and Spyglass Non-Overlapping Behavior', () => {
     expect(clue2).not.toContain("Vowel: O");
     expect(clue2).toContain("Starts with 'FR' blend");
     expect(clue2).toContain("ends with 'T'");
+  });
+
+  describe('adjustInputForSpyglassReveal', () => {
+    it('should preserve typed letters in remaining blanks when an un-typed slot is revealed', () => {
+      // blanks at [1, 2, 3], user typed 'L' into slot 1 and 'A' into slot 2
+      // spyglass reveals slot 3
+      const adjusted = adjustInputForSpyglassReveal({
+        inputVal: 'LA',
+        blankSlotIndices: [1, 2, 3],
+        targetPos: 3
+      });
+      expect(adjusted).toBe('LA');
+    });
+
+    it('should discard the character for a slot that was already typed when that exact slot is revealed', () => {
+      // blanks at [1, 2, 3], user typed 'L' into slot 1 and 'A' into slot 2
+      // spyglass reveals slot 2 (which had 'A')
+      const adjusted = adjustInputForSpyglassReveal({
+        inputVal: 'LA',
+        blankSlotIndices: [1, 2, 3],
+        targetPos: 2
+      });
+      // Remaining blanks are [1, 3]. Slot 1 had 'L', slot 3 was empty -> 'L'
+      expect(adjusted).toBe('L');
+    });
+
+    it('should discard the first character if slot 1 is revealed and preserve slot 2 character in its position', () => {
+      // blanks at [1, 2, 3], user typed 'L' into slot 1 and 'A' into slot 2
+      // spyglass reveals slot 1 (which had 'L')
+      const adjusted = adjustInputForSpyglassReveal({
+        inputVal: 'LA',
+        blankSlotIndices: [1, 2, 3],
+        targetPos: 1
+      });
+      // Remaining blanks are [2, 3]. Slot 2 had 'A', slot 3 was empty -> 'A'
+      expect(adjusted).toBe('A');
+    });
+
+    it('should handle empty or full input smoothly', () => {
+      expect(adjustInputForSpyglassReveal({ inputVal: '', blankSlotIndices: [0, 1], targetPos: 0 })).toBe('');
+      expect(adjustInputForSpyglassReveal({ inputVal: 'CAT', blankSlotIndices: [0, 1, 2], targetPos: 1 })).toBe('CT');
+    });
   });
 });
