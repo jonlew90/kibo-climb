@@ -1745,7 +1745,7 @@ export default function WordsSessionView({
                 {/* TIER 2: ACTION DOCK / ASSISTS BAR (Clean, wrapped, no horizontal scroll) */}
                 <div className="w-full flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 py-0.5 max-w-full">
                   {incorrectReviewData ? (
-                    <span className="text-[10px] sm:text-xs font-black uppercase text-rose-800 bg-rose-100 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1 animate-pulse shrink-0">
+                    <span className="text-xs sm:text-sm font-black uppercase text-rose-800 bg-rose-100 px-2.5 sm:px-3 py-1 rounded-full border border-rose-300 shadow-2xs font-extrabold flex items-center gap-1 animate-pulse shrink-0">
                       ❌ Reviewing Solution
                     </span>
                   ) : (
@@ -1755,7 +1755,7 @@ export default function WordsSessionView({
                         type="button"
                         onClick={handlePassQuestion}
                         disabled={consecutiveSkips >= 2}
-                        className={`text-[10px] sm:text-xs font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                        className={`text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                           consecutiveSkips >= 2
                             ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                             : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -1799,7 +1799,7 @@ export default function WordsSessionView({
                             onOpenWorkshop();
                           }
                         }}
-                        className={`text-[10px] sm:text-xs font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                        className={`text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                           showFrustrationCard
                             ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                             : shouldPulseHint
@@ -1825,7 +1825,7 @@ export default function WordsSessionView({
                         <button
                           type="button"
                           onClick={handleUseLetterSpyglass}
-                          className="text-[10px] sm:text-xs font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs"
+                          className="text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs"
                           title="Use Letter Spyglass to reveal & fill 1 missing letter slot!"
                         >
                           <ItemThumbnail itemId="letter_spyglass" borderless className="w-4 h-4 shrink-0" />
@@ -1838,7 +1838,7 @@ export default function WordsSessionView({
                         <button
                           type="button"
                           onClick={handleUseLetterPruner}
-                          className={`text-[10px] sm:text-xs font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                          className={`text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                             isLetterPrunerActive
                               ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
                               : 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
@@ -1866,22 +1866,22 @@ export default function WordsSessionView({
               let containerGapClass = 'gap-1.5 sm:gap-2';
 
               if (wordLen >= 13) {
-                slotSizeClass = 'min-w-[1.125rem] sm:min-w-[1.375rem] h-7 sm:h-8 px-0.5 rounded-md';
-                textSizeClass = 'text-[10px] sm:text-xs md:text-sm';
+                slotSizeClass = 'min-w-[1.25rem] sm:min-w-[1.5rem] h-8 sm:h-9 px-0.5 rounded-md';
+                textSizeClass = 'text-xs sm:text-sm md:text-base';
                 pingSizeClass = 'w-1.5 h-0.5';
-                spyglassBadgeClass = 'w-3 h-3 text-[7.5px] -top-1 -right-0.5';
+                spyglassBadgeClass = 'w-3.5 h-3.5 text-[8px] -top-1 -right-0.5';
                 containerGapClass = 'gap-0.5';
               } else if (wordLen >= 9) {
-                slotSizeClass = 'min-w-[1.375rem] sm:min-w-[1.75rem] h-8 sm:h-9 px-0.5 sm:px-1 rounded-md sm:rounded-lg';
-                textSizeClass = 'text-xs sm:text-sm md:text-base';
+                slotSizeClass = 'min-w-[1.5rem] sm:min-w-[2rem] h-9 sm:h-10 px-1 rounded-lg';
+                textSizeClass = 'text-sm sm:text-base md:text-lg';
                 pingSizeClass = 'w-2 h-0.5';
-                spyglassBadgeClass = 'w-3.5 h-3.5 text-[8.5px] -top-1 -right-0.5';
-                containerGapClass = 'gap-0.5 sm:gap-1';
+                spyglassBadgeClass = 'w-3.5 h-3.5 text-[9px] -top-1 -right-0.5';
+                containerGapClass = 'gap-1 sm:gap-1.5';
               } else if (wordLen >= 6) {
-                slotSizeClass = 'min-w-[1.75rem] sm:min-w-[2.25rem] h-9 sm:h-10 px-1 sm:px-1.5 rounded-lg sm:rounded-xl';
-                textSizeClass = 'text-base sm:text-xl';
+                slotSizeClass = 'min-w-[1.875rem] sm:min-w-[2.375rem] h-10 sm:h-11 px-1 sm:px-1.5 rounded-xl';
+                textSizeClass = 'text-lg sm:text-2xl';
                 pingSizeClass = 'w-2 h-0.5';
-                spyglassBadgeClass = 'w-3.5 h-3.5 text-[9px] -top-1 -right-1';
+                spyglassBadgeClass = 'w-4 h-4 text-[10px] -top-1 -right-1';
                 containerGapClass = 'gap-1 sm:gap-1.5';
               }
 
@@ -1953,7 +1953,7 @@ export default function WordsSessionView({
 
               return (
                 <div className="space-y-1 sm:space-y-1.5 w-full">
-                  <div className="w-full text-center my-0.5 sm:my-1 text-xs sm:text-sm md:text-base leading-tight font-bold text-slate-600">
+                  <div className="w-full text-center my-0.5 sm:my-1 text-sm sm:text-base md:text-lg leading-snug font-bold text-slate-700">
                      {currentProblem.hint || "Spell the word!"}
                   </div>
                   <div className="w-full flex items-center justify-center flex-wrap my-1 sm:my-1.5 font-extrabold uppercase">

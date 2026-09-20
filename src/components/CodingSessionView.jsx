@@ -930,7 +930,7 @@ export default function CodingSessionView({
                     type="button"
                     onClick={handlePassQuestion}
                     disabled={consecutiveSkips >= 2}
-                    className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                    className={`text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                       consecutiveSkips >= 2
                         ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                         : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -948,7 +948,7 @@ export default function CodingSessionView({
                   <button
                     type="button"
                     onClick={handleUseHint}
-                    className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                    className={`text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                       revealedHint
                         ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                         : (isPracticeMode || (consumables?.hintScrollCount ?? 0) > 0)
@@ -972,7 +972,7 @@ export default function CodingSessionView({
                     <button
                       type="button"
                       onClick={handleUsePruner}
-                      className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                      className={`text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                         eliminatedOptions.length > 0
                           ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
                           : 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
@@ -986,18 +986,18 @@ export default function CodingSessionView({
                 </div>
 
                 {/* Question Display Text */}
-                <div className="text-sm sm:text-base font-extrabold text-slate-800 text-center mb-1 whitespace-pre-line leading-snug">
+                <div className="text-sm sm:text-base md:text-lg font-extrabold text-slate-800 text-center mb-1 whitespace-pre-line leading-snug">
                   {currentProblem.displayString}
                 </div>
 
                 {/* Code Snippet Box */}
                 {currentProblem.codeSnippet && (
-                  <div className="w-full mb-2 bg-slate-900 border-2 border-purple-500/40 rounded-2xl p-2.5 sm:p-3 text-left shadow-inner font-mono text-xs sm:text-sm text-purple-200 overflow-x-auto max-h-[18vh]">
+                  <div className="w-full mb-2 bg-slate-900 border-2 border-purple-500/40 rounded-2xl p-2.5 sm:p-3 text-left shadow-inner font-mono text-xs sm:text-sm md:text-base text-purple-200 overflow-x-auto max-h-[22vh]">
                     <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-1 mb-1.5 text-[10px] sm:text-xs font-sans uppercase font-bold tracking-wider">
                       <span className="flex items-center gap-1"><Code2 className="w-3 h-3 text-purple-400" /> logic_drill.py</span>
                       <span className="text-emerald-400">● Live Trace</span>
                     </div>
-                    <pre className="whitespace-pre-wrap leading-relaxed">
+                    <pre className="whitespace-pre-wrap leading-relaxed font-semibold">
                       <code>{currentProblem.codeSnippet}</code>
                     </pre>
                   </div>

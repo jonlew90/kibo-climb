@@ -1795,7 +1795,7 @@ export default function MathSessionView({
                         type="button"
                         onClick={handlePassQuestion}
                         disabled={consecutiveSkips >= 2}
-                        className={`text-[10px] sm:text-xs font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
+                        className={`text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 ${
                           consecutiveSkips >= 2
                             ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                             : 'bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-900 border-slate-300 hover:border-purple-300 shadow-2xs cursor-pointer'
@@ -1839,7 +1839,7 @@ export default function MathSessionView({
                             onOpenWorkshop();
                           }
                         }}
-                        className={`text-[10px] sm:text-xs font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                        className={`text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                           showFrustrationCard
                             ? 'bg-indigo-200 text-indigo-950 border-indigo-400'
                             : shouldPulseHint
@@ -1865,7 +1865,7 @@ export default function MathSessionView({
                         <button
                           type="button"
                           onClick={handleUseLetterSpyglass}
-                          className="text-[10px] sm:text-xs font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs"
+                          className="text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200 shadow-2xs"
                           title="Use Spyglass to reveal & fill 1 missing blank slot or answer!"
                         >
                           <ItemThumbnail itemId="letter_spyglass" borderless className="w-4 h-4 shrink-0" />
@@ -1878,7 +1878,7 @@ export default function MathSessionView({
                         <button
                           type="button"
                           onClick={handleUseLetterPruner}
-                          className={`text-[10px] sm:text-xs font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
+                          className={`text-xs sm:text-sm font-black uppercase px-2.5 sm:px-3 py-1 rounded-full border shrink-0 transition-all active:scale-95 flex items-center gap-1 cursor-pointer ${
                             isLetterPrunerActive
                               ? 'bg-emerald-200 text-emerald-950 border-emerald-400'
                               : 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 shadow-2xs'
