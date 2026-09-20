@@ -90,6 +90,15 @@ function renderMarkdown(mdText, onNavigate) {
       );
     }
 
+    if (trimmed.startsWith('> ') || trimmed.startsWith('>')) {
+      const quoteText = trimmed.replace(/^>\s*/gm, '').trim();
+      return (
+        <blockquote key={idx}>
+          <p>{formatInlineMarkdown(quoteText, onNavigate)}</p>
+        </blockquote>
+      );
+    }
+
     return (
       <p key={idx}>{formatInlineMarkdown(trimmed, onNavigate)}</p>
     );
@@ -333,6 +342,20 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
           <a href="/" onClick={handlePlayCta} className="cta-button">Start the Climb - Free to Play</a>
         </section>
       </main>
+
+      {/* Standard Footer */}
+      <footer className="border-t border-orange-100 bg-white py-8 text-center text-xs text-slate-500 font-medium">
+        <div className="max-w-6xl mx-auto px-4 space-y-2">
+          <p>© 2026 Kibo Climb. Adaptive math practice, mental arithmetic strategies &amp; printable worksheets for K–8 learners.</p>
+          <div className="flex justify-center gap-4 text-slate-600 font-bold">
+            <a href="/" onClick={(e) => handleNavigateTo('/', e)} className="hover:text-orange-600">Game</a>
+            <a href="/worksheets" onClick={(e) => handleNavigateTo('/worksheets', e)} className="hover:text-orange-600">Worksheets</a>
+            <a href="/blog" onClick={(e) => handleNavigateTo('/blog', e)} className="hover:text-orange-600">Blog</a>
+            <a href="/privacy" onClick={(e) => handleNavigateTo('/privacy', e)} className="hover:text-orange-600">Privacy</a>
+            <a href="/terms" onClick={(e) => handleNavigateTo('/terms', e)} className="hover:text-orange-600">Terms</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

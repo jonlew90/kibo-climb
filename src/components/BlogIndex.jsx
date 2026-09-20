@@ -363,6 +363,20 @@ export default function BlogIndex({ onBack, onNavigate }) {
           </a>
         </section>
       </main>
+
+      {/* Standard Footer */}
+      <footer className="border-t border-orange-100 bg-white py-8 text-center text-xs text-slate-500 font-medium">
+        <div className="max-w-6xl mx-auto px-4 space-y-2">
+          <p>© 2026 Kibo Climb. Adaptive math practice, mental arithmetic strategies &amp; printable worksheets for K–8 learners.</p>
+          <div className="flex justify-center gap-4 text-slate-600 font-bold">
+            <a href="/" onClick={(e) => navigateTo('/', e)} className="hover:text-orange-600">Game</a>
+            <a href="/worksheets" onClick={handleWorksheetCta} className="hover:text-orange-600">Worksheets</a>
+            <a href="/blog" onClick={(e) => navigateTo('/blog', e)} className="hover:text-orange-600">Blog</a>
+            <a href="/privacy" onClick={(e) => navigateTo('/privacy', e)} className="hover:text-orange-600">Privacy</a>
+            <a href="/terms" onClick={(e) => navigateTo('/terms', e)} className="hover:text-orange-600">Terms</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

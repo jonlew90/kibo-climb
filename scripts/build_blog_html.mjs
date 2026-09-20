@@ -59,6 +59,9 @@ function markdownToHtml(mdText) {
         return `<li>${formatInlineMarkdown(text)}</li>`;
       });
       htmlParts.push(`<ul>${items.join('')}</ul>`);
+    } else if (firstLine.startsWith('> ') || firstLine.startsWith('>')) {
+      const quoteText = lines.map(line => line.replace(/^>\s*/, '')).join(' ');
+      htmlParts.push(`<blockquote><p>${formatInlineMarkdown(quoteText)}</p></blockquote>`);
     } else {
       const text = lines.join(' ');
       htmlParts.push(`<p>${formatInlineMarkdown(text)}</p>`);
@@ -474,6 +477,19 @@ ${jsonLd}
       <a href="/" class="cta-button">Start the Climb - Free to Play</a>
     </section>
   </main>
+
+  <footer style="border-top: 1px solid #FFEDD5; background: #FFFFFF; padding: 2rem 1rem; text-align: center; font-size: 0.75rem; color: #64748B; font-weight: 500;">
+    <div style="max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+      <p style="margin: 0;">© 2026 Kibo Climb. Adaptive math practice, mental arithmetic strategies &amp; printable worksheets for K–8 learners.</p>
+      <div style="display: flex; gap: 1rem; color: #475569; font-weight: 700;">
+        <a href="/" style="color: inherit; text-decoration: none;">Game</a>
+        <a href="/worksheets" style="color: inherit; text-decoration: none;">Worksheets</a>
+        <a href="/blog" style="color: inherit; text-decoration: none;">Blog</a>
+        <a href="/privacy" style="color: inherit; text-decoration: none;">Privacy</a>
+        <a href="/terms" style="color: inherit; text-decoration: none;">Terms</a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
 `;
@@ -697,6 +713,19 @@ ${jsonLd}
       <a href="/" class="cta-button">Start the Climb - Free to Play</a>
     </section>
   </main>
+
+  <footer style="border-top: 1px solid #FFEDD5; background: #FFFFFF; padding: 2rem 1rem; text-align: center; font-size: 0.75rem; color: #64748B; font-weight: 500;">
+    <div style="max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+      <p style="margin: 0;">© 2026 Kibo Climb. Adaptive math practice, mental arithmetic strategies &amp; printable worksheets for K–8 learners.</p>
+      <div style="display: flex; gap: 1rem; color: #475569; font-weight: 700;">
+        <a href="/" style="color: inherit; text-decoration: none;">Game</a>
+        <a href="/worksheets" style="color: inherit; text-decoration: none;">Worksheets</a>
+        <a href="/blog" style="color: inherit; text-decoration: none;">Blog</a>
+        <a href="/privacy" style="color: inherit; text-decoration: none;">Privacy</a>
+        <a href="/terms" style="color: inherit; text-decoration: none;">Terms</a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
 `;

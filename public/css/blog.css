@@ -154,6 +154,21 @@ article a:hover {
   color: var(--kibo-orange);
 }
 
+article blockquote {
+  border-left: 4px solid var(--kibo-orange);
+  background: #FFF9F5;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  border-radius: 0 16px 16px 0;
+  color: #334155;
+  font-style: italic;
+  font-weight: 500;
+}
+
+article blockquote p {
+  margin-bottom: 0;
+}
+
 .worksheet-callout-card {
   background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%);
   border: 2px solid #5EEAD4;
