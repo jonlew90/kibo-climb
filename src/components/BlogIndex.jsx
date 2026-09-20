@@ -257,7 +257,7 @@ export default function BlogIndex({ onBack, onNavigate }) {
                 const categoryBadge = (post.tags && post.tags[0]) || post.topic || 'Math Strategies';
 
                 return (
-                  <article key={post.slug} className="flex">
+                  <div key={post.slug} className="flex">
                     <a
                       href={`/blog/${post.slug}`}
                       onClick={(e) => navigateTo(`/blog/${post.slug}`, e)}
@@ -270,15 +270,15 @@ export default function BlogIndex({ onBack, onNavigate }) {
                           className="blog-card-img"
                           loading="lazy"
                         />
+                        <span className="blog-card-badge">
+                          {categoryBadge}
+                        </span>
                       </div>
                       <div className="blog-card-body">
                         <div className="blog-card-meta">
-                          <span className="blog-category-badge">
-                            {categoryBadge}
-                          </span>
-                          <span className="blog-card-date">
-                            {post.formattedDate}
-                          </span>
+                          <span>{post.topic || categoryBadge}</span>
+                          <span>•</span>
+                          <span>{post.readTime || '3 min read'}</span>
                         </div>
                         <h3 className="blog-card-title font-heading">
                           {post.title}
@@ -287,16 +287,16 @@ export default function BlogIndex({ onBack, onNavigate }) {
                           {post.excerpt}
                         </p>
                         <div className="blog-card-footer">
-                          <span className="blog-read-time">
-                            {post.readTime || '2 min read'}
+                          <span className="blog-card-date">
+                            Published {post.formattedDate}
                           </span>
                           <span className="blog-card-read-link">
-                            Read Guide <ArrowRight size={14} />
+                            Read Article <ArrowRight size={15} />
                           </span>
                         </div>
                       </div>
                     </a>
-                  </article>
+                  </div>
                 );
               })}
             </div>

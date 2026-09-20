@@ -78,6 +78,13 @@ export function getAllBlogPosts() {
       const fallbackImage = AVAILABLE_BLOG_IMAGES[idx % AVAILABLE_BLOG_IMAGES.length];
       const featured_asset = rawData.featured_asset || fallbackImage;
 
+      const rawTags = Array.isArray(rawData.tags) ? rawData.tags : [];
+      const normalizedTags = rawTags.map(t => {
+        if (!t) return '';
+        // Title-case tags cleanly (e.g. "mental math" -> "Mental Math", "tier 8" -> "Tier 8")
+        return t.replace(/\b\w/g, c => c.toUpperCase());
+      }).filter(Boolean);
+
       posts.push({
         ...rawData,
         slug,
@@ -85,7 +92,7 @@ export function getAllBlogPosts() {
         excerpt,
         formattedDate,
         published_at: publishedAt,
-        tags: Array.isArray(rawData.tags) ? rawData.tags : [],
+        tags: normalizedTags,
         featured_asset
       });
     }

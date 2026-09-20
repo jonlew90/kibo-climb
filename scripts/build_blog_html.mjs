@@ -534,32 +534,40 @@ function generateBlogIndexHtml(posts) {
     </section>
   ` : '';
 
-  const gridCardsHtml = gridPosts.map(post => `
-    <article class="flex">
+  const gridCardsHtml = gridPosts.map(post => {
+    const coverImg = `${BASE_URL}/images/blog/${post.featured_asset || 'kibo-climbing.jpeg'}`;
+    const categoryBadge = (post.tags && post.tags[0]) || post.topic || 'Math Strategies';
+    const topicText = post.topic || categoryBadge;
+
+    return `
+    <div class="flex">
       <a href="/blog/${post.slug}" class="blog-card w-full">
         <div class="blog-card-img-wrap">
           <img
-            src="${BASE_URL}/images/blog/${post.featured_asset || 'kibo-climbing.jpeg'}"
+            src="${coverImg}"
             alt="${post.title.replace(/"/g, '&quot;')}"
             class="blog-card-img"
             loading="lazy"
           />
+          <span class="blog-card-badge">${categoryBadge}</span>
         </div>
         <div class="blog-card-body">
           <div class="blog-card-meta">
-            <span class="blog-category-badge">${(post.tags && post.tags[0]) || post.topic || 'Math Strategies'}</span>
-            <span class="blog-card-date">${formatDate(post.published_at)}</span>
+            <span>${topicText}</span>
+            <span>•</span>
+            <span>3 min read</span>
           </div>
           <h3 class="blog-card-title">${post.title}</h3>
           <p class="blog-card-excerpt">${(post.social_copy?.short_blurb || post.meta_description || '').replace(/"/g, '&quot;')}</p>
           <div class="blog-card-footer">
-            <span class="blog-read-time">3 min read</span>
-            <span class="blog-card-read-link">Read Guide →</span>
+            <span class="blog-card-date">Published ${formatDate(post.published_at)}</span>
+            <span class="blog-card-read-link">Read Article →</span>
           </div>
         </div>
       </a>
-    </article>
-  `).join('\n');
+    </div>
+  `;
+  }).join('\n');
 
   const jsonLd = JSON.stringify({
     '@context': 'https://schema.org',
@@ -747,6 +755,8 @@ function buildAll() {
   for (const filename of jsonFiles.sort()) {
     const filepath = path.join(BLOG_JSON_DIR, filename);
     const data = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+    const rawTags = Array.isArray(data.tags) ? data.tags : [];
+    data.tags = rawTags.map(t => t ? t.replace(/\b\w/g, c => c.toUpperCase()) : '').filter(Boolean);
     if (data.slug) posts.push(data);
   }
 

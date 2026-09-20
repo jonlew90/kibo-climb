@@ -20,14 +20,17 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const functions = getFunctions(app);
 
-// Initialize Analytics conditionally (only in production on kiboclimb.com)
+import { Capacitor } from '@capacitor/core';
+
+// Initialize Analytics conditionally (in production on kiboclimb.com or in native mobile apps)
 let analytics = null;
+const isNative = typeof window !== 'undefined' && Capacitor.isNativePlatform();
 const isProductionHost = typeof window !== 'undefined' && (
   window.location.hostname === 'kiboclimb.com' ||
   window.location.hostname === 'www.kiboclimb.com'
 );
 
-if (isProductionHost) {
+if (isNative || isProductionHost) {
   // Ensure COPPA-compliant default consent and restricted data processing
   if (typeof window !== 'undefined') {
     window.dataLayer = window.dataLayer || [];

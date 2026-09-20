@@ -10,7 +10,7 @@
     <atom:link href="https://kiboclimb.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>Discover expert mental math shortcuts, adaptive phonics, geography insights, coding logic, and printable worksheet practice to turn daily learning into an exciting mountain climb.</description>
     <language>en-US</language>
-    <lastBuildDate>Sun, 20 Sep 2026 01:19:15 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 20 Sep 2026 01:34:46 GMT</lastBuildDate>
     <image>
       <url>https://kiboclimb.com/icons/icon-512.png</url>
       <title>Kibo Climb</title>
@@ -44,12 +44,12 @@
         <media:title type="plain">Mastering Elite Vocabulary Master: Summit Chunking for Grades 4–6</media:title>
         <media:thumbnail url="https://kiboclimb.com/images/blog/Kibo_celebrating_at_mountain_summit_20260916124923.jpeg" />
       </media:content>
-      <category><![CDATA[tier 8]]></category>
-      <category><![CDATA[words]]></category>
-      <category><![CDATA[mental math]]></category>
-      <category><![CDATA[kibo climb]]></category>
-      <category><![CDATA[grades 4–6]]></category>
-      <category><![CDATA[summit chunking]]></category>
+      <category><![CDATA[Tier 8]]></category>
+      <category><![CDATA[Words]]></category>
+      <category><![CDATA[Mental Math]]></category>
+      <category><![CDATA[Kibo Climb]]></category>
+      <category><![CDATA[Grades 4–6]]></category>
+      <category><![CDATA[Summit Chunking]]></category>
     </item>
     <item>
       <title>Master Mental Addition With the Compensation Strategy</title>
@@ -84,11 +84,11 @@
         <media:title type="plain">Master Mental Addition With the Compensation Strategy</media:title>
         <media:thumbnail url="https://kiboclimb.com/images/blog/kibo_sitting_on_boulder_thinking_20260916125021.jpeg" />
       </media:content>
-      <category><![CDATA[mental math]]></category>
-      <category><![CDATA[math strategies]]></category>
-      <category><![CDATA[elementary math]]></category>
-      <category><![CDATA[addition shortcuts]]></category>
-      <category><![CDATA[parent resources]]></category>
+      <category><![CDATA[Mental Math]]></category>
+      <category><![CDATA[Math Strategies]]></category>
+      <category><![CDATA[Elementary Math]]></category>
+      <category><![CDATA[Addition Shortcuts]]></category>
+      <category><![CDATA[Parent Resources]]></category>
     </item>
     <item>
       <title>Unlocking Mental Math: The Left-to-Right Addition Strategy</title>
@@ -119,10 +119,10 @@
         <media:title type="plain">Unlocking Mental Math: The Left-to-Right Addition Strategy</media:title>
         <media:thumbnail url="https://kiboclimb.com/images/blog/kibo_rock_climbing_granite_cliff_20260916124919.jpeg" />
       </media:content>
-      <category><![CDATA[mental math]]></category>
-      <category><![CDATA[math tips]]></category>
-      <category><![CDATA[addition shortcuts]]></category>
-      <category><![CDATA[learning strategies]]></category>
+      <category><![CDATA[Mental Math]]></category>
+      <category><![CDATA[Math Tips]]></category>
+      <category><![CDATA[Addition Shortcuts]]></category>
+      <category><![CDATA[Learning Strategies]]></category>
     </item>
     <item>
       <title>5 Powerful Mental Math Shortcuts Every Young Climber Should Know</title>
