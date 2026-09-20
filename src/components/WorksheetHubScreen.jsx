@@ -218,49 +218,35 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
-        {/* Hero Banner - Warm Brand Theme Matching /blog & App */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white p-5 sm:p-10 shadow-lg border border-orange-500/30">
-          <div className="relative z-10 max-w-2xl space-y-2 sm:space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/15 backdrop-blur-xs text-amber-100 text-[10px] sm:text-xs font-black uppercase tracking-wider border border-white/20">
-              <Printer className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-200" />
-              <span>Printable Learning Hub &bull; Infinite Variations</span>
+      <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-2.5 sm:py-4 space-y-3 sm:space-y-4">
+        {/* Hero Banner - Compact Warm Brand Theme */}
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white p-3 sm:p-5 shadow-md border border-orange-500/30">
+          <div className="relative z-10 max-w-3xl space-y-1 sm:space-y-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-xs text-amber-100 text-[9px] sm:text-xs font-black uppercase tracking-wider border border-white/20">
+                <Printer className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-200" />
+                <span>Printable Hub</span>
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-100 text-[9px] sm:text-xs font-black border border-amber-300/30">
+                <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-300" />
+                <span>Infinite Practice (Click &quot;New Set&quot;)</span>
+              </span>
             </div>
-            <h1 className="text-xl sm:text-4xl font-heading font-black tracking-tight leading-tight">
+            <h1 className="text-base sm:text-2xl font-heading font-black tracking-tight leading-snug">
               Curriculum Worksheets &amp; Parent Step Guides
             </h1>
-            <p className="text-xs sm:text-base text-amber-100/90 font-medium leading-relaxed">
+            <p className="text-[11px] sm:text-xs text-amber-100/90 font-medium leading-relaxed">
               Explore free foundational printables and VIP Skill Boosters with step-by-step parent strategy keys.
             </p>
           </div>
           
-          <div className="absolute right-0 bottom-0 opacity-10 sm:opacity-20 translate-x-12 translate-y-8 pointer-events-none w-48 h-48 sm:w-64 sm:h-64">
+          <div className="absolute right-0 bottom-0 opacity-10 sm:opacity-15 translate-x-8 translate-y-4 pointer-events-none w-28 h-28 sm:w-36 sm:h-36">
             <div dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }} />
           </div>
         </div>
 
-        {/* Infinite Practice Feature Highlight Banner */}
-        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-teal-500/10 border border-orange-200/80 rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div className="space-y-0.5">
-              <div className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-2">
-                <span>Infinite Practice on Every Sheet</span>
-                <span className="text-[10px] bg-orange-100 text-orange-800 font-extrabold px-2 py-0.5 rounded-full border border-orange-200">
-                  ♾️ Worksheets
-                </span>
-              </div>
-              <p className="text-[11px] sm:text-xs text-slate-600 font-medium">
-                These aren't static PDFs. Open any worksheet, and click <strong className="text-slate-800 font-bold">&quot;New Set&quot;</strong> to instantly generate new worksheets!
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Filter Controls & Search */}
-        <section className="space-y-3 sm:space-y-4 bg-white border border-slate-200/80 rounded-2xl p-3 sm:p-5 shadow-xs">
+        <section className="space-y-2 sm:space-y-3 bg-white border border-slate-200/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-xs">
           {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -269,16 +255,17 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search worksheets by skill, topic, or grade (e.g. Multiplication, Fractions, Grade 3)..."
-              className="w-full pl-10 pr-4 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all"
+              className="w-full pl-10 pr-4 py-1.5 sm:py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all"
             />
           </div>
 
-          {/* Multi-facet Filter Dropdowns */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 pt-1">
+          {/* Multi-facet Filter Dropdowns in a single row */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-4 pt-0.5 sm:pt-1">
             {/* Topic Filter Dropdown */}
-            <div className="space-y-1 custom-dropdown-container relative">
-              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
-                <Filter className="w-3 h-3" /> Topic / Subject
+            <div className="space-y-0.5 sm:space-y-1 custom-dropdown-container relative">
+              <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-0.5 sm:gap-1 truncate">
+                <Filter className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />
+                <span className="truncate">Topic</span>
               </span>
               <button
                 type="button"
@@ -286,16 +273,16 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
                   soundFx?.playKeyTap?.();
                   setOpenDropdown(openDropdown === 'topic' ? null : 'topic');
                 }}
-                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-1.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
               >
                 <span className="truncate">{currentTopicLabel}</span>
-                <svg className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-150 ${openDropdown === 'topic' ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0 transition-transform duration-150 ml-0.5 ${openDropdown === 'topic' ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </button>
 
               {openDropdown === 'topic' && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden animate-pop">
+                <div className="absolute left-0 w-44 sm:w-full sm:right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden animate-pop">
                   {TOPICS.map(topic => (
                     <button
                       key={topic.id}
@@ -312,7 +299,7 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
                       }`}
                     >
                       <span>{topic.label}</span>
-                      {selectedTopic === topic.id && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600" />}
+                      {selectedTopic === topic.id && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600 shrink-0" />}
                     </button>
                   ))}
                 </div>
@@ -320,9 +307,10 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
             </div>
 
             {/* Grade Filter Dropdown */}
-            <div className="space-y-1 custom-dropdown-container relative">
-              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
-                <BookOpen className="w-3 h-3" /> Grade Level
+            <div className="space-y-0.5 sm:space-y-1 custom-dropdown-container relative">
+              <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-0.5 sm:gap-1 truncate">
+                <BookOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />
+                <span className="truncate">Grade</span>
               </span>
               <button
                 type="button"
@@ -330,16 +318,16 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
                   soundFx?.playKeyTap?.();
                   setOpenDropdown(openDropdown === 'grade' ? null : 'grade');
                 }}
-                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-1.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
               >
                 <span className="truncate">{currentGradeLabel}</span>
-                <svg className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-150 ${openDropdown === 'grade' ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0 transition-transform duration-150 ml-0.5 ${openDropdown === 'grade' ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </button>
 
               {openDropdown === 'grade' && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden animate-pop">
+                <div className="absolute left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-0 w-44 sm:w-full sm:right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden animate-pop">
                   {GRADES.map(grade => (
                     <button
                       key={grade.id}
@@ -356,7 +344,7 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
                       }`}
                     >
                       <span>{grade.label}</span>
-                      {selectedGrade === grade.id && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600" />}
+                      {selectedGrade === grade.id && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600 shrink-0" />}
                     </button>
                   ))}
                 </div>
@@ -364,9 +352,9 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
             </div>
 
             {/* Access Tier Filter Dropdown */}
-            <div className="space-y-1 custom-dropdown-container relative">
-              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500">
-                Access Level
+            <div className="space-y-0.5 sm:space-y-1 custom-dropdown-container relative">
+              <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 truncate block">
+                Access
               </span>
               <button
                 type="button"
@@ -374,16 +362,16 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
                   soundFx?.playKeyTap?.();
                   setOpenDropdown(openDropdown === 'tier' ? null : 'tier');
                 }}
-                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-1.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
               >
                 <span className="truncate">{currentTierLabel}</span>
-                <svg className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-150 ${openDropdown === 'tier' ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0 transition-transform duration-150 ml-0.5 ${openDropdown === 'tier' ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </button>
 
               {openDropdown === 'tier' && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden animate-pop">
+                <div className="absolute right-0 w-44 sm:w-full top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden animate-pop">
                   {TIERS.map(tier => (
                     <button
                       key={tier.id}
@@ -400,7 +388,7 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
                       }`}
                     >
                       <span>{tier.label}</span>
-                      {selectedTier === tier.id && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600" />}
+                      {selectedTier === tier.id && <CheckCircle2 className="w-3.5 h-3.5 text-orange-600 shrink-0" />}
                     </button>
                   ))}
                 </div>
