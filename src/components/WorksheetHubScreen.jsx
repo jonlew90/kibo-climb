@@ -224,13 +224,13 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
           <div className="relative z-10 max-w-2xl space-y-2 sm:space-y-3">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/15 backdrop-blur-xs text-amber-100 text-[10px] sm:text-xs font-black uppercase tracking-wider border border-white/20">
               <Printer className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-200" />
-              <span>Printable Learning Hub &bull; ♾️ Infinite Variations</span>
+              <span>Printable Learning Hub &bull; Infinite Variations</span>
             </div>
             <h1 className="text-xl sm:text-4xl font-heading font-black tracking-tight leading-tight">
               Curriculum Worksheets &amp; Parent Step Guides
             </h1>
             <p className="text-xs sm:text-base text-amber-100/90 font-medium leading-relaxed">
-              Explore free foundational printables and VIP Skill Boosters with step-by-step parent strategy keys. Every worksheet procedurally generates infinite problem variations on click for unlimited offline practice!
+              Explore free foundational printables and VIP Skill Boosters with step-by-step parent strategy keys.
             </p>
           </div>
           
@@ -249,11 +249,11 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
               <div className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-2">
                 <span>Infinite Practice on Every Sheet</span>
                 <span className="text-[10px] bg-orange-100 text-orange-800 font-extrabold px-2 py-0.5 rounded-full border border-orange-200">
-                  Procedural Generator
+                  ♾️ Worksheets
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-600 font-medium">
-                These aren't static PDFs. Open any worksheet and click <strong className="text-slate-800 font-bold">&quot;New Set&quot;</strong> in the viewer to instantly generate unlimited fresh number permutations!
+                These aren't static PDFs. Open any worksheet, and click <strong className="text-slate-800 font-bold">&quot;New Set&quot;</strong> to instantly generate new worksheets!
               </p>
             </div>
           </div>
