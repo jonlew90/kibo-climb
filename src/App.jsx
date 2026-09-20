@@ -2125,7 +2125,7 @@ export default function App() {
           <div className="relative">
             <Compass className="w-4 h-4 sm:w-5 sm:h-5 text-amber-700 stroke-[2.5]" />
             {unseenBadgesCount > 0 && (
-              <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-amber-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-pulse leading-none shadow-xs">
+              <span className="absolute -top-1.5 -right-2.5 min-w-[1.1rem] h-4 px-1 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center animate-pulse leading-none shadow-md">
                 {unseenBadgesCount}
               </span>
             )}
@@ -2168,7 +2168,7 @@ export default function App() {
           <div className="relative">
             <Scroll className={`w-4 h-4 sm:w-5 sm:h-5 text-purple-700 stroke-[2.5] ${!isWorkshopOpen && !showBadgesModal && !showManualProfileSwitcher && !showPinGateModal && !showParentDashboard && appState === 'quests' ? 'fill-purple-300' : ''}`} />
             {questService.getUnclaimedCount(activeProfileId) > 0 && (
-              <span className="absolute -top-1 -right-2 min-w-[0.95rem] h-3.5 px-0.5 bg-amber-500 text-white text-[9px] font-black rounded-full border border-white flex items-center justify-center animate-bounce leading-none">
+              <span className="absolute -top-1.5 -right-2.5 min-w-[1.1rem] h-4 px-1 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center animate-bounce leading-none shadow-md">
                 {questService.getUnclaimedCount(activeProfileId)}
               </span>
             )}

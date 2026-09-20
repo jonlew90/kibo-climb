@@ -294,6 +294,24 @@ export function updateBlogPostSeo(post) {
   setMeta('property', 'og:description', description);
   setMeta('property', 'og:url', canonicalUrl);
   setMeta('property', 'og:image', imageUrl);
+  setMeta('property', 'article:published_time', post.published_at);
+  if (post.subject || post.topic) {
+    setMeta('property', 'article:section', post.topic || post.subject);
+  }
+
+  // Tags & Keywords
+  const tags = Array.isArray(post.tags) ? post.tags : [];
+  if (tags.length > 0) {
+    setMeta('name', 'keywords', tags.join(', '));
+    // Remove existing article:tag elements and inject fresh ones
+    document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
+    tags.forEach(tag => {
+      const tagMeta = document.createElement('meta');
+      tagMeta.setAttribute('property', 'article:tag');
+      tagMeta.setAttribute('content', tag);
+      document.head.appendChild(tagMeta);
+    });
+  }
 
   // Twitter Card
   setMeta('name', 'twitter:card', 'summary_large_image');
@@ -316,8 +334,13 @@ export function updateBlogPostSeo(post) {
     'headline': post.title,
     'description': description,
     'datePublished': post.published_at,
+    'dateModified': post.updated_at || post.published_at,
     'url': canonicalUrl,
     'image': imageUrl,
+    'inLanguage': 'en-US',
+    'keywords': tags.join(', '),
+    ...(post.topic ? { 'about': post.topic } : {}),
+    ...(post.tier ? { 'educationalLevel': `Tier ${post.tier}` } : {}),
     'author': {
       '@type': 'Organization',
       'name': 'Kibo Climb Team'
@@ -329,6 +352,10 @@ export function updateBlogPostSeo(post) {
         '@type': 'ImageObject',
         'url': 'https://kiboclimb.com/favicon.png'
       }
+    },
+    'mainEntityOfPage': {
+      '@type': 'WebPage',
+      '@id': canonicalUrl
     }
   };
 

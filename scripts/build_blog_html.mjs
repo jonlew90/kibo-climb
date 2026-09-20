@@ -291,6 +291,11 @@ function generatePostHtml(data, allPosts = []) {
     </nav>
   ` : '';
 
+  const tags = Array.isArray(data.tags) ? data.tags : [];
+  const tagsKeywords = tags.join(', ');
+  const tagsMetaHtml = tags.map(tag => `<meta property="article:tag" content="${tag.replace(/"/g, '&quot;')}" />`).join('\n  ');
+  const sectionMeta = (data.topic || data.subject) ? `<meta property="article:section" content="${(data.topic || data.subject).replace(/"/g, '&quot;')}" />` : '';
+
   const jsonLd = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -298,6 +303,11 @@ function generatePostHtml(data, allPosts = []) {
     description: metaDescription,
     image: featuredImageUrl,
     datePublished: publishedAt,
+    dateModified: data.updated_at || publishedAt,
+    inLanguage: 'en-US',
+    keywords: tagsKeywords,
+    ...(data.topic ? { about: data.topic } : {}),
+    ...(data.tier ? { educationalLevel: `Tier ${data.tier}` } : {}),
     author: {
       '@type': 'Organization',
       name: 'Kibo Climb',
@@ -324,6 +334,7 @@ function generatePostHtml(data, allPosts = []) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>${title} | Kibo Climb</title>
   <meta name="description" content="${metaDescription.replace(/"/g, '&quot;')}" />
+  ${tagsKeywords ? `<meta name="keywords" content="${tagsKeywords.replace(/"/g, '&quot;')}" />` : ''}
   <link rel="canonical" href="${postUrl}" />
   <meta name="robots" content="index, follow" />
 
@@ -372,7 +383,7 @@ function generatePostHtml(data, allPosts = []) {
   <meta property="og:image" content="${featuredImageUrl}" />
   <meta property="article:author" content="Kibo Climb" />
   <meta property="article:published_time" content="${publishedAt}" />
-  <meta name="author" content="Kibo Climb" />
+  ${sectionMeta ? sectionMeta + '\n  ' : ''}${tagsMetaHtml ? tagsMetaHtml + '\n  ' : ''}<meta name="author" content="Kibo Climb" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
