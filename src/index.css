@@ -777,14 +777,16 @@ html, body, #root {
   height: 6px;
 }
 
-/* Hide scrollbar for elements that need horizontal scroll but should look clean */
+/* Hide scrollbar for elements that need scroll but should look clean */
 .hide-scrollbar,
-.scrollbar-none {
+.scrollbar-none,
+.no-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
 .hide-scrollbar::-webkit-scrollbar,
-.scrollbar-none::-webkit-scrollbar {
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .custom-scrollbar::-webkit-scrollbar-track {

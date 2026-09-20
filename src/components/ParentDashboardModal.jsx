@@ -687,7 +687,7 @@ export default function ParentDashboardModal({
 
             {/* Scrollable Subjects Container with Subtle Fade Hint on Mobile */}
             <div className="relative group">
-              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1 px-0.5 scrollbar-thin scrollbar-thumb-purple-200 scrollbar-track-transparent touch-pan-x overscroll-x-contain">
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1 px-0.5 hide-scrollbar touch-pan-x overscroll-x-contain">
                 {Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).map((subKey) => {
                   const subConfig = SUBJECTS_CONFIG[subKey] || {};
                   const isSelected = selectedSubject === subKey;
