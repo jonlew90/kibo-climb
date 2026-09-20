@@ -1,5 +1,5 @@
-import React from 'react';
-import { Play } from 'lucide-react';
+import React, { useState } from 'react';
+import { Play, RotateCcw } from 'lucide-react';
 import ItemThumbnail from '../ItemThumbnail';
 
 export default function ClimbPreCard({
@@ -12,8 +12,10 @@ export default function ClimbPreCard({
   onOpenWorkshop,
   onStartClimb,
   onResumeClimb,
+  onAbandonClimb,
   onOpenPracticeMode
 }) {
+  const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
   const isResumeAvailable = savedClimbState && savedClimbState.sessionQuestionIndex <= 12;
   const ownedDoubleSparks = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
 
@@ -53,6 +55,17 @@ export default function ClimbPreCard({
           <Play className="w-7 h-7 fill-current" />
           <span>{isResumeAvailable ? 'RESUME CLIMB 🏔️' : 'START CLIMB 🏔️'}</span>
         </button>
+
+        {isResumeAvailable && onAbandonClimb && (
+          <button
+            type="button"
+            onClick={() => setShowAbandonConfirm(true)}
+            className="w-full py-2 px-3 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-500 hover:text-rose-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 shadow-2xs"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Abandon & Restart Climb</span>
+          </button>
+        )}
 
         {onOpenPracticeMode && (
           <button
@@ -114,6 +127,42 @@ export default function ClimbPreCard({
           )
         ) : null}
       </div>
+
+      {/* ABANDON CLIMB CONFIRMATION MODAL */}
+      {showAbandonConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full shadow-2xl border-4 border-rose-200 text-center space-y-4 animate-scale-up">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-100 flex items-center justify-center text-3xl shadow-inner">
+              🔄
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-800">Abandon Climb?</h3>
+              <p className="text-sm font-medium text-slate-600 mt-1.5 leading-relaxed">
+                Your progress in this 12-question block will be reset so you can start a fresh ascent. Your sparks, rank, and daily streak are safe!
+              </p>
+            </div>
+            <div className="flex flex-col gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowAbandonConfirm(false)}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-sm shadow-md hover:from-emerald-600 hover:to-teal-700 active:scale-98 transition-all cursor-pointer"
+              >
+                Keep Climbing
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAbandonConfirm(false);
+                  if (onAbandonClimb) onAbandonClimb();
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Abandon & Start Over
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

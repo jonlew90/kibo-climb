@@ -300,6 +300,39 @@ export default function CodingSessionView({
     setHasStartedClimb(true);
   };
 
+  const handleAbandonClimb = () => {
+    soundFx.playKeyTap();
+    setIsAutoPaused(false);
+    storageService.clearActiveClimbState(profileId, 'coding');
+    setSavedClimbState(null);
+    setQuestionsAnswered(0);
+    setSessionQuestionIndex(1);
+    setCorrectCount(0);
+    setBlockCorrectCount(0);
+    setBlockSparksEarned(0);
+    setSessionSparksEarned(0);
+    setBlockRatingGain(0);
+    setMistakeCount(0);
+    setSessionAnswers([]);
+    setMissedReviewQueue([]);
+    setIsReviewPhase(false);
+    setCurrentProblemIndex(0);
+    setEliminatedOptions([]);
+    setRevealedHint(null);
+    setIsClueActive(false);
+    blockSeenKeysRef.current.clear();
+    setHasStartedClimb(false);
+    setProblemStartTime(0);
+
+    const activeTier = isFTUX ? 1 : getTierFromRating(competenceRank);
+    const freshBatch = generateProblems(15, activeTier, [], blockSeenKeysRef.current);
+    setProblemQueue(freshBatch);
+    setFeedbackBanner({
+      type: 'info',
+      text: 'Coding mission reset! Ready for a fresh start 🤖'
+    });
+  };
+
   const handleResumeClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
@@ -916,6 +949,7 @@ export default function CodingSessionView({
               onOpenWorkshop={onOpenWorkshop}
               onStartClimb={handleStartClimb}
               onResumeClimb={handleResumeClimb}
+              onAbandonClimb={handleAbandonClimb}
               onOpenPracticeMode={onOpenPracticeMode}
             />
           ) : (

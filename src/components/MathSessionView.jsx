@@ -402,6 +402,44 @@ export default function MathSessionView({
     setHasStartedClimb(true);
   };
 
+  const handleAbandonClimb = () => {
+    soundFx.playKeyTap();
+    setIsAutoPaused(false);
+    storageService.clearActiveClimbState(profileId, 'math');
+    setSavedClimbState(null);
+    setBlockAnswers([]);
+    setMissedReviewQueue([]);
+    setIsReviewPhase(false);
+    setIsLetterPrunerActive(false);
+    setSpyglassRevealedAnswer(null);
+    setShowFrustrationCard(false);
+    setQuestionsAnswered(0);
+    setSessionQuestionIndex(1);
+    setCorrectCount(0);
+    setBlockCorrectCount(0);
+    setBlockSparksEarned(0);
+    setSessionSparksEarned(0);
+    setBlockRatingGain(0);
+    setMistakeCount(0);
+    setInSessionStreak(0);
+    setInSessionIncorrectStreak(0);
+    setConsecutiveSkips(0);
+    blockSeenKeysRef.current.clear();
+    setHasStartedClimb(false);
+    blockStartTimeRef.current = 0;
+    problemStartTimeRef.current = 0;
+    const currentRating = storageService.getUserData('math').adaptiveCompetenceRating || storageService.getUserData('math').competenceRank || 1000;
+    const activeTier = isFTUX ? 1 : getTierFromRating(currentRating);
+    const freshBatch = generateProblems(15, activeTier, [], blockSeenKeysRef.current);
+    setProblemQueue(freshBatch);
+    setCurrentIndex(0);
+    prevIndexRef.current = 0;
+    triggerToastBanner({
+      type: 'info',
+      text: 'Climb reset! Ready for a fresh start 🏔️'
+    }, 1400);
+  };
+
   const handleResumeClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
@@ -1766,6 +1804,7 @@ export default function MathSessionView({
             onOpenWorkshop={onOpenWorkshop}
             onStartClimb={handleStartClimb}
             onResumeClimb={handleResumeClimb}
+            onAbandonClimb={handleAbandonClimb}
             onOpenPracticeMode={onOpenPracticeMode}
           />
         ) : (

@@ -533,6 +533,44 @@ export default function WordsSessionView({
     setHasStartedClimb(true);
   };
 
+  const handleAbandonClimb = () => {
+    soundFx.playKeyTap();
+    setIsAutoPaused(false);
+    storageService.clearActiveClimbState(profileId, 'words');
+    setSavedClimbState(null);
+    setBlockAnswers([]);
+    setMissedReviewQueue([]);
+    setIsReviewPhase(false);
+    setIsLetterPrunerActive(false);
+    setSpyglassRevealedSlots({});
+    setShowFrustrationCard(false);
+    setQuestionsAnswered(0);
+    setSessionQuestionIndex(1);
+    setCorrectCount(0);
+    setBlockCorrectCount(0);
+    setBlockSparksEarned(0);
+    setSessionSparksEarned(0);
+    setBlockRatingGain(0);
+    setMistakeCount(0);
+    setInSessionStreak(0);
+    setInSessionIncorrectStreak(0);
+    setConsecutiveSkips(0);
+    blockSeenKeysRef.current.clear();
+    setHasStartedClimb(false);
+    blockStartTimeRef.current = 0;
+    problemStartTimeRef.current = 0;
+    const currentRating = storageService.getUserData('words').adaptiveCompetenceRating || storageService.getUserData('words').competenceRank || 1000;
+    const activeTier = isFTUX ? 1 : getTierFromRating(currentRating);
+    const freshBatch = generateProblems(15, activeTier, [], blockSeenKeysRef.current);
+    setProblemQueue(freshBatch);
+    setCurrentIndex(0);
+    prevIndexRef.current = 0;
+    triggerToastBanner({
+      type: 'info',
+      text: 'Climb reset! Ready for a fresh start 🏔️'
+    }, 1400);
+  };
+
   const handleExitOrPauseClimb = () => {
     soundFx.playKeyTap();
     if (isPracticeMode) {
@@ -1762,6 +1800,7 @@ export default function WordsSessionView({
             onOpenWorkshop={onOpenWorkshop}
             onStartClimb={handleStartClimb}
             onResumeClimb={handleResumeClimb}
+            onAbandonClimb={handleAbandonClimb}
             onOpenPracticeMode={onOpenPracticeMode}
           />
         ) : (
