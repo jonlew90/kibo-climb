@@ -287,12 +287,15 @@ export default function MathSessionView({
   }, [currentIndex]);
 
   const currentProblem = problemQueue[currentIndex] || {};
+  const targetStr = String(currentProblem.answerString || currentProblem.answer || '');
   const isMoneyQuestion =
     currentProblem.type === 'money' ||
     currentProblem.operatorSymbol === '🪙' ||
     /quarter|dime|nickel|penny|\$|¢|change|costing/i.test(currentProblem.displayString || '');
-  const isTimeQuestion = currentProblem.type === 'time';
-  const targetStr = String(currentProblem.answerString || currentProblem.answer || '');
+  const isTimeQuestion =
+    currentProblem.type === 'time' ||
+    currentProblem.operatorSymbol === '⏰' ||
+    targetStr.includes(':');
 
   const isOperatorQuestion = Boolean(
     currentProblem.type === 'missing_operator' ||

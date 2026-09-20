@@ -567,6 +567,17 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
         operatorSymbol = '⏰';
         displayString = `What time is ${minsAdd} mins after ${hours}:00 PM?`;
         hint = 'Hint: Count forward by 15-minute quarters!';
+        return {
+          tier: effectiveTier,
+          num1,
+          num2,
+          operatorSymbol,
+          answer: answer.toString(),
+          answerString: answer.toString(),
+          displayString,
+          type: 'time',
+          hint
+        };
       } else if (type < 0.40) {
         num1 = Math.floor(Math.random() * 5) + 5;
         num2 = Math.floor(Math.random() * 5) + 6;
