@@ -134,7 +134,10 @@ export default function MathSessionView({
   const [inSessionIncorrectStreak, setInSessionIncorrectStreak] = useState(0);
   const [consecutiveSkips, setConsecutiveSkips] = useState(0);
   const [showBreakOverlay, setShowBreakOverlay] = useState(false);
-  const [showFrustrationCard, setShowFrustrationCard] = useState(false);
+  const [showFrustrationCard, setShowFrustrationCard] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'math');
+    return Boolean(saved?.showFrustrationCard);
+  });
   const [celebrationEvent, setCelebrationEvent] = useState(null);
 
   // Freeze background interaction and handle dismiss keys when celebration modal is active
@@ -276,18 +279,25 @@ export default function MathSessionView({
     return saved?.spyglassRevealedAnswer || null;
   });
 
+  const currentProblem = problemQueue[currentIndex] || {};
+  const targetStr = String(currentProblem.answerString || currentProblem.answer || '');
+
   // Reset per-question power-up state on question transition (only when index changes during active climb)
   const prevIndexRef = useRef(currentIndex);
   useEffect(() => {
     if (prevIndexRef.current !== currentIndex) {
       setIsLetterPrunerActive(false);
       setSpyglassRevealedAnswer(null);
+      setShowFrustrationCard(false);
+      setShouldPulseHint(false);
+      if (targetStr.startsWith('0.')) {
+        setInputVal('0.');
+      } else {
+        setInputVal('');
+      }
       prevIndexRef.current = currentIndex;
     }
-  }, [currentIndex]);
-
-  const currentProblem = problemQueue[currentIndex] || {};
-  const targetStr = String(currentProblem.answerString || currentProblem.answer || '');
+  }, [currentIndex, targetStr]);
   const isMoneyQuestion =
     currentProblem.type === 'money' ||
     currentProblem.operatorSymbol === '🪙' ||
@@ -397,6 +407,7 @@ export default function MathSessionView({
     setIsAutoPaused(false);
     const saved = storageService.getActiveClimbState(profileId, 'math');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isMathProblem)) {
+      prevIndexRef.current = saved.currentIndex || 0;
       setProblemQueue(saved.problemQueue);
       setCurrentIndex(saved.currentIndex || 0);
       setSessionQuestionIndex(saved.sessionQuestionIndex || 1);
@@ -620,7 +631,9 @@ export default function MathSessionView({
 
   useEffect(() => {
     if (hasStartedClimb) {
-      problemStartTimeRef.current = performance.now();
+      if (problemStartTimeRef.current === 0) {
+        problemStartTimeRef.current = performance.now();
+      }
     } else {
       problemStartTimeRef.current = 0;
     }
@@ -630,14 +643,8 @@ export default function MathSessionView({
       setShouldPulseHint(true);
     }, 7000);
 
-    if (targetStr.startsWith('0.')) {
-      setInputVal('0.');
-    } else {
-      setInputVal('');
-    }
-
     return () => clearTimeout(hintTimer);
-  }, [currentIndex, currentProblem, targetStr, hasStartedClimb]);
+  }, [currentIndex, hasStartedClimb]);
 
   const bannerTimerRef = useRef(null);
 

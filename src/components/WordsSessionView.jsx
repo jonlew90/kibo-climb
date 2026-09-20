@@ -136,7 +136,10 @@ export default function WordsSessionView({
   const [inSessionIncorrectStreak, setInSessionIncorrectStreak] = useState(0);
   const [consecutiveSkips, setConsecutiveSkips] = useState(0);
   const [showBreakOverlay, setShowBreakOverlay] = useState(false);
-  const [showFrustrationCard, setShowFrustrationCard] = useState(false);
+  const [showFrustrationCard, setShowFrustrationCard] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'words');
+    return Boolean(saved?.showFrustrationCard);
+  });
   const [celebrationEvent, setCelebrationEvent] = useState(null);
 
   // Freeze background interaction and handle dismiss keys when celebration modal is active
@@ -303,6 +306,9 @@ export default function WordsSessionView({
     if (prevIndexRef.current !== currentIndex) {
       setIsLetterPrunerActive(false);
       setSpyglassRevealedSlots({});
+      setShowFrustrationCard(false);
+      setShouldPulseHint(false);
+      setInputVal('');
       prevIndexRef.current = currentIndex;
     }
   }, [currentIndex]);
@@ -549,6 +555,7 @@ export default function WordsSessionView({
     setIsAutoPaused(false);
     const saved = storageService.getActiveClimbState(profileId, 'words');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWordsProblem)) {
+      prevIndexRef.current = saved.currentIndex || 0;
       setProblemQueue(saved.problemQueue);
       setCurrentIndex(saved.currentIndex || 0);
       setSessionQuestionIndex(saved.sessionQuestionIndex || 1);
@@ -749,21 +756,20 @@ export default function WordsSessionView({
 
   useEffect(() => {
     if (hasStartedClimb) {
-      problemStartTimeRef.current = performance.now();
+      if (problemStartTimeRef.current === 0) {
+        problemStartTimeRef.current = performance.now();
+      }
     } else {
       problemStartTimeRef.current = 0;
     }
     setShouldPulseHint(false);
-    setShowFrustrationCard(false);
 
     const hintTimer = setTimeout(() => {
       setShouldPulseHint(true);
     }, 7000);
 
-    setInputVal('');
-
     return () => clearTimeout(hintTimer);
-  }, [currentIndex, currentProblem, isMoneyQuestion, targetStr, hasStartedClimb]);
+  }, [currentIndex, hasStartedClimb]);
 
   const bannerTimerRef = useRef(null);
 

@@ -148,7 +148,10 @@ export default function WorldSessionView({
   const [inSessionIncorrectStreak, setInSessionIncorrectStreak] = useState(0);
   const [consecutiveSkips, setConsecutiveSkips] = useState(0);
   const [showBreakOverlay, setShowBreakOverlay] = useState(false);
-  const [showFrustrationCard, setShowFrustrationCard] = useState(false);
+  const [showFrustrationCard, setShowFrustrationCard] = useState(() => {
+    const saved = storageService.getActiveClimbState(profileId, 'world');
+    return Boolean(saved?.showFrustrationCard);
+  });
   const [celebrationEvent, setCelebrationEvent] = useState(null);
 
   // Freeze background interaction and handle dismiss keys when celebration modal is active
@@ -333,7 +336,9 @@ export default function WorldSessionView({
       setPrunedOptions(new Set());
       setShowHintCard(false);
       setIsCompassActive(false);
+      setShowFrustrationCard(false);
       setShouldPulseHint(false);
+      setInputVal('');
       prevIndexRef.current = currentIndex;
     }
   }, [currentIndex]);
@@ -572,6 +577,7 @@ export default function WorldSessionView({
     setIsAutoPaused(false);
     const saved = storageService.getActiveClimbState(profileId, 'world');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWorldProblem)) {
+      prevIndexRef.current = saved.currentIndex || 0;
       setProblemQueue(saved.problemQueue);
       const seen = new Set();
       saved.problemQueue.forEach(p => {
@@ -786,21 +792,20 @@ export default function WorldSessionView({
 
   useEffect(() => {
     if (hasStartedClimb) {
-      problemStartTimeRef.current = performance.now();
+      if (problemStartTimeRef.current === 0) {
+        problemStartTimeRef.current = performance.now();
+      }
     } else {
       problemStartTimeRef.current = 0;
     }
     setShouldPulseHint(false);
-    setShowFrustrationCard(false);
 
     const hintTimer = setTimeout(() => {
       setShouldPulseHint(true);
     }, 7000);
 
-    setInputVal('');
-
     return () => clearTimeout(hintTimer);
-  }, [currentIndex, currentProblem, isMoneyQuestion, targetStr, hasStartedClimb]);
+  }, [currentIndex, hasStartedClimb]);
 
   const bannerTimerRef = useRef(null);
 

@@ -122,9 +122,6 @@ export default function KiboBreakOverlay({
               </span>
               {storageService.hasClubMembership(activeProfileId) ? (
                 <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5">
-                  <span className="text-sm sm:text-base font-bold text-amber-900/50 line-through">
-                    +{Math.round(sparksEarned / 1.25)} ⚡
-                  </span>
                   <div className="text-2xl sm:text-3xl font-black text-amber-700 flex items-center justify-center gap-1">
                     +{sparksEarned} ⚡
                   </div>

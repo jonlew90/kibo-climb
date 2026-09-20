@@ -45,11 +45,6 @@ export default function CelebrationOverlay({
         <div className="bg-amber-100 border-2 border-amber-300 rounded-2xl p-2.5 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-amber-950 font-black text-xs sm:text-sm shadow-xs animate-pulse">
           <div className="flex items-center gap-1.5">
             <Zap className="w-5 h-5 text-amber-500 fill-amber-400 stroke-[2.5]" />
-            {hasVIP && (
-              <span className="line-through text-amber-900/50 text-xs">
-                +{celebrationEvent.bonusSparks} ⚡
-              </span>
-            )}
             <span>
               +{finalSparks} Bonus Sparks Awarded! ⚡
             </span>
