@@ -20,6 +20,7 @@ export default function KiboBreakOverlay({
   blockTimeSec = null,
   isNewSpeedRecord = false,
   isNewStreakRecord = false,
+  newlyUnlockedBadges = [],
   profileId,
   activeSubject = 'math',
   isPracticeMode = false,
@@ -78,6 +79,35 @@ export default function KiboBreakOverlay({
               <span className="text-xs sm:text-sm font-black text-orange-950 flex items-center justify-center gap-1.5">
                 🔥 NEW RECORD! Longest Flawless Streak: {streak} in a row! ⚡
               </span>
+            </div>
+          )}
+
+          {/* NEWLY UNLOCKED BADGES SHOWCASE */}
+          {newlyUnlockedBadges && newlyUnlockedBadges.length > 0 && (
+            <div className="w-full bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 border-2 border-amber-400 rounded-2xl p-2.5 shadow-md flex flex-col gap-1.5 text-center animate-pop">
+              <div className="flex items-center justify-center gap-1.5">
+                <span className="text-xs font-black uppercase text-amber-950 bg-amber-300/80 px-2.5 py-0.5 rounded-full border border-amber-500 shadow-2xs">
+                  🏆 {newlyUnlockedBadges.length === 1 ? 'New Badge Unlocked!' : `${newlyUnlockedBadges.length} New Badges Unlocked!`}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {newlyUnlockedBadges.map((badge, bIdx) => (
+                  <div
+                    key={badge.id || `badge_${bIdx}`}
+                    className="flex items-center gap-2 bg-white/95 border border-amber-300 rounded-xl px-2.5 py-1.5 shadow-xs text-left"
+                  >
+                    <span className="text-2xl">{badge.icon || '🏅'}</span>
+                    <div className="min-w-0">
+                      <div className="text-xs sm:text-sm font-black text-slate-900 leading-tight">
+                        {badge.title || badge.name}
+                      </div>
+                      <div className="text-[10px] text-slate-600 font-bold truncate max-w-[180px]">
+                        {badge.description}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

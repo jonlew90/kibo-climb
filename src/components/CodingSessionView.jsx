@@ -827,6 +827,7 @@ export default function CodingSessionView({
         blockTimeSec={completedBlockStats.blockTimeSec}
         isNewSpeedRecord={completedBlockStats.isNewSpeedRecord}
         isNewStreakRecord={completedBlockStats.isNewStreakRecord}
+        newlyUnlockedBadges={completedBlockStats.newlyUnlockedBadges || []}
         profileId={profileId}
         activeSubject="coding"
         isPracticeMode={isPracticeMode}

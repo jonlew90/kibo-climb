@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Play, RotateCcw } from 'lucide-react';
 import ItemThumbnail from '../ItemThumbnail';
 
@@ -18,6 +19,22 @@ export default function ClimbPreCard({
   const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
   const isResumeAvailable = savedClimbState && savedClimbState.sessionQuestionIndex <= 12;
   const ownedDoubleSparks = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
+
+  useEffect(() => {
+    if (!showAbandonConfirm) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setShowAbandonConfirm(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showAbandonConfirm]);
 
   return (
     <div className="w-full max-w-md bg-white border-4 border-emerald-400 rounded-3xl p-4 sm:p-5 text-center shadow-xl space-y-3 relative overflow-hidden animate-pop flex flex-col justify-center max-h-[44vh]">
@@ -129,23 +146,29 @@ export default function ClimbPreCard({
       </div>
 
       {/* ABANDON CLIMB CONFIRMATION MODAL */}
-      {showAbandonConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full shadow-2xl border-4 border-rose-200 text-center space-y-4 animate-scale-up">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-100 flex items-center justify-center text-3xl shadow-inner">
+      {showAbandonConfirm && typeof document !== 'undefined' && createPortal(
+        <div
+          onClick={() => setShowAbandonConfirm(false)}
+          className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl p-5 sm:p-7 max-w-xs sm:max-w-sm w-full shadow-2xl border-4 border-rose-200 text-center space-y-3.5 sm:space-y-4 animate-scale-up cursor-default"
+          >
+            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-2xl bg-rose-100 flex items-center justify-center text-2xl sm:text-3xl shadow-inner">
               🔄
             </div>
-            <div>
-              <h3 className="text-xl font-black text-slate-800">Abandon Climb?</h3>
-              <p className="text-sm font-medium text-slate-600 mt-1.5 leading-relaxed">
+            <div className="space-y-1">
+              <h3 className="text-lg sm:text-xl font-black text-slate-800">Abandon Climb?</h3>
+              <p className="text-xs sm:text-sm font-medium text-slate-600 leading-relaxed">
                 Your progress in this 12-question block will be reset so you can start a fresh ascent. Your sparks, rank, and daily streak are safe!
               </p>
             </div>
-            <div className="flex flex-col gap-2.5 pt-2">
+            <div className="flex flex-col gap-2 pt-1 sm:pt-2">
               <button
                 type="button"
                 onClick={() => setShowAbandonConfirm(false)}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-sm shadow-md hover:from-emerald-600 hover:to-teal-700 active:scale-98 transition-all cursor-pointer"
+                className="w-full py-2.5 sm:py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-xs sm:text-sm shadow-md hover:from-emerald-600 hover:to-teal-700 active:scale-98 transition-all cursor-pointer"
               >
                 Keep Climbing
               </button>
@@ -155,13 +178,14 @@ export default function ClimbPreCard({
                   setShowAbandonConfirm(false);
                   if (onAbandonClimb) onAbandonClimb();
                 }}
-                className="w-full py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition-colors cursor-pointer"
+                className="w-full py-2 sm:py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition-colors cursor-pointer"
               >
                 Abandon & Start Over
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

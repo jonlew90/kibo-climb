@@ -268,11 +268,13 @@ export default function WorldSessionView({
       setInSessionIncorrectStreak(0);
       setConsecutiveSkips(0);
       setHasStartedClimb(true);
+      setBlockUnlockedBadges([]);
       blockStartTimeRef.current = performance.now();
       problemStartTimeRef.current = performance.now();
     }
   }, [practiceConfig]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [blockUnlockedBadges, setBlockUnlockedBadges] = useState([]);
   const [showPracticeExitConfirm, setShowPracticeExitConfirm] = useState(false);
   const [blockAnswers, setBlockAnswers] = useState(() => {
     const saved = storageService.getActiveClimbState(profileId, 'world');
@@ -546,6 +548,7 @@ export default function WorldSessionView({
     setSavedClimbState(null);
     setBlockAnswers([]);
     setMissedReviewQueue([]);
+    setBlockUnlockedBadges([]);
     setIsReviewPhase(false);
     setIsLetterPrunerActive(false);
     setPrunedOptions(new Set());
@@ -1095,36 +1098,23 @@ export default function WorldSessionView({
         onUnlockedBadgesChange(badgeEvalRes.updatedUnlocked);
       }
 
-      // --- CELEBRATION REWARDS (ONLY FOR NEW BADGE UNLOCKS TO PREVENT POPUP FATIGUE) ---
+      // --- BADGE REWARDS (AGGREGATED FOR END-SCREEN CELEBRATION WITH NON-BLOCKING TOAST FEEDBACK) ---
+      let currentBlockBadges = blockUnlockedBadges;
       if (!isPracticeMode && badgeEvalRes?.newlyUnlocked && badgeEvalRes.newlyUnlocked.length > 0) {
-        const priorityOrder = [
-          'world_summit_master', 'hemisphere_voyager', 'country_diplomat',
-          'state_cartographer', 'continent_navigator',
-          'world_expert', 'world_traveler', 'capital_collector', 'world_novice'
-        ];
-
-        const highestBadge = badgeEvalRes.newlyUnlocked.slice().sort((a, b) => {
-          const idxA = priorityOrder.indexOf(a.id);
-          const idxB = priorityOrder.indexOf(b.id);
-          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-          if (idxA !== -1) return -1;
-          if (idxB !== -1) return 1;
-          return 0;
-        })[0] || badgeEvalRes.newlyUnlocked[badgeEvalRes.newlyUnlocked.length - 1];
-
-        const bonusSparks = 25;
+        const bonusSparks = 25 * badgeEvalRes.newlyUnlocked.length;
         if (onAwardSparks) onAwardSparks(bonusSparks);
         setSessionSparksEarned((prev) => prev + bonusSparks);
         setBlockSparksEarned((prev) => prev + bonusSparks);
         soundFx.playVictory();
-        setCelebrationEvent({
-          type: 'badge',
-          title: '🏆 NEW BADGE UNLOCKED!',
-          icon: highestBadge.icon || '🏅',
-          name: highestBadge.title || highestBadge.name,
-          description: highestBadge.description,
-          bonusSparks: bonusSparks
-        });
+
+        currentBlockBadges = [...blockUnlockedBadges, ...badgeEvalRes.newlyUnlocked];
+        setBlockUnlockedBadges(currentBlockBadges);
+
+        const firstBadge = badgeEvalRes.newlyUnlocked[0];
+        triggerToastBanner({
+          type: 'success',
+          text: `🏅 Badge Unlocked: ${firstBadge.title || firstBadge.name}!`
+        }, 2200);
       }
 
       const existingMastery = activeUserData.recentSkillMastery || [];
@@ -1194,30 +1184,7 @@ export default function WorldSessionView({
             : (currentRecords.mostPerfectSessions || 0)
         };
 
-        setCompletedBlockStats({
-          correctCount: finalBlockCorrect,
-          sparksEarned: finalBlockSparks,
-          blockRatingGain: isPracticeMode ? 0 : nextBlockRatingGain,
-          shieldsUsed: blockShieldsUsed,
-          blockTimeSec,
-          isNewSpeedRecord,
-          isNewStreakRecord
-        });
-
-        // Immediately reset block counters to 0 for the next 12-question block
-        setBlockCorrectCount(0);
-        setBlockSparksEarned(0);
-        setBlockRatingGain(0);
-        setBlockShieldsUsed(0);
-        setBlockAnswers([]);
-
-        storageService.saveUserData({
-          sprintHistory: updatedHistory,
-          personalRecords: updatedRecords,
-          ...(isPracticeMode ? {} : { completedClimbsCount: (activeUserData.completedClimbsCount || 0) + 1 })
-        }, 'world');
-        if (!isPracticeMode && onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
-        if (!isPracticeMode && onRecordDailyPractice) onRecordDailyPractice();
+        let allBlockUnlockedBadges = [...currentBlockBadges];
 
         // Immediately evaluate and claim any newly met badges at block completion (e.g. Flawless Ascent, Trailblazer Record, 3rd Perfect Run)
         if (!isPracticeMode) {
@@ -1237,22 +1204,25 @@ export default function WorldSessionView({
           }
 
           if (blockBadgeEval?.newlyUnlocked && blockBadgeEval.newlyUnlocked.length > 0) {
-            const highestBadge = blockBadgeEval.newlyUnlocked[0];
-            const bonusSparks = 25;
+            const bonusSparks = 25 * blockBadgeEval.newlyUnlocked.length;
             if (onAwardSparks) onAwardSparks(bonusSparks);
             setSessionSparksEarned((prev) => prev + bonusSparks);
             setBlockSparksEarned((prev) => prev + bonusSparks);
             soundFx.playVictory();
-            setCelebrationEvent({
-              type: 'badge',
-              title: '🏆 NEW BADGE UNLOCKED!',
-              icon: highestBadge.icon || '🏅',
-              name: highestBadge.title || highestBadge.name,
-              description: highestBadge.description,
-              bonusSparks: bonusSparks
-            });
+            allBlockUnlockedBadges = [...allBlockUnlockedBadges, ...blockBadgeEval.newlyUnlocked];
           }
         }
+
+        setCompletedBlockStats({
+          correctCount: finalBlockCorrect,
+          sparksEarned: finalBlockSparks,
+          blockRatingGain: isPracticeMode ? 0 : nextBlockRatingGain,
+          shieldsUsed: blockShieldsUsed,
+          blockTimeSec,
+          isNewSpeedRecord,
+          isNewStreakRecord,
+          newlyUnlockedBadges: allBlockUnlockedBadges
+        });
       }
 
       const nextIdx = currentIndex + 1;
@@ -1563,6 +1533,7 @@ export default function WorldSessionView({
         blockTimeSec={completedBlockStats.blockTimeSec}
         isNewSpeedRecord={completedBlockStats.isNewSpeedRecord}
         isNewStreakRecord={completedBlockStats.isNewStreakRecord}
+        newlyUnlockedBadges={completedBlockStats.newlyUnlockedBadges || []}
         profileId={profileId}
         activeSubject="world"
         isPracticeMode={isPracticeMode}

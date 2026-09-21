@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import MathSessionView from '../src/components/MathSessionView';
 import WordsSessionView from '../src/components/WordsSessionView';
 import WorldSessionView from '../src/components/WorldSessionView';
+import KiboBreakOverlay from '../src/components/KiboBreakOverlay';
 import { storageService } from '../src/services/storageService';
 import { evaluateBadges } from '../src/utils/badgeManager';
 
@@ -22,10 +23,19 @@ vi.mock('../src/services/storageService', () => {
       clearActiveClimbState: vi.fn(),
       getFriends: vi.fn(() => []),
       getActiveProfile: vi.fn(() => ({ id: 'test_child', name: 'Tester' })),
-      getActiveProfileId: vi.fn(() => 'test_child')
+      getActiveProfileId: vi.fn(() => 'test_child'),
+      hasClubMembership: vi.fn(() => false)
     }
   };
 });
+
+vi.mock('../src/services/questService', () => ({
+  questService: {
+    getQuests: vi.fn(() => ({ levelInfo: { level: 1, title: 'Basecamp Explorer', progressPct: 0 } })),
+    getDailySubjectsCompleted: vi.fn(() => []),
+    isDailyMultiSubjectBonusClaimed: vi.fn(() => false)
+  }
+}));
 
 vi.mock('../src/utils/mathGenerator', () => ({
   generateProblems: () => [
@@ -122,7 +132,7 @@ vi.mock('../src/utils/badgeManager', () => ({
   evaluateBadges: vi.fn()
 }));
 
-describe('Mid-Climb Badge Celebration Modal Overlay', () => {
+describe('End-Screen Badge Celebration Showcase (Non-blocking Mid-Climb)', () => {
   let container = null;
   let root = null;
 
@@ -147,7 +157,7 @@ describe('Mid-Climb Badge Celebration Modal Overlay', () => {
   });
 
   describe('MathSessionView', () => {
-    it('mounts full-screen overlay to document.body, locks scroll, and closes on Keep Climbing button', async () => {
+    it('shows non-blocking toast banner on mid-climb badge unlock without blocking modal', async () => {
       evaluateBadges.mockReturnValue({
         newlyUnlocked: [
           {
@@ -172,7 +182,7 @@ describe('Mid-Climb Badge Celebration Modal Overlay', () => {
         );
       });
 
-      // Find and click the Start Climb CTA button
+      // Find and click Start Climb CTA button
       const allButtons = Array.from(container.querySelectorAll('button'));
       const startBtn = allButtons.find(b => b.textContent.includes('CLIMB') || b.textContent.includes('START'));
       expect(startBtn).toBeTruthy();
@@ -180,7 +190,7 @@ describe('Mid-Climb Badge Celebration Modal Overlay', () => {
         startBtn.click();
       });
 
-      // Find the keypad digit '2' button (correct answer for 1 + 1 = 2)
+      // Answer correctly (1 + 1 = 2)
       const keypadButtons = Array.from(container.querySelectorAll('button'));
       const twoBtn = keypadButtons.find(b => b.textContent.trim() === '2');
       expect(twoBtn).toBeTruthy();
@@ -189,86 +199,17 @@ describe('Mid-Climb Badge Celebration Modal Overlay', () => {
         twoBtn.click();
       });
 
-      // Overlay should be attached directly to document.body with z-[1000] and fixed inset-0
+      // No full-screen modal blocking the user (no document.body modal portal)
       const modalBackdrop = document.body.querySelector('.z-\\[1000\\]');
-      expect(modalBackdrop).toBeTruthy();
-      expect(modalBackdrop.parentElement).toBe(document.body);
-      expect(modalBackdrop.classList.contains('fixed')).toBe(true);
-      expect(modalBackdrop.classList.contains('inset-0')).toBe(true);
+      expect(modalBackdrop).toBeNull();
 
-      // Body scroll should be locked
-      expect(document.body.style.overflow).toBe('hidden');
-
-      // Modal should display badge details
-      expect(modalBackdrop.textContent).toContain('Lightning Climber');
-      expect(modalBackdrop.textContent).toContain('Completed in record time!');
-
-      // Clicking "Keep Climbing 🚀" button should close the overlay
-      const keepClimbingBtn = Array.from(modalBackdrop.querySelectorAll('button')).find(
-        b => b.textContent.includes('Keep Climbing')
-      );
-      expect(keepClimbingBtn).toBeTruthy();
-
-      await act(async () => {
-        keepClimbingBtn.click();
-      });
-
-      // Overlay should be gone and body overflow restored
-      expect(document.body.querySelector('.z-\\[1000\\]')).toBeNull();
-      expect(document.body.style.overflow).toBe('');
-    });
-
-    it('closes celebration overlay on Escape keydown', async () => {
-      evaluateBadges.mockReturnValue({
-        newlyUnlocked: [
-          {
-            id: 'sum_master',
-            title: 'Master of Sums',
-            name: 'Master of Sums',
-            description: 'Solved 10 sum problems!',
-            icon: '🏆'
-          }
-        ],
-        updatedUnlocked: [{ id: 'sum_master' }]
-      });
-
-      await act(async () => {
-        root.render(
-          <MathSessionView
-            profileId="test_child"
-            isPaused={false}
-            onAwardSparks={vi.fn()}
-            onUnlockedBadgesChange={vi.fn()}
-          />
-        );
-      });
-
-      const allButtons = Array.from(container.querySelectorAll('button'));
-      const startBtn = allButtons.find(b => b.textContent.includes('CLIMB') || b.textContent.includes('START'));
-      await act(async () => {
-        startBtn.click();
-      });
-
-      const keypadButtons = Array.from(container.querySelectorAll('button'));
-      const twoBtn = keypadButtons.find(b => b.textContent.trim() === '2');
-      await act(async () => {
-        twoBtn.click();
-      });
-
-      expect(document.body.querySelector('.z-\\[1000\\]')).toBeTruthy();
-
-      // Dispatch Escape key
-      await act(async () => {
-        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-      });
-
-      expect(document.body.querySelector('.z-\\[1000\\]')).toBeNull();
-      expect(document.body.style.overflow).toBe('');
+      // Non-blocking toast banner should appear in container
+      expect(container.textContent).toContain('Badge Unlocked: Lightning Climber!');
     });
   });
 
   describe('WorldSessionView', () => {
-    it('mounts full-screen overlay to document.body, locks scroll, and closes on backdrop click', async () => {
+    it('shows non-blocking toast banner on mid-climb badge unlock', async () => {
       evaluateBadges.mockReturnValue({
         newlyUnlocked: [
           {
@@ -300,7 +241,7 @@ describe('Mid-Climb Badge Celebration Modal Overlay', () => {
         startBtn.click();
       });
 
-      // Click the 'Europe' option button
+      // Click Europe
       const optionButtons = Array.from(container.querySelectorAll('button'));
       const europeBtn = optionButtons.find(b => b.textContent.includes('Europe'));
       expect(europeBtn).toBeTruthy();
@@ -309,23 +250,15 @@ describe('Mid-Climb Badge Celebration Modal Overlay', () => {
         europeBtn.click();
       });
 
-      const modalBackdrop = document.body.querySelector('.z-\\[1000\\]');
-      expect(modalBackdrop).toBeTruthy();
-      expect(modalBackdrop.parentElement).toBe(document.body);
-      expect(document.body.style.overflow).toBe('hidden');
-
-      // Click backdrop to dismiss
-      await act(async () => {
-        modalBackdrop.click();
-      });
-
+      // No modal popup
       expect(document.body.querySelector('.z-\\[1000\\]')).toBeNull();
-      expect(document.body.style.overflow).toBe('');
+      // Toast appears
+      expect(container.textContent).toContain('Badge Unlocked: Globe Trotter!');
     });
   });
 
   describe('WordsSessionView', () => {
-    it('mounts full-screen overlay to document.body and locks scroll', async () => {
+    it('shows non-blocking toast banner on mid-climb badge unlock', async () => {
       evaluateBadges.mockReturnValue({
         newlyUnlocked: [
           {
@@ -357,7 +290,7 @@ describe('Mid-Climb Badge Celebration Modal Overlay', () => {
         startBtn.click();
       });
 
-      // Type the missing letter 'C' via Qwerty keyboard button
+      // Type missing letter 'C'
       const keyButtons = Array.from(container.querySelectorAll('button'));
       const cBtn = keyButtons.find(b => b.textContent.trim() === 'C');
       expect(cBtn).toBeTruthy();
@@ -366,18 +299,54 @@ describe('Mid-Climb Badge Celebration Modal Overlay', () => {
         cBtn.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
       });
 
-      const modalBackdrop = document.body.querySelector('.z-\\[1000\\]');
-      expect(modalBackdrop).toBeTruthy();
-      expect(modalBackdrop.parentElement).toBe(document.body);
-      expect(document.body.style.overflow).toBe('hidden');
+      // No modal popup
+      expect(document.body.querySelector('.z-\\[1000\\]')).toBeNull();
+      // Toast appears
+      expect(container.textContent).toContain('Badge Unlocked: Word Wizard!');
+    });
+  });
 
-      // Dismiss via Escape
+  describe('KiboBreakOverlay End Screen', () => {
+    it('renders newly unlocked badges showcase when badges are unlocked during the block', async () => {
+      const mockBadges = [
+        {
+          id: 'speed_demon',
+          title: 'Lightning Climber',
+          name: 'Lightning Climber',
+          description: 'Completed in record time!',
+          icon: '⚡'
+        },
+        {
+          id: 'perfect_ascent',
+          title: 'Flawless Ascent',
+          name: 'Flawless Ascent',
+          description: '12/12 with zero mistakes!',
+          icon: '🏔️'
+        }
+      ];
+
       await act(async () => {
-        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        root.render(
+          <KiboBreakOverlay
+            correctCount={12}
+            totalCount={12}
+            streak={12}
+            sparksEarned={50}
+            blockRatingGain={25}
+            competenceRating={1250}
+            newlyUnlockedBadges={mockBadges}
+            profileId="test_child"
+            activeSubject="math"
+            onResumeClimb={vi.fn()}
+          />
+        );
       });
 
-      expect(document.body.querySelector('.z-\\[1000\\]')).toBeNull();
-      expect(document.body.style.overflow).toBe('');
+      expect(container.textContent).toContain('2 New Badges Unlocked!');
+      expect(container.textContent).toContain('Lightning Climber');
+      expect(container.textContent).toContain('Completed in record time!');
+      expect(container.textContent).toContain('Flawless Ascent');
+      expect(container.textContent).toContain('12/12 with zero mistakes!');
     });
   });
 });
