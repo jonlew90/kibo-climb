@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { soundFx } from '../utils/audio';
 import { WORKSHEET_CATALOG, getBestWorksheetForTier, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator.js';
 import { getBlogPostBySlug, getAdjacentBlogPosts, formatDate } from '../utils/blogLoader';
 import { updateBlogPostSeo } from '../utils/seoMetadata';
-import { ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ChevronRight, ArrowLeft, ArrowRight, Copy, Check, Share2 } from 'lucide-react';
 import SocialFollowStrip from './SocialFollowStrip';
 
 function formatInlineMarkdown(text, onNavigate) {
@@ -205,6 +205,47 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
     }
   };
 
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const handleCopyCode = (e, code) => {
+    if (e) e.stopPropagation();
+    soundFx?.playKeyTap?.();
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(code).then(() => {
+        setCopiedCode(true);
+        setTimeout(() => setCopiedCode(false), 2000);
+      }).catch(() => {});
+    }
+  };
+
+  const handleShareCode = async (e, postData) => {
+    if (e) e.stopPropagation();
+    soundFx?.playKeyTap?.();
+    const code = postData.promo_drop?.code;
+    const shareUrl = `${window.location.origin}/?action=workshop&promo=${encodeURIComponent(code)}`;
+    const shareText = `Use secret reader code ${code} on Kibo Climb for +${postData.promo_drop?.sparks || 100} bonus Sparks! 🏔️🐾`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Kibo Climb: ${postData.title}`,
+          text: shareText,
+          url: shareUrl
+        });
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+      }
+    }
+    // Fallback: copy shareable link to clipboard
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(`${shareText}\n${shareUrl}`).then(() => {
+        setCopiedCode(true);
+        setTimeout(() => setCopiedCode(false), 2000);
+      }).catch(() => {});
+    }
+  };
+
   const { prev: prevPost, next: nextPost } = useMemo(() => {
     return getAdjacentBlogPosts(slug);
   }, [slug]);
@@ -279,30 +320,58 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
 
           {post.promo_drop && post.promo_drop.code && (
             <div className="blog-promo-drop-card my-8 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-500/5 border-2 border-amber-300 shadow-sm relative overflow-hidden">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-3 py-1 bg-amber-500 text-white text-xs font-black rounded-full uppercase tracking-wider shadow-xs">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                <div className="space-y-2 max-w-xl">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-3 py-1 bg-amber-500 text-white text-xs font-black rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1">
                       🎁 Secret Reader Reward
                     </span>
                     <span className="text-xs font-bold text-amber-800">
                       ⚡ +{post.promo_drop.sparks || 100} Sparks &amp; Power-Ups
                     </span>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 m-0 mb-1">
+                  <h3 className="text-lg sm:text-xl font-black text-slate-900 m-0">
                     {post.promo_drop.title || 'Claim Your Reader Drop'}
                   </h3>
-                  <p className="text-sm text-slate-600 m-0">
-                    Use secret code <strong className="font-mono bg-white px-2 py-0.5 rounded-lg border border-amber-300 text-amber-900 select-all">{post.promo_drop.code}</strong> in the Kibo Workshop.
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <span className="text-sm text-slate-600 font-medium">Use secret code:</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleCopyCode(e, post.promo_drop.code)}
+                      className="group inline-flex items-center gap-1.5 font-mono font-black text-sm bg-white hover:bg-amber-50 active:scale-95 px-3 py-1 rounded-xl border-2 border-amber-300 hover:border-amber-400 text-amber-950 transition-all cursor-pointer shadow-xs"
+                      title="Click to copy code"
+                    >
+                      <span>{post.promo_drop.code}</span>
+                      {copiedCode ? (
+                        <span className="inline-flex items-center text-xs font-sans font-bold text-emerald-600 gap-0.5">
+                          <Check className="w-3.5 h-3.5" /> Copied!
+                        </span>
+                      ) : (
+                        <Copy className="w-3.5 h-3.5 text-amber-600 group-hover:scale-110 transition-transform" />
+                      )}
+                    </button>
+                  </div>
                 </div>
-                <a
-                  href={`/?action=workshop&promo=${encodeURIComponent(post.promo_drop.code)}`}
-                  onClick={handlePlayCta}
-                  className="w-full sm:w-auto text-center shrink-0 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm px-6 py-3 rounded-2xl shadow-md transition-all active:scale-95 cursor-pointer no-underline"
-                >
-                  Redeem Code in Game →
-                </a>
+
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full lg:w-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={(e) => handleShareCode(e, post)}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-2xl bg-white hover:bg-amber-50/80 active:scale-95 border-2 border-amber-300 text-amber-900 font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer flex-1 sm:flex-initial"
+                    title="Share reward code with friends"
+                  >
+                    <Share2 className="w-4 h-4 text-amber-600" />
+                    <span>Share</span>
+                  </button>
+
+                  <a
+                    href={`/?action=workshop&promo=${encodeURIComponent(post.promo_drop.code)}`}
+                    onClick={handlePlayCta}
+                    className="inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm px-5 sm:px-6 py-3 rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer no-underline flex-1 sm:flex-initial text-center"
+                  >
+                    <span>Redeem in Game →</span>
+                  </a>
+                </div>
               </div>
             </div>
           )}

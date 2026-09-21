@@ -146,7 +146,7 @@
       <h2>Next Steps for Climbers</h2>
       <p>Encourage your student to test the Summit Chunking technique during their next 5-minute practice session. Step by step, they will build an unbreakable foundation of speed and confidence!</p>
       
-    <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(249, 115, 22, 0.08) 100%); border: 2px solid #FCD34D; border-radius: 20px; padding: 1.5rem; margin: 2rem 0; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.1);">
+    <div class="blog-promo-drop-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(249, 115, 22, 0.08) 100%); border: 2px solid #FCD34D; border-radius: 20px; padding: 1.5rem; margin: 2rem 0; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.1);">
       <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
         <div>
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
@@ -154,9 +154,25 @@
             <span style="font-size: 0.8rem; font-weight: 700; color: #92400E;">⚡ +100 Sparks &amp; Power-Ups</span>
           </div>
           <h3 style="margin: 0 0 0.25rem 0; font-size: 1.25rem; font-weight: 900; color: #1E293B;">Summit Chunking Vocabulary Drop</h3>
-          <p style="margin: 0; font-size: 0.875rem; color: #475569;">Use secret code <strong style="font-family: monospace; background: #FFFFFF; padding: 0.15rem 0.4rem; border-radius: 6px; border: 1px solid #FCD34D; color: #78350F;">CHUNKING926</strong> in the Kibo Workshop.</p>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+            <span style="font-size: 0.875rem; color: #475569;">Use secret code:</span>
+            <button
+              type="button"
+              id="copyPromoBtn"
+              onclick="navigator.clipboard.writeText('CHUNKING926').then(() => { this.innerText = '✓ Copied!'; setTimeout(() => { this.innerText = 'CHUNKING926 📋'; }, 2000); })"
+              style="font-family: monospace; font-weight: 900; font-size: 0.9rem; background: #FFFFFF; border: 2px solid #FCD34D; color: #78350F; padding: 0.25rem 0.6rem; border-radius: 8px; cursor: pointer;"
+              title="Click to copy promo code"
+            >CHUNKING926 📋</button>
+          </div>
         </div>
-        <a href="/?action=workshop&promo=CHUNKING926" class="cta-button" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; margin-top: 0; text-decoration: none;">Redeem Code in Game →</a>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;">
+          <button
+            type="button"
+            onclick="if (navigator.share) { navigator.share({ title: 'Kibo Climb Secret Reader Drop', text: 'Use secret code CHUNKING926 on Kibo Climb for +100 bonus Sparks! 🏔️🐾', url: window.location.origin + '/?action=workshop&promo=CHUNKING926' }); } else { navigator.clipboard.writeText(window.location.origin + '/?action=workshop&promo=CHUNKING926').then(() => alert('Link copied to clipboard!')); }"
+            style="padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 700; background: #FFFFFF; border: 2px solid #FCD34D; color: #78350F; border-radius: 14px; cursor: pointer;"
+          >Share Drop ↗</button>
+          <a href="/?action=workshop&promo=CHUNKING926" class="cta-button" style="padding: 0.75rem 1.25rem; font-size: 0.875rem; margin-top: 0; text-decoration: none;">Redeem in Game →</a>
+        </div>
       </div>
     </div>
       
