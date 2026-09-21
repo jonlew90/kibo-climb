@@ -1031,7 +1031,7 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false }) {
     totalSolved: mathSolved,
     accuracyPct: mathAcc,
     avgLatencySec: mathSpeed,
-    playUrl: `https://kiboclimb.com/math`
+    playUrl: `https://kiboclimb.com/math?utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=subject_math`
   });
 
   // Words Subject Summary
@@ -1055,7 +1055,7 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false }) {
       totalSolved: wordsSolved,
       accuracyPct: wordsWeekSolved > 0 ? Math.round((wordsWeekCorrect / wordsWeekSolved) * 100) : null,
       avgLatencySec: wordsWeekSolved > 0 ? (wordsWeekTime / wordsWeekSolved).toFixed(1) : null,
-      playUrl: `https://kiboclimb.com/words`
+      playUrl: `https://kiboclimb.com/words?utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=subject_words`
     });
   }
 
@@ -1153,7 +1153,7 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false }) {
               ${subjectsHtml}
 
               <div style="margin-top: 24px; padding-top: 18px; border-top: 2px solid #e2e8f0; text-align: center;">
-                <a href="https://kiboclimb.com/" style="display: inline-block; background-color: #7c3aed; color: #ffffff; font-size: 14px; font-weight: 800; text-decoration: none; padding: 12px 24px; border-radius: 12px;">
+                <a href="https://kiboclimb.com/?utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=cta_continue_ascent" style="display: inline-block; background-color: #7c3aed; color: #ffffff; font-size: 14px; font-weight: 800; text-decoration: none; padding: 12px 24px; border-radius: 12px;">
                   🏔️ Continue ${name}'s Ascent
                 </a>
               </div>

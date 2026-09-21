@@ -94,7 +94,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
         description: subjectId === 'words'
           ? 'Build spelling fluency, vocabulary, and phonics climbing through Alphabet Meadow to Syntax Summit.'
           : (subjectId === 'math' ? 'Climb through foundational mental math, multiplication, and algebra.' : 'Explore new learning climbs!'),
-        playUrl: `${baseUrl}/${subjectId}?profile=${encodeURIComponent(profileId)}`
+        playUrl: `${baseUrl}/${subjectId}?profile=${encodeURIComponent(profileId)}&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=${encodeURIComponent(subjectId)}_unstarted`
       });
       return;
     }
@@ -250,7 +250,7 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
       needsReviewTopics,
       conceptBreakdown,
       clubInsights,
-      playSubjectUrl: `${baseUrl}/${subjectId}?profile=${encodeURIComponent(profileId)}`
+      playSubjectUrl: `${baseUrl}/${subjectId}?profile=${encodeURIComponent(profileId)}&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=${encodeURIComponent(subjectId)}_subject_card`
     });
   });
 
@@ -282,10 +282,10 @@ export function generateWeeklyDigestData(profile, subjectsConfig = SUBJECTS_CONF
     subjects: playedSubjects,
     unstartedSubjects,
     links: {
-      playUrl: `${baseUrl}/?action=play&profile=${encodeURIComponent(profileId)}`,
-      parentSettingsUrl: `${baseUrl}/?action=parent-settings&profile=${encodeURIComponent(profileId)}`,
-      feedbackUrl: `${baseUrl}/?action=feedback&profile=${encodeURIComponent(profileId)}`,
-      notificationsUrl: `${baseUrl}/?action=notifications&profile=${encodeURIComponent(profileId)}`
+      playUrl: `${baseUrl}/?action=play&profile=${encodeURIComponent(profileId)}&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=cta_continue_ascent`,
+      parentSettingsUrl: `${baseUrl}/?action=parent-settings&profile=${encodeURIComponent(profileId)}&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=footer_parent_zone`,
+      feedbackUrl: `${baseUrl}/?action=feedback&profile=${encodeURIComponent(profileId)}&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=footer_feedback`,
+      notificationsUrl: `${baseUrl}/?action=notifications&profile=${encodeURIComponent(profileId)}&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=footer_notifications`
     },
     generatedAt: now.toISOString()
   };
