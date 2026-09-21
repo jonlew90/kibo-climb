@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass, LogIn, LogOut, Gift, Share2, Cloud, Check, Loader2 } from 'lucide-react';
+import { Flame, Settings, Trophy, Crown, Zap, ArrowLeft, ShoppingBag, Sparkles, Award, Info, X, Lock, ShieldCheck, Users, Mountain, ChevronDown, Star, Scroll, WifiOff, Compass, LogIn, LogOut, Gift, Share2, Cloud, Check, Loader2, Megaphone } from 'lucide-react';
 import Mascot from './components/Mascot';
 import { initOneSignal } from './config/onesignal';
 
@@ -30,6 +30,7 @@ import { getItemById, getItemSlot, getEffectiveSubscriptionPricing, getEffective
 import { soundFx } from './utils/audio';
 import { BRAND_CONFIG } from './config/brand';
 import { pluralize } from './utils/formatters';
+import { maskEmailAddress } from './utils/safeNames';
 import { storageService } from './services/storageService';
 import { questService } from './services/questService';
 import { getCompetenceRankTier, getSubjectTierProgress } from './utils/GameEconomyModel';
@@ -2451,8 +2452,22 @@ export default function App() {
 
                 <div className="h-px bg-slate-100 w-full" />
 
-                {/* Parent Zone & Settings Quick Links */}
+                {/* Parent Zone, News & Settings Quick Links */}
                 <div className="p-2 bg-slate-50/50 flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      const currentNews = getNewsItems(new Date());
+                      setNewsItems(currentNews);
+                      handleOpenModal(VIEWS.NEWS);
+                    }}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-amber-50 text-amber-900 font-black text-xs transition-colors cursor-pointer w-full text-left"
+                  >
+                    <Megaphone className="w-3.5 h-3.5 text-amber-600 stroke-[2.5]" />
+                    <span>Kibo News &amp; Events</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => {
@@ -2499,7 +2514,7 @@ export default function App() {
                     <div className="flex items-center justify-between px-2.5 py-2 rounded-xl bg-teal-50 text-teal-800 font-black text-xs border border-teal-200 w-full select-none">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <Check className="w-3.5 h-3.5 text-teal-600 stroke-[3] shrink-0" />
-                        <span className="truncate text-xs font-black">{currentAuthState.email || 'Cloud Account'}</span>
+                        <span className="truncate text-xs font-black">{maskEmailAddress(currentAuthState.email)}</span>
                       </div>
                       <span className="text-[10px] bg-teal-200/80 text-teal-900 px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0">
                         Active
@@ -3023,6 +3038,11 @@ export default function App() {
           }}
           onSwitchProfile={() => {
             handleOpenModal(VIEWS.PROFILE_SWITCHER);
+          }}
+          onOpenNews={() => {
+            const currentNews = getNewsItems(new Date());
+            setNewsItems(currentNews);
+            handleOpenModal(VIEWS.NEWS);
           }}
         />
       )}
@@ -4109,6 +4129,15 @@ export default function App() {
         isOpen={showNewsModal}
         onClose={handleGoBack}
         newsItems={newsItems}
+        onAction={(actionType, actionParams) => {
+          if (actionType === 'workshop_seasonal') {
+            handleOpenWorkshop(null, 'seasonal');
+          } else if (actionType === 'workshop_sparks') {
+            handleOpenWorkshop(null, 'sparks');
+          } else if (actionType === 'parent_family_plan') {
+            handleOpenPinGate('news_modal', actionParams?.targetTab || 'verification', actionParams?.targetHighlight || 'family_plan');
+          }
+        }}
       />
 
       {/* Feedback Modal */}

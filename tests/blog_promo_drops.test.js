@@ -91,15 +91,11 @@ describe('Blog Secret Reader Promo Drops', () => {
     }
   });
 
-  it('generates dynamic news items for active blog promo drops in newsManager', () => {
+  it('keeps in-game news focused exclusively on game events rather than blog posts', () => {
     const newsItems = getNewsItems();
     expect(Array.isArray(newsItems)).toBe(true);
 
     const promoNews = newsItems.find(item => item.type === 'promo_drop');
-    if (promoNews) {
-      expect(promoNews.priority).toBe(4);
-      expect(promoNews.promoCode).toBeTruthy();
-      expect(promoNews.blogUrl).toContain('/blog/');
-    }
+    expect(promoNews).toBeUndefined();
   });
 });

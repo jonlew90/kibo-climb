@@ -417,7 +417,7 @@ export default function WorldSessionView({
     } else if (onOpenWorkshop) {
       triggerToastBanner({
         type: 'info',
-        text: 'Out of Hint Scrolls! Opening Shop... 📜'
+        text: 'Out of Hint Scrolls! Opening Workshop... 📜'
       }, 1400);
       onOpenWorkshop();
     }
@@ -429,7 +429,7 @@ export default function WorldSessionView({
     if (owned <= 0) {
       triggerToastBanner({
         type: 'info',
-        text: 'Out of Compasses! Opening Shop... 🧪'
+        text: 'Out of Compasses! Opening Workshop... 🧭'
       }, 1400);
       if (onOpenWorkshop) onOpenWorkshop();
       return;
@@ -451,7 +451,7 @@ export default function WorldSessionView({
     if (owned <= 0) {
       triggerToastBanner({
         type: 'info',
-        text: 'Out of 50:50 Pruners! Opening Shop... 🧪'
+        text: 'Out of 50:50 Pruners! Opening Workshop... ✂️'
       }, 1400);
       if (onOpenWorkshop) onOpenWorkshop();
       return;
@@ -1785,7 +1785,7 @@ export default function WorldSessionView({
                           } else if (onOpenWorkshop) {
                             triggerToastBanner({
                               type: 'info',
-                              text: 'Out of Hint Scrolls! Opening Shop... 📜'
+                              text: 'Out of Hint Scrolls! Opening Workshop... 📜'
                             }, 1400);
                             onOpenWorkshop();
                           }

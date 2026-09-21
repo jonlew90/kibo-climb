@@ -171,4 +171,17 @@ export function validateSafeChildUsername(val) {
   return null;
 }
 
+/**
+ * Masks an email address for privacy and compact display (e.g. "j***@gmail.com").
+ * @param {string} email 
+ * @returns {string}
+ */
+export function maskEmailAddress(email) {
+  if (!email || typeof email !== 'string' || !email.includes('@')) return 'Parent Account';
+  const [local, domain] = email.trim().split('@');
+  if (!local || !domain) return 'Parent Account';
+  const maskedLocal = local.length <= 1 ? `${local}***` : `${local[0]}***${local.length > 3 ? local[local.length - 1] : ''}`;
+  return `${maskedLocal}@${domain}`;
+}
+
 

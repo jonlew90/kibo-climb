@@ -747,7 +747,7 @@ export default function CodingSessionView({
     if (owned <= 0) {
       setFeedbackBanner({
         type: 'info',
-        text: 'Out of 50:50 Pruners! Opening Shop... 🧪'
+        text: 'Out of 50:50 Pruners! Opening Workshop... ✂️'
       });
       if (onOpenWorkshop) onOpenWorkshop();
       return;
@@ -789,7 +789,7 @@ export default function CodingSessionView({
     if (owned <= 0) {
       setFeedbackBanner({
         type: 'info',
-        text: 'Out of Hint Scrolls! Opening Shop... 📜'
+        text: 'Out of Hint Scrolls! Opening Workshop... 📜'
       });
       if (onOpenWorkshop) onOpenWorkshop();
       return;

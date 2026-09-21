@@ -345,7 +345,7 @@ export default function KiboBreakOverlay({
                 onClick={onOpenWorkshop}
                 className="w-full py-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 underline underline-offset-2 cursor-pointer transition-colors text-center block"
               >
-                Visit Kibo's Corner 🐾
+                Visit Kibo's Workshop 🐾
               </button>
             </>
           ) : (
@@ -365,7 +365,7 @@ export default function KiboBreakOverlay({
                 className="btn-3d-purple w-full h-12 min-h-[48px] py-3 text-xs sm:text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-bouncy-purple active:scale-95 transition-transform cursor-pointer"
               >
                 <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-                Visit Kibo's Corner 🐾
+                Visit Kibo's Workshop 🐾
               </button>
             </>
           )}

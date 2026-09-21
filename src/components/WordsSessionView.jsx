@@ -362,7 +362,7 @@ export default function WordsSessionView({
     if (owned <= 0) {
       triggerToastBanner({
         type: 'info',
-        text: 'Out of Spyglasses! Opening Shop... 🧪'
+        text: 'Out of Spyglasses! Opening Workshop... 🔍'
       }, 1400);
       if (onOpenWorkshop) onOpenWorkshop();
       return;
@@ -454,7 +454,7 @@ export default function WordsSessionView({
     if (owned <= 0) {
       triggerToastBanner({
         type: 'info',
-        text: 'Out of Pruners! Opening Shop... 🧪'
+        text: 'Out of Pruners! Opening Workshop... ✂️'
       }, 1400);
       if (onOpenWorkshop) onOpenWorkshop();
       return;
@@ -1861,7 +1861,7 @@ export default function WordsSessionView({
                           } else if (onOpenWorkshop) {
                             triggerToastBanner({
                               type: 'info',
-                              text: 'Out of Hint Scrolls! Opening Shop... 📜'
+                              text: 'Out of Hint Scrolls! Opening Workshop... 📜'
                             }, 1400);
                             onOpenWorkshop();
                           }

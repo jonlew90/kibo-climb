@@ -1,7 +1,7 @@
 import React from 'react';
-import { X, Sparkles, Megaphone, CalendarDays, Hourglass } from 'lucide-react';
+import { X, Sparkles, Megaphone, CalendarDays, Hourglass, ArrowRight } from 'lucide-react';
 
-export default function NewsModal({ isOpen, onClose, newsItems = [] }) {
+export default function NewsModal({ isOpen, onClose, newsItems = [], onAction }) {
   if (!isOpen) return null;
 
   return (
@@ -45,25 +45,24 @@ export default function NewsModal({ isOpen, onClose, newsItems = [] }) {
             </div>
           ) : (
             newsItems.map((news, index) => {
-              const Icon = news.type === 'promo_drop' ? Sparkles
-                         : news.type === 'event_start' ? Sparkles
-                         : news.type === 'event_ending' ? Hourglass
-                         : CalendarDays;
+              const Icon = news.type === 'event_ending' ? Hourglass
+                         : news.type === 'event_upcoming_soon' ? CalendarDays
+                         : Sparkles;
 
-              const bgColors = news.type === 'promo_drop' ? 'bg-amber-50 border-amber-300'
-                             : news.type === 'event_start' ? 'bg-emerald-50 border-emerald-200'
-                             : news.type === 'event_ending' ? 'bg-rose-50 border-rose-200'
-                             : 'bg-sky-50 border-sky-200';
+              const bgColors = news.type === 'event_ending' ? 'bg-rose-50 border-rose-200'
+                             : news.type === 'event_upcoming_soon' ? 'bg-sky-50 border-sky-200'
+                             : news.type === 'sale_active' ? 'bg-purple-50 border-purple-200'
+                             : 'bg-emerald-50 border-emerald-200';
 
-              const iconColors = news.type === 'promo_drop' ? 'text-amber-600 bg-amber-100'
-                               : news.type === 'event_start' ? 'text-emerald-500 bg-emerald-100'
-                               : news.type === 'event_ending' ? 'text-rose-500 bg-rose-100'
-                               : 'text-sky-500 bg-sky-100';
+              const iconColors = news.type === 'event_ending' ? 'text-rose-600 bg-rose-100'
+                               : news.type === 'event_upcoming_soon' ? 'text-sky-600 bg-sky-100'
+                               : news.type === 'sale_active' ? 'text-purple-600 bg-purple-100'
+                               : 'text-emerald-600 bg-emerald-100';
 
-              const titleColors = news.type === 'promo_drop' ? 'text-amber-950'
-                                : news.type === 'event_start' ? 'text-emerald-900'
-                                : news.type === 'event_ending' ? 'text-rose-900'
-                                : 'text-sky-900';
+              const titleColors = news.type === 'event_ending' ? 'text-rose-950'
+                                : news.type === 'event_upcoming_soon' ? 'text-sky-950'
+                                : news.type === 'sale_active' ? 'text-purple-950'
+                                : 'text-emerald-950';
 
               return (
                 <div
@@ -80,17 +79,19 @@ export default function NewsModal({ isOpen, onClose, newsItems = [] }) {
                     <p className="text-slate-700 leading-relaxed text-sm">
                       {news.message}
                     </p>
-                    {news.type === 'promo_drop' && news.blogUrl && (
-                      <div className="mt-3 flex items-center gap-2">
-                        <a
-                          href={news.blogUrl}
-                          onClick={(e) => {
+                    {news.actionType && news.actionLabel && (
+                      <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center">
+                        <button
+                          type="button"
+                          onClick={() => {
                             if (onClose) onClose();
+                            if (onAction) onAction(news.actionType, news.actionParams);
                           }}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-xl transition-all shadow-xs"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer"
                         >
-                          📖 Read Article
-                        </a>
+                          <span>{news.actionLabel}</span>
+                          <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                        </button>
                       </div>
                     )}
                   </div>

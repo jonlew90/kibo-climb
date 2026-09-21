@@ -751,7 +751,7 @@ export default function WorkshopModal({
             <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 stroke-[2.5]" />
           </div>
           <h2 className="text-sm sm:text-base font-black tracking-tight text-slate-900 leading-tight truncate">
-            Kibo's Corner
+            Kibo's Workshop
           </h2>
         </div>
 

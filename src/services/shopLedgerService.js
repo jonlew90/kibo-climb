@@ -1,5 +1,5 @@
 // Authoritative Balance Ledger & Transaction Processing Service for Kibo Climb
-// Executes server-side item purchases in Kibo's Corner & validates subscription receipts
+// Executes server-side item purchases in Kibo's Workshop & validates subscription receipts
 
 import { storageService } from './storageService.js';
 import { antiCheatService } from './antiCheatService.js';
@@ -7,7 +7,7 @@ import { getItemById, getItemSalePrice, getItemEffectivePrice, getItemSellBackPr
 
 export const shopLedgerService = {
   /**
-   * Executes an item sale in Kibo's Corner, returning 65% for Club members, 50% for standard climbers.
+   * Executes an item sale in Kibo's Workshop, returning 65% for Club members, 50% for standard climbers.
    * @param {string} itemId - The ID of the item being sold
    * @param {number} sparksPrice - Original price of the item in Sparks
    * @returns {Object} { success: boolean, newSparks: number, unlockedItems: Array, reason?: string }

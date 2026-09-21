@@ -131,7 +131,7 @@ export default function ClimbPreCard({
                 } else if (onTriggerToastBanner) {
                   onTriggerToastBanner({
                     type: 'info',
-                    text: 'Opening Shop to get 2x Potions! 🧪'
+                    text: 'Opening Workshop to get 2x Potions! 🧪'
                   }, 1400);
                 }
               }}

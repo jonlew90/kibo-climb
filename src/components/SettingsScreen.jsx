@@ -1,10 +1,10 @@
 import React from 'react';
-import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, ShieldCheck, Mail, ArrowLeft, Music, Globe, Printer, BookOpen } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Smartphone, FileText, ShieldAlert, ShieldCheck, Mail, ArrowLeft, Music, Globe, Printer, BookOpen, Megaphone } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import { useTranslation } from '../i18n';
 import { storageService } from '../services/storageService';
 
-export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter, onNavigate, onBack, onOpenFeedback, onOpenParentZone, onSwitchProfile }) {
+export default function SettingsScreen({ preferences, onUpdatePreferences, renderFooter, onNavigate, onBack, onOpenFeedback, onOpenParentZone, onSwitchProfile, onOpenNews }) {
   const { t, dialect, setDialect, acceptAllDialects, setAcceptAllDialects } = useTranslation();
   const isMuted = preferences?.isMuted ?? false;
   const isMusicMuted = preferences?.isMusicMuted ?? false;
@@ -100,12 +100,36 @@ export default function SettingsScreen({ preferences, onUpdatePreferences, rende
                     <Smartphone className="w-5 h-5 stroke-[2.5]" />
                   </div>
                   <div>
-                    <span className="font-extrabold text-sky-950 block text-sm">Manage & Switch Profiles</span>
+                    <span className="font-extrabold text-sky-950 block text-sm">Manage &amp; Switch Profiles</span>
                     <span className="text-xs text-sky-700">Change climber or create a new profile</span>
                   </div>
                 </div>
                 <span className="text-xs font-black text-sky-700 bg-white/90 border border-sky-200 px-2.5 py-1 rounded-lg">
                   Switch 👤
+                </span>
+              </button>
+            )}
+
+            {onOpenNews && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  onOpenNews();
+                }}
+                className="flex items-center justify-between p-3.5 bg-amber-50/80 hover:bg-amber-100/80 border-2 border-amber-300 rounded-2xl transition-all active:scale-95 w-full text-left cursor-pointer group shadow-2xs"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-200 text-amber-900 rounded-xl border border-amber-300">
+                    <Megaphone className="w-5 h-5 stroke-[2.5]" />
+                  </div>
+                  <div>
+                    <span className="font-extrabold text-amber-950 block text-sm">Kibo News &amp; Events</span>
+                    <span className="text-xs text-amber-800/80">Active seasonal summits, event countdowns, and updates</span>
+                  </div>
+                </div>
+                <span className="text-xs font-black text-amber-800 bg-white/90 border border-amber-200 px-2.5 py-1 rounded-lg">
+                  View 📢
                 </span>
               </button>
             )}

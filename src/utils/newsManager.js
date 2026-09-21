@@ -1,30 +1,34 @@
-import { WORKSHOP_ITEMS, SEASONAL_EVENTS, calculateRecurringWindow } from './itemsCatalog.js';
-import { getActiveBlogPromoDrops } from './blogLoader.js';
+import { WORKSHOP_ITEMS, SEASONAL_EVENTS, calculateRecurringWindow, getActiveRealMoneySaleEvent } from './itemsCatalog.js';
 
 export function getNewsItems(currentDate = new Date()) {
   const news = [];
 
-  // 1. Active Blog Promo Code Drops (Secret Reader Rewards)
+  // 1. Active Real Money Sale Events (e.g. Seasonal Spark Sales)
   try {
-    const activeDrops = getActiveBlogPromoDrops(currentDate);
-    activeDrops.forEach(({ post, promoDrop, code, daysRemaining }) => {
-      const dayWord = daysRemaining === 1 ? 'day' : 'days';
+    const activeSale = getActiveRealMoneySaleEvent(currentDate);
+    if (activeSale) {
+      const sDayWord = activeSale.daysRemaining === 1 ? 'day' : 'days';
+      const isMembershipSale = activeSale.isMembership || (activeSale.id && (activeSale.id.includes('club') || activeSale.id.includes('family')));
+
       news.push({
-        id: `blog_promo_${code}`,
-        type: 'promo_drop',
-        priority: 4, // High priority so players see secret reward drops immediately
-        title: `🎁 ${promoDrop.title || 'New Secret Reader Reward!'}`,
-        message: `New article drop: "${post.title}". Use secret code ${code} in the Workshop for +${promoDrop.sparks || 100} Sparks & bonus power-ups! (${daysRemaining} ${dayWord} left)`,
-        icon: '🎁',
-        promoCode: code,
-        blogSlug: post.slug,
-        blogUrl: `/blog/${post.slug}`
+        id: `sale_${activeSale.id}_${activeSale.endDate ? new Date(activeSale.endDate).getFullYear() : 'active'}`,
+        type: 'sale_active',
+        priority: 4,
+        title: `✨ ${activeSale.label} Active!`,
+        message: `${activeSale.description || 'Special bonus Sparks and store discounts are live in the Workshop!'} (${activeSale.daysRemaining} ${sDayWord} remaining)`,
+        icon: '✨',
+        actionType: isMembershipSale ? 'parent_family_plan' : 'workshop_sparks',
+        actionLabel: isMembershipSale ? '👑 View Offer (Parent Gate 🔒)' : '🛍️ Visit Spark Shop',
+        actionParams: isMembershipSale
+          ? { targetTab: 'verification', targetHighlight: 'family_plan' }
+          : { hub: 'sparks' }
       });
-    });
+    }
   } catch (e) {
-    console.warn('newsManager: error resolving active blog promo drops', e);
+    console.warn('newsManager: error checking active sales', e);
   }
 
+  // 2. Seasonal Events (Quarterly & Special Summits)
   for (const event of SEASONAL_EVENTS) {
     if (event.id === 'all_active') continue;
     const eventItems = WORKSHOP_ITEMS.filter(i => i.category === 'seasonal' && i.seasonId === event.id);
@@ -42,6 +46,7 @@ export function getNewsItems(currentDate = new Date()) {
 
     const isQuarterly = ['spring', 'summer', 'autumn', 'winter'].includes(event.id);
     const eventNamePhrase = isQuarterly ? event.label : `The ${event.label} event`;
+    const dayWord = window.daysRemaining === 1 ? 'day' : 'days';
 
     if (window.status === 'active') {
       if (daysSinceStart <= 2) {
@@ -52,25 +57,45 @@ export function getNewsItems(currentDate = new Date()) {
           window,
           priority: 3,
           title: "New Event Started!",
-          message: `${eventNamePhrase} has begun! Check out the new seasonal items in the workshop.`,
-          icon: '🎉'
+          message: `${eventNamePhrase} has begun! Check out the new seasonal items in the workshop. (${window.daysRemaining} ${dayWord} remaining)`,
+          icon: '🎉',
+          actionType: 'workshop_seasonal',
+          actionLabel: '🎒 View Seasonal Gear',
+          actionParams: { hub: 'seasonal', seasonId: event.id }
         });
       } else if (window.daysRemaining <= 3) {
-        const dayWord = window.daysRemaining === 1 ? 'day' : 'days';
         news.push({
           id: `${event.id}_ending_${window.startDate.getFullYear()}`,
           type: 'event_ending',
           event,
           window,
-          priority: 2,
+          priority: 3,
           title: "Event Ending Soon!",
           message: `${eventNamePhrase} is ending in ${window.daysRemaining} ${dayWord}! Grab the seasonal items before they're gone.`,
-          icon: '⏳'
+          icon: '⏳',
+          actionType: 'workshop_seasonal',
+          actionLabel: '🎒 Grab Seasonal Items',
+          actionParams: { hub: 'seasonal', seasonId: event.id }
+        });
+      } else {
+        // Active ongoing seasonal event
+        news.push({
+          id: `${event.id}_active_${window.startDate.getFullYear()}`,
+          type: 'event_active',
+          event,
+          window,
+          priority: 2,
+          title: `${event.label} is Active!`,
+          message: `${eventNamePhrase} is live! Explore the Workshop to unlock limited-edition seasonal gear. (${window.daysRemaining} ${dayWord} remaining)`,
+          icon: '🏔️',
+          actionType: 'workshop_seasonal',
+          actionLabel: '🎒 View Seasonal Gear',
+          actionParams: { hub: 'seasonal', seasonId: event.id }
         });
       }
     } else if (window.status === 'upcoming') {
       if (window.startsInDays <= 3) {
-        const dayWord = window.startsInDays === 1 ? 'day' : 'days';
+        const upDayWord = window.startsInDays === 1 ? 'day' : 'days';
         news.push({
           id: `${event.id}_upcoming_${window.startDate.getFullYear()}`,
           type: 'event_upcoming_soon',
@@ -78,8 +103,11 @@ export function getNewsItems(currentDate = new Date()) {
           window,
           priority: 1,
           title: "Upcoming Event!",
-          message: `${eventNamePhrase} is starting in ${window.startsInDays} ${dayWord}! Get ready for new seasonal items.`,
-          icon: '📅'
+          message: `${eventNamePhrase} is starting in ${window.startsInDays} ${upDayWord}! Get ready for new seasonal items.`,
+          icon: '📅',
+          actionType: 'workshop_seasonal',
+          actionLabel: '🎒 Preview Workshop',
+          actionParams: { hub: 'seasonal' }
         });
       }
     }
