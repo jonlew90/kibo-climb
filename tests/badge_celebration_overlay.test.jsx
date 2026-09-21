@@ -116,6 +116,8 @@ vi.mock('../src/utils/audio', () => ({
     playIncorrect: vi.fn(),
     playSparkCollect: vi.fn(),
     playStreakBonus: vi.fn(),
+    playStreakMilestone: vi.fn(),
+    playBlockComplete: vi.fn(),
     playPowerUp: vi.fn(),
     playWhoosh: vi.fn(),
     playBadgeFanfare: vi.fn(),

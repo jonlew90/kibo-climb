@@ -198,9 +198,13 @@ class UserSyncService {
       const userDocRef = doc(db, USERS_COLLECTION, targetUid);
       const subPlan = storageService.getSubscriptionPlan();
       const trialStatus = storageService.getTrialStatus();
+      const parentEmail = currentUser?.email || storageService.getParentAccountEmail() || null;
+      const notificationSettings = storageService.getNotificationSettings();
 
       const payload = {
         uid: targetUid,
+        email: parentEmail,
+        notificationSettings,
         activeProfileId: storageService.getActiveProfileId(),
         profiles: profilesMap,
         updatedAt: serverTimestamp(),

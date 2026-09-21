@@ -147,6 +147,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const preload = () => { soundFx.preloadAll(); };
+    window.addEventListener('pointerdown', preload, { once: true, passive: true });
+    return () => window.removeEventListener('pointerdown', preload);
+  }, []);
+
+  useEffect(() => {
     try {
       if (typeof window !== 'undefined' && window.sessionStorage) {
         window.sessionStorage.setItem('kibo_splash_shown', 'true');
@@ -1149,6 +1155,7 @@ export default function App() {
       if (evalRes.newlyUnlocked && evalRes.newlyUnlocked.length > 0) {
         setNewlyUnlockedBadges(evalRes.newlyUnlocked);
         setUnlockedBadges(evalRes.updatedUnlocked);
+        soundFx.playBadgeUnlock();
       }
     }
 
@@ -1538,6 +1545,7 @@ export default function App() {
     if ((badgeEvalRes.newlyUnlocked || []).length > 0) {
       setUnlockedBadges(badgeEvalRes.updatedUnlocked);
       setNewlyUnlockedBadges(badgeEvalRes.newlyUnlocked);
+      soundFx.playBadgeUnlock();
     }
 
     soundFx.playVictory();
@@ -1869,6 +1877,7 @@ export default function App() {
     if ((badgeEvalRes.newlyUnlocked || []).length > 0) {
       setUnlockedBadges(badgeEvalRes.updatedUnlocked);
       setNewlyUnlockedBadges(badgeEvalRes.newlyUnlocked);
+      soundFx.playBadgeUnlock();
     }
 
     soundFx.playVictory();

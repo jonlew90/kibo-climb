@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ShoppingBag, Play, Trophy, Zap, Flame, TrendingUp, CheckCircle2, ShieldAlert, FileText, Printer, Dumbbell } from 'lucide-react';
 import Mascot from './Mascot';
 import ConfettiCanvas from './ConfettiCanvas';
@@ -7,6 +7,7 @@ import { questService } from '../services/questService';
 import { storageService } from '../services/storageService';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 import { getBestWorksheetForTier } from '../utils/worksheetGenerator';
+import { soundFx } from '../utils/audio';
 
 export default function KiboBreakOverlay({
   correctCount = 12,
@@ -38,6 +39,10 @@ export default function KiboBreakOverlay({
   const activeProfileId = profileId || storageService.getActiveProfileId();
   const questState = questService.getQuests(activeProfileId);
   const questLevelInfo = questState?.levelInfo || { level: 1, title: 'Basecamp Explorer', icon: '🏕️', ascentTier: 1, progressPct: 0 };
+
+  useEffect(() => {
+    soundFx.playBlockComplete();
+  }, []);
   const dailySubjects = questService.getDailySubjectsCompleted(activeProfileId);
   const isMultiSubjectClaimed = questService.isDailyMultiSubjectBonusClaimed(activeProfileId);
   const altitudeEarned = (displayCorrect * 10) + (Math.max(0, totalCount - displayCorrect) * 2);

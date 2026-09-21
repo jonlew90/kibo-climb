@@ -6,7 +6,7 @@ import ConfettiCanvas from './ConfettiCanvas';
 export default function DailyStreakIncreasedModal({ isOpen, onClose, streak }) {
   useEffect(() => {
     if (isOpen) {
-      soundFx.playVictory();
+      soundFx.playStreakMilestone();
     }
   }, [isOpen]);
 

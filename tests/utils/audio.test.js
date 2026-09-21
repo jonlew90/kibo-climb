@@ -31,12 +31,23 @@ describe('audio.js', () => {
       connect: vi.fn(),
     };
 
+    const mockCompressor = {
+      threshold: { value: 0 },
+      knee: { value: 0 },
+      ratio: { value: 0 },
+      attack: { value: 0 },
+      release: { value: 0 },
+      connect: vi.fn(),
+    };
+
     mockContext = {
       currentTime: 100,
       state: 'suspended',
       resume: vi.fn(),
       createOscillator: vi.fn().mockReturnValue(mockOscillator),
       createGain: vi.fn().mockReturnValue(mockGain),
+      createDynamicsCompressor: vi.fn().mockReturnValue(mockCompressor),
+      decodeAudioData: vi.fn(),
       destination: {},
     };
 
@@ -92,32 +103,32 @@ describe('audio.js', () => {
       expect(soundFx.isMuted).toBe(false);
     });
 
-    it('playCorrect plays sound and haptics', () => {
-      soundFx.playCorrect();
+    it('playCorrect plays sound and haptics', async () => {
+      await soundFx.playCorrect();
       expect(global.navigator.vibrate).toHaveBeenCalledWith([20, 30, 20]);
       expect(mockContext.createOscillator).toHaveBeenCalled();
       expect(mockOscillator.type).toBe('sine');
       expect(mockOscillator.start).toHaveBeenCalled();
     });
 
-    it('playIncorrect plays sound and haptics', () => {
-      soundFx.playIncorrect();
+    it('playIncorrect plays sound and haptics', async () => {
+      await soundFx.playIncorrect();
       expect(global.navigator.vibrate).toHaveBeenCalledWith(40);
       expect(mockContext.createOscillator).toHaveBeenCalled();
-      expect(mockOscillator.type).toBe('sawtooth');
+      expect(mockOscillator.type).toBe('triangle');
       expect(mockOscillator.start).toHaveBeenCalled();
     });
 
-    it('playKeyTap plays sound and does not trigger haptics', () => {
-      soundFx.playKeyTap();
+    it('playKeyTap plays sound and does not trigger haptics', async () => {
+      await soundFx.playKeyTap();
       expect(global.navigator.vibrate).not.toHaveBeenCalled();
       expect(mockContext.createOscillator).toHaveBeenCalled();
       expect(mockOscillator.type).toBe('triangle');
       expect(mockOscillator.start).toHaveBeenCalled();
     });
 
-    it('playVictory plays sound and haptics', () => {
-      soundFx.playVictory();
+    it('playVictory plays sound and haptics', async () => {
+      await soundFx.playVictory();
       expect(global.navigator.vibrate).toHaveBeenCalledWith([30, 40, 30, 40, 60]);
       expect(mockContext.createOscillator).toHaveBeenCalledTimes(4); // 4 notes
     });
@@ -128,8 +139,8 @@ describe('audio.js', () => {
       expect(playVictorySpy).toHaveBeenCalled();
     });
 
-    it('playSparkCollect plays sound and haptics', () => {
-      soundFx.playSparkCollect();
+    it('playSparkCollect plays sound and haptics', async () => {
+      await soundFx.playSparkCollect();
       expect(global.navigator.vibrate).toHaveBeenCalledWith([20, 20]);
       expect(mockContext.createOscillator).toHaveBeenCalledTimes(2); // 2 notes
     });
