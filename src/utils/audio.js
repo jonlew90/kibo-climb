@@ -18,6 +18,7 @@ export function triggerHaptic(pattern = 15) {
 
 // ─── SFX file map ────────────────────────────────────────────────────────────
 const SFX_FILES = {
+  bgm_climb:      '/audio/bgm_climb.mp3',
   correct:        '/audio/sfx_correct.ogg',
   victory:        '/audio/sfx_victory.ogg',
   incorrect:      '/audio/sfx_incorrect.ogg',
@@ -35,6 +36,8 @@ class SoundSystem {
     this.ctx = null;
     this.isMuted = false;
     this.isMusicMuted = false;
+    this.bgmSource = null;
+    this.bgmGain = null;
     this.bgmInterval = null;
     this.bgmNoteIndex = 0;
     // AudioBuffer cache: key → AudioBuffer | null (null = failed)
@@ -122,17 +125,46 @@ class SoundSystem {
   }
 
   // ─── BGM ─────────────────────────────────────────────────────────────────
-  // Improved: pentatonic C-major scale, staggered rhythm, compressor, subtle reverb tail
+  // Uses bgm_climb.mp3 with seamless looping and smooth gain fading.
+  // Falls back to pentatonic synthesis if audio buffer fails to load.
 
-  startBGM() {
+  async startBGM() {
     if (this.isMusicMuted) return;
     this.init();
     if (!this.ctx) return;
     this.stopBGM();
 
-    // Pentatonic C major: C4 D4 E4 G4 A4 C5
+    if (this.ctx.state === 'suspended') {
+      try { await this.ctx.resume(); } catch (e) {}
+    }
+
+    // Attempt to load and play the real audio file
+    const buf = await this._loadBuffer('bgm_climb');
+    if (buf && !this.isMusicMuted) {
+      try {
+        const src = this.ctx.createBufferSource();
+        const gain = this.ctx.createGain();
+        src.buffer = buf;
+        src.loop = true;
+
+        const now = this.ctx.currentTime;
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.25, now + 1.2); // Soft ambient volume fade-in
+
+        src.connect(gain);
+        gain.connect(this.ctx.destination);
+        src.start(0);
+
+        this.bgmSource = src;
+        this.bgmGain = gain;
+        return;
+      } catch (e) {
+        console.warn('Failed to start file BGM, using synthesis fallback', e);
+      }
+    }
+
+    // Generative Synthesis Fallback: Pentatonic C major (C4 D4 E4 G4 A4 C5)
     const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
-    // Gentle melodic pattern (indices into scale)
     const pattern = [0, 2, 4, 5, 4, 2, 1, 0, 3, 5, 3, 1];
     let step = this.bgmNoteIndex % pattern.length;
 
@@ -151,7 +183,6 @@ class SoundSystem {
       const now = this.ctx.currentTime;
       const freq = scale[pattern[step]];
 
-      // Main tone — sine for warmth
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'sine';
@@ -164,19 +195,6 @@ class SoundSystem {
       osc.start(now);
       osc.stop(now + 1.4);
 
-      // Subtle octave-up shimmer
-      const osc2 = this.ctx.createOscillator();
-      const gain2 = this.ctx.createGain();
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(freq * 2, now);
-      gain2.gain.setValueAtTime(0, now);
-      gain2.gain.linearRampToValueAtTime(0.025, now + 0.1);
-      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
-      osc2.connect(gain2);
-      gain2.connect(compressor);
-      osc2.start(now);
-      osc2.stop(now + 0.9);
-
       step = (step + 1) % pattern.length;
       this.bgmNoteIndex = step;
     };
@@ -186,6 +204,28 @@ class SoundSystem {
   }
 
   stopBGM() {
+    if (this.bgmSource) {
+      try {
+        if (this.bgmGain && this.ctx) {
+          const now = this.ctx.currentTime;
+          this.bgmGain.gain.setValueAtTime(this.bgmGain.gain.value, now);
+          this.bgmGain.gain.linearRampToValueAtTime(0.001, now + 0.3); // Smooth fade-out
+          setTimeout(() => {
+            try { this.bgmSource?.stop(); } catch (e) {}
+            this.bgmSource = null;
+            this.bgmGain = null;
+          }, 320);
+        } else {
+          this.bgmSource.stop();
+          this.bgmSource = null;
+          this.bgmGain = null;
+        }
+      } catch (e) {
+        this.bgmSource = null;
+        this.bgmGain = null;
+      }
+    }
+
     if (this.bgmInterval) {
       clearInterval(this.bgmInterval);
       this.bgmInterval = null;
