@@ -214,12 +214,18 @@ export default function WorldSessionView({
 
   const isPracticeMode = Boolean(practiceConfig);
   const practiceSprintLength = practiceConfig?.sprintLength || 12;
+  const isWeakAreasMode = practiceConfig?.tier === 'weak_areas' || practiceConfig?.mode === 'weak_areas';
+  const practiceTitle = isWeakAreasMode
+    ? 'Weak Areas Training'
+    : `Tier ${practiceConfig?.tier || userTier} Practice`;
 
   // Generate adaptive problem queue for active tier based on competence rating (or practiceConfig)
   const [problemQueue, setProblemQueue] = useState(() => {
     if (practiceConfig) {
       const seen = new Set();
-      const batch = generateProblems(practiceSprintLength, practiceConfig.tier, [], seen);
+      const activePracticeTier = isWeakAreasMode ? (userTier || 1) : (practiceConfig.tier || 1);
+      const queuedItems = isWeakAreasMode ? storageService.getPracticeQueue('world') : [];
+      const batch = generateProblems(practiceSprintLength, activePracticeTier, queuedItems, seen);
       blockSeenKeysRef.current = seen;
       return batch;
     }
@@ -251,7 +257,9 @@ export default function WorldSessionView({
   useEffect(() => {
     if (practiceConfig) {
       const seen = new Set();
-      const batch = generateProblems(practiceSprintLength, practiceConfig.tier, [], seen);
+      const activePracticeTier = isWeakAreasMode ? (userTier || 1) : (practiceConfig.tier || 1);
+      const queuedItems = isWeakAreasMode ? storageService.getPracticeQueue('world') : [];
+      const batch = generateProblems(practiceSprintLength, activePracticeTier, queuedItems, seen);
       blockSeenKeysRef.current = seen;
       setProblemQueue(batch);
       setCurrentIndex(0);
@@ -1224,6 +1232,16 @@ export default function WorldSessionView({
           isNewStreakRecord,
           newlyUnlockedBadges: allBlockUnlockedBadges
         });
+
+        if (isPracticeMode) {
+          storageService.recordPracticeSession({
+            tier: isWeakAreasMode ? 'weak_areas' : (practiceConfig?.tier || userTier),
+            mode: isWeakAreasMode ? 'weak_areas' : 'tier_drill',
+            correctCount: finalBlockCorrect,
+            totalCount: totalBlockQuestions,
+            timeSec: blockTimeSec
+          }, 'world');
+        }
       }
 
       const nextIdx = currentIndex + 1;
@@ -1539,7 +1557,7 @@ export default function WorldSessionView({
         activeSubject="world"
         isPracticeMode={isPracticeMode}
         practiceTier={practiceConfig?.tier || userTier}
-        practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+        practiceTitle={practiceTitle}
         onViewWorksheet={onViewWorksheet}
         onOpenPracticeMode={() => {
           setShowBreakOverlay(false);
@@ -1585,10 +1603,7 @@ export default function WorldSessionView({
         }}
         onResumeClimb={() => {
           setShowBreakOverlay(false);
-          if (isPracticeMode && onExitPractice) {
-            onExitPractice();
-            return;
-          }
+          soundFx.playKeyTap();
           if (onResetDoubleSparks) onResetDoubleSparks();
           storageService.clearActiveClimbState(profileId, 'world');
           setSavedClimbState(null);
@@ -1604,9 +1619,9 @@ export default function WorldSessionView({
           setInSessionIncorrectStreak(0);
           setConsecutiveSkips(0);
           blockSeenKeysRef.current.clear();
-          setHasStartedClimb(false);
-          blockStartTimeRef.current = 0;
-          problemStartTimeRef.current = 0;
+          setHasStartedClimb(true);
+          blockStartTimeRef.current = performance.now();
+          problemStartTimeRef.current = performance.now();
           const nextTier = getTierFromRating(competenceRank);
           const recentWords = storageService.getUserData('world').recentWords || [];
           const freshBatch = generateProblems(15, nextTier, recentWords, blockSeenKeysRef.current);
@@ -1623,7 +1638,7 @@ export default function WorldSessionView({
       {isPracticeMode && (
         <div className="w-full bg-indigo-700 text-white text-[11px] font-black text-center py-1 flex items-center justify-center gap-1.5 shrink-0 z-40">
           <span>🏋️</span>
-          <span>Training Camp — Streak-Safe · Not Scored · Free Hints</span>
+          <span>{practiceTitle} — Streak-Safe · Not Scored · Free Hints</span>
         </div>
       )}
       <div className="w-full h-full flex flex-col items-center justify-between sm:justify-end pb-1 sm:pb-2 pt-1 px-1.5 sm:px-3 max-w-4xl mx-auto relative overflow-visible flex-1 min-h-0">
@@ -1644,7 +1659,7 @@ export default function WorldSessionView({
           totalQuestions={totalBlockQuestions}
           isReviewPhase={isReviewPhase}
           isPracticeMode={isPracticeMode}
-          practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+          practiceTitle={practiceTitle}
           inSessionStreak={inSessionStreak}
           consumables={consumables}
           onExitOrPause={handleExitOrPauseClimb}

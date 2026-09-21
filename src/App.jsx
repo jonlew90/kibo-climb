@@ -3805,6 +3805,7 @@ export default function App() {
         onClose={() => setIsPracticeModeOpen(false)}
         activeSubject={activeSubject}
         userTier={tier}
+        practiceQueue={practiceQueue}
         onStartPracticeSession={(config) => {
           if (config.subject && config.subject !== activeSubject) {
             setActiveSubject(config.subject);

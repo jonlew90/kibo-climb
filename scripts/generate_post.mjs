@@ -144,7 +144,17 @@ export function generatePostData({ subject = null, tier = null, customSlug = nul
     ? 'coding and logical thinking' 
     : 'mental math calculations';
 
-  const markdown = `## Conquering ${name} on Mount Kibo
+  const seoInstructions = `:::seo-guidelines:::
+[SEO & Content Generation Directives]
+1. Analyze the specific topics list: [${topicsList.join(', ')}] and grade level: "${gradeLabel}" for Tier ${targetTier}.
+2. Generate 3 distinct, high-intent, long-tail parent search queries that parents commonly search for when helping their child with these concepts (e.g., "How to teach...", "Why does my child struggle with...", "Best ways to practice...").
+3. Provide concise, empathetic, and actionable answers (2-3 sentences each) integrating relevant semantic keywords without keyword stuffing.
+4. Output format: Keep strictly to an H3 header ("### Frequently Asked Questions") followed by 3 bolded Q&A pairs in standard markdown.
+:::seo-guidelines:::`;
+
+  const markdown = `${seoInstructions}
+
+## Conquering ${name} on Mount Kibo
 
 Let's be honest: when our kids hit **${location}** on Mount Kilimanjaro, the challenge kicks in for both of them—and sometimes us! Kibo the red panda mascot knows that speed and accuracy unlock essential momentum, but rigid memorization often creates unnecessary friction.
 
@@ -162,6 +172,9 @@ By visualizing concepts as adaptable mental landmarks, working memory strain is 
 ### Trail Pro Tip: ${proTip.title}
 
 > ${proTip.content || proTip.summary}
+
+### Frequently Asked Questions
+<!-- AI_FAQ_CONTENT_PLACEHOLDER: Insert 3 long-tail parent Q&A pairs for ${gradeLabel} Tier ${targetTier} ${name} here -->
 
 ## Reinforce Skills with Offline Practice
 
@@ -184,7 +197,7 @@ Encourage your student to test the ${trickTitle} technique during their next 5-m
   ];
 
   const socialCopy = {
-    x_post: `Help your ${gradeLabel} student master ${name} with the ${trickTitle} shortcut on Kibo Climb! 🏔️🐾 #MathPractice #EdTech`,
+    x_post: `Help your ${gradeLabel} student master ${name} with the ${trickTitle} shortcut on Kibo Climb! 🏔️🐾 Free worksheet + secret reader reward drop inside: #MathPractice #EdTech`,
     short_blurb: `Learn the ${trickTitle} mental shortcut for ${gradeLabel} students tackling Tier ${targetTier} on Mount Kibo.`
   };
 

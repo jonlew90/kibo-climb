@@ -50,7 +50,12 @@ function formatInlineMarkdown(text, onNavigate) {
 
 function renderMarkdown(mdText, onNavigate) {
   if (!mdText) return null;
-  const blocks = mdText.split(/\n\n+/);
+  // Strip internal SEO guidelines directives & HTML comment placeholders before displaying
+  const cleanMd = mdText
+    .replace(/:::seo-guidelines:::[\s\S]*?:::seo-guidelines:::/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .trim();
+  const blocks = cleanMd.split(/\n\n+/);
 
   return blocks.map((block, idx) => {
     const trimmed = block.trim();

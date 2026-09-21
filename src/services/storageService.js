@@ -33,6 +33,7 @@ export const createDefaultSubjectState = (startingRating = 1000) => ({
   cumulativeCorrectStreak: 0,
   personalRecords: { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
   practiceQueue: [],
+  practiceHistory: [],
   sprintHistory: [],
   skipLogs: []
 });
@@ -84,6 +85,7 @@ function createDefaultProfile(initialName = null) {
       lastSprintTimezone: null,
       hasVisitedParentZone: false,
       practiceQueue: [],
+      practiceHistory: [],
       sprintHistory: [],
       skipLogs: [],
       unlockedBadges: [],
@@ -589,6 +591,7 @@ export const storageService = {
           cumulativeCorrectStreak: currentProfileData.cumulativeCorrectStreak || 0,
           personalRecords: currentProfileData.personalRecords || { fastest12QuestionsTime: null, highestCorrectStreak: 0, mostPerfectSessions: 0 },
           practiceQueue: currentProfileData.practiceQueue || [],
+          practiceHistory: currentProfileData.practiceHistory || [],
           sprintHistory: currentProfileData.sprintHistory || [],
           skipLogs: currentProfileData.skipLogs || []
         },
@@ -603,7 +606,7 @@ export const storageService = {
     const subjectSpecificKeys = [
       'adaptiveCompetenceRating', 'competenceRank', 'tier', 'unlockedTiers',
       'totalProblemsSolved', 'cumulativeCorrectStreak', 'personalRecords',
-      'practiceQueue', 'sprintHistory', 'skipLogs'
+      'practiceQueue', 'practiceHistory', 'sprintHistory', 'skipLogs'
     ];
 
     const subjectData = { ...currentProfileData.subjects[subjectId] };
@@ -703,6 +706,36 @@ export const storageService = {
       return updatedQueue;
     }
     return currentQueue;
+  },
+
+  // Practice Mode Session Logging (Recommendation #4)
+  recordPracticeSession(sessionData, subjectId = 'math') {
+    if (!sessionData) return [];
+    const currentHistory = this.getPracticeHistory(subjectId);
+    const correctCount = Number(sessionData.correctCount) || 0;
+    const totalCount = Math.max(1, Number(sessionData.totalCount) || 1);
+    const accuracy = Math.round((correctCount / totalCount) * 100);
+
+    const newRecord = {
+      id: `practice_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      timestamp: new Date().toISOString(),
+      subject: subjectId,
+      tier: sessionData.tier || 1,
+      mode: sessionData.mode || (sessionData.tier === 'weak_areas' ? 'weak_areas' : 'tier_drill'),
+      correctCount,
+      totalCount: Number(sessionData.totalCount) || 0,
+      accuracy,
+      timeSec: Math.round(Number(sessionData.timeSec) || 0)
+    };
+
+    const updatedHistory = [newRecord, ...currentHistory].slice(0, 50);
+    this.saveUserData({ practiceHistory: updatedHistory }, subjectId);
+    return updatedHistory;
+  },
+
+  getPracticeHistory(subjectId = 'math') {
+    const userData = this.getUserData(subjectId);
+    return Array.isArray(userData.practiceHistory) ? userData.practiceHistory : [];
   },
 
   // Skip Event Diagnostics Logging

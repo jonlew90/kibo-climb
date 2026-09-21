@@ -34,6 +34,8 @@ export function getExcerpt(post) {
   if (post.meta_description) return post.meta_description;
   if (!post.content_markdown) return '';
   const clean = post.content_markdown
+    .replace(/:::seo-guidelines:::[\s\S]*?:::seo-guidelines:::/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/^#+\s+.*$/gm, '') // remove headings
     .replace(/(\*\*|\*|__|_|`|\[[^\]]+\]\([^)]+\))/g, '') // remove markdown symbols & link targets
     .trim();

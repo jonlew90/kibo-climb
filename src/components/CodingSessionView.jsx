@@ -166,6 +166,10 @@ export default function CodingSessionView({
 
   const isPracticeMode = Boolean(practiceConfig);
   const practiceSprintLength = practiceConfig?.sprintLength || 12;
+  const isWeakAreasMode = practiceConfig?.tier === 'weak_areas' || practiceConfig?.mode === 'weak_areas';
+  const practiceTitle = isWeakAreasMode
+    ? 'Weak Areas Training'
+    : `Tier ${practiceConfig?.tier || userTier} Practice`;
 
   // Track seen problem keys across consecutive sessions to prevent repetition
   const blockSeenKeysRef = useRef(new Set());
@@ -173,7 +177,9 @@ export default function CodingSessionView({
   // Session & Question Queues
   const [problemQueue, setProblemQueue] = useState(() => {
     if (practiceConfig) {
-      return generateProblems(practiceSprintLength, practiceConfig.tier, [], blockSeenKeysRef.current);
+      const activePracticeTier = isWeakAreasMode ? (userTier || 1) : (practiceConfig.tier || 1);
+      const queuedItems = isWeakAreasMode ? storageService.getPracticeQueue('coding') : [];
+      return generateProblems(practiceSprintLength, activePracticeTier, queuedItems, blockSeenKeysRef.current);
     }
     const saved = storageService.getActiveClimbState(profileId, 'coding');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isCodingProblem)) {
@@ -188,7 +194,9 @@ export default function CodingSessionView({
   // When practiceConfig changes, configure problemQueue and start climb automatically
   useEffect(() => {
     if (practiceConfig) {
-      const batch = generateProblems(practiceSprintLength, practiceConfig.tier, [], blockSeenKeysRef.current);
+      const activePracticeTier = isWeakAreasMode ? (userTier || 1) : (practiceConfig.tier || 1);
+      const queuedItems = isWeakAreasMode ? storageService.getPracticeQueue('coding') : [];
+      const batch = generateProblems(practiceSprintLength, activePracticeTier, queuedItems, blockSeenKeysRef.current);
       setProblemQueue(batch);
       setCurrentProblemIndex(0);
       setSessionQuestionIndex(1);
@@ -610,13 +618,25 @@ export default function CodingSessionView({
       storageService.clearActiveClimbState(profileId, 'coding');
       setSavedClimbState(null);
       analyticsService.logLevelUp('coding', blockCorrectCount + (isCorrect ? 1 : 0));
-      // Trigger Break Overlay
+      const finalCorrect = blockCorrectCount + (isCorrect ? 1 : 0);
       setCompletedBlockStats({
-        correctCount: blockCorrectCount + (isCorrect ? 1 : 0),
+        correctCount: finalCorrect,
         sparksEarned: blockSparksEarned + earnedSparks,
         blockRatingGain: isPracticeMode ? 0 : (blockRatingGain + evalResult.rankDelta),
         shieldsUsed: blockShieldsUsed
       });
+
+      if (isPracticeMode) {
+        const timeSec = Math.max(1, Math.round((Date.now() - (problemStartTime || Date.now())) / 1000));
+        storageService.recordPracticeSession({
+          tier: isWeakAreasMode ? 'weak_areas' : (practiceConfig?.tier || userTier),
+          mode: isWeakAreasMode ? 'weak_areas' : 'tier_drill',
+          correctCount: finalCorrect,
+          totalCount: totalBlockQuestions,
+          timeSec
+        }, 'coding');
+      }
+
       setShowBreakOverlay(true);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 4000);
@@ -832,7 +852,7 @@ export default function CodingSessionView({
         activeSubject="coding"
         isPracticeMode={isPracticeMode}
         practiceTier={practiceConfig?.tier || userTier}
-        practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+        practiceTitle={practiceTitle}
         onViewWorksheet={onViewWorksheet}
         onOpenPracticeMode={() => {
           setShowBreakOverlay(false);
@@ -891,7 +911,7 @@ export default function CodingSessionView({
       {isPracticeMode && (
         <div className="w-full bg-indigo-700 text-white text-[11px] font-black text-center py-1 flex items-center justify-center gap-1.5 shrink-0 z-40">
           <span>🏋️</span>
-          <span>Training Camp — Streak-Safe · Not Scored · Free Hints</span>
+          <span>{practiceTitle} — Streak-Safe · Not Scored · Free Hints</span>
         </div>
       )}
       <div className="w-full h-full flex flex-col items-center justify-between sm:justify-end pb-1 sm:pb-2 pt-1 px-1.5 sm:px-3 max-w-4xl mx-auto relative overflow-visible flex-1 min-h-0">
@@ -911,7 +931,7 @@ export default function CodingSessionView({
             totalQuestions={totalBlockQuestions}
             isReviewPhase={isReviewPhase}
             isPracticeMode={isPracticeMode}
-            practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+            practiceTitle={practiceTitle}
             inSessionStreak={streak}
             consumables={consumables}
             onExitOrPause={handleExitOrPauseClimb}

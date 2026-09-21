@@ -26,7 +26,12 @@ function formatInlineMarkdown(text) {
 
 function markdownToHtml(mdText) {
   if (!mdText) return '';
-  const blocks = mdText.trim().split(/\n\n+/).filter(b => b.trim());
+  // Strip internal SEO guidelines directives & HTML comment placeholders before compiling
+  const cleanMd = mdText
+    .replace(/:::seo-guidelines:::[\s\S]*?:::seo-guidelines:::/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .trim();
+  const blocks = cleanMd.split(/\n\n+/).filter(b => b.trim());
   const htmlParts = [];
 
   for (const block of blocks) {

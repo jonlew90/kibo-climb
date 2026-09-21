@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star, Compass, Lock, Ticket, Printer, User, GraduationCap } from 'lucide-react';
+import { X, ShieldCheck, Key, Settings, Layers, Flame, Zap, CheckCircle2, AlertCircle, Calendar, Target, Bell, Clock, Sparkles, Award, RotateCcw, Trophy, ArrowLeft, Users, Cloud, Plus, Download, Trash2, Unplug, Fingerprint, BarChart3, Star, Compass, Lock, Ticket, Printer, User, GraduationCap, Dumbbell } from 'lucide-react';
 import PrintablesTab from './PrintablesTab';
 import { CURRICULUM_TIERS, getTierFromRating, GRADE_STARTING_RATINGS, getRITBandDetails, calculateMapDomainBreakdown } from '../utils/mathCurriculum';
 import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
@@ -138,6 +138,8 @@ export default function ParentDashboardModal({
       cumulativeCorrectStreak: subData.cumulativeCorrectStreak ?? (subId === 'math' ? (uData.cumulativeCorrectStreak ?? 0) : 0),
       personalRecords: subData.personalRecords || (subId === 'math' ? (uData.personalRecords || {}) : {}),
       tier: subData.tier ?? (subId === 'math' ? (uData.tier ?? 1) : 1),
+      practiceQueue: subData.practiceQueue || (subId === 'math' ? (uData.practiceQueue || []) : []),
+      practiceHistory: subData.practiceHistory || (subId === 'math' ? (uData.practiceHistory || []) : []),
       sprintHistory: subData.sprintHistory || (subId === 'math' ? (uData.sprintHistory || []) : []),
       skipLogs: subData.skipLogs || (subId === 'math' ? (uData.skipLogs || []) : [])
     };
@@ -1477,6 +1479,141 @@ export default function ParentDashboardModal({
                         );
                       })}
                     </div>
+                  </div>
+                </section>
+              );
+            })()}
+
+            {/* TRAINING CAMP & PRACTICE HISTORY (Recommendation #4) */}
+            {(() => {
+              const activeUserData = getProfileSubjectData(viewingProfileId, selectedSubject);
+              const practiceHistory = Array.isArray(activeUserData.practiceHistory) ? activeUserData.practiceHistory : [];
+              const practiceQueue = Array.isArray(activeUserData.practiceQueue) ? activeUserData.practiceQueue : [];
+              const profileName = activeUserData.name || 'Child';
+              const subjectConfig = SUBJECTS_CONFIG[selectedSubject] || SUBJECTS_CONFIG.math;
+
+              const totalPracticed = practiceHistory.length;
+              const avgAccuracy = totalPracticed > 0
+                ? Math.round(practiceHistory.reduce((acc, s) => acc + (s.accuracy || 0), 0) / totalPracticed)
+                : 0;
+
+              return (
+                <section className="bg-white rounded-2xl border-2 border-indigo-200/80 p-4 sm:p-5 shadow-xs space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+                        <Dumbbell className="w-4 h-4 stroke-[2.5]" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h2 className="text-sm sm:text-base font-black text-slate-900 leading-tight">
+                            Training Camp &amp; Targeted Practice
+                          </h2>
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                            {subjectConfig.name}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 font-medium">
+                          Zero-stakes streak-safe drills and targeted weak area remediation
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                      <div className="text-right">
+                        <span className="text-[10px] font-black uppercase text-slate-400 block leading-none">Completed</span>
+                        <span className="text-sm font-black text-slate-800">{totalPracticed} Sprints</span>
+                      </div>
+                      {totalPracticed > 0 && (
+                        <div className="text-right pl-3 border-l border-slate-200">
+                          <span className="text-[10px] font-black uppercase text-slate-400 block leading-none">Avg Acc</span>
+                          <span className="text-sm font-black text-indigo-600">{avgAccuracy}%</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* WEAK AREAS QUEUE STATUS & QUICK START */}
+                  <div className="p-3 rounded-xl bg-gradient-to-r from-rose-50/70 to-amber-50/50 border border-rose-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Target className="w-4 h-4 text-rose-600 shrink-0" />
+                      <div className="min-w-0">
+                        <span className="text-xs font-black text-slate-800 block">
+                          {practiceQueue.length > 0
+                            ? `${practiceQueue.length} Identified Weak Areas Saved`
+                            : `No Unresolved Bottlenecks in ${subjectConfig.name}`}
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-medium block truncate">
+                          {practiceQueue.length > 0
+                            ? 'Targeted drills focus specifically on these struggle questions.'
+                            : 'Practice Mode drills any curriculum tier without streak or rating risk.'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PRACTICE SESSION HISTORY LOG */}
+                  <div className="space-y-2 pt-1">
+                    <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                      Recent Practice Sessions
+                    </h3>
+
+                    {practiceHistory.length > 0 ? (
+                      <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                        {practiceHistory.slice(0, 10).map((session, idx) => {
+                          const dateObj = new Date(session.timestamp);
+                          const dateStr = !isNaN(dateObj.getTime())
+                            ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+                            : 'Recently';
+                          const isWeak = session.mode === 'weak_areas' || session.tier === 'weak_areas';
+
+                          return (
+                            <div
+                              key={session.id || `practice_${idx}`}
+                              className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-indigo-200 flex items-center justify-between gap-2 transition-colors text-xs"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md shrink-0 ${
+                                  isWeak
+                                    ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                    : 'bg-indigo-100 text-indigo-800 border border-indigo-200'
+                                }`}>
+                                  {isWeak ? 'Weak Areas' : `Tier ${session.tier}`}
+                                </span>
+                                <div className="min-w-0">
+                                  <span className="font-extrabold text-slate-800 block truncate">
+                                    {session.correctCount}/{session.totalCount} Correct ({session.accuracy}%)
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-medium">
+                                    {dateStr} • {session.timeSec > 0 ? `${session.timeSec}s` : 'Sprint'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="shrink-0">
+                                <span className={`text-xs font-black px-2 py-0.5 rounded-full ${
+                                  session.accuracy >= 90
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : session.accuracy >= 70
+                                    ? 'bg-amber-100 text-amber-800'
+                                    : 'bg-rose-100 text-rose-800'
+                                }`}>
+                                  {session.accuracy}%
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-1">
+                        <span className="text-xl">🏋️</span>
+                        <p className="text-xs font-bold text-slate-700">No practice sessions logged yet</p>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                          When {profileName} runs Training Camp sessions, completion records and accuracy trends will appear here.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </section>
               );

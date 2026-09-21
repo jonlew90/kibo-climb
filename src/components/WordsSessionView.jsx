@@ -202,12 +202,18 @@ export default function WordsSessionView({
 
   const isPracticeMode = Boolean(practiceConfig);
   const practiceSprintLength = practiceConfig?.sprintLength || 12;
+  const isWeakAreasMode = practiceConfig?.tier === 'weak_areas' || practiceConfig?.mode === 'weak_areas';
+  const practiceTitle = isWeakAreasMode
+    ? 'Weak Areas Training'
+    : `Tier ${practiceConfig?.tier || userTier} Practice`;
 
   // Generate adaptive problem queue for active tier based on competence rating (or practiceConfig)
   const [problemQueue, setProblemQueue] = useState(() => {
     if (practiceConfig) {
       const seen = new Set();
-      const batch = generateProblems(practiceSprintLength, practiceConfig.tier, [], seen);
+      const activePracticeTier = isWeakAreasMode ? (userTier || 1) : (practiceConfig.tier || 1);
+      const queuedItems = isWeakAreasMode ? storageService.getPracticeQueue('words') : [];
+      const batch = generateProblems(practiceSprintLength, activePracticeTier, queuedItems, seen);
       blockSeenKeysRef.current = seen;
       return batch;
     }
@@ -231,7 +237,9 @@ export default function WordsSessionView({
   useEffect(() => {
     if (practiceConfig) {
       const seen = new Set();
-      const batch = generateProblems(practiceSprintLength, practiceConfig.tier, [], seen);
+      const activePracticeTier = isWeakAreasMode ? (userTier || 1) : (practiceConfig.tier || 1);
+      const queuedItems = isWeakAreasMode ? storageService.getPracticeQueue('words') : [];
+      const batch = generateProblems(practiceSprintLength, activePracticeTier, queuedItems, seen);
       blockSeenKeysRef.current = seen;
       setProblemQueue(batch);
       setCurrentIndex(0);
@@ -1189,6 +1197,16 @@ export default function WordsSessionView({
           isNewStreakRecord,
           newlyUnlockedBadges: allBlockUnlockedBadges
         });
+
+        if (isPracticeMode) {
+          storageService.recordPracticeSession({
+            tier: isWeakAreasMode ? 'weak_areas' : (practiceConfig?.tier || userTier),
+            mode: isWeakAreasMode ? 'weak_areas' : 'tier_drill',
+            correctCount: finalBlockCorrect,
+            totalCount: totalBlockQuestions,
+            timeSec: blockTimeSec
+          }, 'words');
+        }
       }
 
       const nextIdx = currentIndex + 1;
@@ -1616,7 +1634,7 @@ export default function WordsSessionView({
         activeSubject="words"
         isPracticeMode={isPracticeMode}
         practiceTier={practiceConfig?.tier || userTier}
-        practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+        practiceTitle={practiceTitle}
         onViewWorksheet={onViewWorksheet}
         onOpenPracticeMode={() => {
           setShowBreakOverlay(false);
@@ -1662,10 +1680,7 @@ export default function WordsSessionView({
         }}
         onResumeClimb={() => {
           setShowBreakOverlay(false);
-          if (isPracticeMode && onExitPractice) {
-            onExitPractice();
-            return;
-          }
+          soundFx.playKeyTap();
           if (onResetDoubleSparks) onResetDoubleSparks();
           storageService.clearActiveClimbState(profileId, 'words');
           setSavedClimbState(null);
@@ -1681,12 +1696,11 @@ export default function WordsSessionView({
           setInSessionIncorrectStreak(0);
           setConsecutiveSkips(0);
           blockSeenKeysRef.current.clear();
-          setHasStartedClimb(false);
-          blockStartTimeRef.current = 0;
-          problemStartTimeRef.current = 0;
+          setHasStartedClimb(true);
+          blockStartTimeRef.current = performance.now();
+          problemStartTimeRef.current = performance.now();
           const nextTier = getTierFromRating(competenceRank);
-          const recentWords = storageService.getUserData('words').recentWords || [];
-          const freshBatch = generateProblems(15, nextTier, recentWords, blockSeenKeysRef.current);
+          const freshBatch = generateProblems(15, nextTier, [], blockSeenKeysRef.current);
           setProblemQueue(freshBatch);
           setCurrentIndex(0);
         }}
@@ -1700,7 +1714,7 @@ export default function WordsSessionView({
       {isPracticeMode && (
         <div className="w-full bg-indigo-700 text-white text-[11px] font-black text-center py-1 flex items-center justify-center gap-1.5 shrink-0 z-40">
           <span>🏋️</span>
-          <span>Training Camp — Streak-Safe · Not Scored · Free Hints</span>
+          <span>{practiceTitle} — Streak-Safe · Not Scored · Free Hints</span>
         </div>
       )}
       <div className="w-full h-full flex flex-col items-center justify-between sm:justify-end pb-1 sm:pb-2 pt-1 px-1.5 sm:px-3 max-w-4xl mx-auto relative overflow-visible flex-1 min-h-0">
@@ -1721,7 +1735,7 @@ export default function WordsSessionView({
           totalQuestions={totalBlockQuestions}
           isReviewPhase={isReviewPhase}
           isPracticeMode={isPracticeMode}
-          practiceTitle={`Tier ${practiceConfig?.tier || userTier} Practice`}
+          practiceTitle={practiceTitle}
           inSessionStreak={inSessionStreak}
           consumables={consumables}
           onExitOrPause={handleExitOrPauseClimb}

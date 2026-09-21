@@ -6,6 +6,9 @@ import { WORDS_CURRICULUM_TIERS } from '../utils/wordsCurriculum';
 import { WORLD_CURRICULUM_TIERS } from '../utils/worldCurriculum';
 import { CODING_CURRICULUM_TIERS } from '../utils/codingCurriculum';
 
+import { storageService } from '../services/storageService';
+import { Target, Sparkles } from 'lucide-react';
+
 const SUBJECT_CATALOGS = {
   math: { label: 'Math', tiers: CURRICULUM_TIERS, color: 'from-amber-500 to-orange-500' },
   words: { label: 'Words', tiers: WORDS_CURRICULUM_TIERS, color: 'from-emerald-500 to-teal-500' },
@@ -18,6 +21,7 @@ export default function PracticeModeModal({
   onClose,
   activeSubject = 'math',
   userTier = 1,
+  practiceQueue = null,
   onStartPracticeSession
 }) {
   const [selectedSubject, setSelectedSubject] = useState(activeSubject);
@@ -36,12 +40,19 @@ export default function PracticeModeModal({
   const currentSubjectConfig = SUBJECT_CATALOGS[selectedSubject] || SUBJECT_CATALOGS.math;
   const tiersList = currentSubjectConfig.tiers || [];
 
+  // Determine weak areas count for current selected subject
+  const currentPracticeQueue = practiceQueue && selectedSubject === activeSubject
+    ? practiceQueue
+    : storageService.getPracticeQueue(selectedSubject);
+  const weakItemsCount = currentPracticeQueue.length;
+
   const handleStartSession = () => {
     soundFx.playKeyTap();
     if (onStartPracticeSession) {
       onStartPracticeSession({
         subject: selectedSubject,
         tier: selectedTier,
+        mode: selectedTier === 'weak_areas' ? 'weak_areas' : 'tier_drill',
         sprintLength: sprintLength
       });
     }
@@ -80,14 +91,52 @@ export default function PracticeModeModal({
         </div>
       </div>
 
+      {/* Weak Areas Targeted Drill (Recommendation #1) */}
+      <div>
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playKeyTap();
+            setSelectedTier('weak_areas');
+          }}
+          className={`w-full p-2.5 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between text-left ${
+            selectedTier === 'weak_areas'
+              ? 'bg-gradient-to-r from-rose-50 to-amber-50 border-rose-500 ring-2 ring-rose-400/40 shadow-xs'
+              : 'bg-white border-slate-200 hover:border-rose-300'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+              <Target className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black text-slate-900">Target Weak Areas Drill</span>
+                {weakItemsCount > 0 && (
+                  <span className="text-[10px] font-black bg-rose-500 text-white px-1.5 py-0.2 rounded-full">
+                    {weakItemsCount} saved
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] font-bold text-slate-500 truncate">
+                {weakItemsCount > 0
+                  ? `Focuses on ${weakItemsCount} previously missed questions & review queue`
+                  : 'Targeted reinforcement on recent struggle concepts'}
+              </p>
+            </div>
+          </div>
+          {selectedTier === 'weak_areas' && <CheckCircle2 className="w-4 h-4 text-rose-600 shrink-0 ml-2" />}
+        </button>
+      </div>
+
       {/* Tier Selector */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <label className="text-xs font-black uppercase tracking-wider text-slate-500 block">
-            Select Training Tier (1–{tiersList.length}):
+            Or Choose Specific Tier (1–{tiersList.length}):
           </label>
           <span className="text-[11px] font-extrabold text-indigo-600">
-            Tier {selectedTier}
+            {selectedTier === 'weak_areas' ? 'Targeted Weak Areas' : `Tier ${selectedTier}`}
           </span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pr-0.5">
@@ -123,13 +172,17 @@ export default function PracticeModeModal({
         </div>
       </div>
 
-      {/* Sprint Length Toggle */}
+      {/* Sprint Length Toggle (Recommendation #3: 3, 6, 12) */}
       <div>
         <label className="text-xs font-black uppercase tracking-wider text-slate-500 block mb-1.5">
           Climb Length:
         </label>
-        <div className="grid grid-cols-2 gap-2">
-          {[6, 12].map(count => (
+        <div className="grid grid-cols-3 gap-1.5">
+          {[
+            { count: 3, label: '3 Qs (Quick Warmup)' },
+            { count: 6, label: '6 Qs (Quick Sprint)' },
+            { count: 12, label: '12 Qs (Full Drill)' }
+          ].map(({ count, label }) => (
             <button
               key={count}
               type="button"
@@ -137,13 +190,13 @@ export default function PracticeModeModal({
                 soundFx.playKeyTap();
                 setSprintLength(count);
               }}
-              className={`py-2 rounded-xl border-2 font-black text-xs transition-all cursor-pointer ${
+              className={`py-2 px-1 rounded-xl border-2 font-black text-xs transition-all cursor-pointer text-center ${
                 sprintLength === count
                   ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs'
                   : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300'
               }`}
             >
-              {count} Questions {count === 12 ? ' (Full Climb)' : ' (Quick Sprint)'}
+              {label}
             </button>
           ))}
         </div>
@@ -152,7 +205,7 @@ export default function PracticeModeModal({
       {/* Safety Notice */}
       <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-2 text-xs font-bold text-amber-900">
         <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
-        <span>100% Streak Safe • Free Hints • No Power-Ups • Zero Rating Penalty</span>
+        <span>100% Streak Safe • Free Hints • Logged to Parent Report • Zero Rating Penalty</span>
       </div>
 
       <button
