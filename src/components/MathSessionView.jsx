@@ -1045,9 +1045,10 @@ export default function MathSessionView({
       const isReviewComplete = isReviewPhase && currentIndex >= problemQueue.length - 1;
 
       if (reachedBlockEnd && missedReviewQueue.length > 0) {
-        // Transition into Mistake Review Phase
+        // Transition into Mistake Review Phase: slice queue cleanly to primary answered items + missed review items
         setIsReviewPhase(true);
-        setProblemQueue((prev) => [...prev, ...missedReviewQueue]);
+        const nextIdx = currentIndex + 1;
+        setProblemQueue((prev) => [...prev.slice(0, nextIdx), ...missedReviewQueue]);
         setMissedReviewQueue([]);
       } else if ((reachedBlockEnd && missedReviewQueue.length === 0) || isReviewComplete) {
         // Full block + reviews completed: Trigger Kibo Break Overlay
@@ -1283,9 +1284,9 @@ export default function MathSessionView({
 
     if (reachedBlockEnd && missedReviewQueue.length > 0) {
       setIsReviewPhase(true);
-      setProblemQueue((prev) => [...prev, ...missedReviewQueue]);
-      setMissedReviewQueue([]);
       const nextIdx = currentIndex + 1;
+      setProblemQueue((prev) => [...prev.slice(0, nextIdx), ...missedReviewQueue]);
+      setMissedReviewQueue([]);
       replenishQueueIfNeeded(nextIdx);
       setCurrentIndex(nextIdx);
       problemStartTimeRef.current = performance.now();
