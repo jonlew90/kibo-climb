@@ -4,7 +4,7 @@ import { WORKSHOP_ITEMS } from '../utils/itemsCatalog';
 
 const SECRET_CODE = 'kibodev';
 
-export function useDevState(onStateChange) {
+export function useDevState(onStateChange, onRequestPinGate) {
   const [isDevPanelOpen, setIsDevPanelOpen] = useState(false);
   const bufferRef = useRef('');
   const timeoutRef = useRef(null);
@@ -39,8 +39,12 @@ export function useDevState(onStateChange) {
 
       // Check for secret sequence match
       if (bufferRef.current === SECRET_CODE) {
-        setIsDevPanelOpen((prev) => !prev);
         bufferRef.current = '';
+        if (onRequestPinGate) {
+          onRequestPinGate();
+        } else {
+          setIsDevPanelOpen((prev) => !prev);
+        }
       }
     };
 

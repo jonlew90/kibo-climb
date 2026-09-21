@@ -6,7 +6,7 @@
 export function generateBlogEmailHtml({
   post,
   siteUrl = 'https://kiboclimb.com',
-  unsubscribeUrl = 'https://kiboclimb.com/parent-dashboard?view=notifications'
+  unsubscribeUrl = 'https://kiboclimb.com/?action=parent-settings&tab=notifications&utm_source=transactional_email&utm_medium=email&utm_campaign=blog_broadcast&utm_content=footer_unsubscribe'
 }) {
   if (!post) throw new Error('Post data is required to generate blog email');
 

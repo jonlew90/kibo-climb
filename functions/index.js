@@ -55,8 +55,123 @@ exports.sendParentEmail = onCall(
 
     const uid = request.auth.uid;
     const db = getFirestore();
+    const { to, subject, htmlBody, textBody, type, post, dryRun } = request.data || {};
 
-    // Enforce per-user rate limit (maximum 5 emails per 10-minute window)
+    // For blog_broadcast type, handle subscriber broadcast
+    if (type === "blog_broadcast") {
+      const apiKey = process.env.RESEND_API_KEY;
+      if (!apiKey && !dryRun) {
+        throw new HttpsError("failed-precondition", "RESEND_API_KEY is not configured.");
+      }
+
+      if (!post || !post.title || !post.slug) {
+        throw new HttpsError("invalid-argument", "Valid blog post object is required.");
+      }
+
+      const recipientEmails = new Set();
+      try {
+        const subSnap = await db.collection("newsletter_subscribers").get();
+        subSnap.forEach((doc) => {
+          const data = doc.data();
+          if (data.email && typeof data.email === "string" && !data.unsubscribed) {
+            const clean = data.email.trim().toLowerCase();
+            if (clean.includes("@")) recipientEmails.add(clean);
+          }
+        });
+      } catch (subErr) {
+        console.warn("[sendParentEmail:blog_broadcast] Error fetching newsletter_subscribers:", subErr);
+      }
+
+      try {
+        const userSnap = await db.collection("users").get();
+        userSnap.forEach((doc) => {
+          const data = doc.data();
+          const parentEmail = data.parentEmail || data.email;
+          if (parentEmail && typeof parentEmail === "string") {
+            const clean = parentEmail.trim().toLowerCase();
+            const notifPrefs = data.notifPrefs || {};
+            if (notifPrefs.blogNewsletterEnabled !== false && !notifPrefs.unsubscribedAll && clean.includes("@")) {
+              recipientEmails.add(clean);
+            }
+          }
+        });
+      } catch (userErr) {
+        console.warn("[sendParentEmail:blog_broadcast] Error fetching users:", userErr);
+      }
+
+      const recipients = Array.from(recipientEmails);
+      const emailSubject = subject || `🐾 New Kibo Guide: ${post.title}`;
+
+      if (dryRun) {
+        return {
+          success: true,
+          dryRun: true,
+          recipientCount: recipients.length,
+          recipientsSample: recipients.slice(0, 5),
+          subject: emailSubject,
+          postSlug: post.slug
+        };
+      }
+
+      if (recipients.length === 0) {
+        return {
+          success: true,
+          sentCount: 0,
+          message: "No active subscribers found."
+        };
+      }
+
+      const resend = new Resend(apiKey);
+      const senderEmail = (process.env.SENDER_EMAIL && !process.env.SENDER_EMAIL.includes("hello@kiboclimb.com"))
+        ? process.env.SENDER_EMAIL
+        : "Kibo Climb <noreply@kiboclimb.com>";
+
+      let sentCount = 0;
+      let failedCount = 0;
+
+      for (const recipient of recipients) {
+        try {
+          const sendRes = await resend.emails.send({
+            from: senderEmail,
+            to: [recipient],
+            subject: emailSubject,
+            html: htmlBody
+          });
+          if (sendRes.error) {
+            failedCount++;
+            console.error(`[sendParentEmail:blog_broadcast] Failed to send to ${recipient}:`, sendRes.error);
+          } else {
+            sentCount++;
+          }
+        } catch (err) {
+          failedCount++;
+          console.error(`[sendParentEmail:blog_broadcast] Error sending to ${recipient}:`, err);
+        }
+      }
+
+      try {
+        await db.collection("newsletter_broadcasts").add({
+          postSlug: post.slug,
+          postTitle: post.title,
+          recipientCount: recipients.length,
+          sentCount,
+          failedCount,
+          sentBy: uid,
+          sentAt: FieldValue.serverTimestamp()
+        });
+      } catch (logErr) {
+        console.warn("[sendParentEmail:blog_broadcast] Failed to record broadcast log:", logErr);
+      }
+
+      return {
+        success: true,
+        sentCount,
+        failedCount,
+        totalRecipients: recipients.length
+      };
+    }
+
+    // Enforce per-user rate limit (maximum 5 emails per 10-minute window) for single emails
     try {
       const rateLimitRef = db.collection("email_rate_limits").doc(uid);
       const now = Date.now();
@@ -1294,193 +1409,6 @@ exports.sendScheduledWeeklyDigests = onSchedule(
     } catch (err) {
       console.error("[sendScheduledWeeklyDigests] Fatal error during digest run:", err);
     }
-  }
-);
-
-/**
- * Callable function to broadcast a blog post newsletter to parent subscribers via Resend.
- */
-exports.sendBlogPostBroadcast = onCall(
-  {
-    cors: true,
-    secrets: ["RESEND_API_KEY"]
-  },
-  async (request) => {
-    if (!request.auth || !request.auth.uid) {
-      throw new HttpsError("unauthenticated", "Authentication required to broadcast blog posts.");
-    }
-
-    const { post, customSubject, dryRun = false } = request.data || {};
-    if (!post || !post.title || !post.slug) {
-      throw new HttpsError("invalid-argument", "Valid blog post metadata with title and slug is required.");
-    }
-
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey && !dryRun) {
-      console.error("Missing RESEND_API_KEY in environment/secrets.");
-      throw new HttpsError("failed-precondition", "RESEND_API_KEY is not configured.");
-    }
-
-    const db = getFirestore();
-    const recipientEmails = new Set();
-
-    // 1. Fetch public newsletter subscribers
-    try {
-      const subSnap = await db.collection("newsletter_subscribers").get();
-      subSnap.forEach((doc) => {
-        const data = doc.data();
-        if (data.email && typeof data.email === "string" && !data.unsubscribed) {
-          const clean = data.email.trim().toLowerCase();
-          if (clean.includes("@")) recipientEmails.add(clean);
-        }
-      });
-    } catch (subErr) {
-      console.warn("[sendBlogPostBroadcast] Error fetching newsletter_subscribers:", subErr);
-    }
-
-    // 2. Fetch opted-in parent accounts
-    try {
-      const userSnap = await db.collection("users").get();
-      userSnap.forEach((doc) => {
-        const data = doc.data();
-        const parentEmail = data.parentEmail || data.email;
-        if (parentEmail && typeof parentEmail === "string") {
-          const clean = parentEmail.trim().toLowerCase();
-          const notifPrefs = data.notifPrefs || {};
-          if (notifPrefs.blogNewsletterEnabled !== false && !notifPrefs.unsubscribedAll && clean.includes("@")) {
-            recipientEmails.add(clean);
-          }
-        }
-      });
-    } catch (userErr) {
-      console.warn("[sendBlogPostBroadcast] Error fetching registered users:", userErr);
-    }
-
-    const recipients = Array.from(recipientEmails);
-    const subject = customSubject || `🐾 New Kibo Guide: ${post.title}`;
-
-    if (dryRun) {
-      return {
-        success: true,
-        dryRun: true,
-        recipientCount: recipients.length,
-        recipientsSample: recipients.slice(0, 5),
-        subject,
-        postSlug: post.slug
-      };
-    }
-
-    if (recipients.length === 0) {
-      return {
-        success: true,
-        sentCount: 0,
-        message: "No active subscribers found."
-      };
-    }
-
-    const resend = new Resend(apiKey);
-    const senderEmail = (process.env.SENDER_EMAIL && !process.env.SENDER_EMAIL.includes('hello@kiboclimb.com'))
-      ? process.env.SENDER_EMAIL
-      : "Kibo Climb <noreply@kiboclimb.com>";
-
-    // Build Email HTML
-    const title = post.title;
-    const excerpt = post.excerpt || post.description || '';
-    const subjectName = (post.subject || 'math').toUpperCase();
-    const tier = post.tier || 1;
-    const readingTime = post.reading_time_minutes || 4;
-    const slug = post.slug;
-    const postUrl = `https://kiboclimb.com/blog/${slug}/`;
-    const featuredAsset = post.featured_asset || 'kibo_sitting_on_boulder_thinking_20260916125021.jpeg';
-    const imageUrl = `https://kiboclimb.com/images/blog/${featuredAsset}`;
-    const promoCode = post.reader_reward_code || post.promo_code || null;
-    const promoReward = post.reader_reward_desc || '50 Free Sparks';
-
-    const rewardSectionHtml = promoCode
-      ? `<div style="margin: 20px 0; background: #fff7ed; border: 2px dashed #f97316; border-radius: 12px; padding: 16px; text-align: center;">
-           <div style="font-size: 12px; font-weight: 800; color: #c2410c; text-transform: uppercase;">🎁 Exclusive Reader Drop</div>
-           <div style="font-size: 15px; font-weight: 800; color: #7c2d12; margin: 4px 0 8px;">Claim ${promoReward} in Kibo Climb!</div>
-           <div style="display: inline-block; background: #ffffff; border: 1px solid #fed7aa; padding: 6px 14px; border-radius: 8px; font-family: monospace; font-size: 15px; font-weight: 700; color: #ea580c;">${promoCode}</div>
-         </div>`
-      : '';
-
-    const htmlBody = `<!DOCTYPE html>
-<html>
-<body style="margin: 0; padding: 24px 12px; background-color: #f8fafc; font-family: sans-serif;">
-  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0;">
-    <div style="background-color: #ea580c; padding: 24px; color: #ffffff;">
-      <div style="font-size: 22px; font-weight: 900;">🐾 Kibo Climb</div>
-      <div style="font-size: 12px; font-weight: 700; color: #ffedd5; text-transform: uppercase;">Parent & Educator Learning Digest</div>
-    </div>
-    <a href="${postUrl}" style="display: block; text-decoration: none;">
-      <img src="${imageUrl}" alt="${title}" style="width: 100%; max-height: 280px; object-fit: cover; display: block;" />
-    </a>
-    <div style="padding: 28px;">
-      <div style="margin-bottom: 12px;">
-        <span style="background: #ffedd5; color: #c2410c; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 9999px; margin-right: 6px;">${subjectName} • Tier ${tier}</span>
-        <span style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 9999px;">⏱️ ${readingTime} min read</span>
-      </div>
-      <h1 style="font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 16px;">
-        <a href="${postUrl}" style="color: #0f172a; text-decoration: none;">${title}</a>
-      </h1>
-      <p style="font-size: 15px; color: #475569; line-height: 1.6; margin: 0 0 20px;">${excerpt}</p>
-      ${rewardSectionHtml}
-      <div style="text-align: center; margin: 28px 0 16px;">
-        <a href="${postUrl}" style="background: #ea580c; color: #ffffff; padding: 14px 28px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block;">Read Full Guide & Print Worksheets →</a>
-      </div>
-    </div>
-    <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8;">
-      <p style="margin: 0 0 8px;">🐾 Kibo Climb — Master mental math, vocabulary, world trivia, and coding!</p>
-      <p style="margin: 0;"><a href="https://kiboclimb.com/parent-dashboard?view=notifications" style="color: #64748b; text-decoration: underline;">Manage Notification Preferences / Unsubscribe</a></p>
-    </div>
-  </div>
-</body>
-</html>`;
-
-    let sentCount = 0;
-    let failedCount = 0;
-
-    for (const email of recipients) {
-      try {
-        const sendRes = await resend.emails.send({
-          from: senderEmail,
-          to: [email],
-          subject,
-          html: htmlBody
-        });
-        if (sendRes.error) {
-          failedCount++;
-          console.error(`[sendBlogPostBroadcast] Error sending to ${email}:`, sendRes.error);
-        } else {
-          sentCount++;
-        }
-      } catch (err) {
-        failedCount++;
-        console.error(`[sendBlogPostBroadcast] Failed to dispatch to ${email}:`, err);
-      }
-    }
-
-    // Record blast audit log in Firestore
-    try {
-      await db.collection("newsletter_broadcasts").add({
-        postSlug: post.slug,
-        postTitle: post.title,
-        recipientCount: recipients.length,
-        sentCount,
-        failedCount,
-        sentBy: request.auth.uid,
-        sentAt: FieldValue.serverTimestamp()
-      });
-    } catch (logErr) {
-      console.warn("[sendBlogPostBroadcast] Failed to record broadcast log:", logErr);
-    }
-
-    return {
-      success: true,
-      sentCount,
-      failedCount,
-      totalRecipients: recipients.length
-    };
   }
 );
 

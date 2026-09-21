@@ -575,9 +575,15 @@ export default function App() {
   };
 
   const handlePinUnlockSuccess = () => {
+    const source = pinGateSource;
     setShowPinGateModal(false);
     setShowProfileSelector(false);
     setPinGateSource(null);
+
+    if (source === 'dev_panel') {
+      devState.setIsDevPanelOpen(true);
+      return;
+    }
 
     if (pendingSparksPurchase) {
       if (authService.getAuthState().isAnonymous) {
@@ -1295,12 +1301,17 @@ export default function App() {
   });
   const isDoubleSparksActive = Boolean(doubleSparksActiveBySubject[activeSubject]);
 
-  const devState = useDevState(() => {
-    const uData = storageService.getUserData(activeSubject);
-    const sData = storageService.getShopState();
-    setSparks(uData.sparks || 0);
-    setUnlockedItems(sData.unlockedItems || ['cap']);
-  });
+  const devState = useDevState(
+    () => {
+      const uData = storageService.getUserData(activeSubject);
+      const sData = storageService.getShopState();
+      setSparks(uData.sparks || 0);
+      setUnlockedItems(sData.unlockedItems || ['cap']);
+    },
+    () => {
+      handleOpenPinGate('dev_panel');
+    }
+  );
 
   const syncAppStateWithStorage = (subjectOverride) => {
     const sub = subjectOverride || activeSubject;

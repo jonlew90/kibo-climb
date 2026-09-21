@@ -80,6 +80,61 @@ class CommunicationsService {
   }
 
   /**
+   * Helper to check client-side rate limit and cooldown (prevents rapid clicking and abuse)
+   * Enforces 15-second minimum interval between sends and max 5 sends per 10-minute window per device/account.
+   */
+  checkClientRateLimit() {
+    try {
+      const now = Date.now();
+      const raw = localStorage.getItem('kibo_email_dispatch_log');
+      const log = raw ? JSON.parse(raw) : { windowStart: now, timestamps: [] };
+
+      // Prune timestamps older than 10 minutes
+      const tenMinutesAgo = now - 10 * 60 * 1000;
+      const recentTimestamps = (log.timestamps || []).filter(ts => ts > tenMinutesAgo);
+
+      // Check minimum cooldown (15 seconds between dispatches)
+      const lastSent = recentTimestamps[recentTimestamps.length - 1] || 0;
+      if (now - lastSent < 15 * 1000) {
+        const waitSec = Math.ceil((15000 - (now - lastSent)) / 1000);
+        return {
+          allowed: false,
+          error: `Please wait ${waitSec}s before sending another email.`
+        };
+      }
+
+      // Check max count in 10-minute window (max 5 per device)
+      if (recentTimestamps.length >= 5) {
+        return {
+          allowed: false,
+          error: 'Email limit reached (5 emails per 10 minutes). Please wait a few minutes before trying again.'
+        };
+      }
+
+      return { allowed: true, recentTimestamps };
+    } catch {
+      return { allowed: true, recentTimestamps: [] };
+    }
+  }
+
+  /**
+   * Records a successful client email dispatch timestamp in localStorage.
+   */
+  recordClientDispatch() {
+    try {
+      const now = Date.now();
+      const raw = localStorage.getItem('kibo_email_dispatch_log');
+      const log = raw ? JSON.parse(raw) : { timestamps: [] };
+      const tenMinutesAgo = now - 10 * 60 * 1000;
+      const timestamps = (log.timestamps || []).filter(ts => ts > tenMinutesAgo);
+      timestamps.push(now);
+      localStorage.setItem('kibo_email_dispatch_log', JSON.stringify({ timestamps }));
+    } catch (e) {
+      console.warn('[CommunicationsService] Could not persist email dispatch log:', e);
+    }
+  }
+
+  /**
    * Sends a parent notification / report via Firebase Cloud Functions (Resend backend).
    *
    * @param {Object} params
@@ -94,6 +149,12 @@ class CommunicationsService {
     if (!email) {
       console.warn('[CommunicationsService] Missing email address. Aborting notification.');
       return { success: false, error: 'Parent email address is required.' };
+    }
+
+    // Check client-side rate limit & cooldown
+    const rateCheck = this.checkClientRateLimit();
+    if (!rateCheck.allowed) {
+      return { success: false, error: rateCheck.error };
     }
 
     const payloadHtml = htmlBody || this.formatEmailHtml({ subject, message });
@@ -114,6 +175,9 @@ class CommunicationsService {
 
       const data = response.data || {};
       console.log('✅ [CommunicationsService] Email sent successfully:', data);
+
+      // Record dispatch on success
+      this.recordClientDispatch();
 
       return {
         success: true,
@@ -240,8 +304,9 @@ class CommunicationsService {
         await signInAnonymously(auth);
       }
 
-      const broadcastCallable = httpsCallable(functions, 'sendBlogPostBroadcast');
+      const broadcastCallable = httpsCallable(functions, 'sendParentEmail');
       const response = await broadcastCallable({
+        type: 'blog_broadcast',
         post,
         customSubject,
         dryRun
