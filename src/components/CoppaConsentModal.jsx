@@ -119,7 +119,7 @@ export default function CoppaConsentModal({
             className="mt-0.5 w-4 h-4 rounded text-purple-600 focus:ring-purple-500 shrink-0 cursor-pointer"
           />
           <span className="text-xs sm:text-sm text-slate-200 font-medium leading-normal">
-            I confirm I am an adult parent or legal guardian. I consent to linking a parent account and syncing learning progress to the cloud under Kibo Climb's Privacy and COPPA Policies.
+            I confirm I am an adult parent or guardian. I consent to account linking, progress sync, and occasional parent learning updates (manageable in Parent Zone) under our Privacy & COPPA Policies.
           </span>
         </label>
 

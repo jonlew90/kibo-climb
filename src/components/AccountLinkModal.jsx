@@ -547,7 +547,7 @@ export default function AccountLinkModal({
             <span>Passwordless Security • COPPA Compliant Sync</span>
           </div>
           <p className="text-[10px] text-slate-400 font-medium leading-tight">
-            Parental use only. Encrypted under our{' '}
+            Parental use only. Progress backup & parent updates. Encrypted under our{' '}
             <button
               type="button"
               onClick={() => setShowCoppaPolicyModal(true)}
