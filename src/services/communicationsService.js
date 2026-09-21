@@ -220,6 +220,50 @@ class CommunicationsService {
       results
     };
   }
+
+  /**
+   * Broadcasts a blog post email via Firebase Cloud Functions (Resend backend).
+   *
+   * @param {Object} params
+   * @param {Object} params.post - Full post metadata object
+   * @param {string} [params.customSubject] - Optional custom email subject
+   * @param {boolean} [params.dryRun=false] - Dry run mode flag
+   * @returns {Promise<Object>}
+   */
+  async broadcastBlogPost({ post, customSubject, dryRun = false }) {
+    if (!post || !post.title || !post.slug) {
+      return { success: false, error: 'Valid blog post object is required.' };
+    }
+
+    try {
+      if (!auth.currentUser) {
+        await signInAnonymously(auth);
+      }
+
+      const broadcastCallable = httpsCallable(functions, 'sendBlogPostBroadcast');
+      const response = await broadcastCallable({
+        post,
+        customSubject,
+        dryRun
+      });
+
+      return {
+        success: true,
+        ...response.data
+      };
+    } catch (error) {
+      console.error('❌ [CommunicationsService] Failed to broadcast blog post:', error);
+      const errorMessage =
+        (typeof error?.details === 'string' ? error.details : error?.details?.message) ||
+        error?.message ||
+        'Failed to dispatch blog broadcast.';
+
+      return {
+        success: false,
+        error: errorMessage
+      };
+    }
+  }
 }
 
 export const communicationsService = new CommunicationsService();

@@ -7,6 +7,8 @@ import { calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { getTierFromRating } from '../utils/mathCurriculum';
 import { getCompetenceRankTier } from '../utils/GameEconomyModel';
 import { SEASONAL_EVENTS } from '../utils/itemsCatalog';
+import { getAllBlogPosts } from '../utils/blogLoader';
+import { generateBlogEmailHtml } from '../utils/blogEmailTemplate';
 
 import { SUBJECTS_CONFIG } from '../config/subjects';
 
@@ -26,6 +28,12 @@ export default function DevControlPanel({
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailReportType, setEmailReportType] = useState('kibo_club'); // 'free' | 'kibo_club'
   const [customDateInput, setCustomDateInput] = useState('');
+
+  // Blog broadcast dev states
+  const allBlogPosts = getAllBlogPosts();
+  const [selectedBlogSlug, setSelectedBlogSlug] = useState(allBlogPosts[0]?.slug || '');
+  const [isSendingBlogEmail, setIsSendingBlogEmail] = useState(false);
+  const [blogEmailMode, setBlogEmailMode] = useState('direct_test'); // 'direct_test' | 'dry_run' | 'full_broadcast'
 
   const currentData = storageService.getUserData(selectedSubject);
   const currentRating = currentData.adaptiveCompetenceRating || currentData.competenceRank || 1000;
@@ -601,6 +609,155 @@ export default function DevControlPanel({
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* SECTION 4.5: BLOG POST EMAIL BROADCAST (RESEND) */}
+          <div className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-orange-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Mail className="w-4 h-4 text-orange-400" />
+                Blog Post Email Broadcast (Resend)
+              </span>
+              <span className="text-[10px] font-black uppercase text-orange-400 bg-orange-950/80 px-2 py-0.5 rounded-md border border-orange-800">
+                {allBlogPosts.length} Guides
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-snug">
+              Select an educational blog post and dispatch or preview the responsive newsletter with secret reader reward drops.
+            </p>
+
+            {/* Select Blog Post */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                Select Blog Post
+              </label>
+              <select
+                value={selectedBlogSlug}
+                onChange={(e) => setSelectedBlogSlug(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 font-sans"
+              >
+                {allBlogPosts.map((post) => (
+                  <option key={post.slug} value={post.slug}>
+                    [{(post.subject || 'math').toUpperCase()} T{post.tier || 1}] {post.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Mode Selector */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                Dispatch Target
+              </label>
+              <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-950/70 border border-slate-700/70 rounded-xl text-center">
+                <button
+                  type="button"
+                  onClick={() => setBlogEmailMode('direct_test')}
+                  className={`py-1.5 px-2 rounded-lg text-[11px] font-extrabold transition-all ${
+                    blogEmailMode === 'direct_test'
+                      ? 'bg-orange-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Single Test Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBlogEmailMode('dry_run')}
+                  className={`py-1.5 px-2 rounded-lg text-[11px] font-extrabold transition-all ${
+                    blogEmailMode === 'dry_run'
+                      ? 'bg-amber-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Dry Run Preview
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBlogEmailMode('full_broadcast')}
+                  className={`py-1.5 px-2 rounded-lg text-[11px] font-extrabold transition-all ${
+                    blogEmailMode === 'full_broadcast'
+                      ? 'bg-red-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  All Subscribers 🚀
+                </button>
+              </div>
+            </div>
+
+            {blogEmailMode === 'direct_test' && (
+              <input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="Enter recipient email (e.g. parent@example.com)"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 font-mono"
+              />
+            )}
+
+            <button
+              disabled={isSendingBlogEmail || (blogEmailMode === 'direct_test' && !testEmail.includes('@'))}
+              onClick={async () => {
+                const targetPost = allBlogPosts.find((p) => p.slug === selectedBlogSlug) || allBlogPosts[0];
+                if (!targetPost) return;
+
+                setIsSendingBlogEmail(true);
+
+                if (blogEmailMode === 'direct_test') {
+                  const subject = `🐾 New Kibo Guide: ${targetPost.title}`;
+                  const htmlBody = generateBlogEmailHtml({ post: targetPost });
+                  const res = await communicationsService.sendParentNotification({
+                    email: testEmail,
+                    subject,
+                    message: targetPost.meta_description || targetPost.excerpt || targetPost.title,
+                    htmlBody,
+                    type: 'blog_post'
+                  });
+
+                  setIsSendingBlogEmail(false);
+                  if (res.success) {
+                    showToast(`✉️ Blog email for "${targetPost.title.slice(0, 20)}..." sent to ${testEmail}!`);
+                  } else {
+                    alert('Failed to send blog email: ' + res.error);
+                  }
+                } else {
+                  // Dry Run or Full Broadcast via Cloud Function
+                  const isDry = blogEmailMode === 'dry_run';
+                  const res = await communicationsService.broadcastBlogPost({
+                    post: targetPost,
+                    dryRun: isDry
+                  });
+
+                  setIsSendingBlogEmail(false);
+                  if (res.success) {
+                    if (isDry) {
+                      showToast(`🔍 Dry Run: ${res.recipientCount || 0} active subscribers found!`);
+                    } else {
+                      showToast(`🚀 Broadcast sent to ${res.sentCount || 0} subscribers!`);
+                    }
+                  } else {
+                    alert('Broadcast error: ' + res.error);
+                  }
+                }
+              }}
+              className={`w-full py-2.5 px-3 rounded-xl font-extrabold text-xs transition-all active:scale-95 text-center flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed ${
+                blogEmailMode === 'full_broadcast'
+                  ? 'bg-red-600 hover:bg-red-500 text-white'
+                  : blogEmailMode === 'dry_run'
+                  ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                  : 'bg-orange-600 hover:bg-orange-500 text-white'
+              }`}
+            >
+              {isSendingBlogEmail
+                ? 'Processing Dispatch...'
+                : blogEmailMode === 'direct_test'
+                ? `Send Blog Post to ${testEmail || 'Email'}`
+                : blogEmailMode === 'dry_run'
+                ? 'Run Broadcast Dry-Run Preview'
+                : '🚀 Broadcast to ALL Subscribers'}
+            </button>
           </div>
 
           {/* SECTION 5: PARENTAL GATE & BIOMETRICS DEBUGGER */}
