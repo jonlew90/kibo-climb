@@ -228,7 +228,6 @@ exports.sendParentEmail = onCall(
     }
 
     const resend = new Resend(apiKey);
-    const { to, subject, htmlBody, textBody } = request.data || {};
 
     if (!to || typeof to !== "string" || !EMAIL_REGEX.test(to.trim()) || to.length > 254) {
       throw new HttpsError("invalid-argument", "A valid recipient email address is required.");
