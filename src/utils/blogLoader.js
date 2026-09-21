@@ -187,3 +187,32 @@ export function getBlogCategories(posts = getAllBlogPosts()) {
 
   return activeCategories;
 }
+
+/**
+ * Returns all currently active promo drops from published blog articles.
+ * A drop is active if now is between published_at and published_at + valid_days.
+ */
+export function getActiveBlogPromoDrops(currentDate = new Date(), posts = getAllBlogPosts()) {
+  const now = (currentDate instanceof Date ? currentDate : new Date(currentDate)).getTime();
+  const activeDrops = [];
+
+  for (const post of posts) {
+    if (!post.promo_drop || !post.promo_drop.code) continue;
+    const pubTime = new Date(post.published_at || 0).getTime();
+    const validDays = Number(post.promo_drop.valid_days) || 14;
+    const expiresTime = pubTime + (validDays * 24 * 60 * 60 * 1000);
+
+    if (now >= pubTime && now <= expiresTime) {
+      const daysRemaining = Math.max(1, Math.ceil((expiresTime - now) / (1000 * 60 * 60 * 24)));
+      activeDrops.push({
+        post,
+        promoDrop: post.promo_drop,
+        code: post.promo_drop.code,
+        daysRemaining,
+        expiresTime
+      });
+    }
+  }
+
+  return activeDrops;
+}

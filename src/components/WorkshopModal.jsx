@@ -159,6 +159,7 @@ export default function WorkshopModal({
   initialHub = 'wearables',
   initialViewMode = 'shop',
   highlightItemId = null,
+  initialPromoCode = null,
   onNavigateWithinWorkshop = null,
   renderFooter
 }) {
@@ -265,6 +266,9 @@ export default function WorkshopModal({
         if (initialViewMode) setViewMode(initialViewMode);
         if (initialHub) setActiveHub(initialHub);
       }
+      if (initialPromoCode) {
+        openPromoDialogWithCode(initialPromoCode);
+      }
       if (highlightItemId) {
         // Allow DOM to render item tile before scrolling
         const timer = setTimeout(() => {
@@ -282,7 +286,7 @@ export default function WorkshopModal({
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen, initialViewMode, initialHub, highlightItemId]);
+  }, [isOpen, initialViewMode, initialHub, highlightItemId, initialPromoCode]);
 
   // Ensure active category hub is scrolled into view in the top navigation strip
   useEffect(() => {

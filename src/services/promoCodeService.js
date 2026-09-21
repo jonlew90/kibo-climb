@@ -1,10 +1,8 @@
-// Promo Code Redemption & Validation Service for Kibo Climb
-// Handles authoritative code redemption, expiration checking, duplicate prevention, and item/spark grants.
-
 import { storageService } from './storageService.js';
 import { shopLedgerService } from './shopLedgerService.js';
 import { functions } from '../config/firebase.js';
 import { httpsCallable } from 'firebase/functions';
+import { getActiveBlogPromoDrops, getAllBlogPosts } from '../utils/blogLoader.js';
 
 export const promoCodeService = {
   /**
@@ -25,7 +23,52 @@ export const promoCodeService = {
   },
 
   /**
-   * Executes promo code redemption by validating via Firebase Cloud Function,
+   * Checks if code matches an active or expired blog drop locally.
+   */
+  resolveBlogPromoDrop(codeStr) {
+    const normalized = this.normalizeCode(codeStr);
+    if (!normalized) return null;
+
+    const allPosts = typeof getAllBlogPosts === 'function' ? getAllBlogPosts() : [];
+    const matchedPost = allPosts.find(
+      (p) => p.promo_drop && p.promo_drop.code && p.promo_drop.code.trim().toUpperCase() === normalized
+    );
+
+    if (!matchedPost) return null;
+
+    const pubTime = new Date(matchedPost.published_at || 0).getTime();
+    const validDays = Number(matchedPost.promo_drop.valid_days) || 14;
+    const expiresTime = pubTime + validDays * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    if (now < pubTime || now > expiresTime) {
+      return {
+        expired: true,
+        post: matchedPost,
+        message: 'This secret reader promo code has expired. Check our latest blog articles for active drops!'
+      };
+    }
+
+    return {
+      expired: false,
+      post: matchedPost,
+      promoDrop: matchedPost.promo_drop,
+      promo: {
+        code: matchedPost.promo_drop.code.toUpperCase(),
+        title: matchedPost.promo_drop.headline || 'Secret Reader Reward',
+        description: `Unlocked from article: ${matchedPost.title}`,
+        badge: 'SECRET_READER',
+        rewards: {
+          sparks: matchedPost.promo_drop.sparks || 100,
+          consumables: matchedPost.promo_drop.consumables || {},
+          items: matchedPost.promo_drop.items || []
+        }
+      }
+    };
+  },
+
+  /**
+   * Executes promo code redemption by validating via Firebase Cloud Function or local blog drop fallback,
    * modifies storage, records transaction audit, and returns results.
    */
   async redeemCode(codeStr) {
@@ -38,16 +81,35 @@ export const promoCodeService = {
       return { success: false, reason: 'This promo code has already been redeemed on this profile.' };
     }
 
-    let promo;
+    let promo = null;
+    let cloudError = null;
+
+    // 1. Try Firebase Cloud Function validation if available
     try {
-      const validateFn = httpsCallable(functions, 'validatePromoCode');
-      const result = await validateFn({ code: normalized });
-      promo = result.data;
+      if (functions) {
+        const validateFn = httpsCallable(functions, 'validatePromoCode');
+        const result = await validateFn({ code: normalized });
+        promo = result.data;
+      }
     } catch (error) {
-      console.error('Error validating promo code:', error);
+      cloudError = error;
+    }
+
+    // 2. Check local blog promo drop fallback if not found in Cloud Functions
+    if (!promo) {
+      const blogResolution = this.resolveBlogPromoDrop(normalized);
+      if (blogResolution) {
+        if (blogResolution.expired) {
+          return { success: false, reason: blogResolution.message };
+        }
+        promo = blogResolution.promo;
+      }
+    }
+
+    if (!promo) {
       return {
         success: false,
-        reason: error.message || 'Failed to validate promo code. Please try again.'
+        reason: cloudError?.message || 'Invalid or expired promo code. Please check and try again.'
       };
     }
 

@@ -189,7 +189,34 @@ Encourage your student to test the ${trickTitle} technique during their next 5-m
   };
 
   const selectedImage = featuredAsset || selectFeaturedImage(existingPosts);
-  const nowIso = new Date().toISOString();
+  const now = new Date();
+  const nowIso = now.toISOString();
+
+  // Generate Unique Thematic Promo Code Drop (e.g. COMPENSATE926, CHUNK826, FRACTIONS1026)
+  const monthCode = (now.getMonth() + 1).toString();
+  const yearCode = now.getFullYear().toString().slice(-2);
+  const cleanKeyword = (trickTitle || name || finalSubject)
+    .replace(/[^a-zA-Z]/g, '')
+    .toUpperCase()
+    .slice(0, 10);
+  const promoCode = `${cleanKeyword}${monthCode}${yearCode}`;
+
+  const promoConsumables = {
+    hintScrollCount: 1,
+    letterSpyglassCount: 1
+  };
+  if (finalSubject === 'words') {
+    promoConsumables.letterPrunerCount = 1;
+  }
+
+  const promoDrop = {
+    code: promoCode,
+    title: `${name} Reader Reward`,
+    description: `Special reader bonus drop for practicing ${name}!`,
+    sparks: 100,
+    consumables: promoConsumables,
+    valid_days: 14
+  };
 
   return {
     title,
@@ -201,6 +228,7 @@ Encourage your student to test the ${trickTitle} technique during their next 5-m
     meta_description: metaDescription,
     tags,
     featured_asset: selectedImage,
+    promo_drop: promoDrop,
     content_markdown: markdown,
     social_copy: socialCopy,
     published_at: nowIso

@@ -199,6 +199,7 @@ export default function App() {
   const [workshopHub, setWorkshopHub] = useState('wearables');
   const [workshopViewMode, setWorkshopViewMode] = useState('shop');
   const [workshopHighlightItemId, setWorkshopHighlightItemId] = useState(null);
+  const [workshopInitialPromoCode, setWorkshopInitialPromoCode] = useState(null);
 
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [showSpeedInfoModal, setShowSpeedInfoModal] = useState(false);
@@ -341,6 +342,7 @@ export default function App() {
         if (params.hub) setWorkshopHub(params.hub);
         if (params.viewMode) setWorkshopViewMode(params.viewMode);
         setWorkshopHighlightItemId(params.highlightItemId || null);
+        setWorkshopInitialPromoCode(params.promoCode || null);
       }
 
       setShowBadgesModal(modalId === VIEWS.BADGES);
@@ -486,14 +488,14 @@ export default function App() {
     }
   };
 
-  const handleOpenWorkshop = (overrideOrigin = null, initialHubParam = 'wearables', initialViewModeParam = 'shop', highlightItemId = null) => {
+  const handleOpenWorkshop = (overrideOrigin = null, initialHubParam = 'wearables', initialViewModeParam = 'shop', highlightItemId = null, promoCode = null) => {
     soundFx.playKeyTap();
     setShowProfileDropdown(false);
     setShowSubjectDropdown(false);
     const entry = navigationHistory.push({
       type: VIEW_TYPES.MODAL,
       id: VIEWS.WORKSHOP,
-      params: { hub: initialHubParam, viewMode: initialViewModeParam, highlightItemId }
+      params: { hub: initialHubParam, viewMode: initialViewModeParam, highlightItemId, promoCode }
     });
     applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
   };
@@ -505,7 +507,8 @@ export default function App() {
       params: {
         hub: nextParams.hub || workshopHub,
         viewMode: nextParams.viewMode || workshopViewMode,
-        highlightItemId: nextParams.highlightItemId || null
+        highlightItemId: nextParams.highlightItemId || null,
+        promoCode: nextParams.promoCode || null
       }
     });
     applyNavState(entry, navigationHistory.getStack(), navigationHistory.getBaseRoute());
@@ -636,6 +639,7 @@ export default function App() {
     try {
       const params = new URLSearchParams(search || '');
       const action = params.get('action') || savedContext?.action;
+      const promo = params.get('promo') || params.get('code') || savedContext?.promo;
       const profile = params.get('profile');
       const subject = params.get('subject');
       const tab = params.get('tab') || savedContext?.tab;
@@ -659,15 +663,15 @@ export default function App() {
         syncAppStateWithStorage(subject);
       }
 
-      // If an explicit action or profile is provided via deep link, dismiss initial profile selector screen
-      if (action || profile) {
+      // If an explicit action or profile or promo is provided via deep link, dismiss initial profile selector screen
+      if (action || profile || promo) {
         setShowProfileSelector(false);
       }
 
-      if (action === 'shop' || action === 'workshop' || action === 'store' || action === 'closet') {
+      if (promo || action === 'promo' || action === 'shop' || action === 'workshop' || action === 'store' || action === 'closet') {
         const targetMode = mode || (action === 'closet' ? 'closet' : 'shop');
         const targetHub = hub || tab || 'wearables';
-        handleOpenWorkshop(null, targetHub, targetMode);
+        handleOpenWorkshop(null, targetHub, targetMode, null, promo || null);
       } else if (action === 'parent-settings' || action === 'parent-dashboard' || action === 'parent' || action === 'parents' || action === 'notifications') {
         const initialTab = action === 'notifications' ? 'notifications' : (tab || 'overview');
         if (sessionId) {
@@ -3932,6 +3936,7 @@ export default function App() {
         initialHub={workshopHub}
         initialViewMode={workshopViewMode}
         highlightItemId={workshopHighlightItemId}
+        initialPromoCode={workshopInitialPromoCode}
         onNavigateWithinWorkshop={handleNavigateWithinWorkshop}
         isKiboClub={isKiboClub}
         activeProfileId={activeProfileId}

@@ -45,19 +45,23 @@ export default function NewsModal({ isOpen, onClose, newsItems = [] }) {
             </div>
           ) : (
             newsItems.map((news, index) => {
-              const Icon = news.type === 'event_start' ? Sparkles
+              const Icon = news.type === 'promo_drop' ? Sparkles
+                         : news.type === 'event_start' ? Sparkles
                          : news.type === 'event_ending' ? Hourglass
                          : CalendarDays;
 
-              const bgColors = news.type === 'event_start' ? 'bg-emerald-50 border-emerald-200'
+              const bgColors = news.type === 'promo_drop' ? 'bg-amber-50 border-amber-300'
+                             : news.type === 'event_start' ? 'bg-emerald-50 border-emerald-200'
                              : news.type === 'event_ending' ? 'bg-rose-50 border-rose-200'
                              : 'bg-sky-50 border-sky-200';
 
-              const iconColors = news.type === 'event_start' ? 'text-emerald-500 bg-emerald-100'
+              const iconColors = news.type === 'promo_drop' ? 'text-amber-600 bg-amber-100'
+                               : news.type === 'event_start' ? 'text-emerald-500 bg-emerald-100'
                                : news.type === 'event_ending' ? 'text-rose-500 bg-rose-100'
                                : 'text-sky-500 bg-sky-100';
 
-              const titleColors = news.type === 'event_start' ? 'text-emerald-900'
+              const titleColors = news.type === 'promo_drop' ? 'text-amber-950'
+                                : news.type === 'event_start' ? 'text-emerald-900'
                                 : news.type === 'event_ending' ? 'text-rose-900'
                                 : 'text-sky-900';
 
@@ -76,6 +80,19 @@ export default function NewsModal({ isOpen, onClose, newsItems = [] }) {
                     <p className="text-slate-700 leading-relaxed text-sm">
                       {news.message}
                     </p>
+                    {news.type === 'promo_drop' && news.blogUrl && (
+                      <div className="mt-3 flex items-center gap-2">
+                        <a
+                          href={news.blogUrl}
+                          onClick={(e) => {
+                            if (onClose) onClose();
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-xl transition-all shadow-xs"
+                        >
+                          📖 Read Article
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

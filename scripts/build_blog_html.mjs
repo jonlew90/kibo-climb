@@ -330,6 +330,21 @@ function generatePostHtml(data, allPosts = []) {
     }
   }, null, 2);
 
+  const promoDropHtml = (data.promo_drop && data.promo_drop.code) ? `
+    <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(249, 115, 22, 0.08) 100%); border: 2px solid #FCD34D; border-radius: 20px; padding: 1.5rem; margin: 2rem 0; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.1);">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span style="background: #F59E0B; color: #FFFFFF; font-size: 0.75rem; font-weight: 900; padding: 0.25rem 0.65rem; border-radius: 9999px; text-transform: uppercase;">🎁 Secret Reader Reward</span>
+            <span style="font-size: 0.8rem; font-weight: 700; color: #92400E;">⚡ +${data.promo_drop.sparks || 100} Sparks &amp; Power-Ups</span>
+          </div>
+          <h3 style="margin: 0 0 0.25rem 0; font-size: 1.25rem; font-weight: 900; color: #1E293B;">${data.promo_drop.headline || data.promo_drop.title || 'Claim Your Reader Drop'}</h3>
+          <p style="margin: 0; font-size: 0.875rem; color: #475569;">Use secret code <strong style="font-family: monospace; background: #FFFFFF; padding: 0.15rem 0.4rem; border-radius: 6px; border: 1px solid #FCD34D; color: #78350F;">${data.promo_drop.code}</strong> in the Kibo Workshop.</p>
+        </div>
+        <a href="/?action=workshop&promo=${encodeURIComponent(data.promo_drop.code)}" class="cta-button" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; margin-top: 0; text-decoration: none;">Redeem Code in Game →</a>
+      </div>
+    </div>` : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -427,6 +442,7 @@ ${jsonLd}
 
     <article>
       ${contentHtml}
+      ${promoDropHtml}
       ${worksheetCalloutHtml}
     </article>
 

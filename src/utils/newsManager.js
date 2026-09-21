@@ -1,7 +1,29 @@
 import { WORKSHOP_ITEMS, SEASONAL_EVENTS, calculateRecurringWindow } from './itemsCatalog.js';
+import { getActiveBlogPromoDrops } from './blogLoader.js';
 
 export function getNewsItems(currentDate = new Date()) {
   const news = [];
+
+  // 1. Active Blog Promo Code Drops (Secret Reader Rewards)
+  try {
+    const activeDrops = getActiveBlogPromoDrops(currentDate);
+    activeDrops.forEach(({ post, promoDrop, code, daysRemaining }) => {
+      const dayWord = daysRemaining === 1 ? 'day' : 'days';
+      news.push({
+        id: `blog_promo_${code}`,
+        type: 'promo_drop',
+        priority: 4, // High priority so players see secret reward drops immediately
+        title: `🎁 ${promoDrop.title || 'New Secret Reader Reward!'}`,
+        message: `New article drop: "${post.title}". Use secret code ${code} in the Workshop for +${promoDrop.sparks || 100} Sparks & bonus power-ups! (${daysRemaining} ${dayWord} left)`,
+        icon: '🎁',
+        promoCode: code,
+        blogSlug: post.slug,
+        blogUrl: `/blog/${post.slug}`
+      });
+    });
+  } catch (e) {
+    console.warn('newsManager: error resolving active blog promo drops', e);
+  }
 
   for (const event of SEASONAL_EVENTS) {
     if (event.id === 'all_active') continue;

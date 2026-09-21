@@ -277,6 +277,36 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
         <article>
           {renderMarkdown(post.content_markdown, onNavigate)}
 
+          {post.promo_drop && post.promo_drop.code && (
+            <div className="blog-promo-drop-card my-8 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-500/5 border-2 border-amber-300 shadow-sm relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-3 py-1 bg-amber-500 text-white text-xs font-black rounded-full uppercase tracking-wider shadow-xs">
+                      🎁 Secret Reader Reward
+                    </span>
+                    <span className="text-xs font-bold text-amber-800">
+                      ⚡ +{post.promo_drop.sparks || 100} Sparks &amp; Power-Ups
+                    </span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-black text-slate-900 m-0 mb-1">
+                    {post.promo_drop.title || 'Claim Your Reader Drop'}
+                  </h3>
+                  <p className="text-sm text-slate-600 m-0">
+                    Use secret code <strong className="font-mono bg-white px-2 py-0.5 rounded-lg border border-amber-300 text-amber-900 select-all">{post.promo_drop.code}</strong> in the Kibo Workshop.
+                  </p>
+                </div>
+                <a
+                  href={`/?action=workshop&promo=${encodeURIComponent(post.promo_drop.code)}`}
+                  onClick={handlePlayCta}
+                  className="w-full sm:w-auto text-center shrink-0 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm px-6 py-3 rounded-2xl shadow-md transition-all active:scale-95 cursor-pointer no-underline"
+                >
+                  Redeem Code in Game →
+                </a>
+              </div>
+            </div>
+          )}
+
           {relatedWorksheet && (
             <div className="worksheet-callout-card">
               <div className="worksheet-callout-header">
