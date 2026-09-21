@@ -118,7 +118,7 @@ export default function PracticeModeModal({
                   </span>
                 )}
               </div>
-              <p className="text-[10px] font-bold text-slate-500 truncate">
+              <p className="text-[10px] font-bold text-slate-500 leading-tight">
                 {weakItemsCount > 0
                   ? `Focuses on ${weakItemsCount} previously missed questions & review queue`
                   : 'Targeted reinforcement on recent struggle concepts'}
