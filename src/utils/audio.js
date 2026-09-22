@@ -19,6 +19,8 @@ export function triggerHaptic(pattern = 15) {
 // ─── SFX file map ────────────────────────────────────────────────────────────
 const SFX_FILES = {
   bgm_climb:      '/audio/bgm_climb.mp3',
+  bgm_home:       '/audio/bgm_home.mp3',
+  bgm_shop:       '/audio/bgm_shop.mp3',
   correct:        '/audio/sfx_correct.ogg',
   victory:        '/audio/sfx_victory.ogg',
   incorrect:      '/audio/sfx_incorrect.ogg',
@@ -31,6 +33,12 @@ const SFX_FILES = {
   toggle:         '/audio/sfx_toggle.ogg',
 };
 
+const DEFAULT_BGM_VOLUMES = {
+  bgm_home: 0.10,
+  bgm_shop: 0.18,
+  bgm_climb: 0.32,
+};
+
 class SoundSystem {
   constructor() {
     this.ctx = null;
@@ -40,17 +48,44 @@ class SoundSystem {
     this.bgmGain = null;
     this.bgmInterval = null;
     this.bgmNoteIndex = 0;
+    this.currentBgmKey = null;
+    this.pendingBgmKey = null;
+    this.pendingBgmVolume = null;
+    this._bgmSessionId = 0;
+    this._activeBgmSources = [];
+    this._unlocked = false;
     // AudioBuffer cache: key → AudioBuffer | null (null = failed)
     this._buffers = {};
     this._loading = {};
+
+    this._setupUnlock();
+  }
+
+  // ─── Global User Activation Unlock ────────────────────────────────────────
+
+  _setupUnlock() {
+    if (typeof window === 'undefined') return;
+    const unlock = async () => {
+      this._unlocked = true;
+      ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => {
+        window.removeEventListener(evt, unlock, true);
+      });
+      this.init();
+      if (this.ctx?.state === 'suspended') {
+        try { await this.ctx.resume(); } catch (e) {}
+      }
+      if (this.pendingBgmKey && !this.isMusicMuted && !this.isMuted && !this.bgmSource) {
+        this.startBGM(this.pendingBgmKey, this.pendingBgmVolume);
+      }
+    };
+    ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => {
+      window.addEventListener(evt, unlock, { once: true, passive: true, capture: true });
+    });
   }
 
   // ─── Context init ────────────────────────────────────────────────────────
 
   init() {
-    if (typeof navigator !== 'undefined' &&
-        navigator.userActivation &&
-        navigator.userActivation.hasBeenActive === false) return;
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
@@ -58,17 +93,56 @@ class SoundSystem {
       }
     }
     if (this.ctx?.state === 'suspended') {
-      try { this.ctx.resume().catch(() => {}); } catch (e) {}
+      try {
+        this.ctx.resume().then(() => {
+          if (this.pendingBgmKey && !this.isMusicMuted && !this.isMuted && !this.bgmSource) {
+            this.startBGM(this.pendingBgmKey, this.pendingBgmVolume);
+          }
+        }).catch(() => {});
+      } catch (e) {}
     }
   }
 
   // ─── State ───────────────────────────────────────────────────────────────
 
   toggleMute() { this.isMuted = !this.isMuted; return this.isMuted; }
-  setMuted(v) { this.isMuted = v; }
+  setMuted(v) {
+    this.isMuted = v;
+    if (v) {
+      this._stopAllBgmSources();
+    } else if (!this.isMusicMuted && this.pendingBgmKey && !this.bgmSource) {
+      this.startBGM(this.pendingBgmKey, this.pendingBgmVolume);
+    }
+  }
+
   setMusicMuted(v) {
     this.isMusicMuted = v;
-    if (v) this.stopBGM();
+    if (v) {
+      this._stopAllBgmSources();
+    } else {
+      if (this.pendingBgmKey) {
+        this.startBGM(this.pendingBgmKey, this.pendingBgmVolume);
+      }
+    }
+  }
+
+  _stopAllBgmSources() {
+    if (this._activeBgmSources && this._activeBgmSources.length > 0) {
+      this._activeBgmSources.forEach(src => {
+        try { src.stop(); src.disconnect(); } catch (e) {}
+      });
+    }
+    this._activeBgmSources = [];
+    if (this.bgmSource) {
+      try { this.bgmSource.stop(); this.bgmSource.disconnect(); } catch (e) {}
+    }
+    this.bgmSource = null;
+    this.bgmGain = null;
+    this.currentBgmKey = null;
+    if (this.bgmInterval) {
+      clearInterval(this.bgmInterval);
+      this.bgmInterval = null;
+    }
   }
 
   // ─── AudioBuffer loader ──────────────────────────────────────────────────
@@ -125,23 +199,58 @@ class SoundSystem {
   }
 
   // ─── BGM ─────────────────────────────────────────────────────────────────
-  // Uses bgm_climb.mp3 with seamless looping and smooth gain fading.
-  // Falls back to pentatonic synthesis if audio buffer fails to load.
+  // Supports trackKey: 'bgm_home' (lobby), 'bgm_shop' (workshop/closet), 'bgm_climb' (active climb)
+  // Strict single-source exclusivity guarantees only 1 track plays at any given time.
 
-  async startBGM() {
-    if (this.isMusicMuted) return;
+  async startBGM(trackKey = 'bgm_climb', targetVolume = null) {
+    const vol = targetVolume ?? DEFAULT_BGM_VOLUMES[trackKey] ?? 0.18;
+    this.pendingBgmKey = trackKey;
+    this.pendingBgmVolume = vol;
+
+    if (this.isMusicMuted || this.isMuted) {
+      this._stopAllBgmSources();
+      return;
+    }
+
+    // If the requested track is already active and playing, adjust volume smoothly if needed
+    if (this.currentBgmKey === trackKey && this.bgmSource) {
+      if (this.bgmGain && this.ctx) {
+        try {
+          const now = this.ctx.currentTime;
+          this.bgmGain.gain.cancelScheduledValues(now);
+          this.bgmGain.gain.setValueAtTime(this.bgmGain.gain.value, now);
+          this.bgmGain.gain.linearRampToValueAtTime(vol, now + 0.3);
+        } catch (e) {}
+      }
+      return;
+    }
+
+    // Increment session ID to cancel any pending asynchronous buffer loads
+    const sessionId = ++this._bgmSessionId;
+
+    // Immediately stop any currently playing tracks
+    this._stopAllBgmSources();
+
     this.init();
     if (!this.ctx) return;
-    this.stopBGM();
 
     if (this.ctx.state === 'suspended') {
       try { await this.ctx.resume(); } catch (e) {}
     }
 
-    // Attempt to load and play the real audio file
-    const buf = await this._loadBuffer('bgm_climb');
-    if (buf && !this.isMusicMuted) {
+    // Load target audio buffer
+    const buf = await this._loadBuffer(trackKey);
+
+    // Abort if another track was requested or state changed while loading
+    if (this._bgmSessionId !== sessionId || this.pendingBgmKey !== trackKey || this.isMusicMuted || this.isMuted) {
+      return;
+    }
+
+    if (buf) {
       try {
+        // Enforce cleanup once more before starting new source
+        this._stopAllBgmSources();
+
         const src = this.ctx.createBufferSource();
         const gain = this.ctx.createGain();
         src.buffer = buf;
@@ -149,14 +258,20 @@ class SoundSystem {
 
         const now = this.ctx.currentTime;
         gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.25, now + 1.2); // Soft ambient volume fade-in
+        gain.gain.linearRampToValueAtTime(vol, now + 0.5);
 
         src.connect(gain);
         gain.connect(this.ctx.destination);
         src.start(0);
 
+        this._activeBgmSources.push(src);
+        src.onended = () => {
+          this._activeBgmSources = this._activeBgmSources.filter(s => s !== src);
+        };
+
         this.bgmSource = src;
         this.bgmGain = gain;
+        this.currentBgmKey = trackKey;
         return;
       } catch (e) {
         console.warn('Failed to start file BGM, using synthesis fallback', e);
@@ -177,7 +292,7 @@ class SoundSystem {
     compressor.connect(this.ctx.destination);
 
     const playStep = () => {
-      if (this.isMusicMuted || !this.ctx) return;
+      if (this.isMusicMuted || this.isMuted || !this.ctx) return;
       if (this.ctx.state === 'suspended') this.ctx.resume();
 
       const now = this.ctx.currentTime;
@@ -201,35 +316,14 @@ class SoundSystem {
 
     playStep();
     this.bgmInterval = setInterval(playStep, 900);
+    this.currentBgmKey = trackKey;
   }
 
   stopBGM() {
-    if (this.bgmSource) {
-      try {
-        if (this.bgmGain && this.ctx) {
-          const now = this.ctx.currentTime;
-          this.bgmGain.gain.setValueAtTime(this.bgmGain.gain.value, now);
-          this.bgmGain.gain.linearRampToValueAtTime(0.001, now + 0.3); // Smooth fade-out
-          setTimeout(() => {
-            try { this.bgmSource?.stop(); } catch (e) {}
-            this.bgmSource = null;
-            this.bgmGain = null;
-          }, 320);
-        } else {
-          this.bgmSource.stop();
-          this.bgmSource = null;
-          this.bgmGain = null;
-        }
-      } catch (e) {
-        this.bgmSource = null;
-        this.bgmGain = null;
-      }
-    }
-
-    if (this.bgmInterval) {
-      clearInterval(this.bgmInterval);
-      this.bgmInterval = null;
-    }
+    this._bgmSessionId++;
+    this.pendingBgmKey = null;
+    this.pendingBgmVolume = null;
+    this._stopAllBgmSources();
   }
 
   // ─── SFX: Correct ────────────────────────────────────────────────────────

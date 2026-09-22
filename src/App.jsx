@@ -2023,6 +2023,40 @@ export default function App() {
 
   const isAppPaused = isWorkshopOpen || showProfileDropdown || showFriendsModal || showLevelUpModal || showSpeedInfoModal || showPinGateModal || showParentDashboard || showMockCheckoutModal || showStripeCheckoutModal || showFamilyUpgradeModal || showStreakSavedModal || showDailyStreakIncreasedModal || showMultiSubjectBonusModal || !!globalAscentLevelUpEvent || !!perfectMonthData || showBadgesModal || showShareModal || showAccountLinkModal || showFirstLaunchOnboardingModal || showProfileSelector || showManualProfileSwitcher || showFeedbackModal || showNewsModal;
 
+  // Centralized Background Music (BGM) coordinator
+  useEffect(() => {
+    if (preferences.isMusicMuted || preferences.isMuted) {
+      soundFx.stopBGM();
+      return;
+    }
+
+    const quietScreens = [
+      'privacy',
+      'coppa_privacy',
+      'terms',
+      'worksheet_viewer',
+      VIEWS.PRIVACY,
+      VIEWS.COPPA,
+      VIEWS.TERMS,
+      VIEWS.WORKSHEET_VIEWER,
+      'blog_post',
+      VIEWS.BLOG_POST,
+    ];
+
+    if (quietScreens.includes(appState)) {
+      soundFx.stopBGM();
+      return;
+    }
+
+    if (isWorkshopOpen) {
+      soundFx.startBGM('bgm_shop');
+    } else if (isClimbActive) {
+      soundFx.startBGM('bgm_climb');
+    } else {
+      soundFx.startBGM('bgm_home');
+    }
+  }, [isWorkshopOpen, isClimbActive, appState, preferences.isMusicMuted, preferences.isMuted]);
+
   // Check for News and Daily Spark Vault (Sequenced: News first, then Daily Vault on close or if no news)
   useEffect(() => {
     // Only check if we are on the main game screen and not in onboarding

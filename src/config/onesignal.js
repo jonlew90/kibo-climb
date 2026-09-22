@@ -21,6 +21,7 @@ const APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID || 'd192b852-cda6-4a6b-897a
 
 // Internal state to track initialization
 let isInitialized = false;
+let initPromise = null;
 
 export const initOneSignal = async () => {
   if (!APP_ID) {
@@ -33,34 +34,40 @@ export const initOneSignal = async () => {
     return;
   }
 
-  try {
-    await loadCapacitorDependencies();
+  if (initPromise) return initPromise;
 
-    if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
-      OneSignalCapacitor.initialize(APP_ID);
-      OneSignalCapacitor.Notifications?.requestPermission(true);
-      isInitialized = true;
-    } else if (typeof window !== 'undefined' && OneSignalReact) {
-      if (!window.OneSignal?.initialized) {
-        await OneSignalReact.init({
-          appId: APP_ID,
-          allowLocalhostAsSecureOrigin: true,
-          serviceWorkerParam: { scope: '/' },
-          serviceWorkerPath: 'OneSignalSDKWorker.js',
-          notifyButton: {
-            enable: false,
-          },
-        });
+  initPromise = (async () => {
+    try {
+      await loadCapacitorDependencies();
+
+      if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
+        OneSignalCapacitor.initialize(APP_ID);
+        OneSignalCapacitor.Notifications?.requestPermission(true);
+        isInitialized = true;
+      } else if (typeof window !== 'undefined' && OneSignalReact) {
+        if (!window.OneSignal?.initialized) {
+          await OneSignalReact.init({
+            appId: APP_ID,
+            allowLocalhostAsSecureOrigin: true,
+            serviceWorkerParam: { scope: '/' },
+            serviceWorkerPath: 'sw.js',
+            notifyButton: {
+              enable: false,
+            },
+          });
+        }
+        isInitialized = true;
       }
-      isInitialized = true;
+    } catch (error) {
+      if (error?.message?.includes('already initialized')) {
+        isInitialized = true;
+      } else if (import.meta.env.DEV) {
+        console.warn('[OneSignal] Initialization note:', error?.message || error);
+      }
     }
-  } catch (error) {
-    if (error?.message?.includes('already initialized')) {
-      isInitialized = true;
-    } else if (import.meta.env.DEV) {
-      console.warn('[OneSignal] Initialization note:', error?.message || error);
-    }
-  }
+  })();
+
+  return initPromise;
 };
 
 /**
@@ -70,6 +77,10 @@ export const loginToOneSignal = async (externalUserId) => {
   if (!externalUserId) return;
 
   try {
+    if (!isInitialized) {
+      await initOneSignal();
+    }
+
     if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
       await OneSignalCapacitor.login(externalUserId);
       return;
@@ -77,10 +88,23 @@ export const loginToOneSignal = async (externalUserId) => {
 
     const os = (typeof window !== 'undefined' && window.OneSignal) || OneSignalReact;
     if (os) {
-      if (typeof os.login === 'function') {
-        await os.login(externalUserId);
-      } else if (OneSignalReact && typeof OneSignalReact.login === 'function') {
-        await OneSignalReact.login(externalUserId);
+      const executeLogin = async () => {
+        if (typeof os.login === 'function') {
+          await os.login(externalUserId);
+        } else if (OneSignalReact && typeof OneSignalReact.login === 'function') {
+          await OneSignalReact.login(externalUserId);
+        }
+      };
+
+      try {
+        await executeLogin();
+      } catch (err) {
+        if (err?.message?.includes('reading \'Qe\'') || err?.message?.includes('undefined')) {
+          await new Promise((resolve) => setTimeout(resolve, 600));
+          await executeLogin().catch(() => {});
+        } else {
+          throw err;
+        }
       }
 
       // Check PushSubscription status & opt-in
@@ -92,7 +116,7 @@ export const loginToOneSignal = async (externalUserId) => {
       }
     }
   } catch (error) {
-    if (import.meta.env.DEV && !error?.message?.includes('reading \'Qe\'') && !error?.message?.includes('undefined')) {
+    if (import.meta.env.DEV && !error?.message?.includes('reading \'Qe\'')) {
       console.warn('[OneSignal] Login note:', error?.message || error);
     }
   }

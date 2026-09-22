@@ -23,6 +23,8 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg', 'favicon.png', 'OneSignalSDKWorker.js', 'geo/*.json'],
       manifest: false, // Use existing site.webmanifest
       workbox: {
+        inlineWorkboxRuntime: true,
+        importScripts: ['https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
         runtimeCaching: [
           {

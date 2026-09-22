@@ -18,8 +18,20 @@ class KiboAudioManagerClass {
     return this.soundFx.toggleMute();
   }
 
-  startBGM() {
-    this.soundFx.startBGM();
+  startBGM(trackKey = 'bgm_climb', volume = null) {
+    this.soundFx.startBGM(trackKey, volume);
+  }
+
+  playHomeBGM(volume = null) {
+    this.soundFx.startBGM('bgm_home', volume);
+  }
+
+  playShopBGM(volume = null) {
+    this.soundFx.startBGM('bgm_shop', volume);
+  }
+
+  playClimbBGM(volume = null) {
+    this.soundFx.startBGM('bgm_climb', volume);
   }
 
   stopBGM() {
