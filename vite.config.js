@@ -1,6 +1,28 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import fs from 'fs';
+import path from 'path';
+
+function prependOneSignalSwPlugin() {
+  return {
+    name: 'prepend-onesignal-sw',
+    enforce: 'post',
+    closeBundle: {
+      sequential: true,
+      order: 'post',
+      handler() {
+        const swPath = path.resolve('dist/sw.js');
+        if (fs.existsSync(swPath)) {
+          let content = fs.readFileSync(swPath, 'utf8');
+          const importStmt = 'importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");\n';
+          content = content.replace(/importScripts\(["'][^"']+OneSignalSDK[^"']*["']\);?/g, '');
+          fs.writeFileSync(swPath, importStmt + content);
+        }
+      }
+    }
+  };
+}
 
 export default defineConfig({
   define: {
@@ -18,6 +40,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    prependOneSignalSwPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg', 'favicon.png', 'OneSignalSDKWorker.js', 'geo/*.json'],

@@ -34,7 +34,7 @@ const SFX_FILES = {
 };
 
 const DEFAULT_BGM_VOLUMES = {
-  bgm_home: 0.10,
+  bgm_home: 0.18,
   bgm_shop: 0.18,
   bgm_climb: 0.32,
 };
