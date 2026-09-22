@@ -807,7 +807,7 @@ export default function DevControlPanel({
               <div className="grid grid-cols-3 gap-1.5">
                 {[
                   { id: 'streak', label: '🔥 Streak', desc: 'Daily Streak Reminder' },
-                  { id: 'unclaimed_reward', label: '🏆 Reward', desc: 'Unclaimed Quest/Badge' },
+                  { id: 'unclaimed_quest', label: '🎁 Quest Sparks', desc: 'Unclaimed Daily Quests' },
                   { id: 'double_sparks', label: '⚡ 2x Sparks', desc: 'Double Sparks Event' }
                 ].map((t) => (
                   <button
@@ -829,14 +829,14 @@ export default function DevControlPanel({
             {/* Preview Box */}
             <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs space-y-1">
               <div className="font-extrabold text-slate-200">
-                {pushType === 'streak' && `🏔️ Keep ${storageService.getProfile(selectedPushProfileId)?.name || 'Kibo Climber'}'s Daily Streak Alive!`}
-                {pushType === 'unclaimed_reward' && `🏆 Unclaimed Reward for ${storageService.getProfile(selectedPushProfileId)?.name || 'Kibo Climber'}!`}
+                {pushType === 'streak' && `🏔️ Keep ${storageService.getProfileById(selectedPushProfileId)?.name || 'Kibo Climber'}'s Daily Streak Alive!`}
+                {(pushType === 'unclaimed_reward' || pushType === 'unclaimed_quest') && `🎁 Unclaimed Quest Sparks for ${storageService.getProfileById(selectedPushProfileId)?.name || 'Kibo Climber'}!`}
                 {pushType === 'double_sparks' && `⚡ Double Sparks Active on Mount Kibo!`}
               </div>
               <div className="text-slate-400 text-[11px]">
                 {pushType === 'streak' && `Kibo the Red Panda is waiting! Complete today's climb to protect your flame 🔥`}
-                {pushType === 'unclaimed_reward' && `${storageService.getProfile(selectedPushProfileId)?.name || 'Child'} has earned a new badge on Mount Kibo! Tap to claim your Sparks.`}
-                {pushType === 'double_sparks' && `Earn 2x Sparks on all climbs today! Help ${storageService.getProfile(selectedPushProfileId)?.name || 'Child'} climb the leaderboard.`}
+                {(pushType === 'unclaimed_reward' || pushType === 'unclaimed_quest') && `${storageService.getProfileById(selectedPushProfileId)?.name || 'Child'} has completed daily quests with unclaimed Sparks! Tap to collect before midnight.`}
+                {pushType === 'double_sparks' && `Earn 2x Sparks on all climbs today! Help ${storageService.getProfileById(selectedPushProfileId)?.name || 'Child'} climb the leaderboard.`}
               </div>
             </div>
 
@@ -844,7 +844,7 @@ export default function DevControlPanel({
             <button
               disabled={isSendingPush}
               onClick={async () => {
-                const targetProf = storageService.getProfile(selectedPushProfileId) || activeProfile;
+                const targetProf = storageService.getProfileById(selectedPushProfileId) || activeProfile;
                 const pName = targetProf.name || targetProf.username || childName;
 
                 setIsSendingPush(true);

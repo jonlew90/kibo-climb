@@ -2801,7 +2801,6 @@ export default function App() {
             {/* Divider */}
             <div className="h-6 w-px bg-slate-200 shrink-0 hidden sm:block" />
 
-            {/* Tier Progress (clickable -> badges modal) */}
             <button
               type="button"
               onClick={handleOpenBadgesModal}
@@ -2809,32 +2808,33 @@ export default function App() {
               title={tierProgress.isMaxTier ? 'Summit Legend! 👑' : `Tier ${tierProgress.tier}: ${tierProgress.tierName} • ${tierProgress.progressPct}% (${tierProgress.pointsToNext} pts to Tier ${tierProgress.tier + 1})`}
               aria-label={`Subject tier ${tierProgress.tier}, ${tierProgress.progressPct}% progress`}
             >
-              {/* Tier badge + name */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className={`text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 rounded-full border shadow-2xs shrink-0 ${subjectTheme.badge}`}>
-                  {tierProgress.isMaxTier ? '👑' : `Tier ${tierProgress.tier}`}
-                </span>
-                <span className={`text-xs font-extrabold truncate max-w-[70px] sm:max-w-[130px] ${subjectTheme.text}`}>
-                  {tierProgress.tierName}
-                </span>
-              </div>
-              {/* Progress bar + labels */}
+              {/* Tier label: "Tier 3 · Pathfinder" */}
               <div className="flex flex-col gap-0.5 min-w-0">
-                <div className={`w-20 sm:w-32 h-2 ${tierProgress.isMaxTier ? 'bg-amber-100' : subjectTheme.bg} rounded-full overflow-hidden border border-slate-200/80`}>
-                  <div
-                    className={`h-full rounded-full transition-all duration-700 shadow-2xs ${tierProgress.isMaxTier ? 'w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 animate-pulse' : `bg-gradient-to-r ${subjectTheme.bar}`}`}
-                    style={{ width: tierProgress.isMaxTier ? '100%' : `${tierProgress.progressPct}%` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] font-black text-slate-600 tabular-nums leading-none">
-                    {tierProgress.isMaxTier ? '100%' : `${tierProgress.progressPct}%`}
-                  </span>
-                  {!tierProgress.isMaxTier && (
-                    <span className="text-[10px] text-slate-400 font-semibold leading-none hidden sm:inline whitespace-nowrap">
-                      {tierProgress.pointsToNext} pts → T{tierProgress.tier + 1}
+                {tierProgress.isMaxTier ? (
+                  <span className={`text-xs font-black leading-none shrink-0 ${subjectTheme.text}`}>👑 Summit Legend</span>
+                ) : (
+                  <div className="flex items-baseline gap-0.5 min-w-0">
+                    <span className={`text-xs font-black leading-none shrink-0 ${subjectTheme.text}`}>
+                      Tier {tierProgress.tier}
                     </span>
-                  )}
+                    <span className="text-xs font-black leading-none text-slate-400 shrink-0">·</span>
+                    <span className={`text-xs font-semibold leading-none truncate min-w-0 ${subjectTheme.text} opacity-80`}>
+                      {tierProgress.tierName}
+                    </span>
+                  </div>
+                )}
+                {/* Progress bar + pct + pts-to-next */}
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-20 sm:w-32 h-2 ${tierProgress.isMaxTier ? 'bg-amber-100' : subjectTheme.bg} rounded-full overflow-hidden border border-slate-200/80`}>
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 shadow-2xs ${tierProgress.isMaxTier ? 'w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 animate-pulse' : `bg-gradient-to-r ${subjectTheme.bar}`}`}
+                      style={{ width: tierProgress.isMaxTier ? '100%' : `${tierProgress.progressPct}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-black text-slate-600 tabular-nums leading-none whitespace-nowrap">
+                    {tierProgress.isMaxTier ? '100%' : `${tierProgress.progressPct}%`}
+                    {!tierProgress.isMaxTier && <span className="text-slate-400 font-normal hidden sm:inline"> · {tierProgress.pointsToNext} pts → T{tierProgress.tier + 1}</span>}
+                  </span>
                 </div>
               </div>
             </button>
