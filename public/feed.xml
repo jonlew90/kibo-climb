@@ -10,12 +10,48 @@
     <atom:link href="https://kiboclimb.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>Discover expert mental math shortcuts, adaptive phonics, geography insights, coding logic, and printable worksheet practice to turn daily learning into an exciting mountain climb.</description>
     <language>en-US</language>
-    <lastBuildDate>Tue, 22 Sep 2026 14:21:13 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 22 Sep 2026 14:34:19 GMT</lastBuildDate>
     <image>
       <url>https://kiboclimb.com/icons/icon-512.png</url>
       <title>Kibo Climb</title>
       <link>https://kiboclimb.com/blog</link>
     </image>
+    <item>
+      <title>Mastering Conditionals &amp; Debugging: Take the True Branch for Grades 4–8</title>
+      <link>https://kiboclimb.com/blog/coding-tier-5-take-the-true-branch</link>
+      <guid isPermaLink="true">https://kiboclimb.com/blog/coding-tier-5-take-the-true-branch</guid>
+      <pubDate>Tue, 22 Sep 2026 14:34:19 GMT</pubDate>
+      <dc:creator><![CDATA[Kibo Climb]]></dc:creator>
+      <author>support@kiboclimb.com (Kibo Climb)</author>
+      <description><![CDATA[Learn the Take the True Branch mental shortcut for Grades 4–8 students tackling Tier 5 on Mount Kibo.]]></description>
+      <content:encoded><![CDATA[<figure><img src="https://kiboclimb.com/images/blog/Red_panda_climbing_mountain_20260917095044.jpeg" alt="Mastering Conditionals &amp; Debugging: Take the True Branch for Grades 4–8" /><figcaption>Mastering Conditionals &amp; Debugging: Take the True Branch for Grades 4–8</figcaption></figure><h2>Conquering Conditionals &amp; Debugging on Mount Kibo</h2>
+      <p>Let's be honest: when our kids hit <strong>Decision Falls</strong> on Mount Kilimanjaro, the challenge kicks in for both of them—and sometimes us! Kibo the red panda mascot knows that speed and accuracy unlock essential momentum, but rigid memorization often creates unnecessary friction.</p>
+      <p>By mastering intuitive curriculum strategies, students transform tricky challenges into second-nature shortcuts (and help us parents remember how to navigate Tier 5 concepts in the process!).</p>
+      <p>In our Tier 5 curriculum (Grades 4–8), students build foundational mastery in: - If / Else statement evaluation - Branching decision outcomes - Off-by-one errors &amp; boundary checks - Bug spotting &amp; code inspection</p>
+      <h3>Trail Trick: Take the True Branch</h3>
+      <p>If the `if` condition is true, execute the code inside it and skip the `else` block completely!</p>
+      <p><strong>Worked Example:</strong> - Problem: <strong>score = 85; if (score &gt;= 90) rank = "A"; else rank = "B"; rank?</strong> - Strategy Application: <strong>85 is not &gt;= 90, so take the else branch!</strong> - Solution: <strong>B</strong></p>
+      <p>By visualizing concepts as adaptable mental landmarks, working memory strain is significantly reduced.</p>
+      <h3>Trail Pro Tip: Watch Strict Inequalities</h3>
+      <blockquote><p>Be careful with `&lt;` vs `&lt;=`. If score is 90, `score &gt; 90` is false, but `score &gt;= 90` is true!</p></blockquote>
+      <h3>Frequently Asked Questions</h3>
+      <h2>Reinforce Skills with Offline Practice</h2>
+      <p>Deliberate practice turns these shortcuts into permanent fluency. You can practice this exact topic live in the <a href="/">Kibo Climb app</a> or download our verified offline companion resource:</p>
+      <ul><li><strong>Free Practice Worksheet:</strong> <a href="/worksheets/coding/grade-4-8-loops-logic-debugging">Summit Loops &amp; Logic Puzzles</a></li><li><strong>Includes:</strong> 16 targeted questions and a complete parent/teacher answer key.</li></ul>
+      <h2>Next Steps for Climbers</h2>
+      <p>Encourage your student to test the Take the True Branch technique during their next 5-minute practice session. Step by step, they will build an unbreakable foundation of speed and confidence!</p>]]></content:encoded>
+      <enclosure url="https://kiboclimb.com/images/blog/Red_panda_climbing_mountain_20260917095044.jpeg" type="image/jpeg" length="0" />
+      <media:content url="https://kiboclimb.com/images/blog/Red_panda_climbing_mountain_20260917095044.jpeg" type="image/jpeg" medium="image">
+        <media:title type="plain">Mastering Conditionals &amp; Debugging: Take the True Branch for Grades 4–8</media:title>
+        <media:thumbnail url="https://kiboclimb.com/images/blog/Red_panda_climbing_mountain_20260917095044.jpeg" />
+      </media:content>
+      <category><![CDATA[Tier 5]]></category>
+      <category><![CDATA[Coding]]></category>
+      <category><![CDATA[Mental Math]]></category>
+      <category><![CDATA[Kibo Climb]]></category>
+      <category><![CDATA[Grades 4–8]]></category>
+      <category><![CDATA[Take The True Branch]]></category>
+    </item>
     <item>
       <title>Mastering Elite Vocabulary Master: Summit Chunking for Grades 4–6</title>
       <link>https://kiboclimb.com/blog/words-tier-8-summit-chunking</link>
