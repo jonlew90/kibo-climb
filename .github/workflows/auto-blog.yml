@@ -2,8 +2,8 @@ name: Auto-Generate SEO Blog Post
 
 on:
   schedule:
-    # Runs Tuesday & Thursday at 14:00 UTC (9:00 AM US Central / 10:00 AM US Eastern / 7:00 AM US Pacific)
-    - cron: '0 14 * * 2,4'
+    # Runs Tuesday & Thursday at 13:37 UTC (8:37 AM US Central / 9:37 AM US Eastern / 6:37 AM US Pacific)
+    - cron: '37 13 * * 2,4'
   workflow_dispatch:
 
 jobs:
