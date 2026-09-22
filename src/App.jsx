@@ -2697,341 +2697,150 @@ export default function App() {
       )}
       <main className="w-full max-w-4xl mx-auto flex-1 flex flex-col p-1 sm:p-2 relative min-h-0 overflow-y-auto hide-scrollbar">
 
-      {/* In-Content Subject Selector Bar */}
-      {appState === 'adaptive_session' && !isClimbActive && (
-        <div className="w-full mb-2 sm:mb-3 flex items-center justify-center gap-2 px-1 shrink-0">
-          {/* Mobile Subject Dropdown (< sm) */}
-          <div className="relative sm:hidden w-48 max-w-[220px]" ref={subjectDropdownRef}>
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playKeyTap();
-                setShowSubjectDropdown(!showSubjectDropdown);
-              }}
-              className={`flex items-center justify-between w-full px-3 py-1.5 rounded-xl font-black text-xs transition-all cursor-pointer shadow-2xs border-2 ${
-                activeSubject === 'math'
-                  ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 ring-2 ring-amber-400/50'
-                  : activeSubject === 'words'
-                  ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 ring-2 ring-indigo-400/50'
-                  : activeSubject === 'world'
-                  ? 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 ring-2 ring-teal-400/50'
-                  : 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white border-rose-300 ring-2 ring-rose-400/50'
-              }`}
-              title="Switch Subject"
-              aria-expanded={showSubjectDropdown}
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="text-base leading-none select-none">
+      {/* Unified Ascent Control Bar — subject tabs + tier progress in one row */}
+      {appState === 'adaptive_session' && !isClimbActive && (() => {
+        const tierProgress = getSubjectTierProgress(liveCompetenceRating, activeSubject);
+        const subjectTheme = activeSubject === 'math'
+          ? { accent: 'border-l-amber-400', bar: 'from-amber-400 to-orange-500', bg: 'bg-amber-500/15', border: 'border-amber-200', text: 'text-amber-950', badge: 'bg-amber-100 text-amber-900 border-amber-300' }
+          : activeSubject === 'words'
+          ? { accent: 'border-l-indigo-500', bar: 'from-indigo-500 to-purple-500', bg: 'bg-indigo-500/15', border: 'border-indigo-200', text: 'text-indigo-950', badge: 'bg-indigo-100 text-indigo-900 border-indigo-300' }
+          : activeSubject === 'world'
+          ? { accent: 'border-l-teal-500', bar: 'from-teal-500 to-emerald-500', bg: 'bg-teal-500/15', border: 'border-teal-200', text: 'text-teal-950', badge: 'bg-teal-100 text-teal-900 border-teal-300' }
+          : { accent: 'border-l-rose-500', bar: 'from-rose-500 to-pink-500', bg: 'bg-rose-500/15', border: 'border-rose-200', text: 'text-rose-950', badge: 'bg-rose-100 text-rose-900 border-rose-300' };
+
+        return (
+        <div className={`w-full mb-2 sm:mb-3 shrink-0 bg-white/90 backdrop-blur-xs border-b-2 border-slate-200 border-l-4 ${subjectTheme.accent} shadow-2xs transition-colors duration-300`}>
+          <div className="w-full max-w-4xl mx-auto px-2 sm:px-3 py-1.5 flex items-center gap-2 min-w-0">
+
+            {/* Mobile Subject Dropdown (< sm) */}
+            <div className="relative sm:hidden shrink-0" ref={subjectDropdownRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playKeyTap();
+                  setShowSubjectDropdown(!showSubjectDropdown);
+                }}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl font-black text-xs transition-all cursor-pointer shadow-2xs border-2 ${
+                  activeSubject === 'math'
+                    ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300'
+                    : activeSubject === 'words'
+                    ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300'
+                    : activeSubject === 'world'
+                    ? 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300'
+                    : 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white border-rose-300'
+                }`}
+                title="Switch Subject"
+                aria-expanded={showSubjectDropdown}
+              >
+                <span className="text-sm leading-none select-none">
                   {activeSubject === 'math' ? '🔢' : activeSubject === 'words' ? '📚' : activeSubject === 'world' ? '🌍' : '💻'}
                 </span>
                 <span className="tracking-tight capitalize">{activeSubject}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-black/15 text-inherit">
-                  {liveCompetenceRating} pts
-                </span>
-                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showSubjectDropdown ? 'rotate-180' : ''}`} />
-              </div>
-            </button>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSubjectDropdown ? 'rotate-180' : ''}`} />
+              </button>
 
-            {/* Mobile Subject Roll-down Menu */}
-            {showSubjectDropdown && (() => {
-              const activeProf = storageService.getActiveProfile();
-              const subData = activeProf.userData?.subjects || {};
-              const getRating = (subId) => {
-                if (subId === activeSubject) return liveCompetenceRating;
-                const d = subData[subId];
-                return Number(d?.adaptiveCompetenceRating) || Number(d?.competenceRank) || 1000;
-              };
-
-              return (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
-                {/* Math Option */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSubjectChange('math');
-                    setShowSubjectDropdown(false);
-                  }}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
-                    activeSubject === 'math'
-                      ? 'bg-amber-100 border-amber-300 text-amber-950'
-                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🔢</span>
-                    <span>Kibo Math</span>
-                  </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-200/70 text-amber-950 font-black">
-                    {getRating('math')} pts
-                  </span>
-                </button>
-
-                {/* Words Option */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSubjectChange('words');
-                    setShowSubjectDropdown(false);
-                  }}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
-                    activeSubject === 'words'
-                      ? 'bg-indigo-100 border-indigo-300 text-indigo-950'
-                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">📚</span>
-                    <span>Kibo Words</span>
-                  </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-200/70 text-indigo-950 font-black">
-                    {getRating('words')} pts
-                  </span>
-                </button>
-
-                {/* World Option */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSubjectChange('world');
-                    setShowSubjectDropdown(false);
-                  }}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
-                    activeSubject === 'world'
-                      ? 'bg-teal-100 border-teal-300 text-teal-950'
-                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🌍</span>
-                    <span>Kibo World</span>
-                  </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-200/70 text-teal-950 font-black">
-                    {getRating('world')} pts
-                  </span>
-                </button>
-
-                {/* Coding Option */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSubjectChange('coding');
-                    setShowSubjectDropdown(false);
-                  }}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
-                    activeSubject === 'coding'
-                      ? 'bg-rose-100 border-rose-300 text-rose-950'
-                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">💻</span>
-                    <span>Kibo Coding</span>
-                  </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-200/70 text-rose-950 font-black">
-                    {getRating('coding')} pts
-                  </span>
-                </button>
-
-                {/* Coming Soon Subjects */}
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black bg-slate-50/80 border border-dashed border-emerald-300 text-slate-700 select-none">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🔬</span>
-                    <span>Kibo Science</span>
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 leading-none">
-                    Coming Soon
-                  </span>
+              {showSubjectDropdown && (() => {
+                const activeProf = storageService.getActiveProfile();
+                const subData = activeProf.userData?.subjects || {};
+                const getRating = (subId) => {
+                  if (subId === activeSubject) return liveCompetenceRating;
+                  const d = subData[subId];
+                  return Number(d?.adaptiveCompetenceRating) || Number(d?.competenceRank) || 1000;
+                };
+                return (
+                <div className="absolute top-full left-0 mt-2 w-52 bg-white border-2 border-slate-200 rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+                  {[
+                    { id: 'math', emoji: '🔢', label: 'Kibo Math', activeClass: 'bg-amber-100 border-amber-300 text-amber-950', badgeClass: 'bg-amber-200/70 text-amber-950' },
+                    { id: 'words', emoji: '📚', label: 'Kibo Words', activeClass: 'bg-indigo-100 border-indigo-300 text-indigo-950', badgeClass: 'bg-indigo-200/70 text-indigo-950' },
+                    { id: 'world', emoji: '🌍', label: 'Kibo World', activeClass: 'bg-teal-100 border-teal-300 text-teal-950', badgeClass: 'bg-teal-200/70 text-teal-950' },
+                    { id: 'coding', emoji: '💻', label: 'Kibo Coding', activeClass: 'bg-rose-100 border-rose-300 text-rose-950', badgeClass: 'bg-rose-200/70 text-rose-950' },
+                  ].map(({ id, emoji, label, activeClass, badgeClass }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => { handleSubjectChange(id); setShowSubjectDropdown(false); }}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer w-full text-left border ${
+                        activeSubject === id ? activeClass : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{emoji}</span>
+                        <span>{label}</span>
+                      </div>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-black ${badgeClass}`}>
+                        {getRating(id)} pts
+                      </span>
+                    </button>
+                  ))}
                 </div>
+                );
+              })()}
+            </div>
 
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black bg-slate-50/80 border border-dashed border-purple-300 text-slate-700 select-none">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🎵</span>
-                    <span>Kibo Music</span>
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 leading-none">
-                    Coming Soon
-                  </span>
-                </div>
-              </div>
-              );
-            })()}
-          </div>
+            {/* Desktop Subject Tab Pills (>= sm) */}
+            <div className="hidden sm:flex items-center gap-1 overflow-x-auto hide-scrollbar flex-1 min-w-0">
+              {[
+                { id: 'math', emoji: '🔢', label: 'Math', activeClass: 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 ring-2 ring-amber-400/50 scale-105', hoverClass: 'bg-white/90 hover:bg-amber-50 text-slate-700 border-slate-200 hover:border-amber-200' },
+                { id: 'words', emoji: '📚', label: 'Words', activeClass: 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 ring-2 ring-indigo-400/50 scale-105', hoverClass: 'bg-white/90 hover:bg-indigo-50 text-slate-700 border-slate-200 hover:border-indigo-200' },
+                { id: 'world', emoji: '🌍', label: 'World', activeClass: 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 ring-2 ring-teal-400/50 scale-105', hoverClass: 'bg-white/90 hover:bg-teal-50 text-slate-700 border-slate-200 hover:border-teal-200' },
+                { id: 'coding', emoji: '💻', label: 'Coding', activeClass: 'bg-gradient-to-r from-rose-500 via-pink-600 to-rose-600 text-white border-rose-300 ring-2 ring-rose-400/50 scale-105', hoverClass: 'bg-white/90 hover:bg-rose-50 text-slate-700 border-slate-200 hover:border-rose-200' },
+              ].map(({ id, emoji, label, activeClass, hoverClass }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => handleSubjectChange(id)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl font-black text-xs transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${activeSubject === id ? activeClass : hoverClass}`}
+                  title={`Switch to Kibo ${label}`}
+                >
+                  <span className="text-sm leading-none select-none">{emoji}</span>
+                  <span className="tracking-tight">{label}</span>
+                </button>
+              ))}
+            </div>
 
-          {/* Desktop Subject Bar (>= sm) */}
-          <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-1 w-full sm:w-auto">
-            {/* Kibo Math */}
-            <button
-              type="button"
-              onClick={() => handleSubjectChange('math')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
-                activeSubject === 'math'
-                  ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-amber-950 border-amber-300 ring-2 ring-amber-400/50 scale-105'
-                  : 'bg-white/90 hover:bg-amber-50 text-slate-700 border-slate-200 hover:border-amber-200'
-              }`}
-              title="Switch to Kibo Math"
-            >
-              <span className="text-sm sm:text-base leading-none select-none">🔢</span>
-              <span className="tracking-tight">Math</span>
-              {activeSubject === 'math' ? (
-                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-amber-950/15 text-amber-950">
-                  {liveCompetenceRating} pts
-                </span>
-              ) : null}
-            </button>
+            {/* Divider */}
+            <div className="h-6 w-px bg-slate-200 shrink-0 hidden sm:block" />
 
-            {/* Kibo Words */}
-            <button
-              type="button"
-              onClick={() => handleSubjectChange('words')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
-                activeSubject === 'words'
-                  ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-indigo-300 ring-2 ring-indigo-400/50 scale-105'
-                  : 'bg-white/90 hover:bg-indigo-50 text-slate-700 border-slate-200 hover:border-indigo-200'
-              }`}
-              title="Switch to Kibo Words"
-            >
-              <span className="text-sm sm:text-base leading-none select-none">📚</span>
-              <span className="tracking-tight">Words</span>
-              {activeSubject === 'words' ? (
-                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-white/20 text-white">
-                  {liveCompetenceRating} pts
-                </span>
-              ) : null}
-            </button>
-
-            {/* Kibo World */}
-            <button
-              type="button"
-              onClick={() => handleSubjectChange('world')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
-                activeSubject === 'world'
-                  ? 'bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 text-white border-teal-300 ring-2 ring-teal-400/50 scale-105'
-                  : 'bg-white/90 hover:bg-teal-50 text-slate-700 border-slate-200 hover:border-teal-200'
-              }`}
-              title="Switch to Kibo World"
-            >
-              <span className="text-sm sm:text-base leading-none select-none">🌍</span>
-              <span className="tracking-tight">World</span>
-              {activeSubject === 'world' ? (
-                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-white/20 text-white">
-                  {liveCompetenceRating} pts
-                </span>
-              ) : null}
-            </button>
-
-            {/* Kibo Coding */}
-            <button
-              type="button"
-              onClick={() => handleSubjectChange('coding')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-2xs shrink-0 border-2 ${
-                activeSubject === 'coding'
-                  ? 'bg-gradient-to-r from-rose-500 via-pink-600 to-rose-600 text-white border-rose-300 ring-2 ring-rose-400/50 scale-105'
-                  : 'bg-white/90 hover:bg-rose-50 text-slate-700 border-slate-200 hover:border-rose-200'
-              }`}
-              title="Switch to Kibo Coding"
-            >
-              <span className="text-sm sm:text-base leading-none select-none">💻</span>
-              <span className="tracking-tight">Coding</span>
-              {activeSubject === 'coding' ? (
-                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-white/20 text-white">
-                  {liveCompetenceRating} pts
-                </span>
-              ) : null}
-            </button>
-
-            {/* Kibo Science (Coming Soon) */}
-            <button
-              type="button"
-              disabled
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-slate-50/80 text-slate-400 border border-dashed border-emerald-300 cursor-not-allowed shrink-0 select-none relative opacity-70"
-              title="Kibo Science - Coming Soon!"
-            >
-              <span className="text-sm sm:text-base leading-none select-none">🔬</span>
-              <span className="tracking-tight">Science</span>
-              <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs leading-none whitespace-nowrap">
-                Coming Soon
-              </span>
-            </button>
-
-            {/* Kibo Music (Coming Soon) */}
-            <button
-              type="button"
-              disabled
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm bg-slate-50/80 text-slate-400 border border-dashed border-purple-300 cursor-not-allowed shrink-0 select-none relative opacity-70"
-              title="Kibo Music - Coming Soon!"
-            >
-              <span className="text-sm sm:text-base leading-none select-none">🎵</span>
-              <span className="tracking-tight">Music</span>
-              <span className="absolute -top-2 -right-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 shadow-2xs leading-none whitespace-nowrap">
-                Coming Soon
-              </span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SUBJECT CURRICULUM TIER PROGRESS BAR */}
-      {appState === 'adaptive_session' && !isClimbActive && (() => {
-        const tierProgress = getSubjectTierProgress(liveCompetenceRating, activeSubject);
-        const theme = activeSubject === 'math'
-          ? { bar: 'from-amber-400 to-orange-500', bg: 'bg-amber-500/15', border: 'border-amber-200', text: 'text-amber-950', badge: 'bg-amber-100 text-amber-900 border-amber-300' }
-          : activeSubject === 'words'
-          ? { bar: 'from-indigo-500 to-purple-500', bg: 'bg-indigo-500/15', border: 'border-indigo-200', text: 'text-indigo-950', badge: 'bg-indigo-100 text-indigo-900 border-indigo-300' }
-          : activeSubject === 'world'
-          ? { bar: 'from-teal-500 to-emerald-500', bg: 'bg-teal-500/15', border: 'border-teal-200', text: 'text-teal-950', badge: 'bg-teal-100 text-teal-900 border-teal-300' }
-          : { bar: 'from-rose-500 to-pink-500', bg: 'bg-rose-500/15', border: 'border-rose-200', text: 'text-rose-950', badge: 'bg-rose-100 text-rose-900 border-rose-300' };
-
-        return (
-          <div className="w-full max-w-xl mx-auto px-2 mb-1.5 sm:mb-2 shrink-0">
+            {/* Tier Progress (clickable -> badges modal) */}
             <button
               type="button"
               onClick={handleOpenBadgesModal}
-              className={`w-full bg-white/90 backdrop-blur-xs border-2 ${theme.border} rounded-2xl px-2.5 sm:px-3.5 py-1.5 shadow-2xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.99] transition-all flex flex-col gap-1 cursor-pointer text-left group`}
-              title={`Curriculum Tier: Tier ${tierProgress.tier} of ${tierProgress.totalTiers} (${tierProgress.tierName} • ${tierProgress.location}) - ${tierProgress.isMaxTier ? 'Summit Mastery!' : `${tierProgress.progressPct}% complete (${tierProgress.pointsToNext} pts to Tier ${tierProgress.tier + 1})`}`}
-              aria-label={`Current Subject Tier ${tierProgress.tier}: ${tierProgress.tierName}, ${tierProgress.progressPct}% progress`}
+              className="flex items-center gap-2 shrink-0 ml-auto sm:ml-0 group cursor-pointer hover:opacity-90 active:scale-95 transition-all min-w-0"
+              title={tierProgress.isMaxTier ? 'Summit Legend! 👑' : `Tier ${tierProgress.tier}: ${tierProgress.tierName} • ${tierProgress.progressPct}% (${tierProgress.pointsToNext} pts to Tier ${tierProgress.tier + 1})`}
+              aria-label={`Subject tier ${tierProgress.tier}, ${tierProgress.progressPct}% progress`}
             >
-              <div className="flex items-center justify-between text-xs sm:text-sm font-black w-full">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className={`text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 rounded-full border shadow-2xs ${theme.badge} shrink-0`}>
-                    Tier {tierProgress.tier}
-                  </span>
-                  <span className={`truncate font-extrabold ${theme.text} text-xs sm:text-sm`}>
-                    {tierProgress.tierName}
-                  </span>
-                  <span className="text-slate-400 font-semibold text-[11px] hidden sm:inline truncate">
-                    • {tierProgress.location}
-                  </span>
+              {/* Tier badge + name */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className={`text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 rounded-full border shadow-2xs shrink-0 ${subjectTheme.badge}`}>
+                  {tierProgress.isMaxTier ? '👑' : `Tier ${tierProgress.tier}`}
+                </span>
+                <span className={`text-xs font-extrabold truncate max-w-[70px] sm:max-w-[130px] ${subjectTheme.text}`}>
+                  {tierProgress.tierName}
+                </span>
+              </div>
+              {/* Progress bar + labels */}
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <div className={`w-20 sm:w-32 h-2 ${tierProgress.isMaxTier ? 'bg-amber-100' : subjectTheme.bg} rounded-full overflow-hidden border border-slate-200/80`}>
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 shadow-2xs ${tierProgress.isMaxTier ? 'w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 animate-pulse' : `bg-gradient-to-r ${subjectTheme.bar}`}`}
+                    style={{ width: tierProgress.isMaxTier ? '100%' : `${tierProgress.progressPct}%` }}
+                  />
                 </div>
-                <div className="flex items-center gap-1 shrink-0 text-[11px] sm:text-xs font-black text-slate-600">
-                  {tierProgress.isMaxTier ? (
-                    <span className="text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full font-black flex items-center gap-1 shadow-2xs">
-                      <span>👑 Summit Legend</span>
-                      <span className="text-amber-950 font-black">• {liveCompetenceRating} pts</span>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] font-black text-slate-600 tabular-nums leading-none">
+                    {tierProgress.isMaxTier ? '100%' : `${tierProgress.progressPct}%`}
+                  </span>
+                  {!tierProgress.isMaxTier && (
+                    <span className="text-[10px] text-slate-400 font-semibold leading-none hidden sm:inline whitespace-nowrap">
+                      {tierProgress.pointsToNext} pts → T{tierProgress.tier + 1}
                     </span>
-                  ) : (
-                    <>
-                      <span className="text-slate-800 font-extrabold">{tierProgress.progressPct}%</span>
-                      <span className="text-slate-400 font-normal hidden xs:inline">({tierProgress.pointsToNext} pts to T{tierProgress.tier + 1})</span>
-                    </>
                   )}
                 </div>
               </div>
-
-              {/* Visual Progress Bar */}
-              <div className={`w-full h-2 sm:h-2.5 ${tierProgress.isMaxTier ? 'bg-amber-100' : theme.bg} rounded-full overflow-hidden border border-slate-200/80 p-0.5`}>
-                <div
-                  className={`h-full rounded-full transition-all duration-700 shadow-2xs ${
-                    tierProgress.isMaxTier
-                      ? 'w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 animate-pulse'
-                      : `bg-gradient-to-r ${theme.bar}`
-                  }`}
-                  style={{ width: tierProgress.isMaxTier ? '100%' : `${tierProgress.progressPct}%` }}
-                />
-              </div>
             </button>
+
           </div>
+        </div>
         );
       })()}
 

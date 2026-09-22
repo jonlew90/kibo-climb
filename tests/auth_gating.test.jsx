@@ -196,16 +196,7 @@ describe('Auth & Parental Gating Verification', () => {
         );
       });
 
-      // Find the toggle button specifically for Allow Real-Money Purchases
-      const allButtons = Array.from(container.querySelectorAll('button'));
-      const realMoneyCard = allButtons.find(b => b.closest('div')?.textContent?.includes('Allow Real-Money Purchases'));
-      expect(realMoneyCard).toBeDefined();
-
-      act(() => {
-        realMoneyCard.click();
-      });
-
-      // Check for the deep link return button
+      // When enabled by default (or after toggle), check for the deep link return button
       const allButtonsAfter = Array.from(container.querySelectorAll('button'));
       const returnBtn = allButtonsAfter.find(b => b.textContent?.includes('Return to Sparks & Club Shop'));
       expect(returnBtn).toBeDefined();

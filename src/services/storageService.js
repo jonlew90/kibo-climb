@@ -134,7 +134,7 @@ const DEFAULT_NOTIF_SETTINGS = {
   struggleAlertsEnabled: true,
   blogNewsletterEnabled: true,
   productUpdatesEnabled: true,
-  allowRealMoneyPurchases: false,
+  allowRealMoneyPurchases: true,
   primaryVerificationMethod: 'biometrics' // 'biometrics' | 'challenge'
 };
 

@@ -40,28 +40,27 @@ export const initOneSignal = async () => {
       OneSignalCapacitor.initialize(APP_ID);
       OneSignalCapacitor.Notifications?.requestPermission(true);
       isInitialized = true;
-      console.log('[OneSignal] Capacitor SDK initialized');
     } else if (typeof window !== 'undefined' && OneSignalReact) {
       if (!window.OneSignal?.initialized) {
         await OneSignalReact.init({
           appId: APP_ID,
           allowLocalhostAsSecureOrigin: true,
+          serviceWorkerParam: { scope: '/' },
+          serviceWorkerPath: 'OneSignalSDKWorker.js',
           notifyButton: {
             enable: false,
           },
         });
       }
       isInitialized = true;
-      console.log('[OneSignal] Web SDK initialized with App ID:', APP_ID);
     }
   } catch (error) {
     if (error?.message?.includes('already initialized')) {
       isInitialized = true;
-      console.log('[OneSignal] Web SDK was already initialized.');
     } else if (error?.message?.includes('Can only be used on')) {
-      console.warn(`[OneSignal] Active domain is restricted by OneSignal dashboard configuration (${error.message}). Pushes will activate on the verified production domain (https://kiboclimb.com).`);
+      // Expected in non-production environments
     } else {
-      console.error('[OneSignal] Initialization error:', error);
+      console.warn('[OneSignal] Initialization note:', error?.message || error);
     }
   }
 };
@@ -78,9 +77,8 @@ export const loginToOneSignal = async (externalUserId) => {
     } else if (OneSignalReact) {
       await OneSignalReact.login(externalUserId);
     }
-    console.log(`[OneSignal] Logged in user: ${externalUserId}`);
   } catch (error) {
-    console.error('[OneSignal] Login error:', error);
+    console.warn('[OneSignal] Login error:', error?.message || error);
   }
 };
 
@@ -96,9 +94,8 @@ export const logoutFromOneSignal = async () => {
     } else if (OneSignalReact) {
       await OneSignalReact.logout();
     }
-    console.log('[OneSignal] Logged out user');
   } catch (error) {
-    console.error('[OneSignal] Logout error:', error);
+    console.warn('[OneSignal] Logout error:', error?.message || error);
   }
 };
 
@@ -118,7 +115,7 @@ export const promptForPushPermissions = async () => {
     }
     return false;
   } catch (error) {
-    console.error('[OneSignal] Permission prompt error:', error);
+    console.warn('[OneSignal] Permission prompt error:', error?.message || error);
     return false;
   }
 };
@@ -134,7 +131,6 @@ export const sendOneSignalTrigger = (key, value) => {
     // 1. Native Capacitor
     if (Capacitor?.isNativePlatform() && OneSignalCapacitor?.InAppMessages?.addTrigger) {
       OneSignalCapacitor.InAppMessages.addTrigger(key, value);
-      console.log(`[OneSignal] Native trigger set: ${key}=${value}`);
       return;
     }
 
@@ -143,13 +139,10 @@ export const sendOneSignalTrigger = (key, value) => {
     if (osObj) {
       if (typeof osObj.InAppMessages?.addTrigger === 'function') {
         osObj.InAppMessages.addTrigger(key, value);
-        console.log(`[OneSignal] Web InAppMessages trigger set: ${key}=${value}`);
       } else if (typeof osObj.InAppMessages?.addTriggers === 'function') {
         osObj.InAppMessages.addTriggers({ [key]: value });
-        console.log(`[OneSignal] Web InAppMessages addTriggers set: ${key}=${value}`);
       } else if (typeof osObj.addTrigger === 'function') {
         osObj.addTrigger(key, value);
-        console.log(`[OneSignal] Legacy addTrigger set: ${key}=${value}`);
       } else if (typeof osObj.push === 'function') {
         osObj.push(() => {
           if (window.OneSignal?.InAppMessages?.addTrigger) {
@@ -157,12 +150,11 @@ export const sendOneSignalTrigger = (key, value) => {
           } else if (window.OneSignal?.addTrigger) {
             window.OneSignal.addTrigger(key, value);
           }
-          console.log(`[OneSignal] Queued trigger set: ${key}=${value}`);
         });
       }
     }
   } catch (err) {
-    console.warn('[OneSignal] Failed to set In-App Message trigger:', err);
+    console.warn('[OneSignal] Failed to set In-App Message trigger:', err?.message || err);
   }
 };
 

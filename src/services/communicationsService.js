@@ -329,6 +329,50 @@ class CommunicationsService {
       };
     }
   }
+
+  /**
+   * Triggers a test push notification via OneSignal (callable Firebase Function).
+   *
+   * @param {Object} params
+   * @param {string} params.profileId - Child profile ID
+   * @param {string} params.childName - Child profile display name
+   * @param {string} [params.type='streak'] - 'streak' | 'unclaimed_reward' | 'double_sparks'
+   * @param {string} [params.customTitle] - Optional custom title override
+   * @param {string} [params.customMessage] - Optional custom message override
+   * @returns {Promise<Object>}
+   */
+  async triggerTestPushNotification({ profileId, childName, type = 'streak', customTitle, customMessage }) {
+    try {
+      if (!auth.currentUser) {
+        await signInAnonymously(auth);
+      }
+
+      const sendPushCallable = httpsCallable(functions, 'sendTestPushNotification');
+      const response = await sendPushCallable({
+        profileId,
+        childName,
+        type,
+        customTitle,
+        customMessage
+      });
+
+      return {
+        success: true,
+        ...response.data
+      };
+    } catch (error) {
+      console.error('❌ [CommunicationsService] Failed to send test push notification:', error);
+      const errorMessage =
+        (typeof error?.details === 'string' ? error.details : error?.details?.message) ||
+        error?.message ||
+        'Failed to dispatch test push notification.';
+
+      return {
+        success: false,
+        error: errorMessage
+      };
+    }
+  }
 }
 
 export const communicationsService = new CommunicationsService();

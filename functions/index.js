@@ -1411,3 +1411,216 @@ exports.sendScheduledWeeklyDigests = onSchedule(
   }
 );
 
+/**
+ * Dispatches a push notification via the OneSignal REST API.
+ * Targets users via their authenticated external user ID (Firebase UID).
+ */
+async function dispatchOneSignalPush({ uids = [], title, message, url, data = {}, apiKey, appId }) {
+  const finalApiKey = apiKey || process.env.ONESIGNAL_REST_API_KEY;
+  const finalAppId = appId || process.env.ONESIGNAL_APP_ID || "d192b852-cda6-4a6b-897a-51b3831ab1af";
+
+  if (!finalApiKey) {
+    console.warn("[OneSignal Push] Missing ONESIGNAL_REST_API_KEY in environment/secrets. Push skipped.");
+    return { success: false, error: "OneSignal REST API Key not configured." };
+  }
+
+  if (!uids || uids.length === 0) {
+    return { success: false, error: "No target external user IDs specified." };
+  }
+
+  const payload = {
+    app_id: finalAppId,
+    include_aliases: {
+      external_id: uids
+    },
+    target_channel: "push",
+    headings: { en: title },
+    contents: { en: message },
+    url: url || "https://kiboclimb.com/?action=play&utm_source=push_notification&utm_campaign=daily_streak",
+    chrome_web_icon: "https://kiboclimb.com/favicon.png",
+    firefox_icon: "https://kiboclimb.com/favicon.png",
+    small_icon: "ic_stat_onesignal_default",
+    large_icon: "https://kiboclimb.com/favicon.png",
+    data: {
+      ...data,
+      sentAt: new Date().toISOString()
+    }
+  };
+
+  try {
+    const response = await fetch("https://onesignal.com/api/v1/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Basic ${finalApiKey}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    if (!response.ok || (result.errors && result.errors.length > 0)) {
+      console.error("[OneSignal Push Error]:", result);
+      return { success: false, error: result.errors ? JSON.stringify(result.errors) : `HTTP ${response.status}` };
+    }
+
+    return {
+      success: true,
+      id: result.id,
+      recipients: result.recipients || 0
+    };
+  } catch (err) {
+    console.error("[OneSignal Push Exception]:", err);
+    return { success: false, error: err.message || "Failed to dispatch push notification." };
+  }
+}
+
+/**
+ * Callable Cloud Function: sendTestPushNotification
+ * Allows immediate testing of OneSignal push notifications directly from DevControlPanel.
+ */
+exports.sendTestPushNotification = onCall(
+  {
+    cors: true,
+    secrets: ["ONESIGNAL_REST_API_KEY"]
+  },
+  async (request) => {
+    if (!request.auth || !request.auth.uid) {
+      throw new HttpsError("unauthenticated", "Authentication required to test notifications.");
+    }
+
+    const callerUid = request.auth.uid;
+    const { profileId, childName = "Kibo Climber", type = "streak", customTitle, customMessage } = request.data || {};
+
+    let title = customTitle;
+    let message = customMessage;
+    let actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=test_push`;
+
+    if (!title || !message) {
+      switch (type) {
+        case "unclaimed_reward":
+        case "unclaimed_quest":
+          title = `🎁 Unclaimed Quest Sparks for ${childName}!`;
+          message = `${childName} has completed daily quests with unclaimed Sparks! Tap to collect before midnight.`;
+          actionUrl = `https://kiboclimb.com/?action=quests&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=unclaimed_quests`;
+          break;
+        case "double_sparks":
+          title = `⚡ Double Sparks Active on Mount Kibo!`;
+          message = `Earn 2x Sparks on all climbs today! Help ${childName} climb the mountain leaderboard.`;
+          actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=double_sparks_event`;
+          break;
+        case "streak":
+        default:
+          title = `🏔️ Keep ${childName}'s Daily Streak Alive!`;
+          message = `Kibo the Red Panda is waiting! Complete today's climb to protect your flame 🔥`;
+          actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=daily_streak`;
+          break;
+      }
+    }
+
+    const pushResult = await dispatchOneSignalPush({
+      uids: [callerUid],
+      title,
+      message,
+      url: actionUrl,
+      data: { profileId, notificationType: type },
+      apiKey: process.env.ONESIGNAL_REST_API_KEY
+    });
+
+    if (!pushResult.success) {
+      throw new HttpsError("internal", pushResult.error || "Failed to dispatch push.");
+    }
+
+    return {
+      success: true,
+      notificationId: pushResult.id,
+      title,
+      message,
+      recipients: pushResult.recipients
+    };
+  }
+);
+
+/**
+ * Scheduled Cron Function: scheduledDailyStreakPush
+ * Runs daily at 5:00 PM (17:00 UTC) to remind active accounts whose children haven't climbed yet today.
+ */
+exports.scheduledDailyStreakPush = onSchedule(
+  {
+    schedule: "0 17 * * *",
+    timeZone: "America/New_York",
+    secrets: ["ONESIGNAL_REST_API_KEY"]
+  },
+  async (event) => {
+    console.log("[scheduledDailyStreakPush] Starting daily streak push reminder check...");
+    const db = getFirestore();
+
+    try {
+      const usersSnap = await db.collection("users").get();
+      if (usersSnap.empty) {
+        console.log("[scheduledDailyStreakPush] No user accounts found.");
+        return;
+      }
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+      let pushesDispatched = 0;
+
+      for (const userDoc of usersSnap.docs) {
+        const userData = userDoc.data() || {};
+        const uid = userDoc.id;
+        const profiles = userData.profiles || {};
+        const notifSettings = userData.notificationSettings || {};
+
+        if (notifSettings.dailyReminderEnabled === false) {
+          continue;
+        }
+
+        // Find profiles that haven't climbed today or have unclaimed quests
+        const unplayedProfiles = [];
+        for (const [pid, prof] of Object.entries(profiles)) {
+          const mathData = prof?.userData || {};
+          const lastPlayed = mathData.lastPlayedDate || (mathData.sprintHistory && mathData.sprintHistory[0]?.date);
+          const lastPlayedDay = lastPlayed ? String(lastPlayed).slice(0, 10) : null;
+          const unclaimedQuests = Number(prof?.unclaimedQuestsCount || 0);
+
+          if (lastPlayedDay !== todayStr) {
+            unplayedProfiles.push({
+              id: pid,
+              name: prof.username || prof.name || 'Kibo Climber',
+              streak: mathData.streak || 0,
+              unclaimedQuests
+            });
+          }
+        }
+
+        if (unplayedProfiles.length > 0) {
+          const firstUnplayed = unplayedProfiles[0];
+          const streakText = firstUnplayed.streak > 1 ? ` (${firstUnplayed.streak}-day streak)` : '';
+          const hasQuestBonus = firstUnplayed.unclaimedQuests > 0 ? ' 🎁 Unclaimed quest Sparks waiting!' : '';
+          
+          const title = `🏔️ Keep ${firstUnplayed.name}'s Streak Alive! 🔥`;
+          const message = `Kibo the Red Panda is waiting! Complete today's climb${streakText} before midnight.${hasQuestBonus}`;
+          const actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(firstUnplayed.id)}&utm_source=push_notification&utm_campaign=daily_streak`;
+
+          const res = await dispatchOneSignalPush({
+            uids: [uid],
+            title,
+            message,
+            url: actionUrl,
+            data: { profileId: firstUnplayed.id, streak: firstUnplayed.streak },
+            apiKey: process.env.ONESIGNAL_REST_API_KEY
+          });
+
+          if (res.success) {
+            pushesDispatched++;
+          }
+        }
+      }
+
+      console.log(`[scheduledDailyStreakPush] Finished daily streak push run. Sent to ${pushesDispatched} accounts.`);
+    } catch (err) {
+      console.error("[scheduledDailyStreakPush] Error executing streak push schedule:", err);
+    }
+  }
+);
+
+

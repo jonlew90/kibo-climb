@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail, Fingerprint, Lock, ShieldAlert, Calendar, Crown } from 'lucide-react';
+import { X, Wrench, Zap, Trophy, ShoppingBag, RotateCcw, AlertTriangle, CheckCircle2, Mail, Fingerprint, Lock, ShieldAlert, Calendar, Crown, Bell } from 'lucide-react';
 import { storageService } from '../services/storageService';
 import { communicationsService } from '../services/communicationsService';
 import { nativeAuthService } from '../services/nativeAuthService';
@@ -28,6 +28,11 @@ export default function DevControlPanel({
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailReportType, setEmailReportType] = useState('kibo_club'); // 'free' | 'kibo_club'
   const [customDateInput, setCustomDateInput] = useState('');
+
+  // Push notification testing states
+  const [isSendingPush, setIsSendingPush] = useState(false);
+  const [pushType, setPushType] = useState('streak'); // 'streak' | 'unclaimed_reward' | 'double_sparks'
+  const [selectedPushProfileId, setSelectedPushProfileId] = useState(() => storageService.getActiveProfileId());
 
   // Blog broadcast dev states
   const allBlogPosts = getAllBlogPosts();
@@ -757,6 +762,108 @@ export default function DevControlPanel({
                 : blogEmailMode === 'dry_run'
                 ? 'Run Broadcast Dry-Run Preview'
                 : '🚀 Broadcast to ALL Subscribers'}
+            </button>
+          </div>
+
+          {/* SECTION 4.6: ONESIGNAL PUSH NOTIFICATIONS TESTER */}
+          <div className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Bell className="w-4 h-4 text-cyan-400" />
+                OneSignal Push Notification Tester
+              </span>
+              <span className="text-[10px] font-black uppercase text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded-md border border-cyan-800">
+                Live Device
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-snug">
+              Dispatch a real-time server-side push notification via OneSignal REST API to your subscribed device.
+            </p>
+
+            {/* Target Profile */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                Target Profile
+              </label>
+              <select
+                value={selectedPushProfileId}
+                onChange={(e) => setSelectedPushProfileId(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-sans"
+              >
+                {storageService.getAllProfiles().map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name || p.username} ({p.gradeLevel || 'Grade 1–2'})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Notification Type Selector */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                Notification Type
+              </label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { id: 'streak', label: '🔥 Streak', desc: 'Daily Streak Reminder' },
+                  { id: 'unclaimed_reward', label: '🏆 Reward', desc: 'Unclaimed Quest/Badge' },
+                  { id: 'double_sparks', label: '⚡ 2x Sparks', desc: 'Double Sparks Event' }
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setPushType(t.id)}
+                    className={`py-2 px-1 text-center rounded-xl font-bold text-[11px] transition-all border ${
+                      pushType === t.id
+                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500 shadow-xs'
+                        : 'bg-slate-900/60 text-slate-400 border-slate-700 hover:bg-slate-900'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Preview Box */}
+            <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs space-y-1">
+              <div className="font-extrabold text-slate-200">
+                {pushType === 'streak' && `🏔️ Keep ${storageService.getProfile(selectedPushProfileId)?.name || 'Kibo Climber'}'s Daily Streak Alive!`}
+                {pushType === 'unclaimed_reward' && `🏆 Unclaimed Reward for ${storageService.getProfile(selectedPushProfileId)?.name || 'Kibo Climber'}!`}
+                {pushType === 'double_sparks' && `⚡ Double Sparks Active on Mount Kibo!`}
+              </div>
+              <div className="text-slate-400 text-[11px]">
+                {pushType === 'streak' && `Kibo the Red Panda is waiting! Complete today's climb to protect your flame 🔥`}
+                {pushType === 'unclaimed_reward' && `${storageService.getProfile(selectedPushProfileId)?.name || 'Child'} has earned a new badge on Mount Kibo! Tap to claim your Sparks.`}
+                {pushType === 'double_sparks' && `Earn 2x Sparks on all climbs today! Help ${storageService.getProfile(selectedPushProfileId)?.name || 'Child'} climb the leaderboard.`}
+              </div>
+            </div>
+
+            {/* Send Push Button */}
+            <button
+              disabled={isSendingPush}
+              onClick={async () => {
+                const targetProf = storageService.getProfile(selectedPushProfileId) || activeProfile;
+                const pName = targetProf.name || targetProf.username || childName;
+
+                setIsSendingPush(true);
+                const res = await communicationsService.triggerTestPushNotification({
+                  profileId: selectedPushProfileId,
+                  childName: pName,
+                  type: pushType
+                });
+                setIsSendingPush(false);
+
+                if (res.success) {
+                  showToast(`🚀 Push sent to subscribed devices! (ID: ${res.notificationId || 'ok'})`);
+                } else {
+                  alert('Push error: ' + res.error + '\n\nMake sure you have granted notification permissions on this device.');
+                }
+              }}
+              className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 px-3 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-1.5"
+            >
+              {isSendingPush ? 'Dispatching Push...' : '🔔 Send Push Notification Now'}
             </button>
           </div>
 

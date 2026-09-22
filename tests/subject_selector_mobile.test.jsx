@@ -100,15 +100,15 @@ describe('Mobile Subject Selector Sizing and Centering', () => {
     const mobileDropdownContainer = mobileDropdownBtn.parentElement;
     expect(mobileDropdownContainer).not.toBeNull();
 
-    // Verify it is not spanning full width (w-full) and is width-constrained
+    // Verify it does not span full width (not w-full)
     const containerClasses = mobileDropdownContainer.className;
-    expect(containerClasses).toContain('w-48');
-    expect(containerClasses).toContain('max-w-[220px]');
     expect(containerClasses).not.toContain('w-full');
+    // Container should be a flex shrink-0 item (not fixed-width in the new unified bar)
+    expect(containerClasses).toContain('shrink-0');
 
-    // Verify parent wrapper is centered
+    // Verify parent wrapper is a flex row container (the unified bar)
     const outerWrapper = mobileDropdownContainer.parentElement;
-    expect(outerWrapper.className).toContain('justify-center');
+    expect(outerWrapper.className).toContain('flex');
   });
 
   it('renders mobile subject selector centered and constrained in LeaderboardScreen', async () => {
