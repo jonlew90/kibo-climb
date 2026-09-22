@@ -347,11 +347,12 @@ class CommunicationsService {
         await signInAnonymously(auth);
       }
 
-      const sendPushCallable = httpsCallable(functions, 'sendTestPushNotification');
+      const sendPushCallable = httpsCallable(functions, 'sendParentEmail');
       const response = await sendPushCallable({
+        type: 'push_test',
         profileId,
         childName,
-        type,
+        pushType: type,
         customTitle,
         customMessage
       });

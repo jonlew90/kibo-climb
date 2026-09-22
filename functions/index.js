@@ -55,7 +55,57 @@ exports.sendParentEmail = onCall(
 
     const uid = request.auth.uid;
     const db = getFirestore();
-    const { to, subject, htmlBody, textBody, type, post, dryRun } = request.data || {};
+    const { to, subject, htmlBody, textBody, type, post, dryRun, profileId, childName = "Kibo Climber", pushType = "streak", customTitle, customMessage } = request.data || {};
+
+    // For push_test type, dispatch OneSignal push test
+    if (type === "push_test") {
+      let title = customTitle;
+      let message = customMessage;
+      let actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=test_push`;
+
+      if (!title || !message) {
+        switch (pushType) {
+          case "unclaimed_reward":
+          case "unclaimed_quest":
+            title = `🎁 Unclaimed Quest Sparks for ${childName}!`;
+            message = `${childName} has completed daily quests with unclaimed Sparks! Tap to collect before midnight.`;
+            actionUrl = `https://kiboclimb.com/?action=quests&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=unclaimed_quests`;
+            break;
+          case "double_sparks":
+            title = `⚡ Double Sparks Active on Mount Kibo!`;
+            message = `Earn 2x Sparks on all climbs today! Help ${childName} climb the mountain leaderboard.`;
+            actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=double_sparks_event`;
+            break;
+          case "streak":
+          default:
+            title = `🏔️ Keep ${childName}'s Daily Streak Alive!`;
+            message = `Kibo the Red Panda is waiting! Complete today's climb to protect your flame 🔥`;
+            actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=daily_streak`;
+            break;
+        }
+      }
+
+      const pushResult = await dispatchOneSignalPush({
+        uids: [uid],
+        title,
+        message,
+        url: actionUrl,
+        data: { profileId, notificationType: pushType },
+        apiKey: process.env.ONESIGNAL_REST_API_KEY
+      });
+
+      if (!pushResult.success) {
+        throw new HttpsError("internal", pushResult.error || "Failed to dispatch push.");
+      }
+
+      return {
+        success: true,
+        notificationId: pushResult.id,
+        title,
+        message,
+        recipients: pushResult.recipients
+      };
+    }
 
     // For blog_broadcast type, handle subscriber broadcast
     if (type === "blog_broadcast") {
@@ -1473,72 +1523,6 @@ async function dispatchOneSignalPush({ uids = [], title, message, url, data = {}
     return { success: false, error: err.message || "Failed to dispatch push notification." };
   }
 }
-
-/**
- * Callable Cloud Function: sendTestPushNotification
- * Allows immediate testing of OneSignal push notifications directly from DevControlPanel.
- */
-exports.sendTestPushNotification = onCall(
-  {
-    cors: true,
-    secrets: ["ONESIGNAL_REST_API_KEY"]
-  },
-  async (request) => {
-    if (!request.auth || !request.auth.uid) {
-      throw new HttpsError("unauthenticated", "Authentication required to test notifications.");
-    }
-
-    const callerUid = request.auth.uid;
-    const { profileId, childName = "Kibo Climber", type = "streak", customTitle, customMessage } = request.data || {};
-
-    let title = customTitle;
-    let message = customMessage;
-    let actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=test_push`;
-
-    if (!title || !message) {
-      switch (type) {
-        case "unclaimed_reward":
-        case "unclaimed_quest":
-          title = `🎁 Unclaimed Quest Sparks for ${childName}!`;
-          message = `${childName} has completed daily quests with unclaimed Sparks! Tap to collect before midnight.`;
-          actionUrl = `https://kiboclimb.com/?action=quests&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=unclaimed_quests`;
-          break;
-        case "double_sparks":
-          title = `⚡ Double Sparks Active on Mount Kibo!`;
-          message = `Earn 2x Sparks on all climbs today! Help ${childName} climb the mountain leaderboard.`;
-          actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=double_sparks_event`;
-          break;
-        case "streak":
-        default:
-          title = `🏔️ Keep ${childName}'s Daily Streak Alive!`;
-          message = `Kibo the Red Panda is waiting! Complete today's climb to protect your flame 🔥`;
-          actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=daily_streak`;
-          break;
-      }
-    }
-
-    const pushResult = await dispatchOneSignalPush({
-      uids: [callerUid],
-      title,
-      message,
-      url: actionUrl,
-      data: { profileId, notificationType: type },
-      apiKey: process.env.ONESIGNAL_REST_API_KEY
-    });
-
-    if (!pushResult.success) {
-      throw new HttpsError("internal", pushResult.error || "Failed to dispatch push.");
-    }
-
-    return {
-      success: true,
-      notificationId: pushResult.id,
-      title,
-      message,
-      recipients: pushResult.recipients
-    };
-  }
-);
 
 /**
  * Scheduled Cron Function: scheduledDailyStreakPush
