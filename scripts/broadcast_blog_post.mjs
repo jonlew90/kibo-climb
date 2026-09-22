@@ -77,11 +77,20 @@ async function getSubscribersFromFirestore() {
   const recipientEmails = new Set();
 
   try {
-    const { initializeApp, getApps } = await import('firebase-admin/app');
-    const { getFirestore } = await import('firebase-admin/firestore');
+    let adminApp, adminFirestore;
+    try {
+      adminApp = await import('firebase-admin/app');
+      adminFirestore = await import('firebase-admin/firestore');
+    } catch {
+      adminApp = await import('../functions/node_modules/firebase-admin/lib/app/index.js');
+      adminFirestore = await import('../functions/node_modules/firebase-admin/lib/firestore/index.js');
+    }
+
+    const { initializeApp, getApps } = adminApp;
+    const { getFirestore } = adminFirestore;
 
     if (getApps().length === 0) {
-      initializeApp();
+      initializeApp({ projectId: 'kibo-climb' });
     }
     const db = getFirestore();
 
