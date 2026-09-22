@@ -59,6 +59,7 @@ exports.sendParentEmail = onCall(
 
     // For push_test type, dispatch OneSignal push test
     if (type === "push_test") {
+      const { subscriptionId } = request.data || {};
       let title = customTitle;
       let message = customMessage;
       let actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=test_push`;
@@ -87,6 +88,7 @@ exports.sendParentEmail = onCall(
 
       const pushResult = await dispatchOneSignalPush({
         uids: [uid],
+        subscriptionIds: subscriptionId ? [subscriptionId] : [],
         title,
         message,
         url: actionUrl,
@@ -1465,7 +1467,7 @@ exports.sendScheduledWeeklyDigests = onSchedule(
  * Dispatches a push notification via the OneSignal REST API.
  * Targets users via their authenticated external user ID (Firebase UID).
  */
-async function dispatchOneSignalPush({ uids = [], title, message, url, data = {}, apiKey, appId }) {
+async function dispatchOneSignalPush({ uids = [], subscriptionIds = [], title, message, url, data = {}, apiKey, appId }) {
   const finalApiKey = apiKey || process.env.ONESIGNAL_REST_API_KEY;
   const finalAppId = appId || process.env.ONESIGNAL_APP_ID || "d192b852-cda6-4a6b-897a-51b3831ab1af";
 
@@ -1474,15 +1476,8 @@ async function dispatchOneSignalPush({ uids = [], title, message, url, data = {}
     return { success: false, error: "OneSignal REST API Key not configured." };
   }
 
-  if (!uids || uids.length === 0) {
-    return { success: false, error: "No target external user IDs specified." };
-  }
-
   const payload = {
     app_id: finalAppId,
-    include_aliases: {
-      external_id: uids
-    },
     target_channel: "push",
     headings: { en: title },
     contents: { en: message },
@@ -1496,6 +1491,16 @@ async function dispatchOneSignalPush({ uids = [], title, message, url, data = {}
       sentAt: new Date().toISOString()
     }
   };
+
+  if (subscriptionIds && subscriptionIds.length > 0) {
+    payload.include_subscription_ids = subscriptionIds;
+  } else if (uids && uids.length > 0) {
+    payload.include_aliases = {
+      external_id: uids
+    };
+  } else {
+    return { success: false, error: "No target external user IDs or subscription IDs specified." };
+  }
 
   try {
     const response = await fetch("https://onesignal.com/api/v1/notifications", {

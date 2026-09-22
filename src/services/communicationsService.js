@@ -347,11 +347,14 @@ class CommunicationsService {
         await signInAnonymously(auth);
       }
 
+      let subscriptionId = null;
       if (auth.currentUser?.uid) {
         try {
           const { loginToOneSignal, initOneSignal } = await import('../config/onesignal.js');
           await initOneSignal();
           await loginToOneSignal(auth.currentUser.uid);
+          const os = (typeof window !== 'undefined' && window.OneSignal);
+          subscriptionId = os?.User?.PushSubscription?.id || null;
         } catch (osErr) {
           console.warn('[CommunicationsService] Could not auto-bind OneSignal uid:', osErr);
         }
@@ -363,6 +366,7 @@ class CommunicationsService {
         profileId,
         childName,
         pushType: type,
+        subscriptionId,
         customTitle,
         customMessage
       });

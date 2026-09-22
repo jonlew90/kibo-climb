@@ -24,15 +24,12 @@ let isInitialized = false;
 
 export const initOneSignal = async () => {
   if (!APP_ID) {
-    console.warn('[OneSignal] Missing VITE_ONESIGNAL_APP_ID in environment.');
+    if (import.meta.env.DEV) console.warn('[OneSignal] Missing VITE_ONESIGNAL_APP_ID in environment.');
     return;
   }
 
-  console.log('[OneSignal] Initializing with APP_ID:', APP_ID);
-
   if (isInitialized || (typeof window !== 'undefined' && window.OneSignal?.initialized)) {
     isInitialized = true;
-    console.log('[OneSignal] Already initialized.');
     return;
   }
 
@@ -43,7 +40,6 @@ export const initOneSignal = async () => {
       OneSignalCapacitor.initialize(APP_ID);
       OneSignalCapacitor.Notifications?.requestPermission(true);
       isInitialized = true;
-      console.log('[OneSignal] Native Capacitor initialized.');
     } else if (typeof window !== 'undefined' && OneSignalReact) {
       if (!window.OneSignal?.initialized) {
         await OneSignalReact.init({
@@ -55,16 +51,14 @@ export const initOneSignal = async () => {
             enable: false,
           },
         });
-        console.log('[OneSignal] Web SDK initialized successfully.');
       }
       isInitialized = true;
     }
   } catch (error) {
     if (error?.message?.includes('already initialized')) {
       isInitialized = true;
-      console.log('[OneSignal] Init note: already initialized');
-    } else {
-      console.warn('[OneSignal] Initialization error:', error?.message || error);
+    } else if (import.meta.env.DEV) {
+      console.warn('[OneSignal] Initialization note:', error?.message || error);
     }
   }
 };
@@ -73,17 +67,11 @@ export const initOneSignal = async () => {
  * Associates the device with a specific user ID for targeted pushes.
  */
 export const loginToOneSignal = async (externalUserId) => {
-  if (!externalUserId) {
-    console.warn('[OneSignal] loginToOneSignal called without externalUserId');
-    return;
-  }
-
-  console.log('[OneSignal] Attempting login with externalUserId:', externalUserId);
+  if (!externalUserId) return;
 
   try {
     if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
       await OneSignalCapacitor.login(externalUserId);
-      console.log('[OneSignal] Native login complete.');
       return;
     }
 
@@ -91,33 +79,22 @@ export const loginToOneSignal = async (externalUserId) => {
     if (os) {
       if (typeof os.login === 'function') {
         await os.login(externalUserId);
-        console.log('[OneSignal] Web os.login() resolved.');
       } else if (OneSignalReact && typeof OneSignalReact.login === 'function') {
         await OneSignalReact.login(externalUserId);
-        console.log('[OneSignal] OneSignalReact.login() resolved.');
       }
 
       // Check PushSubscription status & opt-in
       if (os.User?.PushSubscription) {
         const isOptedIn = os.User.PushSubscription.optedIn;
-        const pushId = os.User.PushSubscription.id;
-        const pushToken = os.User.PushSubscription.token;
-        console.log('[OneSignal] PushSubscription status:', { isOptedIn, pushId, pushToken });
-
         if (!isOptedIn && typeof os.User.PushSubscription.optIn === 'function') {
-          console.log('[OneSignal] Calling PushSubscription.optIn()...');
           await os.User.PushSubscription.optIn();
-          console.log('[OneSignal] PushSubscription optIn resolved.');
         }
       }
-      
-      console.log('[OneSignal] Current OneSignal User state:', {
-        externalId: os.User?.externalId,
-        onesignalId: os.User?.onesignalId
-      });
     }
   } catch (error) {
-    console.error('[OneSignal] Login error:', error);
+    if (import.meta.env.DEV && !error?.message?.includes('reading \'Qe\'') && !error?.message?.includes('undefined')) {
+      console.warn('[OneSignal] Login note:', error?.message || error);
+    }
   }
 };
 
@@ -134,7 +111,7 @@ export const logoutFromOneSignal = async () => {
       await OneSignalReact.logout();
     }
   } catch (error) {
-    console.warn('[OneSignal] Logout error:', error?.message || error);
+    if (import.meta.env.DEV) console.warn('[OneSignal] Logout error:', error?.message || error);
   }
 };
 
@@ -142,7 +119,6 @@ export const logoutFromOneSignal = async () => {
  * Prompts the user for push notification permission (mostly for web/custom flows).
  */
 export const promptForPushPermissions = async () => {
-  console.log('[OneSignal] promptForPushPermissions invoked');
   try {
     // 1. Native Capacitor
     if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
@@ -153,7 +129,6 @@ export const promptForPushPermissions = async () => {
     // 2. OneSignal Web SDK (v16+)
     const os = (typeof window !== 'undefined' && window.OneSignal) || OneSignalReact;
     if (os?.Notifications?.requestPermission) {
-      console.log('[OneSignal] Requesting permission via os.Notifications.requestPermission()...');
       await os.Notifications.requestPermission();
       if (os?.User?.PushSubscription?.optIn) {
         await os.User.PushSubscription.optIn();
@@ -161,7 +136,6 @@ export const promptForPushPermissions = async () => {
       return true;
     }
     if (os?.Slidedown?.promptPush) {
-      console.log('[OneSignal] Requesting permission via os.Slidedown.promptPush()...');
       await os.Slidedown.promptPush();
       if (os?.User?.PushSubscription?.optIn) {
         await os.User.PushSubscription.optIn();
@@ -171,7 +145,6 @@ export const promptForPushPermissions = async () => {
 
     // 3. Browser native Notification fallback
     if (typeof window !== 'undefined' && 'Notification' in window) {
-      console.log('[OneSignal] Requesting permission via window.Notification.requestPermission()...');
       const perm = await Notification.requestPermission();
       if (perm === 'granted' && os?.User?.PushSubscription?.optIn) {
         await os.User.PushSubscription.optIn();
@@ -181,13 +154,13 @@ export const promptForPushPermissions = async () => {
 
     return false;
   } catch (error) {
-    console.warn('[OneSignal] Permission prompt error:', error?.message || error);
+    if (import.meta.env.DEV) console.warn('[OneSignal] Permission prompt error:', error?.message || error);
     if (typeof window !== 'undefined' && 'Notification' in window) {
       try {
         const perm = await Notification.requestPermission();
         return perm === 'granted';
       } catch (e) {
-        console.warn('[Notification API] Fallback error:', e);
+        if (import.meta.env.DEV) console.warn('[Notification API] Fallback error:', e);
       }
     }
     return false;

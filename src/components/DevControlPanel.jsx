@@ -847,10 +847,6 @@ export default function DevControlPanel({
                 type="button"
                 onClick={async (e) => {
                   e.stopPropagation();
-                  console.log('[DevControlPanel] Request Permission clicked.');
-                  console.log('[DevControlPanel] Current window.Notification.permission:', typeof window !== 'undefined' ? window.Notification?.permission : 'N/A');
-                  console.log('[DevControlPanel] Current auth.currentUser:', auth.currentUser ? { uid: auth.currentUser.uid, isAnonymous: auth.currentUser.isAnonymous } : null);
-
                   if (typeof window === 'undefined' || !('Notification' in window)) {
                     alert('Notifications API is not supported in this browser.');
                     return;
@@ -867,7 +863,6 @@ export default function DevControlPanel({
                     await initOneSignal();
                     
                     const perm = await Notification.requestPermission();
-                    console.log('[DevControlPanel] Notification.requestPermission() result:', perm);
                     if (perm === 'granted') {
                       await promptForPushPermissions();
                       if (auth.currentUser?.uid) {
@@ -880,7 +875,6 @@ export default function DevControlPanel({
                       showToast('ℹ️ Notification permission: ' + perm);
                     }
                   } catch (err) {
-                    console.error('[DevControlPanel] Permission error:', err);
                     alert('Permission error: ' + (err?.message || err));
                   }
                 }}
@@ -895,9 +889,6 @@ export default function DevControlPanel({
                   const targetProf = storageService.getProfileById(selectedPushProfileId) || activeProfile;
                   const pName = targetProf.name || targetProf.username || childName;
 
-                  console.log('[DevControlPanel] Send Push clicked. Target profile:', selectedPushProfileId, pName);
-                  console.log('[DevControlPanel] Current auth.currentUser UID:', auth.currentUser?.uid);
-
                   setIsSendingPush(true);
                   const res = await communicationsService.triggerTestPushNotification({
                     profileId: selectedPushProfileId,
@@ -905,8 +896,6 @@ export default function DevControlPanel({
                     type: pushType
                   });
                   setIsSendingPush(false);
-
-                  console.log('[DevControlPanel] triggerTestPushNotification result:', res);
 
                   if (res.success) {
                     showToast(`🚀 Push sent! (ID: ${res.notificationId || 'ok'})`);
