@@ -295,7 +295,7 @@ class CommunicationsService {
    * @param {boolean} [params.dryRun=false] - Dry run mode flag
    * @returns {Promise<Object>}
    */
-  async broadcastBlogPost({ post, customSubject, dryRun = false }) {
+  async broadcastBlogPost({ post, customSubject, dryRun = false, testRecipient, recipients }) {
     if (!post || !post.title || !post.slug) {
       return { success: false, error: 'Valid blog post object is required.' };
     }
@@ -314,7 +314,9 @@ class CommunicationsService {
         post,
         subject: emailSubject,
         htmlBody,
-        dryRun
+        dryRun,
+        testRecipient,
+        recipients
       });
 
       return {

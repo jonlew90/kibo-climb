@@ -9,7 +9,9 @@ const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 
 if (!getApps().length) {
-  initializeApp();
+  initializeApp({
+    projectId: process.env.GCLOUD_PROJECT || "kibo-climb"
+  });
 }
 
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
@@ -55,6 +57,7 @@ exports.sendParentEmail = onCall(
 
     const uid = request.auth.uid;
     const db = getFirestore();
+    const auth = getAuth();
     const { to, subject, htmlBody, textBody, type, post, dryRun, profileId, childName = "Kibo Climber", pushType = "streak", customTitle, customMessage } = request.data || {};
 
     // For push_test type, dispatch OneSignal push test
@@ -121,34 +124,64 @@ exports.sendParentEmail = onCall(
       }
 
       const recipientEmails = new Set();
-      try {
-        const subSnap = await db.collection("newsletter_subscribers").get();
-        subSnap.forEach((doc) => {
-          const data = doc.data();
-          if (data.email && typeof data.email === "string" && !data.unsubscribed) {
-            const clean = data.email.trim().toLowerCase();
-            if (clean.includes("@")) recipientEmails.add(clean);
+      const { recipients: requestedRecipients, testRecipient } = request.data || {};
+
+      if (Array.isArray(requestedRecipients) && requestedRecipients.length > 0) {
+        requestedRecipients.forEach(r => {
+          if (typeof r === "string" && r.includes("@")) {
+            recipientEmails.add(r.trim().toLowerCase());
           }
         });
-      } catch (subErr) {
-        console.warn("[sendParentEmail:blog_broadcast] Error fetching newsletter_subscribers:", subErr);
-      }
+      } else if (testRecipient && typeof testRecipient === "string" && testRecipient.includes("@")) {
+        recipientEmails.add(testRecipient.trim().toLowerCase());
+      } else {
+        let subErr = null;
+        let userErr = null;
 
-      try {
-        const userSnap = await db.collection("users").get();
-        userSnap.forEach((doc) => {
-          const data = doc.data();
-          const parentEmail = data.parentEmail || data.email;
-          if (parentEmail && typeof parentEmail === "string") {
-            const clean = parentEmail.trim().toLowerCase();
-            const notifPrefs = data.notifPrefs || {};
-            if (notifPrefs.blogNewsletterEnabled !== false && !notifPrefs.unsubscribedAll && clean.includes("@")) {
-              recipientEmails.add(clean);
+        try {
+          const subSnap = await db.collection("newsletter_subscribers").get();
+          subSnap.forEach((doc) => {
+            const data = doc.data();
+            if (data.email && typeof data.email === "string" && !data.unsubscribed) {
+              const clean = data.email.trim().toLowerCase();
+              if (clean.includes("@")) recipientEmails.add(clean);
+            }
+          });
+        } catch (err) {
+          subErr = err;
+          console.warn("[sendParentEmail:blog_broadcast] Error fetching newsletter_subscribers:", err);
+        }
+
+        try {
+          const userSnap = await db.collection("users").get();
+          for (const doc of userSnap.docs) {
+            const data = doc.data() || {};
+            const parentEmail = data.email || data.parentEmail;
+            if (parentEmail && typeof parentEmail === "string") {
+              const clean = parentEmail.trim().toLowerCase();
+              const notifSettings = data.notificationSettings || data.notifPrefs || {};
+              const isEnabled = notifSettings.blogNewsletterEnabled !== false && !notifSettings.unsubscribedAll;
+              if (isEnabled && clean.includes("@")) {
+                recipientEmails.add(clean);
+              }
             }
           }
-        });
-      } catch (userErr) {
-        console.warn("[sendParentEmail:blog_broadcast] Error fetching users:", userErr);
+        } catch (err) {
+          userErr = err;
+          console.warn("[sendParentEmail:blog_broadcast] Error fetching users:", err);
+        }
+
+        if (recipientEmails.size === 0 && (subErr || userErr)) {
+          const primaryErr = subErr || userErr;
+          const msg = primaryErr.message || String(primaryErr);
+          if (msg.includes("PERMISSION_DENIED") || primaryErr.code === 7) {
+            throw new HttpsError(
+              "permission-denied",
+              "Firestore permission denied. In Google Cloud IAM, grant 'Cloud Datastore User' role to 171658556844-compute@developer.gserviceaccount.com."
+            );
+          }
+          throw new HttpsError("internal", `Database error fetching subscribers: ${msg}`);
+        }
       }
 
       const recipients = Array.from(recipientEmails);

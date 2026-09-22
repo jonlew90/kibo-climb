@@ -733,15 +733,26 @@ export default function DevControlPanel({
                   const isDry = blogEmailMode === 'dry_run';
                   const res = await communicationsService.broadcastBlogPost({
                     post: targetPost,
-                    dryRun: isDry
+                    dryRun: isDry,
+                    testRecipient: testEmail && testEmail.includes('@') ? testEmail : undefined
                   });
 
                   setIsSendingBlogEmail(false);
                   if (res.success) {
                     if (isDry) {
-                      showToast(`🔍 Dry Run: ${res.recipientCount || 0} active subscribers found!`);
+                      const count = res.recipientCount || 0;
+                      if (count === 0) {
+                        alert('🔍 Dry Run: 0 active subscribers found.\n\nSubscribers are populated from:\n1. Firestore "users" docs with an email address\n2. Firestore "newsletter_subscribers" collection');
+                      } else {
+                        showToast(`🔍 Dry Run: ${count} active subscribers found!`);
+                      }
                     } else {
-                      showToast(`🚀 Broadcast sent to ${res.sentCount || 0} subscribers!`);
+                      const count = res.sentCount || 0;
+                      if (count === 0) {
+                        alert('ℹ️ No emails sent: 0 active subscribers were found in the database.');
+                      } else {
+                        showToast(`🚀 Broadcast sent to ${count} subscribers!`);
+                      }
                     }
                   } else {
                     alert('Broadcast error: ' + res.error);
