@@ -1,28 +1,19 @@
-let OneSignalReact = null;
+import OneSignalReact from 'react-onesignal';
+
 let OneSignalCapacitor = null;
 let Capacitor = null;
 
-// Dynamically load dependencies safely
-const loadDependencies = async () => {
+// Dynamically load Capacitor dependencies on native mobile
+const loadCapacitorDependencies = async () => {
   try {
-    const capCore = await (typeof window !== 'undefined' ? import('@capacitor/core') : Promise.reject());
+    const capCore = await import('@capacitor/core');
     Capacitor = capCore?.Capacitor;
-  } catch (e) {
-    Capacitor = { isNativePlatform: () => false };
-  }
-
-  try {
     if (Capacitor?.isNativePlatform()) {
-      const capPluginPkg = '@onesignal/capacitor-plugin';
-      const capPlugin = await import(/* @vite-ignore */ capPluginPkg);
+      const capPlugin = await import('@onesignal/capacitor-plugin');
       OneSignalCapacitor = capPlugin.default || capPlugin.OneSignal;
-    } else {
-      const reactPluginPkg = 'react-onesignal';
-      const reactPlugin = await import(/* @vite-ignore */ reactPluginPkg);
-      OneSignalReact = reactPlugin.default || reactPlugin.OneSignal;
     }
   } catch (e) {
-    // SDKs not installed or running in test/mock environment
+    // Non-native / Web environment
   }
 };
 
@@ -37,29 +28,41 @@ export const initOneSignal = async () => {
     return;
   }
 
-  if (isInitialized) return;
+  if (isInitialized || (typeof window !== 'undefined' && window.OneSignal?.initialized)) {
+    isInitialized = true;
+    return;
+  }
 
   try {
-    await loadDependencies();
+    await loadCapacitorDependencies();
 
     if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
       OneSignalCapacitor.initialize(APP_ID);
       OneSignalCapacitor.Notifications?.requestPermission(true);
       isInitialized = true;
       console.log('[OneSignal] Capacitor SDK initialized');
-    } else if (OneSignalReact) {
-      await OneSignalReact.init({
-        appId: APP_ID,
-        allowLocalhostAsSecureOrigin: true,
-        notifyButton: {
-          enable: false,
-        },
-      });
+    } else if (typeof window !== 'undefined' && OneSignalReact) {
+      if (!window.OneSignal?.initialized) {
+        await OneSignalReact.init({
+          appId: APP_ID,
+          allowLocalhostAsSecureOrigin: true,
+          notifyButton: {
+            enable: false,
+          },
+        });
+      }
       isInitialized = true;
-      console.log('[OneSignal] Web SDK initialized');
+      console.log('[OneSignal] Web SDK initialized with App ID:', APP_ID);
     }
   } catch (error) {
-    console.error('[OneSignal] Initialization error:', error);
+    if (error?.message?.includes('already initialized')) {
+      isInitialized = true;
+      console.log('[OneSignal] Web SDK was already initialized.');
+    } else if (error?.message?.includes('Can only be used on')) {
+      console.warn(`[OneSignal] Active domain is restricted by OneSignal dashboard configuration (${error.message}). Pushes will activate on the verified production domain (https://kiboclimb.com).`);
+    } else {
+      console.error('[OneSignal] Initialization error:', error);
+    }
   }
 };
 
