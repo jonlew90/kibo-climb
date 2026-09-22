@@ -7,6 +7,7 @@ import { httpsCallable } from 'firebase/functions';
 import { signInAnonymously } from 'firebase/auth';
 import { functions, auth } from '../config/firebase';
 import { generateWeeklyDigestData, formatWeeklyDigestText, formatWeeklyDigestHtml, getAppBaseUrl } from '../utils/weeklyDigest';
+import { generateBlogEmailHtml } from '../utils/blogEmailTemplate';
 import { SUBJECTS_CONFIG } from '../config/subjects';
 
 class CommunicationsService {
@@ -304,11 +305,15 @@ class CommunicationsService {
         await signInAnonymously(auth);
       }
 
+      const htmlBody = generateBlogEmailHtml({ post });
+      const emailSubject = customSubject || `🐾 New Kibo Guide: ${post.title}`;
+
       const broadcastCallable = httpsCallable(functions, 'sendParentEmail');
       const response = await broadcastCallable({
         type: 'blog_broadcast',
         post,
-        customSubject,
+        subject: emailSubject,
+        htmlBody,
         dryRun
       });
 
