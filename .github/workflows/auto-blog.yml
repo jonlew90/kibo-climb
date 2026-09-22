@@ -62,10 +62,22 @@ jobs:
         if: steps.check_diff.outputs.has_changes == 'true'
         run: npx -y firebase-tools deploy --only hosting --project kibo-climb
 
+      - name: Broadcast to Newsletter Subscribers
+        if: steps.check_diff.outputs.has_changes == 'true'
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SENDER_EMAIL: "Kibo Climb <updates@kiboclimb.com>"
+        run: |
+          if [ -n "$RESEND_API_KEY" ]; then
+            node scripts/broadcast_blog_post.mjs --latest
+          else
+            echo "RESEND_API_KEY not configured in GitHub Secrets. Skipping email broadcast."
+          fi
+
       - name: Commit and push changes
         if: steps.check_diff.outputs.has_changes == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "content: auto-generate blog post & deploy"
+          git commit -m "content: auto-generate blog post, deploy & broadcast"
           git push origin main

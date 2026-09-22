@@ -73,6 +73,56 @@ function getBlogPost(slug) {
   return JSON.parse(fs.readFileSync(path.join(BLOG_JSON_DIR, targetFile), 'utf8'));
 }
 
+async function getSubscribersFromFirestore() {
+  const recipientEmails = new Set();
+
+  try {
+    const { initializeApp, getApps } = await import('firebase-admin/app');
+    const { getFirestore } = await import('firebase-admin/firestore');
+
+    if (getApps().length === 0) {
+      initializeApp();
+    }
+    const db = getFirestore();
+
+    // 1. Fetch from newsletter_subscribers collection
+    try {
+      const subSnap = await db.collection('newsletter_subscribers').get();
+      subSnap.forEach(doc => {
+        const data = doc.data();
+        if (data.email && typeof data.email === 'string' && !data.unsubscribed) {
+          const clean = data.email.trim().toLowerCase();
+          if (clean.includes('@')) recipientEmails.add(clean);
+        }
+      });
+    } catch (err) {
+      console.warn('⚠️ [broadcast] Could not fetch newsletter_subscribers collection:', err.message || err);
+    }
+
+    // 2. Fetch from users collection (parentEmail / email where blogNewsletterEnabled is not false and !unsubscribedAll)
+    try {
+      const userSnap = await db.collection('users').get();
+      userSnap.forEach(doc => {
+        const data = doc.data();
+        const parentEmail = data.parentEmail || data.email;
+        if (parentEmail && typeof parentEmail === 'string') {
+          const clean = parentEmail.trim().toLowerCase();
+          const notifPrefs = data.notifPrefs || {};
+          if (notifPrefs.blogNewsletterEnabled !== false && !notifPrefs.unsubscribedAll && clean.includes('@')) {
+            recipientEmails.add(clean);
+          }
+        }
+      });
+    } catch (err) {
+      console.warn('⚠️ [broadcast] Could not fetch users collection:', err.message || err);
+    }
+  } catch (err) {
+    console.warn('⚠️ [broadcast] Firebase Admin initialization note:', err.message || err);
+  }
+
+  return Array.from(recipientEmails);
+}
+
 async function runBroadcast() {
   const post = getBlogPost(targetSlug);
   console.log(`\n🐾 Kibo Climb Blog Post Broadcast`);
@@ -85,10 +135,24 @@ async function runBroadcast() {
   const htmlBody = generateBlogEmailHtml({ post });
   const subject = `🐾 New Kibo Guide: ${post.title}`;
 
+  // Fetch recipients from Firestore
+  let recipients = await getSubscribersFromFirestore();
+  if (recipients.length === 0 && process.env.BROADCAST_TEST_EMAIL) {
+    recipients = [process.env.BROADCAST_TEST_EMAIL];
+  }
+
+  console.log(`\nFound ${recipients.length} subscriber(s):`, recipients.length > 0 ? recipients.slice(0, 5) : 'None');
+
   if (isDryRun) {
     console.log(`\n✅ Email HTML generated successfully (${htmlBody.length} bytes).`);
     console.log(`Subject: "${subject}"`);
+    console.log(`Recipients (${recipients.length}):`, recipients);
     console.log(`Ready for broadcast. Run without '--dry-run' to dispatch via Resend.`);
+    return;
+  }
+
+  if (recipients.length === 0) {
+    console.log(`\nℹ️ No active subscribers found to email. Skipping dispatch.`);
     return;
   }
 
@@ -100,28 +164,42 @@ async function runBroadcast() {
   }
 
   const senderEmail = process.env.SENDER_EMAIL || 'Kibo Climb <updates@kiboclimb.com>';
-  const targetEmail = process.env.BROADCAST_TEST_EMAIL || 'support@kiboclimb.com';
 
-  console.log(`\nDispatching to Resend API for: ${targetEmail}`);
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      from: senderEmail,
-      to: [targetEmail],
-      subject,
-      html: htmlBody
-    })
-  });
+  let sentCount = 0;
+  let failedCount = 0;
 
-  const resJson = await response.json();
-  if (!response.ok) {
-    throw new Error(`Resend API Error: ${JSON.stringify(resJson)}`);
+  for (const targetEmail of recipients) {
+    try {
+      console.log(`Dispatching to Resend for subscriber: ${targetEmail}`);
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: senderEmail,
+          to: [targetEmail],
+          subject,
+          html: htmlBody
+        })
+      });
+
+      const resJson = await response.json();
+      if (!response.ok) {
+        console.error(`❌ Resend Error for ${targetEmail}:`, resJson);
+        failedCount++;
+      } else {
+        console.log(`✅ Sent to ${targetEmail} (ID: ${resJson.id})`);
+        sentCount++;
+      }
+    } catch (err) {
+      console.error(`❌ Dispatch failed for ${targetEmail}:`, err.message || err);
+      failedCount++;
+    }
   }
-  console.log(`✅ Broadcast sent successfully:`, resJson);
+
+  console.log(`\n🎉 Broadcast completed: ${sentCount} sent, ${failedCount} failed.`);
 }
 
 runBroadcast().catch(err => {
