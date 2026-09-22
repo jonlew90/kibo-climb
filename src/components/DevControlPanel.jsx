@@ -11,6 +11,7 @@ import { getAllBlogPosts } from '../utils/blogLoader';
 import { generateBlogEmailHtml } from '../utils/blogEmailTemplate';
 
 import { SUBJECTS_CONFIG } from '../config/subjects';
+import { auth } from '../config/firebase';
 
 export default function DevControlPanel({
   isOpen,
@@ -840,31 +841,84 @@ export default function DevControlPanel({
               </div>
             </div>
 
-            {/* Send Push Button */}
-            <button
-              disabled={isSendingPush}
-              onClick={async () => {
-                const targetProf = storageService.getProfileById(selectedPushProfileId) || activeProfile;
-                const pName = targetProf.name || targetProf.username || childName;
+            {/* Push Permission Prompt & Send Push Buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  console.log('[DevControlPanel] Request Permission clicked.');
+                  console.log('[DevControlPanel] Current window.Notification.permission:', typeof window !== 'undefined' ? window.Notification?.permission : 'N/A');
+                  console.log('[DevControlPanel] Current auth.currentUser:', auth.currentUser ? { uid: auth.currentUser.uid, isAnonymous: auth.currentUser.isAnonymous } : null);
 
-                setIsSendingPush(true);
-                const res = await communicationsService.triggerTestPushNotification({
-                  profileId: selectedPushProfileId,
-                  childName: pName,
-                  type: pushType
-                });
-                setIsSendingPush(false);
+                  if (typeof window === 'undefined' || !('Notification' in window)) {
+                    alert('Notifications API is not supported in this browser.');
+                    return;
+                  }
 
-                if (res.success) {
-                  showToast(`🚀 Push sent to subscribed devices! (ID: ${res.notificationId || 'ok'})`);
-                } else {
-                  alert('Push error: ' + res.error + '\n\nMake sure you have granted notification permissions on this device.');
-                }
-              }}
-              className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 px-3 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-1.5"
-            >
-              {isSendingPush ? 'Dispatching Push...' : '🔔 Send Push Notification Now'}
-            </button>
+                  const currentPerm = Notification.permission;
+                  if (currentPerm === 'denied') {
+                    alert('⚠️ Notifications are Blocked in Chrome.\n\nTo enable:\n1. Click the site settings / tune icon 🎚️ next to the URL (localhost:5173)\n2. Change Notifications from "Block" to "Allow"\n3. Reload the page.');
+                    return;
+                  }
+
+                  try {
+                    const { promptForPushPermissions, initOneSignal, loginToOneSignal } = await import('../config/onesignal.js');
+                    await initOneSignal();
+                    
+                    const perm = await Notification.requestPermission();
+                    console.log('[DevControlPanel] Notification.requestPermission() result:', perm);
+                    if (perm === 'granted') {
+                      await promptForPushPermissions();
+                      if (auth.currentUser?.uid) {
+                        await loginToOneSignal(auth.currentUser.uid);
+                      }
+                      showToast('✅ Browser notifications allowed & linked to user!');
+                    } else if (perm === 'denied') {
+                      alert('⚠️ Permission was denied. Please allow notifications in Chrome URL bar settings.');
+                    } else {
+                      showToast('ℹ️ Notification permission: ' + perm);
+                    }
+                  } catch (err) {
+                    console.error('[DevControlPanel] Permission error:', err);
+                    alert('Permission error: ' + (err?.message || err));
+                  }
+                }}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs py-2 px-2.5 rounded-xl border border-slate-700 transition-all active:scale-95 cursor-pointer text-center flex items-center justify-center gap-1"
+              >
+                🔐 Request Permission
+              </button>
+
+              <button
+                disabled={isSendingPush}
+                onClick={async () => {
+                  const targetProf = storageService.getProfileById(selectedPushProfileId) || activeProfile;
+                  const pName = targetProf.name || targetProf.username || childName;
+
+                  console.log('[DevControlPanel] Send Push clicked. Target profile:', selectedPushProfileId, pName);
+                  console.log('[DevControlPanel] Current auth.currentUser UID:', auth.currentUser?.uid);
+
+                  setIsSendingPush(true);
+                  const res = await communicationsService.triggerTestPushNotification({
+                    profileId: selectedPushProfileId,
+                    childName: pName,
+                    type: pushType
+                  });
+                  setIsSendingPush(false);
+
+                  console.log('[DevControlPanel] triggerTestPushNotification result:', res);
+
+                  if (res.success) {
+                    showToast(`🚀 Push sent! (ID: ${res.notificationId || 'ok'})`);
+                  } else {
+                    alert('Push error: ' + res.error + '\n\nIf you see "all included players are not subscribed", check DevTools console logs.');
+                  }
+                }}
+                className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2 px-2.5 rounded-xl transition-all active:scale-95 text-center flex items-center justify-center gap-1"
+              >
+                {isSendingPush ? 'Sending...' : '🔔 Send Push Now'}
+              </button>
+            </div>
           </div>
 
           {/* SECTION 5: PARENTAL GATE & BIOMETRICS DEBUGGER */}

@@ -725,7 +725,7 @@ export const authService = {
       if (user) {
         const isGlobalLinked = storageService.isAccountGloballyLinked();
         const isAnon = user.isAnonymous && !isGlobalLinked;
-        if (!isAnon) { loginToOneSignal(user.uid); }
+        loginToOneSignal(user.uid);
         const currentData = storageService.getUserData('math');
         const updated = {
           ...currentData,

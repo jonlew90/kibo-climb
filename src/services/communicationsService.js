@@ -347,6 +347,16 @@ class CommunicationsService {
         await signInAnonymously(auth);
       }
 
+      if (auth.currentUser?.uid) {
+        try {
+          const { loginToOneSignal, initOneSignal } = await import('../config/onesignal.js');
+          await initOneSignal();
+          await loginToOneSignal(auth.currentUser.uid);
+        } catch (osErr) {
+          console.warn('[CommunicationsService] Could not auto-bind OneSignal uid:', osErr);
+        }
+      }
+
       const sendPushCallable = httpsCallable(functions, 'sendParentEmail');
       const response = await sendPushCallable({
         type: 'push_test',
