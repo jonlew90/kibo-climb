@@ -46,7 +46,7 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 exports.sendParentEmail = onCall(
   {
     cors: true,
-    secrets: ["RESEND_API_KEY"]
+    secrets: ["RESEND_API_KEY", "ONESIGNAL_REST_API_KEY"]
   },
   async (request) => {
     if (!request.auth || !request.auth.uid) {
