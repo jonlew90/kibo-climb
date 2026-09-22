@@ -92,7 +92,12 @@ export default function DevControlPanel({
                   kibodev
                 </span>
               </h3>
-              <p className="text-xs text-slate-400 font-medium">Quick state overrides for debugging & testing</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-xs text-slate-400 font-medium">Quick state overrides for debugging</p>
+                <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">
+                  Build: {typeof __BUILD_TIME__ !== 'undefined' ? new Date(__BUILD_TIME__).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Development'}
+                </span>
+              </div>
             </div>
           </div>
           <button
@@ -101,7 +106,6 @@ export default function DevControlPanel({
           >
             <X className="w-5 h-5 stroke-[2.5]" />
           </button>
-<button onClick={() => window.testRecordDailyPractice && window.testRecordDailyPractice()} className="w-full py-1.5 px-3 bg-fuchsia-50 text-fuchsia-700 border-2 border-fuchsia-200 rounded-xl font-bold hover:bg-fuchsia-100">Trigger Daily Practice</button>
         </div>
 
         {/* Success Toast Banner */}
