@@ -7,7 +7,7 @@ import { BADGES_CATALOG } from '../data/badges';
 import { soundFx } from '../utils/audio';
 import { pluralize, formatTime } from '../utils/formatters';
 import { getNotificationPrefs, saveNotificationPrefs, saveProfileReminderPrefs, requestNotificationPermission } from '../utils/notifications';
-import { promptForPushPermissions } from '../config/onesignal';
+import { promptForPushPermissions, setOneSignalScreen } from '../config/onesignal';
 import { calculateDomainMastery, calculateAdaptiveCompetenceProfile } from '../utils/domainStats';
 import { calculateConceptBreakdown, generateParentInsightCards } from '../utils/skipDiagnosticEngine';
 import { getCompetenceRankTier, getCompetenceDescription, getCompetenceTierObj } from '../utils/GameEconomyModel';
@@ -179,6 +179,7 @@ export default function ParentDashboardModal({
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
     if (isOpen) {
+      setOneSignalScreen('parent_dashboard');
       const activeId = storageService.getActiveProfileId();
       setViewingProfileId(activeId);
       setLiveUserData(getProfileSubjectData(activeId, selectedSubject));
@@ -186,6 +187,8 @@ export default function ParentDashboardModal({
       if (initialTab) {
         setActiveTab(initialTab);
       }
+    } else {
+      setOneSignalScreen('game');
     }
   }
   const [showEditProfile, setShowEditProfile] = useState(false);

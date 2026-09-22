@@ -47,10 +47,12 @@ export default function KiboBreakOverlay({
   const isMultiSubjectClaimed = questService.isDailyMultiSubjectBonusClaimed(activeProfileId);
   const altitudeEarned = (displayCorrect * 10) + (Math.max(0, totalCount - displayCorrect) * 2);
 
-  const effectivePracticeTier = practiceTier || (practiceTitle ? parseInt(practiceTitle.replace(/\D+/g, ''), 10) || 1 : 1);
+  const isWeakAreas = practiceTier === 'weak_areas' || (typeof practiceTitle === 'string' && practiceTitle.toLowerCase().includes('weak'));
+  const effectivePracticeTier = isWeakAreas ? 1 : (practiceTier || (practiceTitle ? parseInt(practiceTitle.replace(/\D+/g, ''), 10) || 1 : 1));
   const subjectStrands = SUBJECTS_CONFIG[activeSubject]?.SKILL_STRANDS || SUBJECTS_CONFIG.math.SKILL_STRANDS || [];
   const practicedStrand = subjectStrands.find((s) => s.tier === effectivePracticeTier);
-  const strandLabel = practicedStrand ? practicedStrand.name : `Tier ${effectivePracticeTier}`;
+  const strandLabel = isWeakAreas ? 'Targeted Review' : (practicedStrand ? practicedStrand.name : `Tier ${effectivePracticeTier}`);
+  const displayPracticeTierLabel = isWeakAreas ? 'Weak Areas' : `Tier ${effectivePracticeTier}`;
   const recommendedWorksheet = isPracticeMode ? getBestWorksheetForTier(activeSubject, effectivePracticeTier) : null;
 
   return (
@@ -210,15 +212,15 @@ export default function KiboBreakOverlay({
                 <span className="text-base sm:text-lg shrink-0">🎯</span>
                 <div className="text-left min-w-0">
                   <span className="text-[10px] sm:text-xs font-black text-indigo-800 uppercase tracking-wider block">
-                    Tier Practiced
+                    {isWeakAreas ? 'Practice Mode' : 'Tier Practiced'}
                   </span>
                   <span className="text-xs sm:text-sm font-black text-indigo-950 truncate block">
-                    Tier {effectivePracticeTier} • {strandLabel}
+                    {isWeakAreas ? 'Target Weak Areas Drill' : `${displayPracticeTierLabel} • ${strandLabel}`}
                   </span>
                 </div>
               </div>
               <span className="text-xs sm:text-sm font-black text-indigo-950 bg-white px-2.5 py-0.5 sm:py-1 rounded-xl border border-indigo-200 shadow-inner shrink-0 ml-2">
-                Tier {effectivePracticeTier}
+                {displayPracticeTierLabel}
               </span>
             </div>
           )}
@@ -289,10 +291,10 @@ export default function KiboBreakOverlay({
                   <div className="flex items-center gap-2 min-w-0">
                     <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
                     <div className="min-w-0">
-                      <span className="text-[11px] font-black text-slate-800 truncate block">
+                      <span className="text-[11px] font-black text-slate-800 line-clamp-2 leading-tight block">
                         📄 Print offline drill: {recommendedWorksheet.title}
                       </span>
-                      <span className="text-[10px] font-semibold text-slate-500 block">
+                      <span className="text-[10px] font-semibold text-slate-500 block mt-0.5">
                         16 problems + parent answer key
                       </span>
                     </div>

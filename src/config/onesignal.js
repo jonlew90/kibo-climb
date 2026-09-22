@@ -119,3 +119,53 @@ export const promptForPushPermissions = async () => {
     return false;
   }
 };
+
+/**
+ * Sets an in-app trigger key/value for targeted In-App Messages in OneSignal.
+ * E.g.: sendOneSignalTrigger('screen', 'parent_dashboard')
+ */
+export const sendOneSignalTrigger = (key, value) => {
+  if (!key) return;
+
+  try {
+    // 1. Native Capacitor
+    if (Capacitor?.isNativePlatform() && OneSignalCapacitor?.InAppMessages?.addTrigger) {
+      OneSignalCapacitor.InAppMessages.addTrigger(key, value);
+      console.log(`[OneSignal] Native trigger set: ${key}=${value}`);
+      return;
+    }
+
+    // 2. Global Web OneSignal window object (OneSignal SDK v16 / Web)
+    const osObj = (typeof window !== 'undefined' && window.OneSignal) || OneSignalReact;
+    if (osObj) {
+      if (typeof osObj.InAppMessages?.addTrigger === 'function') {
+        osObj.InAppMessages.addTrigger(key, value);
+        console.log(`[OneSignal] Web InAppMessages trigger set: ${key}=${value}`);
+      } else if (typeof osObj.InAppMessages?.addTriggers === 'function') {
+        osObj.InAppMessages.addTriggers({ [key]: value });
+        console.log(`[OneSignal] Web InAppMessages addTriggers set: ${key}=${value}`);
+      } else if (typeof osObj.addTrigger === 'function') {
+        osObj.addTrigger(key, value);
+        console.log(`[OneSignal] Legacy addTrigger set: ${key}=${value}`);
+      } else if (typeof osObj.push === 'function') {
+        osObj.push(() => {
+          if (window.OneSignal?.InAppMessages?.addTrigger) {
+            window.OneSignal.InAppMessages.addTrigger(key, value);
+          } else if (window.OneSignal?.addTrigger) {
+            window.OneSignal.addTrigger(key, value);
+          }
+          console.log(`[OneSignal] Queued trigger set: ${key}=${value}`);
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('[OneSignal] Failed to set In-App Message trigger:', err);
+  }
+};
+
+/**
+ * Convenience helper to set the current active screen context.
+ */
+export const setOneSignalScreen = (screenName) => {
+  sendOneSignalTrigger('screen', screenName);
+};
