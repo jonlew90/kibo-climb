@@ -56,6 +56,33 @@ class SoundSystem {
 
     this._initBgmAudio();
     this._setupUnlock();
+    this._setupVisibilityListener();
+  }
+
+  _setupVisibilityListener() {
+    if (typeof document === 'undefined') return;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        // Tab is hidden / backgrounded: pause BGM and suspend AudioContext
+        if (this._bgmAudio && !this._bgmAudio.paused) {
+          try { this._bgmAudio.pause(); } catch (e) {}
+        }
+        if (this.ctx && this.ctx.state === 'running') {
+          try { this.ctx.suspend().catch(() => {}); } catch (e) {}
+        }
+      } else {
+        // Tab is visible again: resume AudioContext and BGM if not muted
+        if (this.ctx && this.ctx.state === 'suspended' && this._unlocked) {
+          try { this.ctx.resume().catch(() => {}); } catch (e) {}
+        }
+        if (this.currentBgmKey && !this.isMusicMuted && !this.isMuted && this._bgmAudio && this._bgmAudio.paused) {
+          try {
+            const playPromise = this._bgmAudio.play();
+            if (playPromise !== undefined) playPromise.catch(() => {});
+          } catch (e) {}
+        }
+      }
+    });
   }
 
   _initBgmAudio() {
