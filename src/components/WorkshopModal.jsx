@@ -58,8 +58,7 @@ import {
   getItemSellBackPrice,
   getRealMoneyItemClubPrice,
   getRealMoneyItemClubSavings,
-  isWearableItem,
-  getOwnedItems
+  isWearableItem
 } from '../utils/itemsCatalog';
 import { soundFx } from '../utils/audio';
 import { storageService } from '../services/storageService';
@@ -332,9 +331,6 @@ export default function WorkshopModal({
     setSelectedItemDetail(null);
   }, [viewMode, activeHub, selectedSlot, seasonalEventFilter, highlightItemId]);
 
-  const unlockedWearablesCount = useMemo(() => {
-    return getOwnedItems(unlockedItems).length;
-  }, [unlockedItems]);
 
   const currentDate = useMemo(() => storageService.getCurrentDate(), [isOpen]);
   const availableSeasonalEvents = useMemo(() => getAvailableSeasonalEvents(currentDate), [currentDate]);
@@ -787,11 +783,6 @@ export default function WorkshopModal({
           >
             <span>👗</span>
             <span>Closet</span>
-            <span className={`text-[9px] px-1 py-0.2 rounded-full font-black ${
-              viewMode === 'closet' ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'
-            }`}>
-              {unlockedWearablesCount}
-            </span>
           </button>
         </div>
 
