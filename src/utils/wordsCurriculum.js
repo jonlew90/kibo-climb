@@ -1,3 +1,5 @@
+import { isNearTierThreshold as checkNearTierThreshold } from './SkillTreeConfig.js';
+
 export function getTierFromRating(rating = 1000) {
   const numRating = Number(rating) || 1000;
   if (numRating < 1200) return 1; // Tier 1: CVC & Sight Words
@@ -339,9 +341,9 @@ export const WORDS_CURRICULUM_TIERS = [
   }
 ];
 
+// Checks if a player's rating is within 1 climb question (30 pts) of crossing into the next curriculum tier
 export function isNearTierThreshold(currentRating) {
-  const boundaries = [500, 750, 1000, 1250, 1500, 1750, 2000];
-  return boundaries.some((threshold) => currentRating >= threshold - 35 && currentRating < threshold);
+  return checkNearTierThreshold(currentRating, 'words');
 }
 
 export function calculateStars(accuracyPct, durationInSeconds, tierConfig = null, totalQuestions = 15) {

@@ -343,9 +343,10 @@ export const CODING_CURRICULUM_TIERS = [
   }
 ];
 
+import { isNearTierThreshold as checkNearTierThreshold } from './SkillTreeConfig.js';
+
 export function isNearTierThreshold(currentRating) {
-  const boundaries = [1200, 1400, 1600, 1800, 2000, 2200, 2400];
-  return boundaries.some((threshold) => Math.abs(currentRating - threshold) <= 25);
+  return checkNearTierThreshold(currentRating, 'coding');
 }
 
 export function calculateStars(accuracyPct, durationInSeconds, tierConfig = null, totalQuestions = 15) {

@@ -1,3 +1,5 @@
+import { isNearTierThreshold as checkNearTierThreshold } from './SkillTreeConfig.js';
+
 export function getTierFromRating(rating = 1000) {
   const numRating = Number(rating) || 1000;
   if (numRating < 1200) return 1; // Tier 1: Sums & Differences to 20 (Addition & Subtraction only)
@@ -410,10 +412,9 @@ export function getNormalizedProblemKey(probData) {
   return displayString || `${num1}${operatorSymbol}${num2}`;
 }
 
-// Checks if a player's rating is within 1 climb question (35 pts) of crossing into the next curriculum tier
+// Checks if a player's rating is within 1 climb question (30 pts) of crossing into the next curriculum tier
 export function isNearTierThreshold(currentRating) {
-  const boundaries = [500, 750, 1000, 1250, 1500, 1750, 2000];
-  return boundaries.some((threshold) => currentRating >= threshold - 35 && currentRating < threshold);
+  return checkNearTierThreshold(currentRating, 'math');
 }
 
 // Problem generator per Tier (with cumulative topic review for higher tiers)

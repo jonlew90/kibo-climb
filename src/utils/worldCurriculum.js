@@ -194,9 +194,10 @@ export const getTierForRating = (rating = 1000) => {
 
 export const getTierFromRating = getTierForRating;
 
+import { isNearTierThreshold as checkNearTierThreshold } from './SkillTreeConfig.js';
+
 export const isNearTierThreshold = (rating) => {
-  const thresholds = [1200, 1400, 1600, 1800, 2000, 2200, 2400];
-  return thresholds.some(t => Math.abs(rating - t) <= 25);
+  return checkNearTierThreshold(rating, 'world');
 };
 
 

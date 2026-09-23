@@ -234,6 +234,22 @@ describe('Kibo World Curriculum & Deduplication Engine', () => {
     });
   });
 
+  it('should ensure question prompts do not reveal the correct answer in definition or description', () => {
+    for (let tier = 1; tier <= 8; tier++) {
+      const templates = getTierCandidateTemplates(tier);
+      templates.forEach(t => {
+        if (t.type === 'geopolitical_anomaly' || t.type === 'country_trivia') {
+          // Check that prompt does not contain the country name
+          const promptLower = t.prompt.toLowerCase();
+          const answerLower = t.correctAnswer.toLowerCase();
+          expect(promptLower.includes(`"${answerLower}`)).toBe(false);
+          expect(promptLower.includes(`: "${answerLower}`)).toBe(false);
+          expect(promptLower.includes(`is described by: "${answerLower}`)).toBe(false);
+        }
+      });
+    }
+  });
+
   it('should ensure question hints do not duplicate compass orientation clues', () => {
     for (let tier = 1; tier <= 5; tier++) {
       const templates = getTierCandidateTemplates(tier);

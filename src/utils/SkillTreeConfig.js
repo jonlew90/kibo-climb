@@ -42,6 +42,18 @@ export function getSubjectStrands(subjectId = 'math') {
 }
 
 /**
+ * Checks if a player's rating is within gatekeeper distance (30 pts) of crossing into the next tier.
+ * Derives threshold boundaries directly from SUBJECTS_CONFIG to prevent drift between subjects.
+ */
+export function isNearTierThreshold(currentRating = 1000, subjectId = 'math') {
+  const strands = getSubjectStrands(subjectId);
+  if (!strands || strands.length === 0) return false;
+  const numRating = Number(currentRating) || 1000;
+  // Tier thresholds are min ratings for tiers > 1
+  return strands.some(s => s.tier > 1 && numRating >= s.ratingBand.min - 30 && numRating < s.ratingBand.min);
+}
+
+/**
  * Returns the grade level string for a subject and rating.
  */
 export function getGradeLevelForSubject(rating = 1000, subjectId = 'math') {

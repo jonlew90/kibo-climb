@@ -43,7 +43,7 @@ export default function ChallengeBanner({
               : isProbe
               ? 'Calibrating skill rating with an advanced challenge!'
               : isGatekeeper
-              ? '1 question away from entering the next skill tier!'
+              ? 'Tier Promotion Challenge! Solve to enter the next skill tier!'
               : concept
               ? 'Mastering this topic drill!'
               : 'Special Challenge Active'}

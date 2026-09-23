@@ -790,55 +790,55 @@ export const GEOPOLITICAL_ANOMALIES = [
     type: 'enclave',
     name: 'Lesotho',
     enclosingCountry: 'South Africa',
-    fact: 'Lesotho is an independent sovereign kingdom completely surrounded by South Africa.'
+    fact: 'This independent sovereign kingdom is an enclave completely surrounded by South Africa.'
   },
   {
     type: 'enclave',
     name: 'San Marino',
     enclosingCountry: 'Italy',
-    fact: 'San Marino is the world\'s oldest continuous republic, completely surrounded by Italy.'
+    fact: 'This microstate is the world\'s oldest continuous republic and is an enclave completely surrounded by Italy.'
   },
   {
     type: 'enclave',
     name: 'Vatican City',
     enclosingCountry: 'Italy',
-    fact: 'Vatican City is the smallest independent state on Earth, located entirely inside the city of Rome, Italy.'
+    fact: 'This sovereign city-state is the smallest independent country on Earth, located entirely inside the city of Rome, Italy.'
   },
   {
     type: 'doubly_landlocked',
     name: 'Liechtenstein',
     neighborTypes: 'Surrounded entirely by landlocked nations (Switzerland and Austria)',
-    fact: 'Liechtenstein is one of only two doubly-landlocked countries in the world.'
+    fact: 'This European alpine principality is one of only two doubly-landlocked countries in the world, bordered solely by Switzerland and Austria.'
   },
   {
     type: 'doubly_landlocked',
     name: 'Uzbekistan',
     neighborTypes: 'Surrounded entirely by landlocked nations in Central Asia',
-    fact: 'Uzbekistan is one of only two doubly-landlocked countries in the world.'
+    fact: 'This Central Asian nation is one of only two doubly-landlocked countries in the world, surrounded entirely by other landlocked nations.'
   },
   {
     type: 'transcontinental',
     name: 'Turkey',
     continents: ['Europe', 'Asia'],
-    fact: 'Turkey spans Southeastern Europe (Thrace) and Western Asia (Anatolia) across the Turkish Straits.'
+    fact: 'This transcontinental nation spans Southeastern Europe (East Thrace) and Western Asia (Anatolia) across the Turkish Straits.'
   },
   {
     type: 'transcontinental',
     name: 'Egypt',
     continents: ['Africa', 'Asia'],
-    fact: 'Egypt is in North Africa, while its Sinai Peninsula lies in Western Asia across the Suez Canal.'
+    fact: 'This transcontinental country is mainly located in North Africa, while its Sinai Peninsula lies in Western Asia across the Suez Canal.'
   },
   {
     type: 'transcontinental',
     name: 'Panama',
     continents: ['North America', 'South America'],
-    fact: 'Panama bridges Central North America with South America.'
+    fact: 'This isthmus country forms the transcontinental bridge connecting Central North America with South America.'
   },
   {
     type: 'transcontinental',
     name: 'Kazakhstan',
     continents: ['Asia', 'Europe'],
-    fact: 'Most of Kazakhstan lies in Central Asia, but the area west of the Ural River lies in Eastern Europe.'
+    fact: 'This vast transcontinental nation lies mostly in Central Asia, with the portion west of the Ural River extending into Eastern Europe.'
   }
 ];
 
