@@ -1638,7 +1638,7 @@ export default function App() {
     } else {
       const owned = consumables.doubleSparksPotionCount ?? consumables.doubleCoinPotionCount ?? 0;
       if (owned <= 0) return;
-      soundFx.playSparkCollect();
+      soundFx.playItemUse();
       const nextPotionCount = owned - 1;
       const nextConsumables = {
         ...consumables,

@@ -25,12 +25,13 @@ const SFX_FILES = {
   victory:        '/audio/sfx_victory.ogg',
   incorrect:      '/audio/sfx_incorrect.ogg',
   tap:            '/audio/sfx_tap.ogg',
-  spark:          '/audio/sfx_spark.ogg',
+  spark:          '/audio/sfx_item.mp3',
   badge:          '/audio/sfx_badge.ogg',
   block_complete: '/audio/sfx_block_complete.ogg',
   streak:         '/audio/sfx_streak.ogg',
   brand_intro:    '/audio/sfx_brand_intro.ogg',
   toggle:         '/audio/sfx_toggle.ogg',
+  item:           '/audio/sfx_item.mp3',
 };
 
 const DEFAULT_BGM_VOLUMES = {
@@ -470,6 +471,29 @@ class SoundSystem {
     g.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
     osc.connect(g); g.connect(this.ctx.destination);
     osc.start(now); osc.stop(now + 0.07);
+  }
+
+  // ─── SFX: Item Activation (e.g. 2x Potion) ───────────────────────────────
+
+  async playItemUse() {
+    triggerHaptic([8, 12]);
+    const used = await this._playFile('item', 0.85);
+    if (used) return;
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    // Pleasant bubbling ascending chime as synthesis fallback
+    [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * 0.06);
+      g.gain.setValueAtTime(0.2, now + i * 0.06);
+      g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.25);
+      osc.connect(g); g.connect(this.ctx.destination);
+      osc.start(now + i * 0.06); osc.stop(now + i * 0.06 + 0.25);
+    });
   }
 }
 
