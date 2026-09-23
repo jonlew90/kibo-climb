@@ -149,8 +149,8 @@ export default function App() {
 
   useEffect(() => {
     const preload = () => { soundFx.preloadAll(); };
-    window.addEventListener('pointerdown', preload, { once: true, passive: true });
-    return () => window.removeEventListener('pointerdown', preload);
+    window.addEventListener('click', preload, { once: true, passive: true });
+    return () => window.removeEventListener('click', preload);
   }, []);
 
   useEffect(() => {

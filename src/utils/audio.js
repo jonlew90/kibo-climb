@@ -74,7 +74,7 @@ class SoundSystem {
     if (typeof window === 'undefined') return;
     const unlock = async () => {
       this._unlocked = true;
-      ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => {
+      ['click', 'pointerup', 'keydown', 'touchend'].forEach(evt => {
         window.removeEventListener(evt, unlock, true);
       });
       this.init();
@@ -85,7 +85,7 @@ class SoundSystem {
         this.startBGM(this.pendingBgmKey, this.pendingBgmVolume);
       }
     };
-    ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => {
+    ['click', 'pointerup', 'keydown', 'touchend'].forEach(evt => {
       window.addEventListener(evt, unlock, { once: true, passive: true, capture: true });
     });
   }
@@ -158,8 +158,7 @@ class SoundSystem {
 
   // Preload all SFX buffers after first user interaction
   preloadAll() {
-    this.init();
-    if (!this.ctx) return;
+    if (!this._unlocked || !this.ctx) return;
     Object.keys(SFX_FILES).forEach(k => {
       if (!k.startsWith('bgm_')) {
         this._loadBuffer(k);
