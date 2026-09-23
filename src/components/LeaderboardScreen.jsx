@@ -303,7 +303,7 @@ export default function LeaderboardScreen({
           profileId: pid
         });
         if (rewardResult && rewardResult.success) {
-          soundFx.playCelebration?.();
+          soundFx.playVictory();
           setWeeklySettlementReward(rewardResult);
         }
       }
@@ -2185,7 +2185,7 @@ export default function LeaderboardScreen({
             <button
               type="button"
               onClick={() => {
-                soundFx.playKeyTap();
+                soundFx.playSparkCollect();
                 setWeeklySettlementReward(null);
               }}
               className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 active:scale-95 text-white rounded-2xl font-black text-sm shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2"
