@@ -1,4 +1,5 @@
 import React from 'react';
+import { Zap } from 'lucide-react';
 
 export default function ChallengeBanner({
   isProbe = false,
@@ -26,8 +27,9 @@ export default function ChallengeBanner({
             </span>
           )}
           {isGatekeeper && !isProbe && (
-            <span className="font-black uppercase text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 px-2 py-0.5 rounded-full border border-amber-500 text-[10px] leading-none shrink-0 shadow-2xs animate-pulse">
-              ⚡ Gatekeeper
+            <span className="font-black uppercase text-amber-950 bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 px-2 py-0.5 rounded-full border-2 border-yellow-500 text-[10px] leading-none shrink-0 shadow-2xs animate-pulse flex items-center gap-1">
+              <Zap className="w-3 h-3 text-amber-800 fill-amber-500 stroke-[2.5] shrink-0" />
+              <span>Gatekeeper</span>
             </span>
           )}
           {concept && (
@@ -49,8 +51,9 @@ export default function ChallengeBanner({
         </div>
 
         {isDoubleSparks && (
-          <span className="text-[10px] bg-amber-400 text-amber-950 px-1.5 py-0.5 rounded-md font-black border border-amber-500 leading-none shrink-0 shadow-2xs">
-            2x Sparks ⚡
+          <span className="text-[10px] bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 text-amber-950 px-2 py-0.5 rounded-full font-black border-2 border-yellow-500 leading-none shrink-0 shadow-xs flex items-center gap-1">
+            <span>2x Sparks</span>
+            <Zap className="w-3 h-3 text-amber-800 fill-amber-500 stroke-[2.5] shrink-0" />
           </span>
         )}
       </div>
