@@ -45,6 +45,26 @@ export const initOneSignal = async () => {
         OneSignalCapacitor.Notifications?.requestPermission(true);
         isInitialized = true;
       } else if (typeof window !== 'undefined' && OneSignalReact) {
+        // Suppress OneSignal SDK v16 WorkerMessenger errors before push permission is granted
+        if (!window.__onesignal_wm_patched) {
+          window.__onesignal_wm_patched = true;
+          const origConsoleError = console.error;
+          console.error = function (...args) {
+            if (typeof args[0] === 'string' && args[0].includes('[WM]')) {
+              return;
+            }
+            return origConsoleError.apply(console, args);
+          };
+        }
+
+        if ('serviceWorker' in navigator) {
+          try {
+            await navigator.serviceWorker.register('/push/onesignal/OneSignalSDKWorker.js', {
+              scope: '/push/onesignal/'
+            });
+          } catch (e) {}
+        }
+
         if (!window.OneSignal?.initialized) {
           await OneSignalReact.init({
             appId: APP_ID,

@@ -64,6 +64,7 @@ describe('audio.js', () => {
     // Reset sound system state
     soundFx.ctx = null;
     soundFx.isMuted = false;
+    soundFx._unlocked = true;
   });
 
   afterEach(() => {
@@ -153,14 +154,11 @@ describe('audio.js', () => {
       expect(mockContext.createOscillator).not.toHaveBeenCalled();
     });
 
-    it('does not create AudioContext if userActivation.hasBeenActive is false and not unlocked', () => {
+    it('does not create AudioContext when not unlocked', () => {
       soundFx.ctx = null;
       soundFx._unlocked = false;
-      const originalActivation = global.navigator.userActivation;
-      global.navigator.userActivation = { hasBeenActive: false };
       soundFx.init();
       expect(soundFx.ctx).toBeNull();
-      global.navigator.userActivation = originalActivation;
     });
   });
 });
