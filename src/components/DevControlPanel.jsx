@@ -92,8 +92,11 @@ export default function DevControlPanel({
                   kibodev
                 </span>
               </h3>
-              <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex flex-wrap items-center gap-2 mt-0.5">
                 <p className="text-xs text-slate-400 font-medium">Quick state overrides for debugging</p>
+                <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-700/60">
+                  v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0-mvp'}
+                </span>
                 <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">
                   Build: {typeof __BUILD_TIME__ !== 'undefined' ? new Date(__BUILD_TIME__).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Development'}
                 </span>

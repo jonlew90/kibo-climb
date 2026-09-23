@@ -1,7 +1,7 @@
 {
   "name": "@kibo-climb/math-pwa",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.0-mvp",
   "type": "module",
   "scripts": {
     "dev": "vite",
