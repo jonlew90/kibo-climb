@@ -2839,7 +2839,7 @@ export default function App() {
               type="button"
               onClick={handleOpenBadgesModal}
               className="flex items-center gap-2 shrink-0 ml-auto sm:ml-0 group cursor-pointer hover:opacity-90 active:scale-95 transition-all min-w-0"
-              title={tierProgress.isMaxTier ? 'Summit Legend! 👑' : `Tier ${tierProgress.tier}: ${tierProgress.tierName} • ${tierProgress.progressPct}% (${tierProgress.pointsToNext} pts to Tier ${tierProgress.tier + 1})`}
+              title={tierProgress.isMaxTier ? `Summit Legend! 👑 (${Math.round(liveCompetenceRating || 1000)} Rating)` : `Tier ${tierProgress.tier}: ${tierProgress.tierName} • ${tierProgress.progressPct}% (${tierProgress.pointsToNext} pts to Tier ${tierProgress.tier + 1})`}
               aria-label={`Subject tier ${tierProgress.tier}, ${tierProgress.progressPct}% progress`}
             >
               {/* Tier label: "Tier 3 · Pathfinder" */}
@@ -2857,7 +2857,7 @@ export default function App() {
                     </span>
                   </div>
                 )}
-                {/* Progress bar + pct + pts-to-next */}
+                {/* Progress bar + live rating / pct + pts-to-next */}
                 <div className="flex items-center gap-1.5">
                   <div className={`w-20 sm:w-32 h-2 ${tierProgress.isMaxTier ? 'bg-amber-100' : subjectTheme.bg} rounded-full overflow-hidden border border-slate-200/80`}>
                     <div
@@ -2866,7 +2866,7 @@ export default function App() {
                     />
                   </div>
                   <span className="text-[10px] font-black text-slate-600 tabular-nums leading-none whitespace-nowrap">
-                    {tierProgress.isMaxTier ? '100%' : `${tierProgress.progressPct}%`}
+                    {tierProgress.isMaxTier ? `${Math.round(liveCompetenceRating || 1000)} pts` : `${tierProgress.progressPct}%`}
                     {!tierProgress.isMaxTier && <span className="text-slate-400 font-normal hidden sm:inline"> · {tierProgress.pointsToNext} pts → T{tierProgress.tier + 1}</span>}
                   </span>
                 </div>
