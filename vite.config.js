@@ -22,11 +22,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg', 'favicon.png', 'OneSignalSDKWorker.js', 'geo/*.json'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg', 'favicon.png', 'OneSignalSDKWorker.js', 'push/onesignal/OneSignalSDKWorker.js', 'geo/*.json'],
       manifest: false, // Use existing site.webmanifest
       workbox: {
         inlineWorkboxRuntime: true,
-        importScripts: ['https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js'],
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
         runtimeCaching: [
           {

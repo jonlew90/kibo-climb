@@ -93,6 +93,13 @@ class SoundSystem {
   // ─── Context init ────────────────────────────────────────────────────────
 
   init() {
+    if (typeof window === 'undefined') return;
+    if (typeof navigator !== 'undefined' &&
+        navigator.userActivation &&
+        navigator.userActivation.hasBeenActive === false &&
+        !this._unlocked) {
+      return;
+    }
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {

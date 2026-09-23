@@ -152,5 +152,15 @@ describe('audio.js', () => {
       expect(global.navigator.vibrate).toHaveBeenCalledWith([20, 30, 20]);
       expect(mockContext.createOscillator).not.toHaveBeenCalled();
     });
+
+    it('does not create AudioContext if userActivation.hasBeenActive is false and not unlocked', () => {
+      soundFx.ctx = null;
+      soundFx._unlocked = false;
+      const originalActivation = global.navigator.userActivation;
+      global.navigator.userActivation = { hasBeenActive: false };
+      soundFx.init();
+      expect(soundFx.ctx).toBeNull();
+      global.navigator.userActivation = originalActivation;
+    });
   });
 });

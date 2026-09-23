@@ -49,8 +49,8 @@ export const initOneSignal = async () => {
           await OneSignalReact.init({
             appId: APP_ID,
             allowLocalhostAsSecureOrigin: true,
-            serviceWorkerParam: { scope: '/' },
-            serviceWorkerPath: 'sw.js',
+            serviceWorkerPath: 'push/onesignal/OneSignalSDKWorker.js',
+            serviceWorkerParam: { scope: '/push/onesignal/' },
             notifyButton: {
               enable: false,
             },
