@@ -94,6 +94,15 @@ export default function CodingSessionView({
   const friend1TooltipTimeoutRef = useRef(null);
   const friend2TimeoutRef = useRef(null);
   const friend2TooltipTimeoutRef = useRef(null);
+  const bannerTimerRef = useRef(null);
+
+  const triggerToastBanner = (bannerObj, durationMs = 1400) => {
+    setFeedbackBanner(bannerObj);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    bannerTimerRef.current = setTimeout(() => {
+      setFeedbackBanner(null);
+    }, durationMs);
+  };
 
   useEffect(() => {
     return () => {
@@ -101,6 +110,7 @@ export default function CodingSessionView({
       if (friend1TooltipTimeoutRef.current) clearTimeout(friend1TooltipTimeoutRef.current);
       if (friend2TimeoutRef.current) clearTimeout(friend2TimeoutRef.current);
       if (friend2TooltipTimeoutRef.current) clearTimeout(friend2TooltipTimeoutRef.current);
+      if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
     };
   }, []);
 
@@ -284,6 +294,8 @@ export default function CodingSessionView({
   const handleStartClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     storageService.clearActiveClimbState(profileId, 'coding');
     setSavedClimbState(null);
     setQuestionsAnswered(0);
@@ -311,6 +323,8 @@ export default function CodingSessionView({
   const handleAbandonClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     storageService.clearActiveClimbState(profileId, 'coding');
     setSavedClimbState(null);
     setQuestionsAnswered(0);
@@ -335,15 +349,17 @@ export default function CodingSessionView({
     const activeTier = isFTUX ? 1 : getTierFromRating(competenceRank);
     const freshBatch = generateProblems(15, activeTier, [], blockSeenKeysRef.current);
     setProblemQueue(freshBatch);
-    setFeedbackBanner({
+    triggerToastBanner({
       type: 'info',
       text: 'Coding mission reset! Ready for a fresh start 🤖'
-    });
+    }, 1400);
   };
 
   const handleResumeClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     const saved = storageService.getActiveClimbState(profileId, 'coding');
     if (saved) {
       setProblemQueue(saved.problemQueue);
@@ -910,7 +926,10 @@ export default function CodingSessionView({
         <ToastBanner
           feedbackBanner={feedbackBanner}
           hasStartedClimb={hasStartedClimb}
-          onDismiss={() => setFeedbackBanner(null)}
+          onDismiss={() => {
+            if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+            setFeedbackBanner(null);
+          }}
         />
 
         {/* DUOLINGO-STYLE CLIMB FOCUS TOP BAR (Active during climb) */}
@@ -925,7 +944,7 @@ export default function CodingSessionView({
             consumables={consumables}
             onExitOrPause={handleExitOrPauseClimb}
             onOpenFeedback={() => setShowQuestionFeedback(true)}
-            onTriggerToastBanner={(banner) => setFeedbackBanner(banner)}
+            onTriggerToastBanner={triggerToastBanner}
           />
         )}
 
@@ -955,7 +974,7 @@ export default function CodingSessionView({
               consumables={consumables}
               isDoubleSparksActive={isDoubleSparksActive}
               onToggleDoubleSparksPotion={onToggleDoubleSparksPotion}
-              onTriggerToastBanner={setFeedbackBanner}
+              onTriggerToastBanner={triggerToastBanner}
               onOpenWorkshop={onOpenWorkshop}
               onStartClimb={handleStartClimb}
               onResumeClimb={handleResumeClimb}

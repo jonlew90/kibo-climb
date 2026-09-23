@@ -530,6 +530,8 @@ export default function WordsSessionView({
   const handleStartClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     blockStartTimeRef.current = performance.now();
     problemStartTimeRef.current = performance.now();
     storageService.clearActiveClimbState(profileId, 'words');
@@ -547,6 +549,8 @@ export default function WordsSessionView({
   const handleAbandonClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     storageService.clearActiveClimbState(profileId, 'words');
     setSavedClimbState(null);
     setBlockAnswers([]);
@@ -602,6 +606,8 @@ export default function WordsSessionView({
   const handleResumeClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     const saved = storageService.getActiveClimbState(profileId, 'words');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWordsProblem)) {
       prevIndexRef.current = saved.currentIndex || 0;

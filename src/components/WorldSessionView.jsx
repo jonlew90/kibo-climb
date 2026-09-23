@@ -550,6 +550,8 @@ export default function WorldSessionView({
   const handleStartClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     blockStartTimeRef.current = performance.now();
     problemStartTimeRef.current = performance.now();
     storageService.clearActiveClimbState(profileId, 'world');
@@ -569,6 +571,8 @@ export default function WorldSessionView({
   const handleAbandonClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     storageService.clearActiveClimbState(profileId, 'world');
     setSavedClimbState(null);
     setBlockAnswers([]);
@@ -626,6 +630,8 @@ export default function WorldSessionView({
   const handleResumeClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     const saved = storageService.getActiveClimbState(profileId, 'world');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isWorldProblem)) {
       prevIndexRef.current = saved.currentIndex || 0;
@@ -1710,7 +1716,7 @@ export default function WorldSessionView({
 
             return (
               <div
-                className={`w-full max-w-md shrink-0 flex flex-col justify-between bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 text-center transition-all duration-300 space-y-1.5 sm:space-y-2 relative shadow-lg ${
+                className={`w-full max-w-md md:max-w-lg shrink-0 flex flex-col justify-between bg-white border-3 sm:border-4 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 text-center transition-all duration-300 space-y-1.5 sm:space-y-2 relative shadow-lg ${
                   streakCfg.cardGlow
                 } ${isShaking ? 'animate-shake border-rose-400 bg-rose-50/50' : 'border-slate-200'}`}
               >
@@ -1860,8 +1866,14 @@ export default function WorldSessionView({
 
                     if (!resolvedMapData && !resolvedShapeSvg && !resolvedFlagData && !resolvedLandmarkData) return null;
 
+                    const isMapVisual = !resolvedFlagData && !resolvedLandmarkData && (resolvedMapData || resolvedShapeSvg);
+
                     return (
-                      <div className="w-full flex items-center justify-center my-0.5 sm:my-1 h-28 sm:h-32 md:h-36 max-w-[280px] sm:max-w-[340px] mx-auto">
+                      <div className={`w-full flex items-center justify-center my-0.5 sm:my-1 mx-auto ${
+                        isMapVisual
+                          ? 'h-[200px] sm:h-[250px] md:h-[290px] max-w-[380px] sm:max-w-[460px] md:max-w-[500px]'
+                          : 'h-28 sm:h-32 md:h-36 max-w-[280px] sm:max-w-[340px]'
+                      }`}>
                         <WorldMediaViewer
                           mapData={resolvedMapData}
                           shapeSvg={resolvedShapeSvg}
@@ -1989,7 +2001,7 @@ export default function WorldSessionView({
 
       {/* NEXT QUESTION / FINISH CLIMB CTA BUTTON */}
       {hasStartedClimb && incorrectReviewData && (
-        <div className="w-full max-w-md shrink-0 animate-pop mt-1 sm:mt-2 space-y-1.5">
+        <div className="w-full max-w-md md:max-w-lg shrink-0 animate-pop mt-1 sm:mt-2 space-y-1.5">
           <button
             type="button"
             autoFocus

@@ -27,7 +27,7 @@ export default memo(function WorldMapViewer({ mapData, shapeSvg, className = '' 
   /* ── Fallback: standalone shapeSvg (no regional context) ── */
   if (!mapData) {
     return (
-      <div className={`w-full max-w-[320px] sm:max-w-[360px] mx-auto rounded-2xl overflow-hidden border-2 border-sky-300 shadow-md bg-gradient-to-b from-sky-100 via-sky-200 to-sky-100 relative ${className}`}>
+      <div className={`w-full h-full rounded-2xl overflow-hidden border-2 border-sky-300 shadow-md bg-gradient-to-b from-sky-100 via-sky-200 to-sky-100 relative ${className}`}>
         <svg viewBox="0 0 200 140" className="w-full h-full block select-none">
           <rect width="100%" height="100%" fill="#bae6fd" />
           <line x1="0" y1="70" x2="200" y2="70" stroke="rgba(255,255,255,0.4)" strokeDasharray="3,3" strokeWidth="0.75" />
@@ -54,7 +54,7 @@ export default memo(function WorldMapViewer({ mapData, shapeSvg, className = '' 
 
   return (
     <div
-      className={`w-full max-w-[320px] sm:max-w-[360px] mx-auto rounded-2xl overflow-hidden border-2 border-sky-300 shadow-md relative select-none ${className}`}
+      className={`w-full h-full rounded-2xl overflow-hidden border-2 border-sky-300 shadow-md relative select-none ${className}`}
       style={{ background: 'linear-gradient(to bottom, #bae6fd, #7dd3fc, #38bdf8)' }}
     >
       <ComposableMap

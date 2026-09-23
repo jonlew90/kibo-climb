@@ -399,6 +399,8 @@ export default function MathSessionView({
   const handleStartClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     blockStartTimeRef.current = performance.now();
     problemStartTimeRef.current = performance.now();
     storageService.clearActiveClimbState(profileId, 'math');
@@ -416,6 +418,8 @@ export default function MathSessionView({
   const handleAbandonClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     storageService.clearActiveClimbState(profileId, 'math');
     setSavedClimbState(null);
     setBlockAnswers([]);
@@ -454,6 +458,8 @@ export default function MathSessionView({
   const handleResumeClimb = () => {
     soundFx.playKeyTap();
     setIsAutoPaused(false);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    setFeedbackBanner(null);
     const saved = storageService.getActiveClimbState(profileId, 'math');
     if (saved && saved.problemQueue && saved.problemQueue.length > 0 && saved.problemQueue.every(isMathProblem)) {
       prevIndexRef.current = saved.currentIndex || 0;
