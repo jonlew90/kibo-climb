@@ -73,19 +73,19 @@ describe('audio.js', () => {
 
   describe('Haptics', () => {
     it('triggers haptics if enabled and supported', () => {
-      triggerHaptic(20);
-      expect(global.navigator.vibrate).toHaveBeenCalledWith(20);
+      triggerHaptic(6);
+      expect(global.navigator.vibrate).toHaveBeenCalledWith(6);
     });
 
     it('does not trigger haptics if disabled', () => {
       setHapticsEnabled(false);
-      triggerHaptic(20);
+      triggerHaptic(6);
       expect(global.navigator.vibrate).not.toHaveBeenCalled();
     });
 
     it('handles lack of navigator.vibrate gracefully', () => {
       global.navigator.vibrate = undefined;
-      expect(() => triggerHaptic(20)).not.toThrow();
+      expect(() => triggerHaptic(6)).not.toThrow();
     });
   });
 
@@ -106,7 +106,7 @@ describe('audio.js', () => {
 
     it('playCorrect plays sound and haptics', async () => {
       await soundFx.playCorrect();
-      expect(global.navigator.vibrate).toHaveBeenCalledWith([20, 30, 20]);
+      expect(global.navigator.vibrate).toHaveBeenCalledWith([6, 12, 6]);
       expect(mockContext.createOscillator).toHaveBeenCalled();
       expect(mockOscillator.type).toBe('sine');
       expect(mockOscillator.start).toHaveBeenCalled();
@@ -114,7 +114,7 @@ describe('audio.js', () => {
 
     it('playIncorrect plays sound and haptics', async () => {
       await soundFx.playIncorrect();
-      expect(global.navigator.vibrate).toHaveBeenCalledWith(40);
+      expect(global.navigator.vibrate).toHaveBeenCalledWith(12);
       expect(mockContext.createOscillator).toHaveBeenCalled();
       expect(mockOscillator.type).toBe('triangle');
       expect(mockOscillator.start).toHaveBeenCalled();
@@ -130,7 +130,7 @@ describe('audio.js', () => {
 
     it('playVictory plays sound and haptics', async () => {
       await soundFx.playVictory();
-      expect(global.navigator.vibrate).toHaveBeenCalledWith([30, 40, 30, 40, 60]);
+      expect(global.navigator.vibrate).toHaveBeenCalledWith([8, 12, 8, 12, 16]);
       expect(mockContext.createOscillator).toHaveBeenCalledTimes(4); // 4 notes
     });
 
@@ -142,7 +142,7 @@ describe('audio.js', () => {
 
     it('playSparkCollect plays sound and haptics', async () => {
       await soundFx.playSparkCollect();
-      expect(global.navigator.vibrate).toHaveBeenCalledWith([20, 20]);
+      expect(global.navigator.vibrate).toHaveBeenCalledWith([6, 8]);
       expect(mockContext.createOscillator).toHaveBeenCalledTimes(2); // 2 notes
     });
 
@@ -150,7 +150,7 @@ describe('audio.js', () => {
       soundFx.setMuted(true);
       soundFx.playCorrect();
       // Should trigger haptics but not create oscillator
-      expect(global.navigator.vibrate).toHaveBeenCalledWith([20, 30, 20]);
+      expect(global.navigator.vibrate).toHaveBeenCalledWith([6, 12, 6]);
       expect(mockContext.createOscillator).not.toHaveBeenCalled();
     });
 

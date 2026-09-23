@@ -8,7 +8,7 @@ export function setHapticsEnabled(enabled) {
   _hapticsEnabled = enabled;
 }
 
-export function triggerHaptic(pattern = 15) {
+export function triggerHaptic(pattern = 6) {
   if (!_hapticsEnabled) return;
   if (typeof window !== 'undefined' && 'navigator' in window && 'vibrate' in navigator) {
     if (navigator.userActivation && navigator.userActivation.hasBeenActive === false) return;
@@ -244,7 +244,7 @@ class SoundSystem {
   // ─── SFX: Correct ────────────────────────────────────────────────────────
 
   async playCorrect() {
-    triggerHaptic([20, 30, 20]);
+    triggerHaptic([6, 12, 6]);
     const used = await this._playFile('correct', 0.8);
     if (used) return;
     // Synthesis fallback: warm two-tone chime
@@ -269,7 +269,7 @@ class SoundSystem {
   // ─── SFX: Incorrect ──────────────────────────────────────────────────────
 
   async playIncorrect() {
-    triggerHaptic(40);
+    triggerHaptic(12);
     const used = await this._playFile('incorrect', 0.7);
     if (used) return;
     // Synthesis fallback: gentle descending wobble (not harsh)
@@ -310,7 +310,7 @@ class SoundSystem {
   // ─── SFX: Victory ────────────────────────────────────────────────────────
 
   async playVictory() {
-    triggerHaptic([30, 40, 30, 40, 60]);
+    triggerHaptic([8, 12, 8, 12, 16]);
     const used = await this._playFile('victory', 0.85);
     if (used) return;
     if (this.isMuted) return;
@@ -341,7 +341,7 @@ class SoundSystem {
   // ─── SFX: Spark Collect ──────────────────────────────────────────────────
 
   async playSparkCollect() {
-    triggerHaptic([20, 20]);
+    triggerHaptic([6, 8]);
     const used = await this._playFile('spark', 0.7);
     if (used) return;
     if (this.isMuted) return;
@@ -363,7 +363,7 @@ class SoundSystem {
   // ─── SFX: Badge Unlock ───────────────────────────────────────────────────
 
   async playBadgeUnlock() {
-    triggerHaptic([20, 30, 20, 30, 60]);
+    triggerHaptic([6, 10, 6, 10, 16]);
     const used = await this._playFile('badge', 0.8);
     if (used) return;
     if (this.isMuted) return;
@@ -388,7 +388,7 @@ class SoundSystem {
   // ─── SFX: Block Complete ─────────────────────────────────────────────────
 
   async playBlockComplete() {
-    triggerHaptic([30, 30, 60]);
+    triggerHaptic([8, 12, 16]);
     const used = await this._playFile('block_complete', 0.75);
     if (used) return;
     if (this.isMuted) return;
@@ -411,7 +411,7 @@ class SoundSystem {
   // ─── SFX: Streak ─────────────────────────────────────────────────────────
 
   async playStreakMilestone() {
-    triggerHaptic([20, 20, 20, 20, 80]);
+    triggerHaptic([6, 8, 6, 8, 18]);
     const used = await this._playFile('streak', 0.8);
     if (used) return;
     if (this.isMuted) return;
@@ -433,7 +433,7 @@ class SoundSystem {
   // ─── SFX: Brand Intro ────────────────────────────────────────────────────
 
   async playBrandIntroChime() {
-    triggerHaptic([30, 40, 50]);
+    triggerHaptic([8, 10, 14]);
     const used = await this._playFile('brand_intro', 0.8);
     if (used) return;
     if (this.isMuted) return;
