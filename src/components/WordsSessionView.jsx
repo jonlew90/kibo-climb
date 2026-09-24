@@ -916,8 +916,12 @@ export default function WordsSessionView({
       text: 'Trying another problem 🔄'
     }, 1100);
 
-    if (!currentProblem.isReviewAttempt) {
-      setMissedReviewQueue((prev) => [...prev, { ...currentProblem, isReviewAttempt: true, reviewAttempts: 1 }]);
+    const skippedProblem = currentProblem;
+    const isAlreadyReview = !!skippedProblem.isReviewAttempt;
+    if (!isAlreadyReview) {
+      setMissedReviewQueue((prev) => [...prev, { ...skippedProblem, isReviewAttempt: true, reviewAttempts: 1 }]);
+    } else {
+      storageService.addToPracticeQueue(skippedProblem, 'words');
     }
 
     const nextQuestionsAnswered = questionsAnswered + 1;
@@ -925,10 +929,83 @@ export default function WordsSessionView({
     setSessionQuestionIndex((prev) => prev + 1);
     setInputVal('');
 
-    const nextIdx = currentIndex + 1;
-    replenishQueueIfNeeded(nextIdx);
-    setAcknowledgedGivenIndices(new Set());
-    setCurrentIndex(nextIdx);
+    const effectiveReviewQueue = !isAlreadyReview
+      ? [...missedReviewQueue, { ...skippedProblem, isReviewAttempt: true, reviewAttempts: 1 }]
+      : missedReviewQueue;
+
+    const reachedBlockEnd = !isReviewPhase && nextQuestionsAnswered > 0 && nextQuestionsAnswered % totalBlockQuestions === 0;
+    const isReviewComplete = isReviewPhase && currentIndex >= problemQueue.length - 1;
+
+    if (reachedBlockEnd && effectiveReviewQueue.length > 0) {
+      setIsReviewPhase(true);
+      const nextIdx = currentIndex + 1;
+      setProblemQueue((prev) => [...prev.slice(0, nextIdx), ...effectiveReviewQueue]);
+      setMissedReviewQueue([]);
+      setAcknowledgedGivenIndices(new Set());
+      setCurrentIndex(nextIdx);
+      problemStartTimeRef.current = performance.now();
+    } else if ((reachedBlockEnd && effectiveReviewQueue.length === 0) || isReviewComplete) {
+      setIsReviewPhase(false);
+      KiboAudioManager.playBreakSFX();
+      setMascotState('break');
+      setShowBreakOverlay(true);
+
+      storageService.clearActiveClimbState(profileId, 'words');
+      setSavedClimbState(null);
+
+      const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
+      const finalBlockCorrect = blockCorrectCount;
+      const finalBlockSparks = blockSparksEarned;
+
+      const newSessionRecord = {
+        id: `session-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0],
+        tier: getTierFromRating(evalResult.nextCompetenceRank),
+        totalTimeSec: blockTimeSec,
+        correctCount: finalBlockCorrect,
+        totalQuestions: totalBlockQuestions,
+        sparksEarned: finalBlockSparks,
+        accuracyPct: Math.round((finalBlockCorrect / totalBlockQuestions) * 100),
+        ratingGain: isPracticeMode ? 0 : blockRatingGain,
+        answers: [...blockAnswers, answerRecord],
+        isPractice: isPracticeMode
+      };
+
+      const activeUserData = storageService.getUserData('words');
+      const existingHistory = activeUserData.sprintHistory || [];
+      const updatedHistory = isPracticeMode ? existingHistory : [newSessionRecord, ...existingHistory];
+
+      setCompletedBlockStats({
+        correctCount: finalBlockCorrect,
+        sparksEarned: finalBlockSparks,
+        blockRatingGain: isPracticeMode ? 0 : blockRatingGain,
+        shieldsUsed: blockShieldsUsed
+      });
+
+      setBlockCorrectCount(0);
+      setBlockSparksEarned(0);
+      setBlockRatingGain(0);
+      setBlockShieldsUsed(0);
+      setBlockAnswers([]);
+
+      const currentRecords = activeUserData.personalRecords || {};
+      const updatedRecords = { ...currentRecords };
+
+      storageService.saveUserData({
+        sprintHistory: updatedHistory,
+        personalRecords: updatedRecords,
+        ...(isPracticeMode ? {} : { completedClimbsCount: (activeUserData.completedClimbsCount || 0) + 1 })
+      }, 'words');
+      if (!isPracticeMode && onUpdatePersonalRecords) onUpdatePersonalRecords(updatedRecords);
+      if (!isPracticeMode && onRecordDailyPractice) onRecordDailyPractice();
+    } else {
+      const nextIdx = currentIndex + 1;
+      replenishQueueIfNeeded(nextIdx);
+      setAcknowledgedGivenIndices(new Set());
+      setCurrentIndex(nextIdx);
+      problemStartTimeRef.current = performance.now();
+    }
   };
 
   const getFullWordFromInput = (input) => {
@@ -1108,6 +1185,8 @@ export default function WordsSessionView({
         const nextIdx = currentIndex + 1;
         setProblemQueue((prev) => [...prev.slice(0, nextIdx), ...missedReviewQueue]);
         setMissedReviewQueue([]);
+        setAcknowledgedGivenIndices(new Set());
+        setCurrentIndex(nextIdx);
       } else if ((reachedBlockEnd && missedReviewQueue.length === 0) || isReviewComplete) {
         // Full block + reviews completed: Trigger Kibo Break Overlay
         setIsReviewPhase(false);
@@ -1203,12 +1282,12 @@ export default function WordsSessionView({
             timeSec: blockTimeSec
           }, 'words');
         }
+      } else {
+        const nextIdx = currentIndex + 1;
+        replenishQueueIfNeeded(nextIdx);
+        setAcknowledgedGivenIndices(new Set());
+        setCurrentIndex(nextIdx);
       }
-
-      const nextIdx = currentIndex + 1;
-      replenishQueueIfNeeded(nextIdx);
-      setAcknowledgedGivenIndices(new Set());
-      setCurrentIndex(nextIdx);
 
       if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
       bannerTimerRef.current = setTimeout(() => {
@@ -1342,7 +1421,6 @@ export default function WordsSessionView({
       const nextIdx = currentIndex + 1;
       setProblemQueue((prev) => [...prev.slice(0, nextIdx), ...missedReviewQueue]);
       setMissedReviewQueue([]);
-      replenishQueueIfNeeded(nextIdx);
       setAcknowledgedGivenIndices(new Set());
       setCurrentIndex(nextIdx);
       problemStartTimeRef.current = performance.now();

@@ -735,12 +735,61 @@ export default function CodingSessionView({
       text: 'Trying another problem 🔄'
     });
 
+    const nextIndex = currentProblemIndex + 1;
+    const nextSessionQNum = sessionQuestionIndex + 1;
+    const totalBlockQuestions = isPracticeMode ? practiceSprintLength : 12;
+    const reachedBlockEnd = nextSessionQNum > totalBlockQuestions;
+
+    const isAlreadyReview = !!currentProblem?.isReviewAttempt;
+    const effectiveReviewQueue = !isAlreadyReview
+      ? [...missedReviewQueue, { ...currentProblem, isReviewAttempt: true, reviewAttempts: 1 }]
+      : missedReviewQueue;
+
     setQuestionsAnswered(prev => prev + 1);
-    setSessionQuestionIndex(prev => prev + 1);
+    setSessionQuestionIndex(nextSessionQNum);
     setEliminatedOptions([]);
     setRevealedHint(null);
-    setCurrentProblemIndex(prev => prev + 1);
-    setProblemStartTime(Date.now());
+    setIsClueActive(false);
+
+    if (reachedBlockEnd && effectiveReviewQueue.length > 0) {
+      setIsReviewPhase(true);
+      setProblemQueue((prev) => [...prev, ...effectiveReviewQueue]);
+      setMissedReviewQueue([]);
+      setCurrentProblemIndex(nextIndex);
+      setProblemStartTime(Date.now());
+    } else if (reachedBlockEnd || nextIndex >= problemQueue.length) {
+      setIsReviewPhase(false);
+      storageService.clearActiveClimbState(profileId, 'coding');
+      setSavedClimbState(null);
+      analyticsService.logLevelUp('coding', blockCorrectCount);
+      setCompletedBlockStats({
+        correctCount: blockCorrectCount,
+        sparksEarned: blockSparksEarned,
+        blockRatingGain: isPracticeMode ? 0 : blockRatingGain,
+        shieldsUsed: blockShieldsUsed
+      });
+
+      if (isPracticeMode) {
+        const timeSec = Math.max(1, Math.round((Date.now() - (problemStartTime || Date.now())) / 1000));
+        storageService.recordPracticeSession({
+          tier: isWeakAreasMode ? 'weak_areas' : (practiceConfig?.tier || userTier),
+          mode: isWeakAreasMode ? 'weak_areas' : 'tier_drill',
+          correctCount: blockCorrectCount,
+          totalCount: totalBlockQuestions,
+          timeSec
+        }, 'coding');
+      }
+
+      setShowBreakOverlay(true);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 4000);
+    } else {
+      if (!isAlreadyReview) {
+        setMissedReviewQueue((prev) => [...prev, { ...currentProblem, isReviewAttempt: true, reviewAttempts: 1 }]);
+      }
+      setCurrentProblemIndex(nextIndex);
+      setProblemStartTime(Date.now());
+    }
   };
 
   // Use 50:50 Distractor Pruner Power-up (Eliminate 2 wrong answers)
