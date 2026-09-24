@@ -315,7 +315,27 @@ export default function MathSessionView({
   const isTimeQuestion =
     currentProblem.type === 'time' ||
     currentProblem.operatorSymbol === '⏰' ||
-    targetStr.includes(':');
+    targetStr.includes(':') ||
+    Boolean(currentProblem.displayString && /\d+:\d+/.test(currentProblem.displayString));
+
+  const allowColon = Boolean(isTimeQuestion || targetStr.includes(':'));
+  const allowSlash = Boolean(
+    currentProblem.type === 'fraction' ||
+    currentProblem.type === 'ratio' ||
+    targetStr.includes('/') ||
+    (currentProblem.displayString && (currentProblem.displayString.includes('/') || currentProblem.displayString.toLowerCase().includes('ratio') || currentProblem.displayString.toLowerCase().includes('fraction')))
+  );
+  const allowDecimal = Boolean(
+    isMoneyQuestion ||
+    currentProblem.type === 'decimal' ||
+    targetStr.includes('.') ||
+    (currentProblem.displayString && (currentProblem.displayString.includes('$') || currentProblem.displayString.includes('¢') || currentProblem.displayString.includes('.')))
+  );
+  const allowNegative = Boolean(
+    currentProblem.type === 'signed' ||
+    currentProblem.type?.includes('negative') ||
+    targetStr.startsWith('-')
+  );
 
   const isOperatorQuestion = Boolean(
     currentProblem.type === 'missing_operator' ||
@@ -1034,7 +1054,9 @@ export default function MathSessionView({
       setTimeout(() => setMascotState('idle'), 700);
 
       setCorrectCount((prev) => prev + 1);
-      setBlockCorrectCount((prev) => prev + 1);
+      if (!isReviewPhase) {
+        setBlockCorrectCount((prev) => prev + 1);
+      }
       const baseEarned = isPracticeMode ? 1 : evalResult.totalSparksEarned;
       blockEarned = isDoubleSparksActive ? baseEarned * 2 : baseEarned;
       setSessionSparksEarned((prev) => prev + blockEarned);
@@ -1142,9 +1164,9 @@ export default function MathSessionView({
         setSavedClimbState(null);
 
         const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
-        const finalBlockCorrect = Math.min(totalBlockQuestions, blockCorrectCount + 1);
+        const finalBlockCorrect = blockCorrectCount;
         const finalBlockSparks = blockSparksEarned + blockEarned;
-        const isPerfectBlock = finalBlockCorrect === totalBlockQuestions;
+        const isPerfectBlock = finalBlockCorrect === totalBlockQuestions && blockShieldsUsed === 0;
 
         // RECORD COMPLETED CLIMB BLOCK INTO SPRINT HISTORY FOR ACCURATE PRACTICE TIME TRACKING
         const newSessionRecord = {
@@ -1330,7 +1352,7 @@ export default function MathSessionView({
       const isBlockComplete = (questionsAnswered + 1) % totalBlockQuestions === 0;
 
       if (isBlockComplete) {
-        analyticsService.logLevelUp('math', blockCorrectCount + 1);
+        analyticsService.logLevelUp('math', blockCorrectCount);
       }
 
       // Duolingo mistake recycling:
@@ -1486,12 +1508,36 @@ export default function MathSessionView({
       }
     }
 
+    // Check if character is valid for this question type
+    const isDigit = /^[0-9]$/.test(val);
+    if (!isDigit) {
+      if (val === '.' && !allowDecimal) return;
+      if (val === ':' && !allowColon) return;
+      if (val === '/' && !allowSlash) return;
+      if (val === '-' && !allowNegative) return;
+      if (!['.', ':', '/', '-'].includes(val)) return;
+    }
+
+    // Prevent endless input strings (cap at target length + reasonable margin)
+    const maxInputLen = Math.max(10, (targetStr.length || 0) + 4);
+    if (inputVal.length >= maxInputLen) {
+      return;
+    }
+
     let newInput = inputVal;
 
-    if (val === '.' || val === ':' || val === '/') {
+    if (val === '-') {
+      if (!newInput) {
+        newInput = '-';
+      } else if (newInput.startsWith('-')) {
+        newInput = newInput.slice(1);
+      } else {
+        newInput = '-' + newInput;
+      }
+    } else if (val === '.' || val === ':' || val === '/') {
       if (val === '.') {
-        if (!newInput || newInput === '0') {
-          newInput = '0.';
+        if (!newInput || newInput === '0' || newInput === '-') {
+          newInput = newInput === '-' ? '-0.' : '0.';
         } else if (!newInput.includes('.')) {
           newInput = newInput + '.';
         }
@@ -1673,7 +1719,13 @@ export default function MathSessionView({
         const normOp = normalizeOperator(e.key);
         const matchedOpt = currentProblem?.options?.find((o) => normalizeOperator(o) === normOp) || normOp;
         processAnswerEvaluation(matchedOpt);
-      } else if (/^[0-9]$/.test(e.key) || e.key === '.' || e.key === ':' || e.key === '/' || e.key === '-' || e.key === '+' || e.key === '*' || e.key.toLowerCase() === 'x') {
+      } else if (
+        /^[0-9]$/.test(e.key) ||
+        (e.key === '.' && allowDecimal) ||
+        (e.key === ':' && allowColon) ||
+        (e.key === '/' && allowSlash) ||
+        (e.key === '-' && allowNegative)
+      ) {
         e.preventDefault();
         handleDigitInput(e.key);
       } else if (e.key === 'Enter') {
@@ -1692,7 +1744,7 @@ export default function MathSessionView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [inputVal, currentProblem, competenceRank, hasStartedClimb, isOperatorQuestion, incorrectReviewData]);
+  }, [inputVal, currentProblem, competenceRank, hasStartedClimb, isOperatorQuestion, allowDecimal, allowColon, allowSlash, allowNegative, incorrectReviewData]);
 
   const lastBannerTypeRef = useRef('success');
   const lastBannerTextRef = useRef('');

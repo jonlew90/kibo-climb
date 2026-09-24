@@ -332,4 +332,100 @@ describe('Climb Block Completion & Anti-Endless-Loop Test Suite', () => {
       expect(problemQueue[12].isReviewAttempt).toBe(true);
     });
   });
+
+  describe('Block Accuracy & Mistake Review Accounting Invariants', () => {
+    it('accurately calculates 10/12 (83%) when 2 questions are missed in primary climb and later answered in review', () => {
+      const totalBlockQuestions = 12;
+      let blockCorrectCount = 0;
+      let isReviewPhase = false;
+      let missedReviewQueue = [];
+      let problemQueue = Array.from({ length: 12 }, (_, i) => ({ id: `prob_${i}`, answer: i }));
+      let blockShieldsUsed = 0;
+
+      // Simulate 12 primary questions: questions at idx 3 and 7 missed
+      for (let i = 0; i < totalBlockQuestions; i++) {
+        const isMissed = i === 3 || i === 7;
+        const currentProblem = problemQueue[i];
+        if (isMissed) {
+          missedReviewQueue.push({ ...currentProblem, isReviewAttempt: true, reviewAttempts: 1 });
+        } else {
+          if (!isReviewPhase) {
+            blockCorrectCount += 1;
+          }
+        }
+      }
+
+      expect(blockCorrectCount).toBe(10);
+      expect(missedReviewQueue.length).toBe(2);
+
+      // Transition to review phase
+      isReviewPhase = true;
+      problemQueue = [...problemQueue, ...missedReviewQueue];
+      missedReviewQueue = [];
+
+      // Answer both review questions correctly
+      for (let r = 12; r < 14; r++) {
+        const isCorrectInReview = true;
+        if (isCorrectInReview) {
+          if (!isReviewPhase) {
+            blockCorrectCount += 1;
+          }
+        }
+      }
+
+      // Final block stats calculation
+      const finalBlockCorrect = blockCorrectCount;
+      const isPerfectBlock = finalBlockCorrect === totalBlockQuestions && blockShieldsUsed === 0;
+      const accuracyPct = Math.round((finalBlockCorrect / totalBlockQuestions) * 100);
+
+      expect(finalBlockCorrect).toBe(10);
+      expect(accuracyPct).toBe(83);
+      expect(isPerfectBlock).toBe(false);
+    });
+
+    it('shield consumption protects streak but correctly records question as incorrect in block accuracy', () => {
+      const totalBlockQuestions = 12;
+      let blockCorrectCount = 0;
+      let blockShieldsUsed = 0;
+      let isReviewPhase = false;
+
+      // 11 correct, 1 shielded mistake
+      for (let i = 0; i < 11; i++) {
+        if (!isReviewPhase) {
+          blockCorrectCount += 1;
+        }
+      }
+
+      // Shielded mistake on 12th question
+      blockShieldsUsed += 1;
+      // Shielded attempt does NOT increment blockCorrectCount
+
+      const finalBlockCorrect = blockCorrectCount;
+      const isPerfectBlock = finalBlockCorrect === totalBlockQuestions && blockShieldsUsed === 0;
+
+      expect(finalBlockCorrect).toBe(11);
+      expect(blockShieldsUsed).toBe(1);
+      expect(isPerfectBlock).toBe(false);
+    });
+
+    it('perfect 12/12 block with 0 shields qualifies as perfect block', () => {
+      const totalBlockQuestions = 12;
+      let blockCorrectCount = 0;
+      let blockShieldsUsed = 0;
+      let isReviewPhase = false;
+
+      for (let i = 0; i < 12; i++) {
+        if (!isReviewPhase) {
+          blockCorrectCount += 1;
+        }
+      }
+
+      const finalBlockCorrect = blockCorrectCount;
+      const isPerfectBlock = finalBlockCorrect === totalBlockQuestions && blockShieldsUsed === 0;
+
+      expect(finalBlockCorrect).toBe(12);
+      expect(isPerfectBlock).toBe(true);
+    });
+  });
 });
+

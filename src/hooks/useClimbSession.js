@@ -597,7 +597,9 @@ export function useClimbSession({
     if (isCorrect) {
       const nextCorrect = correctCount + 1;
       setCorrectCount(nextCorrect);
-      setBlockCorrectCount((prev) => prev + 1);
+      if (!isReviewPhase) {
+        setBlockCorrectCount((prev) => prev + 1);
+      }
       setMistakeCount(0);
       setShowFrustrationCard(false);
 
@@ -707,9 +709,9 @@ export function useClimbSession({
         setSavedClimbState(null);
 
         const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
-        const finalBlockCorrect = Math.min(totalBlockQuestions, blockCorrectCount + 1);
+        const finalBlockCorrect = blockCorrectCount;
         const finalBlockSparks = blockSparksEarned + blockEarned;
-        const isPerfectBlock = finalBlockCorrect === totalBlockQuestions;
+        const isPerfectBlock = finalBlockCorrect === totalBlockQuestions && blockShieldsUsed === 0;
 
         const newSessionRecord = {
           id: `session-${Date.now()}`,
@@ -907,7 +909,7 @@ export function useClimbSession({
       const isBlockComplete = (questionsAnswered + 1) % totalBlockQuestions === 0;
 
       if (isBlockComplete) {
-        analyticsService.logLevelUp(subjectId, blockCorrectCount + 1);
+        analyticsService.logLevelUp(subjectId, blockCorrectCount);
       }
 
       if (!currentProblem.isReviewAttempt) {

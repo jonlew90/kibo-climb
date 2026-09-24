@@ -553,7 +553,9 @@ export default function CodingSessionView({
 
     if (isCorrect) {
       setCorrectCount(prev => prev + 1);
-      setBlockCorrectCount(prev => prev + 1);
+      if (!isReviewPhase) {
+        setBlockCorrectCount(prev => prev + 1);
+      }
       setMistakeCount(0);
     } else {
       if (!isPracticeMode) {
@@ -622,8 +624,8 @@ export default function CodingSessionView({
       setIsReviewPhase(false);
       storageService.clearActiveClimbState(profileId, 'coding');
       setSavedClimbState(null);
-      analyticsService.logLevelUp('coding', blockCorrectCount + (isCorrect ? 1 : 0));
-      const finalCorrect = blockCorrectCount + (isCorrect ? 1 : 0);
+      const finalCorrect = blockCorrectCount + (!isReviewPhase && isCorrect ? 1 : 0);
+      analyticsService.logLevelUp('coding', finalCorrect);
       setCompletedBlockStats({
         correctCount: finalCorrect,
         sparksEarned: blockSparksEarned + earnedSparks,

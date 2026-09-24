@@ -1101,7 +1101,9 @@ export default function WorldSessionView({
       setTimeout(() => setMascotState('idle'), 700);
 
       setCorrectCount((prev) => prev + 1);
-      setBlockCorrectCount((prev) => prev + 1);
+      if (!isReviewPhase) {
+        setBlockCorrectCount((prev) => prev + 1);
+      }
       const baseEarned = isPracticeMode ? 1 : evalResult.totalSparksEarned;
       blockEarned = isDoubleSparksActive ? baseEarned * 2 : baseEarned;
       setSessionSparksEarned((prev) => prev + blockEarned);
@@ -1233,9 +1235,9 @@ export default function WorldSessionView({
         setSavedClimbState(null);
 
         const blockTimeSec = Math.max(1, Math.round((performance.now() - blockStartTimeRef.current) / 1000));
-        const finalBlockCorrect = Math.min(totalBlockQuestions, blockCorrectCount + 1);
+        const finalBlockCorrect = blockCorrectCount;
         const finalBlockSparks = blockSparksEarned + blockEarned;
-        const isPerfectBlock = finalBlockCorrect === totalBlockQuestions;
+        const isPerfectBlock = finalBlockCorrect === totalBlockQuestions && blockShieldsUsed === 0;
 
         // RECORD COMPLETED CLIMB BLOCK INTO SPRINT HISTORY FOR ACCURATE PRACTICE TIME TRACKING
         const newSessionRecord = {
@@ -1413,7 +1415,7 @@ export default function WorldSessionView({
       const isBlockComplete = (questionsAnswered + 1) % totalBlockQuestions === 0;
 
       if (isBlockComplete) {
-        analyticsService.logLevelUp('world', blockCorrectCount + 1);
+        analyticsService.logLevelUp('world', blockCorrectCount);
       }
 
       // Duolingo mistake recycling:
