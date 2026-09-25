@@ -378,20 +378,32 @@ export default function PinGateModal({
             {/* TAB 1: PRIMARY GATE - NATIVE DEVICE AUTH */}
             {activeTab === 'native' && (
               <div className="space-y-4 py-2 animate-fade-in">
-                <div className={`border-2 rounded-2xl p-5 space-y-3 transition-all ${
-                  isAuthenticating ? 'bg-purple-100/80 border-purple-400 scale-[1.02]' : 'bg-purple-50/70 border-purple-100'
-                }`}>
-                  <div className="relative w-16 h-16 mx-auto">
+                <div
+                  role="button"
+                  tabIndex={isAuthenticating ? -1 : 0}
+                  onClick={triggerNativeAuth}
+                  onKeyDown={(e) => {
+                    if ((e.key === 'Enter' || e.key === ' ') && !isAuthenticating) {
+                      e.preventDefault();
+                      triggerNativeAuth();
+                    }
+                  }}
+                  className={`border-2 rounded-2xl p-5 space-y-3 transition-all select-none cursor-pointer hover:border-purple-300 hover:bg-purple-100/50 active:scale-[0.99] ${
+                    isAuthenticating ? 'bg-purple-100/80 border-purple-400 scale-[1.02] cursor-wait' : 'bg-purple-50/70 border-purple-100'
+                  }`}
+                  aria-label="Authenticate with device biometrics"
+                >
+                  <div className="relative w-16 h-16 mx-auto pointer-events-none">
                     {isAuthenticating && (
                       <div className="absolute -inset-2 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
                     )}
                     <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-sm border transition-all ${
-                      isAuthenticating ? 'bg-purple-600 text-white border-purple-700 animate-pulse' : 'bg-white text-purple-600 border-purple-200'
+                      isAuthenticating ? 'bg-purple-600 text-white border-purple-700 animate-pulse' : 'bg-white text-purple-600 border-purple-200 group-hover:scale-105'
                     }`}>
                       <Fingerprint className={`w-8 h-8 ${isAuthenticating ? 'animate-bounce' : 'stroke-[2.2]'}`} />
                     </div>
                   </div>
-                  <div>
+                  <div className="pointer-events-none">
                     <h4 className="font-extrabold text-sm text-slate-800">
                       {isAuthenticating ? 'Verifying Device Biometrics...' : 'Device Biometrics'}
                     </h4>

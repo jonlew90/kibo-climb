@@ -158,5 +158,45 @@ describe('audio.js', () => {
       soundFx.init();
       expect(soundFx.ctx).toBeNull();
     });
+
+    it('pauses BGM and suspends AudioContext when hidden or unfocused', () => {
+      soundFx._bgmAudio = {
+        paused: false,
+        pause: vi.fn(() => { soundFx._bgmAudio.paused = true; }),
+        play: vi.fn().mockResolvedValue(undefined)
+      };
+      soundFx.ctx = {
+        state: 'running',
+        suspend: vi.fn().mockImplementation(async () => { soundFx.ctx.state = 'suspended'; }),
+        resume: vi.fn().mockImplementation(async () => { soundFx.ctx.state = 'running'; })
+      };
+      soundFx.currentBgmKey = 'bgm_home';
+      soundFx.isMusicMuted = false;
+      soundFx.isMuted = false;
+      soundFx._unlocked = true;
+
+      // Simulate tab hidden
+      Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+
+      expect(soundFx._bgmAudio.pause).toHaveBeenCalled();
+      expect(soundFx.ctx.suspend).toHaveBeenCalled();
+
+      // Simulate window focus event while tab remains hidden (e.g. laptop opened to another tab)
+      soundFx._bgmAudio.play.mockClear();
+      window.dispatchEvent(new Event('focus'));
+
+      // Should NOT resume playback because document.hidden is still true
+      expect(soundFx._bgmAudio.play).not.toHaveBeenCalled();
+
+      // Now simulate user switching directly back to Kibo tab (visible & focused)
+      Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+      document.hasFocus = vi.fn().mockReturnValue(true);
+      document.dispatchEvent(new Event('visibilitychange'));
+
+      expect(soundFx._bgmAudio.play).toHaveBeenCalled();
+      expect(soundFx.ctx.resume).toHaveBeenCalled();
+    });
   });
 });
+

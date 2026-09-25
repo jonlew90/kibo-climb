@@ -61,9 +61,11 @@ class SoundSystem {
 
   _setupVisibilityListener() {
     if (typeof document === 'undefined') return;
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        // Tab is hidden / backgrounded: pause BGM and suspend AudioContext
+
+    const handleVisibilityOrFocus = () => {
+      const isHiddenOrUnfocused = document.hidden || (typeof document.hasFocus === 'function' && !document.hasFocus());
+      if (isHiddenOrUnfocused) {
+        // Tab is hidden or unfocused / backgrounded: pause BGM and suspend AudioContext
         if (this._bgmAudio && !this._bgmAudio.paused) {
           try { this._bgmAudio.pause(); } catch (e) {}
         }
@@ -71,7 +73,7 @@ class SoundSystem {
           try { this.ctx.suspend().catch(() => {}); } catch (e) {}
         }
       } else {
-        // Tab is visible again: resume AudioContext and BGM if not muted
+        // Tab is genuinely visible and focused: resume AudioContext and BGM if not muted
         if (this.ctx && this.ctx.state === 'suspended' && this._unlocked) {
           try { this.ctx.resume().catch(() => {}); } catch (e) {}
         }
@@ -82,7 +84,13 @@ class SoundSystem {
           } catch (e) {}
         }
       }
-    });
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('blur', handleVisibilityOrFocus);
+      window.addEventListener('focus', handleVisibilityOrFocus);
+    }
   }
 
   _initBgmAudio() {
