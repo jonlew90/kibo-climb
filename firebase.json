@@ -25,7 +25,7 @@
     ],
     "headers": [
       {
-        "source": "/@(sw.js|OneSignalSDKWorker.js|push/**)",
+        "source": "/@(sw.js|OneSignalSDKWorker.js|ota_manifest.json|push/**)",
         "headers": [
           {
             "key": "Cache-Control",

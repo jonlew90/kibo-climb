@@ -7,7 +7,9 @@
     "dev": "vite",
     "clean:images": "exiftool -all= -overwrite_original -r public/ 2>/dev/null || true",
     "build:blog": "node scripts/build_blog_html.mjs",
-    "build": "npm run clean:images && npm run build:blog && vite build",
+    "build:ota": "node scripts/generate_ota_bundle.mjs",
+    "build": "npm run clean:images && npm run build:blog && vite build && npm run build:ota",
+    "release:ota": "npm run build && firebase deploy --only hosting",
     "indexnow": "node scripts/notify_indexnow.js",
     "preview": "vite preview",
     "test": "vitest run"
@@ -15,6 +17,7 @@
   "dependencies": {
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.4.2",
+    "@capgo/capacitor-updater": "^8.51.25",
     "@onesignal/capacitor-plugin": "^1.1.8",
     "@stripe/stripe-js": "^9.14.0",
     "d3-geo": "^3.1.1",
@@ -37,6 +40,7 @@
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^4.1.11",
+    "archiver": "^8.0.0",
     "autoprefixer": "^10.4.18",
     "jsdom": "^29.1.1",
     "postcss": "^8.4.35",

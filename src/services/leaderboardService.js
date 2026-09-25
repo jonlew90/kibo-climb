@@ -478,9 +478,15 @@ class LeaderboardService {
 
     // Attempt Cloud Function (exact match by code)
     let cloudFunctionSucceeded = false;
+    const withTimeout = (promise, ms = 1000) =>
+      Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+      ]);
+
     try {
       const searchFn = httpsCallable(functions, 'searchUsername');
-      const res = await searchFn({ query: cleanCode, exact: true });
+      const res = await withTimeout(searchFn({ query: cleanCode, exact: true }), 1000);
       if (res?.data?.results) {
         remoteResults = res.data.results;
         cloudFunctionSucceeded = true;

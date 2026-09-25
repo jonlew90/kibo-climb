@@ -47,6 +47,7 @@ import { userSyncService } from './services/userSyncService';
 import { shopLedgerService } from './services/shopLedgerService';
 import { leaderboardService } from './services/leaderboardService';
 import { analyticsService } from './services/analyticsService';
+import { otaUpdateService } from './services/otaUpdateService';
 import AccountLinkModal from './components/AccountLinkModal';
 import { getNotificationPrefs, scheduleAllProfileReminders, updateAppBadge } from './utils/notifications';
 import MockCheckoutModal from './components/MockCheckoutModal';
@@ -273,9 +274,23 @@ export default function App() {
         return () => clearTimeout(timer);
       }
     });
+    // Notify native OTA runtime that bundle loaded successfully, and check for background updates
+    otaUpdateService.notifyAppReady();
+    otaUpdateService.checkForUpdates();
+
+    const handleAppResume = () => {
+      if (document.visibilityState === 'visible') {
+        otaUpdateService.checkForUpdates();
+      }
+    };
+    document.addEventListener('visibilitychange', handleAppResume);
+    window.addEventListener('focus', handleAppResume);
+
     return () => {
       if (unsubAuth) unsubAuth();
       if (unsubSync) unsubSync();
+      document.removeEventListener('visibilitychange', handleAppResume);
+      window.removeEventListener('focus', handleAppResume);
     };
   }, []);
 
