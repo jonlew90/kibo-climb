@@ -1811,6 +1811,8 @@ export default function WordsSessionView({
           currentQuestionNum={currentQuestionNum}
           totalQuestions={totalBlockQuestions}
           isReviewPhase={isReviewPhase}
+          currentIndex={currentIndex}
+          problemQueue={problemQueue}
           isPracticeMode={isPracticeMode}
           practiceTitle={practiceTitle}
           inSessionStreak={inSessionStreak}

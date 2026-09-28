@@ -6,6 +6,11 @@ export default function ClimbHeader({
   currentQuestionNum,
   totalQuestions = 12,
   isReviewPhase = false,
+  currentIndex,
+  problemQueue,
+  reviewIndex: explicitReviewIndex,
+  reviewTotal: explicitReviewTotal,
+  reviewRemaining: explicitReviewRemaining,
   isPracticeMode = false,
   practiceTitle = 'Training Camp',
   inSessionStreak,
@@ -30,6 +35,31 @@ export default function ClimbHeader({
     return () => window.removeEventListener('pointerdown', handlePointerDown);
   }, [activeTooltip]);
 
+  const queueLen = Array.isArray(problemQueue) ? problemQueue.length : 0;
+  const currentIdx = typeof currentIndex === 'number' ? currentIndex : 0;
+
+  const reviewTotal = explicitReviewTotal !== undefined
+    ? explicitReviewTotal
+    : isReviewPhase && queueLen > 0
+    ? Math.max(1, queueLen - totalQuestions)
+    : 1;
+
+  const reviewIndex = explicitReviewIndex !== undefined
+    ? explicitReviewIndex
+    : isReviewPhase
+    ? Math.min(reviewTotal, Math.max(1, currentIdx - totalQuestions + 1))
+    : 1;
+
+  const reviewRemaining = explicitReviewRemaining !== undefined
+    ? explicitReviewRemaining
+    : isReviewPhase && queueLen > 0
+    ? Math.max(1, queueLen - currentIdx)
+    : 1;
+
+  const reviewProgressPct = reviewTotal > 0
+    ? Math.round((Math.max(0, reviewIndex - 1) / reviewTotal) * 100)
+    : 100;
+
   return (
     <div ref={headerRef} className="relative w-full max-w-xl mx-auto flex items-center justify-between gap-2 px-2 py-1.5 mb-1 z-30 shrink-0">
       {/* Left: Clean Exit / Pause button */}
@@ -48,23 +78,31 @@ export default function ClimbHeader({
         <div className="flex items-center justify-between px-1 text-[10px] sm:text-xs font-black text-slate-500">
           <span className={`uppercase tracking-wider ${isReviewPhase ? 'text-indigo-600 font-extrabold flex items-center gap-1' : isPracticeMode ? 'text-indigo-700 font-extrabold flex items-center gap-1' : ''}`}>
             {isReviewPhase
-              ? '🔁 Mistake Review'
+              ? `🔁 Mistake Review • ${reviewIndex} of ${reviewTotal}`
               : isPracticeMode
               ? `🏋️ ${practiceTitle} • Q${currentQuestionNum}/${totalQuestions}`
               : `Question ${currentQuestionNum} of ${totalQuestions}`}
           </span>
-          <span>{isReviewPhase ? 'Bonus Practice' : isPracticeMode ? 'Streak-Safe 🛡️' : `${Math.round(((currentQuestionNum - 1) / totalQuestions) * 100)}%`}</span>
+          <span className={isReviewPhase ? 'text-indigo-600 font-extrabold' : ''}>
+            {isReviewPhase
+              ? `${Math.round(((reviewIndex - 1) / reviewTotal) * 100)}%`
+              : isPracticeMode
+              ? 'Streak-Safe 🛡️'
+              : `${Math.round(((currentQuestionNum - 1) / totalQuestions) * 100)}%`}
+          </span>
         </div>
         <div className="w-full h-2.5 sm:h-3 bg-slate-200/80 rounded-full overflow-hidden p-0.5 border border-slate-300/60 shadow-inner">
           <div
             className={`h-full rounded-full transition-all duration-500 shadow-xs ${
               isReviewPhase
-                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-pulse'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500'
                 : isPracticeMode
                 ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-teal-400'
                 : 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500'
             }`}
-            style={{ width: `${isReviewPhase ? 100 : Math.max(5, (currentQuestionNum / totalQuestions) * 100)}%` }}
+            style={{
+              width: `${isReviewPhase ? Math.max(8, reviewProgressPct) : Math.max(5, (currentQuestionNum / totalQuestions) * 100)}%`
+            }}
           />
         </div>
       </div>

@@ -989,6 +989,8 @@ export default function CodingSessionView({
             currentQuestionNum={currentQuestionNum}
             totalQuestions={totalBlockQuestions}
             isReviewPhase={isReviewPhase}
+            currentIndex={currentProblemIndex}
+            problemQueue={problemQueue}
             isPracticeMode={isPracticeMode}
             practiceTitle={practiceTitle}
             inSessionStreak={streak}

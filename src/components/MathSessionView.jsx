@@ -1875,6 +1875,8 @@ export default function MathSessionView({
           currentQuestionNum={currentQuestionNum}
           totalQuestions={totalBlockQuestions}
           isReviewPhase={isReviewPhase}
+          currentIndex={currentIndex}
+          problemQueue={problemQueue}
           isPracticeMode={isPracticeMode}
           practiceTitle={practiceTitle}
           inSessionStreak={inSessionStreak}

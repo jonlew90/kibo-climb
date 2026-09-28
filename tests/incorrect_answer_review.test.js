@@ -193,5 +193,38 @@ describe('Incorrect Answer Review Behavior & Scoring Integrity', () => {
     expect(shieldReviewData.isShieldAbsorbed).toBe(true);
     expect(regularReviewData.isShieldAbsorbed).toBe(false);
   });
+
+  it('accurately computes review phase index, total, and remaining count', () => {
+    const totalBlockQuestions = 12;
+    // 3 missed questions appended to problemQueue (total items = 15)
+    const problemQueue = Array.from({ length: 15 }, (_, i) => ({ id: `p_${i}` }));
+    const isReviewPhase = true;
+
+    // First question in review (currentIndex = 12)
+    let currentIndex = 12;
+    let reviewTotal = isReviewPhase ? Math.max(1, problemQueue.length - totalBlockQuestions) : 0;
+    let reviewIndex = isReviewPhase ? Math.min(reviewTotal, Math.max(1, currentIndex - totalBlockQuestions + 1)) : 0;
+    let reviewRemaining = isReviewPhase ? Math.max(1, problemQueue.length - currentIndex) : 0;
+
+    expect(reviewTotal).toBe(3);
+    expect(reviewIndex).toBe(1);
+    expect(reviewRemaining).toBe(3);
+
+    // Second question in review (currentIndex = 13)
+    currentIndex = 13;
+    reviewIndex = isReviewPhase ? Math.min(reviewTotal, Math.max(1, currentIndex - totalBlockQuestions + 1)) : 0;
+    reviewRemaining = isReviewPhase ? Math.max(1, problemQueue.length - currentIndex) : 0;
+
+    expect(reviewIndex).toBe(2);
+    expect(reviewRemaining).toBe(2);
+
+    // Final question in review (currentIndex = 14)
+    currentIndex = 14;
+    reviewIndex = isReviewPhase ? Math.min(reviewTotal, Math.max(1, currentIndex - totalBlockQuestions + 1)) : 0;
+    reviewRemaining = isReviewPhase ? Math.max(1, problemQueue.length - currentIndex) : 0;
+
+    expect(reviewIndex).toBe(3);
+    expect(reviewRemaining).toBe(1);
+  });
 });
 
