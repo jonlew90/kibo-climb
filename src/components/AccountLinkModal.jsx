@@ -446,7 +446,7 @@ export default function AccountLinkModal({
               </span>
             </button>
 
-            {/* Apple 1-Tap Link (Hidden pending Apple Developer account / DUNS verification)
+            {/* Apple 1-Tap Link */}
             <button
               onClick={() => handleLinkProvider('apple')}
               disabled={!!loadingProvider}
@@ -455,9 +455,12 @@ export default function AccountLinkModal({
               <svg className="w-5 h-5 fill-current text-white" viewBox="0 0 170 170">
                 <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-5.04.24-9.97-1.84-14.79-6.23-3.29-2.87-7.14-7.55-11.55-14.04-6.3-9.29-11.39-19.8-15.26-31.53-3.87-11.73-5.81-22.9-5.81-33.51 0-14.86 3.65-27.18 10.96-36.95 7.3-9.77 16.59-14.78 27.87-15.03 4.87 0 10.15 1.23 15.84 3.69 5.69 2.46 9.61 3.69 11.76 3.69 1.76 0 5.8-1.29 12.13-3.87 6.33-2.58 11.74-3.75 16.23-3.51 12.12.72 21.91 4.97 29.37 12.75-10.84 6.54-16.14 15.58-15.9 27.12.24 9.07 3.65 16.7 10.23 22.89 6.58 6.19 14.52 9.77 23.82 10.74-2.53 7.55-5.96 15.42-10.29 23.61zM119.22 31.09c0-7.39 2.67-14.58 8.01-21.57 5.34-6.99 12.17-11.34 20.49-13.05.5 8.05-1.99 15.44-7.47 22.17-5.48 6.73-12.29 10.87-20.43 12.45-.25-1.58-.6-3.79-.6-6.63z"/>
               </svg>
-              <span>{loadingProvider === 'apple' ? 'Signing in with Apple...' : 'Sign in with Apple'}</span>
+              <span>
+                {loadingProvider === 'apple'
+                  ? (activeMode === 'restore' ? 'Signing in with Apple...' : 'Linking Apple Account...')
+                  : (activeMode === 'restore' ? 'Continue with Apple' : 'Save with Apple')}
+              </span>
             </button>
-            */}
 
             {/* Passwordless Magic Link Email Option */}
             {!showEmailInput ? (

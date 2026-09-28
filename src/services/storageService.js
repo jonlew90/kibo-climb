@@ -334,6 +334,16 @@ export const storageService = {
     const isLinked = this.isAccountGloballyLinked();
     const activeProf = this.getActiveProfile();
     const baseProf = createDefaultProfile(safeName);
+    const cleanSubjects = Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, subId) => {
+      const defSub = createDefaultSubjectState(startingRating);
+      delete defSub.activeClimb;
+      acc[subId] = defSub;
+      return acc;
+    }, {});
+
+    const baseUserData = { ...baseProf.userData };
+    delete baseUserData.activeClimb;
+
     const newProfile = {
       ...baseProf,
       id,
@@ -341,7 +351,8 @@ export const storageService = {
       username: safeName,
       gradeLevel,
       userData: {
-        ...baseProf.userData,
+        ...baseUserData,
+        activeClimb: null,
         adaptiveCompetenceRating: startingRating,
         subjectRatings: { math: startingRating, words: startingRating },
         competenceRank: startingRating,
@@ -354,10 +365,7 @@ export const storageService = {
           acc[subId] = startingRating;
           return acc;
         }, {}),
-        subjects: Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).reduce((acc, subId) => {
-          acc[subId] = createDefaultSubjectState(startingRating);
-          return acc;
-        }, {})
+        subjects: cleanSubjects
       }
     };
     state.profiles[id] = newProfile;
@@ -446,13 +454,15 @@ export const storageService = {
       const updatedSubjects = { ...(prevUserData.subjects || {}) };
       Object.keys(SUBJECTS_CONFIG || { math: {}, words: {} }).forEach(subId => {
         subjectRatings[subId] = startingRating;
-        updatedSubjects[subId] = {
+        const subState = {
           ...(updatedSubjects[subId] || createDefaultSubjectState(startingRating)),
           adaptiveCompetenceRating: startingRating,
           competenceRank: startingRating
         };
+        delete subState.activeClimb;
+        updatedSubjects[subId] = subState;
       });
-      state.profiles[activeId].userData = {
+      const nextUserData = {
         ...prevUserData,
         adaptiveCompetenceRating: startingRating,
         subjectRatings,
@@ -460,6 +470,8 @@ export const storageService = {
         unlockedBadges: Array.from(existingUnlocked),
         subjects: updatedSubjects
       };
+      delete nextUserData.activeClimb;
+      state.profiles[activeId].userData = nextUserData;
     }
     safeSaveProfilesState(state);
   },
@@ -1080,6 +1092,7 @@ export const storageService = {
   getActiveClimbState(profileId = null, subjectId = 'math') {
     const state = safeGetProfilesState();
     const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (profileId && !state.profiles[profileId]) return null;
     const profile = state.profiles[pid];
     if (!profile || !profile.userData) return null;
 
@@ -1158,6 +1171,7 @@ export const storageService = {
   saveActiveClimbState(climbState, profileId = null, subjectId = 'math') {
     const state = safeGetProfilesState();
     const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (profileId && !state.profiles[profileId]) return;
     if (!state.profiles[pid]) return;
     const currentUserData = state.profiles[pid].userData || {};
 
@@ -1186,6 +1200,7 @@ export const storageService = {
   clearActiveClimbState(profileId = null, subjectId = 'math') {
     const state = safeGetProfilesState();
     const pid = profileId || state.activeProfileId || DEFAULT_PROFILE_ID;
+    if (profileId && !state.profiles[profileId]) return;
     if (!state.profiles[pid] || !state.profiles[pid].userData) return;
     const currentUserData = { ...state.profiles[pid].userData };
 

@@ -82,4 +82,70 @@ describe('Subject Isolation & Active Climb State Integrity', () => {
       });
     }
   });
+
+  it('should never bleed active climb state from an existing profile to a newly created profile across all subjects', () => {
+    const p1 = storageService.getActiveProfile();
+    const mathProblems = generateMathProblems(15, 1);
+    const wordsProblems = generateWordsProblems(15, 1);
+    const worldProblems = generateWorldProblems(15, 1);
+
+    // Give existing profile an in-progress climb in every subject
+    storageService.saveActiveClimbState({
+      subject: 'math',
+      problemQueue: mathProblems,
+      sessionQuestionIndex: 5,
+      correctCount: 4
+    }, p1.id, 'math');
+
+    storageService.saveActiveClimbState({
+      subject: 'words',
+      problemQueue: wordsProblems,
+      sessionQuestionIndex: 3,
+      correctCount: 2
+    }, p1.id, 'words');
+
+    storageService.saveActiveClimbState({
+      subject: 'world',
+      problemQueue: worldProblems,
+      sessionQuestionIndex: 6,
+      correctCount: 5
+    }, p1.id, 'world');
+
+    expect(storageService.getActiveClimbState(p1.id, 'math')).not.toBeNull();
+    expect(storageService.getActiveClimbState(p1.id, 'words')).not.toBeNull();
+    expect(storageService.getActiveClimbState(p1.id, 'world')).not.toBeNull();
+
+    // Create a new profile
+    const p2 = storageService.createProfile('NewClimber', 'Grade 3–4');
+    expect(p2).not.toBeNull();
+
+    // Verify new profile has null activeClimb across all subjects
+    expect(storageService.getActiveClimbState(p2.id, 'math')).toBeNull();
+    expect(storageService.getActiveClimbState(p2.id, 'words')).toBeNull();
+    expect(storageService.getActiveClimbState(p2.id, 'world')).toBeNull();
+    expect(storageService.getActiveClimbState(p2.id, 'coding')).toBeNull();
+
+    // Profile 1 still retains its active climb
+    expect(storageService.getActiveClimbState(p1.id, 'math')?.sessionQuestionIndex).toBe(5);
+  });
+
+  it('should reset active climb state when saving username/grade during onboarding calibration', () => {
+    const p1 = storageService.getActiveProfile();
+    const mathProblems = generateMathProblems(15, 1);
+
+    storageService.saveActiveClimbState({
+      subject: 'math',
+      problemQueue: mathProblems,
+      sessionQuestionIndex: 4,
+      correctCount: 3
+    }, p1.id, 'math');
+
+    expect(storageService.getActiveClimbState(p1.id, 'math')).not.toBeNull();
+
+    // Onboarding saves new username and grade level
+    storageService.saveUsername('FreshClimber', 'Grade 1–2');
+
+    // Climb state should now be reset so Start Climb is shown
+    expect(storageService.getActiveClimbState(p1.id, 'math')).toBeNull();
+  });
 });
