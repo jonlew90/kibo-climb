@@ -1120,9 +1120,18 @@ html, body, #root {
 /* =========================================
    BLOG & ARTICLE TYPOGRAPHY & SPA STYLING
    ========================================= */
-.blog-page-wrapper {
+.blog-page-wrapper,
+.printable-document {
   -webkit-user-select: text !important;
   user-select: text !important;
+}
+
+.printable-document * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.blog-page-wrapper {
   font-family: 'Fredoka', 'Quicksand', 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.7;
 }

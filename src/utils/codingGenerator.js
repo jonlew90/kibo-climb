@@ -86,7 +86,7 @@ function generateTier1Problem() {
     return {
       tier: 1,
       concept: 'Numeric Sequences',
-      displayString: `What number comes next?\n${seq.join(', ')}, ?`,
+      displayString: `What number comes next in the sequence?\n${seq.join(', ')}, ___`,
       codeSnippet: `pattern = [${seq.join(', ')}, ?]\n# Rule: +${step} each step`,
       options,
       answer,
@@ -133,7 +133,7 @@ function generateTier1Problem() {
     return {
       tier: 1,
       concept: 'Repeating Patterns',
-      displayString: `What shape comes next?\n${seq} [ ? ]`,
+      displayString: `What shape comes next?\n${seq} [ ___ ]`,
       codeSnippet: `repeat_pattern = "${seq} ?"\n# Pattern: A - B - A - B...`,
       options,
       answer,
@@ -155,12 +155,12 @@ function generateTier1Problem() {
   if (isThreeStep) {
     const subVal = Math.floor(Math.random() * Math.min(addVal, 3)) + 1;
     ansNum = startVal + addVal - subVal;
-    displayString = `Follow the steps in order:\n1. Start with ${startVal}\n2. Add ${addVal}\n3. Subtract ${subVal}\nWhat is the final result?`;
+    displayString = `What is the final value of val?`;
     codeSnippet = `val = ${startVal}\nval = val + ${addVal}\nval = val - ${subVal}`;
     hint = `Start with ${startVal}, add ${addVal} (${startVal + addVal}), then subtract ${subVal} (${ansNum}).`;
   } else {
     ansNum = startVal + addVal;
-    displayString = `Follow the steps in order:\n1. Start with ${startVal}\n2. Add ${addVal}\nWhat is the final result?`;
+    displayString = `What is the final value of val?`;
     codeSnippet = `val = ${startVal}\nval = val + ${addVal}`;
     hint = `Start with ${startVal}, then add ${addVal} (${ansNum}).`;
   }
@@ -312,7 +312,7 @@ function generateTier2Problem() {
   return {
     tier: 2,
     concept: 'Nested Loop Output',
-    displayString: `How many times is "*" printed in total?`,
+    displayString: `How many times does the code below print "*"?`,
     codeSnippet: `for row in range(${rows}):\n    for col in range(${cols}):\n        print("*")`,
     options,
     answer,

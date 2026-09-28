@@ -505,7 +505,6 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
       const codeSnippet = prob.codeSnippet ? prob.codeSnippet.trim() : '';
       let snippetHtml = '';
       const isSelfContained = (
-        c === 'Step-by-Step Execution' ||
         c === 'Grid Coordinates' ||
         c === 'Path Tracing' ||
         c === 'Numeric Sequences' ||
@@ -516,7 +515,6 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
         c === 'Comparison Operators' ||
         c === 'Compound Booleans' ||
         c === 'Loop Iteration Count' ||
-        c === 'Nested Loop Output' ||
         c === 'Binary Search' ||
         c === 'Binary Conversion'
       );
