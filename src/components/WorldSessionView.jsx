@@ -491,7 +491,7 @@ export default function WorldSessionView({
   const saveCurrentClimbProgress = () => {
     if (isPracticeMode) return;
     if (!hasStartedClimb || showBreakOverlay) return;
-    if (sessionQuestionIndex > 12 || (questionsAnswered > 0 && questionsAnswered % 12 === 0)) return;
+    if (!isReviewPhase && (sessionQuestionIndex > 12 || (questionsAnswered > 0 && questionsAnswered % 12 === 0))) return;
 
     const now = performance.now();
     const currentPause = pauseStartRef.current ? (now - pauseStartRef.current) : 0;
@@ -1344,7 +1344,7 @@ export default function WorldSessionView({
       } else {
         const ownedShields = (consumables?.shieldCount || 0) + (consumables?.streakSaverCount || 0);
 
-        if (ownedShields > 0 && blockShieldsUsed < 2 && onConsumeShield) {
+        if (!isReviewPhase && ownedShields > 0 && blockShieldsUsed < 2 && onConsumeShield) {
           isShieldAbsorbed = onConsumeShield();
           if (isShieldAbsorbed) {
             // Protect the streak!

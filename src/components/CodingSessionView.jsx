@@ -604,7 +604,8 @@ export default function CodingSessionView({
 
     // Check if primary questions reached
     const totalBlockQuestions = isPracticeMode ? practiceSprintLength : 12;
-    const reachedBlockEnd = nextSessionQNum > totalBlockQuestions;
+    const reachedBlockEnd = !isReviewPhase && nextSessionQNum > totalBlockQuestions;
+    const isReviewComplete = isReviewPhase && nextIndex >= problemQueue.length;
 
     // Duolingo mistake recycling review transition
     const effectiveReviewQueue = !isCorrect && !currentProblem.isReviewAttempt
@@ -613,14 +614,34 @@ export default function CodingSessionView({
 
     if (reachedBlockEnd && effectiveReviewQueue.length > 0) {
       setIsReviewPhase(true);
-      setProblemQueue((prev) => [...prev, ...effectiveReviewQueue]);
+      const updatedQueue = [...problemQueue, ...effectiveReviewQueue];
+      setProblemQueue(updatedQueue);
       setMissedReviewQueue([]);
       setCurrentProblemIndex(nextIndex);
       setEliminatedOptions([]);
       setRevealedHint(null);
       setIsClueActive(false);
       setProblemStartTime(Date.now());
-    } else if (reachedBlockEnd || nextIndex >= problemQueue.length) {
+
+      const reviewClimbState = {
+        problemQueue: updatedQueue,
+        currentProblemIndex: nextIndex,
+        sessionQuestionIndex: nextSessionQNum,
+        questionsAnswered: questionsAnswered + 1,
+        correctCount: isCorrect ? correctCount + 1 : correctCount,
+        blockCorrectCount: isCorrect ? blockCorrectCount + 1 : blockCorrectCount,
+        blockSparksEarned: blockSparksEarned + earnedSparks,
+        sessionSparksEarned: sessionSparksEarned + earnedSparks,
+        blockRatingGain: blockRatingGain + evalResult.rankDelta,
+        mistakeCount: isCorrect ? 0 : mistakeCount + 1,
+        competenceRank: nextRating,
+        sessionAnswers: nextAnswers,
+        missedReviewQueue: [],
+        isReviewPhase: true
+      };
+      storageService.saveActiveClimbState(reviewClimbState, profileId, 'coding');
+      setSavedClimbState(reviewClimbState);
+    } else if ((reachedBlockEnd && effectiveReviewQueue.length === 0) || isReviewComplete) {
       setIsReviewPhase(false);
       storageService.clearActiveClimbState(profileId, 'coding');
       setSavedClimbState(null);

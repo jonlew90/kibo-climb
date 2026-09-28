@@ -17,7 +17,11 @@ export default function ClimbPreCard({
   onOpenPracticeMode
 }) {
   const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
-  const isResumeAvailable = savedClimbState && savedClimbState.sessionQuestionIndex <= 12;
+  const isReviewPhase = Boolean(savedClimbState?.isReviewPhase);
+  const reviewRemaining = isReviewPhase
+    ? Math.max(1, (savedClimbState.problemQueue?.length || 0) - (savedClimbState.currentIndex || 0))
+    : 0;
+  const isResumeAvailable = Boolean(savedClimbState && (isReviewPhase || savedClimbState.sessionQuestionIndex <= 12));
   const ownedDoubleSparks = consumables?.doubleSparksPotionCount ?? consumables?.doubleCoinPotionCount ?? 0;
 
   useEffect(() => {
@@ -41,7 +45,9 @@ export default function ClimbPreCard({
       <div className="space-y-1.5">
         <span className="text-xs sm:text-sm font-black uppercase text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block shadow-2xs">
           {isAutoPaused
-            ? '⏸️ Climb Auto-Paused'
+            ? (isReviewPhase ? `⏸️ Review Auto-Paused • ${reviewRemaining} remaining` : '⏸️ Climb Auto-Paused')
+            : isReviewPhase
+            ? `🔁 Mistake Review • ${reviewRemaining} remaining`
             : isResumeAvailable
             ? `🏔️ Mountain Climb • Question ${savedClimbState.sessionQuestionIndex || 1} of 12`
             : '🏔️ Mountain Climb • 12 Problems'}
@@ -49,6 +55,8 @@ export default function ClimbPreCard({
         <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
           {isAutoPaused
             ? 'Are you still climbing?'
+            : isReviewPhase
+            ? 'Mistake Review in Progress!'
             : isResumeAvailable
             ? 'Climb in Progress!'
             : 'Ready for the Climb?'}
@@ -56,6 +64,8 @@ export default function ClimbPreCard({
         <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed">
           {isAutoPaused
             ? 'We paused your climb and timer so your speed record and streak stay safe! Click Resume to keep going.'
+            : isReviewPhase
+            ? 'Click Resume Climb to continue your mistake review.'
             : isResumeAvailable
             ? 'Click Resume Climb to continue where you left off.'
             : 'Click Start Climb when you are ready! Your timer will begin as soon as you start.'}

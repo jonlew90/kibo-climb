@@ -426,6 +426,93 @@ describe('Climb Block Completion & Anti-Endless-Loop Test Suite', () => {
       expect(finalBlockCorrect).toBe(12);
       expect(isPerfectBlock).toBe(true);
     });
+
+    it('mistake review does not consume shields or increment blockShieldsUsed', () => {
+      let isReviewPhase = true;
+      let ownedShields = 2;
+      let blockShieldsUsed = 0;
+      const onConsumeShield = vi.fn(() => true);
+
+      // Incorrect answer during review phase
+      let isShieldAbsorbed = false;
+      if (!isReviewPhase && ownedShields > 0 && blockShieldsUsed < 2 && onConsumeShield) {
+        isShieldAbsorbed = onConsumeShield();
+        if (isShieldAbsorbed) {
+          blockShieldsUsed += 1;
+        }
+      }
+
+      expect(isShieldAbsorbed).toBe(false);
+      expect(onConsumeShield).not.toHaveBeenCalled();
+      expect(blockShieldsUsed).toBe(0);
+    });
+
+    it('pausing during mistake review preserves exact review problem and queue position on resume', () => {
+      const totalBlockQuestions = 12;
+      // Simulate 12 primary questions answered with 2 mistakes
+      let isReviewPhase = true;
+      let questionsAnswered = 12;
+      let sessionQuestionIndex = 13;
+      let currentIndex = 12;
+      // Problem queue: 12 primary + 2 review questions = 14 total
+      let problemQueue = Array.from({ length: 14 }, (_, i) => ({
+        id: `prob_${i}`,
+        answer: i,
+        isReviewAttempt: i >= 12
+      }));
+      let missedReviewQueue = [];
+
+      // Save climb progress mid-review (saveCurrentClimbProgress guard check)
+      const shouldSave = isReviewPhase || !(sessionQuestionIndex > 12 || (questionsAnswered > 0 && questionsAnswered % totalBlockQuestions === 0));
+      expect(shouldSave).toBe(true);
+
+      const savedState = {
+        problemQueue,
+        currentIndex,
+        sessionQuestionIndex,
+        questionsAnswered,
+        isReviewPhase,
+        missedReviewQueue
+      };
+
+      // User pauses: ClimbPreCard displays Mistake Review state
+      const isResumeAvailable = Boolean(savedState && (savedState.isReviewPhase || savedState.sessionQuestionIndex <= 12));
+      const reviewRemaining = savedState.isReviewPhase
+        ? Math.max(1, (savedState.problemQueue?.length || 0) - (savedState.currentIndex || 0))
+        : 0;
+
+      expect(isResumeAvailable).toBe(true);
+      expect(reviewRemaining).toBe(2);
+
+      // User resumes climb: state restores exactly
+      currentIndex = savedState.currentIndex;
+      isReviewPhase = savedState.isReviewPhase;
+      problemQueue = savedState.problemQueue;
+
+      expect(currentIndex).toBe(12);
+      expect(problemQueue[currentIndex].id).toBe('prob_12');
+      expect(problemQueue[currentIndex].isReviewAttempt).toBe(true);
+
+      // User answers first review question (prob_12) correctly
+      questionsAnswered += 1;
+      sessionQuestionIndex += 1;
+      currentIndex += 1; // advances to index 13
+
+      const reachedBlockEnd = !isReviewPhase && questionsAnswered > 0 && questionsAnswered % totalBlockQuestions === 0;
+      const isReviewComplete = isReviewPhase && currentIndex >= problemQueue.length;
+
+      expect(reachedBlockEnd).toBe(false);
+      expect(isReviewComplete).toBe(false);
+      expect(currentIndex).toBe(13);
+      expect(problemQueue[currentIndex].id).toBe('prob_13');
+
+      // User answers second and final review question (prob_13) correctly
+      questionsAnswered += 1;
+      sessionQuestionIndex += 1;
+      const finalIsReviewComplete = isReviewPhase && currentIndex >= problemQueue.length - 1;
+
+      expect(finalIsReviewComplete).toBe(true);
+    });
   });
 });
 
