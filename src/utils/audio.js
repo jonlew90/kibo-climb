@@ -10,6 +10,7 @@ export function setHapticsEnabled(enabled) {
 
 export function triggerHaptic(pattern = 6) {
   if (!_hapticsEnabled) return;
+  if (typeof document !== 'undefined' && (document.hidden || (typeof document.hasFocus === 'function' && !document.hasFocus()))) return;
   if (typeof window !== 'undefined' && 'navigator' in window && 'vibrate' in navigator) {
     if (navigator.userActivation && navigator.userActivation.hasBeenActive === false) return;
     try { navigator.vibrate(pattern); } catch (e) {}
@@ -59,12 +60,27 @@ class SoundSystem {
     this._setupVisibilityListener();
   }
 
+  isPageActive() {
+    if (typeof document === 'undefined') return false;
+    if (document.hidden) return false;
+    if (typeof document.hasFocus === 'function' && !document.hasFocus()) return false;
+    return true;
+  }
+
+  canPlaySfx() {
+    return !this.isMuted && this.isPageActive();
+  }
+
+  canPlayMusic() {
+    return !this.isMuted && !this.isMusicMuted && this.isPageActive();
+  }
+
   _setupVisibilityListener() {
     if (typeof document === 'undefined') return;
 
     const handleVisibilityOrFocus = () => {
-      const isHiddenOrUnfocused = document.hidden || (typeof document.hasFocus === 'function' && !document.hasFocus());
-      if (isHiddenOrUnfocused) {
+      const active = this.isPageActive();
+      if (!active) {
         // Tab is hidden or unfocused / backgrounded: pause BGM and suspend AudioContext
         if (this._bgmAudio && !this._bgmAudio.paused) {
           try { this._bgmAudio.pause(); } catch (e) {}
@@ -77,7 +93,7 @@ class SoundSystem {
         if (this.ctx && this.ctx.state === 'suspended' && this._unlocked) {
           try { this.ctx.resume().catch(() => {}); } catch (e) {}
         }
-        if (this.currentBgmKey && !this.isMusicMuted && !this.isMuted && this._bgmAudio && this._bgmAudio.paused) {
+        if (this.canPlayMusic() && this.currentBgmKey && this._bgmAudio && this._bgmAudio.paused) {
           try {
             const playPromise = this._bgmAudio.play();
             if (playPromise !== undefined) playPromise.catch(() => {});
@@ -114,10 +130,10 @@ class SoundSystem {
         window.removeEventListener(evt, unlock, true);
       });
       this.init();
-      if (this.ctx?.state === 'suspended') {
+      if (this.ctx?.state === 'suspended' && this.isPageActive()) {
         try { await this.ctx.resume(); } catch (e) {}
       }
-      if (this.pendingBgmKey && !this.isMusicMuted && !this.isMuted) {
+      if (this.pendingBgmKey && this.canPlayMusic()) {
         this.startBGM(this.pendingBgmKey, this.pendingBgmVolume);
       }
     };
@@ -137,7 +153,7 @@ class SoundSystem {
         try { this.ctx = new AudioCtx(); } catch (e) { return; }
       }
     }
-    if (this.ctx?.state === 'suspended') {
+    if (this.ctx?.state === 'suspended' && this.isPageActive()) {
       try {
         this.ctx.resume().catch(() => {});
       } catch (e) {}
@@ -151,7 +167,7 @@ class SoundSystem {
     this.isMuted = v;
     if (v) {
       this.stopBGM();
-    } else if (!this.isMusicMuted && this.pendingBgmKey) {
+    } else if (this.canPlayMusic() && this.pendingBgmKey) {
       this.startBGM(this.pendingBgmKey, this.pendingBgmVolume);
     }
   }
@@ -161,7 +177,7 @@ class SoundSystem {
     if (v) {
       this.stopBGM();
     } else {
-      if (this.pendingBgmKey) {
+      if (this.canPlayMusic() && this.pendingBgmKey) {
         this.startBGM(this.pendingBgmKey, this.pendingBgmVolume);
       }
     }
@@ -205,11 +221,12 @@ class SoundSystem {
   // ─── File playback helper (for SFX) ──────────────────────────────────────
 
   async _playFile(key, volume = 1.0) {
-    if (this.isMuted) return false;
+    if (!this.canPlaySfx()) return false;
     this.init();
     if (!this.ctx) return false;
     const buf = await this._loadBuffer(key);
     if (!buf) return false; // fall through to synthesis
+    if (!this.canPlaySfx()) return false;
     if (this.ctx.state === 'suspended') await this.ctx.resume();
     const src = this.ctx.createBufferSource();
     const gain = this.ctx.createGain();
@@ -232,8 +249,12 @@ class SoundSystem {
     this.pendingBgmKey = trackKey;
     this.pendingBgmVolume = vol;
 
-    if (this.isMusicMuted || this.isMuted) {
-      this.stopBGM();
+    if (!this.canPlayMusic()) {
+      if (this.isMusicMuted || this.isMuted) {
+        this.stopBGM();
+      } else if (this._bgmAudio && !this._bgmAudio.paused) {
+        try { this._bgmAudio.pause(); } catch (e) {}
+      }
       return;
     }
 
@@ -284,7 +305,7 @@ class SoundSystem {
     const used = await this._playFile('correct', 0.8);
     if (used) return;
     // Synthesis fallback: warm two-tone chime
-    if (this.isMuted) return;
+    if (!this.canPlaySfx()) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -309,7 +330,7 @@ class SoundSystem {
     const used = await this._playFile('incorrect', 0.7);
     if (used) return;
     // Synthesis fallback: gentle descending wobble (not harsh)
-    if (this.isMuted) return;
+    if (!this.canPlaySfx()) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -336,7 +357,7 @@ class SoundSystem {
     triggerHaptic([8, 12, 8, 12, 16]);
     const used = await this._playFile('victory', 0.85);
     if (used) return;
-    if (this.isMuted) return;
+    if (!this.canPlaySfx()) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -367,7 +388,7 @@ class SoundSystem {
     triggerHaptic([6, 8]);
     const used = await this._playFile('spark', 0.7);
     if (used) return;
-    if (this.isMuted) return;
+    if (!this.canPlaySfx()) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -389,7 +410,7 @@ class SoundSystem {
     triggerHaptic([6, 10, 6, 10, 16]);
     const used = await this._playFile('badge', 0.8);
     if (used) return;
-    if (this.isMuted) return;
+    if (!this.canPlaySfx()) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -414,7 +435,7 @@ class SoundSystem {
     triggerHaptic([8, 12, 16]);
     const used = await this._playFile('block_complete', 0.75);
     if (used) return;
-    if (this.isMuted) return;
+    if (!this.canPlaySfx()) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -437,7 +458,7 @@ class SoundSystem {
     triggerHaptic([6, 8, 6, 8, 18]);
     const used = await this._playFile('streak', 0.8);
     if (used) return;
-    if (this.isMuted) return;
+    if (!this.canPlaySfx()) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -459,7 +480,7 @@ class SoundSystem {
     triggerHaptic([8, 10, 14]);
     const used = await this._playFile('brand_intro', 0.8);
     if (used) return;
-    if (this.isMuted) return;
+    if (!this.canPlaySfx()) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -494,7 +515,7 @@ class SoundSystem {
   async playToggle() {
     const used = await this._playFile('toggle', 0.5);
     if (used) return;
-    if (this.isMuted) return;
+    if (!this.canPlaySfx()) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -514,7 +535,7 @@ class SoundSystem {
     triggerHaptic([8, 12]);
     const used = await this._playFile('item', 0.85);
     if (used) return;
-    if (this.isMuted) return;
+    if (!this.canPlaySfx()) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -532,4 +553,5 @@ class SoundSystem {
   }
 }
 
+export { SoundSystem };
 export const soundFx = new SoundSystem();
