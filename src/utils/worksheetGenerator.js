@@ -492,11 +492,47 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
 
     if (subject === 'coding') {
       const prob = generateCodingProblem(chosenTier, false, new Set());
-      let q = prob.prompt || prob.question || prob.displayString || 'Coding puzzle';
-      q = q.replace(/^Solve this coding logic puzzle:\s*/i, '').trim();
+      const c = prob.concept;
+      // Skip pure multiple-choice questions that lack answer options on printables
+      if (c === 'Spot the Bug' || c === 'Time Complexity' || c === 'Repeat Loops') {
+        return { q: null, ans: null };
+      }
+
+      let promptText = prob.prompt || prob.question || prob.displayString || 'Coding puzzle';
+      promptText = promptText.replace(/^Solve this coding logic puzzle:\s*/i, '').trim();
+
+      // Clean snippet if present
+      const codeSnippet = prob.codeSnippet ? prob.codeSnippet.trim() : '';
+      let snippetHtml = '';
+      const isSelfContained = (
+        c === 'Step-by-Step Execution' ||
+        c === 'Grid Coordinates' ||
+        c === 'Path Tracing' ||
+        c === 'Numeric Sequences' ||
+        c === 'Doubling Patterns' ||
+        c === 'Repeating Patterns' ||
+        c === 'Boolean Gates' ||
+        c === 'NOT Operator' ||
+        c === 'Comparison Operators' ||
+        c === 'Compound Booleans' ||
+        c === 'Loop Iteration Count' ||
+        c === 'Nested Loop Output' ||
+        c === 'Binary Search' ||
+        c === 'Binary Conversion'
+      );
+
+      if (!isSelfContained && codeSnippet) {
+        const cleanedLines = codeSnippet
+          .split('\n')
+          .filter(line => !line.trim().startsWith('#'));
+        if (cleanedLines.length > 0) {
+          snippetHtml = cleanedLines.join('\n');
+        }
+      }
+
       const ans = String(prob.correctAnswer || prob.answer || prob.answerString || '');
       const reasoning = prob.explanation || `Trace step-by-step logic & variable state to verify '${ans}'.`;
-      return { q, ans, reasoning };
+      return { q: promptText, snippet: snippetHtml, ans, reasoning };
     }
 
     return { q: 'Solve the problem', ans: 'Answer' };
@@ -651,12 +687,20 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
     .problem-card {
       border: 2px solid #e2e8f0;
       border-radius: 12px;
-      padding: 12px 16px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: #ffffff;
-      min-height: 52px;
+      min-height: 50px;
+    }
+
+    .problem-content {
+      display: flex;
+      align-items: flex-start;
+      flex-grow: 1;
+      margin-right: 12px;
+      min-width: 0;
     }
 
     .problem-num {
@@ -664,23 +708,47 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
       font-weight: 800;
       color: #94a3b8;
       margin-right: 8px;
-      width: 24px;
+      width: 22px;
+      shrink-0: 0;
+      line-height: 1.3;
+    }
+
+    .problem-main {
+      flex-grow: 1;
+      min-width: 0;
     }
 
     .problem-text {
-      font-size: 16px;
+      font-size: 13.5px;
       font-weight: 800;
       color: #1e293b;
-      flex-grow: 1;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
+      line-height: 1.35;
+      white-space: pre-line;
+    }
+
+    .code-snippet-block {
+      margin-top: 6px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .answer-box {
-      width: 70px;
-      height: 32px;
+      width: 65px;
+      height: 30px;
       border-bottom: 2px solid #94a3b8;
       background: #f8fafc;
       border-radius: 4px;
+      flex-shrink: 0;
     }
 
     /* FOOTER */
@@ -766,8 +834,13 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
       <div class="grid">
         ${problems.map((p, idx) => `
           <div class="problem-card">
-            <span class="problem-num">${idx + 1}.</span>
-            <span class="problem-text">${p.q}</span>
+            <div class="problem-content">
+              <span class="problem-num">${idx + 1}.</span>
+              <div class="problem-main">
+                <div class="problem-text">${p.q}</div>
+                ${p.snippet ? `<div class="code-snippet-block">${p.snippet}</div>` : ''}
+              </div>
+            </div>
             <div class="answer-box"></div>
           </div>
         `).join('')}
@@ -804,7 +877,7 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
       <div class="key-grid">
         ${problems.map((p, idx) => `
           <div class="key-card">
-            <span class="key-num">${idx + 1}. ${p.q}</span>
+            <span class="key-num">${idx + 1}. ${p.q.replace(/\n/g, ' ')}</span>
             <span class="key-ans">${p.ans}</span>
           </div>
         `).join('')}

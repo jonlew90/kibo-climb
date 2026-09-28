@@ -8578,47 +8578,55 @@ export function calculateRevealedLetterCount(wordLength, tier = 1) {
   let revealCount = 1;
 
   if (tier <= 2) {
-    // Early phonics / CVC / 4-letter blends
+    // Early phonics / CVC / 4-letter blends (Kindergarten - Grade 1)
     if (wordLength >= 5) {
-      revealCount = 1;
+      revealCount = 2;
+    } else if (wordLength === 4) {
+      revealCount = 2; // 2 given, 2 blanks
     } else {
-      revealCount = 1;
+      revealCount = 1; // 3-letter words: 1 given, 2 blanks
     }
   } else if (tier === 3 || tier === 4) {
-    // Elementary digraphs & compound words
+    // Elementary digraphs & compound words (Grades 2 - 3)
     if (wordLength >= 14) {
-      revealCount = 5;
+      revealCount = 8;
     } else if (wordLength >= 11) {
-      revealCount = 4;
+      revealCount = 6;
     } else if (wordLength >= 8) {
+      revealCount = 4;
+    } else if (wordLength >= 6) {
       revealCount = 3;
-    } else if (wordLength >= 5) {
+    } else if (wordLength >= 4) {
       revealCount = 2;
     } else {
       revealCount = 1;
     }
   } else if (tier === 5 || tier === 6) {
-    // Intermediate prefixes, suffixes & advanced vocabulary
+    // Intermediate prefixes, suffixes & advanced vocabulary (Grades 4 - 5)
     if (wordLength >= 14) {
-      revealCount = 4;
+      revealCount = 8;
     } else if (wordLength >= 11) {
-      revealCount = 3;
+      revealCount = 6;
     } else if (wordLength >= 8) {
+      revealCount = 4;
+    } else if (wordLength >= 6) {
       revealCount = 3;
-    } else if (wordLength >= 5) {
+    } else if (wordLength >= 4) {
       revealCount = 2;
     } else {
       revealCount = 1;
     }
   } else {
-    // Tier 7-8: Advanced multisyllabic, etymology & summit rhetoric
+    // Tier 7-8: Advanced multisyllabic, etymology & summit rhetoric (Grades 6+)
     if (wordLength >= 14) {
-      revealCount = 4;
+      revealCount = 8;
     } else if (wordLength >= 11) {
-      revealCount = 3;
+      revealCount = 6;
     } else if (wordLength >= 8) {
-      revealCount = 2;
+      revealCount = 4;
     } else if (wordLength >= 6) {
+      revealCount = 3;
+    } else if (wordLength >= 4) {
       revealCount = 2;
     } else {
       revealCount = 1;

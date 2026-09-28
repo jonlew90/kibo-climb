@@ -143,10 +143,28 @@ function generateTier1Problem() {
     };
   }
 
-  // Execution Step Order
-  const startVal = Math.floor(Math.random() * 5) + 1;
+  // Execution Step Order (2 or 3 steps)
+  const isThreeStep = Math.random() > 0.5;
+  const startVal = Math.floor(Math.random() * 5) + 2;
   const addVal = Math.floor(Math.random() * 4) + 1;
-  const ansNum = startVal + addVal;
+  let ansNum;
+  let displayString;
+  let codeSnippet;
+  let hint;
+
+  if (isThreeStep) {
+    const subVal = Math.floor(Math.random() * Math.min(addVal, 3)) + 1;
+    ansNum = startVal + addVal - subVal;
+    displayString = `Follow the steps in order:\n1. Start with ${startVal}\n2. Add ${addVal}\n3. Subtract ${subVal}\nWhat is the final result?`;
+    codeSnippet = `val = ${startVal}\nval = val + ${addVal}\nval = val - ${subVal}`;
+    hint = `Start with ${startVal}, add ${addVal} (${startVal + addVal}), then subtract ${subVal} (${ansNum}).`;
+  } else {
+    ansNum = startVal + addVal;
+    displayString = `Follow the steps in order:\n1. Start with ${startVal}\n2. Add ${addVal}\nWhat is the final result?`;
+    codeSnippet = `val = ${startVal}\nval = val + ${addVal}`;
+    hint = `Start with ${startVal}, then add ${addVal} (${ansNum}).`;
+  }
+
   const answer = String(ansNum);
   const distractors = [
     String(ansNum + 1),
@@ -159,12 +177,12 @@ function generateTier1Problem() {
   return {
     tier: 1,
     concept: 'Step-by-Step Execution',
-    displayString: `Follow the steps in order:\n1. Start with ${startVal}\n2. Add ${addVal}\nWhat is the result?`,
-    codeSnippet: `val = ${startVal}\nval = val + ${addVal}`,
+    displayString,
+    codeSnippet,
     options,
     answer,
     answerString: answer,
-    hint: `Start with ${startVal}, then add ${addVal}.`,
+    hint,
     type: 'coding'
   };
 }
@@ -273,7 +291,7 @@ function generateTier2Problem() {
     return {
       tier: 2,
       concept: 'Path Tracing',
-      displayString: `Kibo starts at (3, 3).\nFollow each move in order.\nWhere does Kibo end up?`,
+      displayString: `Kibo starts at (3, 3).\nMoves: ${moves.join(' → ')}\nWhere does Kibo end up?`,
       codeSnippet: `x, y = 3, 3\n${moveLines}`,
       options,
       answer,

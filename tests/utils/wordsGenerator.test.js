@@ -13,11 +13,17 @@ describe('wordsGenerator', () => {
   it('calculateRevealedLetterCount handles small words', () => {
     expect(wordsGenerator.calculateRevealedLetterCount(2, 1)).toBe(0);
     expect(wordsGenerator.calculateRevealedLetterCount(3, 1)).toBe(1);
+    expect(wordsGenerator.calculateRevealedLetterCount(4, 2)).toBe(2);
   });
 
-  it('calculateRevealedLetterCount handles larger words across tiers', () => {
-    expect(wordsGenerator.calculateRevealedLetterCount(6, 1)).toBeGreaterThanOrEqual(1);
-    expect(wordsGenerator.calculateRevealedLetterCount(8, 4)).toBeGreaterThanOrEqual(1);
+  it('calculateRevealedLetterCount provides balanced scaffolding across tiers leaving at least 2 blanks', () => {
+    expect(wordsGenerator.calculateRevealedLetterCount(6, 1)).toBe(2);
+    expect(wordsGenerator.calculateRevealedLetterCount(8, 4)).toBe(4);
+    expect(wordsGenerator.calculateRevealedLetterCount(12, 6)).toBe(6);
+    expect(wordsGenerator.calculateRevealedLetterCount(14, 7)).toBe(8);
+    // Always leaves at least 2 blanks
+    expect(wordsGenerator.calculateRevealedLetterCount(4, 3)).toBe(2);
+    expect(wordsGenerator.calculateRevealedLetterCount(5, 5)).toBe(2);
   });
 
   it('generateProblems generates an array of problems', () => {
