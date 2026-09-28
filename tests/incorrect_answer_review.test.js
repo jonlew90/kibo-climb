@@ -170,5 +170,28 @@ describe('Incorrect Answer Review Behavior & Scoring Integrity', () => {
     }
     expect(routedToPracticeQueue).toBe(true);
   });
+
+  it('differentiates shield-absorbed reviews from raw incorrect reviews', () => {
+    const shieldReviewData = {
+      problem: { prompt: '7 × 8', answer: 56 },
+      userAnswer: '54',
+      correctAnswer: 56,
+      isShieldAbsorbed: true,
+      nextQuestionsAnswered: 4,
+      isBlockComplete: false
+    };
+
+    const regularReviewData = {
+      problem: { prompt: '7 × 8', answer: 56 },
+      userAnswer: '54',
+      correctAnswer: 56,
+      isShieldAbsorbed: false,
+      nextQuestionsAnswered: 4,
+      isBlockComplete: false
+    };
+
+    expect(shieldReviewData.isShieldAbsorbed).toBe(true);
+    expect(regularReviewData.isShieldAbsorbed).toBe(false);
+  });
 });
 

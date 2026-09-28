@@ -262,6 +262,9 @@ export default function App() {
   useEffect(() => {
     const unsubAuth = authService.subscribeAuthState?.((user) => {
       setCurrentAuthState(authService.getAuthState());
+      if (user && user.uid) {
+        userSyncService.initUserSync(user.uid);
+      }
     });
     const unsubSync = userSyncService.subscribeSyncStatus?.((status) => {
       if (status === 'syncing') {
@@ -278,19 +281,33 @@ export default function App() {
     otaUpdateService.notifyAppReady();
     otaUpdateService.checkForUpdates();
 
-    const handleAppResume = () => {
+    const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         otaUpdateService.checkForUpdates();
+      } else if (document.visibilityState === 'hidden') {
+        userSyncService.flushSync();
       }
     };
-    document.addEventListener('visibilitychange', handleAppResume);
-    window.addEventListener('focus', handleAppResume);
+    const handleFocus = () => {
+      otaUpdateService.checkForUpdates();
+    };
+    const handleBeforeUnload = () => {
+      userSyncService.flushSync();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
 
     return () => {
       if (unsubAuth) unsubAuth();
       if (unsubSync) unsubSync();
-      document.removeEventListener('visibilitychange', handleAppResume);
-      window.removeEventListener('focus', handleAppResume);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+      userSyncService.stopSync();
     };
   }, []);
 
@@ -1514,6 +1531,7 @@ export default function App() {
       if (nextShieldCount >= 2) return;
       nextShieldCount += 1;
     } else if (item.id === 'streak_saver') {
+      if (nextStreakSaverCount >= 2) return;
       nextStreakSaverCount += 1;
     } else if (item.id === 'double_sparks_potion' || item.id === 'double_coin_potion') {
       nextPotionCount += 1;

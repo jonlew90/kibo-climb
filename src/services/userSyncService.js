@@ -164,6 +164,21 @@ class UserSyncService {
   }
 
   /**
+   * Immediately flushes any pending debounced cloud push (e.g. on page hide or tab backgrounding).
+   */
+  flushSync() {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+      const currentUser = auth.currentUser;
+      const uid = currentUser ? currentUser.uid : storageService.getUserData('math')?.cloudUid;
+      if (uid) {
+        this.pushLocalToCloud(uid);
+      }
+    }
+  }
+
+  /**
    * Directly pushes local profiles state to Firestore.
    */
   async pushLocalToCloud(uid, specificProfileId = null, overwriteEntireDocument = false) {

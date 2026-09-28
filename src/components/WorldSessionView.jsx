@@ -42,6 +42,7 @@ import CompanionsRow from './climb/CompanionsRow';
 import ToastBanner from './climb/ToastBanner';
 import ChallengeBanner from './climb/ChallengeBanner';
 import ItemThumbnail from './ItemThumbnail';
+import IncorrectReviewBanner, { IncorrectReviewAction } from './climb/IncorrectReviewBanner';
 
 
 export default function WorldSessionView({
@@ -1343,7 +1344,7 @@ export default function WorldSessionView({
       } else {
         const ownedShields = (consumables?.shieldCount || 0) + (consumables?.streakSaverCount || 0);
 
-        if (ownedShields > 0 && onConsumeShield) {
+        if (ownedShields > 0 && blockShieldsUsed < 2 && onConsumeShield) {
           isShieldAbsorbed = onConsumeShield();
           if (isShieldAbsorbed) {
             // Protect the streak!
@@ -2017,7 +2018,9 @@ export default function WorldSessionView({
                           let buttonStyle = 'btn-3d-teal';
                           if (incorrectReviewData) {
                             if (isCorrectAnswer) {
-                              buttonStyle = 'bg-emerald-500 hover:bg-emerald-500 border-b-4 border-emerald-700 text-white ring-4 ring-emerald-300/80 scale-[1.02] shadow-md animate-pulse';
+                              buttonStyle = incorrectReviewData.isShieldAbsorbed
+                                ? 'bg-sky-500 hover:bg-sky-500 border-b-4 border-sky-700 text-white ring-4 ring-sky-300/80 scale-[1.02] shadow-md animate-pulse'
+                                : 'bg-emerald-500 hover:bg-emerald-500 border-b-4 border-emerald-700 text-white ring-4 ring-emerald-300/80 scale-[1.02] shadow-md animate-pulse';
                             } else if (isUserChoice) {
                               buttonStyle = 'bg-rose-500 border-b-4 border-rose-700 text-white opacity-90 shadow-sm';
                             } else {
@@ -2043,7 +2046,7 @@ export default function WorldSessionView({
                               disabled={inputVal !== '' || !!incorrectReviewData || isPruned}
                             >
                               <span className={`w-full max-w-full text-center font-extrabold break-words [overflow-wrap:anywhere] hyphens-auto px-0.5 ${fontClass} ${isUserChoice && !isCorrectAnswer ? 'line-through' : ''}`}>
-                                {isCorrectAnswer ? `✓ ${opt}` : isUserChoice ? `✕ ${opt}` : opt}
+                                {isCorrectAnswer ? (incorrectReviewData?.isShieldAbsorbed ? `🛡️ ${opt}` : `✓ ${opt}`) : isUserChoice ? `✕ ${opt}` : opt}
                               </span>
                             </button>
                           );
@@ -2052,23 +2055,13 @@ export default function WorldSessionView({
                     );
                   })()}
 
-                  {/* INCORRECT ANSWER REVIEW BANNER */}
+                  {/* INCORRECT / SHIELD ANSWER REVIEW BANNER */}
                   {incorrectReviewData && (
-                    <div className="w-full bg-rose-50 border-2 border-rose-200 rounded-2xl p-2 sm:p-2.5 text-center space-y-1 animate-pop mt-1">
-                      <div className="flex items-center justify-center gap-2 flex-wrap text-xs sm:text-sm font-bold">
-                        <span className="text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full border border-rose-200 text-xs">
-                          ✕ Your answer: <span className="line-through font-extrabold">{incorrectReviewData.userAnswer || '—'}</span>
-                        </span>
-                        <span className="text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300 font-extrabold text-xs flex items-center gap-1">
-                          ✓ Correct: {incorrectReviewData.correctAnswer}
-                        </span>
-                      </div>
-                      {currentProblem.hint && (
-                        <p className="text-xs text-indigo-900 font-medium italic pt-0.5">
-                          {currentProblem.type === 'tricky_capital' ? '⚠️ Common misconception: ' : '💡 '}{currentProblem.hint}
-                        </p>
-                      )}
-                    </div>
+                    <IncorrectReviewBanner
+                      reviewData={incorrectReviewData}
+                      hint={currentProblem.hint}
+                      hintPrefix={currentProblem.type === 'tricky_capital' ? '⚠️ Common misconception: ' : '💡 '}
+                    />
                   )}
                 </div>
               );
@@ -2081,18 +2074,11 @@ export default function WorldSessionView({
 
       {/* NEXT QUESTION / FINISH CLIMB CTA BUTTON */}
       {hasStartedClimb && incorrectReviewData && (
-        <div className="w-full max-w-md md:max-w-lg shrink-0 animate-pop mt-1 sm:mt-2 space-y-1.5">
-          <button
-            type="button"
-            autoFocus
-            onClick={handleContinueAfterIncorrect}
-            className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-lg sm:text-xl py-3 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer select-none"
-          >
-            <span>{incorrectReviewData.isBlockComplete ? 'Finish Climb 🏔️' : 'Next Question ➔'}</span>
-          </button>
-          <p className="text-[11px] font-bold text-slate-400 text-center uppercase tracking-wider">
-            Press Enter or Space ↵
-          </p>
+        <div className="w-full max-w-md md:max-w-lg shrink-0 animate-pop mt-1 sm:mt-2">
+          <IncorrectReviewAction
+            reviewData={incorrectReviewData}
+            onContinue={handleContinueAfterIncorrect}
+          />
         </div>
       )}
 

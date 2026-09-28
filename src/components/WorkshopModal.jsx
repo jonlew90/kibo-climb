@@ -473,6 +473,9 @@ export default function WorkshopModal({
       if (item.id === 'kibo_shield' && (consumables?.shieldCount ?? 1) >= 2) {
         return;
       }
+      if (item.id === 'streak_saver' && (consumables?.streakSaverCount ?? 0) >= 2) {
+        return;
+      }
       soundFx.playKeyTap();
       onBuyConsumable(item);
       setRecentlyPurchasedId(item.id);
@@ -936,7 +939,7 @@ export default function WorkshopModal({
                           'Equip Now'
                         )}
                       </button>
-                    ) : selectedItemDetail.isConsumable && selectedItemDetail.id === 'kibo_shield' && (consumables?.shieldCount ?? 1) >= 2 ? (
+                    ) : selectedItemDetail.isConsumable && ((selectedItemDetail.id === 'kibo_shield' && (consumables?.shieldCount ?? 1) >= 2) || (selectedItemDetail.id === 'streak_saver' && (consumables?.streakSaverCount ?? 0) >= 2)) ? (
                       <div className="w-full py-1.5 text-xs font-black text-slate-400 bg-slate-100 rounded-xl text-center">
                         Full (2/2)
                       </div>
@@ -1533,7 +1536,8 @@ export default function WorkshopModal({
                 {displayedItems.map((item) => {
                   const isConsumable = item.isConsumable;
                   const shieldOwned = consumables?.shieldCount ?? 1;
-                  const isShieldFull = isConsumable && item.id === 'kibo_shield' && shieldOwned >= 2;
+                  const streakSaverOwned = consumables?.streakSaverCount ?? 0;
+                  const isConsumableFull = isConsumable && ((item.id === 'kibo_shield' && shieldOwned >= 2) || (item.id === 'streak_saver' && streakSaverOwned >= 2));
                   const isUnlocked = isConsumable ? false : unlockedItems.includes(item.id);
                   const isEquippedInApp = equippedItems.includes(item.id);
                   const isPreviewedOnStage = stageEquippedItems.includes(item.id) || (item.bundleItems && item.bundleItems.some((id) => stageEquippedItems.includes(id)));
@@ -1666,7 +1670,7 @@ export default function WorkshopModal({
                             {isEquippedInApp ? 'Unequip' : 'Wear'}
                           </button>
                         ) : isConsumable ? (
-                          isShieldFull ? (
+                          isConsumableFull ? (
                             <div className="text-[10px] font-black text-slate-400 bg-slate-100 py-1 rounded-lg">
                               Full (2/2)
                             </div>
@@ -2096,7 +2100,7 @@ export default function WorkshopModal({
                   </button>
                 </div>
               ) : selectedItemDetail.isConsumable ? (
-                selectedItemDetail.id === 'kibo_shield' && (consumables?.shieldCount ?? 1) >= 2 ? (
+                ((selectedItemDetail.id === 'kibo_shield' && (consumables?.shieldCount ?? 1) >= 2) || (selectedItemDetail.id === 'streak_saver' && (consumables?.streakSaverCount ?? 0) >= 2)) ? (
                   <div className="w-full py-2.5 text-xs font-black text-slate-400 bg-slate-100 rounded-xl text-center">
                     Full (2/2)
                   </div>

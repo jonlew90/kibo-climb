@@ -167,6 +167,9 @@ function safeGetProfilesState() {
 function safeSaveProfilesState(state) {
   try {
     localStorage.setItem(KEYS.PROFILES, JSON.stringify(state));
+    try {
+      userSyncService.syncProfileToCloud();
+    } catch (err) {}
     return true;
   } catch (e) {
     console.error('StorageService: error saving profiles state', e);
@@ -828,6 +831,7 @@ export const storageService = {
   saveNotificationSettings(settings) {
     try {
       localStorage.setItem(KEYS.NOTIF_SETTINGS, JSON.stringify(settings));
+      userSyncService.syncProfileToCloud();
     } catch (e) {
       console.error('StorageService: error writing notification settings', e);
     }
@@ -864,6 +868,9 @@ export const storageService = {
     }
     state.profiles[targetId].practiceDays = newDays;
     safeSaveProfilesState(state);
+    try {
+      userSyncService.syncProfileToCloud(targetId);
+    } catch (e) {}
   },
 
   // Per-Profile Reminder Settings
@@ -897,6 +904,9 @@ export const storageService = {
       state.profiles[targetId].reminderTime = String(settings.reminderTime);
     }
     safeSaveProfilesState(state);
+    try {
+      userSyncService.syncProfileToCloud(targetId);
+    } catch (e) {}
   },
 
   // Parent Settings & Security Gate Storage

@@ -30,6 +30,7 @@ import CompanionsRow from './climb/CompanionsRow';
 import ToastBanner from './climb/ToastBanner';
 import ChallengeBanner from './climb/ChallengeBanner';
 import ItemThumbnail from './ItemThumbnail';
+import IncorrectReviewBanner, { IncorrectReviewAction } from './climb/IncorrectReviewBanner';
 
 
 export default function WordsSessionView({
@@ -1308,7 +1309,7 @@ export default function WordsSessionView({
       } else {
         const ownedShields = (consumables?.shieldCount || 0) + (consumables?.streakSaverCount || 0);
 
-        if (ownedShields > 0 && onConsumeShield) {
+        if (ownedShields > 0 && blockShieldsUsed < 2 && onConsumeShield) {
           isShieldAbsorbed = onConsumeShield();
           if (isShieldAbsorbed) {
             // Protect the streak!
@@ -2105,7 +2106,11 @@ export default function WordsSessionView({
                          {targetStr.split('').map((char, index) => (
                            <span
                              key={index}
-                             className={`relative inline-flex items-center justify-center font-black transition-all duration-150 ${slotSizeClass} ${textSizeClass} bg-emerald-100 text-emerald-900 border-2 border-emerald-400 ring-2 ring-emerald-300 shadow-xs scale-105 animate-pop`}
+                             className={`relative inline-flex items-center justify-center font-black transition-all duration-150 ${slotSizeClass} ${textSizeClass} ${
+                               incorrectReviewData.isShieldAbsorbed
+                                 ? 'bg-sky-100 text-sky-900 border-2 border-sky-400 ring-2 ring-sky-300 shadow-xs scale-105 animate-pop'
+                                 : 'bg-emerald-100 text-emerald-900 border-2 border-emerald-400 ring-2 ring-emerald-300 shadow-xs scale-105 animate-pop'
+                             }`}
                            >
                              {char.toUpperCase()}
                            </span>
@@ -2116,23 +2121,16 @@ export default function WordsSessionView({
                      )}
                   </div>
 
-                  {/* INCORRECT ANSWER REVIEW BANNER */}
+                  {/* INCORRECT / SHIELD ANSWER REVIEW BANNER */}
                   {incorrectReviewData && (
-                    <div className="w-full bg-rose-50 border-2 border-rose-200 rounded-2xl p-2 sm:p-2.5 text-center space-y-1 animate-pop">
-                      <div className="flex items-center justify-center gap-2 flex-wrap text-xs sm:text-sm font-bold">
-                        <span className="text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full border border-rose-200">
-                          ✕ Your spelling: <span className="line-through font-extrabold">{incorrectReviewData.userAnswer ? String(incorrectReviewData.userAnswer).toUpperCase() : '—'}</span>
-                        </span>
-                        <span className="text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300 font-extrabold flex items-center gap-1">
-                          ✓ Correct: {targetStr.toUpperCase()}
-                        </span>
-                      </div>
-                      {currentProblem.hint && (
-                        <p className="text-xs text-indigo-900 font-medium italic pt-0.5">
-                          📜 {currentProblem.hint}
-                        </p>
-                      )}
-                    </div>
+                    <IncorrectReviewBanner
+                      reviewData={incorrectReviewData}
+                      hint={currentProblem.hint}
+                      hintPrefix="📜"
+                      userLabel="Your spelling"
+                      formatUserAnswer={(ans) => ans ? String(ans).toUpperCase() : '—'}
+                      formatCorrectAnswer={() => targetStr.toUpperCase()}
+                    />
                   )}
 
                   {/* INTEGRATED KIBO HINT */}
@@ -2157,19 +2155,10 @@ export default function WordsSessionView({
       {hasStartedClimb && (
         <div className="w-full max-w-sm shrink-0 animate-pop mt-0.5 sm:mt-2 max-h-[35vh]">
           {incorrectReviewData ? (
-            <div className="space-y-2 py-2">
-              <button
-                type="button"
-                autoFocus
-                onClick={handleContinueAfterIncorrect}
-                className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-black text-lg sm:text-xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 animate-pulse cursor-pointer select-none"
-              >
-                <span>{incorrectReviewData.isBlockComplete ? 'Finish Climb 🏔️' : 'Next Question ➔'}</span>
-              </button>
-              <p className="text-[11px] font-bold text-slate-400 text-center uppercase tracking-wider">
-                Press Enter or Space ↵
-              </p>
-            </div>
+            <IncorrectReviewAction
+              reviewData={incorrectReviewData}
+              onContinue={handleContinueAfterIncorrect}
+            />
           ) : (
             <QwertyKeyboard
               prunedKeys={prunedKeys}
