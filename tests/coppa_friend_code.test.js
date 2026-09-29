@@ -1,6 +1,30 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { storageService } from '../src/services/storageService.js';
 import { leaderboardService } from '../src/services/leaderboardService.js';
+
+vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(),
+  signInAnonymously: vi.fn().mockResolvedValue({ user: { uid: 'mock_test_uid' } }),
+  onAuthStateChanged: vi.fn((auth, cb) => {
+    cb({ uid: 'mock_test_uid' });
+    return vi.fn();
+  }),
+}));
+
+vi.mock('firebase/functions', () => ({
+  getFunctions: vi.fn(),
+  httpsCallable: vi.fn(() => vi.fn().mockRejectedValue(new Error('Cloud functions mock disabled in unit test')))
+}));
+
+vi.mock('firebase/firestore', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    getDocs: vi.fn().mockResolvedValue({ empty: true, docs: [] }),
+    getDoc: vi.fn().mockResolvedValue({ exists: () => false, data: () => null }),
+    setDoc: vi.fn().mockResolvedValue(),
+  };
+});
 
 describe('COPPA Climber Friend Code & Exact Search', () => {
   beforeEach(() => {

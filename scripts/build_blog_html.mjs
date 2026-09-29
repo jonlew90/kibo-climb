@@ -38,39 +38,51 @@ function markdownToHtml(mdText) {
     const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) continue;
 
-    const firstLine = lines[0];
+    let currentList = null; // { type: 'ul' | 'ol', items: [] }
 
-    if (firstLine.startsWith('### ')) {
-      const heading = formatInlineMarkdown(firstLine.slice(4));
-      htmlParts.push(`<h3>${heading}</h3>`);
-      for (const line of lines.slice(1)) {
-        htmlParts.push(`<p>${formatInlineMarkdown(line)}</p>`);
+    const flushList = () => {
+      if (currentList) {
+        htmlParts.push(`<${currentList.type}>${currentList.items.map(i => `<li>${formatInlineMarkdown(i)}</li>`).join('')}</${currentList.type}>`);
+        currentList = null;
       }
-    } else if (firstLine.startsWith('## ')) {
-      const heading = formatInlineMarkdown(firstLine.slice(3));
-      htmlParts.push(`<h2>${heading}</h2>`);
-      for (const line of lines.slice(1)) {
-        htmlParts.push(`<p>${formatInlineMarkdown(line)}</p>`);
-      }
-    } else if (/^\d+\.\s+/.test(firstLine)) {
-      const items = lines.map(line => {
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      if (line.startsWith('### ')) {
+        flushList();
+        htmlParts.push(`<h3>${formatInlineMarkdown(line.slice(4))}</h3>`);
+      } else if (line.startsWith('## ')) {
+        flushList();
+        htmlParts.push(`<h2>${formatInlineMarkdown(line.slice(3))}</h2>`);
+      } else if (line.startsWith('# ')) {
+        flushList();
+        htmlParts.push(`<h1>${formatInlineMarkdown(line.slice(2))}</h1>`);
+      } else if (/^\d+\.\s+/.test(line)) {
         const text = line.replace(/^\d+\.\s*/, '');
-        return `<li>${formatInlineMarkdown(text)}</li>`;
-      });
-      htmlParts.push(`<ol>${items.join('')}</ol>`);
-    } else if (firstLine.startsWith('- ') || firstLine.startsWith('* ')) {
-      const items = lines.map(line => {
+        if (!currentList || currentList.type !== 'ol') {
+          flushList();
+          currentList = { type: 'ol', items: [] };
+        }
+        currentList.items.push(text);
+      } else if (line.startsWith('- ') || line.startsWith('* ')) {
         const text = line.replace(/^[-*]\s*/, '');
-        return `<li>${formatInlineMarkdown(text)}</li>`;
-      });
-      htmlParts.push(`<ul>${items.join('')}</ul>`);
-    } else if (firstLine.startsWith('> ') || firstLine.startsWith('>')) {
-      const quoteText = lines.map(line => line.replace(/^>\s*/, '')).join(' ');
-      htmlParts.push(`<blockquote><p>${formatInlineMarkdown(quoteText)}</p></blockquote>`);
-    } else {
-      const text = lines.join(' ');
-      htmlParts.push(`<p>${formatInlineMarkdown(text)}</p>`);
+        if (!currentList || currentList.type !== 'ul') {
+          flushList();
+          currentList = { type: 'ul', items: [] };
+        }
+        currentList.items.push(text);
+      } else if (line.startsWith('> ') || line.startsWith('>')) {
+        flushList();
+        const quoteText = line.replace(/^>\s*/, '');
+        htmlParts.push(`<blockquote><p>${formatInlineMarkdown(quoteText)}</p></blockquote>`);
+      } else {
+        flushList();
+        htmlParts.push(`<p>${formatInlineMarkdown(line)}</p>`);
+      }
     }
+    flushList();
   }
 
   return htmlParts.join('\n      ');
