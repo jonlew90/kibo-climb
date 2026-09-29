@@ -102,4 +102,136 @@ export function formatTime(totalSeconds) {
   return `${remainingSeconds}s`;
 }
 
+/**
+ * Checks whether a math problem asks for change from $1.00.
+ * E.g. "Pay $1.00 for an item costing 85¢. Change?"
+ */
+export function isDollarChangeProblem(problem) {
+  if (!problem) return false;
+  const display = String(problem.displayString || problem.prompt || '');
+  return Boolean(
+    /Pay\s+\$1(?:\.00)?.*Change\?/i.test(display) ||
+    /Change\s+from\s+\$1(?:\.00)?/i.test(display)
+  );
+}
+
+/**
+ * Computes the next input string when typing into a math problem.
+ * Handles auto-filling "0." for dollar change problems:
+ * - Typing 1 then 5 auto-fills "0." -> "0.15"
+ * - Typing 0 first allows typing "." or 1 next without issue ("0" -> "0." or "0.1")
+ * - Typing "." first auto-fills "0."
+ */
+export function computeNextInput({
+  currentInput = '',
+  key,
+  isDollarChange = false,
+  targetStr = '',
+  isTimeQuestion = false,
+  maxLen = 14
+}) {
+  if (currentInput.length >= maxLen) return currentInput;
+  const val = String(key);
+
+  let newInput = currentInput;
+
+  if (val === '-') {
+    if (!newInput) {
+      newInput = '-';
+    } else if (newInput.startsWith('-')) {
+      newInput = newInput.slice(1);
+    } else {
+      newInput = '-' + newInput;
+    }
+    return newInput;
+  }
+
+  if (val === '.' || val === ':' || val === '/') {
+    if (val === '.') {
+      if (!newInput || newInput === '0' || newInput === '-') {
+        newInput = newInput === '-' ? '-0.' : '0.';
+      } else if (!newInput.includes('.')) {
+        newInput = newInput + '.';
+      }
+    } else if (val === ':') {
+      if (!newInput.includes(':')) {
+        newInput = newInput + ':';
+      }
+    } else if (val === '/') {
+      if (!newInput.includes('/')) {
+        newInput = newInput + '/';
+      }
+    }
+    return newInput;
+  }
+
+  // Digit handling
+  if (isDollarChange) {
+    if (!newInput) {
+      if (val === '0') {
+        newInput = '0';
+      } else {
+        newInput = '0.' + val;
+      }
+    } else if (newInput === '0') {
+      if (val === '0') {
+        newInput = '0';
+      } else {
+        newInput = '0.' + val;
+      }
+    } else if (newInput === '0.' || newInput === '.') {
+      newInput = '0.' + val;
+    } else {
+      newInput = newInput + val;
+    }
+    return newInput;
+  }
+
+  if (targetStr.startsWith('0.')) {
+    if (!newInput || newInput === '0') {
+      newInput = '0.' + val;
+    } else if ((newInput === '0.' || newInput === '.') && val !== '.') {
+      newInput = '0.' + val;
+    } else {
+      newInput = newInput + val;
+    }
+    return newInput;
+  }
+
+  if (isTimeQuestion && targetStr.includes(':')) {
+    const parts = targetStr.split(':');
+    const hourDigits = parts[0] ? parts[0].length : 1;
+    const rawDigits = (newInput + val).replace(/[^0-9]/g, '');
+
+    if (rawDigits.length >= hourDigits && !newInput.includes(':')) {
+      const hours = rawDigits.slice(0, hourDigits);
+      const mins = rawDigits.slice(hourDigits);
+      newInput = `${hours}:${mins}`;
+    } else {
+      newInput = newInput + val;
+    }
+    return newInput;
+  }
+
+  if (newInput === '.') {
+    newInput = '0.' + val;
+  } else {
+    newInput = newInput + val;
+  }
+
+  return newInput;
+}
+
+/**
+ * Computes the remaining input string when deleting a digit in math input.
+ * For dollar change questions, deleting from "0." or "0" resets cleanly to empty.
+ */
+export function computeDeletedInput({ currentInput = '', isDollarChange = false }) {
+  if (isDollarChange && (currentInput === '0.' || currentInput === '0')) {
+    return '';
+  }
+  return currentInput.slice(0, -1);
+}
+
+
 

@@ -11,7 +11,7 @@ import { generateProblems } from '../utils/mathGenerator';
 import { getTierFromRating, generateTierProblem, isNearTierThreshold } from '../utils/mathCurriculum';
 import { soundFx } from '../utils/audio';
 import { classifyLatency } from '../utils/latencyEngine';
-import { normalizeTimeAnswer, normalizeDecimal, parseFractionValue, normalizeOperator } from '../utils/formatters';
+import { normalizeTimeAnswer, normalizeDecimal, parseFractionValue, normalizeOperator, isDollarChangeProblem, computeNextInput, computeDeletedInput } from '../utils/formatters';
 import { evaluateAdaptiveAttempt, checkSkillMasteryEvents, shouldTriggerProbeQuestion } from '../utils/AdaptiveEngine';
 import { getProbeTargetTier } from '../utils/SkillTreeConfig';
 import KiboBreakOverlay from './KiboBreakOverlay';
@@ -301,7 +301,9 @@ export default function MathSessionView({
       setSpyglassRevealedAnswer(null);
       setShowFrustrationCard(false);
       setShouldPulseHint(false);
-      if (targetStr.startsWith('0.')) {
+      if (isDollarChangeQuestion) {
+        setInputVal('');
+      } else if (targetStr.startsWith('0.')) {
         setInputVal('0.');
       } else {
         setInputVal('');
@@ -313,6 +315,7 @@ export default function MathSessionView({
     currentProblem.type === 'money' ||
     currentProblem.operatorSymbol === '🪙' ||
     /quarter|dime|nickel|penny|\$|¢|change|costing/i.test(currentProblem.displayString || '');
+  const isDollarChangeQuestion = isMoneyQuestion && isDollarChangeProblem(currentProblem);
   const isTimeQuestion =
     currentProblem.type === 'time' ||
     currentProblem.operatorSymbol === '⏰' ||
@@ -1525,61 +1528,14 @@ export default function MathSessionView({
       return;
     }
 
-    let newInput = inputVal;
-
-    if (val === '-') {
-      if (!newInput) {
-        newInput = '-';
-      } else if (newInput.startsWith('-')) {
-        newInput = newInput.slice(1);
-      } else {
-        newInput = '-' + newInput;
-      }
-    } else if (val === '.' || val === ':' || val === '/') {
-      if (val === '.') {
-        if (!newInput || newInput === '0' || newInput === '-') {
-          newInput = newInput === '-' ? '-0.' : '0.';
-        } else if (!newInput.includes('.')) {
-          newInput = newInput + '.';
-        }
-      } else if (val === ':') {
-        if (!newInput.includes(':')) {
-          newInput = newInput + ':';
-        }
-      } else if (val === '/') {
-        if (!newInput.includes('/')) {
-          newInput = newInput + '/';
-        }
-      }
-    } else {
-      if (targetStr.startsWith('0.')) {
-        if (!newInput || newInput === '0') {
-          newInput = '0.' + val;
-        } else if ((newInput === '0.' || newInput === '.') && val !== '.') {
-          newInput = '0.' + val;
-        } else {
-          newInput = newInput + val;
-        }
-      } else if (isTimeQuestion && targetStr.includes(':')) {
-        const parts = targetStr.split(':');
-        const hourDigits = parts[0] ? parts[0].length : 1;
-        const rawDigits = (newInput + val).replace(/[^0-9]/g, '');
-
-        if (rawDigits.length >= hourDigits && !newInput.includes(':')) {
-          const hours = rawDigits.slice(0, hourDigits);
-          const mins = rawDigits.slice(hourDigits);
-          newInput = `${hours}:${mins}`;
-        } else {
-          newInput = newInput + val;
-        }
-      } else {
-        if (newInput === '.') {
-          newInput = '0.' + val;
-        } else {
-          newInput = newInput + val;
-        }
-      }
-    }
+    let newInput = computeNextInput({
+      currentInput: inputVal,
+      key: val,
+      isDollarChange: isDollarChangeQuestion,
+      targetStr,
+      isTimeQuestion,
+      maxLen: maxInputLen
+    });
 
     newInput = newInput.trim();
 
@@ -1647,7 +1603,9 @@ export default function MathSessionView({
         const userDigits = extractDigits(newInput);
         const targetDigits = extractDigits(targetStr);
 
-        if (userDigits.length > 0 && targetDigits.length > 0 && userDigits.length >= targetDigits.length) {
+        if (newInput === '0' || newInput === '0.' || newInput === '.') {
+          // Do not auto-evaluate incomplete prefix
+        } else if (userDigits.length > 0 && targetDigits.length > 0 && userDigits.length >= targetDigits.length) {
           processAnswerEvaluation(newInput);
           return;
         }
@@ -1660,7 +1618,7 @@ export default function MathSessionView({
 
   const handleDeleteDigit = () => {
     soundFx.playKeyTap();
-    setInputVal((prev) => prev.slice(0, -1));
+    setInputVal((prev) => computeDeletedInput({ currentInput: prev, isDollarChange: isDollarChangeQuestion }));
   };
 
   const handleClearInput = () => {

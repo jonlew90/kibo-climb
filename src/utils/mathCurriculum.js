@@ -695,16 +695,19 @@ export function generateTierProblem(targetTier, isNearThreshold = false) {
       } else if (subType < 0.40) {
         const cost = (Math.floor(Math.random() * 15) + 5) * 5;
         answer = 100 - cost;
+        const dollarAns = (answer / 100).toFixed(2);
         return {
           tier: effectiveTier,
           num1: 100,
           num2: cost,
           operatorSymbol: '🪙',
-          answer: answer.toString(),
-          answerString: answer.toString(),
+          answer: dollarAns,
+          answerString: dollarAns,
+          centsAnswer: answer.toString(),
           displayString: `Pay $1.00 for an item costing ${cost}¢. Change?`,
           type: 'money',
-          hint: 'Hint: Subtract the cost from 100¢!'
+          requiresDecimal: true,
+          hint: 'Hint: Subtract the cost from 100¢ ($1.00)!'
         };
       } else if (subType < 0.65) {
         // Missing Multiplication Operand (6s - 9s)
