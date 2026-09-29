@@ -3028,6 +3028,7 @@ export default function App() {
           onUpdatePin={handleUpdatePin}
           tier={tier}
           onSetTier={handleSetTierManual}
+          onOpenDevPanel={() => devState.setIsDevPanelOpen(true)}
           streak={streak}
           sparks={sparks}
           practiceQueueCount={practiceQueue.length}

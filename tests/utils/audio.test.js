@@ -60,6 +60,8 @@ describe('audio.js', () => {
     global.window.AudioContext = AudioContextMock;
     global.window.webkitAudioContext = undefined;
     global.navigator.vibrate = vi.fn();
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+    document.hasFocus = vi.fn().mockReturnValue(true);
 
     // Reset sound system state
     soundFx.ctx = null;

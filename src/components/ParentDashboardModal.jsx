@@ -69,14 +69,16 @@ export default function ParentDashboardModal({
   onOpenSubscription,
   onOpenFamilyUpgrade,
   onOpenWorkshop,
-  onRedeemPromoCode,
-  onBack,
   renderFooter,
   onSelectWorksheet,
-  onNavigateToHub
+  onNavigateToHub,
+  onOpenDevPanel
 }) {
   const [activeTab, setActiveTab] = useState(initialTab || 'overview'); // 'overview' | 'schedule' | 'verification'
   const [selectedSubject, setSelectedSubject] = useState(activeSubject || 'math');
+  const [devTapCount, setDevTapCount] = useState(0);
+  const [isSendingTestPush, setIsSendingTestPush] = useState(false);
+  const [testPushStatus, setTestPushStatus] = useState(null);
 
   // PIN Change State
   const [oldPinInput, setOldPinInput] = useState('');
@@ -1753,6 +1755,52 @@ export default function ParentDashboardModal({
                       }`} />
                     </button>
                   </div>
+                </div>
+
+                {/* Instant Push Notification Tester */}
+                <div className="flex items-center justify-between bg-purple-50/80 border border-purple-200 p-2.5 rounded-xl text-left">
+                  <div>
+                    <span className="text-xs font-black text-purple-950 block">Device Push Verification</span>
+                    <span className="text-[11px] text-purple-700 font-medium block">
+                      Send an immediate OneSignal test notification to this device
+                    </span>
+                    {testPushStatus && (
+                      <span className={`text-[11px] font-bold block mt-0.5 ${testPushStatus.success ? 'text-emerald-700' : 'text-rose-600'}`}>
+                        {testPushStatus.message}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isSendingTestPush}
+                    onClick={async () => {
+                      setIsSendingTestPush(true);
+                      setTestPushStatus(null);
+                      try {
+                        await promptForPushPermissions();
+                        const res = await communicationsService.triggerTestPushNotification({
+                          profileId: viewingProfileId,
+                          childName: childName,
+                          type: 'streak'
+                        });
+                        setTestPushStatus({
+                          success: true,
+                          message: `✅ Test push dispatched! (Recipients: ${res?.recipients ?? 1})`
+                        });
+                        soundFx.playVictory();
+                      } catch (err) {
+                        setTestPushStatus({
+                          success: false,
+                          message: `⚠️ Error: ${err?.message || 'Check OneSignal setup'}`
+                        });
+                      } finally {
+                        setIsSendingTestPush(false);
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white rounded-xl font-black text-xs transition-all shadow-xs cursor-pointer shrink-0 disabled:opacity-50"
+                  >
+                    {isSendingTestPush ? 'Sending...' : '⚡ Test Push'}
+                  </button>
                 </div>
               </div>
 
