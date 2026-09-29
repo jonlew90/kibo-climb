@@ -1383,7 +1383,7 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false }) {
  */
 exports.sendScheduledWeeklyDigests = onSchedule(
   {
-    schedule: "0 9 * * 0",
+    schedule: "0 18 * * 0",
     timeZone: "America/Chicago",
     secrets: ["RESEND_API_KEY"]
   },
@@ -1418,14 +1418,14 @@ exports.sendScheduledWeeklyDigests = onSchedule(
         const uid = userDoc.id;
 
         // Check if user has weekly digests enabled (defaults to true if not explicitly false)
-        const notifSettings = userData.notificationSettings || {};
-        if (notifSettings.weeklyDigestEnabled === false) {
+        const notifSettings = userData.notificationSettings || userData.notifPrefs || {};
+        if (notifSettings.weeklyDigestEnabled === false || notifSettings.unsubscribedAll) {
           skippedCount++;
           continue;
         }
 
-        // Determine recipient email: doc.email -> auth user record
-        let targetEmail = userData.email;
+        // Determine recipient email: doc.email -> doc.parentEmail -> auth user record
+        let targetEmail = userData.email || userData.parentEmail;
         if (!targetEmail || !EMAIL_REGEX.test(targetEmail)) {
           try {
             const authUser = await auth.getUser(uid);

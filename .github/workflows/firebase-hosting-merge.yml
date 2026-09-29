@@ -1,4 +1,4 @@
-name: Hourly Deploy to Firebase Hosting
+name: Deploy to Firebase Hosting & Functions
 
 on:
   schedule:
@@ -56,9 +56,24 @@ jobs:
           echo "New changes found and rate limit passed. Deploying."
           echo "has_changes=true" >> $GITHUB_OUTPUT
 
+          # Check if functions/ has changes since last deployed tag
+          if [ -z "$TAG_SHA" ] || ! git diff --quiet "$TAG_SHA" "$LATEST_SHA" -- functions/; then
+            echo "Changes detected in functions/. Cloud functions will be deployed."
+            echo "has_functions_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes in functions/. Skipping Cloud Functions deploy."
+            echo "has_functions_changes=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install Dependencies
         if: steps.check_changes.outputs.has_changes == 'true'
         run: npm ci
+
+      - name: Install Functions Dependencies
+        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_changes.outputs.has_functions_changes == 'true'
+        run: |
+          cd functions
+          npm ci
 
       - name: Run Tests
         if: steps.check_changes.outputs.has_changes == 'true'
@@ -76,8 +91,12 @@ jobs:
           service_account: github-action-1311198724@kibo-climb.iam.gserviceaccount.com
 
       - name: Deploy to Firebase Hosting
-        if: steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_changes.outputs.has_functions_changes != 'true'
         run: npx -y firebase-tools deploy --only hosting --project kibo-climb
+
+      - name: Deploy to Firebase Hosting and Functions
+        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_changes.outputs.has_functions_changes == 'true'
+        run: npx -y firebase-tools deploy --only hosting,functions --project kibo-climb
 
       - name: Update last deployed tag
         if: steps.check_changes.outputs.has_changes == 'true'

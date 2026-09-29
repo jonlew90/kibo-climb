@@ -69,8 +69,7 @@ export const initOneSignal = async () => {
           await OneSignalReact.init({
             appId: APP_ID,
             allowLocalhostAsSecureOrigin: true,
-            serviceWorkerPath: 'push/onesignal/OneSignalSDKWorker.js',
-            serviceWorkerParam: { scope: '/push/onesignal/' },
+            serviceWorkerPath: 'OneSignalSDKWorker.js',
             notifyButton: {
               enable: false,
             },
@@ -93,7 +92,7 @@ export const initOneSignal = async () => {
 /**
  * Associates the device with a specific user ID for targeted pushes.
  */
-export const loginToOneSignal = async (externalUserId) => {
+export const loginToOneSignal = async (externalUserId, email = null) => {
   if (!externalUserId) return;
 
   try {
@@ -103,6 +102,9 @@ export const loginToOneSignal = async (externalUserId) => {
 
     if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
       await OneSignalCapacitor.login(externalUserId);
+      if (email && OneSignalCapacitor?.User?.addEmail) {
+        try { await OneSignalCapacitor.User.addEmail(email); } catch (e) {}
+      }
       return;
     }
 
@@ -113,6 +115,9 @@ export const loginToOneSignal = async (externalUserId) => {
           await os.login(externalUserId);
         } else if (OneSignalReact && typeof OneSignalReact.login === 'function') {
           await OneSignalReact.login(externalUserId);
+        }
+        if (email && os.User?.addEmail) {
+          try { await os.User.addEmail(email); } catch (e) {}
         }
       };
 

@@ -495,7 +495,7 @@ export const authService = {
         };
         storageService.setGlobalAccountLinkedState(mergedUserData);
         const earnedSparks = storageService.grantAccountLinkSparksReward();
-        if (targetUser && targetUser.uid) loginToOneSignal(targetUser.uid);
+        if (targetUser && targetUser.uid) loginToOneSignal(targetUser.uid, targetUser.email || null);
         return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
       }
       return { success: false, reason: 'No redirect result found' };
@@ -523,7 +523,7 @@ export const authService = {
               };
               storageService.setGlobalAccountLinkedState(mergedUserData);
               const earnedSparks = storageService.grantAccountLinkSparksReward();
-              if (userCred.user && userCred.user.uid) loginToOneSignal(userCred.user.uid);
+              if (userCred.user && userCred.user.uid) loginToOneSignal(userCred.user.uid, userCred.user.email || null);
               return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
             }
           }
@@ -725,7 +725,7 @@ export const authService = {
       if (user) {
         const isGlobalLinked = storageService.isAccountGloballyLinked();
         const isAnon = user.isAnonymous && !isGlobalLinked;
-        loginToOneSignal(user.uid);
+        loginToOneSignal(user.uid, user.email || null);
         const currentData = storageService.getUserData('math');
         const updated = {
           ...currentData,
