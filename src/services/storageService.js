@@ -1244,6 +1244,8 @@ export const storageService = {
         cycle: state.subscription.cycle,
         cancelAtPeriodEnd: !!state.subscription.cancelAtPeriodEnd,
         isTrial: !!state.subscription.isTrial,
+        trialDays: state.subscription.trialDays || 7,
+        promoCode: state.subscription.promoCode || null,
         trialStartedAt: state.subscription.trialStartedAt || null,
         currentPeriodEnd: state.subscription.currentPeriodEnd,
         canceledAt: state.subscription.canceledAt || null
@@ -1606,11 +1608,14 @@ export const storageService = {
       return { isTrial: true, dayNumber: 8, daysRemaining: 0, isExpired: true };
     }
 
+    const totalDays = Number(plan.trialDays) || 7;
     const daysRemaining = Math.max(1, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
-    const dayNumber = Math.min(7, Math.max(1, 8 - daysRemaining));
+    const dayNumber = Math.min(totalDays, Math.max(1, (totalDays + 1) - daysRemaining));
 
     return {
       isTrial: true,
+      tier: plan.tier || 'single',
+      totalDays,
       dayNumber,
       daysRemaining,
       isExpired: false,
@@ -1650,6 +1655,87 @@ export const storageService = {
 
     const isEngaged = streak >= 7 || distinctActiveDays >= 7;
     return isEngaged;
+  },
+
+  /**
+   * Grants a custom Kibo Club trial (e.g., 30-day Family trial from promo codes).
+   */
+  grantCustomClubTrial({ tier = 'family', days = 30, targetProfileId = null, promoCode = 'PROMO' } = {}) {
+    const state = safeGetProfilesState();
+    const pid = targetProfileId || state.activeProfileId || Object.keys(state.profiles)[0];
+    const now = this.getSimulatedDate() || new Date();
+    const trialEnd = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+    const planId = tier === 'family' ? 'kibo_club_family' : 'kibo_club_sub';
+
+    const SUB_IDS = ['kibo_club_family', 'kibo_club_family_annual', 'kibo_club_sub', 'kibo_club_sub_annual'];
+    Object.keys(state.profiles).forEach(pId => {
+      const prof = state.profiles[pId];
+      if (prof.shopState) {
+        if (prof.shopState.unlockedItems) {
+          prof.shopState.unlockedItems = prof.shopState.unlockedItems.filter(id => !SUB_IDS.includes(id));
+        }
+      }
+    });
+
+    if (tier === 'family') {
+      state.isKiboClubFamily = true;
+      state.needsProfileDowngradeSelection = false;
+      if (pid && state.profiles[pid]) {
+        state.profiles[pid].shopState = state.profiles[pid].shopState || {};
+        state.profiles[pid].shopState.unlockedItems = state.profiles[pid].shopState.unlockedItems || [];
+        state.profiles[pid].shopState.unlockedItems.push(planId);
+      }
+    } else {
+      state.isKiboClubFamily = false;
+      if (pid && state.profiles[pid]) {
+        state.profiles[pid].shopState = state.profiles[pid].shopState || {};
+        state.profiles[pid].shopState.unlockedItems = state.profiles[pid].shopState.unlockedItems || [];
+        state.profiles[pid].shopState.unlockedItems.push(planId);
+        state.primaryProfileId = pid;
+      }
+    }
+
+    state.subscription = {
+      planId,
+      tier,
+      cycle: 'trial',
+      status: 'trialing',
+      isTrial: true,
+      trialDays: days,
+      promoCode,
+      trialStartedAt: now.toISOString(),
+      activatedAt: now.toISOString(),
+      currentPeriodEnd: trialEnd.toISOString(),
+      cancelAtPeriodEnd: false,
+      canceledAt: null,
+      targetProfileId: pid
+    };
+
+    if (pid && state.profiles[pid]) {
+      state.profiles[pid].userData = state.profiles[pid].userData || {};
+      state.profiles[pid].userData.hasReceivedClubTrial = true;
+    }
+
+    safeSaveProfilesState(state);
+    localStorage.setItem('kibo_has_received_club_trial', 'true');
+    localStorage.setItem('kibo_device_trial_claimed', 'true');
+
+    this.recordLedgerEntry({
+      type: 'TRIAL_ACTIVATED',
+      planId,
+      tier,
+      days,
+      promoCode,
+      profileId: pid,
+      currentPeriodEnd: trialEnd.toISOString()
+    });
+
+    return {
+      granted: true,
+      tier,
+      daysRemaining: days,
+      currentPeriodEnd: trialEnd.toISOString()
+    };
   },
 
   /**

@@ -755,7 +755,7 @@ export default function ParentDashboardModal({
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 bg-amber-500 text-white shadow-xs">
                             <Sparkles className="w-3 h-3 fill-current" />
-                            Kibo Club 7-Day Solo Trial
+                            {trialStatus.tier === 'family' ? `Kibo Club ${trialStatus.totalDays || 30}-Day Family Trial` : `Kibo Club ${trialStatus.totalDays || 7}-Day Solo Trial`}
                           </span>
                           <span className="text-xs font-black text-amber-700 bg-amber-100/90 border border-amber-300 px-2 py-0.5 rounded-md flex items-center gap-1">
                             <Clock className="w-3.5 h-3.5 text-amber-600" />
@@ -1995,7 +1995,7 @@ export default function ParentDashboardModal({
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5 font-black text-xs">
                           <Sparkles className="w-4 h-4 fill-amber-200 text-amber-100" />
-                          <span>7-Day Solo Trial Active</span>
+                          <span>{trialStatus.tier === 'family' ? `${trialStatus.totalDays || 30}-Day Family Trial Active` : `${trialStatus.totalDays || 7}-Day Solo Trial Active`}</span>
                         </div>
                         <span className="text-[10px] bg-white text-amber-900 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
                           {trialStatus.daysRemaining === 1 ? 'Expires in 24 hours' : `${trialStatus.daysRemaining} days remaining`}

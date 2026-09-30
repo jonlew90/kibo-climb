@@ -138,5 +138,21 @@ describe('promoCodeService', () => {
       expect(res.success).toBe(true);
       expect(res.updated.sparks).toBe(100); // Unchanged
     });
+
+    it('redeems REDDIT30 special campaign code successfully', async () => {
+      firebaseFunctions.httpsCallable.mockReturnValue(() => Promise.reject(new Error('Cloud function offline')));
+      storageService.grantCustomClubTrial = vi.fn().mockReturnValue({ granted: true, daysRemaining: 30 });
+
+      const res = await promoCodeService.redeemCode('reddit30');
+      expect(res.success).toBe(true);
+      expect(res.promo.code).toBe('REDDIT30');
+      expect(res.reward.sparks).toBe(250);
+      expect(res.reward.items).toContain('golden_ticket');
+      expect(storageService.grantCustomClubTrial).toHaveBeenCalledWith(expect.objectContaining({
+        tier: 'family',
+        days: 30,
+        promoCode: 'REDDIT30'
+      }));
+    });
   });
 });

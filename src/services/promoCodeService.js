@@ -24,6 +24,51 @@ export const promoCodeService = {
   },
 
   /**
+   * Checks if code matches a special promotional campaign (e.g. Reddit launch).
+   */
+  resolveSpecialCampaignPromo(codeStr) {
+    const normalized = this.normalizeCode(codeStr);
+    if (!normalized) return null;
+
+    if (normalized === 'REDDIT30') {
+      const now = new Date();
+      // Redemption window: 30 days from launch (Valid through October 31, 2026 23:59:59 UTC)
+      const validUntil = new Date('2026-10-31T23:59:59Z');
+
+      if (now > validUntil) {
+        return {
+          expired: true,
+          message: 'The REDDIT30 launch promotion has ended. Stay tuned for future community drops!'
+        };
+      }
+
+      return {
+        expired: false,
+        promo: {
+          code: 'REDDIT30',
+          title: '30-Day Kibo Club Family Pass',
+          description: 'Special Reddit Community Launch Drop: 30 days of full Kibo Club Family access, 250 Sparks, and the Golden Ticket!',
+          badge: 'REDDIT_FOUNDER',
+          rewards: {
+            sparks: 250,
+            items: ['golden_ticket'],
+            consumables: {
+              hintScrollCount: 3,
+              letterSpyglassCount: 3
+            },
+            trial: {
+              tier: 'family',
+              days: 30
+            }
+          }
+        }
+      };
+    }
+
+    return null;
+  },
+
+  /**
    * Checks if code matches a catalog promo item directly.
    */
   resolveCatalogPromo(codeStr) {
@@ -122,7 +167,18 @@ export const promoCodeService = {
       cloudError = error;
     }
 
-    // 2. Check local catalog promo item fallback (e.g. GOLDENKIBO, CYBERCLIMB)
+    // 2. Check special campaign promo codes (e.g. REDDIT30)
+    if (!promo) {
+      const campaignResolution = this.resolveSpecialCampaignPromo(normalized);
+      if (campaignResolution) {
+        if (campaignResolution.expired) {
+          return { success: false, reason: campaignResolution.message };
+        }
+        promo = campaignResolution.promo;
+      }
+    }
+
+    // 3. Check local catalog promo item fallback (e.g. GOLDENKIBO, CYBERCLIMB)
     if (!promo) {
       const catalogResolution = this.resolveCatalogPromo(normalized);
       if (catalogResolution) {
@@ -130,7 +186,7 @@ export const promoCodeService = {
       }
     }
 
-    // 3. Check local blog promo drop fallback if not found in Cloud Functions or Catalog
+    // 4. Check local blog promo drop fallback if not found in Cloud Functions or Catalog
     if (!promo) {
       const blogResolution = this.resolveBlogPromoDrop(normalized);
       if (blogResolution) {
@@ -186,6 +242,17 @@ export const promoCodeService = {
       Object.keys(rewards.consumables).forEach((key) => {
         const count = Number(rewards.consumables[key]) || 0;
         currentConsumables[key] = (currentConsumables[key] || 0) + count;
+      });
+    }
+
+    // 4. Grant Membership / Trial if included in promo
+    let trialResult = null;
+    if (rewards.trial && typeof storageService.grantCustomClubTrial === 'function') {
+      trialResult = storageService.grantCustomClubTrial({
+        tier: rewards.trial.tier || 'family',
+        days: rewards.trial.days || 30,
+        targetProfileId: activeProf?.id,
+        promoCode: validatedCode
       });
     }
 
