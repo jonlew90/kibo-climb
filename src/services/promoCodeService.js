@@ -3,6 +3,7 @@ import { shopLedgerService } from './shopLedgerService.js';
 import { functions } from '../config/firebase.js';
 import { httpsCallable } from 'firebase/functions';
 import { getActiveBlogPromoDrops, getAllBlogPosts } from '../utils/blogLoader.js';
+import { WORKSHOP_ITEMS } from '../utils/itemsCatalog.js';
 
 export const promoCodeService = {
   /**
@@ -20,6 +21,32 @@ export const promoCodeService = {
     const normalized = this.normalizeCode(codeStr);
     const redeemed = storageService.getRedeemedPromoCodes();
     return redeemed.includes(normalized);
+  },
+
+  /**
+   * Checks if code matches a catalog promo item directly.
+   */
+  resolveCatalogPromo(codeStr) {
+    const normalized = this.normalizeCode(codeStr);
+    if (!normalized) return null;
+
+    const matchedItem = WORKSHOP_ITEMS.find(
+      (item) => item.promoCodeRequired && item.promoCodeRequired.trim().toUpperCase() === normalized
+    );
+
+    if (!matchedItem) return null;
+
+    return {
+      code: matchedItem.promoCodeRequired.toUpperCase(),
+      title: `${matchedItem.name} Unlocked!`,
+      description: matchedItem.description,
+      badge: 'PROMO_EXCLUSIVE',
+      rewards: {
+        sparks: 150,
+        items: [matchedItem.id],
+        consumables: {}
+      }
+    };
   },
 
   /**
@@ -68,7 +95,7 @@ export const promoCodeService = {
   },
 
   /**
-   * Executes promo code redemption by validating via Firebase Cloud Function or local blog drop fallback,
+   * Executes promo code redemption by validating via Firebase Cloud Function or local catalog/blog fallback,
    * modifies storage, records transaction audit, and returns results.
    */
   async redeemCode(codeStr) {
@@ -95,7 +122,15 @@ export const promoCodeService = {
       cloudError = error;
     }
 
-    // 2. Check local blog promo drop fallback if not found in Cloud Functions
+    // 2. Check local catalog promo item fallback (e.g. GOLDENKIBO, CYBERCLIMB)
+    if (!promo) {
+      const catalogResolution = this.resolveCatalogPromo(normalized);
+      if (catalogResolution) {
+        promo = catalogResolution;
+      }
+    }
+
+    // 3. Check local blog promo drop fallback if not found in Cloud Functions or Catalog
     if (!promo) {
       const blogResolution = this.resolveBlogPromoDrop(normalized);
       if (blogResolution) {
@@ -107,9 +142,10 @@ export const promoCodeService = {
     }
 
     if (!promo) {
+      const isNetworkOrCors = cloudError?.message && (cloudError.message.includes('CORS') || cloudError.message.includes('network') || cloudError.message.includes('fetch') || cloudError.message.includes('preflight') || cloudError.code === 'unavailable');
       return {
         success: false,
-        reason: cloudError?.message || 'Invalid or expired promo code. Please check and try again.'
+        reason: isNetworkOrCors ? 'Invalid or expired promo code. Please check and try again.' : (cloudError?.message || 'Invalid or expired promo code. Please check and try again.')
       };
     }
 
