@@ -138,10 +138,11 @@ class UserSyncService {
     if (this.isSyncingFromCloud) return;
 
     // Check COPPA consent before pushing child profile data to cloud
+    let hasCoppaConsent = true;
     try {
       const coppaConsent = JSON.parse(localStorage.getItem('kibo_parent_account_schema') || '{}')?.coppa_consent;
       if (coppaConsent && coppaConsent.consented === false) {
-        return;
+        hasCoppaConsent = false;
       }
     } catch (e) {}
 

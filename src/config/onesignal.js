@@ -1,4 +1,5 @@
 import OneSignalReact from 'react-onesignal';
+import { auth } from './firebase';
 
 let OneSignalCapacitor = null;
 let Capacitor = null;
@@ -59,8 +60,8 @@ export const initOneSignal = async () => {
 
         if ('serviceWorker' in navigator) {
           try {
-            await navigator.serviceWorker.register('/push/onesignal/OneSignalSDKWorker.js', {
-              scope: '/push/onesignal/'
+            await navigator.serviceWorker.register('/OneSignalSDKWorker.js', {
+              scope: '/'
             });
           } catch (e) {}
         }
@@ -70,12 +71,23 @@ export const initOneSignal = async () => {
             appId: APP_ID,
             allowLocalhostAsSecureOrigin: true,
             serviceWorkerPath: 'OneSignalSDKWorker.js',
+            serviceWorkerParam: { scope: '/' },
             notifyButton: {
               enable: false,
             },
           });
         }
         isInitialized = true;
+
+        // Automatically bind subscription opt-in & current user if already permitted
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+          const os = window.OneSignal || OneSignalReact;
+          if (os?.User?.PushSubscription?.optIn && !os.User.PushSubscription.optedIn) {
+            try {
+              await os.User.PushSubscription.optIn();
+            } catch (e) {}
+          }
+        }
       }
     } catch (error) {
       if (error?.message?.includes('already initialized')) {
@@ -195,10 +207,19 @@ export const promptForPushPermissions = async () => {
     // 3. Browser native Notification fallback
     if (typeof window !== 'undefined' && 'Notification' in window) {
       const perm = await Notification.requestPermission();
-      if (perm === 'granted' && os?.User?.PushSubscription?.optIn) {
-        await os.User.PushSubscription.optIn();
+      if (perm === 'granted') {
+        if (os?.User?.PushSubscription?.optIn) {
+          await os.User.PushSubscription.optIn();
+        }
+        if (auth.currentUser?.uid) {
+          await loginToOneSignal(auth.currentUser.uid, auth.currentUser.email || null);
+        }
       }
       return perm === 'granted';
+    }
+
+    if (auth.currentUser?.uid) {
+      await loginToOneSignal(auth.currentUser.uid, auth.currentUser.email || null);
     }
 
     return false;
