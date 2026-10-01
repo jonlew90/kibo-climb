@@ -32,6 +32,7 @@ jobs:
         run: npm ci
 
       - name: Run blog generation & static HTML/RSS builder
+        id: generate_blog
         run: |
           node scripts/generate_post.mjs --build
 
@@ -67,11 +68,18 @@ jobs:
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SENDER_EMAIL: "Kibo Climb <updates@kiboclimb.com>"
+          TARGET_SLUG: ${{ steps.generate_blog.outputs.generated_slug }}
         run: |
-          if [ -n "$RESEND_API_KEY" ]; then
-            node scripts/broadcast_blog_post.mjs --latest
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "❌ ERROR: RESEND_API_KEY is not set in GitHub Secrets! Failing broadcast step."
+            exit 1
+          fi
+          if [ -n "$TARGET_SLUG" ]; then
+            echo "Broadcasting specifically for slug: $TARGET_SLUG"
+            node scripts/broadcast_blog_post.mjs --slug="$TARGET_SLUG"
           else
-            echo "RESEND_API_KEY not configured in GitHub Secrets. Skipping email broadcast."
+            echo "Broadcasting latest post"
+            node scripts/broadcast_blog_post.mjs --latest
           fi
 
       - name: Commit and push changes

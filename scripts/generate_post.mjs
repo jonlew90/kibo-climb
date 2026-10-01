@@ -84,6 +84,7 @@ function selectFeaturedImage(existingPosts = []) {
 
 export function generatePostData({ subject = null, tier = null, customSlug = null, customTitle = null, featuredAsset = null } = {}) {
   const existingPosts = getExistingArticles();
+  const now = new Date();
 
   let finalSubject = subject;
   let finalTier = tier;
@@ -121,8 +122,15 @@ export function generatePostData({ subject = null, tier = null, customSlug = nul
   const topicsList = Array.isArray(tierData?.topics) ? tierData.topics : ['Core skill practice and fluency'];
 
   const title = customTitle || `Mastering ${name}: ${trickTitle} for ${gradeLabel}`;
-  let cleanSlug = customSlug || `${finalSubject}-tier-${targetTier}-${trickTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-  cleanSlug = cleanSlug.replace(/^-+|-+$/g, '');
+  let baseSlug = customSlug || `${finalSubject}-tier-${targetTier}-${trickTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  baseSlug = baseSlug.replace(/^-+|-+$/g, '');
+
+  let cleanSlug = baseSlug;
+  const existingSlugs = new Set(existingPosts.map(p => p.slug || p.file?.replace('.json', '')));
+  if (existingSlugs.has(cleanSlug)) {
+    const dateSuffix = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    cleanSlug = `${baseSlug}-${dateSuffix}`;
+  }
 
   const metaDescription = `Master ${name} on Mount Kibo with the ${trickTitle} shortcut. Includes worked examples and free printable worksheet practice for ${gradeLabel}.`;
 
@@ -323,6 +331,15 @@ async function main() {
   });
 
   saveBlogPost(postData);
+
+  if (process.env.GITHUB_OUTPUT) {
+    try {
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `generated_slug=${postData.slug}\n`);
+      console.log(` Output generated_slug=${postData.slug} to GITHUB_OUTPUT`);
+    } catch (e) {
+      console.warn('Could not write to GITHUB_OUTPUT:', e.message);
+    }
+  }
 
   if (options.build) {
     const buildScript = path.join(ROOT_DIR, 'scripts', 'build_blog_html.mjs');

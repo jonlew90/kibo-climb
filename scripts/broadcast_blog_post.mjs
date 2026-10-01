@@ -209,9 +209,12 @@ async function runBroadcast() {
   }
 
   console.log(`\n🎉 Broadcast completed: ${sentCount} sent, ${failedCount} failed.`);
+  if (failedCount > 0 && sentCount === 0) {
+    throw new Error(`Broadcast failed for all recipients (${failedCount} errors).`);
+  }
 }
 
 runBroadcast().catch(err => {
-  console.error(`Broadcast failed:`, err.message || err);
+  console.error(`❌ Broadcast fatal error:`, err.message || err);
   process.exit(1);
 });
