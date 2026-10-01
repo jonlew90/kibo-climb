@@ -406,7 +406,9 @@ function generatePostHtml(data, allPosts = []) {
       'allow_ad_personalization_signals': false
     });
     gtag('js', new Date());
-    gtag('config', 'G-PNQ5D8DFHP');
+    gtag('config', 'G-PNQ5D8DFHP', {
+      'cookie_domain': 'kiboclimb.com'
+    });
   </script>
 
   <!-- Google Fonts -->
@@ -669,7 +671,9 @@ function generateBlogIndexHtml(posts) {
       'allow_ad_personalization_signals': false
     });
     gtag('js', new Date());
-    gtag('config', 'G-PNQ5D8DFHP');
+    gtag('config', 'G-PNQ5D8DFHP', {
+      'cookie_domain': 'kiboclimb.com'
+    });
   </script>
 
   <!-- Google Fonts -->

@@ -2,11 +2,20 @@ import { logEvent } from 'firebase/analytics';
 import { analytics } from '../config/firebase';
 
 /**
- * Safely logs an event to Firebase Analytics if it is initialized.
+ * Safely logs an event to GA4 via gtag if available, falling back to Firebase Analytics.
  * @param {string} eventName - The name of the event.
  * @param {Object} [eventParams] - Optional parameters to send with the event.
  */
 const safeLogEvent = (eventName, eventParams = {}) => {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+    try {
+      window.gtag('event', eventName, eventParams);
+      return;
+    } catch (e) {
+      // Fall through to Firebase Analytics
+    }
+  }
+
   if (analytics) {
     try {
       logEvent(analytics, eventName, eventParams);
@@ -17,6 +26,21 @@ const safeLogEvent = (eventName, eventParams = {}) => {
 };
 
 export const analyticsService = {
+  /**
+   * Log standard GA4 page_view for SPA routing to maintain continuous acquisition attribution.
+   * @param {string} pagePath - URL path (e.g., '/', '/math', '/leaderboard').
+   * @param {string} pageTitle - Document title.
+   */
+  logPageView: (pagePath, pageTitle) => {
+    const path = pagePath || (typeof window !== 'undefined' ? window.location.pathname : '/');
+    const title = pageTitle || (typeof document !== 'undefined' ? document.title : '');
+    safeLogEvent('page_view', {
+      page_path: path,
+      page_title: title,
+      page_location: typeof window !== 'undefined' ? window.location.href : `https://kiboclimb.com${path}`
+    });
+  },
+
   /**
    * Log when a user views a specific screen or modal.
    * @param {string} screenName - The name of the screen (e.g., 'Settings', 'Shop', 'ParentDashboard').

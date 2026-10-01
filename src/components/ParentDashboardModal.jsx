@@ -69,6 +69,7 @@ export default function ParentDashboardModal({
   onOpenSubscription,
   onOpenFamilyUpgrade,
   onOpenWorkshop,
+  onBack,
   renderFooter,
   onSelectWorksheet,
   onNavigateToHub

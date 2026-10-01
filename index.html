@@ -48,6 +48,29 @@
     }
     </script>
     
+    <!-- Google Analytics 4 (COPPA Compliant) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PNQ5D8DFHP"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'analytics_storage': 'granted'
+      });
+      gtag('set', {
+        'restricted_data_processing': true,
+        'allow_google_signals': false,
+        'allow_ad_personalization_signals': false
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-PNQ5D8DFHP', {
+        'cookie_domain': 'kiboclimb.com',
+        'send_page_view': false
+      });
+    </script>
+
     <!-- Favicon & Touch Icons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico?v=kibo-duo-v2" />
     <link rel="shortcut icon" href="/favicon.ico?v=kibo-duo-v2" />

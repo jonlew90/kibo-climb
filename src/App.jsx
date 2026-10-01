@@ -463,6 +463,9 @@ export default function App() {
         screenName = `Climb_${sub.charAt(0).toUpperCase() + sub.slice(1)}`;
       }
       analyticsService?.logScreenView?.(screenName);
+      if (current.type === VIEW_TYPES.ROUTE) {
+        analyticsService?.logPageView?.(current.path, typeof document !== 'undefined' ? document.title : screenName);
+      }
     }
   };
 
