@@ -121,7 +121,19 @@ export function generatePostData({ subject = null, tier = null, customSlug = nul
   const sampleProblem = trick.sampleProblem;
   const topicsList = Array.isArray(tierData?.topics) ? tierData.topics : ['Core skill practice and fluency'];
 
-  const title = customTitle || `Mastering ${name}: ${trickTitle} for ${gradeLabel}`;
+  const titleTemplates = [
+    `How to Teach ${name}: The ${trickTitle} Shortcut for ${gradeLabel}`,
+    `Unlocking ${name}: ${trickTitle} Strategies for ${gradeLabel}`,
+    `A Parent's Guide to ${name}: Mastering ${trickTitle} (${gradeLabel})`,
+    `${trickTitle} Explained: Helping ${gradeLabel} Climbers Conquer ${name}`,
+    `Demystifying ${name}: Fast ${trickTitle} Shortcuts for ${gradeLabel}`,
+    `Mastering ${name}: ${trickTitle} for ${gradeLabel}`,
+    `Beyond Flashcards: The ${trickTitle} Technique for ${name} (${gradeLabel})`
+  ];
+
+  // Pick title template deterministically based on tier and subject to prevent repeating styles
+  const templateIdx = (targetTier + finalSubject.length) % titleTemplates.length;
+  const title = customTitle || titleTemplates[templateIdx];
   let baseSlug = customSlug || `${finalSubject}-tier-${targetTier}-${trickTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
   baseSlug = baseSlug.replace(/^-+|-+$/g, '');
 
@@ -210,7 +222,6 @@ Encourage your student to test the ${trickTitle} technique during their next 5-m
   };
 
   const selectedImage = featuredAsset || selectFeaturedImage(existingPosts);
-  const now = new Date();
   const nowIso = now.toISOString();
 
   // Generate Unique Thematic Promo Code Drop (e.g. COMPENSATE926, CHUNK826, FRACTIONS1026)
