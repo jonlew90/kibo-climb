@@ -86,14 +86,14 @@ export const CORE_STRATEGY_CHEATS = [
     subjectName: 'Kibo Coding',
     subjectIcon: '💻',
     title: 'Step-by-Step Memory Box Tracing',
-    shortRule: 'Track variable state changes line by line on your mental scratchpad. Never guess what a loop does all at once.',
-    formula: 'x = 3 ➔ x = x + 2 ➔ x is now 5',
+    shortRule: 'Track variable state changes line by line on your mental scratchpad. Use the value inside one box to calculate the next.',
+    formula: 'x = 4; y = x + 3; x = y * 2  ➔  y = 7, x = 14',
     tier: 4,
     tag: 'Algorithms & Variables',
     interactiveType: 'variable_tracer',
-    defaultValues: { initial: 3, step: 2, runs: 3 },
+    defaultValues: { x: 4, yExpr: 'x + 3', xExpr: 'y * 2' },
     blogSlug: 'coding-tier-4-step-by-step-memory-box',
-    keyTakeaway: 'Stepwise variable tracing is the #1 secret used by master programmers to squash logic bugs.'
+    keyTakeaway: 'Stepwise variable tracing with x and y memory boxes squashes logic bugs and reduces mental load.'
   },
   {
     id: 'coding_branching',
