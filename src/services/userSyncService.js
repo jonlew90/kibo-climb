@@ -3,7 +3,7 @@
 // Supports multi-device bi-directional synchronization with offline fallback
 
 import { db, auth, functions } from '../config/firebase';
-import { doc, setDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, getDoc, serverTimestamp, arrayUnion } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { storageService } from './storageService';
 
@@ -216,6 +216,7 @@ class UserSyncService {
       const trialStatus = storageService.getTrialStatus();
       const parentEmail = currentUser?.email || storageService.getParentAccountEmail() || null;
       const notificationSettings = storageService.getNotificationSettings();
+      const oneSignalSubId = storageService.getOneSignalSubscriptionId();
 
       const payload = {
         uid: targetUid,
@@ -226,6 +227,11 @@ class UserSyncService {
         updatedAt: serverTimestamp(),
         lastSyncedMillis: now
       };
+
+      if (oneSignalSubId) {
+        payload.oneSignalSubscriptionId = oneSignalSubId;
+        payload.oneSignalSubscriptionIds = arrayUnion(oneSignalSubId);
+      }
 
       if (trialStatus.isTrial || localStorage.getItem('kibo_has_received_club_trial') || subPlan?.isTrial) {
         payload.hasReceivedClubTrial = true;

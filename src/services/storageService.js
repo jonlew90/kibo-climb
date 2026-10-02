@@ -19,7 +19,8 @@ const KEYS = {
   GATE_LOCKOUT_UNTIL: 'kibo_parent_gate_lockout_until',
   APP_RATING_STATUS: 'kibo_app_rating_status',
   HAS_ONBOARDED: 'kibo_has_onboarded',
-  MAP_GROWTH_PREF: 'kibo_map_growth_preference'
+  MAP_GROWTH_PREF: 'kibo_map_growth_preference',
+  ONESIGNAL_SUBSCRIPTION_ID: 'kibo_onesignal_subscription_id'
 };
 
 const DEFAULT_PROFILE_ID = 'default_child';
@@ -846,6 +847,25 @@ export const storageService = {
       userSyncService.syncProfileToCloud();
     } catch (e) {
       console.error('StorageService: error writing notification settings', e);
+    }
+  },
+
+  getOneSignalSubscriptionId() {
+    try {
+      return localStorage.getItem(KEYS.ONESIGNAL_SUBSCRIPTION_ID) || null;
+    } catch {
+      return null;
+    }
+  },
+  saveOneSignalSubscriptionId(id) {
+    try {
+      if (id) {
+        localStorage.setItem(KEYS.ONESIGNAL_SUBSCRIPTION_ID, id);
+      } else {
+        localStorage.removeItem(KEYS.ONESIGNAL_SUBSCRIPTION_ID);
+      }
+    } catch (e) {
+      console.error('StorageService: error saving OneSignal subscription ID', e);
     }
   },
 

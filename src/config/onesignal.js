@@ -1,5 +1,7 @@
 import OneSignalReact from 'react-onesignal';
 import { auth } from './firebase';
+import { storageService } from '../services/storageService';
+import { userSyncService } from '../services/userSyncService';
 
 let OneSignalCapacitor = null;
 let Capacitor = null;
@@ -88,6 +90,31 @@ export const initOneSignal = async () => {
             } catch (e) {}
           }
         }
+
+        // Cache and sync subscription ID to cloud
+        try {
+          const os = window.OneSignal || OneSignalReact;
+          const subId = os?.User?.PushSubscription?.id;
+          if (subId) {
+            storageService.saveOneSignalSubscriptionId(subId);
+            if (auth.currentUser?.uid) {
+              userSyncService.pushLocalToCloud(auth.currentUser.uid);
+            }
+          }
+
+          // Listen for push subscription changes
+          if (os?.User?.PushSubscription?.addEventListener) {
+            os.User.PushSubscription.addEventListener('change', (event) => {
+              const newSubId = event?.current?.id || os?.User?.PushSubscription?.id;
+              if (newSubId) {
+                storageService.saveOneSignalSubscriptionId(newSubId);
+                if (auth.currentUser?.uid) {
+                  userSyncService.pushLocalToCloud(auth.currentUser.uid);
+                }
+              }
+            });
+          }
+        } catch (e) {}
       }
     } catch (error) {
       if (error?.message?.includes('already initialized')) {
@@ -150,6 +177,11 @@ export const loginToOneSignal = async (externalUserId, email = null) => {
         if (!isOptedIn && typeof os.User.PushSubscription.optIn === 'function') {
           await os.User.PushSubscription.optIn();
         }
+        const subId = os.User.PushSubscription.id;
+        if (subId) {
+          storageService.saveOneSignalSubscriptionId(subId);
+          userSyncService.pushLocalToCloud(externalUserId);
+        }
       }
     }
   } catch (error) {
@@ -194,12 +226,26 @@ export const promptForPushPermissions = async () => {
       if (os?.User?.PushSubscription?.optIn) {
         await os.User.PushSubscription.optIn();
       }
+      const subId = os?.User?.PushSubscription?.id;
+      if (subId) {
+        storageService.saveOneSignalSubscriptionId(subId);
+        if (auth.currentUser?.uid) {
+          userSyncService.pushLocalToCloud(auth.currentUser.uid);
+        }
+      }
       return true;
     }
     if (os?.Slidedown?.promptPush) {
       await os.Slidedown.promptPush();
       if (os?.User?.PushSubscription?.optIn) {
         await os.User.PushSubscription.optIn();
+      }
+      const subId = os?.User?.PushSubscription?.id;
+      if (subId) {
+        storageService.saveOneSignalSubscriptionId(subId);
+        if (auth.currentUser?.uid) {
+          userSyncService.pushLocalToCloud(auth.currentUser.uid);
+        }
       }
       return true;
     }
@@ -211,8 +257,13 @@ export const promptForPushPermissions = async () => {
         if (os?.User?.PushSubscription?.optIn) {
           await os.User.PushSubscription.optIn();
         }
+        const subId = os?.User?.PushSubscription?.id;
+        if (subId) {
+          storageService.saveOneSignalSubscriptionId(subId);
+        }
         if (auth.currentUser?.uid) {
           await loginToOneSignal(auth.currentUser.uid, auth.currentUser.email || null);
+          userSyncService.pushLocalToCloud(auth.currentUser.uid);
         }
       }
       return perm === 'granted';
