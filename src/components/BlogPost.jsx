@@ -124,7 +124,7 @@ function renderMarkdown(mdText, onNavigate) {
   return elements;
 }
 
-export default function BlogPost({ slug, onBack, onNavigate }) {
+export default function BlogPost({ slug, onBack, onNavigate, onOpenWorkshop }) {
   // Find article dynamically
   const post = useMemo(() => {
     return getBlogPostBySlug(slug);
@@ -165,6 +165,17 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
     } else {
       window.history.pushState({}, '', '/');
       window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  };
+
+  const handleRedeemPromo = (e, code) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (onOpenWorkshop) {
+      onOpenWorkshop(code);
+    } else if (onNavigate) {
+      onNavigate(`/?action=workshop&promo=${encodeURIComponent(code)}`);
+    } else {
+      window.location.href = `/?action=workshop&promo=${encodeURIComponent(code)}`;
     }
   };
 
@@ -408,7 +419,7 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
 
                   <a
                     href={`/?action=workshop&promo=${encodeURIComponent(post.promo_drop.code)}`}
-                    onClick={handlePlayCta}
+                    onClick={(e) => handleRedeemPromo(e, post.promo_drop.code)}
                     className="inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm px-5 sm:px-6 py-3 rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer no-underline flex-1 sm:flex-initial text-center"
                   >
                     <span>Redeem in Game →</span>

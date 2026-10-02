@@ -2980,6 +2980,9 @@ export default function App() {
           slug={activeBlogSlug}
           onBack={handleGoBack}
           onNavigate={handleNavigateTo}
+          onOpenWorkshop={(promoCode) => {
+            handleOpenWorkshop(null, 'wearables', 'shop', null, promoCode);
+          }}
         />
       )}
 
