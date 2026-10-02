@@ -59,6 +59,7 @@ import WorksheetHubScreen from './components/WorksheetHubScreen';
 import WorksheetViewerScreen from './components/WorksheetViewerScreen';
 import BlogIndex from './components/BlogIndex';
 import BlogPost from './components/BlogPost';
+import TipsHubScreen from './components/TipsHubScreen';
 import PrivacyPolicyScreen from './components/PrivacyPolicyScreen';
 import CoppaPrivacyPolicyScreen from './components/CoppaPrivacyPolicyScreen';
 import ShareModal from './components/ShareModal';
@@ -815,6 +816,8 @@ export default function App() {
       } else {
         initialRoute = VIEWS.BLOG_INDEX;
       }
+    } else if (path === '/tips' || path === '/tips/' || path.startsWith('/tips')) {
+      initialRoute = VIEWS.TIPS_HUB;
     } else if (path === '/parent' || path === '/parents' || path === '/parent-dashboard') {
       initialRoute = VIEWS.PARENT_DASHBOARD;
     }
@@ -2289,7 +2292,7 @@ export default function App() {
         </div>
       )}
       {/* Sticky Top HUD Header Bar */}
-      {!isClimbActive && appState !== 'worksheet_hub' && appState !== VIEWS.WORKSHEET_HUB && appState !== 'worksheet_viewer' && appState !== VIEWS.WORKSHEET_VIEWER && (
+      {!isClimbActive && appState !== 'worksheet_hub' && appState !== VIEWS.WORKSHEET_HUB && appState !== 'worksheet_viewer' && appState !== VIEWS.WORKSHEET_VIEWER && appState !== 'blog_index' && appState !== VIEWS.BLOG_INDEX && appState !== 'blog_post' && appState !== VIEWS.BLOG_POST && appState !== 'tips_hub' && appState !== VIEWS.TIPS_HUB && (
       <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between shadow-xs shrink-0">
         {/* Brand Logo, User Profile & Stats */}
         <div className="flex items-center gap-2 w-full justify-between max-w-4xl mx-auto min-w-0">
@@ -2975,6 +2978,14 @@ export default function App() {
       {(appState === 'blog_post' || appState === VIEWS.BLOG_POST) && (
         <BlogPost
           slug={activeBlogSlug}
+          onBack={handleGoBack}
+          onNavigate={handleNavigateTo}
+        />
+      )}
+
+      {/* TIPS & TRICKS STRATEGY HUB SCREEN */}
+      {(appState === 'tips_hub' || appState === VIEWS.TIPS_HUB) && (
+        <TipsHubScreen
           onBack={handleGoBack}
           onNavigate={handleNavigateTo}
         />
@@ -3827,7 +3838,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar */}
-      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && appState !== 'worksheet_hub' && appState !== VIEWS.WORKSHEET_HUB && appState !== 'worksheet_viewer' && appState !== VIEWS.WORKSHEET_VIEWER && appState !== 'blog_index' && appState !== VIEWS.BLOG_INDEX && appState !== 'blog_post' && appState !== VIEWS.BLOG_POST && renderNavigationFooter()}
+      {!isClimbActive && appState !== 'settings' && appState !== 'privacy' && appState !== 'coppa_privacy' && appState !== 'terms' && appState !== 'leaderboard' && appState !== 'quests' && appState !== 'worksheet_hub' && appState !== VIEWS.WORKSHEET_HUB && appState !== 'worksheet_viewer' && appState !== VIEWS.WORKSHEET_VIEWER && appState !== 'blog_index' && appState !== VIEWS.BLOG_INDEX && appState !== 'blog_post' && appState !== VIEWS.BLOG_POST && appState !== 'tips_hub' && appState !== VIEWS.TIPS_HUB && renderNavigationFooter()}
 
       {/* Workshop Modal */}
       <WorkshopModal

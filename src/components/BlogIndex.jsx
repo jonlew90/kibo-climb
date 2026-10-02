@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { soundFx } from '../utils/audio';
 import { getAllBlogPosts, getBlogCategories, getFeaturedPost } from '../utils/blogLoader';
 import { updateBlogIndexSeo } from '../utils/seoMetadata';
 import { KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
@@ -53,7 +52,6 @@ export default function BlogIndex({ onBack, onNavigate }) {
   // Helper for internal navigation
   const navigateTo = (path, e) => {
     if (e && e.preventDefault) e.preventDefault();
-    soundFx?.playKeyTap?.();
     if (onNavigate) {
       onNavigate(path);
     } else {
@@ -64,7 +62,6 @@ export default function BlogIndex({ onBack, onNavigate }) {
 
   const handlePlayCta = (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    soundFx?.playKeyTap?.();
     if (onNavigate) {
       onNavigate('/', 'adaptive_session');
     } else {
@@ -75,7 +72,6 @@ export default function BlogIndex({ onBack, onNavigate }) {
 
   const handleWorksheetCta = (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    soundFx?.playKeyTap?.();
     const targetUrl = '/worksheets';
     if (onNavigate) {
       onNavigate(targetUrl);
@@ -86,54 +82,59 @@ export default function BlogIndex({ onBack, onNavigate }) {
   };
 
   const handleCategorySelect = (category) => {
-    soundFx?.playKeyTap?.();
     setSelectedCategory(category);
     setVisibleCount(POSTS_PER_PAGE);
   };
 
   const handleLoadMore = () => {
-    soundFx?.playKeyTap?.();
     setVisibleCount(prev => prev + POSTS_PER_PAGE);
   };
 
   return (
     <div className="blog-page-wrapper fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B] flex flex-col selection:bg-orange-200">
-      {/* Global Nav Bar (Consistent with Worksheets Hub & App) */}
+      {/* Global Nav Bar (Consistent with Worksheets Hub & Tips Hub) */}
       <header className="border-b border-orange-100/70 bg-white/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+        <div className="max-w-6xl mx-auto px-2 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1 sm:gap-2">
           <a
             href="/"
             onClick={(e) => navigateTo('/', e)}
-            className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 sm:gap-2.5 group cursor-pointer shrink-0 min-w-0"
           >
             <div
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
+              className="w-6 h-6 sm:w-8 sm:h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
               dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }}
             />
-            <span className="font-heading font-black text-lg sm:text-xl text-[#1E293B] tracking-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
+            <span className="font-heading font-black text-sm sm:text-xl text-[#1E293B] tracking-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
               Kibo Climb
             </span>
           </a>
 
-          <nav className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+          <nav className="flex items-center gap-1 sm:gap-4 shrink-0">
+            <a
+              href="/tips"
+              onClick={(e) => navigateTo('/tips', e)}
+              className="text-xs sm:text-sm font-bold text-slate-600 hover:text-orange-600 px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg sm:rounded-xl transition-colors whitespace-nowrap"
+            >
+              Tips &amp; Tricks
+            </a>
             <a
               href="/worksheets"
               onClick={handleWorksheetCta}
-              className="text-sm font-bold text-slate-600 hover:text-orange-600 px-2 py-1.5 rounded-xl transition-colors"
+              className="text-xs sm:text-sm font-bold text-slate-600 hover:text-orange-600 px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg sm:rounded-xl transition-colors whitespace-nowrap"
             >
               Worksheets
             </a>
             <a
               href="/blog"
               onClick={(e) => navigateTo('/blog', e)}
-              className="text-sm font-black text-orange-600 bg-orange-50 px-3 py-1.5 rounded-xl transition-colors"
+              className="text-xs sm:text-sm font-black text-orange-600 bg-orange-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl transition-colors whitespace-nowrap"
             >
               Blog
             </a>
             <a
               href="/"
               onClick={handlePlayCta}
-              className="ml-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+              className="ml-0.5 sm:ml-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[11px] sm:text-sm px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
             >
               Play Free
             </a>
@@ -143,6 +144,31 @@ export default function BlogIndex({ onBack, onNavigate }) {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+        {/* Tips & Strategy Interactive Hub Quick Banner */}
+        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-purple-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-xl shrink-0">
+              💡
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-slate-800">
+                Looking for quick formula cheat-sheets?
+              </h2>
+              <p className="text-xs text-slate-600">
+                Explore our interactive strategy cards with live mental math sliders, phonics toggles, and algorithm tracers.
+              </p>
+            </div>
+          </div>
+          <a
+            href="/tips"
+            onClick={(e) => navigateTo('/tips', e)}
+            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition-all flex items-center gap-1.5 shadow-sm shrink-0"
+          >
+            <span>Open Tips &amp; Tricks Hub</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+
         {/* Hero Banner (Compact on mobile, matching WorksheetHubScreen) */}
         <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white p-4 sm:p-10 shadow-lg border border-orange-500/30">
           <div className="relative z-10 max-w-2xl space-y-1.5 sm:space-y-3">

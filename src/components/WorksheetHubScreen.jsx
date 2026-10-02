@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Printer, Lock, Sparkles, Download, CheckCircle2, ChevronRight, BookOpen, Filter, ArrowRight, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { WORKSHEET_CATALOG, getCanonicalPath, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
 import { updateWorksheetHubSeo } from '../utils/seoMetadata';
-import { soundFx } from '../utils/audio';
 import { analyticsService } from '../services/analyticsService';
 import { storageService } from '../services/storageService';
 import SocialFollowStrip from './SocialFollowStrip';
@@ -121,7 +120,6 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
 
   const handleNavigateTo = (path, e) => {
     if (e && e.preventDefault) e.preventDefault();
-    soundFx?.playKeyTap?.();
     if (onNavigate) {
       onNavigate(path);
     } else {
@@ -131,7 +129,6 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
   };
 
   const handleWorksheetClick = (worksheet) => {
-    soundFx?.playKeyTap?.();
     analyticsService?.logWorksheetView?.(worksheet.id, worksheet.subject, 0);
 
     const url = getCanonicalPath(worksheet);
@@ -145,7 +142,6 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
 
   const handleUnlockClick = (e, worksheet) => {
     if (e && e.stopPropagation) e.stopPropagation();
-    soundFx?.playKeyTap?.();
     if (onOpenKiboClubUpgrade) {
       onOpenKiboClubUpgrade();
     } else {
@@ -159,35 +155,42 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B] flex flex-col selection:bg-orange-200">
-      {/* Global Nav Bar (Consistent with /blog & App) */}
+      {/* Global Nav Bar (Consistent with /blog & /tips) */}
       <header className="border-b border-orange-100/70 bg-white/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+        <div className="max-w-6xl mx-auto px-2 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1 sm:gap-2">
           <a
             href="/"
             onClick={(e) => handleNavigateTo('/', e)}
-            className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 sm:gap-2.5 group cursor-pointer shrink-0 min-w-0"
           >
             <div
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
+              className="w-6 h-6 sm:w-8 sm:h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
               dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }}
             />
-            <span className="font-heading font-black text-lg sm:text-xl text-[#1E293B] tracking-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
+            <span className="font-heading font-black text-sm sm:text-xl text-[#1E293B] tracking-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
               Kibo Climb
             </span>
           </a>
 
-          <nav className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <nav className="flex items-center gap-1 sm:gap-4 shrink-0">
+            <a
+              href="/tips"
+              onClick={(e) => handleNavigateTo('/tips', e)}
+              className="text-xs sm:text-sm font-bold text-slate-600 hover:text-orange-600 px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg sm:rounded-xl transition-colors whitespace-nowrap"
+            >
+              Tips &amp; Tricks
+            </a>
             <a
               href="/worksheets"
               onClick={(e) => handleNavigateTo('/worksheets', e)}
-              className="text-sm font-black text-orange-600 bg-orange-50 px-3 py-1.5 rounded-xl transition-colors"
+              className="text-xs sm:text-sm font-black text-orange-600 bg-orange-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl transition-colors whitespace-nowrap"
             >
               Worksheets
             </a>
             <a
               href="/blog"
               onClick={(e) => handleNavigateTo('/blog', e)}
-              className="text-sm font-bold text-slate-600 hover:text-orange-600 px-2 py-1.5 rounded-xl transition-colors"
+              className="text-xs sm:text-sm font-bold text-slate-600 hover:text-orange-600 px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg sm:rounded-xl transition-colors whitespace-nowrap"
             >
               Blog
             </a>
@@ -195,20 +198,19 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
               <button
                 type="button"
                 onClick={() => {
-                  soundFx.playKeyTap();
                   if (onBack) onBack();
                   else if (onNavigate) onNavigate('/parent', 'parent_dashboard', { tab: 'printables' });
                 }}
-                className="ml-1 sm:ml-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                className="ml-0.5 sm:ml-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-[11px] sm:text-sm px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1 whitespace-nowrap"
               >
-                <ShieldCheck className="w-4 h-4 text-teal-200" />
+                <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-200" />
                 <span>Parent Zone</span>
               </button>
             ) : (
               <a
                 href="/"
                 onClick={(e) => handleNavigateTo('/', e)}
-                className="ml-1 sm:ml-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                className="ml-0.5 sm:ml-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[11px] sm:text-sm px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
               >
                 Play Free
               </a>
@@ -270,7 +272,6 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
               <button
                 type="button"
                 onClick={() => {
-                  soundFx?.playKeyTap?.();
                   setOpenDropdown(openDropdown === 'topic' ? null : 'topic');
                 }}
                 className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-1.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
@@ -288,7 +289,6 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
                       key={topic.id}
                       type="button"
                       onClick={() => {
-                        soundFx?.playKeyTap?.();
                         setSelectedTopic(topic.id);
                         setOpenDropdown(null);
                       }}
@@ -315,7 +315,6 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
               <button
                 type="button"
                 onClick={() => {
-                  soundFx?.playKeyTap?.();
                   setOpenDropdown(openDropdown === 'grade' ? null : 'grade');
                 }}
                 className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-1.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
@@ -333,7 +332,6 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
                       key={grade.id}
                       type="button"
                       onClick={() => {
-                        soundFx?.playKeyTap?.();
                         setSelectedGrade(grade.id);
                         setOpenDropdown(null);
                       }}
@@ -359,7 +357,6 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
               <button
                 type="button"
                 onClick={() => {
-                  soundFx?.playKeyTap?.();
                   setOpenDropdown(openDropdown === 'tier' ? null : 'tier');
                 }}
                 className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-1.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold text-slate-800 flex items-center justify-between cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
@@ -377,7 +374,6 @@ export default function WorksheetHubScreen({ onNavigate, onOpenKiboClubUpgrade, 
                       key={tier.id}
                       type="button"
                       onClick={() => {
-                        soundFx?.playKeyTap?.();
                         setSelectedTier(tier.id);
                         setOpenDropdown(null);
                       }}

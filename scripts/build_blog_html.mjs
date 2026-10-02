@@ -171,6 +171,19 @@ function updateSitemap(posts) {
     }
   }
 
+  // Sync /tips index in sitemap
+  const tipsIndexUrl = `${BASE_URL}/tips`;
+  const tipsIndexLocPattern = new RegExp(`<loc>${tipsIndexUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>([\\s\\S]*?)</url>`, 'i');
+  if (tipsIndexLocPattern.test(sitemapContent)) {
+    sitemapContent = sitemapContent.replace(
+      tipsIndexLocPattern,
+      `<loc>${tipsIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>`
+    );
+  } else {
+    const newEntry = `  <url>\n    <loc>${tipsIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>`;
+    sitemapContent = sitemapContent.replace('</urlset>', newEntry);
+  }
+
   // Sync /worksheets index and public catalog sheets in sitemap
   const worksheetsIndexUrl = `${BASE_URL}/worksheets`;
   const wsIndexLocPattern = new RegExp(`<loc>${worksheetsIndexUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>([\\s\\S]*?)</url>`, 'i');

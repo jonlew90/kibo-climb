@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { soundFx } from '../utils/audio';
 import { WORKSHEET_CATALOG, getBestWorksheetForTier, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator.js';
 import { getBlogPostBySlug, getAdjacentBlogPosts, formatDate } from '../utils/blogLoader';
 import { updateBlogPostSeo } from '../utils/seoMetadata';
@@ -8,7 +7,7 @@ import SocialFollowStrip from './SocialFollowStrip';
 
 function formatInlineMarkdown(text, onNavigate) {
   if (!text) return '';
-  const regex = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
+  const regex = /(\*\*[\s\S]+?\*\*|\[[^\]]+\]\([^)]+\))/g;
   const parts = text.split(regex);
 
   return parts.map((part, index) => {
@@ -30,7 +29,6 @@ function formatInlineMarkdown(text, onNavigate) {
           onClick={(e) => {
             if (isInternal) {
               e.preventDefault();
-              soundFx?.playKeyTap?.();
               if (onNavigate) {
                 onNavigate(href);
               } else {
@@ -55,59 +53,75 @@ function renderMarkdown(mdText, onNavigate) {
     .replace(/:::seo-guidelines:::[\s\S]*?:::seo-guidelines:::/gi, '')
     .replace(/<!--[\s\S]*?-->/g, '')
     .trim();
-  const blocks = cleanMd.split(/\n\n+/);
+  const rawBlocks = cleanMd.split(/\n\n+/).filter(b => b.trim());
+  const elements = [];
 
-  return blocks.map((block, idx) => {
-    const trimmed = block.trim();
-    if (!trimmed) return null;
+  rawBlocks.forEach((block, blockIdx) => {
+    const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) return;
 
-    if (trimmed.startsWith('### ')) {
-      return (
-        <h3 key={idx}>{formatInlineMarkdown(trimmed.replace(/^###\s+/, ''), onNavigate)}</h3>
-      );
-    }
+    let currentList = null; // { type: 'ul' | 'ol', items: [] }
 
-    if (trimmed.startsWith('## ')) {
-      return (
-        <h2 key={idx}>{formatInlineMarkdown(trimmed.replace(/^##\s+/, ''), onNavigate)}</h2>
-      );
-    }
+    const flushList = () => {
+      if (currentList) {
+        const ListTag = currentList.type;
+        elements.push(
+          <ListTag key={`list-${blockIdx}-${elements.length}`}>
+            {currentList.items.map((item, itemIdx) => (
+              <li key={itemIdx}>{formatInlineMarkdown(item, onNavigate)}</li>
+            ))}
+          </ListTag>
+        );
+        currentList = null;
+      }
+    };
 
-    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      const items = trimmed.split(/\n/).map(line => line.replace(/^[-*]\s+/, '').trim()).filter(Boolean);
-      return (
-        <ul key={idx}>
-          {items.map((item, itemIdx) => (
-            <li key={itemIdx}>{formatInlineMarkdown(item, onNavigate)}</li>
-          ))}
-        </ul>
-      );
-    }
+    lines.forEach((line, lineIdx) => {
+      if (line.startsWith('### ')) {
+        flushList();
+        elements.push(<h3 key={`h3-${blockIdx}-${lineIdx}`}>{formatInlineMarkdown(line.slice(4), onNavigate)}</h3>);
+      } else if (line.startsWith('## ')) {
+        flushList();
+        elements.push(<h2 key={`h2-${blockIdx}-${lineIdx}`}>{formatInlineMarkdown(line.slice(3), onNavigate)}</h2>);
+      } else if (line.startsWith('# ')) {
+        flushList();
+        elements.push(<h1 key={`h1-${blockIdx}-${lineIdx}`}>{formatInlineMarkdown(line.slice(2), onNavigate)}</h1>);
+      } else if (/^\d+\.\s+/.test(line)) {
+        const itemText = line.replace(/^\d+\.\s*/, '');
+        if (!currentList || currentList.type !== 'ol') {
+          flushList();
+          currentList = { type: 'ol', items: [] };
+        }
+        currentList.items.push(itemText);
+      } else if (line.startsWith('- ') || line.startsWith('* ')) {
+        const itemText = line.replace(/^[-*]\s*/, '');
+        if (!currentList || currentList.type !== 'ul') {
+          flushList();
+          currentList = { type: 'ul', items: [] };
+        }
+        currentList.items.push(itemText);
+      } else if (line.startsWith('> ') || line.startsWith('>')) {
+        flushList();
+        const quoteText = line.replace(/^>\s*/, '');
+        elements.push(
+          <blockquote key={`quote-${blockIdx}-${lineIdx}`}>
+            <p>{formatInlineMarkdown(quoteText, onNavigate)}</p>
+          </blockquote>
+        );
+      } else {
+        flushList();
+        elements.push(
+          <p key={`p-${blockIdx}-${lineIdx}`}>
+            {formatInlineMarkdown(line, onNavigate)}
+          </p>
+        );
+      }
+    });
 
-    if (/^\d+\.\s+/.test(trimmed)) {
-      const items = trimmed.split(/\n/).map(line => line.replace(/^\d+\.\s+/, '').trim()).filter(Boolean);
-      return (
-        <ol key={idx}>
-          {items.map((item, itemIdx) => (
-            <li key={itemIdx}>{formatInlineMarkdown(item, onNavigate)}</li>
-          ))}
-        </ol>
-      );
-    }
-
-    if (trimmed.startsWith('> ') || trimmed.startsWith('>')) {
-      const quoteText = trimmed.replace(/^>\s*/gm, '').trim();
-      return (
-        <blockquote key={idx}>
-          <p>{formatInlineMarkdown(quoteText, onNavigate)}</p>
-        </blockquote>
-      );
-    }
-
-    return (
-      <p key={idx}>{formatInlineMarkdown(trimmed, onNavigate)}</p>
-    );
+    flushList();
   });
+
+  return elements;
 }
 
 export default function BlogPost({ slug, onBack, onNavigate }) {
@@ -126,7 +140,6 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
 
   const handleBack = (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    soundFx?.playKeyTap?.();
     if (onBack) {
       onBack();
     } else {
@@ -137,7 +150,6 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
 
   const handleNavigateTo = (path, e) => {
     if (e && e.preventDefault) e.preventDefault();
-    soundFx?.playKeyTap?.();
     if (onNavigate) {
       onNavigate(path);
     } else {
@@ -148,7 +160,6 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
 
   const handlePlayCta = (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    soundFx?.playKeyTap?.();
     if (onNavigate) {
       onNavigate('/', 'adaptive_session');
     } else {
@@ -200,7 +211,6 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
 
   const handleWorksheetClick = (e, worksheet) => {
     if (e && e.preventDefault) e.preventDefault();
-    soundFx?.playKeyTap?.();
     const url = `/worksheets/${worksheet.subject}/${worksheet.slug}`;
     if (onNavigate) {
       onNavigate(url);
@@ -214,7 +224,6 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
 
   const handleCopyCode = (e, code) => {
     if (e) e.stopPropagation();
-    soundFx?.playKeyTap?.();
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(code).then(() => {
         setCopiedCode(true);
@@ -225,7 +234,6 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
 
   const handleShareCode = async (e, postData) => {
     if (e) e.stopPropagation();
-    soundFx?.playKeyTap?.();
     const code = postData.promo_drop?.code;
     const shareUrl = `${window.location.origin}/?action=workshop&promo=${encodeURIComponent(code)}`;
     const shareText = `Use secret reader code ${code} on Kibo Climb for +${postData.promo_drop?.sparks || 100} bonus Sparks! 🏔️🐾`;
@@ -257,42 +265,49 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
 
   return (
     <div className="blog-page-wrapper fixed inset-0 z-50 overflow-y-auto bg-[#FFFDF9] text-[#1E293B] flex flex-col selection:bg-orange-200">
-      {/* Global Nav Bar (Consistent with Worksheets Hub & App) */}
+      {/* Global Nav Bar (Consistent with Worksheets Hub & Tips Hub) */}
       <header className="border-b border-orange-100/70 bg-white/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+        <div className="max-w-6xl mx-auto px-2 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1 sm:gap-2">
           <a
             href="/"
             onClick={(e) => handleNavigateTo('/', e)}
-            className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 sm:gap-2.5 group cursor-pointer shrink-0 min-w-0"
           >
             <div
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
+              className="w-6 h-6 sm:w-8 sm:h-8 rounded-xl overflow-hidden shrink-0 shadow-xs group-hover:scale-105 transition-transform"
               dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }}
             />
-            <span className="font-heading font-black text-lg sm:text-xl text-[#1E293B] tracking-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
+            <span className="font-heading font-black text-sm sm:text-xl text-[#1E293B] tracking-tight whitespace-nowrap group-hover:text-orange-600 transition-colors">
               Kibo Climb
             </span>
           </a>
 
-          <nav className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+          <nav className="flex items-center gap-1 sm:gap-4 shrink-0">
+            <a
+              href="/tips"
+              onClick={(e) => handleNavigateTo('/tips', e)}
+              className="text-xs sm:text-sm font-bold text-slate-600 hover:text-orange-600 px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg sm:rounded-xl transition-colors whitespace-nowrap"
+            >
+              Tips &amp; Tricks
+            </a>
             <a
               href="/worksheets"
               onClick={(e) => handleNavigateTo('/worksheets', e)}
-              className="text-sm font-bold text-slate-600 hover:text-orange-600 px-2 py-1.5 rounded-xl transition-colors"
+              className="text-xs sm:text-sm font-bold text-slate-600 hover:text-orange-600 px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg sm:rounded-xl transition-colors whitespace-nowrap"
             >
               Worksheets
             </a>
             <a
               href="/blog"
               onClick={(e) => handleNavigateTo('/blog', e)}
-              className="text-sm font-bold text-slate-600 hover:text-orange-600 px-2 py-1.5 rounded-xl transition-colors"
+              className="text-xs sm:text-sm font-black text-orange-600 bg-orange-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl transition-colors whitespace-nowrap"
             >
               Blog
             </a>
             <a
               href="/"
               onClick={handlePlayCta}
-              className="ml-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+              className="ml-0.5 sm:ml-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[11px] sm:text-sm px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
             >
               Play Free
             </a>
@@ -319,6 +334,28 @@ export default function BlogPost({ slug, onBack, onNavigate }) {
         <div className="date">Published {formatDate(post.published_at)} • {post.topic || 'Adaptive Math Strategies'}</div>
 
         <img src={featuredImg} alt={post.title} className="hero-img" />
+
+        {/* Quick Strategy Cheat-Sheet Callout */}
+        <div className="my-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-300/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-slate-800">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">⚡</span>
+            <div>
+              <h3 className="text-xs sm:text-sm font-black text-slate-900 m-0">
+                Want the fast cheat-sheet formula?
+              </h3>
+              <p className="text-xs text-slate-600 m-0">
+                Test and compare this formula on our interactive Tips &amp; Tricks cheat-sheet hub.
+              </p>
+            </div>
+          </div>
+          <a
+            href="/tips"
+            onClick={(e) => handleNavigateTo('/tips', e)}
+            className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition-all shrink-0 no-underline"
+          >
+            View Cheat Cards →
+          </a>
+        </div>
 
         <article>
           {renderMarkdown(post.content_markdown, onNavigate)}

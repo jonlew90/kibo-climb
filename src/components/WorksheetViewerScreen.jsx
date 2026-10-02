@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, Printer, Copy, Share2, Lock, Sparkles, CheckCircle2, Home, Dices, ChevronLeft, ChevronRight, Dumbbell, ShieldCheck } from 'lucide-react';
 import { getWorksheetBySlug, getWorksheetsForSubject, generateProblemsForWorksheet, getCanonicalPath, KIBO_RED_PANDA_FAVICON_SVG } from '../utils/worksheetGenerator';
 import { updateWorksheetSeo } from '../utils/seoMetadata';
-import { soundFx } from '../utils/audio';
 import { analyticsService } from '../services/analyticsService';
 import { storageService } from '../services/storageService';
 import SocialFollowStrip from './SocialFollowStrip';
@@ -88,7 +87,6 @@ export default function WorksheetViewerScreen({
   }, [worksheet, seed]);
 
   const handleGenerateNewSet = () => {
-    soundFx.playKeyTap();
     const nextSeed = Math.floor(Math.random() * 99000) + 1000;
     setSeed(nextSeed);
 
@@ -103,7 +101,6 @@ export default function WorksheetViewerScreen({
 
 
   const handlePrint = () => {
-    soundFx.playKeyTap();
     if (isLocked) {
       if (onOpenKiboClubUpgrade) onOpenKiboClubUpgrade();
       return;
@@ -113,7 +110,6 @@ export default function WorksheetViewerScreen({
   };
 
   const handleShare = async () => {
-    soundFx.playKeyTap();
     const shareData = {
       title: `Kibo Climb • ${worksheet?.title || 'Worksheet'}`,
       text: `Practice ${worksheet?.title || 'learning skills'} with Kibo Climb!`,
@@ -138,7 +134,6 @@ export default function WorksheetViewerScreen({
   };
 
   const handleReturn = () => {
-    soundFx.playKeyTap();
     if (fromParentDashboard) {
       if (onBack) onBack();
       else if (onNavigate) onNavigate('/parent', 'parent_dashboard', { tab: 'printables' });
@@ -262,7 +257,6 @@ export default function WorksheetViewerScreen({
                 <button
                   type="button"
                   onClick={() => {
-                    soundFx.playKeyTap();
                     if (onNavigate) onNavigate(getCanonicalPath(prevSheet), 'worksheet_viewer', { worksheetId: prevSheet.id });
                   }}
                   className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 hover:border-indigo-300 transition-all text-left flex items-center gap-1.5 cursor-pointer group shrink-0 active:scale-95 shadow-2xs"
@@ -284,7 +278,6 @@ export default function WorksheetViewerScreen({
                 <button
                   type="button"
                   onClick={() => {
-                    soundFx.playKeyTap();
                     if (onNavigate) onNavigate(getCanonicalPath(nextSheet), 'worksheet_viewer', { worksheetId: nextSheet.id });
                   }}
                   className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 hover:border-indigo-300 transition-all text-right flex items-center gap-1.5 cursor-pointer group shrink-0 active:scale-95 shadow-2xs"
@@ -316,7 +309,6 @@ export default function WorksheetViewerScreen({
           <button
             type="button"
             onClick={() => {
-              soundFx.playKeyTap();
               if (onOpenTrainingCamp) {
                 onOpenTrainingCamp({ subject: worksheet.subject });
               } else if (onNavigate) {

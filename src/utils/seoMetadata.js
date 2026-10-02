@@ -59,6 +59,14 @@ export const ROUTE_SEO_CONFIG = {
   blog_index: {
     title: 'Kibo Climb Blog – Math Strategies, Mental Math Shortcuts & Parent Guides',
     description: 'Discover expert mental math shortcuts, adaptive learning strategies, and parent/teacher tips to make math practice exciting with Kibo Climb.'
+  },
+  tips_hub: {
+    title: 'Tips & Tricks Strategy Cheat-Sheets – Kibo Climb',
+    description: 'Interactive mental math formulas, phonics rules, coding step-tracing, and geography anchor cheat cards for fast learners.'
+  },
+  tips: {
+    title: 'Tips & Tricks Strategy Cheat-Sheets – Kibo Climb',
+    description: 'Interactive mental math formulas, phonics rules, coding step-tracing, and geography anchor cheat cards for fast learners.'
   }
 };
 

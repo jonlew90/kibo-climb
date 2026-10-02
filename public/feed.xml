@@ -10,7 +10,7 @@
     <atom:link href="https://kiboclimb.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>Discover expert mental math shortcuts, adaptive phonics, geography insights, coding logic, and printable worksheet practice to turn daily learning into an exciting mountain climb.</description>
     <language>en-US</language>
-    <lastBuildDate>Thu, 01 Oct 2026 19:11:46 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 02 Oct 2026 01:06:22 GMT</lastBuildDate>
     <image>
       <url>https://kiboclimb.com/icons/icon-512.png</url>
       <title>Kibo Climb</title>
@@ -68,9 +68,9 @@
       <p>In our Tier 4 curriculum (Grades 4–8), students build foundational mastery in:</p>
       <ul><li>Variable assignment (x = 5)</li><li>Reassignment &amp; mutability (x = x + 2)</li><li>Multiple variable swaps &amp; dependencies</li><li>Binary conversion (0101 in base-10)</li></ul>
       <h3>Trail Trick: Step-by-Step Memory Box</h3>
-      <p>Think of a variable as a labeled box. When code assigns a new value, the old value is replaced!</p>
+      <p>Think of variables as labeled boxes. Use the value inside one box to calculate the next!</p>
       <p><strong>Worked Example:</strong></p>
-      <ul><li>Problem: <strong>x = 4; x = x + 3; x = x * 2; What is x?</strong></li><li>Strategy Application: <strong>4 + 3 = 7, then 7 * 2 = 14!</strong></li><li>Solution: <strong>14</strong></li></ul>
+      <ul><li>Problem: <strong>x = 4; y = x + 3; x = y * 2; What is x?</strong></li><li>Strategy Application: <strong>First y = 4 + 3 (7), then x = 7 * 2 (14)!</strong></li><li>Solution: <strong>14</strong></li></ul>
       <p>By visualizing concepts as adaptable mental landmarks, working memory strain is significantly reduced.</p>
       <h3>Trail Pro Tip: Binary Place Values</h3>
       <blockquote><p>Binary bit places represent powers of 2: [8s][4s][2s][1s]. Binary 1010 = 8 + 2 = 10.</p></blockquote>

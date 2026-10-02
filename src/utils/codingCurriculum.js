@@ -178,12 +178,12 @@ export const CODING_CURRICULUM_TIERS = [
     associatedBadge: { id: 'variable_virtuoso', name: 'Variable Virtuoso', icon: '🔢' },
     trailTrick: {
       title: 'Step-by-Step Memory Box',
-      description: 'Think of a variable as a labeled box. When code assigns a new value, the old value is replaced!',
-      summary: 'Update the variable box value on each line of code in order.',
+      description: 'Think of variables as labeled boxes. Use the value inside one box to calculate the next!',
+      summary: 'Update each variable box value step by step in order.',
       sampleProblem: {
-        question: 'x = 4; x = x + 3; x = x * 2; What is x?',
+        question: 'x = 4; y = x + 3; x = y * 2; What is x?',
         correctAnswer: '14',
-        hint: '4 + 3 = 7, then 7 * 2 = 14!'
+        hint: 'First y = 4 + 3 (7), then x = 7 * 2 (14)!'
       }
     },
     proTip: {

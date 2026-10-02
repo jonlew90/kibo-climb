@@ -17,6 +17,7 @@ export const VIEWS = {
   WORKSHEET_VIEWER: 'worksheet_viewer',
   BLOG_INDEX: 'blog_index',
   BLOG_POST: 'blog_post',
+  TIPS_HUB: 'tips_hub',
 
   // Modals
   WORKSHOP: 'workshop',
@@ -81,6 +82,8 @@ export const getPathForId = (id, params = {}) => {
       return '/blog';
     case VIEWS.BLOG_POST:
       return params?.slug ? `/blog/${params.slug}` : '/blog';
+    case VIEWS.TIPS_HUB:
+      return '/tips';
     case VIEWS.ADAPTIVE_SESSION:
     default:
       if (params?.subject && SUBJECT_ROUTES[params.subject]) {
@@ -95,12 +98,14 @@ export const normalizeEntry = (entry) => {
     entry = { id: entry };
   }
   let id = entry?.id || VIEWS.ADAPTIVE_SESSION;
+  let normalizedPath = null;
   const isModal = isModalView(id);
   const params = entry?.params ? { ...entry.params } : {};
 
   // Check for worksheet hub root path
   if (entry?.path === '/worksheets' || entry?.path === '/worksheets/') {
     id = VIEWS.WORKSHEET_HUB;
+    normalizedPath = '/worksheets';
   }
 
   // If worksheetId isn't explicitly in params, extract it from the path
@@ -116,6 +121,13 @@ export const normalizeEntry = (entry) => {
   // If blog index path
   if (entry?.path === '/blog' || entry?.path === '/blog/') {
     id = VIEWS.BLOG_INDEX;
+    normalizedPath = '/blog';
+  }
+
+  // If tips index path
+  if (entry?.path === '/tips' || entry?.path === '/tips/') {
+    id = VIEWS.TIPS_HUB;
+    normalizedPath = '/tips';
   }
 
   // If slug isn't explicitly in params for blog post, extract it from path
@@ -125,13 +137,14 @@ export const normalizeEntry = (entry) => {
       params.slug = slug;
     } else {
       id = VIEWS.BLOG_INDEX;
+      normalizedPath = '/blog';
     }
   }
 
   return {
     type: entry?.type || (isModal ? VIEW_TYPES.MODAL : VIEW_TYPES.ROUTE),
     id,
-    path: entry?.path || getPathForId(id, params),
+    path: normalizedPath || entry?.path || getPathForId(id, params),
     params
   };
 };
