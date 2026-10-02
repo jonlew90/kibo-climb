@@ -143,18 +143,18 @@ export default function BlogIndex({ onBack, onNavigate }) {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-2.5 sm:py-4 space-y-3 sm:space-y-4">
         {/* Tips & Strategy Interactive Hub Quick Banner */}
-        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-purple-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-xl shrink-0">
+        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-purple-500/10 border border-amber-500/30 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-lg shrink-0">
               💡
             </div>
             <div>
-              <h2 className="text-sm font-black text-slate-800">
+              <h2 className="text-xs sm:text-sm font-black text-slate-800">
                 Looking for quick formula cheat-sheets?
               </h2>
-              <p className="text-xs text-slate-600">
+              <p className="text-[11px] sm:text-xs text-slate-600">
                 Explore our interactive strategy cards with live mental math sliders, phonics toggles, and algorithm tracers.
               </p>
             </div>
@@ -162,29 +162,31 @@ export default function BlogIndex({ onBack, onNavigate }) {
           <a
             href="/tips"
             onClick={(e) => navigateTo('/tips', e)}
-            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition-all flex items-center gap-1.5 shadow-sm shrink-0"
+            className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition-all flex items-center gap-1 shadow-sm shrink-0"
           >
             <span>Open Tips &amp; Tricks Hub</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </a>
         </div>
 
-        {/* Hero Banner (Compact on mobile, matching WorksheetHubScreen) */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white p-4 sm:p-10 shadow-lg border border-orange-500/30">
-          <div className="relative z-10 max-w-2xl space-y-1.5 sm:space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/15 backdrop-blur-xs text-amber-100 text-[10px] sm:text-xs font-black uppercase tracking-wider border border-white/20">
-              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-200" />
-              <span>Kibo Learning Hub</span>
+        {/* Hero Banner (Matching WorksheetHubScreen) */}
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white p-3 sm:p-5 shadow-md border border-orange-500/30">
+          <div className="relative z-10 max-w-3xl space-y-1 sm:space-y-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-xs text-amber-100 text-[9px] sm:text-xs font-black uppercase tracking-wider border border-white/20">
+                <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-200" />
+                <span>Kibo Learning Hub</span>
+              </span>
             </div>
-            <h1 className="text-xl sm:text-4xl font-heading font-black tracking-tight leading-tight">
+            <h1 className="text-base sm:text-2xl font-heading font-black tracking-tight leading-snug">
               Math Strategies, Mental Tricks &amp; Parent Guides
             </h1>
-            <p className="hidden sm:block text-sm sm:text-base text-amber-100/90 font-medium leading-relaxed">
+            <p className="text-[11px] sm:text-xs text-amber-100/90 font-medium leading-relaxed">
               Discover expert mental math shortcuts, adaptive learning strategies, and printable resources designed to turn everyday arithmetic into an exciting mountain adventure.
             </p>
           </div>
           
-          <div className="absolute right-0 bottom-0 opacity-10 sm:opacity-20 translate-x-12 translate-y-8 pointer-events-none w-48 h-48 sm:w-64 sm:h-64">
+          <div className="absolute right-0 bottom-0 opacity-10 sm:opacity-15 translate-x-8 translate-y-4 pointer-events-none w-28 h-28 sm:w-36 sm:h-36">
             <div dangerouslySetInnerHTML={{ __html: KIBO_RED_PANDA_FAVICON_SVG }} />
           </div>
         </div>
