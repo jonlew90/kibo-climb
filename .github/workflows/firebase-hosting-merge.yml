@@ -98,6 +98,10 @@ jobs:
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_changes.outputs.has_functions_changes == 'true'
         run: npx -y firebase-tools deploy --only hosting,functions --project kibo-climb
 
+      - name: Notify IndexNow of Site Updates
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: node scripts/notify_indexnow.js --all
+
       - name: Update last deployed tag
         if: steps.check_changes.outputs.has_changes == 'true'
         run: |

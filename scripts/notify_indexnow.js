@@ -63,9 +63,12 @@ export async function submitToIndexNow(urls) {
 }
 
 function parseSitemapUrls() {
-  const sitemapPath = path.resolve(__dirname, '../dist/sitemap.xml');
+  const distSitemap = path.resolve(__dirname, '../dist/sitemap.xml');
+  const publicSitemap = path.resolve(__dirname, '../public/sitemap.xml');
+  const sitemapPath = fs.existsSync(distSitemap) ? distSitemap : publicSitemap;
+
   if (!fs.existsSync(sitemapPath)) {
-    console.error('sitemap.xml not found at dist/sitemap.xml');
+    console.error('sitemap.xml not found at dist/sitemap.xml or public/sitemap.xml');
     return [];
   }
   const content = fs.readFileSync(sitemapPath, 'utf8');
