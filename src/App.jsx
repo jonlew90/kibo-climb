@@ -264,7 +264,27 @@ export default function App() {
     const unsubAuth = authService.subscribeAuthState?.((user) => {
       setCurrentAuthState(authService.getAuthState());
       if (user && user.uid) {
-        userSyncService.initUserSync(user.uid);
+        userSyncService.initUserSync(user.uid, () => {
+          syncAppStateWithStorage();
+          try {
+            const pendingProfile = localStorage.getItem('kibo_pending_target_profile');
+            if (pendingProfile) {
+              const allProfiles = storageService.getAllProfiles();
+              const cleanTarget = pendingProfile.trim().toLowerCase();
+              const matched = allProfiles.find(p =>
+                (p.id && p.id.toLowerCase() === cleanTarget) ||
+                (p.username && p.username.toLowerCase() === cleanTarget) ||
+                (p.name && p.name.toLowerCase() === cleanTarget)
+              );
+              if (matched) {
+                storageService.setActiveProfileId(matched.id);
+                setActiveProfileId(matched.id);
+                syncAppStateWithStorage();
+                localStorage.removeItem('kibo_pending_target_profile');
+              }
+            }
+          } catch (e) {}
+        });
       }
     });
     const unsubSync = userSyncService.subscribeSyncStatus?.((status) => {
@@ -701,7 +721,8 @@ export default function App() {
 
       if (profile) {
         const allProfiles = storageService.getAllProfiles();
-        const cleanTarget = decodeURIComponent(profile).trim().toLowerCase();
+        const rawTarget = decodeURIComponent(profile).trim();
+        const cleanTarget = rawTarget.toLowerCase();
         const matched = allProfiles.find(p => 
           (p.id && p.id.toLowerCase() === cleanTarget) ||
           (p.username && p.username.toLowerCase() === cleanTarget) ||
@@ -711,6 +732,18 @@ export default function App() {
           storageService.setActiveProfileId(matched.id);
           setActiveProfileId(matched.id);
           syncAppStateWithStorage();
+        } else {
+          const authState = authService.getAuthState?.();
+          const isAnonymous = !authState?.user || authState?.isAnonymous;
+          if (isAnonymous) {
+            try {
+              localStorage.setItem('kibo_pending_target_profile', rawTarget);
+            } catch (e) {}
+            handleOpenModal(VIEWS.ACCOUNT_LINK, {
+              milestone: `Sign in to continue ${rawTarget}'s Ascent`,
+              isLoginOnly: true
+            });
+          }
         }
       }
 
@@ -4107,6 +4140,24 @@ export default function App() {
           }
           setCurrentAuthState(authService.getAuthState());
           syncAppStateWithStorage();
+          try {
+            const pendingProfile = localStorage.getItem('kibo_pending_target_profile');
+            if (pendingProfile) {
+              const allProfiles = storageService.getAllProfiles();
+              const cleanTarget = pendingProfile.trim().toLowerCase();
+              const matched = allProfiles.find(p =>
+                (p.id && p.id.toLowerCase() === cleanTarget) ||
+                (p.username && p.username.toLowerCase() === cleanTarget) ||
+                (p.name && p.name.toLowerCase() === cleanTarget)
+              );
+              if (matched) {
+                storageService.setActiveProfileId(matched.id);
+                setActiveProfileId(matched.id);
+                syncAppStateWithStorage();
+                localStorage.removeItem('kibo_pending_target_profile');
+              }
+            }
+          } catch (e) {}
           if (pendingSparksPurchase) {
             if (pendingSparksPurchase.realMoneyPrice) {
               const entry = navigationHistory.replace({
