@@ -296,10 +296,17 @@ export default function App() {
       userSyncService.flushSync();
     };
 
+    const handleStorageChange = (e) => {
+      if (e.key === 'kibo_profiles_data' || e.key === 'kibo_userData_math' || !e.key) {
+        syncAppStateWithStorage();
+      }
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleFocus);
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pagehide', handleBeforeUnload);
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
       if (unsubAuth) unsubAuth();
@@ -308,6 +315,7 @@ export default function App() {
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handleBeforeUnload);
+      window.removeEventListener('storage', handleStorageChange);
       userSyncService.stopSync();
     };
   }, []);
@@ -693,9 +701,15 @@ export default function App() {
 
       if (profile) {
         const allProfiles = storageService.getAllProfiles();
-        if (allProfiles && allProfiles.some(p => p.id === profile)) {
-          storageService.setActiveProfileId(profile);
-          setActiveProfileId(profile);
+        const cleanTarget = decodeURIComponent(profile).trim().toLowerCase();
+        const matched = allProfiles.find(p => 
+          (p.id && p.id.toLowerCase() === cleanTarget) ||
+          (p.username && p.username.toLowerCase() === cleanTarget) ||
+          (p.name && p.name.toLowerCase() === cleanTarget)
+        );
+        if (matched) {
+          storageService.setActiveProfileId(matched.id);
+          setActiveProfileId(matched.id);
           syncAppStateWithStorage();
         }
       }
