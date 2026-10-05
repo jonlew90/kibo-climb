@@ -18,3 +18,11 @@
    - Exclude build artifacts, generated types, and package lock files from searches.
 10. **No Prose:** Do not explain the code unless explicitly asked.
 11. **Use Local CLI Tools first:** Use internal commands like `grep` or `find` to map files instead of forcing the LLM to read through directory files to search for things.
+
+# Architecture & Scheduled Notification Capabilities
+
+- **Scheduled Email Digests & Push Notifications:**
+  - The codebase currently delivers automated, scheduled **weekly progress email digests** (`sendScheduledWeeklyDigests` in `functions/index.js` via Resend).
+  - The codebase currently delivers automated, scheduled **daily streak reminder push notifications** (`scheduledDailyStreakPush` in `functions/index.js` via OneSignal REST API) to mobile devices including **Android PWAs**, web browsers, and native mobile clients.
+  - Device subscriptions (`PushSubscription.id`) and user aliases (`external_id: uid`) are continuously synchronized to Firestore (`users/{uid}`) by `src/config/onesignal.js` and `src/services/userSyncService.js` to ensure reliable push delivery across Android PWAs.
+

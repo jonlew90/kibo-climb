@@ -1378,6 +1378,16 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false }) {
 }
 
 /**
+ * ============================================================================
+ * SCHEDULED NOTIFICATION & ENGAGEMENT PIPELINE
+ * Note: The codebase currently sends BOTH:
+ *  1. Scheduled weekly email progress digests (via Resend: `sendScheduledWeeklyDigests`)
+ *  2. Scheduled daily streak reminder push notifications to Android PWAs,
+ *     web browsers, and native apps (via OneSignal: `scheduledDailyStreakPush`)
+ * ============================================================================
+ */
+
+/**
  * Scheduled Cloud Function: Executes weekly on Sundays at 9:00 AM America/Chicago.
  * Dispatches automated weekly progress summaries to parents with linked accounts.
  */

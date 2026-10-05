@@ -1,3 +1,8 @@
+// src/config/onesignal.js
+// OneSignal Push Notification Integration for Kibo Climb
+// Active support: Delivers scheduled & manual push notifications to Android PWAs,
+// web browsers, and native mobile environments with subscription ID sync to Firestore.
+
 import OneSignalReact from 'react-onesignal';
 import { auth } from './firebase';
 import { storageService } from '../services/storageService';
