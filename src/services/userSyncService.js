@@ -214,7 +214,10 @@ class UserSyncService {
       const userDocRef = doc(db, USERS_COLLECTION, targetUid);
       const subPlan = storageService.getSubscriptionPlan();
       const trialStatus = storageService.getTrialStatus();
-      const parentEmail = currentUser?.email || storageService.getParentAccountEmail() || null;
+      const isLinkedAccount = currentUser && !currentUser.isAnonymous;
+      const parentEmail = isLinkedAccount
+        ? (currentUser?.email || storageService.getParentAccountEmail() || null)
+        : (storageService.isAccountGloballyLinked() ? storageService.getParentAccountEmail() : null);
       const notificationSettings = storageService.getNotificationSettings();
       const oneSignalSubId = storageService.getOneSignalSubscriptionId();
 

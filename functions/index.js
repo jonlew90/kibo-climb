@@ -1423,6 +1423,9 @@ exports.sendScheduledWeeklyDigests = onSchedule(
       let sentCount = 0;
       let skippedCount = 0;
 
+      // Group candidate digests by recipient email + child name/ID to prevent duplicate sends across orphaned docs
+      const digestCandidates = new Map();
+
       for (const userDoc of usersSnap.docs) {
         const userData = userDoc.data();
         const uid = userDoc.id;
@@ -1452,6 +1455,7 @@ exports.sendScheduledWeeklyDigests = onSchedule(
           continue;
         }
 
+        const normalizedEmail = targetEmail.trim().toLowerCase();
         const profiles = userData.profiles || {};
         const profileKeys = Object.keys(profiles);
         if (profileKeys.length === 0) {
@@ -1459,10 +1463,19 @@ exports.sendScheduledWeeklyDigests = onSchedule(
           continue;
         }
 
-        // Dispatch digest for each child profile
+        const docUpdatedMillis = Number(userData.updatedAtMillis || userData.lastSyncedMillis || 0);
+
         for (const pid of profileKeys) {
           const profile = profiles[pid];
-          const childName = profile?.username || profile?.name || 'Kibo Climber';
+          const childName = (profile?.username || profile?.name || 'Kibo Climber').trim();
+          const childKey = childName.toLowerCase();
+          const dedupKey = `${normalizedEmail}:::${childKey}`;
+
+          const profileUpdatedMillis = Number(profile?.updatedAtMillis || docUpdatedMillis || 0);
+          const badgeCount = Array.isArray(profile?.userData?.unlockedBadges) ? profile.userData.unlockedBadges.length : 0;
+          const problemsSolved = Number(profile?.userData?.totalProblemsSolved || 0);
+          const candidateScore = (profileUpdatedMillis * 1000) + (badgeCount * 10) + problemsSolved;
+
           const isKiboClub = Boolean(
             userData.isKiboClub ||
             userData.hasFamilyPlan ||
@@ -1471,32 +1484,49 @@ exports.sendScheduledWeeklyDigests = onSchedule(
             profile?.shopState?.unlockedItems?.includes('kibo_club_sub_annual')
           );
 
-          const htmlBody = buildScheduledDigestHtml({ childName, profile, isKiboClub });
-          const subject = `🐾 🏔️ Kibo Weekly Progress for ${childName}`;
-
-          try {
-            const sendRes = await resend.emails.send({
-              from: senderEmail,
-              to: [targetEmail.trim()],
-              subject,
-              html: htmlBody
+          const existingCandidate = digestCandidates.get(dedupKey);
+          if (!existingCandidate || candidateScore > existingCandidate.score) {
+            digestCandidates.set(dedupKey, {
+              targetEmail: normalizedEmail,
+              childName,
+              profile,
+              pid,
+              isKiboClub,
+              userDocRef: userDoc.ref,
+              score: candidateScore
             });
-
-            if (sendRes.error) {
-              console.error(`[sendScheduledWeeklyDigests] Failed to send digest for profile ${pid} to ${targetEmail}:`, sendRes.error);
-            } else {
-              sentCount++;
-              console.log(`[sendScheduledWeeklyDigests] Sent digest for ${childName} to ${targetEmail}`);
-            }
-          } catch (sendErr) {
-            console.error(`[sendScheduledWeeklyDigests] Error sending to ${targetEmail}:`, sendErr);
           }
         }
+      }
 
-        // Mark lastDigestSentAt on user doc
-        await userDoc.ref.set({
-          lastDigestSentAt: FieldValue.serverTimestamp()
-        }, { merge: true });
+      // Dispatch single digest per child profile to each parent email address
+      for (const candidate of digestCandidates.values()) {
+        const { targetEmail, childName, profile, pid, isKiboClub, userDocRef } = candidate;
+        const htmlBody = buildScheduledDigestHtml({ childName, profile, isKiboClub });
+        const subject = `🐾 🏔️ Kibo Weekly Progress for ${childName}`;
+
+        try {
+          const sendRes = await resend.emails.send({
+            from: senderEmail,
+            to: [targetEmail],
+            subject,
+            html: htmlBody
+          });
+
+          if (sendRes.error) {
+            console.error(`[sendScheduledWeeklyDigests] Failed to send digest for profile ${pid} to ${targetEmail}:`, sendRes.error);
+          } else {
+            sentCount++;
+            console.log(`[sendScheduledWeeklyDigests] Sent digest for ${childName} to ${targetEmail}`);
+            if (userDocRef) {
+              await userDocRef.set({
+                lastDigestSentAt: FieldValue.serverTimestamp()
+              }, { merge: true });
+            }
+          }
+        } catch (sendErr) {
+          console.error(`[sendScheduledWeeklyDigests] Error sending to ${targetEmail}:`, sendErr);
+        }
       }
 
       console.log(`[sendScheduledWeeklyDigests] Completed weekly digest run. Sent: ${sentCount}, Skipped: ${skippedCount}`);

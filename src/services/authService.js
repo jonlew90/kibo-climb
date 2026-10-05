@@ -122,6 +122,16 @@ const _handleLinkCollision = async (linkedUser, authProviderName, email, provide
     accountLinkedAt: new Date().toISOString()
   };
 
+  // If anonymous user was converted/switched to a permanent UID, clean up the orphaned anonymous document
+  const currentFirebaseUser = auth.currentUser;
+  if (currentFirebaseUser && currentFirebaseUser.isAnonymous && currentFirebaseUser.uid !== linkedUser.uid) {
+    try {
+      await deleteDoc(doc(db, 'users', currentFirebaseUser.uid));
+    } catch (cleanErr) {
+      console.warn('Could not clean up orphaned anonymous user doc:', cleanErr);
+    }
+  }
+
   storageService.setGlobalAccountLinkedState(mergedUserData);
   const earnedSparks = storageService.grantAccountLinkSparksReward();
 
@@ -620,11 +630,22 @@ export const authService = {
           email: linkedUser.email
         });
 
+        // Clean up previous anonymous doc if different UID
+        const curUser = auth.currentUser;
+        if (curUser && curUser.isAnonymous && curUser.uid !== linkedUser.uid) {
+          try { await deleteDoc(doc(db, 'users', curUser.uid)); } catch (_) {}
+        }
+
         loginToOneSignal(linkedUser.uid);
 
         return { success: true, reload: true };
       } else if (action === 'overwrite_cloud') {
         // We push current local state up, overwriting cloud profiles map entirely
+        const curUser = auth.currentUser;
+        if (curUser && curUser.isAnonymous && curUser.uid !== linkedUser.uid) {
+          try { await deleteDoc(doc(db, 'users', curUser.uid)); } catch (_) {}
+        }
+
         const mergedUserData = {
             ...storageService.getUserData('math'),
             cloudUid: linkedUser.uid,
