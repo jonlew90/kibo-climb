@@ -65,7 +65,7 @@ exports.sendParentEmail = onCall(
       const { subscriptionId } = request.data || {};
       let title = customTitle;
       let message = customMessage;
-      let actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=test_push`;
+      let actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_medium=push&utm_campaign=test_push`;
 
       if (!title || !message) {
         switch (pushType) {
@@ -73,18 +73,18 @@ exports.sendParentEmail = onCall(
           case "unclaimed_quest":
             title = `🎁 Unclaimed Quest Sparks for ${childName}!`;
             message = `${childName} has completed daily quests with unclaimed Sparks! Tap to collect before midnight.`;
-            actionUrl = `https://kiboclimb.com/?action=quests&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=unclaimed_quests`;
+            actionUrl = `https://kiboclimb.com/?action=quests&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_medium=push&utm_campaign=unclaimed_quests`;
             break;
           case "double_sparks":
             title = `⚡ Double Sparks Active on Mount Kibo!`;
             message = `Earn 2x Sparks on all climbs today! Help ${childName} climb the mountain leaderboard.`;
-            actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=double_sparks_event`;
+            actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_medium=push&utm_campaign=double_sparks_event`;
             break;
           case "streak":
           default:
             title = `🏔️ Keep ${childName}'s Daily Streak Alive!`;
             message = `Kibo the Red Panda is waiting! Complete today's climb to protect your flame 🔥`;
-            actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_campaign=daily_streak`;
+            actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(profileId || '')}&utm_source=push_notification&utm_medium=push&utm_campaign=daily_streak`;
             break;
         }
       }
@@ -1555,7 +1555,7 @@ async function dispatchOneSignalPush({ uids = [], subscriptionIds = [], title, m
     target_channel: "push",
     headings: { en: title },
     contents: { en: message },
-    url: url || "https://kiboclimb.com/?action=play&utm_source=push_notification&utm_campaign=daily_streak",
+    url: url || "https://kiboclimb.com/?action=play&utm_source=push_notification&utm_medium=push&utm_campaign=daily_streak",
     chrome_web_icon: "https://kiboclimb.com/favicon.png",
     firefox_icon: "https://kiboclimb.com/favicon.png",
     small_icon: "ic_stat_onesignal_default",
@@ -1566,33 +1566,59 @@ async function dispatchOneSignalPush({ uids = [], subscriptionIds = [], title, m
     }
   };
 
-  let hasTarget = false;
-  if (subscriptionIds && subscriptionIds.length > 0) {
-    payload.include_subscription_ids = subscriptionIds;
-    hasTarget = true;
-  }
-  if (uids && uids.length > 0) {
-    payload.include_aliases = {
-      external_id: uids
+  // OneSignal REST API strictly enforces that targeting parameters (include_subscription_ids vs include_aliases)
+  // are mutually exclusive in a single payload. Combining them triggers a 400 validation error.
+  const attemptPush = async (targetPayload) => {
+    const finalPayload = {
+      ...payload,
+      ...targetPayload
     };
-    hasTarget = true;
-  }
-
-  if (!hasTarget) {
-    return { success: false, error: "No target external user IDs or subscription IDs specified." };
-  }
-
-  try {
     const response = await fetch("https://onesignal.com/api/v1/notifications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Basic ${finalApiKey}`
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(finalPayload)
     });
-
     const result = await response.json();
+    return { response, result };
+  };
+
+  try {
+    let result;
+    let response;
+
+    // 1. Prioritize direct device subscription IDs (e.g. Android PWA or web push subscriptions)
+    if (subscriptionIds && subscriptionIds.length > 0) {
+      const res = await attemptPush({ include_subscription_ids: subscriptionIds });
+      response = res.response;
+      result = res.result;
+
+      // If subscription IDs reached 0 recipients or failed and uids exist, fallback to external_id alias targeting
+      if ((!response.ok || (result.recipients === 0 && !result.id) || (result.errors && result.errors.length > 0)) && uids && uids.length > 0) {
+        console.warn(`[OneSignal Push] Subscription ID delivery yielded no recipients (${JSON.stringify(result)}). Falling back to alias targeting for UIDs:`, uids);
+        const fallbackRes = await attemptPush({
+          include_aliases: { external_id: uids },
+          target_channel: "push"
+        });
+        if (fallbackRes.response.ok && (!fallbackRes.result.errors || fallbackRes.result.errors.length === 0)) {
+          response = fallbackRes.response;
+          result = fallbackRes.result;
+        }
+      }
+    } else if (uids && uids.length > 0) {
+      // 2. Fall back to external_id alias targeting
+      const res = await attemptPush({
+        include_aliases: { external_id: uids },
+        target_channel: "push"
+      });
+      response = res.response;
+      result = res.result;
+    } else {
+      return { success: false, error: "No target external user IDs or subscription IDs specified." };
+    }
+
     if (!response.ok || (result.errors && result.errors.length > 0)) {
       console.error("[OneSignal Push Error]:", result);
       return { success: false, error: result.errors ? JSON.stringify(result.errors) : `HTTP ${response.status}` };
@@ -1714,7 +1740,7 @@ exports.scheduledDailyStreakPush = onSchedule(
           
           const title = `🏔️ Keep ${firstUnplayed.name}'s Streak Alive! 🔥`;
           const message = `Kibo the Red Panda is waiting! Complete today's climb${streakText} before midnight.${hasQuestBonus}`;
-          const actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(firstUnplayed.id)}&utm_source=push_notification&utm_campaign=daily_streak`;
+          const actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(firstUnplayed.id)}&utm_source=push_notification&utm_medium=push&utm_campaign=daily_streak`;
 
           // Collect target subscription IDs if registered on user doc
           const subscriptionIds = [];

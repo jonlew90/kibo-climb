@@ -25,20 +25,38 @@ const safeLogEvent = (eventName, eventParams = {}) => {
   }
 };
 
+// Capture initial landing URL and referrer immediately before any client-side routing or history mutations
+const initialLandingUrl = typeof window !== 'undefined' ? window.location.href : 'https://kiboclimb.com/';
+const initialReferrer = typeof document !== 'undefined' ? (document.referrer || '') : '';
+let isInitialPageView = true;
+let previousPageLocation = initialLandingUrl;
+
 export const analyticsService = {
   /**
    * Log standard GA4 page_view for SPA routing to maintain continuous acquisition attribution.
+   * Preserves full landing URL (including UTM parameters) and initial referrer on session start.
    * @param {string} pagePath - URL path (e.g., '/', '/math', '/leaderboard').
    * @param {string} pageTitle - Document title.
    */
   logPageView: (pagePath, pageTitle) => {
     const path = pagePath || (typeof window !== 'undefined' ? window.location.pathname : '/');
     const title = pageTitle || (typeof document !== 'undefined' ? document.title : '');
+    const currentLocation = isInitialPageView
+      ? initialLandingUrl
+      : (typeof window !== 'undefined' ? `${window.location.origin}${path}` : `https://kiboclimb.com${path}`);
+    const referrer = isInitialPageView
+      ? (initialReferrer || undefined)
+      : previousPageLocation;
+
     safeLogEvent('page_view', {
       page_path: path,
       page_title: title,
-      page_location: typeof window !== 'undefined' ? window.location.href : `https://kiboclimb.com${path}`
+      page_location: currentLocation,
+      ...(referrer ? { page_referrer: referrer } : {})
     });
+
+    previousPageLocation = typeof window !== 'undefined' ? `${window.location.origin}${path}` : `https://kiboclimb.com${path}`;
+    isInitialPageView = false;
   },
 
   /**

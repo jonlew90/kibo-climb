@@ -58,7 +58,16 @@ class UserSyncService {
         }
 
         const cloudData = docSnap.data();
-        if (!cloudData || !cloudData.profiles) return;
+        if (!cloudData) return;
+
+        // Ensure current device's push subscription is registered in Firestore
+        const localSubId = storageService.getOneSignalSubscriptionId();
+        const cloudSubIds = Array.isArray(cloudData.oneSignalSubscriptionIds) ? cloudData.oneSignalSubscriptionIds : [];
+        if (localSubId && (!cloudData.oneSignalSubscriptionId || !cloudSubIds.includes(localSubId))) {
+          this.pushLocalToCloud(uid);
+        }
+
+        if (!cloudData.profiles) return;
 
         // Prevent echo loop when we just pushed changes to cloud
         this.isSyncingFromCloud = true;

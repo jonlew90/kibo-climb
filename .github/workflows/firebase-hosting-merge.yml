@@ -91,12 +91,12 @@ jobs:
           service_account: github-action-1311198724@kibo-climb.iam.gserviceaccount.com
 
       - name: Deploy to Firebase Hosting
-        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_changes.outputs.has_functions_changes != 'true'
+        if: steps.check_changes.outputs.has_changes == 'true'
         run: npx -y firebase-tools deploy --only hosting --project kibo-climb
 
-      - name: Deploy to Firebase Hosting and Functions
+      - name: Deploy to Firebase Functions
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_changes.outputs.has_functions_changes == 'true'
-        run: npx -y firebase-tools deploy --only hosting,functions --project kibo-climb
+        run: npx -y firebase-tools deploy --only functions --project kibo-climb
 
       - name: Notify IndexNow of Site Updates
         if: steps.check_changes.outputs.has_changes == 'true'

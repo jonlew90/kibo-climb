@@ -135,6 +135,11 @@ const _handleLinkCollision = async (linkedUser, authProviderName, email, provide
   storageService.setGlobalAccountLinkedState(mergedUserData);
   const earnedSparks = storageService.grantAccountLinkSparksReward();
 
+  if (linkedUser && linkedUser.uid) {
+    loginToOneSignal(linkedUser.uid, linkedUser.email || null);
+    userSyncService.pushLocalToCloud(linkedUser.uid);
+  }
+
   // Check if cloud account already used their trial
   let trialResult = { granted: false, reason: 'Already claimed' };
   if (cloudHasReceivedClubTrial) {
@@ -385,6 +390,11 @@ export const authService = {
       }
       const earnedSparks = storageService.grantAccountLinkSparksReward();
 
+      if (linkedUser && linkedUser.uid) {
+        loginToOneSignal(linkedUser.uid, linkedUser.email || null);
+        userSyncService.pushLocalToCloud(linkedUser.uid);
+      }
+
       return {
         success: true,
         user: storageService.getUserData('math'),
@@ -471,7 +481,10 @@ export const authService = {
             };
             storageService.setGlobalAccountLinkedState(mergedUserData);
             const earnedSparks = storageService.grantAccountLinkSparksReward();
-            if (res.user.uid) loginToOneSignal(res.user.uid);
+            if (res.user.uid) {
+              loginToOneSignal(res.user.uid, res.user.email || null);
+              userSyncService.pushLocalToCloud(res.user.uid);
+            }
 
             if (typeof window !== 'undefined' && window.history && window.location.search) {
               window.history.replaceState({}, '', window.location.pathname);
@@ -505,7 +518,10 @@ export const authService = {
         };
         storageService.setGlobalAccountLinkedState(mergedUserData);
         const earnedSparks = storageService.grantAccountLinkSparksReward();
-        if (targetUser && targetUser.uid) loginToOneSignal(targetUser.uid, targetUser.email || null);
+        if (targetUser && targetUser.uid) {
+          loginToOneSignal(targetUser.uid, targetUser.email || null);
+          userSyncService.pushLocalToCloud(targetUser.uid);
+        }
         return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
       }
       return { success: false, reason: 'No redirect result found' };
@@ -533,7 +549,10 @@ export const authService = {
               };
               storageService.setGlobalAccountLinkedState(mergedUserData);
               const earnedSparks = storageService.grantAccountLinkSparksReward();
-              if (userCred.user && userCred.user.uid) loginToOneSignal(userCred.user.uid, userCred.user.email || null);
+              if (userCred.user && userCred.user.uid) {
+                loginToOneSignal(userCred.user.uid, userCred.user.email || null);
+                userSyncService.pushLocalToCloud(userCred.user.uid);
+              }
               return { success: true, user: storageService.getUserData('math'), earnedSparks, returnUrl };
             }
           }

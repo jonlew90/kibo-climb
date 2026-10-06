@@ -474,7 +474,9 @@ export default function App() {
       }
 
       if (typeof window !== 'undefined' && window.location.pathname !== current.path) {
-        window.history.pushState({}, '', current.path);
+        const search = window.location.search || '';
+        const hash = window.location.hash || '';
+        window.history.pushState({}, '', current.path + search + hash);
       }
 
       let screenName = 'Home';
@@ -491,10 +493,10 @@ export default function App() {
         const sub = current.params?.subject || activeSubject || 'math';
         screenName = `Climb_${sub.charAt(0).toUpperCase() + sub.slice(1)}`;
       }
-      analyticsService?.logScreenView?.(screenName);
       if (current.type === VIEW_TYPES.ROUTE) {
         analyticsService?.logPageView?.(current.path, typeof document !== 'undefined' ? document.title : screenName);
       }
+      analyticsService?.logScreenView?.(screenName);
     }
   };
 
@@ -822,6 +824,7 @@ export default function App() {
 
   useEffect(() => {
     const rawPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+    const initialSearch = typeof window !== 'undefined' ? window.location.search : '';
     const path = rawPath.replace(/\/+$/, '') || '/';
     const cleanSlug = path.replace(/^\//, '').toLowerCase();
 
@@ -882,7 +885,7 @@ export default function App() {
       handleOpenPinGate('direct_url', 'overview', null);
     }
 
-    processDeepLink();
+    processDeepLink(initialSearch);
   }, []);
 
   useEffect(() => {
