@@ -47,7 +47,7 @@ describe('worksheetGenerator', () => {
     expect(html).toContain('Parent Answer Key');
     expect(html).toContain('@media print');
     expect(html).toContain('Alex');
-    expect(html).toContain(`<link rel="canonical" href="https://www.kiboclimb.com${getCanonicalPath(sheet)}" />`);
+    expect(html).toContain(`<link rel="canonical" href="https://kiboclimb.com${getCanonicalPath(sheet)}" />`);
     expect(html).toContain('(Set #42)');
   });
 

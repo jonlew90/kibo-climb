@@ -1596,7 +1596,9 @@ async function dispatchOneSignalPush({ uids = [], subscriptionIds = [], title, m
       result = res.result;
 
       // If subscription IDs reached 0 recipients or failed and uids exist, fallback to external_id alias targeting
-      if ((!response.ok || (result.recipients === 0 && !result.id) || (result.errors && result.errors.length > 0)) && uids && uids.length > 0) {
+      // Note: OneSignal may return a valid notification `id` even when recipients===0 (stale/rotated subscription),
+      // so we trigger the fallback on recipients===0 regardless of whether `id` is present.
+      if ((!response.ok || result.recipients === 0 || (result.errors && result.errors.length > 0)) && uids && uids.length > 0) {
         console.warn(`[OneSignal Push] Subscription ID delivery yielded no recipients (${JSON.stringify(result)}). Falling back to alias targeting for UIDs:`, uids);
         const fallbackRes = await attemptPush({
           include_aliases: { external_id: uids },
