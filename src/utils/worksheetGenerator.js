@@ -572,14 +572,21 @@ export function generateProblemsForWorksheet(worksheetId, recentMistakes = [], s
 export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', recentMistakes = [], seed = 0) {
   const problems = generateProblemsForWorksheet(worksheet.id, recentMistakes, seed);
   const isDefaultSeed = !seed || seed === 0 || seed === 'default' || seed === '0';
-  const canonicalUrl = `https://www.kiboclimb.com${getCanonicalPath(worksheet)}`;
+  const canonicalUrl = `https://kiboclimb.com${getCanonicalPath(worksheet)}`;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kibo Climb • ${worksheet.title}${!isDefaultSeed ? ` (Set #${seed})` : ''}</title>
+  <meta name="description" content="Free printable ${worksheet.gradeLabel || ''} ${worksheet.subject} worksheet: ${worksheet.title}. ${worksheet.desc} Includes 16 practice problems and complete answer key.">
   <link rel="canonical" href="${canonicalUrl}" />
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Kibo Climb • ${worksheet.title}">
+  <meta property="og:description" content="Free printable ${worksheet.gradeLabel || ''} ${worksheet.subject} worksheet: ${worksheet.title}. ${worksheet.desc}">
+  <meta property="og:url" content="${canonicalUrl}">
+  <meta property="og:type" content="website">
   <style>
     @page {
       margin: 1.2cm;

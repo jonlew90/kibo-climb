@@ -524,7 +524,7 @@ export default function AccountLinkModal({
             <div className="hidden sm:flex items-center gap-3 p-3 bg-indigo-50/60 border border-indigo-100 rounded-2xl text-left">
               <div className="bg-white p-1.5 rounded-xl border border-indigo-200 shadow-2xs shrink-0">
                 <QRCodeSVG
-                  value="https://www.kiboclimb.com"
+                  value="https://kiboclimb.com"
                   size={56}
                   level="M"
                   includeMargin={false}

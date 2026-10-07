@@ -472,7 +472,7 @@ export default function WorksheetViewerScreen({
             <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
               <div className="bg-white p-0.5 rounded border border-slate-200 shadow-2xs shrink-0">
                 <QRCodeSVG
-                  value={`https://www.kiboclimb.com${getCanonicalPath(worksheet)}`}
+                  value={`https://kiboclimb.com${getCanonicalPath(worksheet)}`}
                   size={32}
                   level="M"
                 />
@@ -640,7 +640,7 @@ export default function WorksheetViewerScreen({
             <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
               <div className="bg-white p-0.5 rounded border border-slate-200 shadow-2xs shrink-0">
                 <QRCodeSVG
-                  value={`https://www.kiboclimb.com${getCanonicalPath(worksheet)}`}
+                  value={`https://kiboclimb.com${getCanonicalPath(worksheet)}`}
                   size={32}
                   level="M"
                 />
