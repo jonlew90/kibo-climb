@@ -227,32 +227,7 @@ export default function BadgesModal({
     ? BADGES_CATALOG.find((b) => unseenIdsSet.has(b.id))
     : null;
 
-  const [activeCategory, setActiveCategory] = useState(() => {
-    if (firstUnseenBadge && firstUnseenBadge.category && BADGE_CATEGORIES[firstUnseenBadge.category]) {
-      return firstUnseenBadge.category;
-    }
-    return BADGE_CATEGORIES[activeSubject] ? activeSubject : Object.keys(BADGE_CATEGORIES)[0];
-  });
   const [showAscentRoadmapModal, setShowAscentRoadmapModal] = useState(false);
-
-  const categoryScrollRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-
-  const checkScroll = () => {
-    if (!categoryScrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
-    setCanScrollLeft(scrollLeft > 4);
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
-  };
-
-  useEffect(() => {
-    if (firstUnseenBadge && firstUnseenBadge.category && BADGE_CATEGORIES[firstUnseenBadge.category]) {
-      setActiveCategory(firstUnseenBadge.category);
-    } else if (activeSubject && BADGE_CATEGORIES[activeSubject]) {
-      setActiveCategory(activeSubject);
-    }
-  }, [activeSubject, firstUnseenBadge?.id]);
 
   useEffect(() => {
     if (isOpen && firstUnseenBadge && targetBadgeRef.current) {
@@ -275,7 +250,6 @@ export default function BadgesModal({
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
-      setTimeout(checkScroll, 100);
     }
 
     return () => {
@@ -284,27 +258,6 @@ export default function BadgesModal({
     };
 
   }, [isOpen, onClose]);
-
-  const handleScrollLeft = () => {
-    soundFx.playKeyTap();
-    if (categoryScrollRef.current) {
-      categoryScrollRef.current.scrollBy({ left: -120, behavior: 'smooth' });
-    }
-  };
-
-  const handleScrollRight = () => {
-    soundFx.playKeyTap();
-    if (categoryScrollRef.current) {
-      categoryScrollRef.current.scrollBy({ left: 120, behavior: 'smooth' });
-    }
-  };
-
-  const handleCategoryWheel = (e) => {
-    if (categoryScrollRef.current && e.deltaY !== 0) {
-      categoryScrollRef.current.scrollLeft += e.deltaY;
-      checkScroll();
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -365,7 +318,8 @@ export default function BadgesModal({
       </header>
 
       {/* FULLSCREEN SCROLLABLE CONTENT BODY */}
-      <main ref={contentMainRef} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+      <main ref={contentMainRef} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y overscroll-contain w-full">
+        <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         
         {/* 1. GLOBAL CLIMBER PASSPORT & ASCENT HERO CARD */}
         <AscentLevelHeroCard
@@ -535,66 +489,6 @@ export default function BadgesModal({
           </div>
         </div>
 
-        {/* Category Quick-Jump Bar */}
-        <div className="relative flex items-center shrink-0">
-          {canScrollLeft && (
-            <button
-              type="button"
-              onClick={handleScrollLeft}
-              className="absolute left-0 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white active:scale-95 transition-all"
-            >
-              <ChevronLeft className="w-4 h-4 stroke-[3]" />
-            </button>
-          )}
-
-          <div
-            ref={categoryScrollRef}
-            onScroll={checkScroll}
-            onWheel={handleCategoryWheel}
-            style={{
-              maskImage: canScrollRight ? 'linear-gradient(to right, black 85%, transparent 100%)' : 'none',
-              WebkitMaskImage: canScrollRight ? 'linear-gradient(to right, black 85%, transparent 100%)' : 'none'
-            }}
-            className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 shrink-0 w-full touch-pan-x"
-          >
-            {Object.entries(BADGE_CATEGORIES).map(([key, cat]) => {
-              const catBadges = BADGES_CATALOG.filter((b) => b.category === key);
-              const catUnlocked = catBadges.filter((b) => unlockedSet.has(b.id)).length;
-
-              return (
-                <button
-                  key={key}
-                  onClick={() => {
-                    soundFx?.playKeyTap?.();
-                    setActiveCategory(key);
-                    const rowEl = document.getElementById(`badge-cat-row-${key}`);
-                    if (rowEl) {
-                      rowEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                  }}
-                  className={`py-1.5 px-3.5 text-xs font-extrabold rounded-full shrink-0 transition-colors cursor-pointer ${
-                    activeCategory === key
-                      ? 'bg-amber-500 text-white shadow-md'
-                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                  }`}
-                >
-                  {cat.icon} {cat.label} ({catUnlocked}/{catBadges.length})
-                </button>
-              );
-            })}
-          </div>
-
-          {canScrollRight && (
-            <button
-              type="button"
-              onClick={handleScrollRight}
-              className="absolute right-0 z-20 p-1 bg-white/90 text-slate-700 rounded-full shadow-md border border-slate-200 hover:bg-white active:scale-95 transition-all"
-            >
-              <ChevronRight className="w-4 h-4 stroke-[3]" />
-            </button>
-          )}
-        </div>
-
         {/* Horizontal Netflix-Style Badge Rows Per Category */}
         <div className="space-y-6 pb-6">
           {Object.entries(BADGE_CATEGORIES).map(([catKey, cat]) => {
@@ -614,6 +508,7 @@ export default function BadgesModal({
               />
             );
           })}
+        </div>
         </div>
       </main>
 
