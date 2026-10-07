@@ -124,16 +124,35 @@ export function generatePostData({ subject = null, tier = null, customSlug = nul
   const titleTemplates = [
     `How to Teach ${name}: The ${trickTitle} Shortcut for ${gradeLabel}`,
     `Unlocking ${name}: ${trickTitle} Strategies for ${gradeLabel}`,
-    `A Parent's Guide to ${name}: Mastering ${trickTitle} (${gradeLabel})`,
+    `A Parent's Guide to ${name}: The ${trickTitle} Method (${gradeLabel})`,
     `${trickTitle} Explained: Helping ${gradeLabel} Climbers Conquer ${name}`,
     `Demystifying ${name}: Fast ${trickTitle} Shortcuts for ${gradeLabel}`,
-    `Mastering ${name}: ${trickTitle} for ${gradeLabel}`,
-    `Beyond Flashcards: The ${trickTitle} Technique for ${name} (${gradeLabel})`
+    `Essential Strategies for ${name}: ${trickTitle} for ${gradeLabel}`,
+    `Beyond Flashcards: The ${trickTitle} Technique for ${name} (${gradeLabel})`,
+    `Step-by-Step Guide: Tackling ${name} With ${trickTitle} (${gradeLabel})`,
+    `Cracking the Code on ${name}: ${trickTitle} for ${gradeLabel}`,
+    `Confident Climbing: How ${trickTitle} Makes ${name} Click for ${gradeLabel}`
   ];
 
-  // Pick title template deterministically based on tier and subject to prevent repeating styles
-  const templateIdx = (targetTier + finalSubject.length) % titleTemplates.length;
-  const title = customTitle || titleTemplates[templateIdx];
+  // Pick title template while ensuring we don't repeat recent title opening words or recent patterns
+  const recentFirstWords = new Set(
+    existingPosts
+      .slice(-4)
+      .map(p => (p.title || '').trim().split(/\s+/)[0]?.toLowerCase())
+      .filter(Boolean)
+  );
+
+  // Filter templates that don't start with any recent opening word (e.g. avoid repeating "Mastering", "Unlocking", etc.)
+  const eligibleTemplates = titleTemplates.filter(tpl => {
+    const firstWord = tpl.trim().split(/\s+/)[0]?.toLowerCase();
+    return !recentFirstWords.has(firstWord);
+  });
+  const templatePool = eligibleTemplates.length > 0 ? eligibleTemplates : titleTemplates;
+
+  // Use a pseudo-random hash of tier, subject, and existing post count for rich rotation
+  const hash = Math.abs((targetTier * 13) + (finalSubject.charCodeAt(0) * 7) + (existingPosts.length * 17));
+  const templateIdx = hash % templatePool.length;
+  const title = customTitle || templatePool[templateIdx];
   let baseSlug = customSlug || `${finalSubject}-tier-${targetTier}-${trickTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
   baseSlug = baseSlug.replace(/^-+|-+$/g, '');
 

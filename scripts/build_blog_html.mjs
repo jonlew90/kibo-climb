@@ -13,6 +13,7 @@ const SITEMAP_PATH = path.join(PUBLIC_DIR, 'sitemap.xml');
 const RSS_FEED_PATH = path.join(PUBLIC_DIR, 'feed.xml');
 
 import { WORKSHEET_CATALOG, getBestWorksheetForTier, getWorksheetBySlug } from '../src/utils/worksheetGenerator.js';
+import { buildAllStaticSeoPages } from './build_static_seo_pages.mjs';
 
 function formatInlineMarkdown(text) {
   if (!text) return '';
@@ -851,7 +852,8 @@ function buildAll() {
 
   updateSitemap(posts);
   generateRssFeed(posts);
-  console.log(` Successfully built ${posts.length} static blog posts, RSS feed, and blog index.`);
+  buildAllStaticSeoPages();
+  console.log(` Successfully built ${posts.length} static blog posts, RSS feed, static SEO pages, and blog index.`);
 }
 
 buildAll();
