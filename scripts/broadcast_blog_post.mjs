@@ -75,58 +75,76 @@ function getBlogPost(slug) {
 
 async function getSubscribersFromFirestore() {
   const recipientEmails = new Set();
+  let subErr = null;
+  let userErr = null;
 
+  let adminApp, adminFirestore;
   try {
-    let adminApp, adminFirestore;
+    adminApp = await import('firebase-admin/app');
+    adminFirestore = await import('firebase-admin/firestore');
+  } catch (importErr) {
     try {
-      adminApp = await import('firebase-admin/app');
-      adminFirestore = await import('firebase-admin/firestore');
-    } catch {
       adminApp = await import('../functions/node_modules/firebase-admin/lib/app/index.js');
       adminFirestore = await import('../functions/node_modules/firebase-admin/lib/firestore/index.js');
+    } catch {
+      throw new Error(
+        `Failed to import 'firebase-admin': ${importErr.message}. Ensure 'firebase-admin' is installed in devDependencies.`
+      );
     }
+  }
 
-    const { initializeApp, getApps } = adminApp;
-    const { getFirestore } = adminFirestore;
+  const { initializeApp, getApps } = adminApp;
+  const { getFirestore } = adminFirestore;
 
-    if (getApps().length === 0) {
-      initializeApp({ projectId: 'kibo-climb' });
-    }
-    const db = getFirestore();
+  if (getApps().length === 0) {
+    const projectId = process.env.PROJECT_ID || process.env.GCLOUD_PROJECT || 'kibo-climb';
+    initializeApp({ projectId });
+  }
+  const db = getFirestore();
 
-    // 1. Fetch from newsletter_subscribers collection
-    try {
-      const subSnap = await db.collection('newsletter_subscribers').get();
-      subSnap.forEach(doc => {
-        const data = doc.data();
-        if (data.email && typeof data.email === 'string' && !data.unsubscribed) {
-          const clean = data.email.trim().toLowerCase();
-          if (clean.includes('@')) recipientEmails.add(clean);
-        }
-      });
-    } catch (err) {
-      console.warn('⚠️ [broadcast] Could not fetch newsletter_subscribers collection:', err.message || err);
-    }
-
-    // 2. Fetch from users collection (parentEmail / email where blogNewsletterEnabled is not false and !unsubscribedAll)
-    try {
-      const userSnap = await db.collection('users').get();
-      userSnap.forEach(doc => {
-        const data = doc.data();
-        const parentEmail = data.parentEmail || data.email;
-        if (parentEmail && typeof parentEmail === 'string') {
-          const clean = parentEmail.trim().toLowerCase();
-          const notifPrefs = data.notifPrefs || {};
-          if (notifPrefs.blogNewsletterEnabled !== false && !notifPrefs.unsubscribedAll && clean.includes('@')) {
-            recipientEmails.add(clean);
-          }
-        }
-      });
-    } catch (err) {
-      console.warn('⚠️ [broadcast] Could not fetch users collection:', err.message || err);
-    }
+  // 1. Fetch from newsletter_subscribers collection
+  try {
+    const subSnap = await db.collection('newsletter_subscribers').get();
+    subSnap.forEach(doc => {
+      const data = doc.data();
+      if (data.email && typeof data.email === 'string' && !data.unsubscribed) {
+        const clean = data.email.trim().toLowerCase();
+        if (clean.includes('@')) recipientEmails.add(clean);
+      }
+    });
   } catch (err) {
-    console.warn('⚠️ [broadcast] Firebase Admin initialization note:', err.message || err);
+    subErr = err;
+    console.error('❌ [broadcast] Could not fetch newsletter_subscribers collection:', err.message || err);
+  }
+
+  // 2. Fetch from users collection (parentEmail / email where blogNewsletterEnabled is not false and !unsubscribedAll)
+  try {
+    const userSnap = await db.collection('users').get();
+    userSnap.forEach(doc => {
+      const data = doc.data();
+      const parentEmail = data.parentEmail || data.email;
+      if (parentEmail && typeof parentEmail === 'string') {
+        const clean = parentEmail.trim().toLowerCase();
+        const notifPrefs = data.notifPrefs || data.notificationSettings || {};
+        if (notifPrefs.blogNewsletterEnabled !== false && !notifPrefs.unsubscribedAll && clean.includes('@')) {
+          recipientEmails.add(clean);
+        }
+      }
+    });
+  } catch (err) {
+    userErr = err;
+    console.error('❌ [broadcast] Could not fetch users collection:', err.message || err);
+  }
+
+  if (recipientEmails.size === 0 && (subErr || userErr)) {
+    const primaryErr = subErr || userErr;
+    const msg = primaryErr.message || String(primaryErr);
+    if (msg.includes('PERMISSION_DENIED') || primaryErr.code === 7) {
+      throw new Error(
+        `Firestore permission denied. In Google Cloud IAM, grant 'Cloud Datastore User' (roles/datastore.user) role to github-action-1311198724@kibo-climb.iam.gserviceaccount.com.`
+      );
+    }
+    throw new Error(`Database error fetching subscribers: ${msg}`);
   }
 
   return Array.from(recipientEmails);

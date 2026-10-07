@@ -271,4 +271,21 @@ describe('Badges System & Expansion Tests', () => {
       expect(res2.updatedUnlocked).toContain('daily_multi_subject_5');
     });
   });
+
+  describe('Passport Netflix-Style Category Rows Integrity', () => {
+    it('ensures every category in BADGE_CATEGORIES has badges for horizontal rows', () => {
+      Object.keys(BADGE_CATEGORIES).forEach((catKey) => {
+        const catBadges = BADGES_CATALOG.filter((b) => b.category === catKey);
+        expect(catBadges.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('ensures all badges in BADGES_CATALOG map to an existing category', () => {
+      const validCategories = new Set(Object.keys(BADGE_CATEGORIES));
+      BADGES_CATALOG.forEach((badge) => {
+        expect(validCategories.has(badge.category)).toBe(true);
+      });
+    });
+  });
 });
+

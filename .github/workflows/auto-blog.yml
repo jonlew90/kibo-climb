@@ -5,6 +5,17 @@ on:
     # Runs Tuesday & Thursday at 10:37 UTC (5:37 AM US Central / 6:37 AM US Eastern / 3:37 AM US Pacific)
     - cron: '37 10 * * 2,4'
   workflow_dispatch:
+    inputs:
+      force_broadcast:
+        description: 'Force broadcast to newsletter subscribers (even if no new post was generated)'
+        required: false
+        type: boolean
+        default: false
+      target_slug:
+        description: 'Specific post slug to broadcast (defaults to latest if blank)'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   generate_blog_post:
@@ -53,7 +64,7 @@ jobs:
         run: npm run build
 
       - name: Authenticate to Google Cloud
-        if: steps.check_diff.outputs.has_changes == 'true'
+        if: steps.check_diff.outputs.has_changes == 'true' || inputs.force_broadcast == true
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: projects/171658556844/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
@@ -73,11 +84,12 @@ jobs:
           fi
 
       - name: Broadcast to Newsletter Subscribers
-        if: steps.check_diff.outputs.has_changes == 'true'
+        if: steps.check_diff.outputs.has_changes == 'true' || inputs.force_broadcast == true
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SENDER_EMAIL: "Kibo Climb <updates@kiboclimb.com>"
-          TARGET_SLUG: ${{ steps.generate_blog.outputs.generated_slug }}
+          TARGET_SLUG: ${{ inputs.target_slug || steps.generate_blog.outputs.generated_slug }}
+          PROJECT_ID: kibo-climb
         run: |
           if [ -z "$RESEND_API_KEY" ]; then
             echo "❌ ERROR: RESEND_API_KEY is not set in GitHub Secrets! Failing broadcast step."
