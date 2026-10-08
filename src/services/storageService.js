@@ -941,6 +941,26 @@ export const storageService = {
     } catch (e) {}
   },
 
+  hasParentOptedInPush() {
+    try {
+      return localStorage.getItem('kibo_parent_opted_in_push') === 'true';
+    } catch {
+      return false;
+    }
+  },
+
+  setParentOptedInPush(opted = true) {
+    try {
+      if (opted) {
+        localStorage.setItem('kibo_parent_opted_in_push', 'true');
+      } else {
+        localStorage.removeItem('kibo_parent_opted_in_push');
+      }
+    } catch (e) {
+      console.warn('StorageService: failed to save push opt-in state', e);
+    }
+  },
+
   // Parent Settings & Security Gate Storage
   getParentSettings() {
     try {

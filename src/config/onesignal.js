@@ -50,7 +50,6 @@ export const initOneSignal = async () => {
 
       if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
         OneSignalCapacitor.initialize(APP_ID);
-        OneSignalCapacitor.Notifications?.requestPermission(true);
         isInitialized = true;
       } else if (typeof window !== 'undefined' && OneSignalReact) {
         // Suppress OneSignal SDK v16 WorkerMessenger errors before push permission is granted
@@ -218,6 +217,11 @@ export const logoutFromOneSignal = async () => {
  */
 export const promptForPushPermissions = async () => {
   try {
+    if (!isInitialized) {
+      await initOneSignal();
+    }
+    storageService.setParentOptedInPush(true);
+
     // 1. Native Capacitor
     if (Capacitor?.isNativePlatform() && OneSignalCapacitor) {
       const permission = await OneSignalCapacitor.Notifications?.requestPermission(true);

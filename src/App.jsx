@@ -146,7 +146,12 @@ export default function App() {
   const [isClimbActive, setIsClimbActive] = useState(false);
 
   useEffect(() => {
-    initOneSignal();
+    // Only initialize OneSignal if a parent account exists or parent explicitly opted into push
+    const hasAccount = storageService.isAccountGloballyLinked();
+    const hasOptedIn = storageService.hasParentOptedInPush();
+    if (hasAccount || hasOptedIn) {
+      initOneSignal();
+    }
   }, []);
 
   useEffect(() => {

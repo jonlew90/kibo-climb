@@ -97,7 +97,7 @@ export default function FirstLaunchOnboardingModal({
   onRequestLogin
 }) {
   // step: 0 = welcome/about, 1 = username, 2 = grade selection, 'coppa_consent' = parent consent, 3 = welcome splash
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [usernameInput, setUsernameInput] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [usernameConfirmed, setUsernameConfirmed] = useState(false);
@@ -302,6 +302,138 @@ export default function FirstLaunchOnboardingModal({
     else if (typeof onStartPlacementTest === 'function') onStartPlacementTest();
   };
 
+  // ─── STEP 0: Parent Welcome / Overview ────────────────────────────────────
+  if (step === 0) {
+    return (
+      <div className="fixed inset-0 z-[1000] h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col items-center justify-between p-4 sm:p-6 select-none animate-fade-in overflow-y-auto">
+        <div className="absolute w-96 h-96 rounded-full bg-purple-600/20 blur-3xl pointer-events-none top-1/6 left-1/2 -translate-x-1/2" />
+
+        <div className="relative z-10 w-full max-w-sm sm:max-w-md flex flex-col items-center gap-3 sm:gap-4 text-center my-auto py-2">
+          {/* Header pill */}
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-xs font-black uppercase tracking-wider text-amber-300 bg-amber-400/20 border border-amber-400/40 px-3 py-1 rounded-full inline-flex items-center gap-1.5 shadow-sm">
+              <span>🐾</span> Kibo Climb · For Parents
+            </span>
+          </div>
+
+          {/* Core pitch */}
+          <div className="space-y-1.5">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-snug text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+              Ten minutes of daily maths practice for ages 6–11, <span className="text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.4)]">as a mountain to climb</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-200 font-medium leading-relaxed max-w-xs sm:max-w-sm mx-auto">
+              Bite-sized adaptive climbs adjust difficulty each day as your child ascends with Kibo the red panda.
+            </p>
+          </div>
+
+          {/* Trust reassurance pill */}
+          <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-black px-3.5 py-1.5 rounded-full shadow-sm">
+            <CheckCircle2 className="w-3.5 h-3.5 stroke-[3]" />
+            <span>Free, no ads, no card</span>
+          </div>
+
+          {/* Real gameplay screenshot preview */}
+          <div className="relative group max-w-[200px] sm:max-w-[230px] w-full rounded-2xl overflow-hidden shadow-2xl border-2 border-indigo-400/40 bg-slate-900/80 aspect-[412/600] mx-auto transform-gpu">
+            <img
+              src="/climb-gameplay-preview.png"
+              alt="Real Kibo Climb gameplay showing math practice with Kibo"
+              className="w-full h-full object-cover object-top"
+              loading="eager"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none" />
+            <span className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-slate-950/85 backdrop-blur-xs text-[10px] font-black uppercase tracking-wider text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-400/30 whitespace-nowrap shadow-sm">
+              Live Climb Preview
+            </span>
+          </div>
+
+          {/* Primary CTA */}
+          <div className="w-full pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setStep(1);
+              }}
+              className="w-full min-h-[56px] h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Start climbing</span>
+              <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          </div>
+
+          {/* Secondary Footer */}
+          <div className="flex flex-col items-center gap-2 pt-1">
+            {onRequestLogin && (
+              <p className="text-xs text-slate-300 font-medium">
+                Already have a Kibo account?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playKeyTap();
+                    onRequestLogin();
+                  }}
+                  className="font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer"
+                >
+                  Log In
+                </button>
+              </p>
+            )}
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowCoppaModal(true); }}
+                className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+                <span>COPPA Policy</span>
+              </button>
+              <span className="text-slate-600 text-xs">•</span>
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+                className="text-[11px] font-semibold text-slate-400 hover:text-blue-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+                <span>Privacy Policy</span>
+              </button>
+              <span className="text-slate-600 text-xs">•</span>
+              <button
+                type="button"
+                onClick={() => { soundFx.playKeyTap(); setShowTermsModal(true); }}
+                className="text-[11px] font-semibold text-slate-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-400" />
+                <span>Terms of Service</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {showPrivacyModal && (
+          <PrivacyPolicyScreen
+            onBack={() => setShowPrivacyModal(false)}
+            onNavigateCoppa={() => {
+              setShowPrivacyModal(false);
+              setShowCoppaModal(true);
+            }}
+          />
+        )}
+        {showCoppaModal && (
+          <CoppaPrivacyPolicyScreen
+            onBack={() => setShowCoppaModal(false)}
+            onNavigatePrivacy={() => {
+              setShowCoppaModal(false);
+              setShowPrivacyModal(true);
+            }}
+          />
+        )}
+        {showTermsModal && (
+          <TermsOfServiceScreen onBack={() => setShowTermsModal(false)} />
+        )}
+      </div>
+    );
+  }
+
   // ─── STEP 1: Username ─────────────────────────────────────────────────────
   if (step === 1) {
     return (
@@ -309,10 +441,23 @@ export default function FirstLaunchOnboardingModal({
         <div className="absolute w-96 h-96 rounded-full bg-purple-600/20 blur-3xl pointer-events-none top-1/4 left-1/2 -translate-x-1/2" />
 
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-4 sm:gap-5 text-center">
-          {/* Dot step indicator */}
-          <div className="flex items-center justify-center gap-2 pt-1">
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
-            <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+          {/* Header navigation with Back button & 2-step dots */}
+          <div className="flex items-center justify-between w-full shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playKeyTap();
+                setStep(0);
+              }}
+              className="text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1 font-bold text-xs"
+            >
+              ← Back
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+              <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+            </div>
+            <div className="w-12" aria-hidden="true" />
           </div>
 
           <div className="relative flex justify-center p-1 overflow-visible">
@@ -339,8 +484,8 @@ export default function FirstLaunchOnboardingModal({
           </div>
 
           <form onSubmit={handleUsernameSubmit} className="w-full space-y-3">
-            <div className="relative">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-300 stroke-[2.5]" />
+            <div className="relative flex items-center">
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-300 stroke-[2.5] pointer-events-none z-10" />
               <input
                 ref={inputRef}
                 type="text"
@@ -352,39 +497,36 @@ export default function FirstLaunchOnboardingModal({
                 autoCapitalize="none"
                 spellCheck={false}
                 disabled={isCheckingUsername}
-                className={`w-full px-10 py-3.5 text-center bg-slate-900/90 border-2 rounded-2xl text-white font-black text-lg placeholder:text-slate-400 shadow-inner focus:outline-none transition-all ${
+                className={`w-full min-h-[56px] h-14 pl-10 pr-14 text-center bg-slate-900/90 border-2 rounded-2xl text-white font-black text-lg placeholder:text-slate-400 shadow-inner focus:outline-none transition-all ${
                   usernameError ? 'border-rose-500 bg-rose-500/20 text-rose-100'
                   : usernameConfirmed ? 'border-emerald-400 bg-emerald-500/20 text-emerald-100'
                   : 'border-indigo-400/60 focus:border-amber-400 focus:bg-slate-900 shadow-[0_0_15px_rgba(99,102,241,0.2)]'
                 }`}
               />
-              {usernameConfirmed && (
-                <CheckCircle2 className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400 stroke-[2.5]" />
-              )}
+              {/* 44px Dice Icon inside input's right edge */}
+              <button
+                type="button"
+                onClick={handleGenerateSafeName}
+                title="Roll for a new kid-safe nickname"
+                aria-label="Roll for a new kid-safe nickname"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-indigo-500/20 hover:bg-indigo-500/40 text-amber-300 hover:text-amber-200 border border-indigo-400/40 transition-all cursor-pointer active:scale-90 z-10"
+              >
+                <Dices className="w-5 h-5" />
+              </button>
             </div>
-
-            {/* Quick Safe Name Generator Button */}
-            <button
-              type="button"
-              onClick={handleGenerateSafeName}
-              className="w-full py-2.5 px-3 bg-indigo-900/70 hover:bg-indigo-800/80 border-2 border-indigo-400/60 rounded-xl text-indigo-100 hover:text-white text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-md shadow-indigo-950/50"
-            >
-              <Dices className="w-4 h-4 text-amber-300" />
-              <span>🎲 Regenerate Kid-Safe Tag</span>
-            </button>
 
             {usernameError && <p className="text-xs font-bold text-rose-400 text-left px-1">{usernameError}</p>}
             
             <div className="flex items-center justify-between text-xs text-slate-400 px-1 font-medium">
               <span>3–20 characters · No spaces</span>
-              <span className="flex items-center gap-1 text-emerald-400">
+              <span className="flex items-center gap-1 text-emerald-400 font-bold">
                 <ShieldCheck className="w-3.5 h-3.5" /> Kid Safe
               </span>
             </div>
 
             <button type="submit"
               disabled={isCheckingUsername}
-              className="w-full h-13 sm:h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+              className="w-full min-h-[56px] h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
               {isCheckingUsername ? (
                 <span className="animate-pulse">Checking availability...</span>
               ) : usernameConfirmed ? (

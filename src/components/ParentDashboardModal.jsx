@@ -375,6 +375,7 @@ export default function ParentDashboardModal({
     setProfilesList(storageService.getAllProfiles());
 
     if (updatedEnabled) {
+      storageService.setParentOptedInPush(true);
       requestNotificationPermission();
       promptForPushPermissions();
     }
