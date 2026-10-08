@@ -97,6 +97,15 @@ describe('SoundSystem audio gating', () => {
       expect(soundSystem.canPlaySfx()).toBe(true);
       expect(soundSystem.canPlayMusic()).toBe(false);
     });
+
+    it('disallows SFX and music when onboarding is active', () => {
+      soundSystem.setOnboardingActive(true);
+      expect(soundSystem.canPlaySfx()).toBe(false);
+      expect(soundSystem.canPlayMusic()).toBe(false);
+      soundSystem.setOnboardingActive(false);
+      expect(soundSystem.canPlaySfx()).toBe(true);
+      expect(soundSystem.canPlayMusic()).toBe(true);
+    });
   });
 
   describe('startBGM() gating', () => {

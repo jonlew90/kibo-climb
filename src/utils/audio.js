@@ -51,6 +51,7 @@ class SoundSystem {
     this.pendingBgmVolume = null;
     this._unlocked = false;
     this._bgmAudio = null;
+    this._onboardingActive = false;
     // AudioBuffer cache: key → AudioBuffer | null (null = failed)
     this._buffers = {};
     this._loading = {};
@@ -58,6 +59,13 @@ class SoundSystem {
     this._initBgmAudio();
     this._setupUnlock();
     this._setupVisibilityListener();
+  }
+
+  setOnboardingActive(active) {
+    this._onboardingActive = Boolean(active);
+    if (this._onboardingActive) {
+      this.stopBGM();
+    }
   }
 
   isPageActive() {
@@ -68,10 +76,12 @@ class SoundSystem {
   }
 
   canPlaySfx() {
+    if (this._onboardingActive) return false;
     return !this.isMuted && this.isPageActive();
   }
 
   canPlayMusic() {
+    if (this._onboardingActive) return false;
     return !this.isMuted && !this.isMusicMuted && this.isPageActive();
   }
 

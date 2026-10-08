@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { BRAND_CONFIG } from '../config/brand';
 import { soundFx } from '../utils/audio';
+import { storageService } from '../services/storageService';
 
 export default function CinematicSplash({ onComplete }) {
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   useEffect(() => {
+    // Never begin audio until user has completed onboarding
+    if (!storageService.isOnboarded()) {
+      return;
+    }
+
     // Trigger sound chime after brief layout mount
     const audioTimer = setTimeout(() => {
       soundFx.playBrandIntroChime();

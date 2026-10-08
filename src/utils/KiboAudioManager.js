@@ -45,8 +45,8 @@ class KiboAudioManagerClass {
 
   // Play energetic triple-pop sound effect for streaks
   playStreakSFX() {
+    if (!this.soundFx.canPlaySfx()) return;
     triggerHaptic([6, 8, 12]);
-    if (this.isMuted) return;
     this.soundFx.init();
     const ctx = this.soundFx.ctx;
     if (!ctx) return;
@@ -78,8 +78,8 @@ class KiboAudioManagerClass {
 
   // Play crisp spark collect sound effect
   playSparkCollectSFX() {
+    if (!this.soundFx.canPlaySfx()) return;
     triggerHaptic(6);
-    if (this.isMuted) return;
     this.soundFx.init();
     const ctx = this.soundFx.ctx;
     if (!ctx) return;
@@ -104,8 +104,8 @@ class KiboAudioManagerClass {
 
   // Play gentle breath/cozy sound effect for break overlay
   playBreakSFX() {
+    if (!this.soundFx.canPlaySfx()) return;
     triggerHaptic([8, 12]);
-    if (this.isMuted) return;
     this.soundFx.init();
     const ctx = this.soundFx.ctx;
     if (!ctx) return;

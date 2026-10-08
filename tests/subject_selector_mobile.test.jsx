@@ -56,7 +56,8 @@ vi.mock('../src/utils/audio', () => ({
     playPowerUp: vi.fn(),
     playWhoosh: vi.fn(),
     playBadgeFanfare: vi.fn(),
-    setMuted: vi.fn(), startBGM: vi.fn(), stopBGM: vi.fn(), setMusicMuted: vi.fn()
+    setMuted: vi.fn(), startBGM: vi.fn(), stopBGM: vi.fn(), setMusicMuted: vi.fn(),
+    setOnboardingActive: vi.fn()
   },
   setHapticsEnabled: vi.fn()
 }));

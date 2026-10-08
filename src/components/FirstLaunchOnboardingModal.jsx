@@ -187,6 +187,15 @@ export default function FirstLaunchOnboardingModal({
   }, [isOpen, step]);
 
   useEffect(() => {
+    if (isOpen) {
+      soundFx?.setOnboardingActive?.(true);
+      return () => {
+        soundFx?.setOnboardingActive?.(false);
+      };
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isOpen) return;
       if (e.key === 'Escape' && step === 3 && onStartAdaptiveClimb) {
@@ -206,7 +215,6 @@ export default function FirstLaunchOnboardingModal({
   if (!isOpen) return null;
 
   const handleGenerateSafeName = () => {
-    soundFx.playKeyTap();
     const safeName = generateSafeUsername();
     setUsernameInput(safeName);
     setUsernameError('');
@@ -223,7 +231,6 @@ export default function FirstLaunchOnboardingModal({
 
     // If already verified with the cloud, proceed immediately
     if (checkedUsernameRef.current === normalized) {
-      soundFx.playVictory();
       setStep(2);
       return;
     }
@@ -241,19 +248,16 @@ export default function FirstLaunchOnboardingModal({
         setIsCheckingUsername(false);
         return;
       }
-      soundFx.playVictory();
       setIsCheckingUsername(false);
       setStep(2);
     } catch (err) {
       console.warn('Username claim error', err);
-      soundFx.playVictory();
       setIsCheckingUsername(false);
       setStep(2);
     }
   };
 
   const handleGradeSelect = (grade, startingRatingOverride = null) => {
-    soundFx.playKeyTap();
     setSelectedGrade(grade);
 
     if (gradeSelectionTimerRef.current) {
@@ -275,7 +279,6 @@ export default function FirstLaunchOnboardingModal({
     setRitError('');
     const calibration = ritToStartingRating(parsed);
     setSelectedGrade(calibration.gradeLevel);
-    soundFx.playVictory();
     finalizeProfile(calibration.gradeLevel, calibration.rating);
   };
 
@@ -285,7 +288,6 @@ export default function FirstLaunchOnboardingModal({
     storageService.saveUsername(cleaned, gradeToSave, startingRatingOverride);
     storageService.setOnboarded(true);
     if (onUsernameSet) onUsernameSet(cleaned);
-    soundFx.playVictory();
     setStep(3);
   };
 
@@ -295,8 +297,8 @@ export default function FirstLaunchOnboardingModal({
   };
 
   const handleStart = (subjectToStart = selectedStartingSubject) => {
-    soundFx.playVictory();
     storageService.setOnboarded(true);
+    soundFx?.setOnboardingActive?.(false);
     if (typeof onStartAdaptiveClimb === 'function') onStartAdaptiveClimb(subjectToStart);
     else if (typeof onStartAtTier1 === 'function') onStartAtTier1();
     else if (typeof onStartPlacementTest === 'function') onStartPlacementTest();
@@ -312,24 +314,24 @@ export default function FirstLaunchOnboardingModal({
           {/* Header pill */}
           <div className="flex items-center justify-center gap-2">
             <span className="text-xs font-black uppercase tracking-wider text-amber-300 bg-amber-400/20 border border-amber-400/40 px-3 py-1 rounded-full inline-flex items-center gap-1.5 shadow-sm">
-              <span>🐾</span> Kibo Climb · For Parents
+              <span>🐾</span> Kibo Climb · For Parents & Families
             </span>
           </div>
 
           {/* Core pitch */}
           <div className="space-y-1.5">
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-snug text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
-              Ten minutes of daily maths practice for ages 6–11, <span className="text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.4)]">as a mountain to climb</span>
+              Ten minutes of daily math practice for ages 6–11, <span className="text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.4)]">designed as a mountain climb</span>
             </h1>
             <p className="text-xs sm:text-sm text-slate-200 font-medium leading-relaxed max-w-xs sm:max-w-sm mx-auto">
-              Bite-sized adaptive climbs adjust difficulty each day as your child ascends with Kibo the red panda.
+              Bite-sized daily challenges adapt to your child's skill level as they climb Mount Kibo with their red panda guide.
             </p>
           </div>
 
           {/* Trust reassurance pill */}
           <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-black px-3.5 py-1.5 rounded-full shadow-sm">
             <CheckCircle2 className="w-3.5 h-3.5 stroke-[3]" />
-            <span>Free, no ads, no card</span>
+            <span>100% Free · No Ads · No Card Required</span>
           </div>
 
           {/* Real gameplay screenshot preview */}
@@ -342,7 +344,7 @@ export default function FirstLaunchOnboardingModal({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none" />
             <span className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-slate-950/85 backdrop-blur-xs text-[10px] font-black uppercase tracking-wider text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-400/30 whitespace-nowrap shadow-sm">
-              Live Climb Preview
+              Live Gameplay Preview
             </span>
           </div>
 
@@ -351,12 +353,11 @@ export default function FirstLaunchOnboardingModal({
             <button
               type="button"
               onClick={() => {
-                soundFx.playKeyTap();
                 setStep(1);
               }}
               className="w-full min-h-[56px] h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg shadow-amber-500/30 border-b-4 border-orange-700 active:translate-y-0.5 active:border-b-0 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Start climbing</span>
+              <span>Start Climbing</span>
               <ArrowRight className="w-5 h-5 stroke-[2.5]" />
             </button>
           </div>
@@ -369,7 +370,6 @@ export default function FirstLaunchOnboardingModal({
                 <button
                   type="button"
                   onClick={() => {
-                    soundFx.playKeyTap();
                     onRequestLogin();
                   }}
                   className="font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer"
@@ -381,7 +381,7 @@ export default function FirstLaunchOnboardingModal({
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <button
                 type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowCoppaModal(true); }}
+                onClick={() => { setShowCoppaModal(true); }}
                 className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
@@ -390,7 +390,7 @@ export default function FirstLaunchOnboardingModal({
               <span className="text-slate-600 text-xs">•</span>
               <button
                 type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+                onClick={() => { setShowPrivacyModal(true); }}
                 className="text-[11px] font-semibold text-slate-400 hover:text-blue-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
@@ -399,7 +399,7 @@ export default function FirstLaunchOnboardingModal({
               <span className="text-slate-600 text-xs">•</span>
               <button
                 type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowTermsModal(true); }}
+                onClick={() => { setShowTermsModal(true); }}
                 className="text-[11px] font-semibold text-slate-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
               >
                 <FileText className="w-3.5 h-3.5 text-amber-400" />
@@ -446,7 +446,6 @@ export default function FirstLaunchOnboardingModal({
             <button
               type="button"
               onClick={() => {
-                soundFx.playKeyTap();
                 setStep(0);
               }}
               className="text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1 font-bold text-xs"
@@ -544,7 +543,6 @@ export default function FirstLaunchOnboardingModal({
                 <button
                   type="button"
                   onClick={() => {
-                    soundFx.playKeyTap();
                     onRequestLogin();
                   }}
                   className="font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer"
@@ -556,7 +554,7 @@ export default function FirstLaunchOnboardingModal({
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <button
                 type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowCoppaModal(true); }}
+                onClick={() => { setShowCoppaModal(true); }}
                 className="text-[11px] font-semibold text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
@@ -565,7 +563,7 @@ export default function FirstLaunchOnboardingModal({
               <span className="text-slate-600 text-xs">•</span>
               <button
                 type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowPrivacyModal(true); }}
+                onClick={() => { setShowPrivacyModal(true); }}
                 className="text-[11px] font-semibold text-slate-400 hover:text-blue-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
@@ -574,7 +572,7 @@ export default function FirstLaunchOnboardingModal({
               <span className="text-slate-600 text-xs">•</span>
               <button
                 type="button"
-                onClick={() => { soundFx.playKeyTap(); setShowTermsModal(true); }}
+                onClick={() => { setShowTermsModal(true); }}
                 className="text-[11px] font-semibold text-slate-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1 cursor-pointer"
               >
                 <FileText className="w-3.5 h-3.5 text-amber-400" />
@@ -620,7 +618,6 @@ export default function FirstLaunchOnboardingModal({
             <button
               type="button"
               onClick={() => {
-                soundFx.playKeyTap();
                 if (gradeSelectionTimerRef.current) clearTimeout(gradeSelectionTimerRef.current);
                 setStep(1);
               }}
@@ -699,7 +696,6 @@ export default function FirstLaunchOnboardingModal({
                   <button
                     type="button"
                     onClick={() => {
-                      soundFx.playKeyTap();
                       setShowRitInput(true);
                     }}
                     className="w-full py-2.5 px-3.5 rounded-xl border-2 border-indigo-400/60 bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-100 hover:text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-950/40 transition-all flex items-center justify-center gap-2 cursor-pointer"

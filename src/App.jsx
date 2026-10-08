@@ -2124,6 +2124,13 @@ export default function App() {
       return;
     }
 
+    // Never begin audio until user has completed onboarding
+    if (showFirstLaunchOnboardingModal || !storageService.isOnboarded()) {
+      soundFx?.setOnboardingActive?.(true);
+      soundFx.stopBGM();
+      return;
+    }
+
     const quietScreens = [
       'privacy',
       'coppa_privacy',
@@ -2149,7 +2156,7 @@ export default function App() {
     } else {
       soundFx.startBGM('bgm_home');
     }
-  }, [isWorkshopOpen, isClimbActive, appState, preferences.isMusicMuted, preferences.isMuted]);
+  }, [isWorkshopOpen, isClimbActive, appState, preferences.isMusicMuted, preferences.isMuted, showFirstLaunchOnboardingModal]);
 
   // Check for News and Daily Spark Vault (Sequenced: News first, then Daily Vault on close or if no news)
   useEffect(() => {
