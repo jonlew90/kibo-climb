@@ -1566,61 +1566,33 @@ async function dispatchOneSignalPush({ uids = [], subscriptionIds = [], title, m
     }
   };
 
-  // OneSignal REST API strictly enforces that targeting parameters (include_subscription_ids vs include_aliases)
-  // are mutually exclusive in a single payload. Combining them triggers a 400 validation error.
-  const attemptPush = async (targetPayload) => {
-    const finalPayload = {
-      ...payload,
-      ...targetPayload
+  let hasTarget = false;
+  if (subscriptionIds && subscriptionIds.length > 0) {
+    payload.include_subscription_ids = subscriptionIds;
+    hasTarget = true;
+  }
+  if (uids && uids.length > 0) {
+    payload.include_aliases = {
+      external_id: uids
     };
+    hasTarget = true;
+  }
+
+  if (!hasTarget) {
+    return { success: false, error: "No target external user IDs or subscription IDs specified." };
+  }
+
+  try {
     const response = await fetch("https://onesignal.com/api/v1/notifications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Basic ${finalApiKey}`
       },
-      body: JSON.stringify(finalPayload)
+      body: JSON.stringify(payload)
     });
+
     const result = await response.json();
-    return { response, result };
-  };
-
-  try {
-    let result;
-    let response;
-
-    // 1. Prioritize direct device subscription IDs (e.g. Android PWA or web push subscriptions)
-    if (subscriptionIds && subscriptionIds.length > 0) {
-      const res = await attemptPush({ include_subscription_ids: subscriptionIds });
-      response = res.response;
-      result = res.result;
-
-      // If subscription IDs reached 0 recipients or failed and uids exist, fallback to external_id alias targeting
-      // Note: OneSignal may return a valid notification `id` even when recipients===0 (stale/rotated subscription),
-      // so we trigger the fallback on recipients===0 regardless of whether `id` is present.
-      if ((!response.ok || result.recipients === 0 || (result.errors && result.errors.length > 0)) && uids && uids.length > 0) {
-        console.warn(`[OneSignal Push] Subscription ID delivery yielded no recipients (${JSON.stringify(result)}). Falling back to alias targeting for UIDs:`, uids);
-        const fallbackRes = await attemptPush({
-          include_aliases: { external_id: uids },
-          target_channel: "push"
-        });
-        if (fallbackRes.response.ok && (!fallbackRes.result.errors || fallbackRes.result.errors.length === 0)) {
-          response = fallbackRes.response;
-          result = fallbackRes.result;
-        }
-      }
-    } else if (uids && uids.length > 0) {
-      // 2. Fall back to external_id alias targeting
-      const res = await attemptPush({
-        include_aliases: { external_id: uids },
-        target_channel: "push"
-      });
-      response = res.response;
-      result = res.result;
-    } else {
-      return { success: false, error: "No target external user IDs or subscription IDs specified." };
-    }
-
     if (!response.ok || (result.errors && result.errors.length > 0)) {
       console.error("[OneSignal Push Error]:", result);
       return { success: false, error: result.errors ? JSON.stringify(result.errors) : `HTTP ${response.status}` };

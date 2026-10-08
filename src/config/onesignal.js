@@ -103,7 +103,6 @@ export const initOneSignal = async () => {
           if (subId) {
             storageService.saveOneSignalSubscriptionId(subId);
             if (auth.currentUser?.uid) {
-              loginToOneSignal(auth.currentUser.uid, auth.currentUser.email || null);
               userSyncService.pushLocalToCloud(auth.currentUser.uid);
             }
           }
@@ -115,7 +114,6 @@ export const initOneSignal = async () => {
               if (newSubId) {
                 storageService.saveOneSignalSubscriptionId(newSubId);
                 if (auth.currentUser?.uid) {
-                  loginToOneSignal(auth.currentUser.uid, auth.currentUser.email || null);
                   userSyncService.pushLocalToCloud(auth.currentUser.uid);
                 }
               }
@@ -184,7 +182,7 @@ export const loginToOneSignal = async (externalUserId, email = null) => {
         if (!isOptedIn && typeof os.User.PushSubscription.optIn === 'function') {
           await os.User.PushSubscription.optIn();
         }
-        const subId = os.User.PushSubscription.id || storageService.getOneSignalSubscriptionId();
+        const subId = os.User.PushSubscription.id;
         if (subId) {
           storageService.saveOneSignalSubscriptionId(subId);
           userSyncService.pushLocalToCloud(externalUserId);
