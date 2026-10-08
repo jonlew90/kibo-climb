@@ -10,12 +10,50 @@
     <atom:link href="https://kiboclimb.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>Discover expert mental math shortcuts, adaptive phonics, geography insights, coding logic, and printable worksheet practice to turn daily learning into an exciting mountain climb.</description>
     <language>en-US</language>
-    <lastBuildDate>Thu, 08 Oct 2026 17:14:09 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 08 Oct 2026 17:42:46 GMT</lastBuildDate>
     <image>
       <url>https://kiboclimb.com/icons/icon-512.png</url>
       <title>Kibo Climb</title>
       <link>https://kiboclimb.com/blog</link>
     </image>
+    <item>
+      <title>Step-by-Step Guide: Tackling Fractions, Decimals, &amp; GCF/LCM With The GCF Factor Ladder (Grade 6)</title>
+      <link>https://kiboclimb.com/blog/math-tier-7-the-gcf-factor-ladder</link>
+      <guid isPermaLink="true">https://kiboclimb.com/blog/math-tier-7-the-gcf-factor-ladder</guid>
+      <pubDate>Thu, 08 Oct 2026 17:42:46 GMT</pubDate>
+      <dc:creator><![CDATA[Kibo Climb]]></dc:creator>
+      <author>support@kiboclimb.com (Kibo Climb)</author>
+      <description><![CDATA[Learn the The GCF Factor Ladder mental shortcut for Grade 6 students tackling Tier 7 on Mount Kibo.]]></description>
+      <content:encoded><![CDATA[<figure><img src="https://kiboclimb.com/images/blog/kibo-learning-and-discovering.jpeg" alt="Step-by-Step Guide: Tackling Fractions, Decimals, &amp; GCF/LCM With The GCF Factor Ladder (Grade 6)" /><figcaption>Step-by-Step Guide: Tackling Fractions, Decimals, &amp; GCF/LCM With The GCF Factor Ladder (Grade 6)</figcaption></figure><h2>Conquering Fractions, Decimals, &amp; GCF/LCM on Mount Kibo</h2>
+      <p>Let's be honest: when our kids hit <strong>Fraction Falls</strong> on Mount Kilimanjaro, the challenge kicks in for both of them—and sometimes us! Kibo the red panda mascot knows that speed and accuracy unlock essential momentum, but rigid memorization often creates unnecessary friction.</p>
+      <p>By mastering intuitive curriculum strategies, students transform tricky challenges into second-nature shortcuts (and help us parents remember how to navigate Tier 7 concepts in the process!).</p>
+      <p>In our Tier 7 curriculum (Grade 6), students build foundational mastery in:</p>
+      <ul><li>Least Common Multiples (LCM Summit Sync)</li><li>Greatest Common Factors (GCF Factor Ladder)</li><li>Fraction &amp; decimal equivalents (quarter &amp; tenth rhythms)</li><li>Divisibility rules (2, 3, 5, 9, 10)</li></ul>
+      <h3>Trail Trick: The GCF Factor Ladder</h3>
+      <p>To find the GCF of 12 and 18, divide both by shared prime factors (2, then 3). Multiply the divisors (2 × 3 = 6)!</p>
+      <p><strong>Worked Example:</strong></p>
+      <ul><li>Problem: <strong>GCF of 12 &amp; 18</strong></li><li>Strategy Application: <strong>Find the largest number that divides evenly into both 12 and 18.</strong></li><li>Solution: <strong>6</strong></li></ul>
+      <p>By visualizing concepts as adaptable mental landmarks, working memory strain is significantly reduced.</p>
+      <h3>Trail Pro Tip: GCF vs. LCM Landmark</h3>
+      <blockquote><p>Remember: GCF makes a smaller number (factors divide down), while LCM makes a larger number (multiples leap up)!</p></blockquote>
+      <h3>Frequently Asked Questions</h3>
+      <h2>Reinforce Skills with Offline Practice</h2>
+      <p>Deliberate practice turns these shortcuts into permanent fluency. You can practice this exact topic live in the <a href="/">Kibo Climb app</a> or download our verified offline companion resource:</p>
+      <ul><li><strong>Free Practice Worksheet:</strong> <a href="/worksheets/math/grade-6-pre-algebra-foundations">Grade 6 Pre-Algebra &amp; Order of Operations</a></li><li><strong>Includes:</strong> 16 targeted questions and a complete parent/teacher answer key.</li></ul>
+      <h2>Next Steps for Climbers</h2>
+      <p>Encourage your student to test the The GCF Factor Ladder technique during their next 5-minute practice session. Step by step, they will build an unbreakable foundation of speed and confidence!</p>]]></content:encoded>
+      <enclosure url="https://kiboclimb.com/images/blog/kibo-learning-and-discovering.jpeg" type="image/jpeg" length="0" />
+      <media:content url="https://kiboclimb.com/images/blog/kibo-learning-and-discovering.jpeg" type="image/jpeg" medium="image">
+        <media:title type="plain">Step-by-Step Guide: Tackling Fractions, Decimals, &amp; GCF/LCM With The GCF Factor Ladder (Grade 6)</media:title>
+        <media:thumbnail url="https://kiboclimb.com/images/blog/kibo-learning-and-discovering.jpeg" />
+      </media:content>
+      <category><![CDATA[Tier 7]]></category>
+      <category><![CDATA[Math]]></category>
+      <category><![CDATA[Mental Math]]></category>
+      <category><![CDATA[Kibo Climb]]></category>
+      <category><![CDATA[Grade 6]]></category>
+      <category><![CDATA[The Gcf Factor Ladder]]></category>
+    </item>
     <item>
       <title>Mastering Complex Multisyllabic &amp; Etymology: Root Stem Decoding for Grades 4–6</title>
       <link>https://kiboclimb.com/blog/words-tier-7-root-stem-decoding</link>
