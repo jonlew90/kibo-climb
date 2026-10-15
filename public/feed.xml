@@ -10,12 +10,50 @@
     <atom:link href="https://kiboclimb.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>Discover expert mental math shortcuts, adaptive phonics, geography insights, coding logic, and printable worksheet practice to turn daily learning into an exciting mountain climb.</description>
     <language>en-US</language>
-    <lastBuildDate>Tue, 13 Oct 2026 17:46:32 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 15 Oct 2026 15:18:39 GMT</lastBuildDate>
     <image>
       <url>https://kiboclimb.com/icons/icon-512.png</url>
       <title>Kibo Climb</title>
       <link>https://kiboclimb.com/blog</link>
     </image>
+    <item>
+      <title>Cracking the Code on Division &amp; Long Division Mental Math: The Halving Ladder for Grade 4</title>
+      <link>https://kiboclimb.com/blog/math-tier-6-the-halving-ladder</link>
+      <guid isPermaLink="true">https://kiboclimb.com/blog/math-tier-6-the-halving-ladder</guid>
+      <pubDate>Thu, 15 Oct 2026 15:18:39 GMT</pubDate>
+      <dc:creator><![CDATA[Kibo Climb]]></dc:creator>
+      <author>support@kiboclimb.com (Kibo Climb)</author>
+      <description><![CDATA[Learn the The Halving Ladder mental shortcut for Grade 4 students tackling Tier 6 on Mount Kibo.]]></description>
+      <content:encoded><![CDATA[<figure><img src="https://kiboclimb.com/images/blog/kibo-space-station.jpeg" alt="Cracking the Code on Division &amp; Long Division Mental Math: The Halving Ladder for Grade 4" /><figcaption>Cracking the Code on Division &amp; Long Division Mental Math: The Halving Ladder for Grade 4</figcaption></figure><h2>Conquering Division &amp; Long Division Mental Math on Mount Kibo</h2>
+      <p>Let's be honest: when our kids hit <strong>Boulder Ridge</strong> on Mount Kilimanjaro, the challenge kicks in for both of them—and sometimes us! Kibo the red panda mascot knows that speed and accuracy unlock essential momentum, but rigid memorization often creates unnecessary friction.</p>
+      <p>By mastering intuitive curriculum strategies, students transform tricky challenges into second-nature shortcuts (and help us parents remember how to navigate Tier 6 concepts in the process!).</p>
+      <p>In our Tier 6 curriculum (Grade 4), students build foundational mastery in:</p>
+      <ul><li>Division fact families (reverse multiplication)</li><li>The Halving Ladder mental division strategy (÷4 and ÷8)</li><li>Mental long division estimation</li><li>Elapsed time hours &amp; minutes conversions</li></ul>
+      <h3>Trail Trick: The Halving Ladder</h3>
+      <p>Dividing by 4? Cut the number in half twice! For 84 ÷ 4, half of 84 is 42, and half of 42 is 21!</p>
+      <p><strong>Worked Example:</strong></p>
+      <ul><li>Problem: <strong>84 ÷ 4</strong></li><li>Strategy Application: <strong>Half of 84 is 42. Half of 42 is 21!</strong></li><li>Solution: <strong>21</strong></li></ul>
+      <p>By visualizing concepts as adaptable mental landmarks, working memory strain is significantly reduced.</p>
+      <h3>Trail Pro Tip: Think Multiplication in Reverse</h3>
+      <blockquote><p>Division is just asking 'How many groups?' For 72 ÷ 8, think: 'What times 8 equals 72?'</p></blockquote>
+      <h3>Frequently Asked Questions</h3>
+      <h2>Reinforce Skills with Offline Practice</h2>
+      <p>Deliberate practice turns these shortcuts into permanent fluency. You can practice this exact topic live in the <a href="/">Kibo Climb app</a> or download our verified offline companion resource:</p>
+      <ul><li><strong>Free Practice Worksheet:</strong> <a href="/worksheets/math/grade-4-multi-digit-division">Grade 4 Multi-Digit &amp; Division Speed Drill</a></li><li><strong>Includes:</strong> 16 targeted questions and a complete parent/teacher answer key.</li></ul>
+      <h2>Next Steps for Climbers</h2>
+      <p>Encourage your student to test the The Halving Ladder technique during their next 5-minute practice session. Step by step, they will build an unbreakable foundation of speed and confidence!</p>]]></content:encoded>
+      <enclosure url="https://kiboclimb.com/images/blog/kibo-space-station.jpeg" type="image/jpeg" length="0" />
+      <media:content url="https://kiboclimb.com/images/blog/kibo-space-station.jpeg" type="image/jpeg" medium="image">
+        <media:title type="plain">Cracking the Code on Division &amp; Long Division Mental Math: The Halving Ladder for Grade 4</media:title>
+        <media:thumbnail url="https://kiboclimb.com/images/blog/kibo-space-station.jpeg" />
+      </media:content>
+      <category><![CDATA[Tier 6]]></category>
+      <category><![CDATA[Math]]></category>
+      <category><![CDATA[Mental Math]]></category>
+      <category><![CDATA[Kibo Climb]]></category>
+      <category><![CDATA[Grade 4]]></category>
+      <category><![CDATA[The Halving Ladder]]></category>
+    </item>
     <item>
       <title>Confident Climbing: How Loop Compression Makes Grid Navigation &amp; Loops Click for Grades 1–3</title>
       <link>https://kiboclimb.com/blog/coding-tier-2-loop-compression</link>
