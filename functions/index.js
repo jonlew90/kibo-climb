@@ -1610,8 +1610,113 @@ async function dispatchOneSignalPush({ uids = [], subscriptionIds = [], title, m
 }
 
 /**
+ * Evaluates whether a profile should receive a daily practice/streak reminder.
+ * Enforces scheduled practice days (never alerts on rest days) and prevents UTC date bleed.
+ */
+function evaluateDailyStreakReminder(prof, { now = new Date(), fallbackTimezone = 'America/New_York' } = {}) {
+  if (!prof || prof.dailyReminderEnabled === false) {
+    return { shouldAlert: false, reason: 'profile_reminders_disabled' };
+  }
+
+  const uData = prof?.userData || {};
+  const subjects = uData.subjects || {};
+  const userTz = uData.lastSprintTimezone || fallbackTimezone;
+
+  let profileDateStr, profileDayOfWeek;
+  try {
+    profileDateStr = new Intl.DateTimeFormat('en-CA', {
+      timeZone: userTz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(now);
+    profileDayOfWeek = new Date(`${profileDateStr}T12:00:00Z`).getUTCDay();
+  } catch (e) {
+    profileDateStr = new Intl.DateTimeFormat('en-CA', {
+      timeZone: fallbackTimezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(now);
+    profileDayOfWeek = new Date(`${profileDateStr}T12:00:00Z`).getUTCDay();
+  }
+
+  // Check practice days schedule if set (defaults to 1..5 Mon-Fri)
+  const practiceDays = Array.isArray(prof.practiceDays) ? prof.practiceDays : [1, 2, 3, 4, 5];
+  const isScheduledPracticeDay = practiceDays.includes(profileDayOfWeek);
+
+  // Scheduled practice days guard: Rest days NEVER break a streak and never trigger daily alarms.
+  if (!isScheduledPracticeDay) {
+    return { shouldAlert: false, reason: 'not_a_practice_day', profileDayOfWeek };
+  }
+
+  // Collect all potential climb dates formatted in the user's local timezone
+  const candidateDates = [];
+  if (uData.lastSprintDate) candidateDates.push(String(uData.lastSprintDate).slice(0, 10));
+  if (uData.lastPlayedDate) candidateDates.push(String(uData.lastPlayedDate).slice(0, 10));
+
+  if (uData.lastSprintTimestamp) {
+    try {
+      const tsDateStr = new Intl.DateTimeFormat('en-CA', {
+        timeZone: userTz,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(new Date(uData.lastSprintTimestamp));
+      candidateDates.push(tsDateStr);
+    } catch (e) {
+      candidateDates.push(String(uData.lastSprintTimestamp).slice(0, 10));
+    }
+  }
+
+  ['math', 'words', 'world', 'coding'].forEach((sub) => {
+    const subData = subjects[sub];
+    if (subData) {
+      if (subData.lastSprintDate) candidateDates.push(String(subData.lastSprintDate).slice(0, 10));
+      if (subData.sprintHistory && subData.sprintHistory[0]?.date) {
+        candidateDates.push(String(subData.sprintHistory[0].date).slice(0, 10));
+      }
+      if (subData.lastSprintTimestamp) {
+        try {
+          const subTsStr = new Intl.DateTimeFormat('en-CA', {
+            timeZone: userTz,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          }).format(new Date(subData.lastSprintTimestamp));
+          candidateDates.push(subTsStr);
+        } catch (e) {}
+      }
+    }
+  });
+
+  if (uData.sprintHistory && uData.sprintHistory[0]?.date) {
+    candidateDates.push(String(uData.sprintHistory[0].date).slice(0, 10));
+  }
+
+  const hasClimbedToday = candidateDates.some(d => d === profileDateStr);
+  if (hasClimbedToday) {
+    return { shouldAlert: false, reason: 'already_climbed_today', profileDateStr };
+  }
+
+  const currentStreak = Number(uData.streak || 0);
+  const unclaimedQuests = Number(prof?.unclaimedQuestsCount || 0);
+
+  return {
+    shouldAlert: true,
+    profileDateStr,
+    profileDayOfWeek,
+    currentStreak,
+    unclaimedQuests,
+    name: prof.username || prof.name || 'Kibo Climber'
+  };
+}
+
+exports.evaluateDailyStreakReminder = evaluateDailyStreakReminder;
+
+/**
  * Scheduled Cron Function: scheduledDailyStreakPush
- * Runs daily at 5:00 PM (17:00 UTC) to remind active accounts whose children haven't climbed yet today.
+ * Runs daily at 5:00 PM (17:00 America/New_York) to remind active accounts whose children haven't climbed yet today.
  */
 exports.scheduledDailyStreakPush = onSchedule(
   {
@@ -1630,18 +1735,7 @@ exports.scheduledDailyStreakPush = onSchedule(
         return;
       }
 
-      // Formatter for Eastern Time (America/New_York) to match cron schedule timezone
-      const nyDateStr = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'America/New_York',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      }).format(new Date()); // YYYY-MM-DD
-      const utcDateStr = new Date().toISOString().slice(0, 10);
-
-      // Determine day of week in New York (0=Sun, 1=Mon, ..., 6=Sat)
-      const nyDayOfWeek = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })).getDay();
-
+      const now = new Date();
       let pushesDispatched = 0;
 
       for (const userDoc of usersSnap.docs) {
@@ -1655,54 +1749,16 @@ exports.scheduledDailyStreakPush = onSchedule(
           continue;
         }
 
-        // Find profiles that haven't climbed today or have unclaimed quests
+        // Find profiles that have practice scheduled today and haven't climbed yet
         const unplayedProfiles = [];
         for (const [pid, prof] of Object.entries(profiles)) {
-          // If child profile explicitly has reminders turned off, skip this profile
-          if (prof.dailyReminderEnabled === false) {
-            continue;
-          }
-
-          // Check practice days schedule if set (defaults to 1..5 Mon-Fri)
-          const practiceDays = Array.isArray(prof.practiceDays) ? prof.practiceDays : [1, 2, 3, 4, 5];
-          const isScheduledPracticeDay = practiceDays.includes(nyDayOfWeek);
-
-          const uData = prof?.userData || {};
-          const subjects = uData.subjects || {};
-
-          // Collect all potential climb dates across all subjects
-          const candidateDates = [];
-          if (uData.lastSprintDate) candidateDates.push(String(uData.lastSprintDate).slice(0, 10));
-          if (uData.lastPlayedDate) candidateDates.push(String(uData.lastPlayedDate).slice(0, 10));
-          if (uData.lastSprintTimestamp) candidateDates.push(String(uData.lastSprintTimestamp).slice(0, 10));
-
-          ['math', 'words', 'world', 'coding'].forEach((sub) => {
-            const subData = subjects[sub];
-            if (subData) {
-              if (subData.lastSprintDate) candidateDates.push(String(subData.lastSprintDate).slice(0, 10));
-              if (subData.sprintHistory && subData.sprintHistory[0]?.date) {
-                candidateDates.push(String(subData.sprintHistory[0].date).slice(0, 10));
-              }
-            }
-          });
-          if (uData.sprintHistory && uData.sprintHistory[0]?.date) {
-            candidateDates.push(String(uData.sprintHistory[0].date).slice(0, 10));
-          }
-
-          const hasClimbedToday = candidateDates.some(d => d === nyDateStr || d === utcDateStr);
-          const currentStreak = Number(uData.streak || 0);
-          const unclaimedQuests = Number(prof?.unclaimedQuestsCount || 0);
-
-          // Alert if:
-          // 1. Not climbed today AND today is an active practice day, OR
-          // 2. Not climbed today AND streak > 0 (streak is at risk of expiring), OR
-          // 3. Has unclaimed quest rewards
-          if (!hasClimbedToday && (isScheduledPracticeDay || currentStreak > 0 || unclaimedQuests > 0)) {
+          const evalResult = evaluateDailyStreakReminder(prof, { now, fallbackTimezone: 'America/New_York' });
+          if (evalResult.shouldAlert) {
             unplayedProfiles.push({
               id: pid,
-              name: prof.username || prof.name || 'Kibo Climber',
-              streak: currentStreak,
-              unclaimedQuests
+              name: evalResult.name,
+              streak: evalResult.currentStreak,
+              unclaimedQuests: evalResult.unclaimedQuests
             });
           }
         }
@@ -1711,9 +1767,13 @@ exports.scheduledDailyStreakPush = onSchedule(
           const firstUnplayed = unplayedProfiles[0];
           const streakText = firstUnplayed.streak > 1 ? ` (${firstUnplayed.streak}-day streak)` : '';
           const hasQuestBonus = firstUnplayed.unclaimedQuests > 0 ? ' 🎁 Unclaimed quest Sparks waiting!' : '';
-          
-          const title = `🏔️ Keep ${firstUnplayed.name}'s Streak Alive! 🔥`;
-          const message = `Kibo the Red Panda is waiting! Complete today's climb${streakText} before midnight.${hasQuestBonus}`;
+
+          const title = firstUnplayed.streak > 0
+            ? `🏔️ Keep ${firstUnplayed.name}'s Streak Alive! 🔥`
+            : `🏔️ Time for ${firstUnplayed.name}'s Daily Climb! 🎒`;
+          const message = firstUnplayed.streak > 0
+            ? `Kibo the Red Panda is waiting! Complete today's climb${streakText} before midnight.${hasQuestBonus}`
+            : `Kibo the Red Panda is waiting! Complete today's scheduled climb before midnight.${hasQuestBonus}`;
           const actionUrl = `https://kiboclimb.com/?action=play&profile=${encodeURIComponent(firstUnplayed.id)}&utm_source=push_notification&utm_medium=push&utm_campaign=daily_streak`;
 
           // Collect target subscription IDs if registered on user doc

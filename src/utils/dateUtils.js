@@ -68,7 +68,12 @@ export const isWithinTravelGracePeriod = (lastSessionTimestamp, currentTimestamp
  * Calculates continuous streak from combined sprint history and scheduled practice days.
  * Resilient to time zone transitions, midnight crossings, and custom weekly schedules.
  */
-export const calculateStreakFromHistory = (sprintHistory = [], practiceDays = [1, 2, 3, 4, 5], cutoffHour = CUTOFF_HOUR) => {
+export const calculateStreakFromHistory = (
+  sprintHistory = [],
+  practiceDays = [1, 2, 3, 4, 5],
+  cutoffHour = CUTOFF_HOUR,
+  currentDateInput = new Date()
+) => {
   if (!Array.isArray(sprintHistory) || sprintHistory.length === 0) return 0;
 
   const playedDates = new Set();
@@ -84,21 +89,43 @@ export const calculateStreakFromHistory = (sprintHistory = [], practiceDays = [1
 
   if (playedDates.size === 0) return 0;
 
-  let checkDate = getLogicalDate(new Date(), cutoffHour);
-  let dateStr = formatDateStr(checkDate);
-
-  // If not played yet today, check if yesterday was played
-  if (!playedDates.has(dateStr)) {
-    checkDate.setDate(checkDate.getDate() - 1);
-    dateStr = formatDateStr(checkDate);
-    if (!playedDates.has(dateStr)) {
-      return 0;
-    }
-  }
-
   const effectivePracticeDays = Array.isArray(practiceDays) && practiceDays.length > 0
     ? practiceDays
     : [1, 2, 3, 4, 5];
+
+  let checkDate = getLogicalDate(currentDateInput, cutoffHour);
+  let dateStr = formatDateStr(checkDate);
+
+  // If not played yet today, walk backwards skipping rest days until we find
+  // the most recent scheduled practice day (or any rest day that happened to be played)
+  if (!playedDates.has(dateStr)) {
+    let lookback = new Date(checkDate);
+    let foundPreviousActiveDay = false;
+    let safety = 365;
+
+    while (safety-- > 0) {
+      lookback.setDate(lookback.getDate() - 1);
+      const prevDateStr = formatDateStr(lookback);
+      const dayIdx = lookback.getDay();
+
+      if (playedDates.has(prevDateStr)) {
+        // Found the last played session, streak remains active from here backwards
+        checkDate = lookback;
+        foundPreviousActiveDay = true;
+        break;
+      }
+
+      if (effectivePracticeDays.includes(dayIdx)) {
+        // A scheduled practice day was missed without playing
+        return 0;
+      }
+      // Non-practice (rest) day was unplayed; continue stepping backwards
+    }
+
+    if (!foundPreviousActiveDay) {
+      return 0;
+    }
+  }
 
   let streakCount = 0;
   let safetyLimit = 3650; // Safeguard: max 10 years back
