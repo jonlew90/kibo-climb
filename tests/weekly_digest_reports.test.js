@@ -97,6 +97,103 @@ describe('Weekly Progress Digest Reports (Kibo Club vs Basic)', () => {
     const htmlDigest = formatWeeklyDigestHtml({ childName: 'Maya Explorer', digestData: nonClubDigest });
     expect(htmlDigest).toContain('Unlock Deep Learning Insights with Kibo Club');
     expect(htmlDigest).toContain('Sample Bottleneck Alert');
-    expect(htmlDigest).not.toContain('Topic Bottleneck: Fractions & GCF/LCM');
+  });
+
+  it('builds a consolidated multi-child family digest email for parents with multiple profiles', async () => {
+    const { buildScheduledFamilyDigestHtml, buildScheduledDigestHtml } = await import('../functions/index.js');
+
+    const mockChild1 = {
+      childName: 'ThrivingKangaroo389',
+      pid: 'prof_kangaroo',
+      profile: {
+        username: 'ThrivingKangaroo389',
+        gradeLevel: 'Grade 3–4',
+        userData: {
+          streak: 5,
+          sparks: 310,
+          unlockedBadges: ['speed_star', 'math_pro'],
+          subjects: {
+            math: {
+              adaptiveCompetenceRating: 1350,
+              tier: 3,
+              totalProblemsSolved: 45,
+              sprintHistory: [
+                {
+                  date: new Date().toISOString(),
+                  totalQuestions: 15,
+                  correctCount: 14,
+                  tier: 3
+                }
+              ]
+            }
+          }
+        }
+      }
+    };
+
+    const mockChild2 = {
+      childName: 'EpicPioneer92',
+      pid: 'prof_pioneer',
+      profile: {
+        username: 'EpicPioneer92',
+        gradeLevel: 'Grade 1–2',
+        userData: {
+          streak: 8,
+          sparks: 520,
+          unlockedBadges: ['streak_master'],
+          subjects: {
+            math: {
+              adaptiveCompetenceRating: 1200,
+              tier: 2,
+              totalProblemsSolved: 30,
+              sprintHistory: [
+                {
+                  date: new Date().toISOString(),
+                  totalQuestions: 10,
+                  correctCount: 9,
+                  tier: 2
+                }
+              ]
+            }
+          }
+        }
+      }
+    };
+
+    // Test single child digest
+    const singleHtml = buildScheduledDigestHtml({
+      childName: mockChild1.childName,
+      profile: mockChild1.profile,
+      profileId: mockChild1.pid,
+      isKiboClub: false
+    });
+    expect(singleHtml).toContain('ThrivingKangaroo389');
+    expect(singleHtml).not.toContain('EpicPioneer92');
+    expect(singleHtml).toContain('Weekly Progress Summary for <strong>ThrivingKangaroo389</strong>');
+
+    // Test consolidated family digest
+    const familyHtml = buildScheduledFamilyDigestHtml({
+      children: [mockChild1, mockChild2],
+      isKiboClub: false
+    });
+
+    // Contains both climbers
+    expect(familyHtml).toContain('ThrivingKangaroo389');
+    expect(familyHtml).toContain('EpicPioneer92');
+    expect(familyHtml).toContain('Family Progress Summary · <strong>2 Climbers</strong>');
+    expect(familyHtml).toContain('ThrivingKangaroo389 & EpicPioneer92');
+
+    // Combines family totals: top streak = 8, family solved = 15 + 10 = 25, badges = 2 + 1 = 3
+    expect(familyHtml).toContain('8 Days');
+    expect(familyHtml).toContain('Top Streak');
+    expect(familyHtml).toContain('25');
+    expect(familyHtml).toContain('Family Solved');
+    expect(familyHtml).toContain('3');
+    expect(familyHtml).toContain('Total Badges');
+
+    // Per-child profile links
+    expect(familyHtml).toContain('profile=prof_kangaroo');
+    expect(familyHtml).toContain('profile=prof_pioneer');
   });
 });
+

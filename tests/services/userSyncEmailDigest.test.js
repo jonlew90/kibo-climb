@@ -20,8 +20,14 @@ vi.mock('../../src/config/firebase', () => ({
 vi.mock('firebase/firestore', () => ({
   doc: vi.fn((db, col, id) => ({ path: `${col}/${id}` })),
   setDoc: vi.fn(() => Promise.resolve()),
+  updateDoc: vi.fn(() => Promise.resolve()),
+  deleteField: vi.fn(() => 'DELETE_FIELD'),
   onSnapshot: vi.fn(),
   serverTimestamp: vi.fn(() => 'SERVER_TIMESTAMP')
+}));
+
+vi.mock('firebase/functions', () => ({
+  httpsCallable: vi.fn(() => vi.fn(() => Promise.resolve({ data: { success: true } })))
 }));
 
 import { userSyncService } from '../../src/services/userSyncService.js';
@@ -54,5 +60,21 @@ describe('UserSyncService Scheduled Digest Preferences Sync', () => {
       struggleAlertsEnabled: true,
       productUpdatesEnabled: false
     }));
+  });
+
+  it('records deleted profile ID to prevent resurrection and calls cloud delete', async () => {
+    const { httpsCallable } = await import('firebase/functions');
+    const mockCallable = vi.fn(() => Promise.resolve({ data: { success: true } }));
+    httpsCallable.mockReturnValue(mockCallable);
+
+    await userSyncService.deleteProfileFromCloud('child_profile_to_delete', 'EpicPioneer92');
+
+    const deleted = JSON.parse(localStorage.getItem('kibo_deleted_profile_ids') || '[]');
+    expect(deleted).toContain('child_profile_to_delete');
+    expect(httpsCallable).toHaveBeenCalled();
+    expect(mockCallable).toHaveBeenCalledWith({
+      profileId: 'child_profile_to_delete',
+      childName: 'EpicPioneer92'
+    });
   });
 });

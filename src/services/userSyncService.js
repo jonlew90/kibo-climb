@@ -3,7 +3,7 @@
 // Supports multi-device bi-directional synchronization with offline fallback
 
 import { db, auth, functions } from '../config/firebase';
-import { doc, setDoc, onSnapshot, getDoc, serverTimestamp, arrayUnion } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, getDoc, serverTimestamp, arrayUnion, updateDoc, deleteField } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { storageService } from './storageService';
 
@@ -74,10 +74,17 @@ class UserSyncService {
         try {
           const localProfilesState = storageService.getAllProfiles();
           const cloudProfiles = cloudData.profiles;
+          let deletedIds = [];
+          try {
+            deletedIds = JSON.parse(localStorage.getItem('kibo_deleted_profile_ids') || '[]');
+          } catch (e) {}
 
           // Merge cloud profiles into local storage
           let updated = false;
           Object.keys(cloudProfiles).forEach((profileId) => {
+            if (deletedIds.includes(profileId)) {
+              return; // Do NOT resurrect deleted profile
+            }
             const cloudProfile = cloudProfiles[profileId];
             const localProfile = storageService.getProfileById(profileId);
 
@@ -264,6 +271,41 @@ class UserSyncService {
     } catch (error) {
       console.warn('UserSyncService: Cloud sync failed (will retry online)', error);
       this.notifySyncStatus('error');
+    }
+  }
+
+  /**
+   * Permanently deletes a profile from Cloud Firestore to prevent ghost digests and resurrection.
+   */
+  async deleteProfileFromCloud(profileId, childName = null) {
+    if (!profileId) return;
+
+    try {
+      const deleted = JSON.parse(localStorage.getItem('kibo_deleted_profile_ids') || '[]');
+      if (!deleted.includes(profileId)) {
+        deleted.push(profileId);
+        localStorage.setItem('kibo_deleted_profile_ids', JSON.stringify(deleted));
+      }
+    } catch (e) {}
+
+    const currentUser = auth.currentUser;
+    const uid = currentUser ? currentUser.uid : storageService.getUserData('math')?.cloudUid;
+
+    try {
+      const deleteProfileCloud = httpsCallable(functions, 'deleteChildProfileCloud');
+      await deleteProfileCloud({ profileId, childName });
+    } catch (cfErr) {
+      if (uid) {
+        try {
+          const userDocRef = doc(db, USERS_COLLECTION, uid);
+          await updateDoc(userDocRef, {
+            [`profiles.${profileId}`]: deleteField(),
+            updatedAt: serverTimestamp()
+          });
+        } catch (docErr) {
+          console.warn('UserSyncService: Direct updateDoc deleteField failed', docErr);
+        }
+      }
     }
   }
 }

@@ -399,11 +399,17 @@ export const storageService = {
     const keys = Object.keys(state.profiles);
     if (keys.length <= 1) return false;
 
+    const profileToDelete = state.profiles[profileId];
+    const childName = profileToDelete?.username || profileToDelete?.name || null;
+
     delete state.profiles[profileId];
     if (state.activeProfileId === profileId) {
       state.activeProfileId = Object.keys(state.profiles)[0];
     }
     safeSaveProfilesState(state);
+    try {
+      userSyncService.deleteProfileFromCloud(profileId, childName);
+    } catch (e) {}
     return true;
   },
 

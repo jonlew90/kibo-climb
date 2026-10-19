@@ -1192,12 +1192,11 @@ exports.createStripePortalSession = onCall(
 /**
  * Compiles a weekly summary and HTML template for scheduled email digests.
  */
-function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, profileId = null }) {
+function computeProfileWeeklyStats({ childName, profile, profileId = null }) {
   const name = childName || profile?.name || profile?.username || 'Kibo Climber';
   const grade = profile?.gradeLevel || 'Grade 1–2';
   const userData = profile?.userData || {};
   const streak = userData.streak || 0;
-  const sparks = userData.sparks || 0;
   const unlockedBadges = userData.unlockedBadges || [];
 
   const now = new Date();
@@ -1211,9 +1210,8 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, prof
   const mathSolved = mathData.totalProblemsSolved || 0;
   const mathSprints = mathData.sprintHistory || [];
   const mathRecent = mathSprints.filter(s => s.date && (now - new Date(s.date)) / (1000 * 60 * 60 * 24) <= 7);
-  const mathToAnalyze = mathRecent.length > 0 ? mathRecent : mathSprints.slice(0, 10);
   let mathWeekSolved = 0, mathWeekCorrect = 0, mathWeekTime = 0;
-  mathToAnalyze.forEach(s => {
+  mathRecent.forEach(s => {
     mathWeekSolved += Number(s.totalQuestions || 12);
     mathWeekCorrect += Number(s.correctCount || s.score || 0);
     mathWeekTime += Number(s.totalTimeSec || 0);
@@ -1239,9 +1237,8 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, prof
   const wordsSprints = wordsData.sprintHistory || [];
   if (wordsSolved > 0 || wordsSprints.length > 0) {
     const wordsRecent = wordsSprints.filter(s => s.date && (now - new Date(s.date)) / (1000 * 60 * 60 * 24) <= 7);
-    const wordsToAnalyze = wordsRecent.length > 0 ? wordsRecent : wordsSprints.slice(0, 10);
     let wordsWeekSolved = 0, wordsWeekCorrect = 0, wordsWeekTime = 0;
-    wordsToAnalyze.forEach(s => {
+    wordsRecent.forEach(s => {
       wordsWeekSolved += Number(s.totalQuestions || 12);
       wordsWeekCorrect += Number(s.correctCount || s.score || 0);
       wordsWeekTime += Number(s.totalTimeSec || 0);
@@ -1260,10 +1257,9 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, prof
   }
 
   const totalProblemsThisWeek = subjects.reduce((sum, s) => sum + s.solvedThisWeek, 0);
-  const totalStudyTimeMin = Math.round((mathWeekTime + (wordsData ? 0 : 0)) / 60);
 
   const subjectsHtml = subjects.map(sub => `
-    <div style="background-color: #ffffff; border: 2px solid #e2e8f0; border-radius: 16px; padding: 18px; margin-bottom: 20px; text-align: left;">
+    <div style="background-color: #ffffff; border: 2px solid #e2e8f0; border-radius: 16px; padding: 18px; margin-bottom: 16px; text-align: left;">
       <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 12px;">
         <h3 style="margin: 0; color: #0f172a; font-size: 16px; font-weight: 800;">
           <span style="font-size: 18px; margin-right: 6px;">${sub.icon}</span> ${sub.name} Climb
@@ -1292,12 +1288,28 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, prof
     </div>
   `).join('');
 
+  return {
+    name,
+    grade,
+    streak,
+    unlockedBadgesCount: unlockedBadges.length,
+    totalProblemsThisWeek,
+    subjects,
+    subjectsHtml,
+    profileQuery,
+    profileId
+  };
+}
+
+function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, profileId = null }) {
+  const stats = computeProfileWeeklyStats({ childName, profile, profileId });
+
   return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>🐾 Kibo Climb Weekly Progress for ${name}</title>
+  <title>🐾 Kibo Climb Weekly Progress for ${stats.name}</title>
 </head>
 <body style="margin: 0; padding: 24px 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -1310,11 +1322,11 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, prof
                 <tr>
                   <td>
                     <h1 style="margin: 0; color: #ffffff; font-size: 21px; font-weight: 900;">🐾 Kibo Climb</h1>
-                    <p style="margin: 2px 0 0 0; color: #a5b4fc; font-size: 13px; font-weight: 600;">Weekly Progress Summary for <strong>${name}</strong></p>
+                    <p style="margin: 2px 0 0 0; color: #a5b4fc; font-size: 13px; font-weight: 600;">Weekly Progress Summary for <strong>${stats.name}</strong></p>
                   </td>
                   <td align="right">
                     <span style="background-color: rgba(255,255,255,0.15); color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
-                      ${grade}
+                      ${stats.grade}
                     </span>
                   </td>
                 </tr>
@@ -1329,17 +1341,17 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, prof
                 <tr>
                   <td align="center">
                     <span style="font-size: 18px;">🔥</span>
-                    <div style="font-size: 15px; font-weight: 900; color: #d97706;">${streak} Days</div>
+                    <div style="font-size: 15px; font-weight: 900; color: #d97706;">${stats.streak} Days</div>
                     <div style="font-size: 10px; font-weight: 700; color: #78350f; text-transform: uppercase;">Streak</div>
                   </td>
                   <td align="center" style="border-left: 1px solid #e9d5ff; border-right: 1px solid #e9d5ff;">
                     <span style="font-size: 18px;">⚡</span>
-                    <div style="font-size: 15px; font-weight: 900; color: #7c3aed;">${totalProblemsThisWeek}</div>
+                    <div style="font-size: 15px; font-weight: 900; color: #7c3aed;">${stats.totalProblemsThisWeek}</div>
                     <div style="font-size: 10px; font-weight: 700; color: #581c87; text-transform: uppercase;">Weekly Items</div>
                   </td>
                   <td align="center">
                     <span style="font-size: 18px;">🏆</span>
-                    <div style="font-size: 15px; font-weight: 900; color: #0284c7;">${unlockedBadges.length}</div>
+                    <div style="font-size: 15px; font-weight: 900; color: #0284c7;">${stats.unlockedBadgesCount}</div>
                     <div style="font-size: 10px; font-weight: 700; color: #0c4a6e; text-transform: uppercase;">Badges</div>
                   </td>
                 </tr>
@@ -1350,11 +1362,11 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, prof
           <!-- SUBJECTS -->
           <tr>
             <td style="padding: 24px 32px; background-color: #f8fafc;">
-              ${subjectsHtml}
+              ${stats.subjectsHtml}
 
               <div style="margin-top: 24px; padding-top: 18px; border-top: 2px solid #e2e8f0; text-align: center;">
-                <a href="https://kiboclimb.com/?action=play&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=cta_continue_ascent${profileQuery}" style="display: inline-block; background-color: #7c3aed; color: #ffffff; font-size: 14px; font-weight: 800; text-decoration: none; padding: 12px 24px; border-radius: 12px;">
-                  🏔️ Continue ${name}'s Ascent
+                <a href="https://kiboclimb.com/?action=play&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=cta_continue_ascent${stats.profileQuery}" style="display: inline-block; background-color: #7c3aed; color: #ffffff; font-size: 14px; font-weight: 800; text-decoration: none; padding: 12px 24px; border-radius: 12px;">
+                  🏔️ Continue ${stats.name}'s Ascent
                 </a>
               </div>
             </td>
@@ -1377,6 +1389,133 @@ function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, prof
 </html>
   `.trim();
 }
+
+/**
+ * Builds a single consolidated family weekly digest email covering all children in a family account.
+ */
+function buildScheduledFamilyDigestHtml({ children = [], isKiboClub = false }) {
+  const childrenStats = children.map(c => computeProfileWeeklyStats({
+    childName: c.childName,
+    profile: c.profile,
+    profileId: c.pid
+  }));
+
+  const totalFamilyProblems = childrenStats.reduce((sum, c) => sum + c.totalProblemsThisWeek, 0);
+  const totalFamilyBadges = childrenStats.reduce((sum, c) => sum + c.unlockedBadgesCount, 0);
+  const topStreak = Math.max(0, ...childrenStats.map(c => c.streak));
+  const namesSummary = childrenStats.map(c => c.name).join(' & ');
+
+  const childrenSectionsHtml = childrenStats.map(c => `
+    <div style="background-color: #ffffff; border: 2px solid #e2e8f0; border-radius: 18px; padding: 22px; margin-bottom: 24px; text-align: left;">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 14px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+        <tr>
+          <td>
+            <h2 style="margin: 0; color: #0f172a; font-size: 18px; font-weight: 900;">👤 ${c.name}</h2>
+            <span style="color: #64748b; font-size: 12px; font-weight: 700;">${c.grade}</span>
+          </td>
+          <td align="right">
+            <span style="background-color: #fef3c7; color: #92400e; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 12px; margin-right: 6px;">
+              🔥 ${c.streak}d streak
+            </span>
+            <span style="background-color: #f3e8ff; color: #6b21a8; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 12px;">
+              ⚡ ${c.totalProblemsThisWeek} this week
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      ${c.subjectsHtml}
+
+      <div style="text-align: center; margin-top: 14px;">
+        <a href="https://kiboclimb.com/?action=play&profile=${encodeURIComponent(c.profileId || '')}&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_family_digest" style="display: inline-block; background-color: #7c3aed; color: #ffffff; font-size: 13px; font-weight: 800; text-decoration: none; padding: 10px 20px; border-radius: 10px;">
+          🏔️ Continue ${c.name}'s Ascent →
+        </a>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>🐾 Kibo Climb Weekly Family Progress: ${namesSummary}</title>
+</head>
+<body style="margin: 0; padding: 24px 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); padding: 24px 32px; text-align: left;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 21px; font-weight: 900;">🐾 Kibo Climb</h1>
+                    <p style="margin: 2px 0 0 0; color: #a5b4fc; font-size: 13px; font-weight: 600;">Family Progress Summary · <strong>${children.length} Climbers</strong></p>
+                  </td>
+                  <td align="right">
+                    <span style="background-color: rgba(255,255,255,0.15); color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                      👨‍👩‍👧‍👦 Family Plan
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- COMBINED FAMILY RIBBON -->
+          <tr>
+            <td style="background-color: #faf5ff; border-bottom: 2px solid #f3e8ff; padding: 16px 24px;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center">
+                    <span style="font-size: 18px;">🔥</span>
+                    <div style="font-size: 15px; font-weight: 900; color: #d97706;">${topStreak} Days</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #78350f; text-transform: uppercase;">Top Streak</div>
+                  </td>
+                  <td align="center" style="border-left: 1px solid #e9d5ff; border-right: 1px solid #e9d5ff;">
+                    <span style="font-size: 18px;">⚡</span>
+                    <div style="font-size: 15px; font-weight: 900; color: #7c3aed;">${totalFamilyProblems}</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #581c87; text-transform: uppercase;">Family Solved</div>
+                  </td>
+                  <td align="center">
+                    <span style="font-size: 18px;">🏆</span>
+                    <div style="font-size: 15px; font-weight: 900; color: #0284c7;">${totalFamilyBadges}</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #0c4a6e; text-transform: uppercase;">Total Badges</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- PER-CHILD SECTIONS -->
+          <tr>
+            <td style="padding: 24px 28px; background-color: #f8fafc;">
+              ${childrenSectionsHtml}
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background-color: #ffffff; border-top: 1px solid #e2e8f0; padding: 18px 32px; text-align: center;">
+              <p style="margin: 0; color: #94a3b8; font-size: 11px;">
+                You are receiving this single consolidated digest because Weekly Digest is enabled in your Kibo Climb Parent Zone.<br/>
+                © ${new Date().getFullYear()} Kibo Climb. The Daily Climb to Mastery.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+exports.buildScheduledDigestHtml = buildScheduledDigestHtml;
+exports.buildScheduledFamilyDigestHtml = buildScheduledFamilyDigestHtml;
 
 /**
  * ============================================================================
@@ -1468,13 +1607,40 @@ exports.sendScheduledWeeklyDigests = onSchedule(
 
         for (const pid of profileKeys) {
           const profile = profiles[pid];
+          if (!profile || profile.isDeleted === true) continue;
+
           const childName = (profile?.username || profile?.name || 'Kibo Climber').trim();
           const childKey = childName.toLowerCase();
           const dedupKey = `${normalizedEmail}:::${childKey}`;
 
+          const uData = profile?.userData || {};
+          const subjects = uData.subjects || {};
+          const totalProblems = Number(uData.totalProblemsSolved || subjects.math?.totalProblemsSolved || 0);
+          const mathSprints = subjects.math?.sprintHistory || uData.sprintHistory || [];
+          const wordsSprints = subjects.words?.sprintHistory || [];
+          const hasAnySprints = (mathSprints.length > 0 || wordsSprints.length > 0);
+
+          // Skip completely unplayed placeholder profiles
+          if (totalProblems === 0 && !hasAnySprints) {
+            continue;
+          }
+
+          // Check if profile has had any practice in the last 45 days
+          const nowMs = Date.now();
+          const fortyFiveDaysMs = 45 * 24 * 60 * 60 * 1000;
+          const mathRecent45 = mathSprints.some(s => s.date && (nowMs - new Date(s.date).getTime()) <= fortyFiveDaysMs);
+          const wordsRecent45 = wordsSprints.some(s => s.date && (nowMs - new Date(s.date).getTime()) <= fortyFiveDaysMs);
+          const lastDate = uData.lastSprintDate || uData.lastPlayedDate || uData.lastSprintTimestamp;
+          const isRecentLastDate = lastDate && (nowMs - new Date(lastDate).getTime()) <= fortyFiveDaysMs;
+
+          if (!mathRecent45 && !wordsRecent45 && !isRecentLastDate) {
+            // Profile has been inactive for > 45 days — skip weekly digest to prevent ghost digests
+            continue;
+          }
+
           const profileUpdatedMillis = Number(profile?.updatedAtMillis || docUpdatedMillis || 0);
           const badgeCount = Array.isArray(profile?.userData?.unlockedBadges) ? profile.userData.unlockedBadges.length : 0;
-          const problemsSolved = Number(profile?.userData?.totalProblemsSolved || 0);
+          const problemsSolved = totalProblems;
           const candidateScore = (profileUpdatedMillis * 1000) + (badgeCount * 10) + problemsSolved;
 
           const isKiboClub = Boolean(
@@ -1500,11 +1666,40 @@ exports.sendScheduledWeeklyDigests = onSchedule(
         }
       }
 
-      // Dispatch single digest per child profile to each parent email address
+      // Group candidate profiles by parent email so multi-profile accounts receive 1 consolidated family digest
+      const familyEmailMap = new Map();
       for (const candidate of digestCandidates.values()) {
-        const { targetEmail, childName, profile, pid, isKiboClub, userDocRef } = candidate;
-        const htmlBody = buildScheduledDigestHtml({ childName, profile, isKiboClub, profileId: pid });
-        const subject = `🐾 🏔️ Kibo Weekly Progress for ${childName}`;
+        const { targetEmail } = candidate;
+        if (!familyEmailMap.has(targetEmail)) {
+          familyEmailMap.set(targetEmail, []);
+        }
+        familyEmailMap.get(targetEmail).push(candidate);
+      }
+
+      for (const [targetEmail, children] of familyEmailMap.entries()) {
+        const isMultiChild = children.length > 1;
+        const isAnyKiboClub = children.some(c => c.isKiboClub);
+
+        let subject;
+        let htmlBody;
+
+        if (isMultiChild) {
+          const namesSummary = children.map(c => c.childName).join(' & ');
+          subject = `🐾 🏔️ Kibo Weekly Family Progress: ${namesSummary}`;
+          htmlBody = buildScheduledFamilyDigestHtml({
+            children,
+            isKiboClub: isAnyKiboClub
+          });
+        } else {
+          const single = children[0];
+          subject = `🐾 🏔️ Kibo Weekly Progress for ${single.childName}`;
+          htmlBody = buildScheduledDigestHtml({
+            childName: single.childName,
+            profile: single.profile,
+            isKiboClub: single.isKiboClub,
+            profileId: single.pid
+          });
+        }
 
         try {
           const sendRes = await resend.emails.send({
@@ -1515,14 +1710,16 @@ exports.sendScheduledWeeklyDigests = onSchedule(
           });
 
           if (sendRes.error) {
-            console.error(`[sendScheduledWeeklyDigests] Failed to send digest for profile ${pid} to ${targetEmail}:`, sendRes.error);
+            console.error(`[sendScheduledWeeklyDigests] Failed to send digest to ${targetEmail}:`, sendRes.error);
           } else {
             sentCount++;
-            console.log(`[sendScheduledWeeklyDigests] Sent digest for ${childName} to ${targetEmail}`);
-            if (userDocRef) {
-              await userDocRef.set({
-                lastDigestSentAt: FieldValue.serverTimestamp()
-              }, { merge: true });
+            console.log(`[sendScheduledWeeklyDigests] Sent digest (${children.length} climber(s)) to ${targetEmail}`);
+            for (const child of children) {
+              if (child.userDocRef) {
+                await child.userDocRef.set({
+                  lastDigestSentAt: FieldValue.serverTimestamp()
+                }, { merge: true }).catch(() => {});
+              }
             }
           }
         } catch (sendErr) {
@@ -1811,5 +2008,146 @@ exports.scheduledDailyStreakPush = onSchedule(
     }
   }
 );
+
+/**
+ * Callable Cloud Function: deleteChildProfileCloud
+ * Permanently deletes a child profile from the user's Firestore document
+ * (and any orphaned docs matching the parent's verified email) to prevent resurrection and ghost digests.
+ */
+exports.deleteChildProfileCloud = onCall(
+  { cors: true },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "User must be authenticated to delete a profile.");
+    }
+
+    const { profileId, childName } = request.data || {};
+    if (!profileId && !childName) {
+      throw new HttpsError("invalid-argument", "Must specify profileId or childName to delete.");
+    }
+
+    const uid = request.auth.uid;
+    const userEmail = request.auth.token?.email;
+    const db = getFirestore();
+
+    console.log(`[deleteChildProfileCloud] Deleting profile for UID: ${uid}, Email: ${userEmail}, profileId: ${profileId}, childName: ${childName}`);
+
+    let deletedCount = 0;
+
+    // 1. Delete from caller's direct user doc
+    const userDocRef = db.collection("users").doc(uid);
+    const userDocSnap = await userDocRef.get();
+    if (userDocSnap.exists) {
+      const data = userDocSnap.data() || {};
+      const profiles = data.profiles || {};
+      const updates = {};
+
+      for (const [pid, prof] of Object.entries(profiles)) {
+        const pName = (prof.username || prof.name || '').trim().toLowerCase();
+        if ((profileId && pid === profileId) || (childName && pName === childName.trim().toLowerCase())) {
+          updates[`profiles.${pid}`] = FieldValue.delete();
+          deletedCount++;
+        }
+      }
+
+      if (Object.keys(updates).length > 0) {
+        updates.updatedAt = FieldValue.serverTimestamp();
+        await userDocRef.update(updates);
+      }
+    }
+
+    // 2. Also search for any orphaned user docs associated with the caller's email
+    if (userEmail && EMAIL_REGEX.test(userEmail)) {
+      const normalizedEmail = userEmail.trim().toLowerCase();
+      const emailQuerySnap = await db.collection("users").where("email", "==", normalizedEmail).get();
+      for (const docSnap of emailQuerySnap.docs) {
+        if (docSnap.id === uid) continue;
+        const data = docSnap.data() || {};
+        const profiles = data.profiles || {};
+        const updates = {};
+
+        for (const [pid, prof] of Object.entries(profiles)) {
+          const pName = (prof.username || prof.name || '').trim().toLowerCase();
+          if ((profileId && pid === profileId) || (childName && pName === childName.trim().toLowerCase())) {
+            updates[`profiles.${pid}`] = FieldValue.delete();
+            deletedCount++;
+          }
+        }
+
+        if (Object.keys(updates).length > 0) {
+          updates.updatedAt = FieldValue.serverTimestamp();
+          await docSnap.ref.update(updates);
+        }
+      }
+    }
+
+    console.log(`[deleteChildProfileCloud] Completed deletion. Removed ${deletedCount} instances for email ${userEmail}.`);
+    return { success: true, deletedCount };
+  }
+);
+
+/**
+ * Callable Cloud Function: getLinkedAccountProfiles
+ * Returns all child profiles registered under the caller's account or email across all documents.
+ */
+exports.getLinkedAccountProfiles = onCall(
+  { cors: true },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "User must be authenticated.");
+    }
+
+    const uid = request.auth.uid;
+    const userEmail = request.auth.token?.email;
+    const db = getFirestore();
+
+    const results = [];
+    const seenProfileIds = new Set();
+
+    const extractFromDoc = (docSnap, isCurrentDoc) => {
+      const data = docSnap.data() || {};
+      const profiles = data.profiles || {};
+      for (const [pid, prof] of Object.entries(profiles)) {
+        if (!prof || prof.isDeleted) continue;
+        if (seenProfileIds.has(pid)) continue;
+        seenProfileIds.add(pid);
+
+        const uData = prof.userData || {};
+        const mathData = uData.subjects?.math || uData || {};
+        results.push({
+          id: pid,
+          name: prof.username || prof.name || 'Kibo Climber',
+          gradeLevel: prof.gradeLevel || 'Grade 1–2',
+          totalProblemsSolved: mathData.totalProblemsSolved || uData.totalProblemsSolved || 0,
+          streak: uData.streak || 0,
+          lastClimbDate: uData.lastSprintDate || uData.lastPlayedDate || null,
+          docId: docSnap.id,
+          isCurrentAccountDoc: isCurrentDoc
+        });
+      }
+    };
+
+    const userDocSnap = await db.collection("users").doc(uid).get();
+    if (userDocSnap.exists) {
+      extractFromDoc(userDocSnap, true);
+    }
+
+    if (userEmail && EMAIL_REGEX.test(userEmail)) {
+      const normalizedEmail = userEmail.trim().toLowerCase();
+      const emailQuerySnap = await db.collection("users").where("email", "==", normalizedEmail).get();
+      for (const docSnap of emailQuerySnap.docs) {
+        if (docSnap.id === uid) continue;
+        extractFromDoc(docSnap, false);
+      }
+    }
+
+    return { success: true, profiles: results };
+  }
+);
+
+// Helper exports for unit testing and modular use
+exports.computeProfileWeeklyStats = computeProfileWeeklyStats;
+exports.buildScheduledDigestHtml = buildScheduledDigestHtml;
+exports.buildScheduledFamilyDigestHtml = buildScheduledFamilyDigestHtml;
 
 
