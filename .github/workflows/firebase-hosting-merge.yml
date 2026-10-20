@@ -96,7 +96,7 @@ jobs:
 
       - name: Deploy to Firebase Functions
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_changes.outputs.has_functions_changes == 'true'
-        run: npx -y firebase-tools deploy --only functions --project kibo-climb
+        run: npx -y firebase-tools deploy --only functions --force --project kibo-climb
 
       - name: Notify IndexNow of Site Updates
         if: steps.check_changes.outputs.has_changes == 'true'
