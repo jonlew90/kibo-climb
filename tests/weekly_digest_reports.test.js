@@ -11,6 +11,13 @@ vi.mock('firebase-functions/v2/scheduler', () => ({
 vi.mock('firebase-functions/params', () => ({
   defineSecret: (name) => name
 }));
+vi.mock('resend', () => ({
+  Resend: class {
+    constructor() {
+      this.emails = { send: vi.fn() };
+    }
+  }
+}));
 
 import { generateWeeklyDigestData, formatWeeklyDigestText, formatWeeklyDigestHtml } from '../src/utils/weeklyDigest.js';
 import { SUBJECTS_CONFIG } from '../src/config/subjects.js';

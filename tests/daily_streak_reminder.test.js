@@ -11,6 +11,13 @@ vi.mock('firebase-functions/v2/scheduler', () => ({
 vi.mock('firebase-functions/params', () => ({
   defineSecret: (name) => name
 }));
+vi.mock('resend', () => ({
+  Resend: class {
+    constructor() {
+      this.emails = { send: vi.fn() };
+    }
+  }
+}));
 
 import { calculateStreakFromHistory } from '../src/utils/dateUtils';
 const { evaluateDailyStreakReminder } = require('../functions/index');
