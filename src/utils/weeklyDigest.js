@@ -696,3 +696,328 @@ export function formatWeeklyDigestHtml({ childName, digestData, baseUrl = digest
 </html>
   `.trim();
 }
+
+/**
+ * Compiles a weekly summary and HTML template for scheduled email digests.
+ */
+export function computeProfileWeeklyStats({ childName, profile, profileId = null }) {
+  const name = childName || profile?.name || profile?.username || 'Kibo Climber';
+  const grade = profile?.gradeLevel || 'Grade 1–2';
+  const userData = profile?.userData || {};
+  const streak = userData.streak || 0;
+  const unlockedBadges = userData.unlockedBadges || [];
+
+  const now = new Date();
+  const mathData = userData.subjects?.math || userData || {};
+  const wordsData = userData.subjects?.words || {};
+
+  const profileQuery = profileId ? `&profile=${encodeURIComponent(profileId)}` : '';
+  const subjects = [];
+
+  // Math Subject Summary
+  const mathSolved = mathData.totalProblemsSolved || 0;
+  const mathSprints = mathData.sprintHistory || [];
+  const mathRecent = mathSprints.filter(s => s.date && (now - new Date(s.date)) / (1000 * 60 * 60 * 24) <= 7);
+  let mathWeekSolved = 0, mathWeekCorrect = 0, mathWeekTime = 0;
+  mathRecent.forEach(s => {
+    mathWeekSolved += Number(s.totalQuestions || 12);
+    mathWeekCorrect += Number(s.correctCount || s.score || 0);
+    mathWeekTime += Number(s.totalTimeSec || 0);
+  });
+  const mathRating = mathData.adaptiveCompetenceRating || 1000;
+  const mathAcc = mathWeekSolved > 0 ? Math.round((mathWeekCorrect / mathWeekSolved) * 100) : null;
+  const mathSpeed = mathWeekSolved > 0 ? (mathWeekTime / mathWeekSolved).toFixed(1) : null;
+
+  subjects.push({
+    name: 'Math',
+    icon: '🔢',
+    rating: mathRating,
+    tier: mathData.tier || 1,
+    solvedThisWeek: mathWeekSolved,
+    totalSolved: mathSolved,
+    accuracyPct: mathAcc,
+    avgLatencySec: mathSpeed,
+    playUrl: `https://kiboclimb.com/math?utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=subject_math${profileQuery}`
+  });
+
+  // Words Subject Summary
+  const wordsSolved = wordsData.totalProblemsSolved || 0;
+  const wordsSprints = wordsData.sprintHistory || [];
+  if (wordsSolved > 0 || wordsSprints.length > 0) {
+    const wordsRecent = wordsSprints.filter(s => s.date && (now - new Date(s.date)) / (1000 * 60 * 60 * 24) <= 7);
+    let wordsWeekSolved = 0, wordsWeekCorrect = 0, wordsWeekTime = 0;
+    wordsRecent.forEach(s => {
+      wordsWeekSolved += Number(s.totalQuestions || 12);
+      wordsWeekCorrect += Number(s.correctCount || s.score || 0);
+      wordsWeekTime += Number(s.totalTimeSec || 0);
+    });
+    subjects.push({
+      name: 'Words',
+      icon: '📚',
+      rating: wordsData.adaptiveCompetenceRating || 1000,
+      tier: wordsData.tier || 1,
+      solvedThisWeek: wordsWeekSolved,
+      totalSolved: wordsSolved,
+      accuracyPct: wordsWeekSolved > 0 ? Math.round((wordsWeekCorrect / wordsWeekSolved) * 100) : null,
+      avgLatencySec: wordsWeekSolved > 0 ? (wordsWeekTime / wordsWeekSolved).toFixed(1) : null,
+      playUrl: `https://kiboclimb.com/words?utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=subject_words${profileQuery}`
+    });
+  }
+
+  const totalProblemsThisWeek = subjects.reduce((sum, s) => sum + s.solvedThisWeek, 0);
+
+  const subjectsHtml = subjects.map(sub => `
+    <div style="background-color: #ffffff; border: 2px solid #e2e8f0; border-radius: 16px; padding: 18px; margin-bottom: 16px; text-align: left;">
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 12px;">
+        <h3 style="margin: 0; color: #0f172a; font-size: 16px; font-weight: 800;">
+          <span style="font-size: 18px; margin-right: 6px;">${sub.icon}</span> ${sub.name} Climb
+        </h3>
+        <span style="background-color: #f3e8ff; color: #6b21a8; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 12px;">
+          Rating: ${sub.rating} · Tier ${sub.tier}
+        </span>
+      </div>
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td width="50%" style="padding: 4px 0;">
+            <span style="font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 700;">Completed</span>
+            <div style="font-size: 13px; font-weight: 800; color: #1e293b;">${sub.solvedThisWeek} this week (${sub.totalSolved} total)</div>
+          </td>
+          <td width="50%" style="padding: 4px 0;">
+            <span style="font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 700;">Accuracy</span>
+            <div style="font-size: 13px; font-weight: 800; color: ${sub.accuracyPct >= 80 ? '#16a34a' : '#d97706'};">${sub.accuracyPct !== null ? `${sub.accuracyPct}%` : 'Calibrating'}</div>
+          </td>
+        </tr>
+      </table>
+      <div style="text-align: right; margin-top: 10px;">
+        <a href="${sub.playUrl}" style="font-size: 12px; font-weight: 800; color: #7c3aed; text-decoration: none;">
+          Play ${sub.name} Climb →
+        </a>
+      </div>
+    </div>
+  `).join('');
+
+  return {
+    name,
+    grade,
+    streak,
+    unlockedBadgesCount: unlockedBadges.length,
+    totalProblemsThisWeek,
+    subjects,
+    subjectsHtml,
+    profileQuery,
+    profileId
+  };
+}
+
+export function buildScheduledDigestHtml({ childName, profile, isKiboClub = false, profileId = null }) {
+  const stats = computeProfileWeeklyStats({ childName, profile, profileId });
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>🐾 Kibo Climb Weekly Progress for ${stats.name}</title>
+</head>
+<body style="margin: 0; padding: 24px 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 580px; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); padding: 24px 32px; text-align: left;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 21px; font-weight: 900;">🐾 Kibo Climb</h1>
+                    <p style="margin: 2px 0 0 0; color: #a5b4fc; font-size: 13px; font-weight: 600;">Weekly Progress Summary for <strong>${stats.name}</strong></p>
+                  </td>
+                  <td align="right">
+                    <span style="background-color: rgba(255,255,255,0.15); color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                      ${stats.grade}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- RIBBON -->
+          <tr>
+            <td style="background-color: #faf5ff; border-bottom: 2px solid #f3e8ff; padding: 16px 24px;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center">
+                    <span style="font-size: 18px;">🔥</span>
+                    <div style="font-size: 15px; font-weight: 900; color: #d97706;">${stats.streak} Days</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #78350f; text-transform: uppercase;">Streak</div>
+                  </td>
+                  <td align="center" style="border-left: 1px solid #e9d5ff; border-right: 1px solid #e9d5ff;">
+                    <span style="font-size: 18px;">⚡</span>
+                    <div style="font-size: 15px; font-weight: 900; color: #7c3aed;">${stats.totalProblemsThisWeek}</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #581c87; text-transform: uppercase;">Weekly Items</div>
+                  </td>
+                  <td align="center">
+                    <span style="font-size: 18px;">🏆</span>
+                    <div style="font-size: 15px; font-weight: 900; color: #0284c7;">${stats.unlockedBadgesCount}</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #0c4a6e; text-transform: uppercase;">Badges</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- SUBJECTS -->
+          <tr>
+            <td style="padding: 24px 32px; background-color: #f8fafc;">
+              ${stats.subjectsHtml}
+
+              <div style="margin-top: 24px; padding-top: 18px; border-top: 2px solid #e2e8f0; text-align: center;">
+                <a href="https://kiboclimb.com/?action=play&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_digest&utm_content=cta_continue_ascent${stats.profileQuery}" style="display: inline-block; background-color: #7c3aed; color: #ffffff; font-size: 14px; font-weight: 800; text-decoration: none; padding: 12px 24px; border-radius: 12px;">
+                  🏔️ Continue ${stats.name}'s Ascent
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background-color: #ffffff; border-top: 1px solid #e2e8f0; padding: 18px 32px; text-align: center;">
+              <p style="margin: 0; color: #94a3b8; font-size: 11px;">
+                You are receiving this because Weekly Digest is enabled in your Kibo Climb Parent Zone.<br/>
+                © ${new Date().getFullYear()} Kibo Climb. The Daily Climb to Mastery.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Builds a single consolidated family weekly digest email covering all children in a family account.
+ */
+export function buildScheduledFamilyDigestHtml({ children = [], isKiboClub = false }) {
+  const childrenStats = children.map(c => computeProfileWeeklyStats({
+    childName: c.childName,
+    profile: c.profile,
+    profileId: c.pid
+  }));
+
+  const totalFamilyProblems = childrenStats.reduce((sum, c) => sum + c.totalProblemsThisWeek, 0);
+  const totalFamilyBadges = childrenStats.reduce((sum, c) => sum + c.unlockedBadgesCount, 0);
+  const topStreak = Math.max(0, ...childrenStats.map(c => c.streak));
+  const namesSummary = childrenStats.map(c => c.name).join(' & ');
+
+  const childrenSectionsHtml = childrenStats.map(c => `
+    <div style="background-color: #ffffff; border: 2px solid #e2e8f0; border-radius: 18px; padding: 22px; margin-bottom: 24px; text-align: left;">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 14px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+        <tr>
+          <td>
+            <h2 style="margin: 0; color: #0f172a; font-size: 18px; font-weight: 900;">👤 ${c.name}</h2>
+            <span style="color: #64748b; font-size: 12px; font-weight: 700;">${c.grade}</span>
+          </td>
+          <td align="right">
+            <span style="background-color: #fef3c7; color: #92400e; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 12px; margin-right: 6px;">
+              🔥 ${c.streak}d streak
+            </span>
+            <span style="background-color: #f3e8ff; color: #6b21a8; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 12px;">
+              ⚡ ${c.totalProblemsThisWeek} this week
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      ${c.subjectsHtml}
+
+      <div style="text-align: center; margin-top: 14px;">
+        <a href="https://kiboclimb.com/?action=play&profile=${encodeURIComponent(c.profileId || '')}&utm_source=transactional_email&utm_medium=email&utm_campaign=weekly_family_digest" style="display: inline-block; background-color: #7c3aed; color: #ffffff; font-size: 13px; font-weight: 800; text-decoration: none; padding: 10px 20px; border-radius: 10px;">
+          🏔️ Continue ${c.name}'s Ascent →
+        </a>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>🐾 Kibo Climb Weekly Family Progress: ${namesSummary}</title>
+</head>
+<body style="margin: 0; padding: 24px 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); padding: 24px 32px; text-align: left;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 21px; font-weight: 900;">🐾 Kibo Climb</h1>
+                    <p style="margin: 2px 0 0 0; color: #a5b4fc; font-size: 13px; font-weight: 600;">Family Progress Summary · <strong>${children.length} Climbers</strong></p>
+                  </td>
+                  <td align="right">
+                    <span style="background-color: rgba(255,255,255,0.15); color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                      👨‍👩‍👧‍👦 Family Plan
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- COMBINED FAMILY RIBBON -->
+          <tr>
+            <td style="background-color: #faf5ff; border-bottom: 2px solid #f3e8ff; padding: 16px 24px;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center">
+                    <span style="font-size: 18px;">🔥</span>
+                    <div style="font-size: 15px; font-weight: 900; color: #d97706;">${topStreak} Days</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #78350f; text-transform: uppercase;">Top Streak</div>
+                  </td>
+                  <td align="center" style="border-left: 1px solid #e9d5ff; border-right: 1px solid #e9d5ff;">
+                    <span style="font-size: 18px;">⚡</span>
+                    <div style="font-size: 15px; font-weight: 900; color: #7c3aed;">${totalFamilyProblems}</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #581c87; text-transform: uppercase;">Family Solved</div>
+                  </td>
+                  <td align="center">
+                    <span style="font-size: 18px;">🏆</span>
+                    <div style="font-size: 15px; font-weight: 900; color: #0284c7;">${totalFamilyBadges}</div>
+                    <div style="font-size: 10px; font-weight: 700; color: #0c4a6e; text-transform: uppercase;">Total Badges</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- PER-CHILD SECTIONS -->
+          <tr>
+            <td style="padding: 24px 28px; background-color: #f8fafc;">
+              ${childrenSectionsHtml}
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background-color: #ffffff; border-top: 1px solid #e2e8f0; padding: 18px 32px; text-align: center;">
+              <p style="margin: 0; color: #94a3b8; font-size: 11px;">
+                You are receiving this single consolidated digest because Weekly Digest is enabled in your Kibo Climb Parent Zone.<br/>
+                © ${new Date().getFullYear()} Kibo Climb. The Daily Climb to Mastery.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}

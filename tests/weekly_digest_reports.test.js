@@ -1,25 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
-
-vi.mock('firebase-functions/v2/https', () => ({
-  onCall: (opts, handler) => (handler || opts),
-  onRequest: (opts, handler) => (handler || opts),
-  HttpsError: class extends Error {}
-}));
-vi.mock('firebase-functions/v2/scheduler', () => ({
-  onSchedule: (opts, handler) => (handler || opts)
-}));
-vi.mock('firebase-functions/params', () => ({
-  defineSecret: (name) => name
-}));
-vi.mock('resend', () => ({
-  Resend: class {
-    constructor() {
-      this.emails = { send: vi.fn() };
-    }
-  }
-}));
-
-import { generateWeeklyDigestData, formatWeeklyDigestText, formatWeeklyDigestHtml } from '../src/utils/weeklyDigest.js';
+import { describe, it, expect } from 'vitest';
+import {
+  generateWeeklyDigestData,
+  formatWeeklyDigestText,
+  formatWeeklyDigestHtml,
+  buildScheduledDigestHtml,
+  buildScheduledFamilyDigestHtml
+} from '../src/utils/weeklyDigest.js';
 import { SUBJECTS_CONFIG } from '../src/config/subjects.js';
 
 describe('Weekly Progress Digest Reports (Kibo Club vs Basic)', () => {
@@ -120,8 +106,6 @@ describe('Weekly Progress Digest Reports (Kibo Club vs Basic)', () => {
   });
 
   it('builds a consolidated multi-child family digest email for parents with multiple profiles', async () => {
-    const { buildScheduledFamilyDigestHtml, buildScheduledDigestHtml } = await import('../functions/index.js');
-
     const mockChild1 = {
       childName: 'ThrivingKangaroo389',
       pid: 'prof_kangaroo',

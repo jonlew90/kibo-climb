@@ -1,26 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-
-vi.mock('firebase-functions/v2/https', () => ({
-  onCall: (opts, handler) => (handler || opts),
-  onRequest: (opts, handler) => (handler || opts),
-  HttpsError: class extends Error {}
-}));
-vi.mock('firebase-functions/v2/scheduler', () => ({
-  onSchedule: (opts, handler) => (handler || opts)
-}));
-vi.mock('firebase-functions/params', () => ({
-  defineSecret: (name) => name
-}));
-vi.mock('resend', () => ({
-  Resend: class {
-    constructor() {
-      this.emails = { send: vi.fn() };
-    }
-  }
-}));
-
 import { calculateStreakFromHistory } from '../src/utils/dateUtils';
-const { evaluateDailyStreakReminder } = require('../functions/index');
+import { evaluateDailyStreakReminder, dispatchOneSignalPush } from '../src/utils/dailyStreakReminder.js';
 
 describe('calculateStreakFromHistory - Weekend and Rest Day Resiliency', () => {
   const monToFri = [1, 2, 3, 4, 5];
@@ -264,7 +244,6 @@ describe('evaluateDailyStreakReminder - Push Notification Scheduling & Day Filte
 });
 
 describe('dispatchOneSignalPush - Mutually Exclusive Targeting Payload Guard', () => {
-  const { dispatchOneSignalPush } = require('../functions/index');
 
   it('never combines include_aliases and include_subscription_ids in a single request payload', async () => {
     const originalFetch = global.fetch;
