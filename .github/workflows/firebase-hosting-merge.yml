@@ -94,15 +94,9 @@ jobs:
         if: steps.check_changes.outputs.has_changes == 'true'
         run: npx -y firebase-tools deploy --only hosting --project kibo-climb
 
-      - name: Prune orphaned Cloud Functions
-        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_changes.outputs.has_functions_changes == 'true'
-        run: |
-          npx -y firebase-tools functions:delete deleteChildProfileCloud --region us-central1 --force --project kibo-climb || true
-          npx -y firebase-tools functions:delete getLinkedAccountProfiles --region us-central1 --force --project kibo-climb || true
-
       - name: Deploy to Firebase Functions
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_changes.outputs.has_functions_changes == 'true'
-        run: npx -y firebase-tools deploy --only functions --force --project kibo-climb
+        run: npx -y firebase-tools deploy --only functions:sendParentEmail,functions:validatePromoCode,functions:joinWeeklyLeague,functions:processReferralLinking,functions:claimUsername,functions:searchUsername,functions:getFriendScores,functions:createStripeCheckoutSession,functions:stripeWebhook,functions:createStripePortalSession,functions:sendScheduledWeeklyDigests,functions:scheduledDailyStreakPush --project kibo-climb
 
       - name: Notify IndexNow of Site Updates
         if: steps.check_changes.outputs.has_changes == 'true'
