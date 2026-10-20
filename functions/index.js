@@ -112,6 +112,66 @@ exports.sendParentEmail = onCall(
       };
     }
 
+    // For delete_profile type, permanently prune child profile from user's Firestore doc and any orphaned docs
+    if (type === "delete_profile") {
+      const { profileId, childName } = request.data || {};
+      if (!profileId && !childName) {
+        throw new HttpsError("invalid-argument", "Must specify profileId or childName to delete.");
+      }
+
+      const userEmail = request.auth.token?.email;
+      let deletedCount = 0;
+
+      // 1. Delete from caller's direct user doc
+      const userDocRef = db.collection("users").doc(uid);
+      const userDocSnap = await userDocRef.get();
+      if (userDocSnap.exists) {
+        const data = userDocSnap.data() || {};
+        const profiles = data.profiles || {};
+        const updates = {};
+
+        for (const [pid, prof] of Object.entries(profiles)) {
+          const pName = (prof.username || prof.name || '').trim().toLowerCase();
+          if ((profileId && pid === profileId) || (childName && pName === childName.trim().toLowerCase())) {
+            updates[`profiles.${pid}`] = FieldValue.delete();
+            deletedCount++;
+          }
+        }
+
+        if (Object.keys(updates).length > 0) {
+          updates.updatedAt = FieldValue.serverTimestamp();
+          await userDocRef.update(updates);
+        }
+      }
+
+      // 2. Also search for any orphaned user docs associated with the caller's email
+      if (userEmail && EMAIL_REGEX.test(userEmail)) {
+        const normalizedEmail = userEmail.trim().toLowerCase();
+        const emailQuerySnap = await db.collection("users").where("email", "==", normalizedEmail).get();
+        for (const docSnap of emailQuerySnap.docs) {
+          if (docSnap.id === uid) continue;
+          const data = docSnap.data() || {};
+          const profiles = data.profiles || {};
+          const updates = {};
+
+          for (const [pid, prof] of Object.entries(profiles)) {
+            const pName = (prof.username || prof.name || '').trim().toLowerCase();
+            if ((profileId && pid === profileId) || (childName && pName === childName.trim().toLowerCase())) {
+              updates[`profiles.${pid}`] = FieldValue.delete();
+              deletedCount++;
+            }
+          }
+
+          if (Object.keys(updates).length > 0) {
+            updates.updatedAt = FieldValue.serverTimestamp();
+            await docSnap.ref.update(updates);
+          }
+        }
+      }
+
+      return { success: true, deletedCount };
+    }
+
     // For blog_broadcast type, handle subscriber broadcast
     if (type === "blog_broadcast") {
       const apiKey = process.env.RESEND_API_KEY;
@@ -2006,142 +2066,6 @@ exports.scheduledDailyStreakPush = onSchedule(
     } catch (err) {
       console.error("[scheduledDailyStreakPush] Error executing streak push schedule:", err);
     }
-  }
-);
-
-/**
- * Callable Cloud Function: deleteChildProfileCloud
- * Permanently deletes a child profile from the user's Firestore document
- * (and any orphaned docs matching the parent's verified email) to prevent resurrection and ghost digests.
- */
-exports.deleteChildProfileCloud = onCall(
-  { cors: true },
-  async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "User must be authenticated to delete a profile.");
-    }
-
-    const { profileId, childName } = request.data || {};
-    if (!profileId && !childName) {
-      throw new HttpsError("invalid-argument", "Must specify profileId or childName to delete.");
-    }
-
-    const uid = request.auth.uid;
-    const userEmail = request.auth.token?.email;
-    const db = getFirestore();
-
-    console.log(`[deleteChildProfileCloud] Deleting profile for UID: ${uid}, Email: ${userEmail}, profileId: ${profileId}, childName: ${childName}`);
-
-    let deletedCount = 0;
-
-    // 1. Delete from caller's direct user doc
-    const userDocRef = db.collection("users").doc(uid);
-    const userDocSnap = await userDocRef.get();
-    if (userDocSnap.exists) {
-      const data = userDocSnap.data() || {};
-      const profiles = data.profiles || {};
-      const updates = {};
-
-      for (const [pid, prof] of Object.entries(profiles)) {
-        const pName = (prof.username || prof.name || '').trim().toLowerCase();
-        if ((profileId && pid === profileId) || (childName && pName === childName.trim().toLowerCase())) {
-          updates[`profiles.${pid}`] = FieldValue.delete();
-          deletedCount++;
-        }
-      }
-
-      if (Object.keys(updates).length > 0) {
-        updates.updatedAt = FieldValue.serverTimestamp();
-        await userDocRef.update(updates);
-      }
-    }
-
-    // 2. Also search for any orphaned user docs associated with the caller's email
-    if (userEmail && EMAIL_REGEX.test(userEmail)) {
-      const normalizedEmail = userEmail.trim().toLowerCase();
-      const emailQuerySnap = await db.collection("users").where("email", "==", normalizedEmail).get();
-      for (const docSnap of emailQuerySnap.docs) {
-        if (docSnap.id === uid) continue;
-        const data = docSnap.data() || {};
-        const profiles = data.profiles || {};
-        const updates = {};
-
-        for (const [pid, prof] of Object.entries(profiles)) {
-          const pName = (prof.username || prof.name || '').trim().toLowerCase();
-          if ((profileId && pid === profileId) || (childName && pName === childName.trim().toLowerCase())) {
-            updates[`profiles.${pid}`] = FieldValue.delete();
-            deletedCount++;
-          }
-        }
-
-        if (Object.keys(updates).length > 0) {
-          updates.updatedAt = FieldValue.serverTimestamp();
-          await docSnap.ref.update(updates);
-        }
-      }
-    }
-
-    console.log(`[deleteChildProfileCloud] Completed deletion. Removed ${deletedCount} instances for email ${userEmail}.`);
-    return { success: true, deletedCount };
-  }
-);
-
-/**
- * Callable Cloud Function: getLinkedAccountProfiles
- * Returns all child profiles registered under the caller's account or email across all documents.
- */
-exports.getLinkedAccountProfiles = onCall(
-  { cors: true },
-  async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "User must be authenticated.");
-    }
-
-    const uid = request.auth.uid;
-    const userEmail = request.auth.token?.email;
-    const db = getFirestore();
-
-    const results = [];
-    const seenProfileIds = new Set();
-
-    const extractFromDoc = (docSnap, isCurrentDoc) => {
-      const data = docSnap.data() || {};
-      const profiles = data.profiles || {};
-      for (const [pid, prof] of Object.entries(profiles)) {
-        if (!prof || prof.isDeleted) continue;
-        if (seenProfileIds.has(pid)) continue;
-        seenProfileIds.add(pid);
-
-        const uData = prof.userData || {};
-        const mathData = uData.subjects?.math || uData || {};
-        results.push({
-          id: pid,
-          name: prof.username || prof.name || 'Kibo Climber',
-          gradeLevel: prof.gradeLevel || 'Grade 1–2',
-          totalProblemsSolved: mathData.totalProblemsSolved || uData.totalProblemsSolved || 0,
-          streak: uData.streak || 0,
-          lastClimbDate: uData.lastSprintDate || uData.lastPlayedDate || null,
-          docId: docSnap.id,
-          isCurrentAccountDoc: isCurrentDoc
-        });
-      }
-    };
-
-    const userDocSnap = await db.collection("users").doc(uid).get();
-    if (userDocSnap.exists) {
-      extractFromDoc(userDocSnap, true);
-    }
-
-    if (userEmail && EMAIL_REGEX.test(userEmail)) {
-      const normalizedEmail = userEmail.trim().toLowerCase();
-      const emailQuerySnap = await db.collection("users").where("email", "==", normalizedEmail).get();
-      for (const docSnap of emailQuerySnap.docs) {
-        if (docSnap.id === uid) continue;
-        extractFromDoc(docSnap, false);
-      }
-    }
-
-    return { success: true, profiles: results };
   }
 );
 

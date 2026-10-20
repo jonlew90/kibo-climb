@@ -73,6 +73,7 @@ describe('UserSyncService Scheduled Digest Preferences Sync', () => {
     expect(deleted).toContain('child_profile_to_delete');
     expect(httpsCallable).toHaveBeenCalled();
     expect(mockCallable).toHaveBeenCalledWith({
+      type: 'delete_profile',
       profileId: 'child_profile_to_delete',
       childName: 'EpicPioneer92'
     });

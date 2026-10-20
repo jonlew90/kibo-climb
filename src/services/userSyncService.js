@@ -292,8 +292,8 @@ class UserSyncService {
     const uid = currentUser ? currentUser.uid : storageService.getUserData('math')?.cloudUid;
 
     try {
-      const deleteProfileCloud = httpsCallable(functions, 'deleteChildProfileCloud');
-      await deleteProfileCloud({ profileId, childName });
+      const sendParentEmail = httpsCallable(functions, 'sendParentEmail');
+      await sendParentEmail({ type: 'delete_profile', profileId, childName });
     } catch (cfErr) {
       if (uid) {
         try {
