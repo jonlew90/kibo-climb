@@ -1823,42 +1823,76 @@ async function dispatchOneSignalPush({ uids = [], subscriptionIds = [], title, m
     }
   };
 
-  let hasTarget = false;
-  if (subscriptionIds && subscriptionIds.length > 0) {
-    payload.include_subscription_ids = subscriptionIds;
-    hasTarget = true;
-  }
-  if (uids && uids.length > 0) {
-    payload.include_aliases = {
-      external_id: uids
+  // OneSignal REST API strictly forbids combining include_aliases and include_subscription_ids
+  // in the same payload (triggers HTTP 400 Bad Request). They must be sent in separate requests.
+  const postNotification = async (targetField) => {
+    const finalPayload = {
+      ...payload,
+      ...targetField
     };
-    hasTarget = true;
-  }
-
-  if (!hasTarget) {
-    return { success: false, error: "No target external user IDs or subscription IDs specified." };
-  }
-
-  try {
     const response = await fetch("https://onesignal.com/api/v1/notifications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Basic ${finalApiKey}`
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(finalPayload)
     });
-
     const result = await response.json();
-    if (!response.ok || (result.errors && result.errors.length > 0)) {
-      console.error("[OneSignal Push Error]:", result);
-      return { success: false, error: result.errors ? JSON.stringify(result.errors) : `HTTP ${response.status}` };
+    return { response, result };
+  };
+
+  try {
+    let lastResponse;
+    let lastResult;
+
+    // 1. Try external_id alias targeting if UIDs provided
+    if (uids && uids.length > 0) {
+      const aliasRes = await postNotification({
+        include_aliases: { external_id: uids }
+      });
+      lastResponse = aliasRes.response;
+      lastResult = aliasRes.result;
+
+      if (lastResponse.ok && lastResult.recipients > 0 && (!lastResult.errors || lastResult.errors.length === 0)) {
+        return {
+          success: true,
+          id: lastResult.id,
+          recipients: lastResult.recipients
+        };
+      }
+    }
+
+    // 2. If alias delivery had 0 recipients or failed, or no UIDs provided, fallback to direct subscription IDs
+    if (subscriptionIds && subscriptionIds.length > 0) {
+      const subRes = await postNotification({
+        include_subscription_ids: subscriptionIds
+      });
+      lastResponse = subRes.response;
+      lastResult = subRes.result;
+
+      if (lastResponse.ok && (!lastResult.errors || lastResult.errors.length === 0)) {
+        return {
+          success: true,
+          id: lastResult.id,
+          recipients: lastResult.recipients || 0
+        };
+      }
+    }
+
+    if (!lastResponse) {
+      return { success: false, error: "No target external user IDs or subscription IDs specified." };
+    }
+
+    if (!lastResponse.ok || (lastResult.errors && lastResult.errors.length > 0)) {
+      console.error("[OneSignal Push Error]:", lastResult);
+      return { success: false, error: lastResult.errors ? JSON.stringify(lastResult.errors) : `HTTP ${lastResponse.status}` };
     }
 
     return {
       success: true,
-      id: result.id,
-      recipients: result.recipients || 0
+      id: lastResult?.id,
+      recipients: lastResult?.recipients || 0
     };
   } catch (err) {
     console.error("[OneSignal Push Exception]:", err);
@@ -2073,5 +2107,6 @@ exports.scheduledDailyStreakPush = onSchedule(
 exports.computeProfileWeeklyStats = computeProfileWeeklyStats;
 exports.buildScheduledDigestHtml = buildScheduledDigestHtml;
 exports.buildScheduledFamilyDigestHtml = buildScheduledFamilyDigestHtml;
+exports.dispatchOneSignalPush = dispatchOneSignalPush;
 
 

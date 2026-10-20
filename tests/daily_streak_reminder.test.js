@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { calculateStreakFromHistory } from '../src/utils/dateUtils';
 const { evaluateDailyStreakReminder } = require('../functions/index');
 
@@ -240,5 +240,88 @@ describe('evaluateDailyStreakReminder - Push Notification Scheduling & Day Filte
     const result = evaluateDailyStreakReminder(profile, { now: saturday5pmET });
     expect(result.shouldAlert).toBe(true);
     expect(result.profileDayOfWeek).toBe(6);
+  });
+});
+
+describe('dispatchOneSignalPush - Mutually Exclusive Targeting Payload Guard', () => {
+  const { dispatchOneSignalPush } = require('../functions/index');
+
+  it('never combines include_aliases and include_subscription_ids in a single request payload', async () => {
+    const originalFetch = global.fetch;
+    const fetchCalls = [];
+
+    global.fetch = vi.fn(async (url, options) => {
+      const parsedBody = JSON.parse(options.body);
+      fetchCalls.push(parsedBody);
+      return {
+        ok: true,
+        json: async () => ({ id: 'notif_123', recipients: 1 })
+      };
+    });
+
+    try {
+      const res = await dispatchOneSignalPush({
+        uids: ['uid_parent_123'],
+        subscriptionIds: ['sub_device_abc'],
+        title: 'Test Title',
+        message: 'Test Message',
+        apiKey: 'test_api_key',
+        appId: 'test_app_id'
+      });
+
+      expect(res.success).toBe(true);
+      expect(fetchCalls.length).toBeGreaterThan(0);
+
+      // Verify each individual fetch call NEVER combines include_aliases and include_subscription_ids
+      for (const call of fetchCalls) {
+        const hasAliases = Boolean(call.include_aliases);
+        const hasSubIds = Boolean(call.include_subscription_ids);
+        expect(hasAliases && hasSubIds).toBe(false);
+      }
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  it('falls back to include_subscription_ids if alias targeting yields 0 recipients', async () => {
+    const originalFetch = global.fetch;
+    const fetchCalls = [];
+
+    global.fetch = vi.fn(async (url, options) => {
+      const parsedBody = JSON.parse(options.body);
+      fetchCalls.push(parsedBody);
+
+      if (parsedBody.include_aliases) {
+        return {
+          ok: true,
+          json: async () => ({ id: 'notif_alias_empty', recipients: 0 })
+        };
+      }
+
+      return {
+        ok: true,
+        json: async () => ({ id: 'notif_sub_success', recipients: 1 })
+      };
+    });
+
+    try {
+      const res = await dispatchOneSignalPush({
+        uids: ['uid_unlinked_device'],
+        subscriptionIds: ['sub_direct_device'],
+        title: 'Test Title',
+        message: 'Test Message',
+        apiKey: 'test_api_key',
+        appId: 'test_app_id'
+      });
+
+      expect(res.success).toBe(true);
+      expect(fetchCalls.length).toBe(2);
+      expect(fetchCalls[0].include_aliases).toBeDefined();
+      expect(fetchCalls[0].include_subscription_ids).toBeUndefined();
+      expect(fetchCalls[1].include_aliases).toBeUndefined();
+      expect(fetchCalls[1].include_subscription_ids).toEqual(['sub_direct_device']);
+    } finally {
+      global.fetch = originalFetch;
+    }
   });
 });
