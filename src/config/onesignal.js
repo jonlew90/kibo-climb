@@ -64,19 +64,11 @@ export const initOneSignal = async () => {
           };
         }
 
-        if ('serviceWorker' in navigator) {
-          try {
-            await navigator.serviceWorker.register('/OneSignalSDKWorker.js', {
-              scope: '/'
-            });
-          } catch (e) {}
-        }
-
         if (!window.OneSignal?.initialized) {
           await OneSignalReact.init({
             appId: APP_ID,
             allowLocalhostAsSecureOrigin: true,
-            serviceWorkerPath: 'OneSignalSDKWorker.js',
+            serviceWorkerPath: 'sw.js',
             serviceWorkerParam: { scope: '/' },
             notifyButton: {
               enable: false,
