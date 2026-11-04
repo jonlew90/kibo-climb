@@ -140,6 +140,8 @@ describe('promoCodeService', () => {
     });
 
     it('redeems REDDIT30 special campaign code successfully', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-10-15T12:00:00Z'));
       firebaseFunctions.httpsCallable.mockReturnValue(() => Promise.reject(new Error('Cloud function offline')));
       storageService.grantCustomClubTrial = vi.fn().mockReturnValue({ granted: true, daysRemaining: 30 });
 
@@ -153,6 +155,7 @@ describe('promoCodeService', () => {
         days: 30,
         promoCode: 'REDDIT30'
       }));
+      vi.useRealTimers();
     });
   });
 });
