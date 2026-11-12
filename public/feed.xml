@@ -10,12 +10,50 @@
     <atom:link href="https://kiboclimb.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>Discover expert mental math shortcuts, adaptive phonics, geography insights, coding logic, and printable worksheet practice to turn daily learning into an exciting mountain climb.</description>
     <language>en-US</language>
-    <lastBuildDate>Tue, 10 Nov 2026 18:09:24 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 12 Nov 2026 18:33:37 GMT</lastBuildDate>
     <image>
       <url>https://kiboclimb.com/icons/icon-512.png</url>
       <title>Kibo Climb</title>
       <link>https://kiboclimb.com/blog</link>
     </image>
+    <item>
+      <title>Cracking the Code on Loops &amp; Accumulators: Tally the Passes for Grades 6–8+</title>
+      <link>https://kiboclimb.com/blog/coding-tier-6-tally-the-passes</link>
+      <guid isPermaLink="true">https://kiboclimb.com/blog/coding-tier-6-tally-the-passes</guid>
+      <pubDate>Thu, 12 Nov 2026 18:33:37 GMT</pubDate>
+      <dc:creator><![CDATA[Kibo Climb]]></dc:creator>
+      <author>support@kiboclimb.com (Kibo Climb)</author>
+      <description><![CDATA[Learn the Tally the Passes mental shortcut for Grades 6–8+ students tackling Tier 6 on Mount Kibo.]]></description>
+      <content:encoded><![CDATA[<figure><img src="https://kiboclimb.com/images/blog/kibo-thinking.jpeg" alt="Cracking the Code on Loops &amp; Accumulators: Tally the Passes for Grades 6–8+" /><figcaption>Cracking the Code on Loops &amp; Accumulators: Tally the Passes for Grades 6–8+</figcaption></figure><h2>Conquering Loops &amp; Accumulators on Mount Kibo</h2>
+      <p>Let's be honest: when our kids hit <strong>Iteration Pass</strong> on Mount Kilimanjaro, the challenge kicks in for both of them—and sometimes us! Kibo the red panda mascot knows that speed and accuracy unlock essential momentum, but rigid memorization often creates unnecessary friction.</p>
+      <p>By mastering intuitive curriculum strategies, students transform tricky challenges into second-nature shortcuts (and help us parents remember how to navigate Tier 6 concepts in the process!).</p>
+      <p>In our Tier 6 curriculum (Grades 6–8+), students build foundational mastery in:</p>
+      <ul><li>For loop range tracing (for i = 1 to 4)</li><li>Accumulator variables (sum += i)</li><li>While loop termination conditions</li><li>Loop iteration count calculation</li></ul>
+      <h3>Trail Trick: Tally the Passes</h3>
+      <p>Write down each pass of the loop: i=1 (sum=1), i=2 (sum=3), i=3 (sum=6). Keep a running tally!</p>
+      <p><strong>Worked Example:</strong></p>
+      <ul><li>Problem: <strong>total = 0; for i in [1, 2, 3]: total += i * 2; total?</strong></li><li>Strategy Application: <strong>Pass 1: +2, Pass 2: +4, Pass 3: +6. Sum = 12!</strong></li><li>Solution: <strong>12</strong></li></ul>
+      <p>By visualizing concepts as adaptable mental landmarks, working memory strain is significantly reduced.</p>
+      <h3>Trail Pro Tip: Check Loop End Condition</h3>
+      <blockquote><p>Confirm whether the loop stops before or after the upper limit.</p></blockquote>
+      <h3>Frequently Asked Questions</h3>
+      <h2>Reinforce Skills with Offline Practice</h2>
+      <p>Deliberate practice turns these shortcuts into permanent fluency. You can practice this exact topic live in the <a href="/">Kibo Climb app</a> or download our verified offline companion resource:</p>
+      <ul><li><strong>Free Practice Worksheet:</strong> <a href="/worksheets/coding/grade-6-8-functions-recursion-algorithms">Advanced Functions, Recursion &amp; Algorithms</a></li><li><strong>Includes:</strong> 16 targeted questions and a complete parent/teacher answer key.</li></ul>
+      <h2>Next Steps for Climbers</h2>
+      <p>Encourage your student to test the Tally the Passes technique during their next 5-minute practice session. Step by step, they will build an unbreakable foundation of speed and confidence!</p>]]></content:encoded>
+      <enclosure url="https://kiboclimb.com/images/blog/kibo-thinking.jpeg" type="image/jpeg" length="0" />
+      <media:content url="https://kiboclimb.com/images/blog/kibo-thinking.jpeg" type="image/jpeg" medium="image">
+        <media:title type="plain">Cracking the Code on Loops &amp; Accumulators: Tally the Passes for Grades 6–8+</media:title>
+        <media:thumbnail url="https://kiboclimb.com/images/blog/kibo-thinking.jpeg" />
+      </media:content>
+      <category><![CDATA[Tier 6]]></category>
+      <category><![CDATA[Coding]]></category>
+      <category><![CDATA[Mental Math]]></category>
+      <category><![CDATA[Kibo Climb]]></category>
+      <category><![CDATA[Grades 6–8+]]></category>
+      <category><![CDATA[Tally The Passes]]></category>
+    </item>
     <item>
       <title>A Parent's Guide to Mount World Summit: The Curriculum Strategy Method (Grades 4–8)</title>
       <link>https://kiboclimb.com/blog/world-tier-8-curriculum-strategy</link>
