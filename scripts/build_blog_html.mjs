@@ -131,90 +131,60 @@ function formatDate(isoString) {
 }
 
 function updateSitemap(posts) {
-  if (!fs.existsSync(SITEMAP_PATH)) {
-    console.warn(`Sitemap not found at ${SITEMAP_PATH}. Skipping sitemap sync.`);
-    return;
-  }
-
-  let sitemapContent = fs.readFileSync(SITEMAP_PATH, 'utf8');
-
-  // Sync /blog index URL in sitemap
-  const blogIndexUrl = `${BASE_URL}/blog`;
-  const blogIndexLocPattern = new RegExp(`<loc>${blogIndexUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>([\\s\\S]*?)</url>`, 'i');
   const todayDate = new Date().toISOString().slice(0, 10);
+  const publicSheets = WORKSHEET_CATALOG.filter(w => !w.isDynamic);
 
-  if (blogIndexLocPattern.test(sitemapContent)) {
-    sitemapContent = sitemapContent.replace(
-      blogIndexLocPattern,
-      `<loc>${blogIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>`
-    );
-  } else {
-    const newEntry = `  <url>\n    <loc>${blogIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>`;
-    sitemapContent = sitemapContent.replace('</urlset>', newEntry);
-  }
+  const entries = [
+    { loc: `${BASE_URL}/`, lastmod: todayDate, changefreq: 'weekly', priority: '1.0' },
+    { loc: `${BASE_URL}/math`, lastmod: todayDate, changefreq: 'weekly', priority: '0.9' },
+    { loc: `${BASE_URL}/words`, lastmod: todayDate, changefreq: 'weekly', priority: '0.9' },
+    { loc: `${BASE_URL}/world`, lastmod: todayDate, changefreq: 'weekly', priority: '0.9' },
+    { loc: `${BASE_URL}/coding`, lastmod: todayDate, changefreq: 'weekly', priority: '0.9' },
+    { loc: `${BASE_URL}/blog`, lastmod: todayDate, changefreq: 'weekly', priority: '0.9' },
+    { loc: `${BASE_URL}/worksheets`, lastmod: todayDate, changefreq: 'weekly', priority: '0.9' },
+    { loc: `${BASE_URL}/tips`, lastmod: todayDate, changefreq: 'weekly', priority: '0.9' }
+  ];
 
   for (const post of posts) {
-    const slug = post.slug;
-    const postUrl = `${BASE_URL}/blog/${slug}`;
-    const publishedAt = post.published_at || '2026-09-14';
-    const pubDateShort = publishedAt.slice(0, 10);
-
-    const locPattern = new RegExp(`<loc>${postUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>([\\s\\S]*?)</url>`, 'i');
-    
-    if (locPattern.test(sitemapContent)) {
-      sitemapContent = sitemapContent.replace(
-        locPattern,
-        `<loc>${postUrl}</loc>\n    <lastmod>${pubDateShort}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`
-      );
-    } else {
-      const newEntry = `  <url>\n    <loc>${postUrl}</loc>\n    <lastmod>${pubDateShort}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>\n</urlset>`;
-      sitemapContent = sitemapContent.replace('</urlset>', newEntry);
-    }
+    const pubDateShort = (post.published_at || todayDate).slice(0, 10);
+    entries.push({
+      loc: `${BASE_URL}/blog/${post.slug}`,
+      lastmod: pubDateShort,
+      changefreq: 'monthly',
+      priority: '0.8'
+    });
   }
 
-  // Sync /tips index in sitemap
-  const tipsIndexUrl = `${BASE_URL}/tips`;
-  const tipsIndexLocPattern = new RegExp(`<loc>${tipsIndexUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>([\\s\\S]*?)</url>`, 'i');
-  if (tipsIndexLocPattern.test(sitemapContent)) {
-    sitemapContent = sitemapContent.replace(
-      tipsIndexLocPattern,
-      `<loc>${tipsIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>`
-    );
-  } else {
-    const newEntry = `  <url>\n    <loc>${tipsIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>`;
-    sitemapContent = sitemapContent.replace('</urlset>', newEntry);
-  }
-
-  // Sync /worksheets index and public catalog sheets in sitemap
-  const worksheetsIndexUrl = `${BASE_URL}/worksheets`;
-  const wsIndexLocPattern = new RegExp(`<loc>${worksheetsIndexUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>([\\s\\S]*?)</url>`, 'i');
-  if (wsIndexLocPattern.test(sitemapContent)) {
-    sitemapContent = sitemapContent.replace(
-      wsIndexLocPattern,
-      `<loc>${worksheetsIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>`
-    );
-  } else {
-    const newEntry = `  <url>\n    <loc>${worksheetsIndexUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>`;
-    sitemapContent = sitemapContent.replace('</urlset>', newEntry);
-  }
-
-  const publicSheets = WORKSHEET_CATALOG.filter(w => !w.isDynamic);
   for (const sheet of publicSheets) {
-    const sheetUrl = `${BASE_URL}/worksheets/${sheet.subject}/${sheet.slug}`;
-    const locPattern = new RegExp(`<loc>${sheetUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>([\\s\\S]*?)</url>`, 'i');
-    if (locPattern.test(sitemapContent)) {
-      sitemapContent = sitemapContent.replace(
-        locPattern,
-        `<loc>${sheetUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`
-      );
-    } else {
-      const newEntry = `  <url>\n    <loc>${sheetUrl}</loc>\n    <lastmod>${todayDate}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>\n</urlset>`;
-      sitemapContent = sitemapContent.replace('</urlset>', newEntry);
-    }
+    entries.push({
+      loc: `${BASE_URL}/worksheets/${sheet.subject}/${sheet.slug}`,
+      lastmod: todayDate,
+      changefreq: 'monthly',
+      priority: '0.8'
+    });
   }
+
+  entries.push(
+    { loc: `${BASE_URL}/privacy`, lastmod: '2026-09-01', changefreq: 'yearly', priority: '0.3' },
+    { loc: `${BASE_URL}/coppa-privacy`, lastmod: '2026-09-01', changefreq: 'yearly', priority: '0.3' },
+    { loc: `${BASE_URL}/terms`, lastmod: '2026-09-01', changefreq: 'yearly', priority: '0.3' }
+  );
+
+  const urlNodes = entries.map(e => `  <url>
+    <loc>${e.loc}</loc>
+    <lastmod>${e.lastmod}</lastmod>
+    <changefreq>${e.changefreq}</changefreq>
+    <priority>${e.priority}</priority>
+  </url>`).join('\n');
+
+  const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlNodes}
+</urlset>
+`;
 
   fs.writeFileSync(SITEMAP_PATH, sitemapContent, 'utf8');
-  console.log(` Synchronized Sitemap with blog index, ${posts.length} posts, and ${publicSheets.length} worksheets: ${SITEMAP_PATH}`);
+  console.log(` Synchronized Sitemap with ${entries.length} live URLs (${posts.length} posts, ${publicSheets.length} worksheets): ${SITEMAP_PATH}`);
 }
 
 function generateRssFeed(posts) {

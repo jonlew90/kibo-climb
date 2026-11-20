@@ -30,54 +30,78 @@ export const SUBJECT_SEO_CONFIG = {
 export const ROUTE_SEO_CONFIG = {
   settings: {
     title: 'Settings – Kibo Climb',
-    description: 'Manage audio, display, climber preferences, and gameplay settings in Kibo Climb.'
+    description: 'Manage audio, display, climber preferences, and gameplay settings in Kibo Climb.',
+    path: '/settings'
   },
   privacy: {
     title: 'Privacy Policy – Kibo Climb',
-    description: 'Learn how Kibo Climb protects child privacy, COPPA compliance, and account security.'
+    description: 'Learn how Kibo Climb protects child privacy, COPPA compliance, and account security.',
+    path: '/privacy'
+  },
+  coppa_privacy: {
+    title: 'COPPA Child Privacy Notice – Kibo Climb',
+    description: 'Learn how Kibo Climb complies with COPPA to protect children online without third-party ads or behavioral tracking.',
+    path: '/coppa-privacy'
   },
   terms: {
     title: 'Terms of Service – Kibo Climb',
-    description: 'Terms and conditions for using Kibo Climb educational apps.'
+    description: 'Terms and conditions for using Kibo Climb educational apps.',
+    path: '/terms'
   },
   leaderboard: {
     title: 'Climber Leaderboards – Kibo Climb',
-    description: 'View top climber rankings, friend leagues, and subject mastery standings.'
+    description: 'View top climber rankings, friend leagues, and subject mastery standings.',
+    path: '/leaderboard'
   },
   quests: {
     title: 'Daily & Weekly Quests – Kibo Climb',
-    description: 'Complete daily learning quests, level up your ascent rank, and collect Sparks.'
+    description: 'Complete daily learning quests, level up your ascent rank, and collect Sparks.',
+    path: '/quests'
   },
   parent_dashboard: {
     title: 'Parent Zone & Progress Dashboard – Kibo Climb',
-    description: 'Review weekly progress digests, topic mastery breakdowns, and family subscription settings.'
+    description: 'Review weekly progress digests, topic mastery breakdowns, and family subscription settings.',
+    path: '/parent-dashboard'
   },
   blog: {
     title: 'Kibo Climb Blog – Math Strategies, Mental Math Shortcuts & Parent Guides',
-    description: 'Discover expert mental math shortcuts, adaptive learning strategies, and parent/teacher tips to make math practice exciting with Kibo Climb.'
+    description: 'Discover expert mental math shortcuts, adaptive learning strategies, and parent/teacher tips to make math practice exciting with Kibo Climb.',
+    path: '/blog'
   },
   blog_index: {
     title: 'Kibo Climb Blog – Math Strategies, Mental Math Shortcuts & Parent Guides',
-    description: 'Discover expert mental math shortcuts, adaptive learning strategies, and parent/teacher tips to make math practice exciting with Kibo Climb.'
+    description: 'Discover expert mental math shortcuts, adaptive learning strategies, and parent/teacher tips to make math practice exciting with Kibo Climb.',
+    path: '/blog'
   },
   tips_hub: {
     title: 'Tips & Tricks Strategy Cheat-Sheets – Kibo Climb',
-    description: 'Interactive mental math formulas, phonics rules, coding step-tracing, and geography anchor cheat cards for fast learners.'
+    description: 'Interactive mental math formulas, phonics rules, coding step-tracing, and geography anchor cheat cards for fast learners.',
+    path: '/tips'
   },
   tips: {
     title: 'Tips & Tricks Strategy Cheat-Sheets – Kibo Climb',
-    description: 'Interactive mental math formulas, phonics rules, coding step-tracing, and geography anchor cheat cards for fast learners.'
+    description: 'Interactive mental math formulas, phonics rules, coding step-tracing, and geography anchor cheat cards for fast learners.',
+    path: '/tips'
   }
 };
 
+const DEDICATED_SEO_ROUTES = new Set(['blog_post', 'worksheet_viewer', 'worksheets']);
+
 /**
  * Updates document meta tags according to the active route and subject.
+ * Preserves self-referencing canonical URLs so `/` does not conflict with `/math`.
  * @param {Object} options
  * @param {string} options.route - Active route identifier ('adaptive_session', 'settings', etc.)
  * @param {string} [options.subject='math'] - Active subject identifier ('math', 'words', 'world', 'coding')
  */
 export function updateDocumentSeo({ route, subject = 'math' } = {}) {
   if (typeof document === 'undefined') return;
+  if (route && DEDICATED_SEO_ROUTES.has(route)) return;
+
+  const rawPathname = typeof window !== 'undefined' && window.location?.pathname
+    ? window.location.pathname
+    : '/';
+  const normalizedPathname = rawPathname === '/' ? '/' : rawPathname.replace(/\/+$/, '');
 
   let title = 'Kibo Climb – Fun Daily Math, Words, Geography & Coding Practice for Kids';
   let description = 'The Daily Climb to Mastery. Fast, engaging Math, Words, World geography, and Coding practice app for children with instant feedback, streak rewards, and stats tracking.';
@@ -86,8 +110,8 @@ export function updateDocumentSeo({ route, subject = 'math' } = {}) {
   if (route && route !== 'adaptive_session' && ROUTE_SEO_CONFIG[route]) {
     title = ROUTE_SEO_CONFIG[route].title;
     description = ROUTE_SEO_CONFIG[route].description;
-    relativePath = `/${route.replace('_', '-')}`;
-  } else if (subject && SUBJECT_SEO_CONFIG[subject]) {
+    relativePath = ROUTE_SEO_CONFIG[route].path || `/${route.replace(/_/g, '-')}`;
+  } else if (normalizedPathname !== '/' && subject && SUBJECT_SEO_CONFIG[subject]) {
     title = SUBJECT_SEO_CONFIG[subject].title;
     description = SUBJECT_SEO_CONFIG[subject].description;
     relativePath = SUBJECT_SEO_CONFIG[subject].path;
@@ -110,9 +134,11 @@ export function updateDocumentSeo({ route, subject = 'math' } = {}) {
   // Standard Meta
   setMeta('name', 'description', description);
 
-  // Canonical Link
+  // Canonical Link (consistent trailing slash on root '/', no trailing slash on subpaths)
   let canonicalEl = document.querySelector('link[rel="canonical"]');
-  const canonicalUrl = `https://kiboclimb.com${relativePath === '/' ? '' : relativePath}`;
+  const canonicalUrl = relativePath === '/'
+    ? 'https://kiboclimb.com/'
+    : `https://kiboclimb.com${relativePath}`;
   if (!canonicalEl) {
     canonicalEl = document.createElement('link');
     canonicalEl.setAttribute('rel', 'canonical');

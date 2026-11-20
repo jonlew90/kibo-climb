@@ -25,6 +25,24 @@ const safeLogEvent = (eventName, eventParams = {}) => {
   }
 };
 
+const MAX_ERRORS_PER_SESSION = 5;
+const IGNORED_ERROR_PATTERNS = [
+  /^script error\.?$/i,
+  /resizeobserver loop/i,
+  /\[wm\]/i,
+  /chrome-extension:\/\//i,
+  /moz-extension:\/\//i,
+  /safari-extension:\/\//i,
+  /notallowederror/i,
+  /aborterror/i,
+  /the play\(\) request was interrupted/i,
+  /failed to log analytics event/i,
+  /loading chunk \d+ failed/i,
+  /dynamically imported module/i
+];
+const seenErrorSignatures = new Set();
+let loggedErrorCount = 0;
+
 // Capture initial landing URL and referrer immediately before any client-side routing or history mutations
 const initialLandingUrl = typeof window !== 'undefined' ? window.location.href : 'https://kiboclimb.com/';
 const initialReferrer = typeof document !== 'undefined' ? (document.referrer || '') : '';
@@ -211,11 +229,14 @@ export const analyticsService = {
 
   /**
    * Log an error, exception, or crash securely without violating COPPA rules.
-   * Ensures PII like emails and phone numbers are redacted.
+   * Filters benign browser/third-party noise, deduplicates identical errors,
+   * caps total exceptions per session, and redacts PII (emails/phones).
    * @param {Error|string} error - The error object or string message.
    * @param {Object} [additionalParams] - Optional additional context.
    */
   logError: (error, additionalParams = {}) => {
+    if (loggedErrorCount >= MAX_ERRORS_PER_SESSION) return;
+
     let errorMessage = '';
 
     if (error instanceof Error) {
@@ -234,13 +255,32 @@ export const analyticsService = {
       errorMessage = String(errorMessage);
     }
 
+    const trimmed = errorMessage.trim();
+    if (!trimmed) return;
+
+    // Ignore benign browser, extension, media autoplay, and offline network noise
+    if (IGNORED_ERROR_PATTERNS.some((pattern) => pattern.test(trimmed))) return;
+    if (
+      typeof navigator !== 'undefined' &&
+      navigator.onLine === false &&
+      /failed to fetch|networkerror|load failed/i.test(trimmed)
+    ) {
+      return;
+    }
+
     // Redact potential PII (emails and phone numbers) to ensure COPPA compliance
-    let redactedMessage = errorMessage
+    let redactedMessage = trimmed
       .replace(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi, '[REDACTED_EMAIL]')
       .replace(/(\+?\d{1,2}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g, '[REDACTED_PHONE]');
 
+    const signature = redactedMessage.substring(0, 100);
+    if (seenErrorSignatures.has(signature)) return;
+
+    seenErrorSignatures.add(signature);
+    loggedErrorCount += 1;
+
     safeLogEvent('exception', {
-      description: redactedMessage.substring(0, 100),
+      description: signature,
       fatal: additionalParams.fatal === true
     });
   },

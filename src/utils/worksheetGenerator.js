@@ -573,6 +573,40 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
   const problems = generateProblemsForWorksheet(worksheet.id, recentMistakes, seed);
   const isDefaultSeed = !seed || seed === 0 || seed === 'default' || seed === '0';
   const canonicalUrl = `https://kiboclimb.com${getCanonicalPath(worksheet)}`;
+  const subjectLabel = worksheet.subject
+    ? worksheet.subject.charAt(0).toUpperCase() + worksheet.subject.slice(1)
+    : 'Learning';
+  const relatedSheets = WORKSHEET_CATALOG
+    .filter(w => !w.isDynamic && w.subject === worksheet.subject && w.id !== worksheet.id)
+    .slice(0, 6);
+  const structuredData = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'LearningResource',
+        name: worksheet.title,
+        description: worksheet.desc,
+        learningResourceType: 'Worksheet',
+        educationalLevel: worksheet.gradeLabel || 'K-8',
+        inLanguage: 'en',
+        isAccessibleForFree: true,
+        url: canonicalUrl,
+        provider: {
+          '@type': 'Organization',
+          name: 'Kibo Climb',
+          url: 'https://kiboclimb.com/'
+        }
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://kiboclimb.com/' },
+          { '@type': 'ListItem', position: 2, name: 'Worksheets', item: 'https://kiboclimb.com/worksheets' },
+          { '@type': 'ListItem', position: 3, name: worksheet.title, item: canonicalUrl }
+        ]
+      }
+    ]
+  });
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -587,6 +621,26 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
   <meta property="og:description" content="Free printable ${worksheet.gradeLabel || ''} ${worksheet.subject} worksheet: ${worksheet.title}. ${worksheet.desc}">
   <meta property="og:url" content="${canonicalUrl}">
   <meta property="og:type" content="website">
+  <script type="application/ld+json">${structuredData}</script>
+  <!-- Google Analytics 4 (COPPA Compliant) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PNQ5D8DFHP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      'ad_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied',
+      'analytics_storage': 'granted'
+    });
+    gtag('set', {
+      'restricted_data_processing': true,
+      'allow_google_signals': false,
+      'allow_ad_personalization_signals': false
+    });
+    gtag('js', new Date());
+    gtag('config', 'G-PNQ5D8DFHP', { 'cookie_domain': 'kiboclimb.com' });
+  </script>
   <style>
     @page {
       margin: 1.2cm;
@@ -812,6 +866,16 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
   </style>
 </head>
 <body>
+  <nav class="no-print" aria-label="Worksheet navigation" style="max-width: 820px; margin: 0 auto 14px; padding: 10px 16px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 700;">
+    <a href="/" style="color: #ea580c; text-decoration: none; font-weight: 900;">🐾 Kibo Climb</a>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px;">
+      <a href="/worksheets" style="color: #334155; text-decoration: none;">All Worksheets</a>
+      <a href="/${worksheet.subject}" style="color: #0d9488; text-decoration: none;">Practice ${subjectLabel} Online</a>
+      <a href="/blog" style="color: #334155; text-decoration: none;">Strategy Blog</a>
+      <a href="/tips" style="color: #334155; text-decoration: none;">Tips</a>
+    </div>
+  </nav>
+
   <!-- PAGE 1: QUESTIONS -->
   <div class="page page-1">
     <div>
@@ -901,8 +965,22 @@ export function generateWorksheetHtml(worksheet, childName = 'Kibo Climber', rec
     </div>
   </div>
 
+  ${relatedSheets.length > 0 ? `<section class="no-print" aria-label="Related worksheets" style="max-width: 820px; margin: 20px auto 72px; padding: 18px 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px;">
+    <h2 style="margin: 0 0 10px; font-size: 16px; color: #0f172a;">More Free Printable ${subjectLabel} Worksheets</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;">
+      ${relatedSheets.map(s => `<a href="${getCanonicalPath(s)}" style="display: block; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; text-decoration: none; color: #0f172a; background: #f8fafc;">
+        <div style="font-size: 11px; font-weight: 800; color: #0284c7;">${s.gradeLabel || 'All Grades'}</div>
+        <div style="font-size: 13px; font-weight: 800; margin-top: 2px;">${s.title}</div>
+      </a>`).join('')}
+    </div>
+    <div style="margin-top: 12px; font-size: 13px; display: flex; flex-wrap: wrap; gap: 14px;">
+      <a href="/worksheets" style="color: #ea580c; font-weight: 800; text-decoration: none;">Browse All Worksheets →</a>
+      <a href="/${worksheet.subject}" style="color: #0d9488; font-weight: 800; text-decoration: none;">Play Interactive ${subjectLabel} Climb →</a>
+    </div>
+  </section>` : ''}
+
   <div class="no-print" style="position: fixed; bottom: 16px; right: 16px; z-index: 100;">
-    <button onclick="window.print()" style="background: #0d9488; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+    <button onclick="if(typeof gtag==='function'){gtag('event','print_worksheet',{worksheet_id:'${worksheet.id}',subject:'${worksheet.subject}',is_kibo_club_only:false});}window.print();" style="background: #0d9488; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
       🖨️ Print Worksheet & Key
     </button>
   </div>

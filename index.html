@@ -6,6 +6,18 @@
     <title>Kibo Climb – Fun Daily Math, Words, Geography &amp; Coding Practice for Kids</title>
     <meta name="description" content="The Daily Climb to Mastery. Fast, engaging Math, Words, Geography, and Coding practice app for children with instant feedback, streak rewards, and stats tracking." />
     <link rel="canonical" href="https://kiboclimb.com/" />
+    <script>
+      (function () {
+        try {
+          var path = window.location.pathname || '/';
+          var cleanPath = path === '/' ? '/' : path.replace(/\/+$/, '');
+          if (cleanPath !== '/') {
+            var canonical = document.querySelector('link[rel="canonical"]');
+            if (canonical) canonical.setAttribute('href', 'https://kiboclimb.com' + cleanPath);
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="alternate" type="application/rss+xml" title="Kibo Climb Blog RSS Feed" href="https://kiboclimb.com/feed.xml" />
     <meta name="robots" content="index, follow" />
 
@@ -95,10 +107,19 @@
   </head>
   <body class="bg-[#FFFDF9] text-slate-800 font-sans antialiased selection:bg-kibo-teal selection:text-white min-h-screen select-none">
     <noscript>
-      <div style="padding: 2rem; font-family: sans-serif; text-align: center;">
+      <div style="padding: 2rem; font-family: sans-serif; text-align: center; max-width: 720px; margin: 0 auto;">
         <h1>Kibo Climb – Daily Learning Climb</h1>
-        <p>Fast, engaging Math, Words, and World practice for children with instant feedback, streak rewards, and stats tracking.</p>
-        <p>Please enable JavaScript to launch the app.</p>
+        <p>Fast, engaging Math, Words, Geography, and Coding practice for children with instant feedback, streak rewards, and printable worksheets.</p>
+        <nav aria-label="Primary links" style="margin: 1.5rem 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
+          <a href="/math">Kibo Math</a>
+          <a href="/words">Kibo Words</a>
+          <a href="/world">Kibo World Geography</a>
+          <a href="/coding">Kibo Coding</a>
+          <a href="/worksheets">Free Printable Worksheets</a>
+          <a href="/blog">Learning Strategies Blog</a>
+          <a href="/tips">Tips &amp; Cheat Sheets</a>
+        </nav>
+        <p>Please enable JavaScript to launch the interactive climb app.</p>
       </div>
     </noscript>
     <div id="root"></div>
